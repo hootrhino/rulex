@@ -1,0 +1,4 @@
+*.log
+.vscode/
+rulenginex
+.DS_Store
