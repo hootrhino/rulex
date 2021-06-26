@@ -12,6 +12,7 @@ import (
 
 //
 type CoAPInEndResource struct {
+	enabled bool
 	inEndId string
 	router  *mux.Router
 }
@@ -23,7 +24,7 @@ func NewCoAPInEndResource(inEndId string) *CoAPInEndResource {
 	}
 }
 
-func (cc *CoAPInEndResource) Start(e *RuleEngine, successCallBack func(), errorCallback func(error)) error {
+func (cc *CoAPInEndResource) Start(e *RuleEngine) error {
 
 	cc.router.Use(func(next mux.Handler) mux.Handler {
 		return mux.HandlerFunc(func(w mux.ResponseWriter, r *mux.Message) {
@@ -33,7 +34,7 @@ func (cc *CoAPInEndResource) Start(e *RuleEngine, successCallBack func(), errorC
 	})
 	cc.router.Handle("/in", mux.HandlerFunc(func(w mux.ResponseWriter, msg *mux.Message) {
 		log.Debugf("Received Coap Data: %#v", msg)
-		e.Work(GetInEnd(cc.inEndId), msg.String())
+		e.Work(e.GetInEnd(cc.inEndId), msg.String())
 		err := w.SetResponse(codes.Content, message.TextPlain, bytes.NewReader([]byte("ok")))
 		if err != nil {
 			log.Errorf("cannot set response: %v", err)
@@ -41,10 +42,8 @@ func (cc *CoAPInEndResource) Start(e *RuleEngine, successCallBack func(), errorC
 	}))
 	err := coap.ListenAndServe("udp", ":5688", cc.router)
 	if err != nil {
-		errorCallback(err)
 		return err
 	} else {
-		successCallBack()
 		return nil
 	}
 }
@@ -60,11 +59,18 @@ func (cc *CoAPInEndResource) Reload() {
 func (cc *CoAPInEndResource) Pause() {
 
 }
-func (cc *CoAPInEndResource) Status() int {
-	return GetInEnd(cc.inEndId).State
+func (cc *CoAPInEndResource) Status(e *RuleEngine) int {
+	return e.GetInEnd(cc.inEndId).State
 }
 
 func (cc *CoAPInEndResource) Register(inEndId string) error {
 
 	return nil
+}
+
+func (cc *CoAPInEndResource) Test(inEndId string) bool {
+	return true
+}
+func (cc *CoAPInEndResource) Enabled() bool {
+	return cc.enabled
 }

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>RulengineX-Dashboard</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+</head>
+
+<body>
+    <div id="app">
+        <el-container>
+            <el-header>
+                <el-menu class="el-menu-demo" mode="horizontal" background-color="#545c64" text-color="#fff"
+                    active-text-color="#ffd04b">
+                    <el-menu-item index="1">RulengineX</el-menu-item>
+                </el-menu>
+            </el-header>
+
+            <el-main>
+                <el-alert title="这是一个极其简陋的界面，因为我不会做前端，所以搞了个很简单的界面来显示一些关键信息。（按理来说这种软件不应该有界面的）" type="warning">
+                </el-alert>
+                <template>
+                    <el-tabs v-model="activeName" @tab-click="handleClick">
+                        <el-tab-pane label="系统信息" name="system">
+                            <template>
+                                <el-row :gutter="12">
+                                    <el-col :span="8">
+                                        <el-card shadow="always">
+                                            CPU核心数: <h1>&{systemData.cpus}</h1>
+                                        </el-card>
+                                    </el-col>
+
+                                    <el-col :span="8">
+                                        <el-card shadow="always">
+                                            操作系统 <h1>&{systemData.os}</h1>
+                                        </el-card>
+                                    </el-col>
+
+                                    <el-col :span="8">
+                                        <el-card shadow="always">
+                                            硬件架构 <h1>&{systemData.arch}</h1>
+                                        </el-card>
+                                    </el-col>
+
+                                </el-row>
+                            </template>
+                        </el-tab-pane>
+                        <el-tab-pane label="输入端管理" name="inend">
+                            <template>
+                                <el-table :data="inEndData" style="width: 100%">
+                                    <el-table-column prop="id" label="ID" width="180">
+                                    </el-table-column>
+                                    <el-table-column prop="state" label="状态" width="180">
+                                    </el-table-column>
+                                    <el-table-column prop="type" label="类型" width="180">
+                                    </el-table-column>
+                                    <el-table-column prop="name" label="名称" width="180">
+                                    </el-table-column>
+                                    <el-table-column prop="description" label="描述信息">
+                                    </el-table-column>
+                                </el-table>
+                            </template>
+                        </el-tab-pane>
+                        <el-tab-pane label="插件管理" name="plugin"><template>
+                                <el-table :data="pluginData" style="width: 100%">
+                                    <el-table-column prop="name" label="插件名称" width="180">
+                                    </el-table-column>
+                                    <el-table-column prop="version" label="版本" width="180">
+                                    </el-table-column>
+                                    <el-table-column prop="homepage" label="插件主页" width="180">
+                                    </el-table-column>
+                                    <el-table-column prop="helpLink" label="帮助文档" width="180">
+                                    </el-table-column>
+                                    <el-table-column prop="author" label="作者" width="180">
+                                    </el-table-column>
+                                    <el-table-column prop="email" label="Email" width="180">
+                                    </el-table-column>
+                                    <el-table-column prop="license" label="协议">
+                                    </el-table-column>
+                                </el-table>
+                            </template></el-tab-pane>
+                    </el-tabs>
+                </template>
+            </el-main>
+
+        </el-container>
+
+    </div>
+</body>
+<!-- import Vue before Element -->
+<script src="https://unpkg.com/vue/dist/vue.js"></script>
+<!-- import JavaScript -->
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+<script>
+    new Vue({
+        el: '#app',
+        delimiters: ['&{', '}'],
+        data() {
+            return {
+                activeName: 'system',
+                systemData: {
+                    "arch": "unknown",
+                    "cpus": 0,
+                    "os": "unknown"
+                },
+                inEndData: [{
+                    id: 'noju&OUIhjn',
+                    state: 1,
+                    type: "MQTT",
+                    name: 'MQTT',
+                    description: 'MQTT Stream InEnd',
+                }],
+                pluginData: [{
+                    "name": "HttpApiServer",
+                    "version": "0.0.1",
+                    "homepage": "www.ezlinker.cn",
+                    "helpLink": "www.ezlinker.cn",
+                    "author": "wwhai",
+                    "email": "cnwwhai@gmail.com",
+                    "license": "MIT"
+                }],
+
+            };
+        },
+        mounted() {
+            let thiz = this;
+            axios.get('http://127.0.0.1:2580/api/v1/system')
+                .then(response => {
+                    thiz.systemData = response.data
+                    console.log(response.data)
+                })
+        },
+        methods: {
+            handleClick(tab, event) {
+                console.log("当前选中:", tab.name);
+            }
+        }
+    })
+</script>
+
+</html>

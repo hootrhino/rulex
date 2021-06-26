@@ -3,30 +3,30 @@
 //
 package x
 
-var ruleCache map[string]*Rule
+var ruleCache map[string]*rule
 
 func init() {
-	ruleCache = map[string]*Rule{}
+	ruleCache = map[string]*rule{}
 }
 
 //
 //
 //
-func GetRule(id string) *Rule {
+func GetRule(id string) *rule {
 	return ruleCache[id]
 }
 
 //
 //
 //
-func SaveRule(Rule *Rule) {
-	ruleCache[Rule.Id] = Rule
+func SaveRule(r *rule) {
+	ruleCache[r.Id] = r
 
 }
 
 //
 //
 //
-func RemoveRule(Rule *Rule) {
-	delete(ruleCache, Rule.Id)
+func RemoveRule(r *rule) {
+	delete(ruleCache, r.Id)
 }

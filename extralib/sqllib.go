@@ -8,13 +8,13 @@ import (
 )
 
 // LoadSqlLib
-func LoadSqlLib(L *lua.LState) int {
-	mod := L.SetFuncs(L.G.Global, map[string]lua.LGFunction{
-		"LoadSqlLibOk": func(L *lua.LState) int {
+func LoadSqlLib(vm *lua.LState) int {
+	mod := vm.SetFuncs(vm.G.Global, map[string]lua.LGFunction{
+		"LoadSqlLibOk": func(vm *lua.LState) int {
 			log.Debug("LoadSqlLibOk")
 			return 0
 		},
 	})
-	L.Push(mod)
+	vm.Push(mod)
 	return 1
 }

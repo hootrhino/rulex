@@ -9,6 +9,7 @@ Copy to EMQX console.
     {ok, C} = emqtt:start_link([{host, "localhost"}, {clientid, <<"BenchX">>}]),
     {ok, _} = emqtt:connect(C),
     lists:foreach(fun(I) ->
-        emqtt:publish(C, <<"test">>, erlang:integer_to_binary(I), qos0)
+        io:format("Send:~p\n",[I]),
+        emqtt:publish(C, <<"$X_IN_END">>, erlang:integer_to_binary(I), qos0)
     end, lists:seq(1, Count)).
 ```

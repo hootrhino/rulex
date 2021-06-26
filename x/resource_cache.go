@@ -1,4 +1,0 @@
-//
-// Cache local
-//
-package x

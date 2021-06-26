@@ -3,6 +3,7 @@ module rulenginex
 go 1.15
 
 require (
+	cuelang.org/go v0.4.0
 	github.com/cortexproject/cortex v1.9.0
 	github.com/eclipse/paho.mqtt.golang v1.3.5
 	github.com/gin-gonic/gin v1.7.2
@@ -16,5 +17,8 @@ require (
 	github.com/stretchr/testify v1.7.0
 	github.com/wwhai/gopher-json v0.0.0-20201124131017-552bb3c4c3bf
 	github.com/yuin/gopher-lua v0.0.0-20210529063254-f4c35e4016d9
+	go.mongodb.org/mongo-driver v1.4.6
+	golang.org/x/tools v0.1.0
+	google.golang.org/protobuf v1.25.0
 	layeh.com/gopher-json v0.0.0-20201124131017-552bb3c4c3bf
 )
