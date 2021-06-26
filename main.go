@@ -14,6 +14,7 @@ import (
 //
 var LocalEngine *x.RuleEngine
 
+//
 func main() {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, syscall.SIGQUIT)
@@ -26,14 +27,15 @@ func main() {
 		"clientId": "test",
 	}
 	in1 := x.NewInEnd("MQTT", "MQTT Stream", "MQTT Input Stream", &config)
-
+	in1.Id = "INEND1"
 	if err0 := LocalEngine.LoadInEnds(in1); err0 != nil {
 		log.Fatal("InEnd load failed:", err0)
 
 	}
-	out1 := x.NewOutEnd("mongo", "Data to mongodb", "Save data to mongodb", &map[string]interface{}{
-		"mongourl": "mongodb+srv://rulenginex:rulenginex@cluster0.rsdmb.mongodb.net/test",
-	})
+	out1 := x.NewOutEnd("mongo", "Data to mongodb", "Save data to mongodb",
+		&map[string]interface{}{
+			"mongourl": "mongodb+srv://rulenginex:rulenginex@cluster0.rsdmb.mongodb.net/test",
+		})
 	out1.Id = "MongoDB001"
 	if err1 := LocalEngine.LoadOutEnds(out1); err1 != nil {
 		log.Fatal("OutEnd load failed:", err1)
@@ -41,15 +43,16 @@ func main() {
 	actions := `
 		Actions = {
 			function(data)
-			    dataToMongo("MongoDB001","data is ok")
 			    print("[LUA Actions Callback]: Mqtt payload:", data)
+			    dataToMongo("MongoDB001", data)
+			    print("[LUA Actions Callback]: Save to mongodb!")
 			    return true, data
-		    end
+			end
 	}`
 	from := []string{in1.Id}
 	failed := `function Failed(error) print("[LUA Callback] call failed from lua:", error) end`
 	success := `function Success() print("[LUA Callback] call success from lua") end`
-	rule1 := x.NewRule("just_a_test_rule", "just_a_test_rule", from, success, actions, failed)
+	rule1 := x.NewRule(LocalEngine, "just_a_test_rule", "just_a_test_rule", from, success, actions, failed)
 
 	//
 	if e := LocalEngine.LoadRules(rule1); e != nil {

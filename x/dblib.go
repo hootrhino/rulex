@@ -1,0 +1,35 @@
+package x
+
+import (
+	"encoding/json"
+
+	"github.com/ngaut/log"
+	"github.com/yuin/gopher-lua"
+)
+
+// Loader
+func LoadDbLib(e *RuleEngine, vm *lua.LState) int {
+	mod := vm.SetFuncs(vm.G.Global, map[string]lua.LGFunction{
+		"dataToMongo": func(l *lua.LState) int {
+			id := l.ToString(1)
+			data := l.ToString(2)
+			toMongo(e, id, data)
+			return 0
+		},
+	})
+	vm.Push(mod)
+	return 1
+}
+
+//
+//
+//
+func toMongo(e *RuleEngine, id string, data interface{}) {
+	bsonf := &map[string]interface{}{}
+	err := json.Unmarshal([]byte(data.(string)), bsonf)
+	if err != nil {
+		log.Errorf("Mongo data must be JSON format:%#v", data, err)
+	} else {
+		(*e.OutEnds)[id].Target.To(bsonf)
+	}
+}

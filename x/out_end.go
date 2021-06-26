@@ -10,6 +10,7 @@ type outEnd struct {
 	Name        string                  `json:"name"`
 	Description string                  `json:"description"`
 	Config      *map[string]interface{} `json:"config"`
+	Target      XTarget                 `json:"-"`
 }
 
 //
@@ -28,6 +29,7 @@ func NewOutEnd(t string,
 		Config:      c,
 	}
 }
+
 //
 //
 //

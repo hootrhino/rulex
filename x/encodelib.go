@@ -1,4 +1,4 @@
-package extralib
+package x
 
 import (
 	"github.com/ngaut/log"
@@ -6,7 +6,7 @@ import (
 )
 
 // Loader
-func LoadEncodeLib(L *lua.LState) int {
+func LoadEncodeLib(e *RuleEngine, L *lua.LState) int {
 	mod := L.SetFuncs(L.G.Global, map[string]lua.LGFunction{
 		"LoadEncodeLibOk": func(L *lua.LState) int {
 			log.Debug("LoadEncodeLibOk")

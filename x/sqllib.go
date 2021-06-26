@@ -1,4 +1,4 @@
-package extralib
+package x
 
 import (
 
@@ -8,7 +8,7 @@ import (
 )
 
 // LoadSqlLib
-func LoadSqlLib(vm *lua.LState) int {
+func LoadSqlLib(e *RuleEngine, vm *lua.LState) int {
 	mod := vm.SetFuncs(vm.G.Global, map[string]lua.LGFunction{
 		"LoadSqlLibOk": func(vm *lua.LState) int {
 			log.Debug("LoadSqlLibOk")

@@ -1,9 +1,8 @@
 package x
 
 import (
-	"rulenginex/extralib"
-
 	luajson "github.com/wwhai/gopher-json"
+
 	lua "github.com/yuin/gopher-lua"
 )
 
@@ -24,7 +23,8 @@ type rule struct {
 //
 // New
 //
-func NewRule(name string,
+func NewRule(e *RuleEngine,
+	name string,
 	description string,
 	from []string,
 	success string,
@@ -35,10 +35,7 @@ func NewRule(name string,
 		RegistryMaxSize:  1024 * 80,
 		RegistryGrowStep: 32,
 	})
-	extralib.LoadDecodeLib(vm)
-	extralib.LoadEncodeLib(vm)
-	extralib.LoadSqlLib(vm)
-	extralib.LoadDbLib(vm)
+	LoadDbLib(e, vm)
 	luajson.Preload(vm)
 	return &rule{
 		Id:          MakeUUID("RULE"),

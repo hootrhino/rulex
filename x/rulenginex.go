@@ -100,6 +100,7 @@ func startTarget(t XTarget, out *outEnd, e *RuleEngine) error {
 	log.Info("Starting OutEnd Target:", out.Name)
 	if t.Test(out.Id) {
 		e.SaveOutEnd(out)
+		out.Target = t
 		if err := t.Register(out.Id); err != nil {
 			return err
 		} else {
@@ -179,7 +180,6 @@ func VerifyCallback(r *rule) error {
 
 //
 func (r *rule) ExecuteActions(arg lua.LValue) (lua.LValue, error) {
-	log.Debug("ExecuteActions")
 	table := r.VM.GetGlobal("Actions")
 	if table != nil && table.Type() == lua.LTTable {
 		funcs := make(map[string]*lua.LFunction)

@@ -4,15 +4,17 @@ import (
 	"context"
 
 	"github.com/ngaut/log"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 //
 type MongoTarget struct {
-	enabled  bool
-	outEndId string
-	client   *mongo.Client
+	enabled    bool
+	outEndId   string
+	client     *mongo.Client
+	collection *mongo.Collection
 }
 
 func NewMongoTarget() *MongoTarget {
@@ -45,13 +47,13 @@ func (m *MongoTarget) Start(e *RuleEngine) error {
 	} else {
 		if (*config)["database"] != nil {
 			if (*config)["collection"] != nil {
-				client.Database((*config)["database"].(string)).Collection((*config)["collection"].(string))
+				m.collection = client.Database((*config)["database"].(string)).Collection((*config)["collection"].(string))
 			} else {
-				client.Database((*config)["mongourl"].(string)).Collection("rulex_data")
+				m.collection = client.Database((*config)["mongourl"].(string)).Collection("rulex_data")
 
 			}
 		} else {
-			client.Database("rulex").Collection("rulex_data")
+			m.collection = client.Database("rulex").Collection("rulex_data")
 		}
 		m.client = client
 		m.enabled = true
@@ -86,6 +88,9 @@ func (m *MongoTarget) Stop() {
 }
 
 func (m *MongoTarget) To(data interface{}) error {
-	log.Debugf("Mongotarget Data:%#v", data)
-	return nil
+	_, err := m.collection.InsertOne(context.TODO(), bson.D{{"data", data}})
+	if err != nil {
+		log.Error("Mongo To Failed:", err)
+	}
+	return err
 }
