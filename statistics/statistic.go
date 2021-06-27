@@ -34,3 +34,7 @@ func DecFailed() {
 		cache["failed"] = cache["failed"] - 1
 	}
 }
+
+func AllStatistics() *map[string]int64 {
+	return &cache
+}

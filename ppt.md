@@ -1,19 +1,91 @@
+---
+marp: true
+---
+
+# RulEngineX
+A simple and lightweight stream data processor.
+
+---
+
+## Architecture
+
+![width:36cm height:16cm drop-shadow](pic/1.png)
+
+---
+
+## InEnd
+```go
+type inEnd struct {
+	Id          string                  `json:"id"`
+	State       TargetState             `json:"state"`
+	Type        string                  `json:"type"`
+	Name        string                  `json:"name"`
+	Description string                  `json:"description"`
+	Binds       *map[string]rule        `json:"-"`
+	Config      *map[string]interface{} `json:"config"`
+}
+//
+type XResource interface {
+	Test(inEndId string) bool
+	Register(inEndId string) error
+	Start(e *RuleEngine) error
+	Enabled() bool
+	Reload()
+	Pause()
+	Status(e *RuleEngine) TargetState
+	Stop()
+}
+
+```
+---
+
+## OutEnd
+```go
+type outEnd struct {
+	Id          string                  `json:"id"`
+	Type        string                  `json:"type"`
+	State       TargetState             `json:"state"`
+	Name        string                  `json:"name"`
+	Description string                  `json:"description"`
+	Config      *map[string]interface{} `json:"config"`
+	Target      XTarget                 `json:"-"`
+}
+//
+type XTarget interface {
+	Test(outEndId string) bool
+	Register(outEndId string) error
+	Start(e *RuleEngine) error
+	Enabled() bool
+	Reload()
+	Pause()
+	Status(e *RuleEngine) TargetState
+	To(data interface{}) error
+	Stop()
+}
+```
+---
+
+## Plugin
+```go
+type XPlugin interface {
+	Load(*RuleEngine) *XPluginEnv
+	Init(*XPluginEnv) error
+	Install(*XPluginEnv) (*XPluginMetaInfo, error)
+	Start(*RuleEngine, *XPluginEnv) error
+	Uninstall(*XPluginEnv) error
+	Clean()
+}
+
+```
+## Life Cycle
+```
+Load -> Init -> Install -> Start -> Uninstall -> Clean
+```
+---
+
+## WebApi Plugin Demo
+```go
 package plugin
-
-import (
-	"context"
-	"net/http"
-	"rulenginex/statistics"
-	"rulenginex/x"
-	"runtime"
-	"time"
-
-	"github.com/gin-gonic/gin"
-	"github.com/ngaut/log"
-	"github.com/shirou/gopsutil/cpu"
-	"github.com/shirou/gopsutil/disk"
-	"github.com/shirou/gopsutil/mem"
-)
 
 const API_ROOT string = "/api/v1/"
 const DASHBOARD_ROOT string = "/dashboard/v1/"
@@ -33,7 +105,6 @@ func (hh *HttpApiServer) Load(r *x.RuleEngine) *x.XPluginEnv {
 
 //
 func (hh *HttpApiServer) Init(env *x.XPluginEnv) error {
-
 	ctx := context.Background()
 	go func(ctx context.Context) {
 		hh.ginEngine.Run(":2580")
@@ -58,12 +129,6 @@ func (hh *HttpApiServer) Start(e *x.RuleEngine, env *x.XPluginEnv) error {
 	hh.ginEngine.GET(DASHBOARD_ROOT, func(c *gin.Context) {
 		c.HTML(http.StatusOK, "dashboard.html", gin.H{})
 	})
-	hh.ginEngine.GET(API_ROOT+"plugins", func(c *gin.Context) {
-		cros(c)
-		c.PureJSON(http.StatusOK, gin.H{
-			"plugins": hh.RuleEngine.Plugins,
-		})
-	})
 	hh.ginEngine.GET(API_ROOT+"system", func(c *gin.Context) {
 		cros(c)
 		//
@@ -79,26 +144,6 @@ func (hh *HttpApiServer) Start(e *x.RuleEngine, env *x.XPluginEnv) error {
 			"arch":       runtime.GOARCH,
 			"cpus":       runtime.GOMAXPROCS(0)})
 	})
-	//
-	hh.ginEngine.GET(API_ROOT+"inends", func(c *gin.Context) {
-		cros(c)
-		c.JSON(http.StatusOK, gin.H{"inends": e.AllInEnd()})
-	})
-	//
-	hh.ginEngine.GET(API_ROOT+"outends", func(c *gin.Context) {
-		cros(c)
-		c.JSON(http.StatusOK, gin.H{"outends": e.AllOutEnd()})
-	})
-	//
-	hh.ginEngine.GET(API_ROOT+"rules", func(c *gin.Context) {
-		cros(c)
-		c.JSON(http.StatusOK, gin.H{"rules": x.AllRule()})
-	})
-	//
-	hh.ginEngine.GET(API_ROOT+"statistics", func(c *gin.Context) {
-		cros(c)
-		c.JSON(http.StatusOK, gin.H{"statistics": statistics.AllStatistics()})
-	})
 	log.Info("Http web dashboard started on:http://127.0.0.1:2580" + DASHBOARD_ROOT)
 	return nil
 }
@@ -111,20 +156,4 @@ func (hh *HttpApiServer) Clean() {
 	log.Info("HttpApiServer Cleaned")
 }
 
-//
-func cros(c *gin.Context) {
-	method := c.Request.Method
-	origin := c.Request.Header.Get("Origin")
-	if origin != "" {
-		c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
-		c.Header("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE,UPDATE")
-		c.Header("Access-Control-Allow-Headers", "Authorization, Content-Length, X-CSRF-Token, Token,session")
-		c.Header("Access-Control-Expose-Headers", "Content-Length, Access-Control-Allow-Origin, Access-Control-Allow-Headers")
-		c.Header("Access-Control-Max-Age", "172800")
-		c.Header("Access-Control-Allow-Credentials", "true")
-	}
-
-	if method == "OPTIONS" {
-		c.JSON(http.StatusOK, "ok!")
-	}
-}
+```

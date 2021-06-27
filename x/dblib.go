@@ -2,6 +2,7 @@ package x
 
 import (
 	"encoding/json"
+	"rulenginex/statistics"
 
 	"github.com/ngaut/log"
 	"github.com/yuin/gopher-lua"
@@ -28,8 +29,10 @@ func toMongo(e *RuleEngine, id string, data interface{}) {
 	bsonf := &map[string]interface{}{}
 	err := json.Unmarshal([]byte(data.(string)), bsonf)
 	if err != nil {
+		// statistics.IncFailed()
 		log.Errorf("Mongo data must be JSON format:%#v", data, err)
 	} else {
+		statistics.IncOut()
 		(*e.OutEnds)[id].Target.To(bsonf)
 	}
 }

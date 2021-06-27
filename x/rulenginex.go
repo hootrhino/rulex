@@ -122,7 +122,7 @@ func startTarget(target XTarget, out *outEnd, e *RuleEngine) error {
 		if err1 := target.Start(e); err1 != nil {
 			return err1
 		} else {
-			// Current tringer it!!
+			// \!!!
 			testTargetState(target, e, out.Id)
 			//
 			go func(ctx context.Context) {
@@ -143,11 +143,11 @@ func startTarget(target XTarget, out *outEnd, e *RuleEngine) error {
 func testTargetState(target XTarget, e *RuleEngine, id string) {
 	if !target.Test(id) {
 		e.GetOutEnd(id).State = DOWN
-		log.Errorf("Target %s unworked", id)
+		log.Errorf("Target %s down", id)
 	} else {
 		if e.GetOutEnd(id).State == DOWN {
 			e.GetOutEnd(id).State = UP
-			log.Errorf("Target %s recovered", id)
+			log.Warnf("Target %s recovered", id)
 		}
 	}
 }
@@ -160,6 +160,7 @@ func (e *RuleEngine) LoadRules(r *rule) error {
 		if len(r.From) > 0 {
 			for _, inId := range r.From {
 				if in := e.GetInEnd(inId); in != nil {
+					// Bind to rule
 					(*in.Binds)[r.Id] = *r
 					SaveRule(r)
 					return nil

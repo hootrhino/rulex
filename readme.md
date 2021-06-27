@@ -12,3 +12,27 @@ RulEngine X 是一个轻量级规则引擎(名字看起来有点怪实际上是 
 - HTTP RestFul API
 ## 管理界面
 - Web dashboard
+
+## 测试
+
+```sh
+make run
+```
+> 测试依赖于 main.go, 需要MQTT环境，本地装一个测试。
+
+## 编译
+```sh
+make build
+```
+## Docker打包
+```sh
+make docker
+```
+## 制作压缩包
+```sh
+make package
+```
+## 统计代码
+```sh
+make clocs
+```

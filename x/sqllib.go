@@ -1,8 +1,6 @@
 package x
 
 import (
-
-	// "github.com/marianogappa/sqlparser"
 	"encoding/json"
 
 	"github.com/ngaut/log"
@@ -16,7 +14,6 @@ func LoadSqlLib(e *RuleEngine, vm *lua.LState) int {
 			data := vm.ToString(1)
 			sql := vm.ToString(2)
 			selectResult, err := Select(data, sql)
-			log.Debug("Select ===>", selectResult)
 			if err != nil {
 				log.Error(err)
 				vm.Push(lua.LNil)
@@ -40,7 +37,7 @@ func LoadSqlLib(e *RuleEngine, vm *lua.LState) int {
 
 //
 func Select(data string, sql string) (*map[string]interface{}, error) {
-	log.Debug(data, sql)
+	// log.Debug(data, sql)
 	result, err0 := jsonStringToMap(data)
 	if err0 != nil {
 		return nil, err0

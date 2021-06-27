@@ -13,7 +13,7 @@ build:
 	echo '"build_ts":' '"$(shell date '+%Y-%m-%d %H:%M:%S')"' >> metainfo.json
 	echo "}" >> metainfo.json
 
-	go build -o ${APP}-${VERSION} main.go
+	go build -ldflags "-s -w" -o ${APP}-${VERSION} main.go
 
 .PHONY: run
 run:
