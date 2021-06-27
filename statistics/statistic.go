@@ -1,40 +1,57 @@
 package statistics
 
-var cache map[string]int64
+// import "time"
+
+var statisticsCache map[string]int64
+// var recentlyLogCache []string
 
 func init() {
-	cache = map[string]int64{
-		"in":     0,
-		"out":    0,
-		"failed": 0,
+	// recentlyLogCache = make([]string, 50)
+	statisticsCache = map[string]int64{
+		"inSuccess":  0,
+		"outSuccess": 0,
+		"inFailed":   0,
+		"outFailed":  0,
 	}
 }
 func IncIn() {
-	cache["in"] = cache["in"] + 1
+	statisticsCache["inSuccess"] = statisticsCache["inSuccess"] + 1
 }
 func DecIn() {
-	if cache["in"]-1 > 0 {
-		cache["in"] = cache["in"] - 1
+	if statisticsCache["inSuccess"]-1 > 0 {
+		statisticsCache["inSuccess"] = statisticsCache["inSuccess"] - 1
 	}
 }
 func IncOut() {
-	cache["out"] = cache["out"] + 1
+	statisticsCache["outSuccess"] = statisticsCache["outSuccess"] + 1
 
 }
 func DecOut() {
-	if cache["out"]-1 > 0 {
-		cache["out"] = cache["out"] - 1
+	if statisticsCache["outSuccess"]-1 > 0 {
+		statisticsCache["outSuccess"] = statisticsCache["outSuccess"] - 1
 	}
 }
-func IncFailed() {
-	cache["failed"] = cache["failed"] + 1
+func IncInFailed() {
+	statisticsCache["inFailed"] = statisticsCache["inFailed"] + 1
 }
-func DecFailed() {
-	if cache["failed"]-1 > 0 {
-		cache["failed"] = cache["failed"] - 1
-	}
+
+func IncOutFailed() {
+	statisticsCache["outFailed"] = statisticsCache["outFailed"] + 1
 }
 
 func AllStatistics() *map[string]int64 {
-	return &cache
+	return &statisticsCache
 }
+
+// func AddLog(logs string) {
+// 	if len(recentlyLogCache) > 50 {
+// 		recentlyLogCache = recentlyLogCache[1:]
+// 		recentlyLogCache = append(recentlyLogCache, time.Now().Format("2006.01.02 15:04:05")+" => "+logs)
+
+// 	} else {
+// 		recentlyLogCache = append(recentlyLogCache, time.Now().Format("2006.01.02 15:04:05")+" => "+logs)
+// 	}
+// }
+// func AllLog() []string {
+// 	return recentlyLogCache
+// }

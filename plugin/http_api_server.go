@@ -99,6 +99,7 @@ func (hh *HttpApiServer) Start(e *x.RuleEngine, env *x.XPluginEnv) error {
 		cros(c)
 		c.JSON(http.StatusOK, gin.H{"statistics": statistics.AllStatistics()})
 	})
+	//
 	log.Info("Http web dashboard started on:http://127.0.0.1:2580" + DASHBOARD_ROOT)
 	return nil
 }

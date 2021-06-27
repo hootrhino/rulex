@@ -29,7 +29,7 @@ func toMongo(e *RuleEngine, id string, data interface{}) {
 	bsonf := &map[string]interface{}{}
 	err := json.Unmarshal([]byte(data.(string)), bsonf)
 	if err != nil {
-		// statistics.IncFailed()
+		statistics.IncOutFailed()
 		log.Errorf("Mongo data must be JSON format:%#v", data, err)
 	} else {
 		statistics.IncOut()

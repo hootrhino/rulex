@@ -13,15 +13,14 @@ func LoadSqlLib(e *RuleEngine, vm *lua.LState) int {
 		"Select": func(vm *lua.LState) int {
 			data := vm.ToString(1)
 			sql := vm.ToString(2)
-			selectResult, err := Select(data, sql)
-			if err != nil {
-				log.Error(err)
+			selectResult, err0 := Select(data, sql)
+			if err0 != nil {
 				vm.Push(lua.LNil)
 				return 1
 			} else {
-				jsonString, err := json.Marshal(selectResult)
-				if err != nil {
-					log.Error(err)
+				jsonString, err1 := json.Marshal(selectResult)
+				if err1 != nil {
+					log.Error(err1)
 					vm.Push(lua.LNil)
 					return 1
 				} else {
@@ -56,7 +55,6 @@ func jsonStringToMap(jsonString string) (*map[string]interface{}, error) {
 	result := make(map[string]interface{})
 	err := json.Unmarshal([]byte(jsonString), &result)
 	if err != nil {
-		log.Error("Data must be JSON format:", jsonString)
 		return nil, err
 	} else {
 		return &result, nil

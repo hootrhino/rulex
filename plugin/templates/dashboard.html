@@ -149,19 +149,24 @@
                                 <el-row :gutter="12">
                                     <el-col :span="8">
                                         <el-card shadow="always">
-                                            数据输入: <h1>&{statisticData.in}</h1>
+                                            数据输入: <h1>&{statisticData.inSuccess}</h1>
+                                        </el-card>
+                                    </el-col>
+
+                                    <!-- <el-col :span="8">
+                                        <el-card shadow="always">
+                                            输入失败： <h1>&{statisticData.inFailed}</h1>
+                                        </el-card>
+                                    </el-col> -->
+                                    <el-col :span="8">
+                                        <el-card shadow="always">
+                                            输出成功： <h1>&{statisticData.outSuccess}</h1>
                                         </el-card>
                                     </el-col>
 
                                     <el-col :span="8">
                                         <el-card shadow="always">
-                                            数据输出： <h1>&{statisticData.out}</h1>
-                                        </el-card>
-                                    </el-col>
-
-                                    <el-col :span="8">
-                                        <el-card shadow="always">
-                                            执行失败 <h1>&{statisticData.failed}</h1>
+                                            输出失败 <h1>&{statisticData.outFailed}</h1>
                                         </el-card>
                                     </el-col>
 
@@ -202,9 +207,10 @@
                     "os": "unknown"
                 },
                 statisticData: {
-                    "in": 0,
-                    "out": 0,
-                    "failed": 0
+                    "inSuccess": 0,
+                    "outSuccess": 0,
+                    "inFailed": 0,
+                    "outFailed": 0,
                 },
                 inEndData: [],
                 outEndData: [],

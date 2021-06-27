@@ -5,7 +5,7 @@ Copy to EMQX console.
 - peer message 1 byte
 
 ```erlang
-    Count = 100000,
+    Count = 100,
     {ok, C} = emqtt:start_link([{host, "localhost"}, {clientid, <<"BenchX">>}]),
     {ok, _} = emqtt:connect(C),
     lists:foreach(fun(I) ->
