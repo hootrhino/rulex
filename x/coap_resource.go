@@ -59,7 +59,7 @@ func (cc *CoAPInEndResource) Reload() {
 func (cc *CoAPInEndResource) Pause() {
 
 }
-func (cc *CoAPInEndResource) Status(e *RuleEngine) int {
+func (cc *CoAPInEndResource) Status(e *RuleEngine) TargetState {
 	return e.GetInEnd(cc.inEndId).State
 }
 

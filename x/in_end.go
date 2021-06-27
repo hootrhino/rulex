@@ -3,7 +3,7 @@ package x
 //
 type inEnd struct {
 	Id          string                  `json:"id"`
-	State       int                     `json:"state"`
+	State       TargetState             `json:"state"`
 	Type        string                  `json:"type"`
 	Name        string                  `json:"name"`
 	Description string                  `json:"description"`

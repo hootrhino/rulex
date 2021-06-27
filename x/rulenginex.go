@@ -11,6 +11,13 @@ import (
 	lua "github.com/yuin/gopher-lua"
 )
 
+type TargetState int
+
+const (
+	UP   TargetState = 1
+	DOWN TargetState = 0
+)
+
 //
 //
 //
@@ -134,11 +141,11 @@ func startTarget(target XTarget, out *outEnd, e *RuleEngine) error {
 // Test Target State
 func testTargetState(target XTarget, e *RuleEngine, id string) {
 	if !target.Test(id) {
-		e.GetOutEnd(id).State = 0
+		e.GetOutEnd(id).State = DOWN
 		log.Errorf("Target %s unworked", id)
 	} else {
-		if e.GetOutEnd(id).State == 0 {
-			e.GetOutEnd(id).State = 1
+		if e.GetOutEnd(id).State == DOWN {
+			e.GetOutEnd(id).State = UP
 			log.Errorf("Target %s recovered", id)
 		}
 	}

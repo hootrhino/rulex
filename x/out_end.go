@@ -6,7 +6,7 @@ package x
 type outEnd struct {
 	Id          string                  `json:"id"`
 	Type        string                  `json:"type"`
-	State       int                     `json:"state"`
+	State       TargetState             `json:"state"`
 	Name        string                  `json:"name"`
 	Description string                  `json:"description"`
 	Config      *map[string]interface{} `json:"config"`

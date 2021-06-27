@@ -15,7 +15,7 @@ type XResource interface {
 	Enabled() bool
 	Reload()
 	Pause()
-	Status(e *RuleEngine) int
+	Status(e *RuleEngine) TargetState
 	Stop()
 }
 
@@ -29,7 +29,7 @@ type XTarget interface {
 	Enabled() bool
 	Reload()
 	Pause()
-	Status(e *RuleEngine) int
+	Status(e *RuleEngine) TargetState
 	To(data interface{}) error
 	Stop()
 }

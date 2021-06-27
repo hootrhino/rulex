@@ -51,7 +51,7 @@ func (hh *HttpInEndResource) Reload() {
 func (hh *HttpInEndResource) Pause() {
 
 }
-func (hh *HttpInEndResource) Status(e *RuleEngine) int {
+func (hh *HttpInEndResource) Status(e *RuleEngine) TargetState {
 	return e.GetInEnd(hh.inEndId).State
 }
 

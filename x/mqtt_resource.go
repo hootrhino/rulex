@@ -93,7 +93,7 @@ func (mm *MqttInEndResource) Reload() {
 func (mm *MqttInEndResource) Pause() {
 
 }
-func (mm *MqttInEndResource) Status(e *RuleEngine) int {
+func (mm *MqttInEndResource) Status(e *RuleEngine) TargetState {
 	return e.GetInEnd(mm.inEndId).State
 }
 
