@@ -37,7 +37,6 @@ func (hh *HttpApiServer) Init(env *x.XPluginEnv) error {
 	go func(ctx context.Context) {
 		hh.ginEngine.Run(":2580")
 	}(ctx)
-	log.Info("HttpApiServer Inited")
 	return nil
 }
 func (hh *HttpApiServer) Install(env *x.XPluginEnv) (*x.XPluginMetaInfo, error) {
@@ -94,6 +93,7 @@ func (hh *HttpApiServer) Start(e *x.RuleEngine, env *x.XPluginEnv) error {
 		cros(c)
 		c.JSON(http.StatusOK, gin.H{"rules": x.AllRule()})
 	})
+	log.Info("Http web dashboard started on:http://127.0.0.1:2580" + DASHBOARD_ROOT)
 	return nil
 }
 

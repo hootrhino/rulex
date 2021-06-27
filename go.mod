@@ -4,6 +4,7 @@ go 1.15
 
 require (
 	cuelang.org/go v0.4.0
+	github.com/chanxuehong/wechat v0.0.0-20201110083048-0180211b69fd
 	github.com/cortexproject/cortex v1.9.0
 	github.com/eclipse/paho.mqtt.golang v1.3.5
 	github.com/gin-gonic/gin v1.7.2

@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"reflect"
+	"rulenginex/statistics"
 	"time"
 
 	"github.com/ngaut/log"
@@ -192,8 +193,10 @@ func (e *RuleEngine) Work(in *inEnd, data string) (bool, error) {
 		_, err0 := rule.ExecuteActions(lua.LString(data))
 		if err0 != nil {
 			rule.ExecuteFailed(lua.LString(err0.Error()))
+			statistics.IncFailed()
 			return false, err0
 		} else {
+			statistics.IncIn()
 			rule.ExecuteSuccess()
 			return true, nil
 		}
