@@ -46,18 +46,80 @@
                                     </el-col>
 
                                 </el-row>
+                                <el-row :gutter="12">
+                                    <el-col :span="8">
+                                        <el-card shadow="always">
+                                            磁盘使用率: <h1>%&{systemData.diskInfo}</h1>
+                                        </el-card>
+                                    </el-col>
+
+                                    <el-col :span="8">
+                                        <el-card shadow="always">
+                                            内存使用率： <h1>%&{systemData.memInfo}</h1>
+                                        </el-card>
+                                    </el-col>
+
+                                    <el-col :span="8">
+                                        <el-card shadow="always">
+                                            CPU使用率 <h1>%&{systemData.cpuPercent}</h1>
+                                        </el-card>
+                                    </el-col>
+
+                                </el-row>
                             </template>
                         </el-tab-pane>
                         <el-tab-pane label="输入端管理" name="inend">
                             <template>
                                 <el-table :data="inEndData" style="width: 100%">
-                                    <el-table-column prop="id" label="ID" width="180">
+                                    <el-table-column prop="id" label="ID" width="380">
                                     </el-table-column>
                                     <el-table-column prop="state" label="状态" width="180">
+                                        <template slot-scope="scope">
+                                            <el-tag v-if="scope.row.state === 0" type="danger">停止
+                                            </el-tag>
+                                            <el-tag v-if="scope.row.state === 1" type="success">运行
+                                            </el-tag>
+                                        </template>
                                     </el-table-column>
                                     <el-table-column prop="type" label="类型" width="180">
                                     </el-table-column>
                                     <el-table-column prop="name" label="名称" width="180">
+                                    </el-table-column>
+                                    <el-table-column prop="description" label="描述信息">
+                                    </el-table-column>
+                                </el-table>
+                            </template>
+                        </el-tab-pane>
+                        <el-tab-pane label="输出端管理" name="outend">
+                            <template>
+                                <el-table :data="outEndData" style="width: 100%">
+                                    <el-table-column prop="id" label="ID" width="380">
+                                    </el-table-column>
+                                    <el-table-column prop="state" label="状态" width="180">
+                                        <template slot-scope="scope">
+                                            <el-tag v-if="scope.row.state === 0" type="danger">停止
+                                            </el-tag>
+                                            <el-tag v-if="scope.row.state === 1" type="success">运行
+                                            </el-tag>
+                                        </template>
+                                    </el-table-column>
+                                    <el-table-column prop="type" label="类型" width="180">
+                                    </el-table-column>
+                                    <el-table-column prop="name" label="名称" width="180">
+                                    </el-table-column>
+                                    <el-table-column prop="description" label="描述信息">
+                                    </el-table-column>
+                                </el-table>
+                            </template>
+                        </el-tab-pane>
+                        <el-tab-pane label="规则管理" name="rule">
+                            <template>
+                                <el-table :data="ruleData" style="width: 100%">
+                                    <el-table-column prop="id" label="ID" width="380">
+                                    </el-table-column>
+                                    <el-table-column prop="name" label="名称" width="180">
+                                    </el-table-column>
+                                    <el-table-column prop="from" label="绑定资源" width="180">
                                     </el-table-column>
                                     <el-table-column prop="description" label="描述信息">
                                     </el-table-column>
@@ -102,26 +164,17 @@
             return {
                 activeName: 'system',
                 systemData: {
+                    "diskInfo": 0,
+                    "memInfo": 0,
+                    "cpuPercent": 0,
                     "arch": "unknown",
                     "cpus": 0,
                     "os": "unknown"
                 },
-                inEndData: [{
-                    id: 'noju&OUIhjn',
-                    state: 1,
-                    type: "MQTT",
-                    name: 'MQTT',
-                    description: 'MQTT Stream InEnd',
-                }],
-                pluginData: [{
-                    "name": "HttpApiServer",
-                    "version": "0.0.1",
-                    "homepage": "www.ezlinker.cn",
-                    "helpLink": "www.ezlinker.cn",
-                    "author": "wwhai",
-                    "email": "cnwwhai@gmail.com",
-                    "license": "MIT"
-                }],
+                inEndData: [],
+                outEndData: [],
+                ruleData: [],
+                pluginData: [],
 
             };
         },
@@ -135,7 +188,46 @@
         },
         methods: {
             handleClick(tab, event) {
-                console.log("当前选中:", tab.name);
+                let thiz = this;
+                switch (tab.name) {
+                    case "inend":
+                        axios.get('http://127.0.0.1:2580/api/v1/inends')
+                            .then(response => {
+                                thiz.inEndData = Object.values(response.data.inends)
+                            })
+                        break;
+
+                    case "outend":
+                        axios.get('http://127.0.0.1:2580/api/v1/outends')
+                            .then(response => {
+                                thiz.outEndData = Object.values(response.data.outends)
+
+                            })
+                        break;
+
+                    case "plugin":
+                        axios.get('http://127.0.0.1:2580/api/v1/plugins')
+                            .then(response => {
+                                thiz.pluginData = Object.values(response.data.plugins)
+                            })
+                        break;
+
+                    case "system":
+                        axios.get('http://127.0.0.1:2580/api/v1/system')
+                            .then(response => {
+                                thiz.systemData = response.data
+                            })
+                        break;
+                    case "rule":
+                        axios.get('http://127.0.0.1:2580/api/v1/rules')
+                            .then(response => {
+                                thiz.ruleData = Object.values(response.data.rules)
+                            })
+                        break;
+
+                    default:
+                        break;
+                }
             }
         }
     })

@@ -14,7 +14,9 @@ require (
 	github.com/mitchellh/mapstructure v1.4.1
 	github.com/ngaut/log v0.0.0-20180314031856-b8e36e7ba5ac
 	github.com/plgd-dev/go-coap/v2 v2.4.0
+	github.com/shirou/gopsutil v3.21.5+incompatible
 	github.com/stretchr/testify v1.7.0
+	github.com/tklauser/go-sysconf v0.3.6 // indirect
 	github.com/wwhai/gopher-json v0.0.0-20201124131017-552bb3c4c3bf
 	github.com/yuin/gopher-lua v0.0.0-20210529063254-f4c35e4016d9
 	go.mongodb.org/mongo-driver v1.4.6

@@ -1,12 +1,17 @@
 package plugin
 
 import (
+	"context"
 	"net/http"
 	"rulenginex/x"
 	"runtime"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/ngaut/log"
+	"github.com/shirou/gopsutil/cpu"
+	"github.com/shirou/gopsutil/disk"
+	"github.com/shirou/gopsutil/mem"
 )
 
 const API_ROOT string = "/api/v1/"
@@ -28,7 +33,10 @@ func (hh *HttpApiServer) Load(r *x.RuleEngine) *x.XPluginEnv {
 //
 func (hh *HttpApiServer) Init(env *x.XPluginEnv) error {
 
-	go hh.ginEngine.Run(":2580")
+	ctx := context.Background()
+	go func(ctx context.Context) {
+		hh.ginEngine.Run(":2580")
+	}(ctx)
 	log.Info("HttpApiServer Inited")
 	return nil
 }
@@ -59,10 +67,17 @@ func (hh *HttpApiServer) Start(e *x.RuleEngine, env *x.XPluginEnv) error {
 	hh.ginEngine.GET(API_ROOT+"system", func(c *gin.Context) {
 		cros(c)
 		//
+		percent, _ := cpu.Percent(time.Second, false)
+		memInfo, _ := mem.VirtualMemory()
+		parts, _ := disk.Partitions(true)
+		diskInfo, _ := disk.Usage(parts[0].Mountpoint)
 		c.JSON(http.StatusOK, gin.H{
-			"os":   runtime.GOOS,
-			"arch": runtime.GOARCH,
-			"cpus": runtime.GOMAXPROCS(0)})
+			"diskInfo":   diskInfo.UsedPercent,
+			"memInfo":    memInfo.UsedPercent,
+			"cpuPercent": percent[0],
+			"os":         runtime.GOOS,
+			"arch":       runtime.GOARCH,
+			"cpus":       runtime.GOMAXPROCS(0)})
 	})
 	//
 	hh.ginEngine.GET(API_ROOT+"inends", func(c *gin.Context) {
@@ -73,6 +88,11 @@ func (hh *HttpApiServer) Start(e *x.RuleEngine, env *x.XPluginEnv) error {
 	hh.ginEngine.GET(API_ROOT+"outends", func(c *gin.Context) {
 		cros(c)
 		c.JSON(http.StatusOK, gin.H{"outends": e.AllOutEnd()})
+	})
+	//
+	hh.ginEngine.GET(API_ROOT+"rules", func(c *gin.Context) {
+		cros(c)
+		c.JSON(http.StatusOK, gin.H{"rules": x.AllRule()})
 	})
 	return nil
 }

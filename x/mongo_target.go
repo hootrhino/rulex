@@ -2,6 +2,7 @@ package x
 
 import (
 	"context"
+	"time"
 
 	"github.com/ngaut/log"
 	"go.mongodb.org/mongo-driver/bson"
@@ -57,7 +58,23 @@ func (m *MongoTarget) Start(e *RuleEngine) error {
 		}
 		m.client = client
 		m.enabled = true
+		e.GetOutEnd(m.outEndId).State = 1
 		log.Info("Mongodb connect successfully")
+		ctx := context.Background()
+		go func(ctx context.Context, client *mongo.Client) {
+			t := time.NewTicker(time.Duration(time.Second * 5))
+			defer t.Stop()
+			for {
+				<-t.C
+				err1 := client.Ping(ctx, nil)
+				if err1 != nil {
+					log.Error("client disconnected,error:", err1)
+					e.GetOutEnd(m.outEndId).State = 0
+				} else {
+					e.GetOutEnd(m.outEndId).State = 1
+				}
+			}
+		}(ctx, m.client)
 		return nil
 	}
 }

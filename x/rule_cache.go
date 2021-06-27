@@ -30,3 +30,10 @@ func SaveRule(r *rule) {
 func RemoveRule(r *rule) {
 	delete(ruleCache, r.Id)
 }
+
+//
+//
+//
+func AllRule() map[string]*rule {
+	return ruleCache
+}
