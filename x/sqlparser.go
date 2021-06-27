@@ -87,6 +87,7 @@ func SqlParse(data *map[string]interface{}, sql string) (*map[string]interface{}
 							}
 						default:
 							{
+								fieldsResult[condition.Operand1] = inputValue
 							}
 						}
 
