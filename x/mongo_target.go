@@ -2,7 +2,6 @@ package x
 
 import (
 	"context"
-	"time"
 
 	"github.com/ngaut/log"
 	"go.mongodb.org/mongo-driver/bson"
@@ -42,45 +41,31 @@ func (m *MongoTarget) Start(e *RuleEngine) error {
 	if err0 != nil {
 		return err0
 	}
-	err1 := client.Ping(context.TODO(), nil)
-	if err1 != nil {
-		return err1
-	} else {
-		if (*config)["database"] != nil {
-			if (*config)["collection"] != nil {
-				m.collection = client.Database((*config)["database"].(string)).Collection((*config)["collection"].(string))
-			} else {
-				m.collection = client.Database((*config)["mongourl"].(string)).Collection("rulex_data")
 
-			}
+	if (*config)["database"] != nil {
+		if (*config)["collection"] != nil {
+			m.collection = client.Database((*config)["database"].(string)).Collection((*config)["collection"].(string))
 		} else {
-			m.collection = client.Database("rulex").Collection("rulex_data")
+			m.collection = client.Database((*config)["mongourl"].(string)).Collection("rulex_data")
+
 		}
-		m.client = client
-		m.enabled = true
-		e.GetOutEnd(m.outEndId).State = 1
-		log.Info("Mongodb connect successfully")
-		ctx := context.Background()
-		go func(ctx context.Context, client *mongo.Client) {
-			t := time.NewTicker(time.Duration(time.Second * 5))
-			defer t.Stop()
-			for {
-				<-t.C
-				err1 := client.Ping(ctx, nil)
-				if err1 != nil {
-					log.Error("client disconnected,error:", err1)
-					e.GetOutEnd(m.outEndId).State = 0
-				} else {
-					e.GetOutEnd(m.outEndId).State = 1
-				}
-			}
-		}(ctx, m.client)
-		return nil
+	} else {
+		m.collection = client.Database("rulex").Collection("rulex_data")
 	}
+	m.client = client
+	m.enabled = true
+	log.Info("Mongodb connect successfully")
+	return nil
+
 }
 
 func (m *MongoTarget) Test(outEndId string) bool {
-	return true
+	err1 := m.client.Ping(context.Background(), nil)
+	if err1 != nil {
+		return false
+	} else {
+		return true
+	}
 }
 
 func (m *MongoTarget) Enabled() bool {

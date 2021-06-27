@@ -41,11 +41,15 @@ func main() {
 		log.Fatal("OutEnd load failed:", err1)
 	}
 	actions := `
+	    local json = require("json")
 		Actions = {
 			function(data)
 			    print("[LUA Actions Callback]: Mqtt payload:", data)
 			    dataToMongo("MongoDB001", data)
-			    print("[LUA Actions Callback]: Save to mongodb!")
+				print("[LUA Actions Callback]: Save to mongodb!")
+			    r = Select(data, "select temp,hum from INPUT_DATA where temp > '100' and hum < '24'")
+			    print("[LUA Actions Callback]temp ===>", json.decode(r)["temp"])
+			    print("[LUA Actions Callback]hum ===>", json.decode(r)["hum"])
 			    return true, data
 			end
 	}`

@@ -2,8 +2,10 @@ package x
 
 import (
 	"container/list"
+	"context"
 	"errors"
 	"reflect"
+	"time"
 
 	"github.com/ngaut/log"
 	lua "github.com/yuin/gopher-lua"
@@ -96,18 +98,49 @@ func tryCreateOutEnd(out *outEnd, e *RuleEngine) error {
 //
 // Start output target
 //
-func startTarget(t XTarget, out *outEnd, e *RuleEngine) error {
+// Target life cycle:
+// Register -> Start -> Test
+//
+//
+func startTarget(target XTarget, out *outEnd, e *RuleEngine) error {
 	log.Info("Starting OutEnd Target:", out.Name)
-	if t.Test(out.Id) {
-		e.SaveOutEnd(out)
-		out.Target = t
-		if err := t.Register(out.Id); err != nil {
-			return err
-		} else {
-			return t.Start(e)
-		}
+	// Important!!! Must save outend first
+	e.SaveOutEnd(out)
+	out.Target = target
+	// Register outend to target
+	if err0 := target.Register(out.Id); err0 != nil {
+		return err0
 	} else {
-		return errors.New("Target start failed:" + out.Name)
+		if err1 := target.Start(e); err1 != nil {
+			return err1
+		} else {
+			// Current tringer it!!
+			testTargetState(target, e, out.Id)
+			//
+			go func(ctx context.Context) {
+				// 5 seconds
+				ticker := time.NewTicker(time.Duration(time.Second * 5))
+				defer target.Stop()
+				for {
+					<-ticker.C
+					testTargetState(target, e, out.Id)
+				}
+			}(context.Background())
+			return nil
+		}
+	}
+}
+
+// Test Target State
+func testTargetState(target XTarget, e *RuleEngine, id string) {
+	if !target.Test(id) {
+		e.GetOutEnd(id).State = 0
+		log.Errorf("Target %s unworked", id)
+	} else {
+		if e.GetOutEnd(id).State == 0 {
+			e.GetOutEnd(id).State = 1
+			log.Errorf("Target %s recovered", id)
+		}
 	}
 }
 
@@ -283,8 +316,6 @@ func (e *RuleEngine) RemoveInEnd(in *inEnd) {
 func (e *RuleEngine) AllInEnd() map[string]*inEnd {
 	return (*e.InEnds)
 }
-
-///////////////////////////////////////////////////////
 
 //
 //
