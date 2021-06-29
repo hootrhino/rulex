@@ -20,7 +20,7 @@ func main() {
 	signal.Notify(c, syscall.SIGQUIT)
 	LocalEngine = x.NewRuleEngine()
 	config := map[string]interface{}{
-		"server":   "127.0.0.1",
+		"server":   "broker.hivemq.com",
 		"port":     1883,
 		"username": "test",
 		"password": "test",
