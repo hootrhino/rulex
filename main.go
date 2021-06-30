@@ -20,7 +20,7 @@ func main() {
 	signal.Notify(c, syscall.SIGQUIT)
 	LocalEngine = x.NewRuleEngine()
 	config := map[string]interface{}{
-		"server":   "broker.hivemq.com",
+		"server":   "192.168.0.103",
 		"port":     1883,
 		"username": "test",
 		"password": "test",
@@ -41,21 +41,26 @@ func main() {
 		log.Fatal("OutEnd load failed:", err1)
 	}
 	actions := `
-	    local json = require("json")
-		Actions = {
-			function(data)
-			    print("[LUA Actions Callback]: Mqtt payload:", data)
-			    dataToMongo("MongoDB001", data)
-				print("[LUA Actions Callback]: Save to mongodb!")
-			    r = Select(data, "select temp,hum from INPUT_DATA where temp > '100' and hum < '24'")
-			    print("[LUA Actions Callback]temp ===>", json.decode(r)["temp"])
-			    print("[LUA Actions Callback]hum ===>", json.decode(r)["hum"])
-			    return true, data
-			end
-	}`
+local json = require("json")
+Actions = {
+	function(data)
+		-- print("[LUA Actions Callback]: Mqtt payload:", data)
+		dataToMongo("MongoDB001", data)
+		return true, data
+	end
+}
+`
 	from := []string{in1.Id}
-	failed := `function Failed(error) print("[LUA Callback] call failed from lua:", error) end`
-	success := `function Success() print("[LUA Callback] call success from lua") end`
+	failed := `
+function Failed(error)
+  -- print("[LUA Callback] call failed from lua:", error)
+end
+`
+	success := `
+function Success()
+  -- print("[LUA Callback] call success from lua")
+end
+`
 	rule1 := x.NewRule(LocalEngine, "just_a_test_rule", "just_a_test_rule", from, success, actions, failed)
 
 	//

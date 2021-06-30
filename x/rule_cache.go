@@ -13,6 +13,8 @@ func init() {
 //
 //
 func GetRule(id string) *rule {
+	lock.Lock()
+	defer lock.Unlock()
 	return ruleCache[id]
 }
 
@@ -20,6 +22,8 @@ func GetRule(id string) *rule {
 //
 //
 func SaveRule(r *rule) {
+	lock.Lock()
+	defer lock.Unlock()
 	ruleCache[r.Id] = r
 
 }
@@ -28,6 +32,8 @@ func SaveRule(r *rule) {
 //
 //
 func RemoveRule(r *rule) {
+	lock.Lock()
+	defer lock.Unlock()
 	delete(ruleCache, r.Id)
 }
 
@@ -35,5 +41,7 @@ func RemoveRule(r *rule) {
 //
 //
 func AllRule() map[string]*rule {
+	lock.Lock()
+	defer lock.Unlock()
 	return ruleCache
 }

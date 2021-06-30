@@ -33,7 +33,7 @@ func (mm *MqttInEndResource) Start(e *RuleEngine) error {
 	var messageHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
 		log.Infof("Received message: [%s] from topic: [%s]\n", msg.Payload(), msg.Topic())
 		if mm.enabled {
-			go e.Work(e.GetInEnd(mm.inEndId), string(msg.Payload()))
+			e.Work(e.GetInEnd(mm.inEndId), string(msg.Payload()))
 		}
 	}
 	//
@@ -41,7 +41,10 @@ func (mm *MqttInEndResource) Start(e *RuleEngine) error {
 		log.Infof("Mqtt InEnd Connected Success")
 		// TODO support multipul topics
 		client.Subscribe(DEFAULT_TOPIC, 1, nil)
-		e.GetInEnd(mm.inEndId).State = 1
+		inEnd := e.GetInEnd(mm.inEndId)
+		lock.Lock()
+		defer lock.Unlock()
+		inEnd.State = 1
 	}
 
 	var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err error) {

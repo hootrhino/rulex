@@ -6,6 +6,7 @@ import (
 	"errors"
 	"reflect"
 	"rulenginex/statistics"
+	"sync"
 	"time"
 
 	"github.com/ngaut/log"
@@ -13,6 +14,7 @@ import (
 )
 
 type TargetState int
+var lock sync.Mutex
 
 const (
 	UP   TargetState = 1
@@ -160,7 +162,11 @@ func (e *RuleEngine) LoadRules(r *rule) error {
 		if len(r.From) > 0 {
 			for _, inId := range r.From {
 				if in := e.GetInEnd(inId); in != nil {
-					// Bind to rule
+					// Bind to rule, Key:RuleId, Value: Rule
+					// RULE_0f8619ef-3cf2-452f-8dd7-aa1db4ecfdde {
+					// ...
+					// ...
+					// }
 					(*in.Binds)[r.Id] = *r
 					SaveRule(r)
 					return nil
@@ -303,6 +309,8 @@ func (e *RuleEngine) LoadPlugin(p XPlugin) error {
 //
 //
 func (e *RuleEngine) GetInEnd(id string) *inEnd {
+	lock.Lock()
+	defer lock.Unlock()
 	return (*e.InEnds)[id]
 }
 
@@ -310,6 +318,8 @@ func (e *RuleEngine) GetInEnd(id string) *inEnd {
 //
 //
 func (e *RuleEngine) SaveInEnd(in *inEnd) {
+	lock.Lock()
+	defer lock.Unlock()
 	(*e.InEnds)[in.Id] = in
 }
 
@@ -317,6 +327,8 @@ func (e *RuleEngine) SaveInEnd(in *inEnd) {
 //
 //
 func (e *RuleEngine) RemoveInEnd(in *inEnd) {
+	lock.Lock()
+	defer lock.Unlock()
 	delete((*e.InEnds), in.Id)
 }
 
@@ -324,6 +336,8 @@ func (e *RuleEngine) RemoveInEnd(in *inEnd) {
 //
 //
 func (e *RuleEngine) AllInEnd() map[string]*inEnd {
+	lock.Lock()
+	defer lock.Unlock()
 	return (*e.InEnds)
 }
 
@@ -331,6 +345,8 @@ func (e *RuleEngine) AllInEnd() map[string]*inEnd {
 //
 //
 func (e *RuleEngine) GetOutEnd(id string) *outEnd {
+	lock.Lock()
+	defer lock.Unlock()
 	return (*e.OutEnds)[id]
 }
 
@@ -338,6 +354,8 @@ func (e *RuleEngine) GetOutEnd(id string) *outEnd {
 //
 //
 func (e *RuleEngine) SaveOutEnd(out *outEnd) {
+	lock.Lock()
+	defer lock.Unlock()
 	(*e.OutEnds)[out.Id] = out
 }
 
@@ -345,6 +363,8 @@ func (e *RuleEngine) SaveOutEnd(out *outEnd) {
 //
 //
 func (e *RuleEngine) RemoveOutEnd(out *outEnd) {
+	lock.Lock()
+	defer lock.Unlock()
 	delete((*e.OutEnds), out.Id)
 }
 
@@ -352,5 +372,7 @@ func (e *RuleEngine) RemoveOutEnd(out *outEnd) {
 //
 //
 func (e *RuleEngine) AllOutEnd() map[string]*outEnd {
+	lock.Lock()
+	defer lock.Unlock()
 	return (*e.OutEnds)
 }

@@ -2,15 +2,11 @@ package statistics
 
 import "sync"
 
-// import "time"
-
 var statisticsCache map[string]int64
 
-// var recentlyLogCache []string
 var lock sync.Mutex
 
 func init() {
-	// recentlyLogCache = make([]string, 50)
 	statisticsCache = map[string]int64{
 		"inSuccess":  0,
 		"outSuccess": 0,
@@ -57,16 +53,3 @@ func IncOutFailed() {
 func AllStatistics() *map[string]int64 {
 	return &statisticsCache
 }
-
-// func AddLog(logs string) {
-// 	if len(recentlyLogCache) > 50 {
-// 		recentlyLogCache = recentlyLogCache[1:]
-// 		recentlyLogCache = append(recentlyLogCache, time.Now().Format("2006.01.02 15:04:05")+" => "+logs)
-
-// 	} else {
-// 		recentlyLogCache = append(recentlyLogCache, time.Now().Format("2006.01.02 15:04:05")+" => "+logs)
-// 	}
-// }
-// func AllLog() []string {
-// 	return recentlyLogCache
-// }
