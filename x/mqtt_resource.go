@@ -49,7 +49,10 @@ func (mm *MqttInEndResource) Start(e *RuleEngine) error {
 
 	var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err error) {
 		log.Infof("Connect lost: %v\n", err)
-		e.GetInEnd(mm.inEndId).State = 0
+		inEnd := e.GetInEnd(mm.inEndId)
+		lock.Lock()
+		defer lock.Unlock()
+		inEnd.State = 0
 	}
 	config := e.GetInEnd(mm.inEndId).Config
 	opts := mqtt.NewClientOptions()
