@@ -8,6 +8,7 @@ import (
 	"rulenginex/x"
 	"syscall"
 
+	"github.com/gin-gonic/gin"
 	"github.com/ngaut/log"
 )
 
@@ -16,11 +17,12 @@ var LocalEngine *x.RuleEngine
 
 //
 func main() {
+	gin.SetMode(gin.ReleaseMode)
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, syscall.SIGQUIT)
 	LocalEngine = x.NewRuleEngine()
 	config := map[string]interface{}{
-		"server":   "192.168.0.103",
+		"server":   "127.0.0.1",
 		"port":     1883,
 		"username": "test",
 		"password": "test",
@@ -44,8 +46,8 @@ func main() {
 local json = require("json")
 Actions = {
 	function(data)
-		-- print("[LUA Actions Callback]: Mqtt payload:", data)
-		dataToMongo("MongoDB001", data)
+	    dataToMongo("MongoDB001", data)
+	    print("[LUA Actions Callback]:dataToMongo Mqtt payload:", data)
 		return true, data
 	end
 }

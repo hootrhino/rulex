@@ -26,7 +26,7 @@ docker:
 
 .PHONY: deploy
 deploy:
-	nohup ${APP}/${APP}:${VERSION} 2&>1 &
+	nohup ${APP}:${VERSION} 2&>1 &
 
 
 .PHONY: clean

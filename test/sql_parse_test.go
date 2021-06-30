@@ -1,18 +1,36 @@
 package test
 
 import (
-	"testing"
+	"encoding/json"
+	"rulenginex/x"
 
-	"github.com/marianogappa/sqlparser"
+	"github.com/go-playground/assert/v2"
+	"github.com/ngaut/log"
+
+	"testing"
 )
 
-func TestParse(t *testing.T) {
-	query, err := sqlparser.Parse("SELECT a, b, c FROM 'data'  WHERE k = '1' AND f > '2'")
-	if err != nil {
-		t.Log(err)
+func TestJq(t *testing.T) {
+
+	jqExpression := `.[] | select(.id == 1)`
+	inputData := []interface{}{
+		map[string]interface{}{"id": 1, "name": "A1"},
+		map[string]interface{}{"id": 2, "name": "A2"},
+		map[string]interface{}{"id": 3, "name": "A3"},
+		map[string]interface{}{"id": 4, "name": "A4"},
 	}
-	t.Log(query.Type)
-	t.Log(query.Fields)
-	t.Log(query.TableName)
-	t.Logf("%#v", query.Conditions)
+
+	l1, _ := x.Select(jqExpression, &inputData)
+	l2, _ := x.Select(jqExpression, &inputData)
+	l3, _ := x.Select(jqExpression, &inputData)
+	json1, _ := json.Marshal(l1)
+	json2, _ := json.Marshal(l2)
+	json3, _ := json.Marshal(l3)
+	assert.Equal(t, `[{"id":1,"name":"A1"}] `, string(json1))
+	assert.Equal(t, `[{"id":1,"name":"A1"}] `, string(json1))
+	assert.Equal(t, `[{"id":1,"name":"A1"}] `, string(json1))
+	log.Debug(string(json1))
+	log.Debug(string(json2))
+	log.Debug(string(json3))
+
 }

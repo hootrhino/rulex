@@ -11,6 +11,19 @@ type inEnd struct {
 	Config      *map[string]interface{} `json:"config"`
 }
 
+func (in *inEnd) GetState() TargetState {
+	lock.Lock()
+	defer lock.Unlock()
+	return in.State
+}
+
+//
+func (in *inEnd) SetState(s TargetState) {
+	lock.Lock()
+	defer lock.Unlock()
+	in.State = s
+}
+
 //
 func NewInEnd(t string,
 	n string,

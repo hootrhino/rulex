@@ -13,6 +13,18 @@ type outEnd struct {
 	Target      XTarget                 `json:"-"`
 }
 
+func (o *outEnd) GetState() TargetState {
+	lock.Lock()
+	defer lock.Unlock()
+	return o.State
+}
+//
+func (o *outEnd) SetState(s TargetState) {
+	lock.Lock()
+	defer lock.Unlock()
+	o.State = s
+}
+
 //
 //
 //

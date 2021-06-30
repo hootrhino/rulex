@@ -40,19 +40,14 @@ func (mm *MqttInEndResource) Start(e *RuleEngine) error {
 	var connectHandler mqtt.OnConnectHandler = func(client mqtt.Client) {
 		log.Infof("Mqtt InEnd Connected Success")
 		// TODO support multipul topics
-		client.Subscribe(DEFAULT_TOPIC, 1, nil)
-		inEnd := e.GetInEnd(mm.inEndId)
-		lock.Lock()
-		defer lock.Unlock()
-		inEnd.State = 1
+		client.Subscribe(DEFAULT_TOPIC, 2, nil)
+		e.GetInEnd(mm.inEndId).SetState(UP)
 	}
 
 	var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err error) {
 		log.Infof("Connect lost: %v\n", err)
-		inEnd := e.GetInEnd(mm.inEndId)
-		lock.Lock()
-		defer lock.Unlock()
-		inEnd.State = 0
+		time.Sleep(5 * time.Second)
+		e.GetInEnd(mm.inEndId).SetState(DOWN)
 	}
 	config := e.GetInEnd(mm.inEndId).Config
 	opts := mqtt.NewClientOptions()

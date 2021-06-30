@@ -36,7 +36,7 @@ func NewRule(e *RuleEngine,
 		RegistryGrowStep: 32,
 	})
 	LoadDbLib(e, vm)
-	LoadSqlLib(e, vm)
+	LoadJqLib(e, vm)
 	luajson.Preload(vm)
 	return &rule{
 		Id:          MakeUUID("RULE"),

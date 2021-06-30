@@ -14,6 +14,7 @@ import (
 )
 
 type TargetState int
+
 var lock sync.Mutex
 
 const (
@@ -144,12 +145,12 @@ func startTarget(target XTarget, out *outEnd, e *RuleEngine) error {
 // Test Target State
 func testTargetState(target XTarget, e *RuleEngine, id string) {
 	if !target.Test(id) {
-		e.GetOutEnd(id).State = DOWN
-		log.Errorf("Target %s down", id)
+		e.GetOutEnd(id).SetState(DOWN)
+		log.Errorf("Target %s DOWN", id)
 	} else {
-		if e.GetOutEnd(id).State == DOWN {
-			e.GetOutEnd(id).State = UP
-			log.Warnf("Target %s recovered", id)
+		if e.GetOutEnd(id).GetState() == DOWN {
+			e.GetOutEnd(id).SetState(UP)
+			log.Warnf("Target %s recover to UP", id)
 		}
 	}
 }
