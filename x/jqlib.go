@@ -67,7 +67,6 @@ func Select(jqExpression string, inputData *[]interface{}) (*[]interface{}, erro
 				return nil, err1
 			}
 			result = append(result, v)
-			log.Debug(v)
 		}
 		return &result, nil
 	}

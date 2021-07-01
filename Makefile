@@ -29,12 +29,15 @@ deploy:
 	nohup ${APP}:${VERSION} 2&>1 &
 
 
-.PHONY: clean
-clean:
-	go clean
-	rm ${APP}-${VERSION}
-	rm ${APP}-${VERSION}.zip
-	rm metainfo.json
+.PHONY: test
+test:
+	go test rulenginex/test -v
+
+.PHONY: cover
+cover:
+	go test rulenginex/test -v -cover
+	go test -coverprofile=coverage.out
+	go tool cover -html=coverage.out
 
 .PHONY: clocs
 clocs:
@@ -42,3 +45,11 @@ clocs:
 	echo '```sh' >> clocs.md
 	cloc ./ >> clocs.md
 	echo '```'  >> clocs.md
+
+.PHONY: clean
+clean:
+	go clean
+	rm ${APP}-${VERSION}
+	rm ${APP}-${VERSION}.zip
+	rm metainfo.json
+	rm coverage.out

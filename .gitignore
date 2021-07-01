@@ -2,3 +2,5 @@
 .vscode/
 rulenginex
 .DS_Store
+*.zip
+*.out

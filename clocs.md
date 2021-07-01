@@ -1,21 +1,22 @@
 # Lines
 ```sh
-      44 text files.
-classified 44 files      43 unique files.                              
+      43 text files.
+classified 43 files      42 unique files.                              
        6 files ignored.
 
-github.com/AlDanial/cloc v 1.90  T=0.05 s (756.5 files/s, 46688.1 lines/s)
+github.com/AlDanial/cloc v 1.90  T=0.06 s (686.6 files/s, 46057.5 lines/s)
 -------------------------------------------------------------------------------
 Language                     files          blank        comment           code
 -------------------------------------------------------------------------------
-Go                              27            206            163           1384
-HTML                             1             22              2            252
-Markdown                         4             23              0            193
-Lua                              4              2             25             61
-make                             1              8              0             34
+Go                              26            212            166           1426
+HTML                             1             34              2            328
+Markdown                         3             22              0            179
+Lua                              4              1             25             61
+make                             1             11              0             44
 JSON                             1              0              0             19
 Dockerfile                       1              2              0             11
+Bourne Shell                     1              1              0              5
 -------------------------------------------------------------------------------
-SUM:                            39            263            190           1954
+SUM:                            38            283            193           2073
 -------------------------------------------------------------------------------
 ```
