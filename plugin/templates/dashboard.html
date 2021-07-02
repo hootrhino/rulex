@@ -95,6 +95,15 @@
                         <el-tab-pane label="数据入口" name="inend">
                             <template>
                                 <el-table :data="inEndData" style="width: 100%">
+                                    <el-table-column type="expand">
+                                        <template slot-scope="props">
+                                            <el-form label-position="left" inline class="demo-table-expand">
+                                                <el-form-item label="配置信息">
+                                                    <span>&{props.row.config}</span>
+                                                </el-form-item>
+                                            </el-form>
+                                        </template>
+                                    </el-table-column>
                                     <el-table-column prop="id" label="ID" width="380">
                                     </el-table-column>
                                     <el-table-column prop="state" label="状态" width="180">
@@ -111,15 +120,7 @@
                                     </el-table-column>
                                     <el-table-column prop="description" label="描述信息">
                                     </el-table-column>
-                                    <el-table-column type="expand">
-                                        <template slot-scope="props">
-                                            <el-form label-position="left" inline class="demo-table-expand">
-                                                <el-form-item label="配置信息">
-                                                    <span>&{props.row.config}</span>
-                                                </el-form-item>
-                                            </el-form>
-                                        </template>
-                                    </el-table-column>
+
                                 </el-table>
                             </template>
                         </el-tab-pane>

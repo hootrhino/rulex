@@ -9,7 +9,7 @@ package x
 //}
 //
 type XResource interface {
-	Test(inEndId string) bool     //0
+	Test(inEndId string) bool      //0
 	Register(inEndId string) error //1
 	Start(e *RuleEngine) error     //2
 	Enabled() bool
@@ -50,5 +50,6 @@ type XPlugin interface {
 //
 //
 type XHook interface {
-	Work(inEndId string, data string) error
+	Work(data string) error
+	Name() string
 }

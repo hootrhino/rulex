@@ -35,7 +35,7 @@ func NewOutEnd(t string,
 	return &outEnd{
 		Id:          MakeUUID("OUTEND"),
 		Type:        t,
-		State:       0,
+		State:       DOWN,
 		Name:        n,
 		Description: d,
 		Config:      c,

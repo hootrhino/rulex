@@ -26,7 +26,7 @@ const (
 //
 //
 type RuleEngine struct {
-	Hooks     *list.List
+	Hooks     *map[string]XHook            `json:"-"`
 	Plugins   *map[string]*XPluginMetaInfo `json:"plugins"`
 	InEnds    *map[string]*inEnd           `json:"inends"`
 	OutEnds   *map[string]*outEnd          `json:"outends"`
@@ -376,4 +376,25 @@ func (e *RuleEngine) AllOutEnd() map[string]*outEnd {
 	lock.Lock()
 	defer lock.Unlock()
 	return (*e.OutEnds)
+}
+
+//
+// LoadHook
+//
+func (e *RuleEngine) LoadHook(inEndId string, data string) {
+
+}
+
+//
+// RunHooks
+//
+func (e *RuleEngine) RunHooks(data string) {
+	for _, h := range *e.Hooks {
+		if err := runHook(h, data); err != nil {
+			log.Error("run hook:", h.Name(), " failed, error is:", err)
+		}
+	}
+}
+func runHook(h XHook, data string) error {
+	return h.Work(data)
 }
