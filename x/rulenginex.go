@@ -381,8 +381,13 @@ func (e *RuleEngine) AllOutEnd() map[string]*outEnd {
 //
 // LoadHook
 //
-func (e *RuleEngine) LoadHook(inEndId string, data string) {
-
+func (e *RuleEngine) LoadHook(h XHook) error {
+	if (*e.Hooks)[h.Name()] != nil {
+		return errors.New("hook have been loaded")
+	} else {
+		(*e.Hooks)[h.Name()] = h
+		return nil
+	}
 }
 
 //
