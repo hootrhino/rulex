@@ -31,10 +31,10 @@ func SaveRule(r *rule) {
 //
 //
 //
-func RemoveRule(r *rule) {
+func RemoveRule(ruleId string) {
 	lock.Lock()
 	defer lock.Unlock()
-	delete(ruleCache, r.Id)
+	delete(ruleCache, ruleId)
 }
 
 //

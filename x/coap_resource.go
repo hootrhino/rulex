@@ -2,6 +2,7 @@ package x
 
 import (
 	"bytes"
+	"context"
 
 	"github.com/ngaut/log"
 	coap "github.com/plgd-dev/go-coap/v2"
@@ -40,12 +41,17 @@ func (cc *CoAPInEndResource) Start(e *RuleEngine) error {
 			log.Errorf("cannot set response: %v", err)
 		}
 	}))
-	err := coap.ListenAndServe("udp", ":5688", cc.router)
-	if err != nil {
-		return err
-	} else {
-		return nil
-	}
+	go func(ctx context.Context) {
+		err := coap.ListenAndServe("udp", ":5688", cc.router)
+		if err != nil {
+			return
+		} else {
+			return
+		}
+	}(context.Background())
+	cc.enabled = true
+
+	return nil
 }
 
 //
@@ -60,11 +66,11 @@ func (cc *CoAPInEndResource) Pause() {
 
 }
 func (cc *CoAPInEndResource) Status(e *RuleEngine) TargetState {
-	return e.GetInEnd(cc.inEndId).State
+	return UP
 }
 
 func (cc *CoAPInEndResource) Register(inEndId string) error {
-
+	cc.inEndId = inEndId
 	return nil
 }
 

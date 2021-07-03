@@ -19,9 +19,7 @@ func NewHttpInEndResource(inEndId string) *HttpInEndResource {
 }
 func (hh *HttpInEndResource) Start(e *RuleEngine) error {
 	hh.engine = gin.New()
-	gin.SetMode(gin.ReleaseMode)
 	config := e.GetInEnd(hh.inEndId).Config
-
 	hh.engine.GET("/in", func(c *gin.Context) {
 		inForm := struct{ data string }{}
 		err := c.BindJSON(inForm)

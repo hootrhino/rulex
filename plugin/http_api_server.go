@@ -15,6 +15,10 @@ import (
 	"github.com/shirou/gopsutil/mem"
 )
 
+func init() {
+	gin.SetMode(gin.ReleaseMode)
+}
+
 const API_ROOT string = "/api/v1/"
 const DASHBOARD_ROOT string = "/dashboard/v1/"
 
@@ -25,7 +29,6 @@ type HttpApiServer struct {
 
 func (hh *HttpApiServer) Load(r *x.RuleEngine) *x.XPluginEnv {
 	hh.ginEngine = gin.New()
-	gin.SetMode(gin.ReleaseMode)
 	hh.ginEngine.LoadHTMLGlob("plugin/templates/*")
 	hh.RuleEngine = r
 	return x.NewXPluginEnv()
@@ -100,6 +103,34 @@ func (hh *HttpApiServer) Start(e *x.RuleEngine, env *x.XPluginEnv) error {
 		c.JSON(http.StatusOK, gin.H{"statistics": statistics.AllStatistics()})
 	})
 	//
+	hh.ginEngine.POST(API_ROOT+"rules", func(c *gin.Context) {
+		cros(c)
+		type Form struct {
+			Id          string
+			Name        string
+			Description string
+			From        []string
+			Actions     string
+			Success     string
+			Failed      string
+		}
+		form := Form{}
+		c.Bind(&form)
+		log.Debugf("Create Rule:%#v", form)
+		c.JSON(http.StatusOK, gin.H{"msg": 0})
+	})
+	//
+	hh.ginEngine.DELETE(API_ROOT+"rules", func(c *gin.Context) {
+		cros(c)
+		ruleId, exists := c.GetQuery("id")
+		if exists {
+			e.RemoveRule(ruleId)
+			c.JSON(http.StatusOK, gin.H{})
+		} else {
+			c.JSON(http.StatusBadRequest, gin.H{"msg": "rule not exists"})
+		}
+	})
+	//
 	log.Info("Http web dashboard started on:http://127.0.0.1:2580" + DASHBOARD_ROOT)
 	return nil
 }
@@ -110,22 +141,4 @@ func (hh *HttpApiServer) Uninstall(env *x.XPluginEnv) error {
 }
 func (hh *HttpApiServer) Clean() {
 	log.Info("HttpApiServer Cleaned")
-}
-
-//
-func cros(c *gin.Context) {
-	method := c.Request.Method
-	origin := c.Request.Header.Get("Origin")
-	if origin != "" {
-		c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
-		c.Header("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE,UPDATE")
-		c.Header("Access-Control-Allow-Headers", "Authorization, Content-Length, X-CSRF-Token, Token,session")
-		c.Header("Access-Control-Expose-Headers", "Content-Length, Access-Control-Allow-Origin, Access-Control-Allow-Headers")
-		c.Header("Access-Control-Max-Age", "172800")
-		c.Header("Access-Control-Allow-Credentials", "true")
-	}
-
-	if method == "OPTIONS" {
-		c.JSON(http.StatusOK, "ok!")
-	}
 }

@@ -31,7 +31,6 @@ func NewMqttInEndResource(inEndId string) *MqttInEndResource {
 func (mm *MqttInEndResource) Start(e *RuleEngine) error {
 
 	var messageHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
-		log.Infof("Received message: [%s] from topic: [%s]\n", msg.Payload(), msg.Topic())
 		if mm.enabled {
 			e.Work(e.GetInEnd(mm.inEndId), string(msg.Payload()))
 		}

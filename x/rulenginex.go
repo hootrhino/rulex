@@ -1,7 +1,6 @@
 package x
 
 import (
-	"container/list"
 	"context"
 	"errors"
 	"reflect"
@@ -55,7 +54,7 @@ func (e *RuleEngine) GetConfig(k string) interface{} {
 	return (*e.ConfigMap)[k]
 }
 
-func (e *RuleEngine) LoadInEnds(in *inEnd) error {
+func (e *RuleEngine) LoadInEnd(in *inEnd) error {
 	return tryCreateInEnd(in, e)
 
 }
@@ -75,15 +74,31 @@ func tryCreateInEnd(in *inEnd, e *RuleEngine) error {
 }
 
 //
-func startResources(r XResource, in *inEnd, e *RuleEngine) error {
+func startResources(resource XResource, in *inEnd, e *RuleEngine) error {
 	log.Info("Starting InEnd Resources:", in.Name)
 
-	if r.Test(in.Id) {
+	if resource.Test(in.Id) {
 		e.SaveInEnd(in)
-		if err := r.Register(in.Id); err != nil {
+		if err := resource.Register(in.Id); err != nil {
 			return err
 		} else {
-			return r.Start(e)
+			if err1 := resource.Start(e); err1 != nil {
+				return err1
+			} else {
+				// \!!!
+				testResourceState(resource, e, in.Id)
+				//
+				go func(ctx context.Context) {
+					// 5 seconds
+					ticker := time.NewTicker(time.Duration(time.Second * 5))
+					defer resource.Stop()
+					for {
+						<-ticker.C
+						testResourceState(resource, e, in.Id)
+					}
+				}(context.Background())
+				return nil
+			}
 		}
 	} else {
 		return errors.New("Resources start failed:" + in.Name)
@@ -142,6 +157,19 @@ func startTarget(target XTarget, out *outEnd, e *RuleEngine) error {
 	}
 }
 
+// test ResourceState
+func testResourceState(resource XResource, e *RuleEngine, id string) {
+	if !resource.Test(id) {
+		e.GetInEnd(id).SetState(DOWN)
+		log.Errorf("Target %s DOWN", id)
+	} else {
+		if e.GetInEnd(id).GetState() == DOWN {
+			e.GetInEnd(id).SetState(UP)
+			log.Warnf("Target %s recover to UP", id)
+		}
+	}
+}
+
 // Test Target State
 func testTargetState(target XTarget, e *RuleEngine, id string) {
 	if !target.Test(id) {
@@ -155,8 +183,8 @@ func testTargetState(target XTarget, e *RuleEngine, id string) {
 	}
 }
 
-// LoadRules
-func (e *RuleEngine) LoadRules(r *rule) error {
+// LoadRule
+func (e *RuleEngine) LoadRule(r *rule) error {
 	if err := VerifyCallback(r); err != nil {
 		return err
 	} else {
@@ -181,18 +209,29 @@ func (e *RuleEngine) LoadRules(r *rule) error {
 
 }
 
+//
+// Remove a rule
+//
+func (e *RuleEngine) RemoveRule(ruleId string) error {
+	if rule := GetRule(ruleId); rule != nil {
+		for _, inEnd := range *e.InEnds {
+			for _, rule := range *inEnd.Binds {
+				if rule.Id == ruleId {
+					delete(*inEnd.Binds, ruleId)
+				}
+			}
+		}
+		RemoveRule(ruleId)
+		return nil
+	} else {
+		return errors.New("rule:" + ruleId + " not exists")
+	}
+}
+
 // Stop
 func (e *RuleEngine) Stop() {
-}
-
-// RunSuccessCallback
-func (e *RuleEngine) RunSuccessCallback(ruleId string) {
-
-}
-
-// RunFailedCallback
-func (e *RuleEngine) RunFailedCallback(ruleId string) {
-
+	// TODO: More stop callback
+	log.Info("RuleEngine stoped")
 }
 
 // Work
@@ -243,14 +282,14 @@ func (r *rule) ExecuteActions(arg lua.LValue) (lua.LValue, error) {
 	}
 	return nil, errors.New("not a lua table")
 }
-
+// LUA Callback : Success
 func (r *rule) ExecuteSuccess() (interface{}, error) {
 	return execute(r.VM, "Success")
 }
+// LUA Callback : Failed
 
 func (r *rule) ExecuteFailed(arg lua.LValue) (interface{}, error) {
 	return execute(r.VM, "Failed", arg)
-
 }
 
 // Execute Lua function
@@ -263,7 +302,7 @@ func execute(vm *lua.LState, k string, args ...lua.LValue) (interface{}, error) 
 	if name == "LNilType" {
 		return nil, errors.New("target:" + k + " is not exists")
 	}
-	return nil, errors.New("target:" + k + " is n	ot a lua function")
+	return nil, errors.New("target:" + k + " is not a lua function")
 }
 
 // callLuaFunc

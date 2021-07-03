@@ -6,7 +6,6 @@
     <title>RulengineX-Dashboard</title>
     <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.9.0/styles/default.min.css">
 
     <style>
         .demo-table-expand {
@@ -26,10 +25,19 @@
 
         pre {
             width: 1200px;
-            background-color: rgb(46, 43, 43);
-            color: yellowgreen;
+            background-color: rgb(28, 23, 23);
+            color: rgb(170, 255, 0);
             padding-left: 20px;
             padding-right: 20px;
+        }
+
+        footer {
+            position: absolute;
+            bottom: 0;
+            width: 98%;
+            height: 130px;
+            color: rgb(0, 0, 0);
+            background-color: #ffffff;
         }
     </style>
 </head>
@@ -99,7 +107,7 @@
                                         <template slot-scope="props">
                                             <el-form label-position="left" inline class="demo-table-expand">
                                                 <el-form-item label="配置信息">
-                                                    <span>&{props.row.config}</span>
+                                                    <pre>&{props.row.config}</pre>
                                                 </el-form-item>
                                             </el-form>
                                         </template>
@@ -132,7 +140,7 @@
                                         <template slot-scope="props">
                                             <el-form label-position="left" inline class="demo-table-expand">
                                                 <el-form-item label="配置信息">
-                                                    <span>&{props.row.config}</span>
+                                                    <pre>&{props.row.config}</pre>
                                                 </el-form-item>
                                             </el-form>
                                         </template>
@@ -249,11 +257,11 @@
                     </el-tabs>
                 </template>
             </el-main>
-
             <el-footer>
-
                 <footer>
+                    <hr>
                     <p>Designed by: wwhai</p>
+                    <p>Document: <a href="https://wwhai.github.io/rulex_doc_html">Here</a></p>
                     <p>Contact information: <a href="cnwwhai@gmail.com">cnwwhai@gmail.com</a>.</p>
                 </footer>
             </el-footer>

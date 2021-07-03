@@ -6,7 +6,8 @@ import (
 
 	lua "github.com/yuin/gopher-lua"
 )
-
+//
+//  Run lua as pipline
 //
 func runPipline(vm *lua.LState, funcs map[string]*lua.LFunction, arg lua.LValue) (lua.LValue, error) {
 	acc := 1
