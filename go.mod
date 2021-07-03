@@ -14,6 +14,7 @@ require (
 	github.com/itchyny/gojq v0.12.4
 	github.com/layeh/gopher-json v0.0.0-20201124131017-552bb3c4c3bf
 	github.com/marianogappa/sqlparser v0.0.0-20200911141220-8e57d2372c3d
+	github.com/mattn/go-sqlite3 v1.11.0
 	github.com/mitchellh/mapstructure v1.4.1
 	github.com/ngaut/log v0.0.0-20180314031856-b8e36e7ba5ac
 	github.com/plgd-dev/go-coap/v2 v2.4.0

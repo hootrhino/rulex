@@ -78,7 +78,7 @@ func (m *MongoTarget) Reload() {
 
 func (m *MongoTarget) Pause() {
 	log.Info("Mongotarget Pause success")
- 
+
 }
 
 func (m *MongoTarget) Status(e *RuleEngine) TargetState {

@@ -20,7 +20,6 @@ type rule struct {
 	Failed      string      `json:"failed"`
 }
 
-
 //
 // New
 //

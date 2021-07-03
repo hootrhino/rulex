@@ -1,10 +1,9 @@
 package main
 
 import (
-	"io/ioutil"
 	"os"
 	"os/signal"
-	"rulenginex/plugin"
+	"rulenginex/plugin/http_server"
 	"rulenginex/x"
 	"syscall"
 
@@ -84,34 +83,7 @@ end
 	if e := engine.LoadPlugin(&httpServer); e != nil {
 		log.Fatal("rule load failed:", e)
 	}
-	//
-	defaultBanner :=
-		`
-	--------------------------------------------------------------------
-	____  _   _ _     _____ _   _  ____ ___ _   _ _____          __  __
-	|  _ \| | | | |   | ____| \ | |/ ___|_ _| \ | | ____|         \ \/ /
-	| |_) | | | | |   |  _| |  \| | |  _ | ||  \| |  _|    _____   \  / 
-	|  _ <| |_| | |___| |___| |\  | |_| || || |\  | |___  |_____|  /  \ 
-	|_| \_\\___/|_____|_____|_| \_|\____|___|_| \_|_____|         /_/\_\
-	---------------------------------------------------------------------
-`
-	engine.Start(func() {
-		file, err := os.Open("conf/banner.txt")
-		if err != nil {
-			log.Warn("No banner found, print default banner")
-			log.Info(defaultBanner)
-		} else {
-			data, err := ioutil.ReadAll(file)
-			if err != nil {
-				log.Warn("No banner found, print default banner")
-				log.Info(defaultBanner)
-			} else {
-				log.Info("\n", string(data))
-			}
-		}
-		log.Info("RulengineX start successfully")
-		file.Close()
-	})
+	engine.Start()
 	<-c
 	os.Exit(0)
 }

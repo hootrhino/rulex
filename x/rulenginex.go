@@ -3,6 +3,8 @@ package x
 import (
 	"context"
 	"errors"
+	"io/ioutil"
+	"os"
 	"reflect"
 	"rulenginex/statistics"
 	"sync"
@@ -42,9 +44,30 @@ func NewRuleEngine() *RuleEngine {
 }
 
 //
-func (e *RuleEngine) Start(sc func()) *map[string]interface{} {
+func (e *RuleEngine) Start() *map[string]interface{} {
 	e.ConfigMap = &map[string]interface{}{}
-	(sc)()
+	//
+	defaultBanner :=
+		`
+	---------------------------------
+	             RulEX
+	---------------------------------
+`
+	file, err := os.Open("conf/banner.txt")
+	if err != nil {
+		log.Warn("No banner found, print default banner")
+		log.Info(defaultBanner)
+	} else {
+		data, err := ioutil.ReadAll(file)
+		if err != nil {
+			log.Warn("No banner found, print default banner")
+			log.Info(defaultBanner)
+		} else {
+			log.Info("\n", string(data))
+		}
+	}
+	log.Info("RulengineX start successfully")
+	file.Close()
 	return e.ConfigMap
 }
 
@@ -85,10 +108,9 @@ func startResources(resource XResource, in *inEnd, e *RuleEngine) error {
 			if err1 := resource.Start(e); err1 != nil {
 				return err1
 			} else {
-				// \!!!
-				testResourceState(resource, e, in.Id)
-				//
 				go func(ctx context.Context) {
+					// \!!!
+					testResourceState(resource, e, in.Id)
 					// 5 seconds
 					ticker := time.NewTicker(time.Duration(time.Second * 5))
 					defer resource.Stop()
@@ -140,10 +162,10 @@ func startTarget(target XTarget, out *outEnd, e *RuleEngine) error {
 		if err1 := target.Start(e); err1 != nil {
 			return err1
 		} else {
-			// \!!!
-			testTargetState(target, e, out.Id)
 			//
 			go func(ctx context.Context) {
+				// \!!!
+				testTargetState(target, e, out.Id)
 				// 5 seconds
 				ticker := time.NewTicker(time.Duration(time.Second * 5))
 				defer target.Stop()
@@ -282,10 +304,12 @@ func (r *rule) ExecuteActions(arg lua.LValue) (lua.LValue, error) {
 	}
 	return nil, errors.New("not a lua table")
 }
+
 // LUA Callback : Success
 func (r *rule) ExecuteSuccess() (interface{}, error) {
 	return execute(r.VM, "Success")
 }
+
 // LUA Callback : Failed
 
 func (r *rule) ExecuteFailed(arg lua.LValue) (interface{}, error) {

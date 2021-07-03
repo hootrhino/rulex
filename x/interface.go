@@ -11,7 +11,7 @@ package x
 type XResource interface {
 	Test(inEndId string) bool      //0
 	Register(inEndId string) error //1
-		Start(e *RuleEngine) error     //2
+	Start(e *RuleEngine) error     //2
 	Enabled() bool
 	Reload()
 	Pause()

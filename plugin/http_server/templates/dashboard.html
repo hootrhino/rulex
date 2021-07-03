@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>RulengineX-Dashboard</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+    <style>
+        .demo-table-expand {
+            font-size: 0;
+        }
+
+        .demo-table-expand label {
+            width: 90px;
+            color: #000000;
+        }
+
+        .demo-table-expand .el-form-item {
+            margin-right: 0;
+            margin-bottom: 0;
+            width: 50%;
+        }
+
+        pre {
+            width: 1200px;
+            background-color: rgb(28, 23, 23);
+            color: rgb(170, 255, 0);
+            padding-left: 20px;
+            padding-right: 20px;
+        }
+
+        footer {
+            position: absolute;
+            bottom: 0;
+            width: 98%;
+            height: 130px;
+            color: rgb(0, 0, 0);
+            background-color: #ffffff;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <el-container>
+            <el-header>
+                <el-menu mode="horizontal" text-color="#000000" active-text-color="#FFFFFF">
+                    <el-menu-item index="1"></el-menu-item>
+                    <h1>RulEngineX</h1>
+                    </el-menu-item>
+                </el-menu>
+            </el-header>
+
+            <el-main>
+                <template>
+                    <el-tabs v-model="activeName" @tab-click="handleClick">
+                        <el-tab-pane label="系统信息" name="system">
+                            <template>
+                                <el-row :gutter="12">
+                                    <el-col :span="8">
+                                        <el-card shadow="always">
+                                            CPU核心数: <h1>&{systemData.cpus}</h1>
+                                        </el-card>
+                                    </el-col>
+
+                                    <el-col :span="8">
+                                        <el-card shadow="always">
+                                            操作系统 <h1>&{systemData.os}</h1>
+                                        </el-card>
+                                    </el-col>
+
+                                    <el-col :span="8">
+                                        <el-card shadow="always">
+                                            硬件架构 <h1>&{systemData.arch}</h1>
+                                        </el-card>
+                                    </el-col>
+
+                                </el-row>
+                                <el-row :gutter="12">
+                                    <el-col :span="8">
+                                        <el-card shadow="always">
+                                            磁盘使用率: <h1>%&{systemData.diskInfo}</h1>
+                                        </el-card>
+                                    </el-col>
+
+                                    <el-col :span="8">
+                                        <el-card shadow="always">
+                                            内存使用率： <h1>%&{systemData.memInfo}</h1>
+                                        </el-card>
+                                    </el-col>
+
+                                    <el-col :span="8">
+                                        <el-card shadow="always">
+                                            CPU使用率 <h1>%&{systemData.cpuPercent}</h1>
+                                        </el-card>
+                                    </el-col>
+
+                                </el-row>
+                            </template>
+                        </el-tab-pane>
+                        <el-tab-pane label="数据入口" name="inend">
+                            <template>
+                                <el-table :data="inEndData" style="width: 100%">
+                                    <el-table-column type="expand">
+                                        <template slot-scope="props">
+                                            <el-form label-position="left" inline class="demo-table-expand">
+                                                <el-form-item label="配置信息">
+                                                    <pre>&{props.row.config}</pre>
+                                                </el-form-item>
+                                            </el-form>
+                                        </template>
+                                    </el-table-column>
+                                    <el-table-column prop="id" label="ID" width="380">
+                                    </el-table-column>
+                                    <el-table-column prop="state" label="状态" width="180">
+                                        <template slot-scope="scope">
+                                            <el-tag v-if="scope.row.state === 0" type="danger">停止
+                                            </el-tag>
+                                            <el-tag v-if="scope.row.state === 1" type="success">运行
+                                            </el-tag>
+                                        </template>
+                                    </el-table-column>
+                                    <el-table-column prop="type" label="类型" width="180">
+                                    </el-table-column>
+                                    <el-table-column prop="name" label="名称" width="180">
+                                    </el-table-column>
+                                    <el-table-column prop="description" label="描述信息">
+                                    </el-table-column>
+
+                                </el-table>
+                            </template>
+                        </el-tab-pane>
+                        <el-tab-pane label="数据出口" name="outend">
+                            <template>
+                                <el-table :data="outEndData" style="width: 100%">
+
+                                    <el-table-column type="expand">
+                                        <template slot-scope="props">
+                                            <el-form label-position="left" inline class="demo-table-expand">
+                                                <el-form-item label="配置信息">
+                                                    <pre>&{props.row.config}</pre>
+                                                </el-form-item>
+                                            </el-form>
+                                        </template>
+                                    </el-table-column>
+
+                                    <el-table-column prop="id" label="ID" width="380">
+                                    </el-table-column>
+                                    <el-table-column prop="state" label="状态" width="180">
+                                        <template slot-scope="scope">
+                                            <el-tag v-if="scope.row.state === 0" type="danger">停止
+                                            </el-tag>
+                                            <el-tag v-if="scope.row.state === 1" type="success">运行
+                                            </el-tag>
+                                        </template>
+                                    </el-table-column>
+                                    <el-table-column prop="type" label="类型" width="180">
+                                    </el-table-column>
+                                    <el-table-column prop="name" label="名称" width="180">
+                                    </el-table-column>
+                                    <el-table-column prop="description" label="描述信息">
+                                    </el-table-column>
+
+                                </el-table>
+                            </template>
+                        </el-tab-pane>
+                        <el-tab-pane label="规则管理" name="rule">
+                            <template>
+                                <el-table :data="ruleData" style="width: 100%">
+
+                                    <el-table-column type="expand">
+                                        <template slot-scope="props">
+
+                                            <el-form label-position="left" label-width="120px"
+                                                class="demo-table-expand">
+                                                <el-form-item label="数据源">
+                                                    <el-tag v-for="item in props.row.from" effect="plain">
+                                                        &{ item }
+                                                    </el-tag>
+                                                </el-form-item>
+                                            </el-form>
+                                            <el-form label-position="left" label-width="120px"
+                                                class="demo-table-expand">
+                                                <el-form-item label="成功回调">
+                                                    <pre>&{props.row.success}</pre>
+                                                </el-form-item>
+                                            </el-form>
+                                            <el-form label-position="left" label-width="120px"
+                                                class="demo-table-expand">
+                                                <el-form-item label="失败回调">
+                                                    <pre>&{props.row.failed}</pre>
+                                                </el-form-item>
+                                            </el-form>
+                                            <el-form label-position="left" label-width="120px"
+                                                class="demo-table-expand">
+                                                <el-form-item label="动作回调">
+                                                    <pre>&{props.row.actions}</pre>
+                                                </el-form-item>
+                                            </el-form>
+                                        </template>
+                                    </el-table-column>
+
+                                    <el-table-column prop="id" label="ID" width="380">
+                                    </el-table-column>
+                                    <el-table-column prop="name" label="名称" width="180">
+                                    </el-table-column>
+                                    <el-table-column prop="from" label="绑定资源" width="180">
+                                    </el-table-column>
+                                    <el-table-column prop="description" label="描述信息">
+                                    </el-table-column>
+
+                                </el-table>
+                            </template>
+                        </el-tab-pane>
+                        <el-tab-pane label="插件管理" name="plugin"><template>
+                                <el-table :data="pluginData" style="width: 100%">
+                                    <el-table-column prop="name" label="插件名称" width="180">
+                                    </el-table-column>
+                                    <el-table-column prop="version" label="版本" width="180">
+                                    </el-table-column>
+                                    <el-table-column prop="homepage" label="插件主页" width="180">
+                                    </el-table-column>
+                                    <el-table-column prop="helpLink" label="帮助文档" width="180">
+                                    </el-table-column>
+                                    <el-table-column prop="author" label="作者" width="180">
+                                    </el-table-column>
+                                    <el-table-column prop="email" label="Email" width="180">
+                                    </el-table-column>
+                                    <el-table-column prop="license" label="协议">
+                                    </el-table-column>
+                                </el-table>
+                            </template></el-tab-pane>
+                        <el-tab-pane label="数据统计" name="statistic"><template>
+                                <el-row :gutter="12">
+                                    <el-col :span="8">
+                                        <el-card shadow="always">
+                                            数据输入: <h1>&{statisticData.inSuccess}</h1>
+                                        </el-card>
+                                    </el-col>
+
+                                    <el-col :span="8">
+                                        <el-card shadow="always">
+                                            输出成功： <h1>&{statisticData.outSuccess}</h1>
+                                        </el-card>
+                                    </el-col>
+
+                                    <el-col :span="8">
+                                        <el-card shadow="always">
+                                            输出失败 <h1>&{statisticData.outFailed}</h1>
+                                        </el-card>
+                                    </el-col>
+
+                                </el-row>
+                            </template></el-tab-pane>
+                    </el-tabs>
+                </template>
+            </el-main>
+            <el-footer>
+                <footer>
+                    <hr>
+                    <p>Designed by: wwhai</p>
+                    <p>Document: <a href="https://wwhai.github.io/rulex_doc_html">Here</a></p>
+                    <p>Contact information: <a href="cnwwhai@gmail.com">cnwwhai@gmail.com</a>.</p>
+                </footer>
+            </el-footer>
+        </el-container>
+
+    </div>
+</body>
+<!-- import Vue before Element -->
+<script src="https://unpkg.com/vue/dist/vue.js"></script>
+<!-- import JavaScript -->
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+<script>
+
+    let HOST = 'http://127.0.0.1:2580/api/v1/'
+    new Vue({
+        el: '#app',
+        delimiters: ['&{', '}'],
+        data() {
+            return {
+                activeName: 'system',
+                systemData: {
+                    "diskInfo": 0,
+                    "memInfo": 0,
+                    "cpuPercent": 0,
+                    "arch": "unknown",
+                    "cpus": 0,
+                    "os": "unknown"
+                },
+                statisticData: {
+                    "inSuccess": 0,
+                    "outSuccess": 0,
+                    "inFailed": 0,
+                    "outFailed": 0,
+                },
+                inEndData: [],
+                outEndData: [],
+                ruleData: [],
+                pluginData: [],
+
+            };
+        },
+        mounted() {
+            let thiz = this;
+            axios.get(HOST + 'system')
+                .then(response => {
+                    thiz.systemData = response.data
+                    console.log(response.data)
+                })
+        },
+        methods: {
+            handleClick(tab, event) {
+                let thiz = this;
+                switch (tab.name) {
+                    case "inend":
+                        axios.get(HOST + 'inends')
+                            .then(response => {
+                                thiz.inEndData = Object.values(response.data.inends)
+                            })
+                            .catch(error => thiz.$message.error('请求失败'))
+                        break;
+
+                    case "outend":
+                        axios.get(HOST + 'outends')
+                            .then(response => {
+                                thiz.outEndData = Object.values(response.data.outends)
+
+                            })
+                            .catch(error => thiz.$message.error('请求失败'))
+                        break;
+
+                    case "plugin":
+                        axios.get(HOST + 'plugins')
+                            .then(response => {
+                                thiz.pluginData = Object.values(response.data.plugins)
+                            })
+                            .catch(error => thiz.$message.error('请求失败'))
+                        break;
+
+                    case "system":
+                        axios.get(HOST + 'system')
+                            .then(response => {
+                                thiz.systemData = response.data
+                            })
+                            .catch(error => thiz.$message.error('请求失败'))
+                        break;
+                    case "rule":
+                        axios.get(HOST + 'rules')
+                            .then(response => {
+                                thiz.ruleData = Object.values(response.data.rules)
+                            })
+                            .catch(error => thiz.$message.error('请求失败'))
+                        break;
+                    case "statistic":
+                        axios.get(HOST + 'statistics')
+                            .then(response => {
+                                thiz.statisticData = response.data.statistics
+                            })
+                            .catch(error => thiz.$message.error('请求失败'))
+                        break;
+
+                    default:
+                        break;
+                }
+            }
+        }
+    })
+</script>
+
+</html>

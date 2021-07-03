@@ -18,6 +18,7 @@ func (o *outEnd) GetState() TargetState {
 	defer lock.Unlock()
 	return o.State
 }
+
 //
 func (o *outEnd) SetState(s TargetState) {
 	lock.Lock()

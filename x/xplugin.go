@@ -1,6 +1,5 @@
 package x
 
-
 //
 // External Plugin
 //
@@ -40,6 +39,7 @@ func (p *XPluginEnv) Get(k string) interface{} {
 func (p *XPluginEnv) Set(k string, v interface{}) {
 	(*(p.env))[k] = v
 }
+
 //
 //
 //
