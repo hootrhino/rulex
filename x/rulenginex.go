@@ -14,13 +14,13 @@ import (
 	lua "github.com/yuin/gopher-lua"
 )
 
-type TargetState int
+type State int
 
 var lock sync.Mutex
 
 const (
-	UP   TargetState = 1
-	DOWN TargetState = 0
+	UP   State = 1
+	DOWN State = 0
 )
 
 //
@@ -83,6 +83,8 @@ func (e *RuleEngine) LoadInEnd(in *inEnd) error {
 }
 
 //
+// TODO more type support in the future
+//
 func tryCreateInEnd(in *inEnd, e *RuleEngine) error {
 	if in.Type == "MQTT" {
 		return startResources(NewMqttInEndResource(in.Id), in, e)
@@ -92,6 +94,9 @@ func tryCreateInEnd(in *inEnd, e *RuleEngine) error {
 	}
 	if in.Type == "COAP" {
 		return startResources(NewCoAPInEndResource(in.Id), in, e)
+	}
+	if in.Type == "SERIAL" {
+		return startResources(NewSerialResource(in.Id), in, e)
 	}
 	return errors.New("unsupported rule type:" + in.Type)
 }
@@ -165,13 +170,13 @@ func startTarget(target XTarget, out *outEnd, e *RuleEngine) error {
 			//
 			go func(ctx context.Context) {
 				// \!!!
-				testTargetState(target, e, out.Id)
+				testState(target, e, out.Id)
 				// 5 seconds
 				ticker := time.NewTicker(time.Duration(time.Second * 5))
 				defer target.Stop()
 				for {
 					<-ticker.C
-					testTargetState(target, e, out.Id)
+					testState(target, e, out.Id)
 				}
 			}(context.Background())
 			return nil
@@ -193,7 +198,7 @@ func testResourceState(resource XResource, e *RuleEngine, id string) {
 }
 
 // Test Target State
-func testTargetState(target XTarget, e *RuleEngine, id string) {
+func testState(target XTarget, e *RuleEngine, id string) {
 	if !target.Test(id) {
 		e.GetOutEnd(id).SetState(DOWN)
 		log.Errorf("Target %s DOWN", id)

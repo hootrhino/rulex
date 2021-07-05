@@ -38,10 +38,8 @@ func main() {
 		"port":   1883,
 	})
 	in2.Id = "INEND2"
-	in2.SetState(x.UP)
 	if err := engine.LoadInEnd(in2); err != nil {
 		log.Fatal("InEnd load failed:", err)
-
 	}
 	out1 := x.NewOutEnd("mongo", "Data to mongodb", "Save data to mongodb",
 		&map[string]interface{}{

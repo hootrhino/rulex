@@ -3,7 +3,7 @@ package x
 //
 type inEnd struct {
 	Id          string                  `json:"id"`
-	State       TargetState             `json:"state"`
+	State       State                   `json:"state"`
 	Type        string                  `json:"type"`
 	Name        string                  `json:"name"`
 	Description string                  `json:"description"`
@@ -11,14 +11,14 @@ type inEnd struct {
 	Config      *map[string]interface{} `json:"config"`
 }
 
-func (in *inEnd) GetState() TargetState {
+func (in *inEnd) GetState() State {
 	lock.Lock()
 	defer lock.Unlock()
 	return in.State
 }
 
 //
-func (in *inEnd) SetState(s TargetState) {
+func (in *inEnd) SetState(s State) {
 	lock.Lock()
 	defer lock.Unlock()
 	in.State = s

@@ -13,16 +13,15 @@ import (
 
 //
 type CoAPInEndResource struct {
-	enabled bool
-	inEndId string
-	router  *mux.Router
+	*XStatus
+	router *mux.Router
 }
 
 func NewCoAPInEndResource(inEndId string) *CoAPInEndResource {
-	return &CoAPInEndResource{
-		inEndId: inEndId,
-		router:  mux.NewRouter(),
-	}
+	c := CoAPInEndResource{}
+	c.inEndId = inEndId
+	c.router = mux.NewRouter()
+	return &c
 }
 
 func (cc *CoAPInEndResource) Start(e *RuleEngine) error {
@@ -65,7 +64,7 @@ func (cc *CoAPInEndResource) Reload() {
 func (cc *CoAPInEndResource) Pause() {
 
 }
-func (cc *CoAPInEndResource) Status(e *RuleEngine) TargetState {
+func (cc *CoAPInEndResource) Status(e *RuleEngine) State {
 	return UP
 }
 

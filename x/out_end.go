@@ -6,21 +6,21 @@ package x
 type outEnd struct {
 	Id          string                  `json:"id"`
 	Type        string                  `json:"type"`
-	State       TargetState             `json:"state"`
+	State       State                   `json:"state"`
 	Name        string                  `json:"name"`
 	Description string                  `json:"description"`
 	Config      *map[string]interface{} `json:"config"`
 	Target      XTarget                 `json:"-"`
 }
 
-func (o *outEnd) GetState() TargetState {
+func (o *outEnd) GetState() State {
 	lock.Lock()
 	defer lock.Unlock()
 	return o.State
 }
 
 //
-func (o *outEnd) SetState(s TargetState) {
+func (o *outEnd) SetState(s State) {
 	lock.Lock()
 	defer lock.Unlock()
 	o.State = s

@@ -17,15 +17,14 @@ const DEFAULT_TOPIC string = "$X_IN_END"
 
 //
 type MqttInEndResource struct {
-	enabled bool
-	inEndId string
-	client  mqtt.Client
+	*XStatus
+	client mqtt.Client
 }
 
 func NewMqttInEndResource(inEndId string) *MqttInEndResource {
-	return &MqttInEndResource{
-		inEndId: inEndId,
-	}
+	m := MqttInEndResource{}
+	m.inEndId = inEndId
+	return &m
 }
 
 func (mm *MqttInEndResource) Start(e *RuleEngine) error {
@@ -93,7 +92,7 @@ func (mm *MqttInEndResource) Reload() {
 func (mm *MqttInEndResource) Pause() {
 
 }
-func (mm *MqttInEndResource) Status(e *RuleEngine) TargetState {
+func (mm *MqttInEndResource) Status(e *RuleEngine) State {
 	return e.GetInEnd(mm.inEndId).State
 }
 

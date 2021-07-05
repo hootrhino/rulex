@@ -81,7 +81,7 @@ func (m *MongoTarget) Pause() {
 
 }
 
-func (m *MongoTarget) Status(e *RuleEngine) TargetState {
+func (m *MongoTarget) Status(e *RuleEngine) State {
 	return e.GetOutEnd(m.outEndId).State
 }
 

@@ -6,16 +6,15 @@ import (
 
 //
 type HttpInEndResource struct {
-	enabled bool
-	inEndId string
-	engine  *gin.Engine
+	*XStatus
+	engine *gin.Engine
 }
 
 func NewHttpInEndResource(inEndId string) *HttpInEndResource {
-	return &HttpInEndResource{
-		inEndId: inEndId,
-		engine:  gin.Default(),
-	}
+	h := HttpInEndResource{}
+	h.inEndId = inEndId
+	h.engine = gin.Default()
+	return &h
 }
 func (hh *HttpInEndResource) Start(e *RuleEngine) error {
 	hh.engine = gin.New()
@@ -49,7 +48,7 @@ func (hh *HttpInEndResource) Reload() {
 func (hh *HttpInEndResource) Pause() {
 
 }
-func (hh *HttpInEndResource) Status(e *RuleEngine) TargetState {
+func (hh *HttpInEndResource) Status(e *RuleEngine) State {
 	return e.GetInEnd(hh.inEndId).State
 }
 

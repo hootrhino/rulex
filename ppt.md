@@ -17,7 +17,7 @@ A simple and lightweight stream data processor.
 ```go
 type inEnd struct {
 	Id          string                  `json:"id"`
-	State       TargetState             `json:"state"`
+	State       State             `json:"state"`
 	Type        string                  `json:"type"`
 	Name        string                  `json:"name"`
 	Description string                  `json:"description"`
@@ -32,7 +32,7 @@ type XResource interface {
 	Enabled() bool
 	Reload()
 	Pause()
-	Status(e *RuleEngine) TargetState
+	Status(e *RuleEngine) State
 	Stop()
 }
 
@@ -44,7 +44,7 @@ type XResource interface {
 type outEnd struct {
 	Id          string                  `json:"id"`
 	Type        string                  `json:"type"`
-	State       TargetState             `json:"state"`
+	State       State             `json:"state"`
 	Name        string                  `json:"name"`
 	Description string                  `json:"description"`
 	Config      *map[string]interface{} `json:"config"`
@@ -58,7 +58,7 @@ type XTarget interface {
 	Enabled() bool
 	Reload()
 	Pause()
-	Status(e *RuleEngine) TargetState
+	Status(e *RuleEngine) State
 	To(data interface{}) error
 	Stop()
 }

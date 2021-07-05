@@ -5,7 +5,7 @@ package x
 // XResource{
 //  inEndId
 //  enabled
-//  status
+//  status.
 //}
 //
 type XResource interface {
@@ -15,7 +15,7 @@ type XResource interface {
 	Enabled() bool
 	Reload()
 	Pause()
-	Status(e *RuleEngine) TargetState
+	Status(e *RuleEngine) State
 	Stop()
 }
 
@@ -29,7 +29,7 @@ type XTarget interface {
 	Enabled() bool
 	Reload()
 	Pause()
-	Status(e *RuleEngine) TargetState
+	Status(e *RuleEngine) State
 	To(data interface{}) error
 	Stop()
 }
@@ -52,4 +52,12 @@ type XPlugin interface {
 type XHook interface {
 	Work(data string) error
 	Name() string
+}
+
+//
+//
+//
+type XStatus struct {
+	inEndId string
+	enabled bool
 }
