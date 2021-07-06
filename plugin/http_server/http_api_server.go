@@ -1,10 +1,10 @@
-package plugin
+package httpserver
 
 import (
 	"context"
 	"net/http"
-	"rulenginex/statistics"
-	"rulenginex/x"
+	"rulex/statistics"
+	"rulex/x"
 	"runtime"
 	"time"
 

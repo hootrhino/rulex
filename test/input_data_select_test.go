@@ -2,7 +2,7 @@ package test
 
 import (
 	"encoding/json"
-	"rulenginex/x"
+	"rulex/x"
 
 	"github.com/go-playground/assert/v2"
 	"testing"

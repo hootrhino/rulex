@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"reflect"
-	"rulenginex/statistics"
+	"rulex/statistics"
 	"sync"
 	"time"
 
@@ -66,7 +66,7 @@ func (e *RuleEngine) Start() *map[string]interface{} {
 			log.Info("\n", string(data))
 		}
 	}
-	log.Info("RulengineX start successfully")
+	log.Info("rulex start successfully")
 	file.Close()
 	return e.ConfigMap
 }

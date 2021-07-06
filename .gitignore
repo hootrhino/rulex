@@ -1,6 +1,6 @@
 *.log
 .vscode/
-rulenginex
+rulex
 .DS_Store
 *.zip
 *.out

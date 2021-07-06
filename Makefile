@@ -1,4 +1,4 @@
-APP=rulenginex
+APP=rulex
 VERSION=0.0.1
 
 .PHONY: all
@@ -31,11 +31,11 @@ deploy:
 
 .PHONY: test
 test:
-	go test rulenginex/test -v
+	go test rulex/test -v
 
 .PHONY: cover
 cover:
-	go test rulenginex/test -v -cover
+	go test rulex/test -v -cover
 	go test -coverprofile=coverage.out
 	go tool cover -html=coverage.out
 

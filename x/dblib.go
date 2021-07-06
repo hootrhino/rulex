@@ -2,7 +2,7 @@ package x
 
 import (
 	"encoding/json"
-	"rulenginex/statistics"
+	"rulex/statistics"
 
 	"github.com/ngaut/log"
 	"github.com/yuin/gopher-lua"

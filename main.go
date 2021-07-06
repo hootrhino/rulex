@@ -3,8 +3,8 @@ package main
 import (
 	"os"
 	"os/signal"
-	"rulenginex/plugin/http_server"
-	"rulenginex/x"
+	"rulex/plugin/http_server"
+	"rulex/x"
 	"syscall"
 
 	"github.com/gin-gonic/gin"
@@ -43,7 +43,7 @@ func main() {
 	}
 	out1 := x.NewOutEnd("mongo", "Data to mongodb", "Save data to mongodb",
 		&map[string]interface{}{
-			"mongourl": "mongodb+srv://rulenginex:rulenginex@cluster0.rsdmb.mongodb.net/test",
+			"mongourl": "mongodb+srv://rulex:rulex@cluster0.rsdmb.mongodb.net/test",
 		})
 	out1.Id = "MongoDB001"
 	if err1 := engine.LoadOutEnds(out1); err1 != nil {
@@ -77,7 +77,7 @@ end
 	if e := engine.LoadRule(rule1); e != nil {
 		log.Fatal("rule load failed:", e)
 	}
-	httpServer := plugin.HttpApiServer{}
+	httpServer := httpserver.HttpApiServer{}
 	if e := engine.LoadPlugin(&httpServer); e != nil {
 		log.Fatal("rule load failed:", e)
 	}

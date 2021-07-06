@@ -2,7 +2,6 @@ package test
 
 import (
 	"github.com/eclipse/paho.mqtt.golang"
-
 	"testing"
 )
 

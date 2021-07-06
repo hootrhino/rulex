@@ -7,7 +7,7 @@ ENV GO111MODULE=on \
     GOPROXY="https://goproxy.cn,direct"
 RUN apk add build-base
 MAINTAINER wwhai "cnwwhai@gmail.com"
-ADD . /rulenginex
-WORKDIR /rulenginex
+ADD . /rulex
+WORKDIR /rulex
 
 CMD make run
