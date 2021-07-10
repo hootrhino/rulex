@@ -15,16 +15,18 @@ import (
 type CoAPInEndResource struct {
 	XStatus
 	router *mux.Router
+	e      *RuleEngine
 }
 
-func NewCoAPInEndResource(inEndId string) *CoAPInEndResource {
+func NewCoAPInEndResource(inEndId string, e *RuleEngine) *CoAPInEndResource {
 	c := CoAPInEndResource{}
 	c.InEndId = inEndId
 	c.router = mux.NewRouter()
+	c.e = e
 	return &c
 }
 
-func (cc *CoAPInEndResource) Start(e *RuleEngine) error {
+func (cc *CoAPInEndResource) Start() error {
 
 	cc.router.Use(func(next mux.Handler) mux.Handler {
 		return mux.HandlerFunc(func(w mux.ResponseWriter, r *mux.Message) {
@@ -34,7 +36,7 @@ func (cc *CoAPInEndResource) Start(e *RuleEngine) error {
 	})
 	cc.router.Handle("/in", mux.HandlerFunc(func(w mux.ResponseWriter, msg *mux.Message) {
 		log.Debugf("Received Coap Data: %#v", msg)
-		e.Work(e.GetInEnd(cc.InEndId), msg.String())
+		cc.e.Work(cc.e.GetInEnd(cc.InEndId), msg.String())
 		err := w.SetResponse(codes.Content, message.TextPlain, bytes.NewReader([]byte("ok")))
 		if err != nil {
 			log.Errorf("cannot set response: %v", err)
@@ -64,7 +66,7 @@ func (cc *CoAPInEndResource) Reload() {
 func (cc *CoAPInEndResource) Pause() {
 
 }
-func (cc *CoAPInEndResource) Status(e *RuleEngine) State {
+func (cc *CoAPInEndResource) Status() State {
 	return UP
 }
 

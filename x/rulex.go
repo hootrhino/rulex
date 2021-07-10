@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/ngaut/log"
+	luajson "github.com/wwhai/gopher-json"
 	lua "github.com/yuin/gopher-lua"
 )
 
@@ -51,7 +52,7 @@ func (e *RuleEngine) Start() *map[string]interface{} {
 	e.ConfigMap = &map[string]interface{}{}
 	//
 	defaultBanner :=
-`
+		`
 	---------------------------------
 	             RulEX
 	---------------------------------
@@ -90,47 +91,56 @@ func (e *RuleEngine) LoadInEnd(in *inEnd) error {
 //
 func tryCreateInEnd(in *inEnd, e *RuleEngine) error {
 	if in.Type == "MQTT" {
-		return startResources(NewMqttInEndResource(in.Id), in, e)
+		return startResources(NewMqttInEndResource(in.Id, e), in, e)
 	}
 	if in.Type == "HTTP" {
-		return startResources(NewHttpInEndResource(in.Id), in, e)
+		return startResources(NewHttpInEndResource(in.Id, e), in, e)
 	}
 	if in.Type == "COAP" {
-		return startResources(NewCoAPInEndResource(in.Id), in, e)
+		return startResources(NewCoAPInEndResource(in.Id, e), in, e)
 	}
 	if in.Type == "SERIAL" {
-		return startResources(NewSerialResource(in.Id), in, e)
+		return startResources(NewSerialResource(in.Id, e), in, e)
 	}
 	return errors.New("unsupported rule type:" + in.Type)
 }
 
 //
 func startResources(resource XResource, in *inEnd, e *RuleEngine) error {
-
-	if resource.Test(in.Id) {
-		e.SaveInEnd(in)
-		if err := resource.Register(in.Id); err != nil {
-			return err
-		} else {
-			if err1 := resource.Start(e); err1 != nil {
-				return err1
-			} else {
-				go func(ctx context.Context) {
-					// \!!!
-					testResourceState(resource, e, in.Id)
-					// 5 seconds
-					ticker := time.NewTicker(time.Duration(time.Second * 5))
-					defer resource.Stop()
-					for {
-						<-ticker.C
-						testResourceState(resource, e, in.Id)
-					}
-				}(context.Background())
-				return nil
-			}
-		}
+	// Save to rule engine first
+	e.SaveInEnd(in)
+	//
+	if err := resource.Register(in.Id); err != nil {
+		return err
 	} else {
-		return errors.New("Resources start failed:" + in.Name)
+		if err1 := resource.Start(); err1 != nil {
+			log.Error(err1)
+		}
+		go func(ctx context.Context) {
+			// 5 seconds
+			ticker := time.NewTicker(time.Duration(time.Second * 5))
+			defer resource.Stop()
+			for {
+				<-ticker.C
+				if resource.Status() == DOWN {
+					testResourceState(resource, e, in.Id)
+				}
+			}
+		}(context.Background())
+		return nil
+	}
+}
+
+// test ResourceState
+func testResourceState(resource XResource, e *RuleEngine, id string) {
+	if !resource.Test(id) {
+		e.GetInEnd(id).SetState(DOWN)
+		log.Errorf("Resource %s DOWN", id)
+	} else {
+		if e.GetInEnd(id).GetState() == DOWN {
+			e.GetInEnd(id).SetState(UP)
+			log.Warnf("Resource %s recover to UP", id)
+		}
 	}
 }
 
@@ -144,7 +154,7 @@ func (e *RuleEngine) LoadOutEnds(out *outEnd) error {
 //
 func tryCreateOutEnd(out *outEnd, e *RuleEngine) error {
 	if out.Type == "mongo" {
-		return startTarget(NewMongoTarget(), out, e)
+		return startTarget(NewMongoTarget(e), out, e)
 	}
 	return errors.New("unsupported target type:" + out.Type)
 
@@ -166,41 +176,27 @@ func startTarget(target XTarget, out *outEnd, e *RuleEngine) error {
 	if err0 := target.Register(out.Id); err0 != nil {
 		return err0
 	} else {
-		if err1 := target.Start(e); err1 != nil {
-			return err1
-		} else {
-			//
-			go func(ctx context.Context) {
-				// \!!!
-				testState(target, e, out.Id)
-				// 5 seconds
-				ticker := time.NewTicker(time.Duration(time.Second * 5))
-				defer target.Stop()
-				for {
-					<-ticker.C
-					testState(target, e, out.Id)
+		if err1 := target.Start(); err1 != nil {
+			log.Error(err1)
+		}
+		//
+		go func(ctx context.Context) {
+			// 5 seconds
+			ticker := time.NewTicker(time.Duration(time.Second * 5))
+			defer target.Stop()
+			for {
+				<-ticker.C
+				if target.Status() == DOWN {
+					testTargetState(target, e, out.Id)
 				}
-			}(context.Background())
-			return nil
-		}
-	}
-}
-
-// test ResourceState
-func testResourceState(resource XResource, e *RuleEngine, id string) {
-	if !resource.Test(id) {
-		e.GetInEnd(id).SetState(DOWN)
-		log.Errorf("Target %s DOWN", id)
-	} else {
-		if e.GetInEnd(id).GetState() == DOWN {
-			e.GetInEnd(id).SetState(UP)
-			log.Warnf("Target %s recover to UP", id)
-		}
+			}
+		}(context.Background())
+		return nil
 	}
 }
 
 // Test Target State
-func testState(target XTarget, e *RuleEngine, id string) {
+func testTargetState(target XTarget, e *RuleEngine, id string) {
 	if !target.Test(id) {
 		e.GetOutEnd(id).SetState(DOWN)
 		log.Errorf("Target %s DOWN", id)
@@ -209,6 +205,7 @@ func testState(target XTarget, e *RuleEngine, id string) {
 			e.GetOutEnd(id).SetState(UP)
 			log.Warnf("Target %s recover to UP", id)
 		}
+
 	}
 }
 
@@ -315,17 +312,38 @@ func (e *RuleEngine) Work(in *inEnd, data string) (bool, error) {
 
 // Verify Lua Syntax
 func VerifyCallback(r *rule) error {
-	e1 := r.VM.DoString(r.Success)
+	vm := lua.NewState()
+	luajson.Preload(vm)
+	e1 := vm.DoString(r.Success)
 	if e1 != nil {
 		return e1
 	}
-	e2 := r.VM.DoString(r.Failed)
-	if e2 != nil {
-		return e1
+	if vm.GetGlobal("Success").Type() != lua.LTFunction {
+		return errors.New("success not submit")
 	}
-	e3 := r.VM.DoString(r.Actions)
+	e2 := vm.DoString(r.Failed)
+	if e2 != nil {
+		return e2
+	}
+	if vm.GetGlobal("Failed").Type() != lua.LTFunction {
+		return errors.New("failed not submit")
+	}
+	e3 := vm.DoString(r.Actions)
 	if e3 != nil {
-		return e1
+		return e3
+	}
+	// validate Syntax
+	actionsTable := vm.GetGlobal("Actions")
+	if actionsTable != nil && actionsTable.Type() == lua.LTTable {
+		valid := false
+		actionsTable.(*lua.LTable).ForEach(func(idx, f lua.LValue) {
+			valid = (reflect.TypeOf(f).Elem().Name() == "LFunction")
+		})
+		if !valid {
+			return errors.New("invalid function type")
+		}
+	} else {
+		return errors.New("actions must be a functions table")
 	}
 	return nil
 }

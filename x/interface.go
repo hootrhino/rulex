@@ -13,11 +13,11 @@ import "sync"
 type XResource interface {
 	Test(inEndId string) bool      //0
 	Register(inEndId string) error //1
-	Start(e *RuleEngine) error     //2
+	Start() error                  //2
 	Enabled() bool
 	Reload()
 	Pause()
-	Status(e *RuleEngine) State
+	Status() State
 	Stop()
 }
 
@@ -27,11 +27,11 @@ type XResource interface {
 type XTarget interface {
 	Test(outEndId string) bool      //0
 	Register(outEndId string) error //1
-	Start(e *RuleEngine) error      //2
+	Start() error                   //2
 	Enabled() bool
 	Reload()
 	Pause()
-	Status(e *RuleEngine) State
+	Status() State
 	To(data interface{}) error
 	Stop()
 }

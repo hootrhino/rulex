@@ -14,6 +14,8 @@ type MRule struct {
 
 type MInEnd struct {
 	gorm.Model
+	// UUID for origin resource ID
+	UUID        string `gorm:"not null"`
 	Type        string `gorm:"not null"`
 	Name        string `gorm:"not null"`
 	Description string
@@ -22,6 +24,8 @@ type MInEnd struct {
 
 type MOutEnd struct {
 	gorm.Model
+	// UUID for origin resource ID
+	UUID        string `gorm:"not null"`
 	Type        string `gorm:"not null"`
 	Name        string `gorm:"not null"`
 	Description string

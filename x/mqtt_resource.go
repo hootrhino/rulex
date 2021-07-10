@@ -19,19 +19,21 @@ const DEFAULT_TOPIC string = "$X_IN_END"
 type MqttInEndResource struct {
 	XStatus
 	client mqtt.Client
+	e      *RuleEngine
 }
 
-func NewMqttInEndResource(inEndId string) *MqttInEndResource {
+func NewMqttInEndResource(inEndId string, e *RuleEngine) *MqttInEndResource {
 	m := new(MqttInEndResource)
 	m.InEndId = inEndId
+	m.e = e
 	return m
 }
 
-func (mm *MqttInEndResource) Start(e *RuleEngine) error {
+func (mm *MqttInEndResource) Start() error {
 
 	var messageHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
 		if mm.Enable {
-			e.Work(e.GetInEnd(mm.InEndId), string(msg.Payload()))
+			mm.e.Work(mm.e.GetInEnd(mm.InEndId), string(msg.Payload()))
 		}
 	}
 	//
@@ -39,15 +41,15 @@ func (mm *MqttInEndResource) Start(e *RuleEngine) error {
 		log.Infof("Mqtt InEnd Connected Success")
 		// TODO support multipul topics
 		client.Subscribe(DEFAULT_TOPIC, 2, nil)
-		e.GetInEnd(mm.InEndId).SetState(UP)
+		mm.e.GetInEnd(mm.InEndId).SetState(UP)
 	}
 
 	var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err error) {
 		log.Infof("Connect lost: %v\n", err)
 		time.Sleep(5 * time.Second)
-		e.GetInEnd(mm.InEndId).SetState(DOWN)
+		mm.e.GetInEnd(mm.InEndId).SetState(DOWN)
 	}
-	config := e.GetInEnd(mm.InEndId).Config
+	config := mm.e.GetInEnd(mm.InEndId).Config
 	opts := mqtt.NewClientOptions()
 	opts.AddBroker(fmt.Sprintf("tcp://%s:%v", (*config)["server"], (*config)["port"]))
 	if (*config)["clientId"] != nil {
@@ -71,7 +73,7 @@ func (mm *MqttInEndResource) Start(e *RuleEngine) error {
 	opts.SetPingTimeout(10 * time.Second)
 	opts.SetAutoReconnect(true)
 	opts.OnReconnecting = func(mqtt.Client, *mqtt.ClientOptions) {
-		log.Warn("Try to reconnect")
+		log.Warn("Client disconnected, Try to reconnect...")
 	}
 	opts.SetMaxReconnectInterval(5 * time.Second)
 	mm.client = mqtt.NewClient(opts)
@@ -92,8 +94,8 @@ func (mm *MqttInEndResource) Reload() {
 func (mm *MqttInEndResource) Pause() {
 
 }
-func (mm *MqttInEndResource) Status(e *RuleEngine) State {
-	return e.GetInEnd(mm.InEndId).State
+func (mm *MqttInEndResource) Status() State {
+	return mm.e.GetInEnd(mm.InEndId).GetState()
 }
 
 func (mm *MqttInEndResource) Register(inEndId string) error {
@@ -102,7 +104,32 @@ func (mm *MqttInEndResource) Register(inEndId string) error {
 }
 
 func (mm *MqttInEndResource) Test(inEndId string) bool {
-	return true
+	config := mm.e.GetInEnd(inEndId).Config
+	opts := mqtt.NewClientOptions()
+	opts.AddBroker(fmt.Sprintf("tcp://%s:%v", (*config)["server"], (*config)["port"]))
+	if (*config)["clientId"] != nil {
+		opts.SetClientID("x-client-main-" + (*config)["clientId"].(string))
+	} else {
+		opts.SetPassword(DEFAULT_CLIENTID)
+	}
+	if (*config)["username"] != nil {
+		opts.SetUsername((*config)["username"].(string))
+	} else {
+		opts.SetPassword(DEFAULT_USERNAME)
+	}
+	if (*config)["password"] != nil {
+		opts.SetPassword((*config)["password"].(string))
+	} else {
+		opts.SetPassword(DEFAULT_PASSWORD)
+	}
+	opts.SetAutoReconnect(false)
+	cc := mqtt.NewClient(opts)
+	if token := cc.Connect(); token.Wait() && token.Error() != nil {
+		log.Error(token.Error())
+		return false
+	} else {
+		return true
+	}
 }
 
 func (mm *MqttInEndResource) Enabled() bool {

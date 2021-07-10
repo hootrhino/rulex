@@ -15,12 +15,14 @@ type MongoTarget struct {
 	outEndId   string
 	client     *mongo.Client
 	collection *mongo.Collection
+	e          *RuleEngine
 }
 
-func NewMongoTarget() *MongoTarget {
+func NewMongoTarget(e *RuleEngine) *MongoTarget {
 
 	return &MongoTarget{
 		enabled: false,
+		e:       e,
 	}
 }
 
@@ -29,8 +31,8 @@ func (m *MongoTarget) Register(outEndId string) error {
 	return nil
 }
 
-func (m *MongoTarget) Start(e *RuleEngine) error {
-	config := e.GetOutEnd(m.outEndId).Config
+func (m *MongoTarget) Start() error {
+	config := m.e.GetOutEnd(m.outEndId).Config
 	var clientOptions *options.ClientOptions
 	if (*config)["mongourl"] != nil {
 		clientOptions = options.Client().ApplyURI((*config)["mongourl"].(string))
@@ -82,8 +84,8 @@ func (m *MongoTarget) Pause() {
 
 }
 
-func (m *MongoTarget) Status(e *RuleEngine) State {
-	return e.GetOutEnd(m.outEndId).State
+func (m *MongoTarget) Status() State {
+	return m.e.GetOutEnd(m.outEndId).State
 }
 
 func (m *MongoTarget) Stop() {

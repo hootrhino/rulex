@@ -7,6 +7,7 @@ import (
 	"rulex/x"
 	"runtime"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -46,9 +47,9 @@ func (hh *HttpApiServer) Init(env *x.XPluginEnv) error {
 	hh.InitDb()
 	hh.ginEngine.LoadHTMLGlob(hh.Root)
 	ctx := context.Background()
-	go func(ctx context.Context) {
-		hh.ginEngine.Run(":" + strconv.Itoa(hh.Port))
-	}(ctx)
+	go func(ctx context.Context, port int) {
+		hh.ginEngine.Run(":" + strconv.Itoa(port))
+	}(ctx, hh.Port)
 	return nil
 }
 func (hh *HttpApiServer) Install(env *x.XPluginEnv) (*x.XPluginMetaInfo, error) {
@@ -110,7 +111,9 @@ func (hh *HttpApiServer) Start(e *x.RuleEngine, env *x.XPluginEnv) error {
 		cros(c)
 		c.JSON(http.StatusOK, gin.H{"statistics": statistics.AllStatistics()})
 	})
+	//
 	// Create InEnd
+	//
 	hh.ginEngine.POST(API_ROOT+"inends", func(c *gin.Context) {
 		cros(c)
 		type Form struct {
@@ -129,6 +132,7 @@ func (hh *HttpApiServer) Start(e *x.RuleEngine, env *x.XPluginEnv) error {
 				c.JSON(http.StatusBadRequest, gin.H{"msg": err1.Error()})
 			} else {
 				hh.InsertMInEnd(&MInEnd{
+					UUID:        x.MakeUUID("INEND"),
 					Type:        form.Type,
 					Name:        form.Name,
 					Description: form.Description,
@@ -138,6 +142,92 @@ func (hh *HttpApiServer) Start(e *x.RuleEngine, env *x.XPluginEnv) error {
 			}
 		}
 	})
+	//
+	// Create OutEnd
+	//
+	hh.ginEngine.POST(API_ROOT+"outEnds", func(c *gin.Context) {
+		cros(c)
+		type Form struct {
+			Type        string                 `json:"type" binding:"required"`
+			Name        string                 `json:"name" binding:"required"`
+			Description string                 `json:"description"`
+			Config      map[string]interface{} `json:"config" binding:"required"`
+		}
+		form := Form{}
+		err0 := c.ShouldBindJSON(&form)
+		if err0 != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"msg": err0.Error()})
+		} else {
+			configJson, err1 := json.Marshal(form.Config)
+			if err1 != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"msg": err1.Error()})
+			} else {
+				hh.InsertMOutEnd(&MOutEnd{
+					UUID:        x.MakeUUID("OUTEND"),
+					Type:        form.Type,
+					Name:        form.Name,
+					Description: form.Description,
+					Config:      string(configJson),
+				})
+				c.JSON(http.StatusOK, gin.H{"msg": "create success"})
+			}
+		}
+	})
+	// Create rule
+	hh.ginEngine.POST(API_ROOT+"rules", func(c *gin.Context) {
+		cros(c)
+		type Form struct {
+			From        string `json:"from" binding:"required"`
+			Name        string `json:"name" binding:"required"`
+			Description string `json:"description"`
+			Actions     string `json:"actions"`
+			Success     string `json:"success"`
+			Failed      string `json:"failed"`
+		}
+		form := Form{}
+		err0 := c.ShouldBindJSON(&form)
+		if err0 != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"msg": err0.Error()})
+		} else {
+			rule := x.NewRule(nil,
+				form.Name,
+				form.Description,
+				nil,
+				form.Success,
+				form.Actions,
+				form.Failed)
+			if len(strings.Split(form.From, ",")) > 0 {
+				for _, id := range strings.Split(form.From, ",") {
+					// must be: 111,222,333... style
+					if id != "" {
+						if e.GetInEnd(id) == nil {
+							c.JSON(http.StatusBadRequest, gin.H{"msg": "inend not exists:" + id})
+							return
+						}
+					} else {
+						c.JSON(http.StatusOK, gin.H{"msg": "invalid 'from' string format:" + form.From})
+						return
+					}
+				}
+				if err1 := x.VerifyCallback(rule); err1 != nil {
+					c.JSON(http.StatusBadRequest, gin.H{"msg": err1.Error()})
+				} else {
+					hh.InsertMRule(&MRule{
+						Name:        form.Name,
+						Description: form.Description,
+						From:        form.From,
+						Success:     form.Success,
+						Failed:      form.Failed,
+						Actions:     form.Actions,
+					})
+					c.JSON(http.StatusOK, gin.H{"msg": "create success"})
+				}
+			} else {
+				c.JSON(http.StatusBadRequest, gin.H{"msg": "from can't empty"})
+			}
+		}
+	})
+
 	//
 	hh.ginEngine.DELETE(API_ROOT+"rules", func(c *gin.Context) {
 		cros(c)
@@ -155,9 +245,7 @@ func (hh *HttpApiServer) Start(e *x.RuleEngine, env *x.XPluginEnv) error {
 }
 
 func (hh *HttpApiServer) Uninstall(env *x.XPluginEnv) error {
-	log.Info("HttpApiServer Uninstalled")
 	return nil
 }
 func (hh *HttpApiServer) Clean() {
-	log.Info("HttpApiServer Cleaned")
 }

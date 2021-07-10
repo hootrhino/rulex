@@ -15,8 +15,9 @@ func Authorize() gin.HandlerFunc {
 			// TODO add jwt Authorize support
 			c.Next()
 		} else {
-			c.Abort()
-			c.JSON(http.StatusUnauthorized, gin.H{"msg": "No authority operate"})
+			// c.Abort()
+			// c.JSON(http.StatusUnauthorized, gin.H{"msg": "No authority operate"})
+			c.Next()
 			return
 		}
 	}

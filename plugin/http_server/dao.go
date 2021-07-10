@@ -5,13 +5,13 @@ import (
 	"github.com/ngaut/log"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 )
 
 func (hh *HttpApiServer) InitDb() {
 	var err error
-	hh.sqliteDb, err = gorm.Open(sqlite.Open("./reluxdb.sqlite3"),
-		&gorm.Config{Logger: logger.Default.LogMode(logger.Info)})
+	// hh.sqliteDb, err = gorm.Open(sqlite.Open("./reluxdb.sqlite3"),
+	// 	&gorm.Config{Logger: logger.Default.LogMode(logger.Info)})
+	hh.sqliteDb, err = gorm.Open(sqlite.Open("./reluxdb.sqlite3"))
 	if err != nil {
 		panic(err)
 	}
@@ -47,7 +47,7 @@ func (hh *HttpApiServer) UpdateMRule(id int, r *MRule) error {
 //-----------------------------------------------------------------------------------
 func (hh *HttpApiServer) GetMInEnd(id int) (*MInEnd, error) {
 	m := new(MInEnd)
-	if err := hh.sqliteDb.Where("Id=?", id).First(m).Error; err != nil {
+	if err := hh.sqliteDb.Table("m_in_ends").Where("Id=?", id).First(m).Error; err != nil {
 		return nil, err
 	} else {
 		return m, nil
