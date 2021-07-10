@@ -62,6 +62,7 @@ func (m *MongoTarget) Start(e *RuleEngine) error {
 func (m *MongoTarget) Test(outEndId string) bool {
 	err1 := m.client.Ping(context.Background(), nil)
 	if err1 != nil {
+		log.Error(err1)
 		return false
 	} else {
 		return true

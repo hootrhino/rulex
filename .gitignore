@@ -1,6 +1,9 @@
 *.log
 .vscode/
-rulex
+rulex-*
 .DS_Store
 *.zip
 *.out
+*.zip
+*.json
+*.sqlite3

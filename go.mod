@@ -17,6 +17,7 @@ require (
 	github.com/wwhai/gopher-json v0.0.0-20201124131017-552bb3c4c3bf
 	github.com/yuin/gopher-lua v0.0.0-20210529063254-f4c35e4016d9
 	go.mongodb.org/mongo-driver v1.5.4
+	gopkg.in/square/go-jose.v2 v2.5.1
 	gorm.io/driver/sqlite v1.1.4
 	gorm.io/gorm v1.21.11
 )

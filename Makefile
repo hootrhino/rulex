@@ -41,10 +41,7 @@ cover:
 
 .PHONY: clocs
 clocs:
-	echo "# Lines" > clocs.md
-	echo '```sh' >> clocs.md
-	cloc ./ >> clocs.md
-	echo '```'  >> clocs.md
+	cloc ./
 
 .PHONY: clean
 clean:

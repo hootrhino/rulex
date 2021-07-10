@@ -1,5 +1,7 @@
 package x
 
+import "sync"
+
 //
 // Rule is for desplay, XResource is actully worker
 // XResource{
@@ -35,7 +37,7 @@ type XTarget interface {
 }
 
 //
-//
+// External Plugin
 //
 type XPlugin interface {
 	Load(*RuleEngine) *XPluginEnv
@@ -47,7 +49,7 @@ type XPlugin interface {
 }
 
 //
-//
+// XHook for enhancement rulex with golang
 //
 type XHook interface {
 	Work(data string) error
@@ -55,9 +57,50 @@ type XHook interface {
 }
 
 //
-//
+// XStatus for resource status
 //
 type XStatus struct {
-	inEndId string
-	enabled bool
+	sync.Mutex
+	InEndId string
+	Enable  bool
+}
+
+//
+// External Plugin
+//
+type XPluginEnv struct {
+	env *map[string]interface{}
+}
+
+//
+type XPluginMetaInfo struct {
+	Name     string `json:"name"`
+	Version  string `json:"version"`
+	Homepage string `json:"homepage"`
+	HelpLink string `json:"helpLink"`
+	Author   string `json:"author"`
+	Email    string `json:"email"`
+	License  string `json:"license"`
+}
+
+//
+func NewXPluginMetaInfo() *XPluginMetaInfo {
+	return &XPluginMetaInfo{}
+}
+
+//
+func NewXPluginEnv() *XPluginEnv {
+	return &XPluginEnv{
+		env: &map[string]interface{}{},
+	}
+}
+
+//
+func (p *XPluginEnv) Get(k string) interface{} {
+	return (*(p.env))[k]
+}
+
+//
+func (p *XPluginEnv) Set(k string, v interface{}) {
+	(*(p.env))[k] = v
 }

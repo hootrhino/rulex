@@ -7,6 +7,7 @@ import (
 	"os"
 	"reflect"
 	"rulex/statistics"
+	"runtime"
 	"sync"
 	"time"
 
@@ -15,8 +16,6 @@ import (
 )
 
 type State int
-
-var lock sync.Mutex
 
 const (
 	UP   State = 1
@@ -27,7 +26,9 @@ const (
 //
 //
 type RuleEngine struct {
+	sync.Mutex
 	Hooks     *map[string]XHook            `json:"-"`
+	Rules     *map[string]*rule            `json:"-"`
 	Plugins   *map[string]*XPluginMetaInfo `json:"plugins"`
 	InEnds    *map[string]*inEnd           `json:"inends"`
 	OutEnds   *map[string]*outEnd          `json:"outends"`
@@ -37,6 +38,8 @@ type RuleEngine struct {
 func NewRuleEngine() *RuleEngine {
 	return &RuleEngine{
 		Plugins:   &map[string]*XPluginMetaInfo{},
+		Hooks:     &map[string]XHook{},
+		Rules:     &map[string]*rule{},
 		InEnds:    &map[string]*inEnd{},
 		OutEnds:   &map[string]*outEnd{},
 		ConfigMap: &map[string]interface{}{},
@@ -48,7 +51,7 @@ func (e *RuleEngine) Start() *map[string]interface{} {
 	e.ConfigMap = &map[string]interface{}{}
 	//
 	defaultBanner :=
-		`
+`
 	---------------------------------
 	             RulEX
 	---------------------------------
@@ -103,7 +106,6 @@ func tryCreateInEnd(in *inEnd, e *RuleEngine) error {
 
 //
 func startResources(resource XResource, in *inEnd, e *RuleEngine) error {
-	log.Info("Starting InEnd Resources:", in.Name)
 
 	if resource.Test(in.Id) {
 		e.SaveInEnd(in)
@@ -224,7 +226,7 @@ func (e *RuleEngine) LoadRule(r *rule) error {
 					// ...
 					// }
 					(*in.Binds)[r.Id] = *r
-					SaveRule(r)
+					e.SaveRule(r)
 					return nil
 				} else {
 					return errors.New("InEnd:" + inId + " is not exists")
@@ -239,8 +241,29 @@ func (e *RuleEngine) LoadRule(r *rule) error {
 //
 // Remove a rule
 //
+func (e *RuleEngine) GetRule(id string) *rule {
+	e.Lock()
+	defer e.Unlock()
+	return (*e.Rules)[id]
+}
+
+//
+//
+//
+func (e *RuleEngine) SaveRule(r *rule) {
+	e.Lock()
+	defer e.Unlock()
+	(*e.Rules)[r.Id] = r
+
+}
+
+//
+// RemoveRule and inend--rule bindings
+//
 func (e *RuleEngine) RemoveRule(ruleId string) error {
-	if rule := GetRule(ruleId); rule != nil {
+	e.Lock()
+	defer e.Unlock()
+	if rule := e.GetRule(ruleId); rule != nil {
 		for _, inEnd := range *e.InEnds {
 			for _, rule := range *inEnd.Binds {
 				if rule.Id == ruleId {
@@ -248,17 +271,30 @@ func (e *RuleEngine) RemoveRule(ruleId string) error {
 				}
 			}
 		}
-		RemoveRule(ruleId)
+		delete((*e.Rules), ruleId)
 		return nil
 	} else {
 		return errors.New("rule:" + ruleId + " not exists")
 	}
 }
 
+//
+//
+//
+func (e *RuleEngine) AllRule() map[string]*rule {
+	e.Lock()
+	defer e.Unlock()
+	return (*e.Rules)
+}
+
+//
 // Stop
+//
 func (e *RuleEngine) Stop() {
 	// TODO: More stop callback
-	log.Info("RuleEngine stoped")
+	// STOP in/out
+	log.Info("RuleEngine stop")
+	runtime.GC()
 }
 
 // Work
@@ -378,8 +414,8 @@ func (e *RuleEngine) LoadPlugin(p XPlugin) error {
 //
 //
 func (e *RuleEngine) GetInEnd(id string) *inEnd {
-	lock.Lock()
-	defer lock.Unlock()
+	e.Lock()
+	defer e.Unlock()
 	return (*e.InEnds)[id]
 }
 
@@ -387,8 +423,8 @@ func (e *RuleEngine) GetInEnd(id string) *inEnd {
 //
 //
 func (e *RuleEngine) SaveInEnd(in *inEnd) {
-	lock.Lock()
-	defer lock.Unlock()
+	e.Lock()
+	defer e.Unlock()
 	(*e.InEnds)[in.Id] = in
 }
 
@@ -396,8 +432,8 @@ func (e *RuleEngine) SaveInEnd(in *inEnd) {
 //
 //
 func (e *RuleEngine) RemoveInEnd(in *inEnd) {
-	lock.Lock()
-	defer lock.Unlock()
+	e.Lock()
+	defer e.Unlock()
 	delete((*e.InEnds), in.Id)
 }
 
@@ -405,8 +441,8 @@ func (e *RuleEngine) RemoveInEnd(in *inEnd) {
 //
 //
 func (e *RuleEngine) AllInEnd() map[string]*inEnd {
-	lock.Lock()
-	defer lock.Unlock()
+	e.Lock()
+	defer e.Unlock()
 	return (*e.InEnds)
 }
 
@@ -414,8 +450,8 @@ func (e *RuleEngine) AllInEnd() map[string]*inEnd {
 //
 //
 func (e *RuleEngine) GetOutEnd(id string) *outEnd {
-	lock.Lock()
-	defer lock.Unlock()
+	e.Lock()
+	defer e.Unlock()
 	return (*e.OutEnds)[id]
 }
 
@@ -423,8 +459,8 @@ func (e *RuleEngine) GetOutEnd(id string) *outEnd {
 //
 //
 func (e *RuleEngine) SaveOutEnd(out *outEnd) {
-	lock.Lock()
-	defer lock.Unlock()
+	e.Lock()
+	defer e.Unlock()
 	(*e.OutEnds)[out.Id] = out
 }
 
@@ -432,8 +468,8 @@ func (e *RuleEngine) SaveOutEnd(out *outEnd) {
 //
 //
 func (e *RuleEngine) RemoveOutEnd(out *outEnd) {
-	lock.Lock()
-	defer lock.Unlock()
+	e.Lock()
+	defer e.Unlock()
 	delete((*e.OutEnds), out.Id)
 }
 
@@ -441,8 +477,8 @@ func (e *RuleEngine) RemoveOutEnd(out *outEnd) {
 //
 //
 func (e *RuleEngine) AllOutEnd() map[string]*outEnd {
-	lock.Lock()
-	defer lock.Unlock()
+	e.Lock()
+	defer e.Unlock()
 	return (*e.OutEnds)
 }
 

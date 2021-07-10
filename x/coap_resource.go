@@ -13,13 +13,13 @@ import (
 
 //
 type CoAPInEndResource struct {
-	*XStatus
+	XStatus
 	router *mux.Router
 }
 
 func NewCoAPInEndResource(inEndId string) *CoAPInEndResource {
 	c := CoAPInEndResource{}
-	c.inEndId = inEndId
+	c.InEndId = inEndId
 	c.router = mux.NewRouter()
 	return &c
 }
@@ -34,7 +34,7 @@ func (cc *CoAPInEndResource) Start(e *RuleEngine) error {
 	})
 	cc.router.Handle("/in", mux.HandlerFunc(func(w mux.ResponseWriter, msg *mux.Message) {
 		log.Debugf("Received Coap Data: %#v", msg)
-		e.Work(e.GetInEnd(cc.inEndId), msg.String())
+		e.Work(e.GetInEnd(cc.InEndId), msg.String())
 		err := w.SetResponse(codes.Content, message.TextPlain, bytes.NewReader([]byte("ok")))
 		if err != nil {
 			log.Errorf("cannot set response: %v", err)
@@ -48,7 +48,7 @@ func (cc *CoAPInEndResource) Start(e *RuleEngine) error {
 			return
 		}
 	}(context.Background())
-	cc.enabled = true
+	cc.Enable = true
 
 	return nil
 }
@@ -69,7 +69,7 @@ func (cc *CoAPInEndResource) Status(e *RuleEngine) State {
 }
 
 func (cc *CoAPInEndResource) Register(inEndId string) error {
-	cc.inEndId = inEndId
+	cc.InEndId = inEndId
 	return nil
 }
 
@@ -77,5 +77,5 @@ func (cc *CoAPInEndResource) Test(inEndId string) bool {
 	return true
 }
 func (cc *CoAPInEndResource) Enabled() bool {
-	return cc.enabled
+	return cc.Enable
 }

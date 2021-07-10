@@ -17,21 +17,21 @@ const DEFAULT_TOPIC string = "$X_IN_END"
 
 //
 type MqttInEndResource struct {
-	*XStatus
+	XStatus
 	client mqtt.Client
 }
 
 func NewMqttInEndResource(inEndId string) *MqttInEndResource {
-	m := MqttInEndResource{}
-	m.inEndId = inEndId
-	return &m
+	m := new(MqttInEndResource)
+	m.InEndId = inEndId
+	return m
 }
 
 func (mm *MqttInEndResource) Start(e *RuleEngine) error {
 
 	var messageHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
-		if mm.enabled {
-			e.Work(e.GetInEnd(mm.inEndId), string(msg.Payload()))
+		if mm.Enable {
+			e.Work(e.GetInEnd(mm.InEndId), string(msg.Payload()))
 		}
 	}
 	//
@@ -39,17 +39,17 @@ func (mm *MqttInEndResource) Start(e *RuleEngine) error {
 		log.Infof("Mqtt InEnd Connected Success")
 		// TODO support multipul topics
 		client.Subscribe(DEFAULT_TOPIC, 2, nil)
-		e.GetInEnd(mm.inEndId).SetState(UP)
+		e.GetInEnd(mm.InEndId).SetState(UP)
 	}
 
 	var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err error) {
 		log.Infof("Connect lost: %v\n", err)
 		time.Sleep(5 * time.Second)
-		e.GetInEnd(mm.inEndId).SetState(DOWN)
+		e.GetInEnd(mm.InEndId).SetState(DOWN)
 	}
-	config := e.GetInEnd(mm.inEndId).Config
+	config := e.GetInEnd(mm.InEndId).Config
 	opts := mqtt.NewClientOptions()
-	opts.AddBroker(fmt.Sprintf("tcp://%s:%v", (*config)["server"], (*config)["port"].(int)))
+	opts.AddBroker(fmt.Sprintf("tcp://%s:%v", (*config)["server"], (*config)["port"]))
 	if (*config)["clientId"] != nil {
 		opts.SetClientID("x-client-main-" + (*config)["clientId"].(string))
 	} else {
@@ -75,7 +75,7 @@ func (mm *MqttInEndResource) Start(e *RuleEngine) error {
 	}
 	opts.SetMaxReconnectInterval(5 * time.Second)
 	mm.client = mqtt.NewClient(opts)
-	mm.enabled = true
+	mm.Enable = true
 	if token := mm.client.Connect(); token.Wait() && token.Error() != nil {
 		return token.Error()
 	} else {
@@ -93,11 +93,11 @@ func (mm *MqttInEndResource) Pause() {
 
 }
 func (mm *MqttInEndResource) Status(e *RuleEngine) State {
-	return e.GetInEnd(mm.inEndId).State
+	return e.GetInEnd(mm.InEndId).State
 }
 
 func (mm *MqttInEndResource) Register(inEndId string) error {
-
+	mm.InEndId = inEndId
 	return nil
 }
 
@@ -106,5 +106,5 @@ func (mm *MqttInEndResource) Test(inEndId string) bool {
 }
 
 func (mm *MqttInEndResource) Enabled() bool {
-	return mm.enabled
+	return mm.Enable
 }

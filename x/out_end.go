@@ -1,9 +1,12 @@
 package x
 
+import "sync"
+
 //
 //
 //
 type outEnd struct {
+	sync.Mutex
 	Id          string                  `json:"id"`
 	Type        string                  `json:"type"`
 	State       State                   `json:"state"`
@@ -14,15 +17,15 @@ type outEnd struct {
 }
 
 func (o *outEnd) GetState() State {
-	lock.Lock()
-	defer lock.Unlock()
+	o.Lock()
+	defer o.Unlock()
 	return o.State
 }
 
 //
 func (o *outEnd) SetState(s State) {
-	lock.Lock()
-	defer lock.Unlock()
+	o.Lock()
+	defer o.Unlock()
 	o.State = s
 }
 

@@ -6,40 +6,48 @@ import (
 	"rulex/statistics"
 	"rulex/x"
 	"runtime"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	_ "github.com/mattn/go-sqlite3"
 	"github.com/ngaut/log"
 	"github.com/shirou/gopsutil/cpu"
 	"github.com/shirou/gopsutil/disk"
 	"github.com/shirou/gopsutil/mem"
+	"gopkg.in/square/go-jose.v2/json"
+	"gorm.io/gorm"
 )
-
-func init() {
-	gin.SetMode(gin.ReleaseMode)
-}
 
 const API_ROOT string = "/api/v1/"
 const DASHBOARD_ROOT string = "/dashboard/v1/"
 
 type HttpApiServer struct {
+	Port       int
+	Root       string
+	sqliteDb   *gorm.DB
 	ginEngine  *gin.Engine
 	RuleEngine *x.RuleEngine
 }
 
-func (hh *HttpApiServer) Load(r *x.RuleEngine) *x.XPluginEnv {
-	hh.ginEngine = gin.New()
-	hh.ginEngine.LoadHTMLGlob("plugin/templates/*")
-	hh.RuleEngine = r
+func NewHttpApiServer(port int, root string) *HttpApiServer {
+	return &HttpApiServer{Port: port, Root: root}
+}
+func (hh *HttpApiServer) Load(e *x.RuleEngine) *x.XPluginEnv {
+	hh.RuleEngine = e
 	return x.NewXPluginEnv()
 }
 
 //
 func (hh *HttpApiServer) Init(env *x.XPluginEnv) error {
-
+	gin.SetMode(gin.ReleaseMode)
+	hh.ginEngine = gin.New()
+	hh.ginEngine.Use(Authorize())
+	hh.InitDb()
+	hh.ginEngine.LoadHTMLGlob(hh.Root)
 	ctx := context.Background()
 	go func(ctx context.Context) {
-		hh.ginEngine.Run(":2580")
+		hh.ginEngine.Run(":" + strconv.Itoa(hh.Port))
 	}(ctx)
 	return nil
 }
@@ -95,29 +103,40 @@ func (hh *HttpApiServer) Start(e *x.RuleEngine, env *x.XPluginEnv) error {
 	//
 	hh.ginEngine.GET(API_ROOT+"rules", func(c *gin.Context) {
 		cros(c)
-		c.JSON(http.StatusOK, gin.H{"rules": x.AllRule()})
+		c.JSON(http.StatusOK, gin.H{"rules": e.AllRule()})
 	})
 	//
 	hh.ginEngine.GET(API_ROOT+"statistics", func(c *gin.Context) {
 		cros(c)
 		c.JSON(http.StatusOK, gin.H{"statistics": statistics.AllStatistics()})
 	})
-	//
-	hh.ginEngine.POST(API_ROOT+"rules", func(c *gin.Context) {
+	// Create InEnd
+	hh.ginEngine.POST(API_ROOT+"inends", func(c *gin.Context) {
 		cros(c)
 		type Form struct {
-			Id          string
-			Name        string
-			Description string
-			From        []string
-			Actions     string
-			Success     string
-			Failed      string
+			Type        string                 `json:"type" binding:"required"`
+			Name        string                 `json:"name" binding:"required"`
+			Description string                 `json:"description"`
+			Config      map[string]interface{} `json:"config" binding:"required"`
 		}
 		form := Form{}
-		c.Bind(&form)
-		log.Debugf("Create Rule:%#v", form)
-		c.JSON(http.StatusOK, gin.H{"msg": 0})
+		err0 := c.ShouldBindJSON(&form)
+		if err0 != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"msg": err0.Error()})
+		} else {
+			configJson, err1 := json.Marshal(form.Config)
+			if err1 != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"msg": err1.Error()})
+			} else {
+				hh.InsertMInEnd(&MInEnd{
+					Type:        form.Type,
+					Name:        form.Name,
+					Description: form.Description,
+					Config:      string(configJson),
+				})
+				c.JSON(http.StatusOK, gin.H{"msg": "create success"})
+			}
+		}
 	})
 	//
 	hh.ginEngine.DELETE(API_ROOT+"rules", func(c *gin.Context) {

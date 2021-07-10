@@ -14,7 +14,7 @@ type SerialResource struct {
 
 func NewSerialResource(inEndId string) *SerialResource {
 	s := SerialResource{}
-	s.inEndId = inEndId
+	s.InEndId = inEndId
 	//
 	return &s
 }
@@ -28,7 +28,7 @@ func (s *SerialResource) Register(inEndId string) error {
 }
 
 func (s *SerialResource) Start(e *RuleEngine) error {
-	config := e.GetInEnd(s.inEndId).Config
+	config := e.GetInEnd(s.InEndId).Config
 	name := (*config)["port"]
 	baud := (*config)["baud"]
 	readTimeout := (*config)["read_timeout"]

@@ -6,6 +6,22 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func Authorize() gin.HandlerFunc {
+	return func(c *gin.Context) {
+
+		token := c.Query("token") // 访问令牌
+
+		if token != "" {
+			// TODO add jwt Authorize support
+			c.Next()
+		} else {
+			c.Abort()
+			c.JSON(http.StatusUnauthorized, gin.H{"msg": "No authority operate"})
+			return
+		}
+	}
+}
+
 //
 func cros(c *gin.Context) {
 	method := c.Request.Method

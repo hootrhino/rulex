@@ -12,13 +12,13 @@ type HttpInEndResource struct {
 
 func NewHttpInEndResource(inEndId string) *HttpInEndResource {
 	h := HttpInEndResource{}
-	h.inEndId = inEndId
+	h.InEndId = inEndId
 	h.engine = gin.Default()
 	return &h
 }
 func (hh *HttpInEndResource) Start(e *RuleEngine) error {
 	hh.engine = gin.New()
-	config := e.GetInEnd(hh.inEndId).Config
+	config := e.GetInEnd(hh.InEndId).Config
 	hh.engine.GET("/in", func(c *gin.Context) {
 		inForm := struct{ data string }{}
 		err := c.BindJSON(inForm)
@@ -27,7 +27,7 @@ func (hh *HttpInEndResource) Start(e *RuleEngine) error {
 				"message": err,
 			})
 		} else {
-			e.Work(e.GetInEnd(hh.inEndId), inForm.data)
+			e.Work(e.GetInEnd(hh.InEndId), inForm.data)
 			c.JSON(200, gin.H{
 				"message": "ok",
 				"data":    inForm,
@@ -49,7 +49,7 @@ func (hh *HttpInEndResource) Pause() {
 
 }
 func (hh *HttpInEndResource) Status(e *RuleEngine) State {
-	return e.GetInEnd(hh.inEndId).State
+	return e.GetInEnd(hh.InEndId).State
 }
 
 func (hh *HttpInEndResource) Register(inEndId string) error {
@@ -62,5 +62,5 @@ func (hh *HttpInEndResource) Test(inEndId string) bool {
 }
 
 func (hh *HttpInEndResource) Enabled() bool {
-	return hh.enabled
+	return hh.Enable
 }
