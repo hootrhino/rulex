@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"os"
 	"os/signal"
-	"rulex/plugin/http_server"
+	httpserver "rulex/plugin/http_server"
 	"rulex/x"
 	"strings"
 	"syscall"
@@ -21,7 +21,7 @@ func main() {
 	engine := x.NewRuleEngine()
 	engine.Start()
 	////////
-	hh := httpserver.NewHttpApiServer(2580, "plugin/http_server/templates/*")
+	hh := httpserver.NewHttpApiServer(2580, "plugin/http_server/templates/*", engine)
 	if e := engine.LoadPlugin(hh); e != nil {
 		log.Fatal("rule load failed:", e)
 	}
@@ -31,7 +31,7 @@ func main() {
 	for _, minEnd := range hh.AllMInEnd() {
 		config := map[string]interface{}{}
 		if err := json.Unmarshal([]byte(minEnd.Config), &config); err != nil {
-			log.Fatal(err)
+			log.Error(err)
 		}
 		in1 := x.NewInEnd(minEnd.Type, minEnd.Name, minEnd.Description, &config)
 		// Important !!!!!!!!
@@ -44,15 +44,30 @@ func main() {
 	// Load rule from sqlite
 	//
 	for _, mRule := range hh.AllMRules() {
-		rule1 := x.NewRule(engine,
+		rule := x.NewRule(engine,
 			mRule.Name,
 			mRule.Description,
 			strings.Split(mRule.From, ","),
 			mRule.Success,
 			mRule.Actions,
 			mRule.Failed)
-		if err := engine.LoadRule(rule1); err != nil {
+		if err := engine.LoadRule(rule); err != nil {
 			log.Error(err)
+		}
+	}
+	//
+	// Load out end from sqlite
+	//
+	for _, mOutEnd := range hh.AllMOutEnd() {
+		config := map[string]interface{}{}
+		if err := json.Unmarshal([]byte(mOutEnd.Config), &config); err != nil {
+			log.Error(err)
+		}
+		newOutEnd := x.NewOutEnd(mOutEnd.Type, mOutEnd.Name, mOutEnd.Description, &config)
+		// Important !!!!!!!!
+		newOutEnd.Id = mOutEnd.UUID
+		if err := engine.LoadOutEnd(newOutEnd); err != nil {
+			log.Error("OutEnd load failed:", err)
 		}
 	}
 	<-c

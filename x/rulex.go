@@ -36,6 +36,11 @@ type RuleEngine struct {
 	ConfigMap *map[string]interface{}      `json:"configMap"`
 }
 
+func (e *RuleEngine) GetPlugins() *map[string]*XPluginMetaInfo {
+	e.Lock()
+	defer e.Unlock()
+	return e.Plugins
+}
 func NewRuleEngine() *RuleEngine {
 	return &RuleEngine{
 		Plugins:   &map[string]*XPluginMetaInfo{},
@@ -53,9 +58,14 @@ func (e *RuleEngine) Start() *map[string]interface{} {
 	//
 	defaultBanner :=
 		`
-	---------------------------------
-	             RulEX
-	---------------------------------
+-----------------------------------------------------------
+~~~/=====\       ██████╗ ██╗   ██╗██╗     ███████╗██╗  ██╗
+~~~||\\\||--->o  ██╔══██╗██║   ██║██║     ██╔════╝╚██╗██╔╝
+~~~||///||--->o  ██████╔╝██║   ██║██║     █████╗   ╚███╔╝ 
+~~~||///||--->o  ██╔══██╗██║   ██║██║     ██╔══╝   ██╔██╗ 
+~~~||\\\||--->o  ██║  ██║╚██████╔╝███████╗███████╗██╔╝ ██╗
+~~~\=====/       ╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚══════╝╚═╝  ╚═╝
+-----------------------------------------------------------
 `
 	file, err := os.Open("conf/banner.txt")
 	if err != nil {
@@ -82,14 +92,6 @@ func (e *RuleEngine) GetConfig(k string) interface{} {
 }
 
 func (e *RuleEngine) LoadInEnd(in *inEnd) error {
-	return tryCreateInEnd(in, e)
-
-}
-
-//
-// TODO more type support in the future
-//
-func tryCreateInEnd(in *inEnd, e *RuleEngine) error {
 	if in.Type == "MQTT" {
 		return startResources(NewMqttInEndResource(in.Id, e), in, e)
 	}
@@ -114,7 +116,7 @@ func startResources(resource XResource, in *inEnd, e *RuleEngine) error {
 		return err
 	} else {
 		if err1 := resource.Start(); err1 != nil {
-			log.Error(err1)
+			return err1
 		}
 		go func(ctx context.Context) {
 			// 5 seconds
@@ -146,8 +148,8 @@ func testResourceState(resource XResource, e *RuleEngine, id string) {
 
 //
 //
-// LoadOutEnds
-func (e *RuleEngine) LoadOutEnds(out *outEnd) error {
+// LoadOutEnd
+func (e *RuleEngine) LoadOutEnd(out *outEnd) error {
 	return tryCreateOutEnd(out, e)
 }
 
@@ -168,7 +170,7 @@ func tryCreateOutEnd(out *outEnd, e *RuleEngine) error {
 //
 //
 func startTarget(target XTarget, out *outEnd, e *RuleEngine) error {
-	log.Info("Starting OutEnd Target:", out.Name)
+	log.Info("Starting OutEnd Target:", out.Id)
 	// Important!!! Must save outend first
 	e.SaveOutEnd(out)
 	out.Target = target
@@ -297,17 +299,25 @@ func (e *RuleEngine) Stop() {
 // Work
 func (e *RuleEngine) Work(in *inEnd, data string) (bool, error) {
 	statistics.IncIn()
+	//
+	// Run Lua
+	//
+	e.runLuaCallbacks(in, data)
+	//
+	// Run Hook
+	//
+	e.runHooks(data)
+	return false, nil
+}
+func (e *RuleEngine) runLuaCallbacks(in *inEnd, data string) {
 	for _, rule := range *in.Binds {
-		_, err0 := rule.ExecuteActions(lua.LString(data))
-		if err0 != nil {
-			rule.ExecuteFailed(lua.LString(err0.Error()))
-			return false, err0
+		_, err := rule.ExecuteActions(lua.LString(data))
+		if err != nil {
+			rule.ExecuteFailed(lua.LString(err.Error()))
 		} else {
 			rule.ExecuteSuccess()
-			return true, nil
 		}
 	}
-	return false, nil
 }
 
 // Verify Lua Syntax
@@ -405,7 +415,7 @@ func callLuaFunc(vm *lua.LState, callable *lua.LFunction, args ...lua.LValue) ([
 
 //
 func (e *RuleEngine) LoadPlugin(p XPlugin) error {
-	env := p.Load(e)
+	env := p.Load()
 	err0 := p.Init(env)
 	if err0 != nil {
 		return err0
@@ -415,10 +425,10 @@ func (e *RuleEngine) LoadPlugin(p XPlugin) error {
 			return err1
 		} else {
 			if (*e.Plugins)[metaInfo.Name] != nil {
-				return errors.New("plugin already instaled:" + metaInfo.Name)
+				return errors.New("plugin already installed:" + metaInfo.Name)
 			} else {
 				(*e.Plugins)[metaInfo.Name] = metaInfo
-				if err2 := p.Start(e, env); err2 != nil {
+				if err2 := p.Start(env); err2 != nil {
 					return err2
 				}
 				return nil
@@ -515,10 +525,10 @@ func (e *RuleEngine) LoadHook(h XHook) error {
 //
 // RunHooks
 //
-func (e *RuleEngine) RunHooks(data string) {
+func (e *RuleEngine) runHooks(data string) {
 	for _, h := range *e.Hooks {
 		if err := runHook(h, data); err != nil {
-			log.Error("run hook:", h.Name(), " failed, error is:", err)
+			h.Error(err)
 		}
 	}
 }

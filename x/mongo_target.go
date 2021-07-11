@@ -49,7 +49,6 @@ func (m *MongoTarget) Start() error {
 			m.collection = client.Database((*config)["database"].(string)).Collection((*config)["collection"].(string))
 		} else {
 			m.collection = client.Database((*config)["mongourl"].(string)).Collection("rulex_data")
-
 		}
 	} else {
 		m.collection = client.Database("rulex").Collection("rulex_data")

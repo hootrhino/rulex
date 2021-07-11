@@ -2,15 +2,15 @@ package httpserver
 
 import (
 	"net/http"
+	"rulex/x"
 
 	"github.com/gin-gonic/gin"
+	"gopkg.in/square/go-jose.v2/json"
 )
 
 func Authorize() gin.HandlerFunc {
 	return func(c *gin.Context) {
-
-		token := c.Query("token") // 访问令牌
-
+		token := c.Query("token")
 		if token != "" {
 			// TODO add jwt Authorize support
 			c.Next()
@@ -38,5 +38,45 @@ func cros(c *gin.Context) {
 
 	if method == "OPTIONS" {
 		c.JSON(http.StatusOK, "ok!")
+	}
+}
+
+//
+// LoadNewestInEnd
+//
+func (hh *HttpApiServer) LoadNewestInEnd(uuid string) error {
+	mInEnd, _ := hh.GetMInEndWithUUID(uuid)
+	config := map[string]interface{}{}
+	if err := json.Unmarshal([]byte(mInEnd.Config), &config); err != nil {
+		return err
+	} else {
+		in := x.NewInEnd(mInEnd.Type, mInEnd.Name, mInEnd.Description, &config)
+		// Important !!!!!!!!
+		in.Id = mInEnd.UUID
+		if err := hh.ruleEngine.LoadInEnd(in); err != nil {
+			return err
+		} else {
+			return nil
+		}
+	}
+}
+
+//
+// LoadNewestOutEnd
+//
+func (hh *HttpApiServer) LoadNewestOutEnd(uuid string) error {
+	mOutEnd, _ := hh.GetMOutEndWithUUID(uuid)
+	config := map[string]interface{}{}
+	if err := json.Unmarshal([]byte(mOutEnd.Config), &config); err != nil {
+		return err
+	} else {
+		out := x.NewOutEnd(mOutEnd.Type, mOutEnd.Name, mOutEnd.Description, &config)
+		// Important !!!!!!!!
+		out.Id = mOutEnd.UUID
+		if err := hh.ruleEngine.LoadOutEnd(out); err != nil {
+			return err
+		} else {
+			return nil
+		}
 	}
 }

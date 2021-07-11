@@ -30,6 +30,16 @@ func (hh *HttpApiServer) GetMRule(id int) (*MRule, error) {
 		return m, nil
 	}
 }
+
+func (hh *HttpApiServer) GetMRuleWithUUID(uuid string) (*MRule, error) {
+	m := new(MRule)
+	if err := hh.sqliteDb.Where("UUID=?", uuid).First(m).Error; err != nil {
+		return nil, err
+	} else {
+		return m, nil
+	}
+}
+
 func (hh *HttpApiServer) InsertMRule(r *MRule) {
 	hh.sqliteDb.Table("m_rules").Create(r)
 }
@@ -53,6 +63,15 @@ func (hh *HttpApiServer) GetMInEnd(id int) (*MInEnd, error) {
 		return m, nil
 	}
 }
+func (hh *HttpApiServer) GetMInEndWithUUID(uuid string) (*MInEnd, error) {
+	m := new(MInEnd)
+	if err := hh.sqliteDb.Table("m_in_ends").Where("UUID=?", uuid).First(m).Error; err != nil {
+		return nil, err
+	} else {
+		return m, nil
+	}
+}
+
 func (hh *HttpApiServer) InsertMInEnd(i *MInEnd) {
 	hh.sqliteDb.Table("m_in_ends").Create(i)
 }
@@ -75,10 +94,16 @@ func (hh *HttpApiServer) GetMOutEnd(id int) (*MOutEnd, error) {
 		return m, nil
 	}
 }
+func (hh *HttpApiServer) GetMOutEndWithUUID(uuid string) (*MOutEnd, error) {
+	m := new(MOutEnd)
+	if err := hh.sqliteDb.Where("UUID=?", uuid).First(m).Error; err != nil {
+		return nil, err
+	} else {
+		return m, nil
+	}
+}
 func (hh *HttpApiServer) InsertMOutEnd(o *MOutEnd) {
 	hh.sqliteDb.Table("m_out_ends").Create(o)
-	log.Debug("Create outend success")
-
 }
 func (hh *HttpApiServer) UpdateMOutEnd(id int, o *MOutEnd) error {
 	m := MOutEnd{}

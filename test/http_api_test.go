@@ -5,13 +5,10 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
-	"os"
-	"os/signal"
+
 	"rulex/plugin/http_server"
 	"rulex/x"
-	"strings"
 
-	"syscall"
 	"testing"
 	"time"
 
@@ -19,31 +16,36 @@ import (
 	"github.com/ngaut/log"
 )
 
+//
+// TestHttpAPi
+//
 func TestHttpAPi(t *testing.T) {
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, syscall.SIGQUIT)
+
 	engine := x.NewRuleEngine()
 	engine.Start()
 	////////
-	hh := httpserver.NewHttpApiServer(2580, "../plugin/http_server/templates/*")
+	hh := httpserver.NewHttpApiServer(2580, "../plugin/http_server/templates/*", engine)
 	if e := engine.LoadPlugin(hh); e != nil {
 		log.Fatal("rule load failed:", e)
 	}
 	hh.Truncate()
+	//---------------------------------------------------------------------------------------
 	//
-	rrr := post(map[string]interface{}{
-		"type":        "MQTT",
-		"name":        "MQTT test",
-		"description": "MQTT Test Resource",
-		"config": map[string]interface{}{
-			"server":   "127.0.0.1",
-			"port":     1883,
-			"username": "test",
-			"password": "test",
-			"clientId": "test",
-		},
-	}, "inends")
-	t.Log("Create inend =======> ", rrr)
+	//---------------------------------------------------------------------------------------
+	log.Debug(
+		post(map[string]interface{}{
+			"type":        "MQTT",
+			"name":        "MQTT test",
+			"description": "MQTT Test Resource",
+			"config": map[string]interface{}{
+				"server":   "127.0.0.1",
+				"port":     1883,
+				"username": "test",
+				"password": "test",
+				"clientId": "test",
+			},
+		}, "inends"),
+	)
 	///////
 	mIn_id_1, errs2 := hh.GetMInEnd(1)
 	if errs2 != nil {
@@ -54,24 +56,40 @@ func TestHttpAPi(t *testing.T) {
 	assert.Equal(t, mIn_id_1.Type, "MQTT")
 	assert.Equal(t, mIn_id_1.Name, "MQTT test")
 	assert.Equal(t, mIn_id_1.Description, "MQTT Test Resource")
-	config := map[string]interface{}{}
-	uerror := json.Unmarshal([]byte(mIn_id_1.Config), &config)
-	if uerror != nil {
-		log.Fatal(uerror)
+
+	//---------------------------------------------------------------------------------------
+	// Create outend
+	//---------------------------------------------------------------------------------------
+	log.Debug(
+		post(map[string]interface{}{
+			"type":        "mongo",
+			"name":        "data to mongo",
+			"description": "data to mongo",
+			"config": map[string]interface{}{
+				"mongourl": "mongodb+srv://rulenginex:rulenginex@cluster0.rsdmb.mongodb.net/rulex_test_db?retryWrites=true&w=majority",
+			},
+		}, "outends"),
+	)
+
+	m_Out_id_1, errs2 := hh.GetMOutEnd(1)
+	if errs2 != nil {
+		log.Fatal(errs2)
 	}
-	//
-	newInEnd1 := x.NewInEnd(mIn_id_1.Type, mIn_id_1.Name, mIn_id_1.Description, &config)
-	newInEnd1.Id = mIn_id_1.UUID
-	if err0 := engine.LoadInEnd(newInEnd1); err0 != nil {
-		log.Fatal("InEnd load failed:", err0)
-	}
+	assert.Equal(t, len(hh.AllMInEnd()), int(1))
+	assert.Equal(t, m_Out_id_1.ID, uint(1))
+	assert.Equal(t, m_Out_id_1.ID, uint(1))
+	assert.Equal(t, m_Out_id_1.Type, "mongo")
+	assert.Equal(t, m_Out_id_1.Name, "data to mongo")
+	assert.Equal(t, m_Out_id_1.Description, "data to mongo")
+
 	//
 	// Create rule
 	//
-	rrr22 := post(map[string]interface{}{
-		"name":        "just_a_test",
-		"description": "just_a_test",
-		"actions": `
+	log.Debug(
+		post(map[string]interface{}{
+			"name":        "just_a_test",
+			"description": "just_a_test",
+			"actions": `
 		local json = require("json")
 		Actions = {
 			function(data)
@@ -80,37 +98,20 @@ func TestHttpAPi(t *testing.T) {
 				return true, data
 			end
 		}`,
-		"from": newInEnd1.Id,
-		"failed": `
+			"from": m_Out_id_1.UUID,
+			"failed": `
 		function Failed(error)
 		  -- print("[LUA Callback] call failed from lua:", error)
 		end`,
-		"success": `
+			"success": `
 		function Success()
 		  -- print("[LUA Callback] call success from lua")
 		end`,
-	}, "rules")
-	log.Debug("Create rule ====> ", rrr22)
-	//
-	//
-	//
-	for _, mRule := range hh.AllMRules() {
-		rule1 := x.NewRule(engine,
-			mRule.Name,
-			mRule.Description,
-			strings.Split(mRule.From, ","),
-			mRule.Success,
-			mRule.Actions,
-			mRule.Failed)
-		if err := engine.LoadRule(rule1); err != nil {
-			log.Fatal("rule load failed:", err)
-		}
-	}
-	//
-	//
+		}, "rules"),
+	)
 	//
 	assert.Equal(t, len((get("inends"))) > 100, true)
-	time.Sleep(2 * time.Second)
+	time.Sleep(3 * time.Second)
 
 }
 

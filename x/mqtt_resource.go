@@ -104,32 +104,7 @@ func (mm *MqttInEndResource) Register(inEndId string) error {
 }
 
 func (mm *MqttInEndResource) Test(inEndId string) bool {
-	config := mm.e.GetInEnd(inEndId).Config
-	opts := mqtt.NewClientOptions()
-	opts.AddBroker(fmt.Sprintf("tcp://%s:%v", (*config)["server"], (*config)["port"]))
-	if (*config)["clientId"] != nil {
-		opts.SetClientID("x-client-main-" + (*config)["clientId"].(string))
-	} else {
-		opts.SetPassword(DEFAULT_CLIENTID)
-	}
-	if (*config)["username"] != nil {
-		opts.SetUsername((*config)["username"].(string))
-	} else {
-		opts.SetPassword(DEFAULT_USERNAME)
-	}
-	if (*config)["password"] != nil {
-		opts.SetPassword((*config)["password"].(string))
-	} else {
-		opts.SetPassword(DEFAULT_PASSWORD)
-	}
-	opts.SetAutoReconnect(false)
-	cc := mqtt.NewClient(opts)
-	if token := cc.Connect(); token.Wait() && token.Error() != nil {
-		log.Error(token.Error())
-		return false
-	} else {
-		return true
-	}
+	return mm.client.IsConnected()
 }
 
 func (mm *MqttInEndResource) Enabled() bool {

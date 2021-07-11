@@ -28,14 +28,13 @@ type HttpApiServer struct {
 	Root       string
 	sqliteDb   *gorm.DB
 	ginEngine  *gin.Engine
-	RuleEngine *x.RuleEngine
+	ruleEngine *x.RuleEngine
 }
 
-func NewHttpApiServer(port int, root string) *HttpApiServer {
-	return &HttpApiServer{Port: port, Root: root}
+func NewHttpApiServer(port int, root string, e *x.RuleEngine) *HttpApiServer {
+	return &HttpApiServer{Port: port, Root: root, ruleEngine: e}
 }
-func (hh *HttpApiServer) Load(e *x.RuleEngine) *x.XPluginEnv {
-	hh.RuleEngine = e
+func (hh *HttpApiServer) Load() *x.XPluginEnv {
 	return x.NewXPluginEnv()
 }
 
@@ -66,14 +65,14 @@ func (hh *HttpApiServer) Install(env *x.XPluginEnv) (*x.XPluginMetaInfo, error) 
 
 //
 //
-func (hh *HttpApiServer) Start(e *x.RuleEngine, env *x.XPluginEnv) error {
+func (hh *HttpApiServer) Start(env *x.XPluginEnv) error {
 	hh.ginEngine.GET(DASHBOARD_ROOT, func(c *gin.Context) {
 		c.HTML(http.StatusOK, "dashboard.html", gin.H{})
 	})
 	hh.ginEngine.GET(API_ROOT+"plugins", func(c *gin.Context) {
 		cros(c)
 		c.PureJSON(http.StatusOK, gin.H{
-			"plugins": hh.RuleEngine.Plugins,
+			"plugins": hh.ruleEngine.GetPlugins(),
 		})
 	})
 	hh.ginEngine.GET(API_ROOT+"system", func(c *gin.Context) {
@@ -94,17 +93,17 @@ func (hh *HttpApiServer) Start(e *x.RuleEngine, env *x.XPluginEnv) error {
 	//
 	hh.ginEngine.GET(API_ROOT+"inends", func(c *gin.Context) {
 		cros(c)
-		c.JSON(http.StatusOK, gin.H{"inends": e.AllInEnd()})
+		c.JSON(http.StatusOK, gin.H{"inends": hh.ruleEngine.AllInEnd()})
 	})
 	//
 	hh.ginEngine.GET(API_ROOT+"outends", func(c *gin.Context) {
 		cros(c)
-		c.JSON(http.StatusOK, gin.H{"outends": e.AllOutEnd()})
+		c.JSON(http.StatusOK, gin.H{"outends": hh.ruleEngine.AllOutEnd()})
 	})
 	//
 	hh.ginEngine.GET(API_ROOT+"rules", func(c *gin.Context) {
 		cros(c)
-		c.JSON(http.StatusOK, gin.H{"rules": e.AllRule()})
+		c.JSON(http.StatusOK, gin.H{"rules": hh.ruleEngine.AllRule()})
 	})
 	//
 	hh.ginEngine.GET(API_ROOT+"statistics", func(c *gin.Context) {
@@ -131,21 +130,28 @@ func (hh *HttpApiServer) Start(e *x.RuleEngine, env *x.XPluginEnv) error {
 			if err1 != nil {
 				c.JSON(http.StatusBadRequest, gin.H{"msg": err1.Error()})
 			} else {
+				uuid := x.MakeUUID("INEND")
 				hh.InsertMInEnd(&MInEnd{
-					UUID:        x.MakeUUID("INEND"),
+					UUID:        uuid,
 					Type:        form.Type,
 					Name:        form.Name,
 					Description: form.Description,
 					Config:      string(configJson),
 				})
-				c.JSON(http.StatusOK, gin.H{"msg": "create success"})
+				err := hh.LoadNewestInEnd(uuid)
+				if err != nil {
+
+					c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
+				} else {
+					c.JSON(http.StatusOK, gin.H{"msg": "create success"})
+				}
 			}
 		}
 	})
 	//
 	// Create OutEnd
 	//
-	hh.ginEngine.POST(API_ROOT+"outEnds", func(c *gin.Context) {
+	hh.ginEngine.POST(API_ROOT+"outends", func(c *gin.Context) {
 		cros(c)
 		type Form struct {
 			Type        string                 `json:"type" binding:"required"`
@@ -162,14 +168,21 @@ func (hh *HttpApiServer) Start(e *x.RuleEngine, env *x.XPluginEnv) error {
 			if err1 != nil {
 				c.JSON(http.StatusBadRequest, gin.H{"msg": err1.Error()})
 			} else {
+				// TODO : Load newest OutEnd
+				uuid := x.MakeUUID("OUTEND")
 				hh.InsertMOutEnd(&MOutEnd{
-					UUID:        x.MakeUUID("OUTEND"),
+					UUID:        uuid,
 					Type:        form.Type,
 					Name:        form.Name,
 					Description: form.Description,
 					Config:      string(configJson),
 				})
-				c.JSON(http.StatusOK, gin.H{"msg": "create success"})
+				err := hh.LoadNewestOutEnd(uuid)
+				if err != nil {
+					c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
+				} else {
+					c.JSON(http.StatusOK, gin.H{"msg": "create success"})
+				}
 			}
 		}
 	})
@@ -200,7 +213,7 @@ func (hh *HttpApiServer) Start(e *x.RuleEngine, env *x.XPluginEnv) error {
 				for _, id := range strings.Split(form.From, ",") {
 					// must be: 111,222,333... style
 					if id != "" {
-						if e.GetInEnd(id) == nil {
+						if hh.ruleEngine.GetInEnd(id) == nil {
 							c.JSON(http.StatusBadRequest, gin.H{"msg": "inend not exists:" + id})
 							return
 						}
@@ -212,15 +225,27 @@ func (hh *HttpApiServer) Start(e *x.RuleEngine, env *x.XPluginEnv) error {
 				if err1 := x.VerifyCallback(rule); err1 != nil {
 					c.JSON(http.StatusBadRequest, gin.H{"msg": err1.Error()})
 				} else {
-					hh.InsertMRule(&MRule{
+					mRule := &MRule{
 						Name:        form.Name,
 						Description: form.Description,
 						From:        form.From,
 						Success:     form.Success,
 						Failed:      form.Failed,
 						Actions:     form.Actions,
-					})
-					c.JSON(http.StatusOK, gin.H{"msg": "create success"})
+					}
+					hh.InsertMRule(mRule)
+					rule := x.NewRule(hh.ruleEngine,
+						mRule.Name,
+						mRule.Description,
+						strings.Split(mRule.From, ","),
+						mRule.Success,
+						mRule.Actions,
+						mRule.Failed)
+					if err := hh.ruleEngine.LoadRule(rule); err != nil {
+						c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
+					} else {
+						c.JSON(http.StatusOK, gin.H{"msg": "create success"})
+					}
 				}
 			} else {
 				c.JSON(http.StatusBadRequest, gin.H{"msg": "from can't empty"})
@@ -233,7 +258,7 @@ func (hh *HttpApiServer) Start(e *x.RuleEngine, env *x.XPluginEnv) error {
 		cros(c)
 		ruleId, exists := c.GetQuery("id")
 		if exists {
-			e.RemoveRule(ruleId)
+			hh.ruleEngine.RemoveRule(ruleId)
 			c.JSON(http.StatusOK, gin.H{})
 		} else {
 			c.JSON(http.StatusBadRequest, gin.H{"msg": "rule not exists"})

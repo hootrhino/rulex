@@ -40,10 +40,10 @@ type XTarget interface {
 // External Plugin
 //
 type XPlugin interface {
-	Load(*RuleEngine) *XPluginEnv
+	Load() *XPluginEnv
 	Init(*XPluginEnv) error
 	Install(*XPluginEnv) (*XPluginMetaInfo, error)
-	Start(*RuleEngine, *XPluginEnv) error
+	Start(*XPluginEnv) error
 	Uninstall(*XPluginEnv) error
 	Clean()
 }
@@ -53,6 +53,7 @@ type XPlugin interface {
 //
 type XHook interface {
 	Work(data string) error
+	Error(error)
 	Name() string
 }
 
