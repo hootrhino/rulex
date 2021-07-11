@@ -36,8 +36,6 @@ test:
 .PHONY: cover
 cover:
 	go test rulex/test -v -cover
-	go test -coverprofile=coverage.out
-	go tool cover -html=coverage.out
 
 .PHONY: clocs
 clocs:

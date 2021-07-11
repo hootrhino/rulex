@@ -47,7 +47,7 @@
             <el-header>
                 <el-menu mode="horizontal" text-color="#000000" active-text-color="#FFFFFF">
                     <el-menu-item index="1"></el-menu-item>
-                    <h1>rulex</h1>
+                    <h1>RULEX</h1>
                     </el-menu-item>
                 </el-menu>
             </el-header>
@@ -99,6 +99,30 @@
                                 </el-row>
                             </template>
                         </el-tab-pane>
+
+                        <el-tab-pane label="数据统计" name="statistic"><template>
+                                <el-row :gutter="12">
+                                    <el-col :span="8">
+                                        <el-card shadow="always">
+                                            数据输入: <h1>&{statisticData.inSuccess}</h1>
+                                        </el-card>
+                                    </el-col>
+
+                                    <el-col :span="8">
+                                        <el-card shadow="always">
+                                            输出成功： <h1>&{statisticData.outSuccess}</h1>
+                                        </el-card>
+                                    </el-col>
+
+                                    <el-col :span="8">
+                                        <el-card shadow="always">
+                                            输出失败 <h1>&{statisticData.outFailed}</h1>
+                                        </el-card>
+                                    </el-col>
+
+                                </el-row>
+                            </template></el-tab-pane>
+
                         <el-tab-pane label="数据入口" name="inend">
                             <template>
                                 <el-table :data="inEndData" style="width: 100%">
@@ -231,28 +255,7 @@
                                     </el-table-column>
                                 </el-table>
                             </template></el-tab-pane>
-                        <el-tab-pane label="数据统计" name="statistic"><template>
-                                <el-row :gutter="12">
-                                    <el-col :span="8">
-                                        <el-card shadow="always">
-                                            数据输入: <h1>&{statisticData.inSuccess}</h1>
-                                        </el-card>
-                                    </el-col>
 
-                                    <el-col :span="8">
-                                        <el-card shadow="always">
-                                            输出成功： <h1>&{statisticData.outSuccess}</h1>
-                                        </el-card>
-                                    </el-col>
-
-                                    <el-col :span="8">
-                                        <el-card shadow="always">
-                                            输出失败 <h1>&{statisticData.outFailed}</h1>
-                                        </el-card>
-                                    </el-col>
-
-                                </el-row>
-                            </template></el-tab-pane>
                     </el-tabs>
                 </template>
             </el-main>
