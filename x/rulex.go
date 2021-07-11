@@ -462,10 +462,10 @@ func (e *RuleEngine) SaveInEnd(in *inEnd) {
 //
 //
 //
-func (e *RuleEngine) RemoveInEnd(in *inEnd) {
+func (e *RuleEngine) RemoveInEnd(id string) {
 	e.Lock()
 	defer e.Unlock()
-	delete((*e.InEnds), in.Id)
+	delete((*e.InEnds), id)
 }
 
 //

@@ -1,14 +1,13 @@
 package x
 
+//
+// All RuleEngine parameter passed by pseudo constructure function
+//
 import "sync"
 
 //
-// Rule is for desplay, XResource is actully worker
-// XResource{
-//  inEndId
-//  enabled
-//  status.
-//}
+// Rule type is for property store,
+// XResource implements struct type is actually worker
 //
 type XResource interface {
 	Test(inEndId string) bool      //0

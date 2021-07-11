@@ -254,12 +254,49 @@ func (hh *HttpApiServer) Start(env *x.XPluginEnv) error {
 	})
 
 	//
+	//
+	//
+	hh.ginEngine.DELETE(API_ROOT+"inends", func(c *gin.Context) {
+		cros(c)
+		uuid, exists := c.GetQuery("uuid")
+		if exists {
+			// Important !!!!!
+			hh.ruleEngine.RemoveInEnd(uuid) //1
+			hh.DeleteMRule(uuid)            //2
+			//
+			c.JSON(http.StatusOK, gin.H{"msg": "remove success"})
+		} else {
+			c.JSON(http.StatusBadRequest, gin.H{"msg": "rule not exists"})
+		}
+	})
+	//
+	//
+	//
+	hh.ginEngine.DELETE(API_ROOT+"outends", func(c *gin.Context) {
+		cros(c)
+		uuid, exists := c.GetQuery("uuid")
+		if exists {
+			// Important !!!!!
+			hh.ruleEngine.RemoveRule(uuid) //1
+			hh.DeleteMOutEnd(uuid)         //2
+			//
+			c.JSON(http.StatusOK, gin.H{"msg": "remove success"})
+		} else {
+			c.JSON(http.StatusBadRequest, gin.H{"msg": "rule not exists"})
+		}
+	})
+	//
+	//
+	//
 	hh.ginEngine.DELETE(API_ROOT+"rules", func(c *gin.Context) {
 		cros(c)
-		ruleId, exists := c.GetQuery("id")
+		uuid, exists := c.GetQuery("uuid")
 		if exists {
-			hh.ruleEngine.RemoveRule(ruleId)
-			c.JSON(http.StatusOK, gin.H{})
+			// Important !!!!!
+			hh.ruleEngine.RemoveRule(uuid) //1
+			hh.DeleteMRule(uuid)           //2
+			//
+			c.JSON(http.StatusOK, gin.H{"msg": "remove success"})
 		} else {
 			c.JSON(http.StatusBadRequest, gin.H{"msg": "rule not exists"})
 		}

@@ -44,6 +44,10 @@ func (hh *HttpApiServer) InsertMRule(r *MRule) {
 	hh.sqliteDb.Table("m_rules").Create(r)
 }
 
+func (hh *HttpApiServer) DeleteMRule(uuid string) {
+	hh.sqliteDb.Where("UUID=?", uuid).Unscoped().Delete(&MRule{})
+}
+
 func (hh *HttpApiServer) UpdateMRule(id int, r *MRule) error {
 	m := MRule{}
 	if err := hh.sqliteDb.Where("Id=?", id).First(&m).Error; err != nil {
@@ -75,6 +79,11 @@ func (hh *HttpApiServer) GetMInEndWithUUID(uuid string) (*MInEnd, error) {
 func (hh *HttpApiServer) InsertMInEnd(i *MInEnd) {
 	hh.sqliteDb.Table("m_in_ends").Create(i)
 }
+
+func (hh *HttpApiServer) DeleteMInEnd(uuid string) {
+	hh.sqliteDb.Where("UUID=?", uuid).Unscoped().Delete(&MInEnd{})
+}
+
 func (hh *HttpApiServer) UpdateMInEnd(id int, i *MInEnd) error {
 	m := MInEnd{}
 	if err := hh.sqliteDb.Where("Id=?", id).First(&m).Error; err != nil {
@@ -102,9 +111,15 @@ func (hh *HttpApiServer) GetMOutEndWithUUID(uuid string) (*MOutEnd, error) {
 		return m, nil
 	}
 }
+
 func (hh *HttpApiServer) InsertMOutEnd(o *MOutEnd) {
 	hh.sqliteDb.Table("m_out_ends").Create(o)
 }
+
+func (hh *HttpApiServer) DeleteMOutEnd(uuid string) {
+	hh.sqliteDb.Where("UUID=?", uuid).Unscoped().Delete(&MOutEnd{})
+}
+
 func (hh *HttpApiServer) UpdateMOutEnd(id int, o *MOutEnd) error {
 	m := MOutEnd{}
 	if err := hh.sqliteDb.Where("Id=?", id).First(&m).Error; err != nil {
@@ -126,11 +141,13 @@ func (hh *HttpApiServer) GetMUser(id int) (*MUser, error) {
 		return m, nil
 	}
 }
+
 func (hh *HttpApiServer) InsertMUser(o *MUser) {
 	hh.sqliteDb.Table("m_users").Create(o)
 	log.Debug("Create outend success")
 
 }
+
 func (hh *HttpApiServer) UpdateMUser(id int, o *MUser) error {
 	m := MUser{}
 	if err := hh.sqliteDb.Where("Id=?", id).First(&m).Error; err != nil {
@@ -147,16 +164,19 @@ func (hh *HttpApiServer) AllMRules() []MRule {
 	hh.sqliteDb.Find(&rules)
 	return rules
 }
+
 func (hh *HttpApiServer) AllMInEnd() []MInEnd {
 	inends := []MInEnd{}
 	hh.sqliteDb.Table("m_in_ends").Find(&inends)
 	return inends
 }
+
 func (hh *HttpApiServer) AllMOutEnd() []MOutEnd {
 	outends := []MOutEnd{}
 	hh.sqliteDb.Find(&outends)
 	return outends
 }
+
 func (hh *HttpApiServer) AllMUser() []MUser {
 	users := []MUser{}
 	hh.sqliteDb.Find(&users)
