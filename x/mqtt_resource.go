@@ -33,6 +33,7 @@ func (mm *MqttInEndResource) Start() error {
 
 	var messageHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
 		if mm.Enable {
+			log.Debug("Message payload:", string(msg.Payload()))
 			mm.e.Work(mm.e.GetInEnd(mm.InEndId), string(msg.Payload()))
 		}
 	}

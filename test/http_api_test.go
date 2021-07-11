@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"strings"
 
 	"rulex/plugin/http_server"
 	"rulex/x"
@@ -12,6 +13,7 @@ import (
 	"testing"
 	"time"
 
+	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/go-playground/assert/v2"
 	"github.com/ngaut/log"
 )
@@ -66,7 +68,7 @@ func TestHttpAPi(t *testing.T) {
 			"name":        "data to mongo",
 			"description": "data to mongo",
 			"config": map[string]interface{}{
-				"mongourl": "mongodb+srv://rulenginex:rulenginex@cluster0.rsdmb.mongodb.net/rulex_test_db?retryWrites=true&w=majority",
+				"mongourl": "mongodb://root:root@localhost:27017/rulex_test_db?authSource=admin&retryWrites=true&w=majority",
 			},
 		}, "outends"),
 	)
@@ -76,7 +78,6 @@ func TestHttpAPi(t *testing.T) {
 		log.Fatal(errs2)
 	}
 	assert.Equal(t, len(hh.AllMInEnd()), int(1))
-	assert.Equal(t, m_Out_id_1.ID, uint(1))
 	assert.Equal(t, m_Out_id_1.ID, uint(1))
 	assert.Equal(t, m_Out_id_1.Type, "mongo")
 	assert.Equal(t, m_Out_id_1.Name, "data to mongo")
@@ -89,26 +90,31 @@ func TestHttpAPi(t *testing.T) {
 		post(map[string]interface{}{
 			"name":        "just_a_test",
 			"description": "just_a_test",
-			"actions": `
-		local json = require("json")
-		Actions = {
-			function(data)
-				dataToMongo("MongoDB001", data)
-				print("[LUA Actions Callback]:dataToMongo Mqtt payload:", data)
-				return true, data
-			end
-		}`,
-			"from": m_Out_id_1.UUID,
+			"actions": strings.Replace(`
+			            local json = require("json")
+						Actions = {
+							function(data)
+							    local s = '{"temp":100,"hum":30, "co2":123.4, "lex":22.56}'
+								print(s == data)
+								DataToMongo("$${OUT}", s)
+								return true, data
+							end
+						}`, "$${OUT}", m_Out_id_1.UUID, -1),
+			"from": mIn_id_1.UUID,
 			"failed": `
-		function Failed(error)
-		  -- print("[LUA Callback] call failed from lua:", error)
-		end`,
+		           function Failed(error)
+				   print("call error:",error)
+		           end`,
 			"success": `
-		function Success()
-		  -- print("[LUA Callback] call success from lua")
-		end`,
+		           function Success()
+				   print("call success")
+				   end`,
 		}, "rules"),
 	)
+	//
+	time.Sleep(3 * time.Second)
+
+	publish()
 	//
 	assert.Equal(t, len((get("inends"))) > 100, true)
 	time.Sleep(3 * time.Second)
@@ -146,4 +152,22 @@ func get(api string) string {
 		log.Fatal(errs2)
 	}
 	return string(body)
+}
+
+func publish() {
+
+	var connectHandler mqtt.OnConnectHandler = func(client mqtt.Client) {
+		client.Publish("$X_IN_END", 2, false, `{"temp":100,"hum":30, "co2":123.4, "lex":22.56}`)
+	}
+
+	opts := mqtt.NewClientOptions()
+	opts.AddBroker("tcp://127.0.0.1:1883")
+	//
+	opts.SetClientID("x_IN_END_TEST1")
+	opts.SetUsername("x_IN_END_TEST1")
+	opts.SetPassword("x_IN_END_TEST1")
+	//
+	opts.OnConnect = connectHandler
+	client := mqtt.NewClient(opts)
+	client.Connect().Wait()
 }

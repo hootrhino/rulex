@@ -92,7 +92,8 @@ func (m *MongoTarget) Stop() {
 }
 
 func (m *MongoTarget) To(data interface{}) error {
-	_, err := m.collection.InsertOne(context.TODO(), bson.D{{"data", data}})
+	document := bson.D{bson.E{Key: "data", Value: data}}
+	_, err := m.collection.InsertOne(context.Background(), document)
 	if err != nil {
 		log.Error("Mongo To Failed:", err)
 	}

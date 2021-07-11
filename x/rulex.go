@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/ngaut/log"
-	luajson "github.com/wwhai/gopher-json"
 	lua "github.com/yuin/gopher-lua"
 )
 
@@ -118,6 +117,7 @@ func startResources(resource XResource, in *inEnd, e *RuleEngine) error {
 		if err1 := resource.Start(); err1 != nil {
 			return err1
 		}
+		testResourceState(resource, e, in.Id)
 		go func(ctx context.Context) {
 			// 5 seconds
 			ticker := time.NewTicker(time.Duration(time.Second * 5))
@@ -181,6 +181,7 @@ func startTarget(target XTarget, out *outEnd, e *RuleEngine) error {
 		if err1 := target.Start(); err1 != nil {
 			log.Error(err1)
 		}
+		testTargetState(target, e, out.Id)
 		//
 		go func(ctx context.Context) {
 			// 5 seconds
@@ -310,9 +311,11 @@ func (e *RuleEngine) Work(in *inEnd, data string) (bool, error) {
 	return false, nil
 }
 func (e *RuleEngine) runLuaCallbacks(in *inEnd, data string) {
+	log.Debug(data)
 	for _, rule := range *in.Binds {
 		_, err := rule.ExecuteActions(lua.LString(data))
 		if err != nil {
+			log.Error(err)
 			rule.ExecuteFailed(lua.LString(err.Error()))
 		} else {
 			rule.ExecuteSuccess()
@@ -322,8 +325,7 @@ func (e *RuleEngine) runLuaCallbacks(in *inEnd, data string) {
 
 // Verify Lua Syntax
 func VerifyCallback(r *rule) error {
-	vm := lua.NewState()
-	luajson.Preload(vm)
+	vm := r.VM
 	e1 := vm.DoString(r.Success)
 	if e1 != nil {
 		return e1
@@ -370,8 +372,9 @@ func (r *rule) ExecuteActions(arg lua.LValue) (lua.LValue, error) {
 			}
 		})
 		return runPipline(r.VM, funcs, arg)
+	} else {
+		return nil, errors.New("actions not a lua table or not exist")
 	}
-	return nil, errors.New("not a lua table")
 }
 
 // LUA Callback : Success
@@ -404,9 +407,9 @@ func callLuaFunc(vm *lua.LState, callable *lua.LFunction, args ...lua.LValue) ([
 		return nil, errors.New("callable function is not exists")
 	} else {
 		coroutine, _ := vm.NewThread()
-		state, err1, lValues := vm.Resume(coroutine, callable, args...)
+		state, err, lValues := vm.Resume(coroutine, callable, args...)
 		if state != lua.ResumeOK {
-			return nil, err1
+			return nil, err
 		} else {
 			return lValues, nil
 		}
