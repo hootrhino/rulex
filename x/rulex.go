@@ -153,6 +153,8 @@ func (e *RuleEngine) LoadOutEnd(out *outEnd) error {
 	return tryCreateOutEnd(out, e)
 }
 
+// 
+//
 //
 func tryCreateOutEnd(out *outEnd, e *RuleEngine) error {
 	if out.Type == "mongo" {

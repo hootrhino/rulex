@@ -1,7 +1,7 @@
 package x
 
 //
-// All RuleEngine parameter passed by pseudo constructure function
+// !!! All 'RuleEngine' parameter passed by pseudo constructure function !!!
 //
 import "sync"
 

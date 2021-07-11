@@ -64,17 +64,27 @@ func (hh *HttpApiServer) Install(env *x.XPluginEnv) (*x.XPluginMetaInfo, error) 
 }
 
 //
+// HttpApiServer Start
 //
 func (hh *HttpApiServer) Start(env *x.XPluginEnv) error {
+	//
+	// Render dashboard index
+	//
 	hh.ginEngine.GET(DASHBOARD_ROOT, func(c *gin.Context) {
 		c.HTML(http.StatusOK, "dashboard.html", gin.H{})
 	})
+	//
+	// Get all plugins
+	//
 	hh.ginEngine.GET(API_ROOT+"plugins", func(c *gin.Context) {
 		cros(c)
 		c.PureJSON(http.StatusOK, gin.H{
 			"plugins": hh.ruleEngine.GetPlugins(),
 		})
 	})
+	//
+	// Get system infomation
+	//
 	hh.ginEngine.GET(API_ROOT+"system", func(c *gin.Context) {
 		cros(c)
 		//
@@ -91,20 +101,28 @@ func (hh *HttpApiServer) Start(env *x.XPluginEnv) error {
 			"cpus":       runtime.GOMAXPROCS(0)})
 	})
 	//
+	// Get all inends
+	//
 	hh.ginEngine.GET(API_ROOT+"inends", func(c *gin.Context) {
 		cros(c)
 		c.JSON(http.StatusOK, gin.H{"inends": hh.ruleEngine.AllInEnd()})
 	})
+	//
+	// Get all outends
 	//
 	hh.ginEngine.GET(API_ROOT+"outends", func(c *gin.Context) {
 		cros(c)
 		c.JSON(http.StatusOK, gin.H{"outends": hh.ruleEngine.AllOutEnd()})
 	})
 	//
+	// Get all rules
+	//
 	hh.ginEngine.GET(API_ROOT+"rules", func(c *gin.Context) {
 		cros(c)
 		c.JSON(http.StatusOK, gin.H{"rules": hh.ruleEngine.AllRule()})
 	})
+	//
+	// Get statistics data
 	//
 	hh.ginEngine.GET(API_ROOT+"statistics", func(c *gin.Context) {
 		cros(c)
@@ -186,7 +204,9 @@ func (hh *HttpApiServer) Start(env *x.XPluginEnv) error {
 			}
 		}
 	})
+	//
 	// Create rule
+	//
 	hh.ginEngine.POST(API_ROOT+"rules", func(c *gin.Context) {
 		cros(c)
 		type Form struct {
@@ -254,7 +274,7 @@ func (hh *HttpApiServer) Start(env *x.XPluginEnv) error {
 	})
 
 	//
-	//
+	// Delete inend by UUID
 	//
 	hh.ginEngine.DELETE(API_ROOT+"inends", func(c *gin.Context) {
 		cros(c)
@@ -270,7 +290,7 @@ func (hh *HttpApiServer) Start(env *x.XPluginEnv) error {
 		}
 	})
 	//
-	//
+	// Delete outend by UUID
 	//
 	hh.ginEngine.DELETE(API_ROOT+"outends", func(c *gin.Context) {
 		cros(c)
@@ -286,7 +306,7 @@ func (hh *HttpApiServer) Start(env *x.XPluginEnv) error {
 		}
 	})
 	//
-	//
+	// Delete rule by UUID
 	//
 	hh.ginEngine.DELETE(API_ROOT+"rules", func(c *gin.Context) {
 		cros(c)
