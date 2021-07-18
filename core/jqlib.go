@@ -1,11 +1,11 @@
-package x
+package core
 
 import (
 	"encoding/json"
 
 	"github.com/itchyny/gojq"
 	"github.com/ngaut/log"
-	"github.com/yuin/gopher-lua"
+	lua "github.com/yuin/gopher-lua"
 )
 
 // Loader

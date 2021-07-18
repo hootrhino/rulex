@@ -1,4 +1,4 @@
-package x
+package core
 
 import (
 	"time"
@@ -21,6 +21,10 @@ func NewSerialResource(inEndId string, e *RuleEngine) *SerialResource {
 	return &s
 }
 
+func (mm *SerialResource) DataModels() *map[string]XDataModel {
+	return &map[string]XDataModel{}
+}
+
 func (s *SerialResource) Test(inEndId string) bool {
 	return true
 }
@@ -31,7 +35,7 @@ func (s *SerialResource) Register(inEndId string) error {
 
 func (s *SerialResource) Start() error {
 	config := s.e.GetInEnd(s.InEndId).Config
-	name := (*config)["port"]
+	name := (*config)["name"]
 	baud := (*config)["baud"]
 	readTimeout := (*config)["read_timeout"]
 	size := (*config)["size"]

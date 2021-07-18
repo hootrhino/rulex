@@ -3,8 +3,8 @@ package httpserver
 import (
 	"context"
 	"net/http"
+	"rulex/core"
 	"rulex/statistics"
-	"rulex/x"
 	"runtime"
 	"strconv"
 	"strings"
@@ -28,18 +28,18 @@ type HttpApiServer struct {
 	Root       string
 	sqliteDb   *gorm.DB
 	ginEngine  *gin.Engine
-	ruleEngine *x.RuleEngine
+	ruleEngine *core.RuleEngine
 }
 
-func NewHttpApiServer(port int, root string, e *x.RuleEngine) *HttpApiServer {
+func NewHttpApiServer(port int, root string, e *core.RuleEngine) *HttpApiServer {
 	return &HttpApiServer{Port: port, Root: root, ruleEngine: e}
 }
-func (hh *HttpApiServer) Load() *x.XPluginEnv {
-	return x.NewXPluginEnv()
+func (hh *HttpApiServer) Load() *core.XPluginEnv {
+	return core.NewXPluginEnv()
 }
 
 //
-func (hh *HttpApiServer) Init(env *x.XPluginEnv) error {
+func (hh *HttpApiServer) Init(env *core.XPluginEnv) error {
 	gin.SetMode(gin.ReleaseMode)
 	hh.ginEngine = gin.New()
 	hh.ginEngine.Use(Authorize())
@@ -51,8 +51,8 @@ func (hh *HttpApiServer) Init(env *x.XPluginEnv) error {
 	}(ctx, hh.Port)
 	return nil
 }
-func (hh *HttpApiServer) Install(env *x.XPluginEnv) (*x.XPluginMetaInfo, error) {
-	return &x.XPluginMetaInfo{
+func (hh *HttpApiServer) Install(env *core.XPluginEnv) (*core.XPluginMetaInfo, error) {
+	return &core.XPluginMetaInfo{
 		Name:     "HttpApiServer",
 		Version:  "0.0.1",
 		Homepage: "www.ezlinker.cn",
@@ -66,7 +66,7 @@ func (hh *HttpApiServer) Install(env *x.XPluginEnv) (*x.XPluginMetaInfo, error) 
 //
 // HttpApiServer Start
 //
-func (hh *HttpApiServer) Start(env *x.XPluginEnv) error {
+func (hh *HttpApiServer) Start(env *core.XPluginEnv) error {
 	//
 	// Render dashboard index
 	//
@@ -129,6 +129,28 @@ func (hh *HttpApiServer) Start(env *x.XPluginEnv) error {
 		c.JSON(http.StatusOK, gin.H{"statistics": statistics.AllStatistics()})
 	})
 	//
+	//
+	//
+	hh.ginEngine.POST(API_ROOT+"auth", func(c *gin.Context) {
+		cros(c)
+		type Form struct {
+			Username string `json:"username" binding:"required"`
+			Password string `json:"password" binding:"required"`
+		}
+		form := Form{}
+		err0 := c.ShouldBindJSON(&form)
+		if err0 != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"msg": err0.Error()})
+		} else {
+			user, err1 := hh.GetMUser(form.Username, form.Password)
+			if err1 != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"msg": err1.Error()})
+			} else {
+				c.JSON(http.StatusOK, gin.H{"msg": "success", "data": user.ID})
+			}
+		}
+	})
+	//
 	// Create InEnd
 	//
 	hh.ginEngine.POST(API_ROOT+"inends", func(c *gin.Context) {
@@ -148,7 +170,7 @@ func (hh *HttpApiServer) Start(env *x.XPluginEnv) error {
 			if err1 != nil {
 				c.JSON(http.StatusBadRequest, gin.H{"msg": err1.Error()})
 			} else {
-				uuid := x.MakeUUID("INEND")
+				uuid := core.MakeUUID("INEND")
 				hh.InsertMInEnd(&MInEnd{
 					UUID:        uuid,
 					Type:        form.Type,
@@ -187,7 +209,7 @@ func (hh *HttpApiServer) Start(env *x.XPluginEnv) error {
 				c.JSON(http.StatusBadRequest, gin.H{"msg": err1.Error()})
 			} else {
 				// TODO : Load newest OutEnd
-				uuid := x.MakeUUID("OUTEND")
+				uuid := core.MakeUUID("OUTEND")
 				hh.InsertMOutEnd(&MOutEnd{
 					UUID:        uuid,
 					Type:        form.Type,
@@ -222,7 +244,7 @@ func (hh *HttpApiServer) Start(env *x.XPluginEnv) error {
 		if err0 != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"msg": err0.Error()})
 		} else {
-			rule := x.NewRule(nil,
+			rule := core.NewRule(nil,
 				form.Name,
 				form.Description,
 				nil,
@@ -242,7 +264,7 @@ func (hh *HttpApiServer) Start(env *x.XPluginEnv) error {
 						return
 					}
 				}
-				if err1 := x.VerifyCallback(rule); err1 != nil {
+				if err1 := core.VerifyCallback(rule); err1 != nil {
 					c.JSON(http.StatusBadRequest, gin.H{"msg": err1.Error()})
 				} else {
 					mRule := &MRule{
@@ -254,7 +276,7 @@ func (hh *HttpApiServer) Start(env *x.XPluginEnv) error {
 						Actions:     form.Actions,
 					}
 					hh.InsertMRule(mRule)
-					rule := x.NewRule(hh.ruleEngine,
+					rule := core.NewRule(hh.ruleEngine,
 						mRule.Name,
 						mRule.Description,
 						strings.Split(mRule.From, ","),
@@ -326,7 +348,7 @@ func (hh *HttpApiServer) Start(env *x.XPluginEnv) error {
 	return nil
 }
 
-func (hh *HttpApiServer) Uninstall(env *x.XPluginEnv) error {
+func (hh *HttpApiServer) Uninstall(env *core.XPluginEnv) error {
 	return nil
 }
 func (hh *HttpApiServer) Clean() {

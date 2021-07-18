@@ -1,4 +1,4 @@
-package x
+package core
 
 import (
 	"fmt"
@@ -86,6 +86,11 @@ func (mm *MqttInEndResource) Start() error {
 	}
 
 }
+
+func (mm *MqttInEndResource) DataModels() *map[string]XDataModel {
+	return &map[string]XDataModel{}
+}
+
 func (mm *MqttInEndResource) Stop() {
 
 }

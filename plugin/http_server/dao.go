@@ -133,9 +133,9 @@ func (hh *HttpApiServer) UpdateMOutEnd(id int, o *MOutEnd) error {
 //-----------------------------------------------------------------------------------
 
 //-----------------------------------------------------------------------------------
-func (hh *HttpApiServer) GetMUser(id int) (*MUser, error) {
+func (hh *HttpApiServer) GetMUser(username string, password string) (*MUser, error) {
 	m := new(MUser)
-	if err := hh.sqliteDb.Where("Id=?", id).First(m).Error; err != nil {
+	if err := hh.sqliteDb.Where("Username=?", username).Where("Password=?", password).First(m).Error; err != nil {
 		return nil, err
 	} else {
 		return m, nil

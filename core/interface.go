@@ -1,4 +1,4 @@
-package x
+package core
 
 //
 // !!! All 'RuleEngine' parameter passed by pseudo constructure function !!!
@@ -9,11 +9,30 @@ import "sync"
 // Rule type is for property store,
 // XResource implements struct type is actually worker
 //
+type ModelType int
+
+const (
+	T_NUMBER  ModelType = 1
+	T_STRING  ModelType = 2
+	T_BOOLEAN ModelType = 3
+	T_JSON    ModelType = 4
+	T_BIN     ModelType = 5
+	T_RAW     ModelType = 6
+)
+
+type XDataModel struct {
+	Type      ModelType
+	Name      string
+	MaxLength int
+	MinLength int
+}
+
 type XResource interface {
 	Test(inEndId string) bool      //0
 	Register(inEndId string) error //1
 	Start() error                  //2
 	Enabled() bool
+	DataModels() *map[string]XDataModel
 	Reload()
 	Pause()
 	Status() State

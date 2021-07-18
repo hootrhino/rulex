@@ -1,4 +1,4 @@
-package x
+package core
 
 import (
 	luajson "github.com/wwhai/gopher-json"

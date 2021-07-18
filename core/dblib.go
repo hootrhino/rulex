@@ -1,11 +1,11 @@
-package x
+package core
 
 import (
 	"encoding/json"
 	"rulex/statistics"
 
 	"github.com/ngaut/log"
-	"github.com/yuin/gopher-lua"
+	lua "github.com/yuin/gopher-lua"
 )
 
 // Loader
@@ -30,7 +30,7 @@ func DataToMongo(e *RuleEngine, id string, data string) {
 	err := json.Unmarshal([]byte(data), bson)
 	if err != nil {
 		statistics.IncOutFailed()
-		log.Errorf("Mongo data must be JSON format:%#v", data, " ==> ", err)
+		log.Error("Mongo data must be JSON format:", data, " ==> ", err)
 	} else {
 		statistics.IncOut()
 		(*e.OutEnds)[id].Target.To(bson)

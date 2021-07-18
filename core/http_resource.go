@@ -1,4 +1,4 @@
-package x
+package core
 
 import (
 	"github.com/gin-gonic/gin"
@@ -19,6 +19,8 @@ func NewHttpInEndResource(inEndId string, e *RuleEngine) *HttpInEndResource {
 	h.e = e
 	return &h
 }
+
+//
 func (hh *HttpInEndResource) Start() error {
 	hh.engine = gin.New()
 	config := hh.e.GetInEnd(hh.InEndId).Config
@@ -39,6 +41,11 @@ func (hh *HttpInEndResource) Start() error {
 	})
 	hh.engine.Run(":" + (*config)["port"].(string))
 	return nil
+}
+
+//
+func (mm *HttpInEndResource) DataModels() *map[string]XDataModel {
+	return &map[string]XDataModel{}
 }
 
 //

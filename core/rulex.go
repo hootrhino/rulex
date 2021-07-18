@@ -1,4 +1,4 @@
-package x
+package core
 
 import (
 	"context"
@@ -153,7 +153,7 @@ func (e *RuleEngine) LoadOutEnd(out *outEnd) error {
 	return tryCreateOutEnd(out, e)
 }
 
-// 
+//
 //
 //
 func tryCreateOutEnd(out *outEnd, e *RuleEngine) error {
@@ -169,7 +169,6 @@ func tryCreateOutEnd(out *outEnd, e *RuleEngine) error {
 //
 // Target life cycle:
 // Register -> Start -> Test
-//
 //
 func startTarget(target XTarget, out *outEnd, e *RuleEngine) error {
 	log.Info("Starting OutEnd Target:", out.Id)

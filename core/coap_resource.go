@@ -1,4 +1,4 @@
-package x
+package core
 
 import (
 	"bytes"
@@ -60,6 +60,9 @@ func (cc *CoAPInEndResource) Stop() {
 
 }
 
+func (mm *CoAPInEndResource) DataModels() *map[string]XDataModel {
+	return &map[string]XDataModel{}
+}
 func (cc *CoAPInEndResource) Reload() {
 
 }

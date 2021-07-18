@@ -17,7 +17,7 @@ build:
 
 .PHONY: run
 run:
-	go run -race main.go
+	go run -race main.go run
 
 .PHONY: docker
 docker:

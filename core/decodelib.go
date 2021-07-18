@@ -1,8 +1,8 @@
-package x
+package core
 
 import (
 	"github.com/ngaut/log"
-	"github.com/yuin/gopher-lua"
+	lua "github.com/yuin/gopher-lua"
 )
 
 // Loader

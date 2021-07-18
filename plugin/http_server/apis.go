@@ -2,11 +2,17 @@ package httpserver
 
 import (
 	"net/http"
-	"rulex/x"
+	"rulex/core"
 
 	"github.com/gin-gonic/gin"
 	"gopkg.in/square/go-jose.v2/json"
 )
+
+// Http Return
+type R struct {
+	Code int
+	Msg  string
+}
 
 func Authorize() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -50,7 +56,7 @@ func (hh *HttpApiServer) LoadNewestInEnd(uuid string) error {
 	if err := json.Unmarshal([]byte(mInEnd.Config), &config); err != nil {
 		return err
 	} else {
-		in := x.NewInEnd(mInEnd.Type, mInEnd.Name, mInEnd.Description, &config)
+		in := core.NewInEnd(mInEnd.Type, mInEnd.Name, mInEnd.Description, &config)
 		// Important !!!!!!!!
 		in.Id = mInEnd.UUID
 		if err := hh.ruleEngine.LoadInEnd(in); err != nil {
@@ -70,7 +76,7 @@ func (hh *HttpApiServer) LoadNewestOutEnd(uuid string) error {
 	if err := json.Unmarshal([]byte(mOutEnd.Config), &config); err != nil {
 		return err
 	} else {
-		out := x.NewOutEnd(mOutEnd.Type, mOutEnd.Name, mOutEnd.Description, &config)
+		out := core.NewOutEnd(mOutEnd.Type, mOutEnd.Name, mOutEnd.Description, &config)
 		// Important !!!!!!!!
 		out.Id = mOutEnd.UUID
 		if err := hh.ruleEngine.LoadOutEnd(out); err != nil {

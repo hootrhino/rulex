@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"strings"
 
-	"rulex/plugin/http_server"
-	"rulex/x"
+	"rulex/core"
+	httpserver "rulex/plugin/http_server"
 
 	"testing"
 	"time"
@@ -23,7 +23,7 @@ import (
 //
 func TestHttpAPi(t *testing.T) {
 
-	engine := x.NewRuleEngine()
+	engine := core.NewRuleEngine()
 	engine.Start()
 	////////
 	hh := httpserver.NewHttpApiServer(2580, "../plugin/http_server/templates/*", engine)
