@@ -1,5 +1,4 @@
 APP=rulex
-VERSION=0.0.1
 
 .PHONY: all
 all:
@@ -41,3 +40,8 @@ clean:
 	rm ${APP}-${VERSION}.zip
 	rm metainfo.json
 	rm coverage.out
+
+.PHONY: tag
+tag:
+	make package
+	gh release create $(VERSION) ./${APP}-${VERSION}.zip -F changelog.md
