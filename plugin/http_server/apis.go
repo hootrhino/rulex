@@ -5,6 +5,7 @@ import (
 	"rulex/core"
 
 	"github.com/gin-gonic/gin"
+	"github.com/ngaut/log"
 	"gopkg.in/square/go-jose.v2/json"
 )
 
@@ -54,12 +55,14 @@ func (hh *HttpApiServer) LoadNewestInEnd(uuid string) error {
 	mInEnd, _ := hh.GetMInEndWithUUID(uuid)
 	config := map[string]interface{}{}
 	if err := json.Unmarshal([]byte(mInEnd.Config), &config); err != nil {
+		log.Error(err)
 		return err
 	} else {
 		in := core.NewInEnd(mInEnd.Type, mInEnd.Name, mInEnd.Description, &config)
-		// Important !!!!!!!!
+		// Important !!!!!!!! in.Id = mInEnd.UUID
 		in.Id = mInEnd.UUID
 		if err := hh.ruleEngine.LoadInEnd(in); err != nil {
+			log.Error(err)
 			return err
 		} else {
 			return nil

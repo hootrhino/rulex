@@ -16,11 +16,9 @@ import (
 //
 func main() {
 
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, syscall.SIGQUIT)
 	app := &cli.App{
 		Name:  "RULEX, a lightweight iot data rule gateway",
-		Usage: "http://rule core.ezlinker.cn",
+		Usage: "http://rulex.ezlinker.cn",
 		Commands: []*cli.Command{
 			{
 				Name:  "run",
@@ -48,12 +46,13 @@ func main() {
 		log.Fatal(err)
 	}
 
-	<-c
-	os.Exit(0)
 }
 
 //
 func Run() {
+
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, syscall.SIGQUIT)
 	engine := core.NewRuleEngine()
 	engine.Start()
 	////////
@@ -76,6 +75,7 @@ func Run() {
 			log.Error("InEnd load failed:", err)
 		}
 	}
+
 	//
 	// Load rule from sqlite
 	//
@@ -106,4 +106,6 @@ func Run() {
 			log.Error("OutEnd load failed:", err)
 		}
 	}
+	<-c
+	os.Exit(0)
 }

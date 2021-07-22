@@ -34,7 +34,8 @@ func TestHttpAPi(t *testing.T) {
 	//---------------------------------------------------------------------------------------
 	//
 	//---------------------------------------------------------------------------------------
-	log.Debug(
+	//
+	log.Debug("Create MQTT",
 		post(map[string]interface{}{
 			"type":        "MQTT",
 			"name":        "MQTT test",
@@ -48,6 +49,7 @@ func TestHttpAPi(t *testing.T) {
 			},
 		}, "inends"),
 	)
+
 	///////
 	mIn_id_1, errs2 := hh.GetMInEnd(1)
 	if errs2 != nil {
@@ -58,11 +60,21 @@ func TestHttpAPi(t *testing.T) {
 	assert.Equal(t, mIn_id_1.Type, "MQTT")
 	assert.Equal(t, mIn_id_1.Name, "MQTT test")
 	assert.Equal(t, mIn_id_1.Description, "MQTT Test Resource")
-
+	//
+	log.Debug(
+		post(map[string]interface{}{
+			"type":        "HTTP",
+			"name":        "HTTP API Server",
+			"description": "HTTP Resource",
+			"config": map[string]interface{}{
+				"port": "2581",
+			},
+		}, "inends"),
+	)
 	//---------------------------------------------------------------------------------------
 	// Create outend
 	//---------------------------------------------------------------------------------------
-	log.Debug(
+	log.Debug("Create Mongo",
 		post(map[string]interface{}{
 			"type":        "mongo",
 			"name":        "data to mongo",
@@ -72,7 +84,7 @@ func TestHttpAPi(t *testing.T) {
 			},
 		}, "outends"),
 	)
-
+	//
 	m_Out_id_1, errs2 := hh.GetMOutEnd(1)
 	if errs2 != nil {
 		log.Fatal(errs2)
@@ -113,7 +125,17 @@ func TestHttpAPi(t *testing.T) {
 	)
 	//
 	time.Sleep(3 * time.Second)
-
+	log.Debug("Create HTTP",
+		post(map[string]interface{}{
+			"type":        "HTTP",
+			"name":        "HTTP API Server",
+			"description": "HTTP Resource",
+			"config": map[string]interface{}{
+				"port": "2581",
+			},
+		}, "inends"),
+	)
+	//
 	publish()
 	//
 	assert.Equal(t, len((get("inends"))) > 100, true)
@@ -170,4 +192,24 @@ func publish() {
 	opts.OnConnect = connectHandler
 	client := mqtt.NewClient(opts)
 	client.Connect().Wait()
+}
+func TestHttpInEnd(t *testing.T) {
+	engine := core.NewRuleEngine()
+	engine.Start()
+	////////
+	hh := httpserver.NewHttpApiServer(2580, "../plugin/http_server/templates/*", engine)
+	if e := engine.LoadPlugin(hh); e != nil {
+		log.Fatal("rule load failed:", e)
+	}
+	hh.Truncate()
+	log.Debug(
+		post(map[string]interface{}{
+			"type":        "HTTP",
+			"name":        "HTTP API Server",
+			"description": "HTTP Resource",
+			"config": map[string]interface{}{
+				"port": "2581",
+			},
+		}, "inends"),
+	)
 }

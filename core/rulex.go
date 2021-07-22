@@ -112,9 +112,11 @@ func startResources(resource XResource, in *inEnd, e *RuleEngine) error {
 	e.SaveInEnd(in)
 	//
 	if err := resource.Register(in.Id); err != nil {
+		log.Error(err)
 		return err
 	} else {
 		if err1 := resource.Start(); err1 != nil {
+			log.Error(err1)
 			return err1
 		}
 		testResourceState(resource, e, in.Id)
@@ -171,7 +173,6 @@ func tryCreateOutEnd(out *outEnd, e *RuleEngine) error {
 // Register -> Start -> Test
 //
 func startTarget(target XTarget, out *outEnd, e *RuleEngine) error {
-	log.Info("Starting OutEnd Target:", out.Id)
 	// Important!!! Must save outend first
 	e.SaveOutEnd(out)
 	out.Target = target

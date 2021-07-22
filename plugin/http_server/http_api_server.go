@@ -42,7 +42,7 @@ func (hh *HttpApiServer) Load() *core.XPluginEnv {
 func (hh *HttpApiServer) Init(env *core.XPluginEnv) error {
 	gin.SetMode(gin.ReleaseMode)
 	hh.ginEngine = gin.New()
-	hh.ginEngine.Use(Authorize())
+	//hh.ginEngine.Use(Authorize())
 	hh.InitDb()
 	hh.ginEngine.LoadHTMLGlob(hh.Root)
 	ctx := context.Background()
@@ -178,9 +178,8 @@ func (hh *HttpApiServer) Start(env *core.XPluginEnv) error {
 					Description: form.Description,
 					Config:      string(configJson),
 				})
-				err := hh.LoadNewestInEnd(uuid)
-				if err != nil {
-
+				if err := hh.LoadNewestInEnd(uuid); err != nil {
+					log.Error(err)
 					c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
 				} else {
 					c.JSON(http.StatusOK, gin.H{"msg": "create success"})
@@ -334,7 +333,7 @@ func (hh *HttpApiServer) Start(env *core.XPluginEnv) error {
 		cros(c)
 		uuid, exists := c.GetQuery("uuid")
 		if exists {
-			// Important !!!!!
+			// Important !!!!! hh.ruleEngine.RemoveRule(uuid)
 			hh.ruleEngine.RemoveRule(uuid) //1
 			hh.DeleteMRule(uuid)           //2
 			//

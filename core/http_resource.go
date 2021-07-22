@@ -1,29 +1,31 @@
 package core
 
 import (
+	"context"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
+	"github.com/ngaut/log"
 )
 
 //
 type HttpInEndResource struct {
-	*XStatus
-	engine *gin.Engine
-	e      *RuleEngine
+	XStatus
+	engine     *gin.Engine
+	ruleEngine *RuleEngine
 }
 
 func NewHttpInEndResource(inEndId string, e *RuleEngine) *HttpInEndResource {
-
 	h := HttpInEndResource{}
 	h.InEndId = inEndId
 	h.engine = gin.Default()
-	h.e = e
+	h.ruleEngine = e
 	return &h
 }
 
 //
 func (hh *HttpInEndResource) Start() error {
-	hh.engine = gin.New()
-	config := hh.e.GetInEnd(hh.InEndId).Config
+	config := hh.ruleEngine.GetInEnd(hh.InEndId).Config
 	hh.engine.GET("/in", func(c *gin.Context) {
 		inForm := struct{ data string }{}
 		err := c.BindJSON(inForm)
@@ -32,14 +34,18 @@ func (hh *HttpInEndResource) Start() error {
 				"message": err,
 			})
 		} else {
-			hh.e.Work(hh.e.GetInEnd(hh.InEndId), inForm.data)
+			hh.ruleEngine.Work(hh.ruleEngine.GetInEnd(hh.InEndId), inForm.data)
 			c.JSON(200, gin.H{
 				"message": "ok",
 				"data":    inForm,
 			})
 		}
 	})
-	hh.engine.Run(":" + (*config)["port"].(string))
+	go func(ctx context.Context) {
+		http.ListenAndServe(":"+(*config)["port"].(string), hh.engine)
+	}(context.Background())
+	log.Info("HTTP Resource start successfully")
+
 	return nil
 }
 
@@ -59,11 +65,11 @@ func (hh *HttpInEndResource) Pause() {
 
 }
 func (hh *HttpInEndResource) Status() State {
-	return hh.e.GetInEnd(hh.InEndId).State
+	return hh.ruleEngine.GetInEnd(hh.InEndId).State
 }
 
 func (hh *HttpInEndResource) Register(inEndId string) error {
-
+	hh.InEndId = inEndId
 	return nil
 }
 
