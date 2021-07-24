@@ -293,9 +293,11 @@ func (e *RuleEngine) AllRule() map[string]*rule {
 // Stop
 //
 func (e *RuleEngine) Stop() {
-	// TODO: More stop callback
-	// STOP in/out
-	log.Info("RuleEngine stop")
+	// Hooks     *map[string]XHook
+	// Rules     *map[string]*rule
+	// InEnds    *map[string]*inEnd
+	// OutEnds   *map[string]*outEnd
+ 
 	runtime.GC()
 }
 

@@ -9,9 +9,7 @@ import (
 
 func (hh *HttpApiServer) InitDb() {
 	var err error
-	// hh.sqliteDb, err = gorm.Open(sqlite.Open("./reluxdb.sqlite3"),
-	// 	&gorm.Config{Logger: logger.Default.LogMode(logger.Info)})
-	hh.sqliteDb, err = gorm.Open(sqlite.Open("./reluxdb.sqlite3"))
+	hh.sqliteDb, err = gorm.Open(sqlite.Open("./rulex.db"))
 	if err != nil {
 		panic(err)
 	}

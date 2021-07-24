@@ -10,7 +10,7 @@ import "sync"
 // XResource implements struct type is actually worker
 //
 type ModelType int
-
+// 'T' means Type
 const (
 	T_NUMBER  ModelType = 1
 	T_STRING  ModelType = 2
@@ -122,4 +122,13 @@ func (p *XPluginEnv) Get(k string) interface{} {
 //
 func (p *XPluginEnv) Set(k string, v interface{}) {
 	(*(p.env))[k] = v
+}
+
+// GoPlugins support
+// ONLY for *nix OS!!!
+type XModuleInfo struct {
+}
+type XModule interface {
+	load() XModuleInfo
+	unLoad() error
 }

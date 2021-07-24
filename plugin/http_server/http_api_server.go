@@ -42,7 +42,7 @@ func (hh *HttpApiServer) Load() *core.XPluginEnv {
 func (hh *HttpApiServer) Init(env *core.XPluginEnv) error {
 	gin.SetMode(gin.ReleaseMode)
 	hh.ginEngine = gin.New()
-	//hh.ginEngine.Use(Authorize())
+	hh.ginEngine.Use(Authorize())
 	hh.InitDb()
 	hh.ginEngine.LoadHTMLGlob(hh.Root)
 	ctx := context.Background()

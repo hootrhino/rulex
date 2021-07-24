@@ -1,5 +1,5 @@
 APP=rulex
-
+VERSION=preview
 .PHONY: all
 all:
 	make build
