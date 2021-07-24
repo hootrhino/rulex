@@ -14,6 +14,8 @@ require (
 	github.com/ngaut/log v0.0.0-20180314031856-b8e36e7ba5ac
 	github.com/plgd-dev/go-coap/v2 v2.4.0
 	github.com/shirou/gopsutil v3.21.6+incompatible
+	github.com/swaggo/files v0.0.0-20190704085106-630677cd5c14
+	github.com/swaggo/gin-swagger v1.3.0
 	github.com/tarm/serial v0.0.0-20180830185346-98f6abe2eb07
 	github.com/tklauser/go-sysconf v0.3.6 // indirect
 	github.com/urfave/cli/v2 v2.3.0
