@@ -119,6 +119,8 @@ func startResources(resource XResource, in *inEnd, e *RuleEngine) error {
 			log.Error(err1)
 			return err1
 		}
+		// Set resources to inend
+		in.Resource = resource
 		testResourceState(resource, e, in.Id)
 		go func(ctx context.Context) {
 			// 5 seconds
@@ -293,11 +295,14 @@ func (e *RuleEngine) AllRule() map[string]*rule {
 // Stop
 //
 func (e *RuleEngine) Stop() {
-	// Hooks     *map[string]XHook
-	// Rules     *map[string]*rule
-	// InEnds    *map[string]*inEnd
-	// OutEnds   *map[string]*outEnd
- 
+	log.Debug("Stop rulex")
+	for _, inEnd := range *e.InEnds {
+		inEnd.Resource.Stop()
+	}
+
+	for _, outEnds := range *e.OutEnds {
+		outEnds.Target.Stop()
+	}
 	runtime.GC()
 }
 

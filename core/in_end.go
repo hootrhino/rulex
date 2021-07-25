@@ -12,6 +12,7 @@ type inEnd struct {
 	Description string                  `json:"description"`
 	Binds       *map[string]rule        `json:"-"`
 	Config      *map[string]interface{} `json:"config"`
+	Resource    XResource               `json:"-"`
 }
 
 func (in *inEnd) GetState() State {

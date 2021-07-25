@@ -52,7 +52,7 @@ func main() {
 func Run() {
 
 	c := make(chan os.Signal, 1)
-	signal.Notify(c, syscall.SIGQUIT)
+	signal.Notify(c, syscall.SIGINT, syscall.SIGABRT)
 	engine := core.NewRuleEngine()
 	engine.Start()
 	////////
@@ -107,5 +107,6 @@ func Run() {
 		}
 	}
 	<-c
+	engine.Stop()
 	os.Exit(0)
 }
