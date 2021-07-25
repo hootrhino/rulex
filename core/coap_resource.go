@@ -20,7 +20,7 @@ type CoAPInEndResource struct {
 
 func NewCoAPInEndResource(inEndId string, e *RuleEngine) *CoAPInEndResource {
 	c := CoAPInEndResource{}
-	c.InEndId = inEndId
+	c.PointId = inEndId
 	c.router = mux.NewRouter()
 	c.e = e
 	return &c
@@ -36,7 +36,7 @@ func (cc *CoAPInEndResource) Start() error {
 	})
 	cc.router.Handle("/in", mux.HandlerFunc(func(w mux.ResponseWriter, msg *mux.Message) {
 		log.Debugf("Received Coap Data: %#v", msg)
-		cc.e.Work(cc.e.GetInEnd(cc.InEndId), msg.String())
+		cc.e.Work(cc.e.GetInEnd(cc.PointId), msg.String())
 		err := w.SetResponse(codes.Content, message.TextPlain, bytes.NewReader([]byte("ok")))
 		if err != nil {
 			log.Errorf("cannot set response: %v", err)
@@ -74,7 +74,7 @@ func (cc *CoAPInEndResource) Status() State {
 }
 
 func (cc *CoAPInEndResource) Register(inEndId string) error {
-	cc.InEndId = inEndId
+	cc.PointId = inEndId
 	return nil
 }
 

@@ -35,7 +35,7 @@ func NewRule(e *RuleEngine,
 		RegistryMaxSize:  1024 * 80,
 		RegistryGrowStep: 32,
 	})
-	LoadDbLib(e, vm)
+	LoadTargetLib(e, vm)
 	LoadJqLib(e, vm)
 	luajson.Preload(vm)
 	return &rule{

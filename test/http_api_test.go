@@ -96,6 +96,7 @@ func TestHttpAPi(t *testing.T) {
 	assert.Equal(t, m_Out_id_1.Description, "data to mongo")
 
 	//
+	//
 	// Create rule
 	//
 	log.Debug(
@@ -139,8 +140,18 @@ func TestHttpAPi(t *testing.T) {
 	publish()
 	//
 	assert.Equal(t, len((get("inends"))) > 100, true)
-	time.Sleep(3 * time.Second)
-
+	//
+	time.Sleep(1 * time.Second)
+	log.Debug("Create Http Target",
+		post(map[string]interface{}{
+			"type":        "HTTP",
+			"name":        "data to http server",
+			"description": "data to http server",
+			"config": map[string]interface{}{
+				"url": "http://127.0.0.1:3356/data",
+			},
+		}, "outends"),
+	)
 }
 
 func post(data map[string]interface{}, api string) string {
@@ -211,5 +222,15 @@ func TestHttpInEnd(t *testing.T) {
 				"port": "2581",
 			},
 		}, "inends"),
+	)
+	log.Debug("Create Http Target",
+		post(map[string]interface{}{
+			"type":        "HTTP",
+			"name":        "data to http server",
+			"description": "data to http server",
+			"config": map[string]interface{}{
+				"url": "http://127.0.0.1:3356/data",
+			},
+		}, "outends"),
 	)
 }

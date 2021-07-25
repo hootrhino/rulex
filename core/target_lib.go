@@ -9,12 +9,18 @@ import (
 )
 
 // Loader
-func LoadDbLib(e *RuleEngine, vm *lua.LState) int {
+func LoadTargetLib(e *RuleEngine, vm *lua.LState) int {
 	mod := vm.SetFuncs(vm.G.Global, map[string]lua.LGFunction{
 		"DataToMongo": func(l *lua.LState) int {
 			id := l.ToString(1)
 			data := l.ToString(2)
 			DataToMongo(e, id, data)
+			return 0
+		},
+		"DataToHttpServer": func(l *lua.LState) int {
+			id := l.ToString(1)
+			data := l.ToString(2)
+			DataToHttpServer(e, id, data)
 			return 0
 		},
 	})
@@ -31,6 +37,21 @@ func DataToMongo(e *RuleEngine, id string, data string) {
 	if err != nil {
 		statistics.IncOutFailed()
 		log.Error("Mongo data must be JSON format:", data, " ==> ", err)
+	} else {
+		statistics.IncOut()
+		(*e.OutEnds)[id].Target.To(bson)
+	}
+}
+
+//
+//
+//
+func DataToHttpServer(e *RuleEngine, id string, data string) {
+	bson := &map[string]interface{}{}
+	err := json.Unmarshal([]byte(data), bson)
+	if err != nil {
+		statistics.IncOutFailed()
+		log.Error("DataToHttpServer data must be JSON format:", data, " ==> ", err)
 	} else {
 		statistics.IncOut()
 		(*e.OutEnds)[id].Target.To(bson)

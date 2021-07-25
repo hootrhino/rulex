@@ -8,15 +8,14 @@ import (
 )
 
 type SerialResource struct {
-	*XStatus
+	XStatus
 	serialPort *serial.Port
-	e          *RuleEngine
 }
 
 func NewSerialResource(inEndId string, e *RuleEngine) *SerialResource {
 	s := SerialResource{}
-	s.InEndId = inEndId
-	s.e = e
+	s.PointId = inEndId
+	s.ruleEngine = e
 	//
 	return &s
 }
@@ -34,7 +33,7 @@ func (s *SerialResource) Register(inEndId string) error {
 }
 
 func (s *SerialResource) Start() error {
-	config := s.e.GetInEnd(s.InEndId).Config
+	config := s.ruleEngine.GetInEnd(s.PointId).Config
 	name := (*config)["name"]
 	baud := (*config)["baud"]
 	readTimeout := (*config)["read_timeout"]

@@ -11,28 +11,24 @@ import (
 
 //
 type MongoTarget struct {
-	enabled    bool
-	outEndId   string
+	XStatus
 	client     *mongo.Client
 	collection *mongo.Collection
-	e          *RuleEngine
 }
 
 func NewMongoTarget(e *RuleEngine) *MongoTarget {
-
-	return &MongoTarget{
-		enabled: false,
-		e:       e,
-	}
+	mg := new(MongoTarget)
+	mg.ruleEngine = e
+	return mg
 }
 
 func (m *MongoTarget) Register(outEndId string) error {
-	m.outEndId = outEndId
+	m.PointId = outEndId
 	return nil
 }
 
 func (m *MongoTarget) Start() error {
-	config := m.e.GetOutEnd(m.outEndId).Config
+	config := m.ruleEngine.GetOutEnd(m.PointId).Config
 	var clientOptions *options.ClientOptions
 	if (*config)["mongourl"] != nil {
 		clientOptions = options.Client().ApplyURI((*config)["mongourl"].(string))
@@ -54,7 +50,7 @@ func (m *MongoTarget) Start() error {
 		m.collection = client.Database("rulex").Collection("rulex_data")
 	}
 	m.client = client
-	m.enabled = true
+	m.Enable = true
 	log.Info("Mongodb connect successfully")
 	return nil
 
@@ -71,7 +67,7 @@ func (m *MongoTarget) Test(outEndId string) bool {
 }
 
 func (m *MongoTarget) Enabled() bool {
-	return m.enabled
+	return m.Enable
 }
 
 func (m *MongoTarget) Reload() {
@@ -84,7 +80,7 @@ func (m *MongoTarget) Pause() {
 }
 
 func (m *MongoTarget) Status() State {
-	return m.e.GetOutEnd(m.outEndId).State
+	return m.ruleEngine.GetOutEnd(m.PointId).State
 }
 
 func (m *MongoTarget) Stop() {

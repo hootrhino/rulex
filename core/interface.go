@@ -10,6 +10,7 @@ import "sync"
 // XResource implements struct type is actually worker
 //
 type ModelType int
+
 // 'T' means Type
 const (
 	T_NUMBER  ModelType = 1
@@ -80,8 +81,9 @@ type XHook interface {
 //
 type XStatus struct {
 	sync.Mutex
-	InEndId string
-	Enable  bool
+	PointId    string
+	Enable     bool
+	ruleEngine *RuleEngine
 }
 
 //
