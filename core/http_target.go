@@ -9,19 +9,19 @@ import (
 )
 
 func post(data interface{}, url string) (string, error) {
-	p, errs1 := json.Marshal(data)
-	if errs1 != nil {
-		return "", errs1
+	p, err1 := json.Marshal(data)
+	if err1 != nil {
+		return "", err1
 	}
-	r, errs2 := http.Post(url, "application/json", bytes.NewBuffer(p))
-	if errs2 != nil {
-		return "", errs2
+	r, err2 := http.Post(url, "application/json", bytes.NewBuffer(p))
+	if err2 != nil {
+		return "", err2
 	}
 	defer r.Body.Close()
 
-	body, errs3 := ioutil.ReadAll(r.Body)
-	if errs3 != nil {
-		return "", errs3
+	body, err3 := ioutil.ReadAll(r.Body)
+	if err3 != nil {
+		return "", err3
 	}
 	return string(body), nil
 }
@@ -57,6 +57,8 @@ func (ht *HTTPTarget) To(data interface{}) error {
 	_, err := post(data, (*config)["url"].(string))
 	return err
 }
+
+//
 func (ht *HTTPTarget) Stop() {
 
 }

@@ -100,6 +100,9 @@ func (e *RuleEngine) LoadInEnd(in *inEnd) error {
 	if in.Type == "COAP" {
 		return startResources(NewCoAPInEndResource(in.Id, e), in, e)
 	}
+	if in.Type == "GRPC" {
+		return startResources(NewGrpcInEndResource(in.Id, e), in, e)
+	}
 	if in.Type == "SERIAL" {
 		return startResources(NewSerialResource(in.Id, e), in, e)
 	}
@@ -320,7 +323,6 @@ func (e *RuleEngine) Work(in *inEnd, data string) (bool, error) {
 	return false, nil
 }
 func (e *RuleEngine) runLuaCallbacks(in *inEnd, data string) {
-	log.Debug(data)
 	for _, rule := range *in.Binds {
 		_, err := rule.ExecuteActions(lua.LString(data))
 		if err != nil {

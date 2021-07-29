@@ -2,6 +2,7 @@ package test
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
@@ -9,6 +10,7 @@ import (
 
 	"rulex/core"
 	httpserver "rulex/plugin/http_server"
+	"rulex/rulexrpc"
 
 	"testing"
 	"time"
@@ -16,6 +18,7 @@ import (
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/go-playground/assert/v2"
 	"github.com/ngaut/log"
+	"google.golang.org/grpc"
 )
 
 //
@@ -204,6 +207,7 @@ func publish() {
 	client := mqtt.NewClient(opts)
 	client.Connect().Wait()
 }
+
 func TestHttpInEnd(t *testing.T) {
 	engine := core.NewRuleEngine()
 	engine.Start()
@@ -233,4 +237,42 @@ func TestHttpInEnd(t *testing.T) {
 			},
 		}, "outends"),
 	)
+}
+
+func TestGrpcInEnd(t *testing.T) {
+	engine := core.NewRuleEngine()
+	engine.Start()
+	////////
+	hh := httpserver.NewHttpApiServer(2580, "../plugin/http_server/templates/*", engine)
+	if e := engine.LoadPlugin(hh); e != nil {
+		log.Fatal("rule load failed:", e)
+	}
+	hh.Truncate()
+	log.Debug(
+		post(map[string]interface{}{
+			"type":        "GRPC",
+			"name":        "GRPC API Server",
+			"description": "GRPC Resource",
+			"config": map[string]interface{}{
+				"port":      "2583",
+				"transport": "tcp",
+			},
+		}, "inends"),
+	)
+	//
+	conn, err := grpc.Dial("127.0.0.1:2583", grpc.WithInsecure())
+	if err != nil {
+		t.Error(err)
+	}
+	defer conn.Close()
+	c := rulexrpc.NewRulexRpcClient(conn)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	resp, err := c.Work(ctx, &rulexrpc.Data{
+		Value: `{"key":"value"}`,
+	})
+	if err != nil {
+		t.Error(err)
+	}
+	t.Log(resp)
 }

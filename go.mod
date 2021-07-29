@@ -11,18 +11,20 @@ require (
 	github.com/google/uuid v1.2.0
 	github.com/itchyny/gojq v0.12.4
 	github.com/mattn/go-sqlite3 v1.14.7
+	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
+	github.com/modern-go/reflect2 v1.0.1 // indirect
 	github.com/ngaut/log v0.0.0-20180314031856-b8e36e7ba5ac
 	github.com/plgd-dev/go-coap/v2 v2.4.0
 	github.com/shirou/gopsutil v3.21.6+incompatible
-	github.com/swaggo/files v0.0.0-20190704085106-630677cd5c14
-	github.com/swaggo/gin-swagger v1.3.0
 	github.com/tarm/serial v0.0.0-20180830185346-98f6abe2eb07
 	github.com/tklauser/go-sysconf v0.3.6 // indirect
+	github.com/ugorji/go v1.1.13 // indirect
 	github.com/urfave/cli/v2 v2.3.0
 	github.com/wwhai/gopher-json v0.0.0-20201124131017-552bb3c4c3bf
 	github.com/yuin/gopher-lua v0.0.0-20210529063254-f4c35e4016d9
 	go.mongodb.org/mongo-driver v1.5.4
-	google.golang.org/protobuf v1.26.0 // indirect
+	google.golang.org/grpc v1.32.0
+	google.golang.org/protobuf v1.27.1
 	gopkg.in/square/go-jose.v2 v2.5.1
 	gorm.io/driver/sqlite v1.1.4
 	gorm.io/gorm v1.21.11
