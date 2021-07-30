@@ -70,10 +70,9 @@ func (g *GrpcInEndResource) Start() error {
 	g.rpcServer = grpc.NewServer()
 	g.rulexServer = new(RulexRpcServer)
 	g.rulexServer.grpcInEndResource = g
-	g.rulexServer.grpcInEndResource.PointId = g.PointId
 	//
 	rulexrpc.RegisterRulexRpcServer(g.rpcServer, g.rulexServer)
-	go func(ctx context.Context) {
+	go func(context.Context) {
 		log.Info("GrpcInEndResource Started At:", listener.Addr())
 		g.rpcServer.Serve(listener)
 	}(context.Background())
