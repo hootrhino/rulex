@@ -19,3 +19,38 @@ RuleX 是一个轻量级规则引擎。主要用来中转上游数据和吐出�
 ## 文档
 <a href="https://wwhai.github.io/rulex_doc_html/inde core.html">查看文档</a>
 
+## Todo list
+以下功能计划在 ` 0.0.1 ` 版本发布
+### 完整支持以下数据输入端
+- MQTT Client
+- HTTP Post
+- COAP Client
+- Grpc Client
+- UART Input
+- CAN 总线
+- MODBUS
+
+### 完整支持以下数据输出端
+- MongoDB
+- Mysql
+- Mqtt Server
+- Redis
+- kafka
+- Flink
+
+### 性能测试报告
+- windows(AMD64) 测试
+- macos(AMD64) 测试
+- Linux(AMD64) 测试
+- ARM 芯片测试
+
+### 以下特性
+- 完整命令行支持
+- HTTP API 支持
+- 数据迁移支持
+- 容器化部署支持
+- 更友好的文档
+- 二次开发教程
+
+> 这可能是个很漫长的过程，不过每天都会完善起来
+> 
