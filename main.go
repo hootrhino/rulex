@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/signal"
 	"rulex/core"
+	"rulex/plugin/demo_plugin"
 	httpserver "rulex/plugin/http_server"
 	"strings"
 	"syscall"
@@ -55,10 +56,14 @@ func Run() {
 	signal.Notify(c, syscall.SIGINT, syscall.SIGABRT)
 	engine := core.NewRuleEngine()
 	engine.Start()
-	////////
 	hh := httpserver.NewHttpApiServer(2580, "plugin/http_server/templates/*", engine)
-	if e := engine.LoadPlugin(hh); e != nil {
-		log.Fatal("rule load failed:", e)
+	// HttpApiServer loaded default
+	if err := engine.LoadPlugin(hh); err != nil {
+		log.Fatal("rule load failed:", err)
+	}
+	// Load a demo plugin
+	if err := engine.LoadPlugin(demo_plugin.NewDemoPlugin()); err != nil {
+		log.Fatal("rule load failed:", err)
 	}
 	//
 	// Load inend from sqlite
@@ -106,7 +111,8 @@ func Run() {
 			log.Error("OutEnd load failed:", err)
 		}
 	}
-	<-c
+	signal := <-c
+	log.Info(signal)
 	engine.Stop()
 	os.Exit(0)
 }

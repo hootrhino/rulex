@@ -49,6 +49,16 @@ func cros(c *gin.Context) {
 }
 
 //
+// Add api route
+//
+func (h *HttpApiServer) addRoute(f func(*gin.Context, *HttpApiServer, *core.RuleEngine)) func(*gin.Context) {
+
+	return func(c *gin.Context) {
+		f(c, h, h.ruleEngine)
+	}
+}
+
+//
 // LoadNewestInEnd
 //
 func (hh *HttpApiServer) LoadNewestInEnd(uuid string) error {
