@@ -9,6 +9,16 @@ build:
 	go mod tidy
 	go build -ldflags "-s -w" -o ${APP}-${VERSION} main.go
 
+.PHONY: xx
+xx:
+	make build
+
+.PHONY: windows
+windows:
+	go mod tidy
+	SET GOOS=windows
+	go build -ldflags "-s -w" -o ${APP}-${VERSION}.exe main.go
+
 .PHONY: package
 package:
 	echo "{" > metainfo.json
