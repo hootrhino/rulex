@@ -95,15 +95,15 @@ func (hh *HttpApiServer) Start(env *core.XPluginEnv) error {
 	//
 	// Create InEnd
 	//
-	hh.ginEngine.POST(API_ROOT+"inends", hh.addRoute(InEnds))
+	hh.ginEngine.POST(API_ROOT+"inends", hh.addRoute(CreateInend))
 	//
 	// Create OutEnd
 	//
-	hh.ginEngine.POST(API_ROOT+"outends", hh.addRoute(OutEnds))
+	hh.ginEngine.POST(API_ROOT+"outends", hh.addRoute(CreateOutEnd))
 	//
 	// Create rule
 	//
-	hh.ginEngine.POST(API_ROOT+"rules", hh.addRoute(Rules))
+	hh.ginEngine.POST(API_ROOT+"rules", hh.addRoute(CreateRule))
 	//
 	// Delete inend by UUID
 	//

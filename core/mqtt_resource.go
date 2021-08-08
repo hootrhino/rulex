@@ -10,7 +10,7 @@ import (
 )
 
 //
-const DEFAULT_CLIENTID string = "X_IN_END_CLIENT"
+const DEFAULT_CLIENT_ID string = "X_IN_END_CLIENT"
 const DEFAULT_USERNAME string = "X_IN_END"
 const DEFAULT_PASSWORD string = "X_IN_END"
 const DEFAULT_TOPIC string = "$X_IN_END"
@@ -55,7 +55,7 @@ func (mm *MqttInEndResource) Start() error {
 	if (*config)["clientId"] != nil {
 		opts.SetClientID("x-client-main-" + (*config)["clientId"].(string))
 	} else {
-		opts.SetPassword(DEFAULT_CLIENTID)
+		opts.SetPassword(DEFAULT_CLIENT_ID)
 	}
 	if (*config)["username"] != nil {
 		opts.SetUsername((*config)["username"].(string))
