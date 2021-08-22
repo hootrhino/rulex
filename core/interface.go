@@ -134,3 +134,19 @@ type XModule interface {
 	load() XModuleInfo
 	unLoad() error
 }
+
+//--------------------------------------------------------------
+// Remote Stream
+// ┌───────────────┐          ┌────────────────┐
+// │               │          │                │
+// │   RULEX       │ ◄─────── │   SERVER       │
+// │               │ ◄─────── │                │
+// └───────────────┘          └────────────────┘
+// Rulex Stream use GRPC for transport layer
+//--------------------------------------------------------------
+type XStream interface {
+	Start() error
+	OnStreamApproached(data string) error
+	State() XStatus
+	Close()
+}
