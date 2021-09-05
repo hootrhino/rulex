@@ -150,3 +150,11 @@ type XStream interface {
 	State() XStatus
 	Close()
 }
+
+//
+// 驱动接口
+//
+type XDriver interface {
+	Init() error
+	Stop() error
+}

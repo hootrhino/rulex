@@ -1,38 +1,40 @@
 package core
 
 import (
+	"rulex/gpio"
 	"time"
 
 	"github.com/ngaut/log"
 	"github.com/tarm/serial"
 )
 
-type SerialResource struct {
+type LoraModuleResource struct {
 	XStatus
 	serialPort *serial.Port
+	loraDriver *gpio.ATK_LORA_01Driver
 }
 
-func NewSerialResource(inEndId string, e *RuleEngine) *SerialResource {
-	s := SerialResource{}
+func NewLoraModuleResource(inEndId string, e *RuleEngine) *LoraModuleResource {
+	s := LoraModuleResource{}
 	s.PointId = inEndId
 	s.ruleEngine = e
 	//
 	return &s
 }
 
-func (mm *SerialResource) DataModels() *map[string]XDataModel {
+func (mm *LoraModuleResource) DataModels() *map[string]XDataModel {
 	return &map[string]XDataModel{}
 }
 
-func (s *SerialResource) Test(inEndId string) bool {
+func (s *LoraModuleResource) Test(inEndId string) bool {
 	return true
 }
 
-func (s *SerialResource) Register(inEndId string) error {
+func (s *LoraModuleResource) Register(inEndId string) error {
 	return nil
 }
 
-func (s *SerialResource) Start() error {
+func (s *LoraModuleResource) Start() error {
 	config := s.ruleEngine.GetInEnd(s.PointId).Config
 	name := (*config)["name"]
 	baud := (*config)["baud"]
@@ -50,29 +52,30 @@ func (s *SerialResource) Start() error {
 		StopBits:    serial.StopBits(stopbits.(int)),
 	})
 	if err != nil {
-		log.Error("SerialResource start failed:", err)
+		log.Error("LoraModuleResource start failed:", err)
 		return err
 	} else {
 		s.serialPort = serialPort
-		log.Info("SerialResource start success:")
+		s.loraDriver = gpio.NewATK_LORA_01Driver(serialPort)
+		log.Info("LoraModuleResource start success:")
 		return nil
 	}
 }
 
-func (s *SerialResource) Enabled() bool {
+func (s *LoraModuleResource) Enabled() bool {
 	return true
 }
 
-func (s *SerialResource) Reload() {
+func (s *LoraModuleResource) Reload() {
 }
 
-func (s *SerialResource) Pause() {
+func (s *LoraModuleResource) Pause() {
 
 }
 
-func (s *SerialResource) Status() State {
+func (s *LoraModuleResource) Status() State {
 	return UP
 }
 
-func (s *SerialResource) Stop() {
+func (s *LoraModuleResource) Stop() {
 }

@@ -1,91 +1,94 @@
 package gpio
 
-type ATK_LORA_01 struct {
+import "github.com/tarm/serial"
+
+//------------------------------------------------------------------------
+// 内部函数
+//------------------------------------------------------------------------
+
+//
+//
+//
+func write(a *ATK_LORA_01Driver, k string) (error, string) {
+	_, err := a.serialPort.Write([]byte(k + "\r\n"))
+	if err != nil {
+		return err, ""
+	}
+	for {
+		response := make([]byte, 0)
+		size, err := a.serialPort.Read(response)
+		if err != nil {
+			return err, ""
+		}
+		if size > 0 {
+			return nil, string(response)
+		}
+	}
+}
+
+//------------------------------------------------------------------------
+
+//
+// 正点原子的 Lora 模块封装
+//
+type ATK_LORA_01Driver struct {
+	serialPort *serial.Port
 }
 
 //
-// 测试模块是否可用
+// 初始化一个驱动
 //
-func Test() string {
-	return "OK"
+func NewATK_LORA_01Driver(serialPort *serial.Port) *ATK_LORA_01Driver {
+	m := new(ATK_LORA_01Driver)
+	m.serialPort = serialPort
+	return m
+}
+
+func (a *ATK_LORA_01Driver) Test() (error, string) {
+	return write(a, "AT\r\n")
 }
 
 // 获取参数
-func GetProperty(k string) string {
-	// 查询型号
-	if k == "AT+MODEL?" {
-
-	}
-	// 查村软件版本号
-	if k == "AT+CGMR?" {
-
-	}
-	// 查询地址
-	if k == "AT+ADDR=?" {
-
-	}
-	// 查询功率
-	if k == "AT+TPOWER=?" {
-
-	}
-	// 查询工作模式
-	if k == "AT+CWMODE" {
-
-	}
-	// 查询发送状态
-	if k == "AT+TMODE=?" {
-
-	}
-	// 查询无线速率和信道
-	if k == "AT+WLRATE=?" {
-
-	}
-	// 查询休眠时间
-	if k == "AT+WLTIME=?" {
-
-	}
-	// 查询串口参数
-	if k == "AT+UART=?" {
-
-	}
-
-	return "NO_SUCH_COMMAND"
+func (a *ATK_LORA_01Driver) GetProperty(k string) (error, string) {
+	return write(a, k)
 }
-func SetEcho() string {
-	return "OK"
+func (a *ATK_LORA_01Driver) SetEcho() (error, string) {
+	return write(a, "")
 }
-func Reset() string {
-	return "OK"
+func (a *ATK_LORA_01Driver) Reset() (error, string) {
+	return write(a, "")
 }
-func SaveConfig() string {
-	return "OK"
+func (a *ATK_LORA_01Driver) SaveConfig() (error, string) {
+	return write(a, "")
 }
-func RevoverFactory() string {
-	return "OK"
+func (a *ATK_LORA_01Driver) RevoverFactory() (error, string) {
+	return write(a, "")
 }
-func SetAddr(k string, v string) string {
-	return "OK"
+func (a *ATK_LORA_01Driver) SetAddr(k string, v string) (error, string) {
+	return write(a, "")
 }
-func SetPower(power int) string {
-	return "OK"
+func (a *ATK_LORA_01Driver) SetPower(power int) (error, string) {
+	return write(a, "")
 }
-func SetCWMode(mode int) string {
-	return "OK"
+func (a *ATK_LORA_01Driver) SetCWMode(mode int) (error, string) {
+	return write(a, "")
 }
-func SetTMode(mode int) string {
-	return "OK"
+func (a *ATK_LORA_01Driver) SetTMode(mode int) (error, string) {
+	return write(a, "")
 }
-func SetRate(rate int, channel int) string {
-	return "OK"
+func (a *ATK_LORA_01Driver) SetRate(rate int, channel int) (error, string) {
+	return write(a, "")
 }
-func SetTime(time int) string {
-	return "OK"
+func (a *ATK_LORA_01Driver) SetTime(time int) (error, string) {
+	return write(a, "")
 }
 
 // 设置串口参数
+// -----------------------------
 // AT+UART=<bps>,<par>
 // +UART:<bps>,<par> OK
-//
-func SetUart(bps int, par int) string {
-	return "OK"
+// -----------------------------
+
+func (a *ATK_LORA_01Driver) SetUart(bps int, par int) (error, string) {
+	return write(a, "")
 }
