@@ -103,9 +103,9 @@ func (e *RuleEngine) LoadInEnd(in *inEnd) error {
 	if in.Type == "GRPC" {
 		return startResources(NewGrpcInEndResource(in.Id, e), in, e)
 	}
-	if in.Type == "SERIAL" {
-		return startResources(NewSerialResource(in.Id, e), in, e)
-	}
+	// if in.Type == "SERIAL" {
+	// 	return startResources(NewSerialResource(in.Id, e), in, e)
+	// }
 	return errors.New("unsupported rule type:" + in.Type)
 }
 

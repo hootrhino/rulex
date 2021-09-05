@@ -16,7 +16,6 @@ require (
 	github.com/ngaut/log v0.0.0-20180314031856-b8e36e7ba5ac
 	github.com/plgd-dev/go-coap/v2 v2.4.0
 	github.com/shirou/gopsutil v3.21.6+incompatible
-	github.com/stianeikeland/go-rpio/v4 v4.5.0
 	github.com/tarm/serial v0.0.0-20180830185346-98f6abe2eb07
 	github.com/tklauser/go-sysconf v0.3.6 // indirect
 	github.com/ugorji/go v1.1.13 // indirect
