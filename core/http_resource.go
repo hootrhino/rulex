@@ -11,20 +11,20 @@ import (
 //
 type HttpInEndResource struct {
 	XStatus
-	engine     *gin.Engine
+	engine *gin.Engine
 }
 
-func NewHttpInEndResource(inEndId string, e *RuleEngine) *HttpInEndResource {
+func NewHttpInEndResource(inEndId string, e RuleX) *HttpInEndResource {
 	h := HttpInEndResource{}
 	h.PointId = inEndId
 	h.engine = gin.Default()
-	h.ruleEngine = e
+	h.RuleEngine = e
 	return &h
 }
 
 //
 func (hh *HttpInEndResource) Start() error {
-	config := hh.ruleEngine.GetInEnd(hh.PointId).Config
+	config := hh.RuleEngine.GetInEnd(hh.PointId).Config
 	hh.engine.GET("/in", func(c *gin.Context) {
 		inForm := struct{ data string }{}
 		err := c.BindJSON(inForm)
@@ -33,7 +33,7 @@ func (hh *HttpInEndResource) Start() error {
 				"message": err.Error(),
 			})
 		} else {
-			hh.ruleEngine.Work(hh.ruleEngine.GetInEnd(hh.PointId), inForm.data)
+			hh.RuleEngine.Work(hh.RuleEngine.GetInEnd(hh.PointId), inForm.data)
 			c.JSON(200, gin.H{
 				"message": "ok",
 				"data":    inForm,
@@ -64,7 +64,7 @@ func (hh *HttpInEndResource) Pause() {
 
 }
 func (hh *HttpInEndResource) Status() State {
-	return hh.ruleEngine.GetInEnd(hh.PointId).State
+	return hh.RuleEngine.GetInEnd(hh.PointId).State
 }
 
 func (hh *HttpInEndResource) Register(inEndId string) error {

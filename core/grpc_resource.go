@@ -21,8 +21,8 @@ type RulexRpcServer struct {
 
 //
 func (r *RulexRpcServer) Work(ctx context.Context, in *rulexrpc.Data) (*rulexrpc.Response, error) {
-	r.grpcInEndResource.ruleEngine.Work(
-		r.grpcInEndResource.ruleEngine.GetInEnd(r.grpcInEndResource.PointId),
+	r.grpcInEndResource.RuleEngine.Work(
+		r.grpcInEndResource.RuleEngine.GetInEnd(r.grpcInEndResource.PointId),
 		in.Value,
 	)
 	return &rulexrpc.Response{
@@ -41,16 +41,16 @@ type GrpcInEndResource struct {
 }
 
 //
-func NewGrpcInEndResource(inEndId string, e *RuleEngine) *GrpcInEndResource {
+func NewGrpcInEndResource(inEndId string, e RuleX) *GrpcInEndResource {
 	h := GrpcInEndResource{}
 	h.PointId = inEndId
-	h.ruleEngine = e
+	h.RuleEngine = e
 	return &h
 }
 
 //
 func (g *GrpcInEndResource) Start() error {
-	config := g.ruleEngine.GetInEnd(g.PointId).Config
+	config := g.RuleEngine.GetInEnd(g.PointId).Config
 	port := ":" + (*config)["port"].(string)
 	// transport
 	// TCP SSL HTTP HTTPS
@@ -95,7 +95,7 @@ func (g *GrpcInEndResource) Pause() {
 
 }
 func (g *GrpcInEndResource) Status() State {
-	return g.ruleEngine.GetInEnd(g.PointId).State
+	return g.RuleEngine.GetInEnd(g.PointId).State
 }
 
 func (g *GrpcInEndResource) Register(inEndId string) error {

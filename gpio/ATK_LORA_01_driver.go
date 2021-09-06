@@ -7,7 +7,7 @@ import "github.com/tarm/serial"
 //------------------------------------------------------------------------
 
 //
-//
+// 串口数据写入
 //
 func write(a *ATK_LORA_01Driver, k string) (error, string) {
 	_, err := a.serialPort.Write([]byte(k + "\r\n"))
@@ -44,41 +44,86 @@ func NewATK_LORA_01Driver(serialPort *serial.Port) *ATK_LORA_01Driver {
 	return m
 }
 
+// -----------------------------
+// AT\r\n
+// -----------------------------
+
 func (a *ATK_LORA_01Driver) Test() (error, string) {
 	return write(a, "AT\r\n")
 }
 
+// 设置命令回显
 // 获取参数
 func (a *ATK_LORA_01Driver) GetProperty(k string) (error, string) {
 	return write(a, k)
 }
+
+// 设置命令回显
+// -----------------------------
+
 func (a *ATK_LORA_01Driver) SetEcho() (error, string) {
 	return write(a, "")
 }
+
+// 重置参数
+// -----------------------------
+
 func (a *ATK_LORA_01Driver) Reset() (error, string) {
 	return write(a, "")
 }
+
+// 保存参数
+// -----------------------------
+
 func (a *ATK_LORA_01Driver) SaveConfig() (error, string) {
 	return write(a, "")
 }
+
+// 恢复出厂
+// -----------------------------
+
 func (a *ATK_LORA_01Driver) RevoverFactory() (error, string) {
 	return write(a, "")
 }
+
+// 设置地址
+// -----------------------------
+
 func (a *ATK_LORA_01Driver) SetAddr(k string, v string) (error, string) {
 	return write(a, "")
 }
+
+// 设置功率
+// -----------------------------
+
 func (a *ATK_LORA_01Driver) SetPower(power int) (error, string) {
 	return write(a, "")
 }
+
+// 设置WMode
+// -----------------------------
+
 func (a *ATK_LORA_01Driver) SetCWMode(mode int) (error, string) {
 	return write(a, "")
 }
+
+// 设置SetTMode
+// -----------------------------
+
 func (a *ATK_LORA_01Driver) SetTMode(mode int) (error, string) {
 	return write(a, "")
 }
+
+// 设置波特率
+// -----------------------------
+
 func (a *ATK_LORA_01Driver) SetRate(rate int, channel int) (error, string) {
 	return write(a, "")
 }
+
+// 设置时间
+// -----------------------------
+
 func (a *ATK_LORA_01Driver) SetTime(time int) (error, string) {
 	return write(a, "")
 }

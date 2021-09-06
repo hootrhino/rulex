@@ -17,7 +17,7 @@ type LoraModuleResource struct {
 func NewLoraModuleResource(inEndId string, e *RuleEngine) *LoraModuleResource {
 	s := LoraModuleResource{}
 	s.PointId = inEndId
-	s.ruleEngine = e
+	s.RuleEngine = e
 	//
 	return &s
 }
@@ -35,7 +35,7 @@ func (s *LoraModuleResource) Register(inEndId string) error {
 }
 
 func (s *LoraModuleResource) Start() error {
-	config := s.ruleEngine.GetInEnd(s.PointId).Config
+	config := s.RuleEngine.GetInEnd(s.PointId).Config
 	name := (*config)["name"]
 	baud := (*config)["baud"]
 	readTimeout := (*config)["read_timeout"]

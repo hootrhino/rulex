@@ -21,6 +21,9 @@ const (
 	T_RAW     ModelType = 6
 )
 
+//
+// 驱动的数据模型
+//
 type XDataModel struct {
 	Type      ModelType
 	Name      string
@@ -28,6 +31,42 @@ type XDataModel struct {
 	MinLength int
 }
 
+//
+// RuleX interface
+//
+type RuleX interface {
+	Start() *map[string]interface{}
+	Work(in *inEnd, data string) (bool, error)
+	//
+	GetConfig(k string) interface{}
+	//
+	LoadInEnd(in *inEnd) error
+	GetInEnd(id string) *inEnd
+	SaveInEnd(in *inEnd)
+	RemoveInEnd(id string)
+	AllInEnd() map[string]*inEnd
+	//
+	LoadOutEnd(out *outEnd) error
+	AllOutEnd() map[string]*outEnd
+	GetOutEnd(id string) *outEnd
+	SaveOutEnd(out *outEnd)
+	RemoveOutEnd(out *outEnd)
+	//
+	LoadHook(h XHook) error
+	//
+	LoadPlugin(p XPlugin) error
+	AllPlugins() *map[string]*XPluginMetaInfo
+	//
+	LoadRule(r *rule) error
+	AllRule() map[string]*rule
+	RemoveRule(uuid string) error
+	//
+	Stop()
+}
+
+//
+// XResource: 终端资源，比如实际上的 MQTT 客户端
+//
 type XResource interface {
 	Test(inEndId string) bool      //0
 	Register(inEndId string) error //1
@@ -83,7 +122,7 @@ type XStatus struct {
 	sync.Mutex
 	PointId    string
 	Enable     bool
-	ruleEngine *RuleEngine
+	RuleEngine RuleX
 }
 
 //

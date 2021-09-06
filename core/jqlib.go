@@ -9,7 +9,7 @@ import (
 )
 
 // Loader
-func LoadJqLib(e *RuleEngine, vm *lua.LState) int {
+func LoadJqLib(e RuleX, vm *lua.LState) int {
 	mod := vm.SetFuncs(vm.G.Global, map[string]lua.LGFunction{
 		"Select": func(l *lua.LState) int {
 			jqExpression := l.ToString(1)

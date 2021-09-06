@@ -23,7 +23,7 @@ type rule struct {
 //
 // New
 //
-func NewRule(e *RuleEngine,
+func NewRule(e RuleX,
 	name string,
 	description string,
 	from []string,

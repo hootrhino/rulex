@@ -15,6 +15,7 @@ import (
 	lua "github.com/yuin/gopher-lua"
 )
 
+// Resource State
 type State int
 
 const (
@@ -23,7 +24,7 @@ const (
 )
 
 //
-//
+// RuleEngine
 //
 type RuleEngine struct {
 	sync.Mutex
@@ -35,12 +36,10 @@ type RuleEngine struct {
 	ConfigMap *map[string]interface{}      `json:"configMap"`
 }
 
-func (e *RuleEngine) GetPlugins() *map[string]*XPluginMetaInfo {
-	e.Lock()
-	defer e.Unlock()
-	return e.Plugins
-}
-func NewRuleEngine() *RuleEngine {
+//
+//
+//
+func NewRuleEngine() RuleX {
 	return &RuleEngine{
 		Plugins:   &map[string]*XPluginMetaInfo{},
 		Hooks:     &map[string]XHook{},
@@ -49,6 +48,20 @@ func NewRuleEngine() *RuleEngine {
 		OutEnds:   &map[string]*outEnd{},
 		ConfigMap: &map[string]interface{}{},
 	}
+}
+
+//
+//
+//
+func (e *RuleEngine) GetPlugins() *map[string]*XPluginMetaInfo {
+	e.Lock()
+	defer e.Unlock()
+	return e.Plugins
+}
+func (e *RuleEngine) AllPlugins() *map[string]*XPluginMetaInfo {
+	e.Lock()
+	defer e.Unlock()
+	return e.Plugins
 }
 
 //
@@ -163,7 +176,7 @@ func (e *RuleEngine) LoadOutEnd(out *outEnd) error {
 //
 //
 //
-func tryCreateOutEnd(out *outEnd, e *RuleEngine) error {
+func tryCreateOutEnd(out *outEnd, e RuleX) error {
 	if out.Type == "mongo" {
 		return startTarget(NewMongoTarget(e), out, e)
 	}
@@ -177,7 +190,7 @@ func tryCreateOutEnd(out *outEnd, e *RuleEngine) error {
 // Target life cycle:
 // Register -> Start -> Test
 //
-func startTarget(target XTarget, out *outEnd, e *RuleEngine) error {
+func startTarget(target XTarget, out *outEnd, e RuleX) error {
 	// Important!!! Must save outend first
 	e.SaveOutEnd(out)
 	out.Target = target
@@ -206,7 +219,7 @@ func startTarget(target XTarget, out *outEnd, e *RuleEngine) error {
 }
 
 // Test Target State
-func testTargetState(target XTarget, e *RuleEngine, id string) {
+func testTargetState(target XTarget, e RuleX, id string) {
 	if !target.Test(id) {
 		e.GetOutEnd(id).SetState(DOWN)
 		log.Errorf("Target %s DOWN", id)
@@ -526,7 +539,7 @@ func (e *RuleEngine) AllOutEnd() map[string]*outEnd {
 
 //
 // LoadHook
-//
+//F
 func (e *RuleEngine) LoadHook(h XHook) error {
 	if (*e.Hooks)[h.Name()] != nil {
 		return errors.New("hook have been loaded")

@@ -16,9 +16,9 @@ type MongoTarget struct {
 	collection *mongo.Collection
 }
 
-func NewMongoTarget(e *RuleEngine) *MongoTarget {
+func NewMongoTarget(e RuleX) *MongoTarget {
 	mg := new(MongoTarget)
-	mg.ruleEngine = e
+	mg.RuleEngine = e
 	return mg
 }
 
@@ -28,7 +28,7 @@ func (m *MongoTarget) Register(outEndId string) error {
 }
 
 func (m *MongoTarget) Start() error {
-	config := m.ruleEngine.GetOutEnd(m.PointId).Config
+	config := m.RuleEngine.GetOutEnd(m.PointId).Config
 	var clientOptions *options.ClientOptions
 	if (*config)["mongourl"] != nil {
 		clientOptions = options.Client().ApplyURI((*config)["mongourl"].(string))
@@ -80,7 +80,7 @@ func (m *MongoTarget) Pause() {
 }
 
 func (m *MongoTarget) Status() State {
-	return m.ruleEngine.GetOutEnd(m.PointId).State
+	return m.RuleEngine.GetOutEnd(m.PointId).State
 }
 
 func (m *MongoTarget) Stop() {

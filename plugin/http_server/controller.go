@@ -19,24 +19,24 @@ import (
 //
 // Render dashboard index
 //
-func Index(c *gin.Context, hh *HttpApiServer, e *core.RuleEngine) {
+func Index(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
 	c.HTML(http.StatusOK, "dashboard.html", gin.H{})
 }
 
 //
 // Get all plugins
 //
-func Plugins(c *gin.Context, hh *HttpApiServer, e *core.RuleEngine) {
+func Plugins(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
 	cros(c)
 	c.PureJSON(http.StatusOK, gin.H{
-		"plugins": e.GetPlugins(),
+		"plugins": e.AllPlugins(),
 	})
 }
 
 //
 // Get system infomation
 //
-func System(c *gin.Context, hh *HttpApiServer, e *core.RuleEngine) {
+func System(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
 	cros(c)
 	//
 	percent, _ := cpu.Percent(time.Second, false)
@@ -55,7 +55,7 @@ func System(c *gin.Context, hh *HttpApiServer, e *core.RuleEngine) {
 //
 // Get all inends
 //
-func InEnds(c *gin.Context, hh *HttpApiServer, e *core.RuleEngine) {
+func InEnds(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
 	cros(c)
 	c.JSON(http.StatusOK, gin.H{"inends": e.AllInEnd()})
 }
@@ -63,7 +63,7 @@ func InEnds(c *gin.Context, hh *HttpApiServer, e *core.RuleEngine) {
 //
 // Get all outends
 //
-func OutEnds(c *gin.Context, hh *HttpApiServer, e *core.RuleEngine) {
+func OutEnds(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
 	cros(c)
 	c.JSON(http.StatusOK, gin.H{"outends": e.AllOutEnd()})
 }
@@ -71,7 +71,7 @@ func OutEnds(c *gin.Context, hh *HttpApiServer, e *core.RuleEngine) {
 //
 // Get all rules
 //
-func Rules(c *gin.Context, hh *HttpApiServer, e *core.RuleEngine) {
+func Rules(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
 	cros(c)
 	c.JSON(http.StatusOK, gin.H{"rules": e.AllRule()})
 }
@@ -79,7 +79,7 @@ func Rules(c *gin.Context, hh *HttpApiServer, e *core.RuleEngine) {
 //
 // Get statistics data
 //
-func Statistics(c *gin.Context, hh *HttpApiServer, e *core.RuleEngine) {
+func Statistics(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
 	cros(c)
 	c.JSON(http.StatusOK, gin.H{"statistics": statistics.AllStatistics()})
 }
@@ -87,7 +87,7 @@ func Statistics(c *gin.Context, hh *HttpApiServer, e *core.RuleEngine) {
 //
 //
 //
-func Users(c *gin.Context, hh *HttpApiServer, e *core.RuleEngine) {
+func Users(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
 	cros(c)
 	type Form struct {
 		Username string `json:"username" binding:"required"`
@@ -110,7 +110,7 @@ func Users(c *gin.Context, hh *HttpApiServer, e *core.RuleEngine) {
 //
 // Create InEnd
 //
-func CreateInend(c *gin.Context, hh *HttpApiServer, e *core.RuleEngine) {
+func CreateInend(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
 	cros(c)
 	type Form struct {
 		Type        string                 `json:"type" binding:"required"`
@@ -148,7 +148,7 @@ func CreateInend(c *gin.Context, hh *HttpApiServer, e *core.RuleEngine) {
 //
 // Create OutEnd
 //
-func CreateOutEnd(c *gin.Context, hh *HttpApiServer, e *core.RuleEngine) {
+func CreateOutEnd(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
 	cros(c)
 	type Form struct {
 		Type        string                 `json:"type" binding:"required"`
@@ -187,7 +187,7 @@ func CreateOutEnd(c *gin.Context, hh *HttpApiServer, e *core.RuleEngine) {
 //
 // Create rule
 //
-func CreateRule(c *gin.Context, hh *HttpApiServer, e *core.RuleEngine) {
+func CreateRule(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
 	cros(c)
 	type Form struct {
 		From        string `json:"from" binding:"required"`
@@ -256,7 +256,7 @@ func CreateRule(c *gin.Context, hh *HttpApiServer, e *core.RuleEngine) {
 //
 // Delete inend by UUID
 //
-func DeleteInend(c *gin.Context, hh *HttpApiServer, e *core.RuleEngine) {
+func DeleteInend(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
 	cros(c)
 	uuid, exists := c.GetQuery("uuid")
 	if exists {
@@ -273,7 +273,7 @@ func DeleteInend(c *gin.Context, hh *HttpApiServer, e *core.RuleEngine) {
 //
 // Delete outend by UUID
 //
-func DeleteOutend(c *gin.Context, hh *HttpApiServer, e *core.RuleEngine) {
+func DeleteOutend(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
 	cros(c)
 	uuid, exists := c.GetQuery("uuid")
 	if exists {
@@ -290,7 +290,7 @@ func DeleteOutend(c *gin.Context, hh *HttpApiServer, e *core.RuleEngine) {
 //
 // Delete rule by UUID
 //
-func DeleteRule(c *gin.Context, hh *HttpApiServer, e *core.RuleEngine) {
+func DeleteRule(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
 	cros(c)
 	uuid, exists := c.GetQuery("uuid")
 	if exists {
@@ -303,10 +303,11 @@ func DeleteRule(c *gin.Context, hh *HttpApiServer, e *core.RuleEngine) {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": "rule not exists"})
 	}
 }
+
 //
 // Auth
 //
-func Auth(c *gin.Context, hh *HttpApiServer, e *core.RuleEngine) {
+func Auth(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
 	cros(c)
 	type Form struct {
 		Username string `json:"username" binding:"required"`

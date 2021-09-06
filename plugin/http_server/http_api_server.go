@@ -21,10 +21,10 @@ type HttpApiServer struct {
 	Root       string
 	sqliteDb   *gorm.DB
 	ginEngine  *gin.Engine
-	ruleEngine *core.RuleEngine
+	ruleEngine core.RuleX
 }
 
-func NewHttpApiServer(port int, root string, e *core.RuleEngine) *HttpApiServer {
+func NewHttpApiServer(port int, root string, e core.RuleX) *HttpApiServer {
 	return &HttpApiServer{Port: port, Root: root, ruleEngine: e}
 }
 func (hh *HttpApiServer) Load() *core.XPluginEnv {

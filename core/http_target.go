@@ -53,7 +53,7 @@ func (ht *HTTPTarget) Status() State {
 
 }
 func (ht *HTTPTarget) To(data interface{}) error {
-	config := ht.ruleEngine.GetOutEnd(ht.PointId).Config
+	config := ht.RuleEngine.GetOutEnd(ht.PointId).Config
 	_, err := post(data, (*config)["url"].(string))
 	return err
 }

@@ -21,10 +21,10 @@ type MqttInEndResource struct {
 	client mqtt.Client
 }
 
-func NewMqttInEndResource(inEndId string, e *RuleEngine) *MqttInEndResource {
+func NewMqttInEndResource(inEndId string, e RuleX) *MqttInEndResource {
 	m := new(MqttInEndResource)
 	m.PointId = inEndId
-	m.ruleEngine = e
+	m.RuleEngine = e
 	return m
 }
 
@@ -33,7 +33,7 @@ func (mm *MqttInEndResource) Start() error {
 	var messageHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
 		if mm.Enable {
 			log.Debug("Message payload:", string(msg.Payload()))
-			mm.ruleEngine.Work(mm.ruleEngine.GetInEnd(mm.PointId), string(msg.Payload()))
+			mm.RuleEngine.Work(mm.RuleEngine.GetInEnd(mm.PointId), string(msg.Payload()))
 		}
 	}
 	//
@@ -41,15 +41,15 @@ func (mm *MqttInEndResource) Start() error {
 		log.Infof("Mqtt InEnd Connected Success")
 		// TODO support multipul topics
 		client.Subscribe(DEFAULT_TOPIC, 2, nil)
-		mm.ruleEngine.GetInEnd(mm.PointId).SetState(UP)
+		mm.RuleEngine.GetInEnd(mm.PointId).SetState(UP)
 	}
 
 	var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err error) {
 		log.Infof("Connect lost: %v\n", err)
 		time.Sleep(5 * time.Second)
-		mm.ruleEngine.GetInEnd(mm.PointId).SetState(DOWN)
+		mm.RuleEngine.GetInEnd(mm.PointId).SetState(DOWN)
 	}
-	config := mm.ruleEngine.GetInEnd(mm.PointId).Config
+	config := mm.RuleEngine.GetInEnd(mm.PointId).Config
 	opts := mqtt.NewClientOptions()
 	opts.AddBroker(fmt.Sprintf("tcp://%s:%v", (*config)["server"], (*config)["port"]))
 	if (*config)["clientId"] != nil {
@@ -100,7 +100,7 @@ func (mm *MqttInEndResource) Pause() {
 
 }
 func (mm *MqttInEndResource) Status() State {
-	return mm.ruleEngine.GetInEnd(mm.PointId).GetState()
+	return mm.RuleEngine.GetInEnd(mm.PointId).GetState()
 }
 
 func (mm *MqttInEndResource) Register(inEndId string) error {
