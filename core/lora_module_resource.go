@@ -1,7 +1,7 @@
 package core
 
 import (
-	"rulex/gpio"
+	"rulex/drivers"
 	"time"
 
 	"github.com/ngaut/log"

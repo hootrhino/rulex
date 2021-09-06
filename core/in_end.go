@@ -1,6 +1,7 @@
 package core
 
 import "sync"
+import "rulex/utils"
 
 //
 type inEnd struct {
@@ -35,7 +36,7 @@ func NewInEnd(t string,
 	c *map[string]interface{}) *inEnd {
 
 	return &inEnd{
-		Id:          MakeUUID("INEND"),
+		Id:          utils.MakeUUID("INEND"),
 		Type:        t,
 		Name:        n,
 		Description: d,

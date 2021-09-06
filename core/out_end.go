@@ -1,6 +1,7 @@
 package core
 
 import "sync"
+import "rulex/utils"
 
 //
 //
@@ -37,7 +38,7 @@ func NewOutEnd(t string,
 	d string,
 	c *map[string]interface{}) *outEnd {
 	return &outEnd{
-		Id:          MakeUUID("OUTEND"),
+		Id:          utils.MakeUUID("OUTEND"),
 		Type:        t,
 		State:       DOWN,
 		Name:        n,

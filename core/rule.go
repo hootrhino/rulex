@@ -4,6 +4,7 @@ import (
 	luajson "github.com/wwhai/gopher-json"
 
 	lua "github.com/yuin/gopher-lua"
+	"rulex/utils"
 )
 
 //
@@ -39,7 +40,7 @@ func NewRule(e RuleX,
 	LoadJqLib(e, vm)
 	luajson.Preload(vm)
 	return &rule{
-		Id:          MakeUUID("RULE"),
+		Id:          utils.MakeUUID("RULE"),
 		Name:        name,
 		Description: description,
 		From:        from,

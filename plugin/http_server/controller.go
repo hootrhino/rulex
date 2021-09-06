@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"rulex/core"
 	"rulex/statistics"
+	"rulex/utils"
 	"runtime"
 	"strings"
 	"time"
@@ -127,7 +128,7 @@ func CreateInend(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
 		if err1 != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"msg": err1.Error()})
 		} else {
-			uuid := core.MakeUUID("INEND")
+			uuid := utils.MakeUUID("INEND")
 			hh.InsertMInEnd(&MInEnd{
 				UUID:        uuid,
 				Type:        form.Type,
@@ -166,7 +167,7 @@ func CreateOutEnd(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
 			c.JSON(http.StatusBadRequest, gin.H{"msg": err1.Error()})
 		} else {
 			// TODO : Load newest OutEnd
-			uuid := core.MakeUUID("OUTEND")
+			uuid := utils.MakeUUID("OUTEND")
 			hh.InsertMOutEnd(&MOutEnd{
 				UUID:        uuid,
 				Type:        form.Type,
