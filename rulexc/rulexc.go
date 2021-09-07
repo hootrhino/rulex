@@ -55,9 +55,9 @@ func get(host string, api string) string {
 func main() {
 	app := &cli.App{
 		Action: func(c *cli.Context) error {
-			log.Debug(c.String("host"))
-			log.Debug(c.String("username"))
-			log.Debug(c.String("password"))
+			// log.Debug(c.String("host"))
+			// log.Debug(c.String("username"))
+			// log.Debug(c.String("password"))
 			return nil
 		},
 		Commands: []*cli.Command{
@@ -136,7 +136,7 @@ func main() {
 					maps := map[string]interface{}{}
 					err := json.Unmarshal([]byte(config), &maps)
 					if err != nil {
-						log.Error(err)
+						log.Error(config, err)
 					} else {
 						_, result := post(maps, host, "inends")
 						fmt.Println(result)

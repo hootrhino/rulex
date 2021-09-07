@@ -2,7 +2,6 @@ package core
 
 import (
 	"rulex/drivers"
-	"time"
 
 	"github.com/ngaut/log"
 	"github.com/tarm/serial"
@@ -23,7 +22,14 @@ func NewLoraModuleResource(inEndId string, e *RuleEngine) *LoraModuleResource {
 }
 
 func (mm *LoraModuleResource) DataModels() *map[string]XDataModel {
-	return &map[string]XDataModel{}
+	return &map[string]XDataModel{
+		"NodeData": {
+			Type:      T_JSON,
+			Name:      "NodeSendMsg",
+			MinLength: 2,
+			MaxLength: 1024,
+		},
+	}
 }
 
 func (s *LoraModuleResource) Test(inEndId string) bool {
@@ -38,18 +44,18 @@ func (s *LoraModuleResource) Start() error {
 	config := s.RuleEngine.GetInEnd(s.PointId).Config
 	name := (*config)["name"]
 	baud := (*config)["baud"]
-	readTimeout := (*config)["read_timeout"]
-	size := (*config)["size"]
-	parity := (*config)["parity"]
-	stopbits := (*config)["stopbits"]
+	//readTimeout := (*config)["readTimeout"]
+	//size := (*config)["size"]
+	//parity := (*config)["parity"]
+	//stopbits := (*config)["stopbits"]
 
 	serialPort, err := serial.OpenPort(&serial.Config{
-		Name:        name.(string),
-		Baud:        baud.(int),
-		ReadTimeout: time.Duration(readTimeout.(int64)),
-		Size:        size.(byte),
-		Parity:      serial.Parity(parity.(int)),
-		StopBits:    serial.StopBits(stopbits.(int)),
+		Name:   name.(string),
+		Baud:   int(baud.(float64)),
+		Parity: 'N',
+		//ReadTimeout: time.Duration(readTimeout.(int)),
+		//Size:        size.(byte),
+		//StopBits: serial.StopBits(stopbits.(float64)),
 	})
 	if err != nil {
 		log.Error("LoraModuleResource start failed:", err)
@@ -57,7 +63,7 @@ func (s *LoraModuleResource) Start() error {
 	} else {
 		s.serialPort = serialPort
 		s.loraDriver = gpio.NewATK_LORA_01Driver(serialPort)
-		log.Info("LoraModuleResource start success:")
+		log.Info("LoraModuleResource start success.")
 		return nil
 	}
 }
@@ -78,4 +84,5 @@ func (s *LoraModuleResource) Status() State {
 }
 
 func (s *LoraModuleResource) Stop() {
+	s.serialPort.Close()
 }

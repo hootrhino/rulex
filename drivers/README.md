@@ -26,3 +26,25 @@ int main(int argc, char const *argv[])
 }
 
 ```
+## 创建一个Lora模块
+Config:
+```json
+{
+	"name": "LoraATKModule",
+	"type": "LoraATK",
+	"config": {
+		"name": "COM2",
+		"baud": 115200,
+		"readTimeout": "test",
+		"size": 8,
+		"parity": "N",
+		"stopbits": 1
+	},
+	"description": "Lora ATK Module"
+}
+```
+Test:
+
+```sh
+go run ./rulexc.go inend-create --config  '{\"name\":\"LoraATKModule\",\"type\":\"LoraATK\",\"config\":{\"name\":\"COM1\",\"baud\":\"115200\",\"readTimeout\":\"0\",\"size\":\"8\",\"parity\":\"N\",\"stopbits\":\"1\"},\"description\":\"Lora ATK Module\"}'
+```

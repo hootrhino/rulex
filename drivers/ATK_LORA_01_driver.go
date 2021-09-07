@@ -1,6 +1,12 @@
 package gpio
 
-import "github.com/tarm/serial"
+import (
+	"context"
+	"time"
+
+	"github.com/ngaut/log"
+	"github.com/tarm/serial"
+)
 
 //------------------------------------------------------------------------
 // 内部函数
@@ -15,7 +21,7 @@ func write(a *ATK_LORA_01Driver, k string) (error, string) {
 		return err, ""
 	}
 	for {
-		response := make([]byte, 0)
+		response := make([]byte, 4)
 		size, err := a.serialPort.Read(response)
 		if err != nil {
 			return err, ""
@@ -41,6 +47,30 @@ type ATK_LORA_01Driver struct {
 func NewATK_LORA_01Driver(serialPort *serial.Port) *ATK_LORA_01Driver {
 	m := new(ATK_LORA_01Driver)
 	m.serialPort = serialPort
+	go func(context.Context) {
+		log.Debug("NewATK_LORA_01Driver Start listening...")
+		for {
+			response := make([]byte, 4)
+			_, err := serialPort.Read(response)
+			if err != nil {
+				log.Error(err)
+			} else {
+				log.Debug("Received:", response)
+			}
+		}
+	}(context.Background())
+	t := time.NewTicker(time.Duration(3 * time.Second))
+	go func(context.Context) {
+		for {
+			select {
+			case <-t.C:
+				_, err := serialPort.Write([]byte("AT\r\n"))
+				if err != nil {
+					log.Error(err)
+				}
+			}
+		}
+	}(context.Background())
 	return m
 }
 
