@@ -5,6 +5,14 @@ package core
 //
 import "sync"
 
+// Resource State
+type State int
+
+const (
+	UP   State = 1
+	DOWN State = 0
+)
+
 //
 // Rule type is for property store,
 // XResource implements struct type is actually worker
