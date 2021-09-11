@@ -110,3 +110,7 @@ func (g *GrpcInEndResource) Test(inEndId string) bool {
 func (g *GrpcInEndResource) Enabled() bool {
 	return g.Enable
 }
+
+func (g *GrpcInEndResource) Details() *inEnd {
+	return g.RuleEngine.GetInEnd(g.PointId)
+}

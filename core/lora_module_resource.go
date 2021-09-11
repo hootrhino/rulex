@@ -9,7 +9,6 @@ import (
 
 type LoraModuleResource struct {
 	XStatus
-	serialPort *serial.Port
 	loraDriver *gpio.ATK_LORA_01Driver
 }
 
@@ -33,7 +32,12 @@ func (mm *LoraModuleResource) DataModels() *map[string]XDataModel {
 }
 
 func (s *LoraModuleResource) Test(inEndId string) bool {
-	return true
+	if err, _ := s.loraDriver.Test(); err != nil {
+		log.Error(err)
+		return false
+	} else {
+		return true
+	}
 }
 
 func (s *LoraModuleResource) Register(inEndId string) error {
@@ -50,19 +54,19 @@ func (s *LoraModuleResource) Start() error {
 	//stopbits := (*config)["stopbits"]
 
 	serialPort, err := serial.OpenPort(&serial.Config{
-		Name:   name.(string),
-		Baud:   int(baud.(float64)),
-		Parity: 'N',
-		//ReadTimeout: time.Duration(readTimeout.(int)),
-		//Size:        size.(byte),
-		//StopBits: serial.StopBits(stopbits.(float64)),
+		Name:        name.(string),
+		Baud:        int(baud.(float64)),
+		Parity:      'N',
+		ReadTimeout: 0,
+		Size:        0,
+		StopBits:    1,
 	})
 	if err != nil {
 		log.Error("LoraModuleResource start failed:", err)
 		return err
 	} else {
-		s.serialPort = serialPort
 		s.loraDriver = gpio.NewATK_LORA_01Driver(serialPort)
+		s.loraDriver.Init()
 		log.Info("LoraModuleResource start success.")
 		return nil
 	}
@@ -78,11 +82,24 @@ func (s *LoraModuleResource) Reload() {
 func (s *LoraModuleResource) Pause() {
 
 }
+func (s *LoraModuleResource) Details() *inEnd {
+	return s.RuleEngine.GetInEnd(s.PointId)
+}
 
 func (s *LoraModuleResource) Status() State {
-	return UP
+	if s.loraDriver != nil {
+		if err, _ := s.loraDriver.Test(); err != nil {
+			log.Error(err)
+			return DOWN
+		} else {
+			return UP
+		}
+	}
+	return DOWN
 }
 
 func (s *LoraModuleResource) Stop() {
-	s.serialPort.Close()
+	if s.loraDriver != nil {
+		s.loraDriver.Stop()
+	}
 }

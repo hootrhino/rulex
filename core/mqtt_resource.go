@@ -115,3 +115,6 @@ func (mm *MqttInEndResource) Test(inEndId string) bool {
 func (mm *MqttInEndResource) Enabled() bool {
 	return mm.Enable
 }
+func (mm *MqttInEndResource) Details() *inEnd {
+	return mm.RuleEngine.GetInEnd(mm.PointId)
+}

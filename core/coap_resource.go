@@ -84,3 +84,6 @@ func (cc *CoAPInEndResource) Test(inEndId string) bool {
 func (cc *CoAPInEndResource) Enabled() bool {
 	return cc.Enable
 }
+func (cc *CoAPInEndResource) Details() *inEnd {
+	return cc.RuleEngine.GetInEnd(cc.PointId)
+}

@@ -2,7 +2,6 @@ package gpio
 
 import (
 	"context"
-	"time"
 
 	"github.com/ngaut/log"
 	"github.com/tarm/serial"
@@ -39,6 +38,8 @@ func write(a *ATK_LORA_01Driver, k string) (error, string) {
 //
 type ATK_LORA_01Driver struct {
 	serialPort *serial.Port
+	channel    chan bool
+	ctx        context.Context
 }
 
 //
@@ -46,32 +47,42 @@ type ATK_LORA_01Driver struct {
 //
 func NewATK_LORA_01Driver(serialPort *serial.Port) *ATK_LORA_01Driver {
 	m := new(ATK_LORA_01Driver)
+	m.channel = make(chan bool)
 	m.serialPort = serialPort
+	m.ctx = context.Background()
+	return m
+}
+
+//
+//
+//
+func (a *ATK_LORA_01Driver) Init() error {
 	go func(context.Context) {
-		log.Debug("NewATK_LORA_01Driver Start listening...")
-		for {
-			response := make([]byte, 4)
-			_, err := serialPort.Read(response)
-			if err != nil {
-				log.Error(err)
-			} else {
-				log.Debug("Received:", response)
-			}
-		}
-	}(context.Background())
-	t := time.NewTicker(time.Duration(3 * time.Second))
-	go func(context.Context) {
+		log.Debug("ATK LORA 01 Driver Start Listening...")
 		for {
 			select {
-			case <-t.C:
-				_, err := serialPort.Write([]byte("AT\r\n"))
-				if err != nil {
-					log.Error(err)
+			case <-a.ctx.Done():
+				return
+			default:
+				{
+					response := make([]byte, 16)
+					_, err := a.serialPort.Read(response)
+					if err != nil {
+						a.Stop()
+						return
+					} else {
+						log.Debug("SerialPort Received:", response)
+					}
 				}
 			}
+
 		}
-	}(context.Background())
-	return m
+	}(a.ctx)
+	return nil
+}
+func (a *ATK_LORA_01Driver) Stop() error {
+	a.ctx.Done()
+	return nil
 }
 
 // -----------------------------

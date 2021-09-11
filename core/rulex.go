@@ -125,15 +125,16 @@ func (e *RuleEngine) LoadInEnd(in *inEnd) error {
 //
 func startResources(resource XResource, in *inEnd, e *RuleEngine) error {
 	// Save to rule engine first
+	// 这么作主要是为了可以 预加载 进去，然后等环境恢复了以后自动复原
 	e.SaveInEnd(in)
-	//
+	// 首先把资源ID给注册进去，作为资源的全局索引
 	if err := resource.Register(in.Id); err != nil {
 		log.Error(err)
 		return err
 	} else {
+		// 然后启动资源
 		if err1 := resource.Start(); err1 != nil {
 			log.Error(err1)
-			return err1
 		}
 		// Set resources to inend
 		in.Resource = resource
@@ -144,6 +145,7 @@ func startResources(resource XResource, in *inEnd, e *RuleEngine) error {
 			defer resource.Stop()
 			for {
 				<-ticker.C
+				// log.Debug("Test state...", resource.Details().Id)
 				if resource.Status() == DOWN {
 					testResourceState(resource, e, in.Id)
 				}
@@ -153,16 +155,17 @@ func startResources(resource XResource, in *inEnd, e *RuleEngine) error {
 	}
 }
 
+//
 // test ResourceState
+//
 func testResourceState(resource XResource, e *RuleEngine, id string) {
-	if !resource.Test(id) {
-		e.GetInEnd(id).SetState(DOWN)
-		log.Errorf("Resource %s DOWN", id)
+	if resource.Status() == UP {
+		e.GetInEnd(id).SetState(UP)
 	} else {
-		if e.GetInEnd(id).GetState() == DOWN {
-			e.GetInEnd(id).SetState(UP)
-			log.Warnf("Resource %s recover to UP", id)
-		}
+		// 当资源挂了以后先给停止，然后重启
+		log.Warnf("resource %s down. try to restart it", resource.Details().Id)
+		resource.Stop()
+		resource.Start()
 	}
 }
 
@@ -220,15 +223,13 @@ func startTarget(target XTarget, out *outEnd, e RuleX) error {
 
 // Test Target State
 func testTargetState(target XTarget, e RuleX, id string) {
-	if !target.Test(id) {
-		e.GetOutEnd(id).SetState(DOWN)
-		log.Errorf("Target %s DOWN", id)
+	if target.Status() == UP {
+		e.GetInEnd(id).SetState(UP)
 	} else {
-		if e.GetOutEnd(id).GetState() == DOWN {
-			e.GetOutEnd(id).SetState(UP)
-			log.Warnf("Target %s recover to UP", id)
-		}
-
+		// 当资源挂了以后先给停止，然后重启
+		log.Warnf("Target %s down. try to restart it", target)
+		target.Stop()
+		target.Start()
 	}
 }
 
@@ -313,12 +314,17 @@ func (e *RuleEngine) AllRule() map[string]*rule {
 func (e *RuleEngine) Stop() {
 	log.Debug("Stop rulex")
 	for _, inEnd := range *e.InEnds {
-		inEnd.Resource.Stop()
+		if inEnd.Resource != nil {
+			inEnd.Resource.Stop()
+		}
 	}
 
 	for _, outEnds := range *e.OutEnds {
-		outEnds.Target.Stop()
+		if outEnds.Target != nil {
+			outEnds.Target.Stop()
+		}
 	}
+	runtime.Gosched()
 	runtime.GC()
 }
 

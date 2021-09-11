@@ -68,6 +68,7 @@ type RuleX interface {
 // XResource: 终端资源，比如实际上的 MQTT 客户端
 //
 type XResource interface {
+	Details() *inEnd
 	Test(inEndId string) bool      //0
 	Register(inEndId string) error //1
 	Start() error                  //2

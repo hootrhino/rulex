@@ -79,3 +79,6 @@ func (hh *HttpInEndResource) Test(inEndId string) bool {
 func (hh *HttpInEndResource) Enabled() bool {
 	return hh.Enable
 }
+func (hh *HttpInEndResource) Details() *inEnd {
+	return hh.RuleEngine.GetInEnd(hh.PointId)
+}

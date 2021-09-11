@@ -48,3 +48,46 @@ Test:
 ```sh
 go run ./rulexc.go inend-create --config  '{\"name\":\"LoraATKModule\",\"type\":\"LoraATK\",\"config\":{\"name\":\"COM1\",\"baud\":\"115200\",\"readTimeout\":\"0\",\"size\":\"8\",\"parity\":\"N\",\"stopbits\":\"1\"},\"description\":\"Lora ATK Module\"}'
 ```
+## 模拟串口测试
+### 安装 socat
+```
+sudo apt install socat
+```
+### 运行
+```sh
+socat -d -d -d  pty,raw,echo=0 pty,raw,echo=1
+```
+### 输出
+```
+2021/09/11 19:18:03 socat[6074] I socat by Gerhard Rieger and contributors - see www.dest-unreach.org
+2021/09/11 19:18:03 socat[6074] I This product includes software developed by the OpenSSL Project for use in the OpenSSL Toolkit. (http://www.openssl.org/)
+2021/09/11 19:18:03 socat[6074] I This product includes software written by Tim Hudson (tjh@cryptsoft.com)
+2021/09/11 19:18:03 socat[6074] I setting option "raw"
+2021/09/11 19:18:03 socat[6074] I setting option "echo" to 0
+2021/09/11 19:18:03 socat[6074] I openpty({5}, {6}, {"/dev/pts/0"},,) -> 0
+2021/09/11 19:18:03 socat[6074] N PTY is /dev/pts/0
+2021/09/11 19:18:03 socat[6074] I setting option "raw"
+2021/09/11 19:18:03 socat[6074] I setting option "echo" to 1
+2021/09/11 19:18:03 socat[6074] I openpty({7}, {8}, {"/dev/pts/1"},,) -> 0
+2021/09/11 19:18:03 socat[6074] N PTY is /dev/pts/1
+2021/09/11 19:18:03 socat[6074] I resolved and opened all sock addresses
+2021/09/11 19:18:03 socat[6074] N starting data transfer loop with FDs [5,5] and [7,7]
+2021/09/11 19:18:09 socat[6074] I transferred 6 bytes from 5 to 7
+2021/09/11 19:18:09 socat[6074] I transferred 8 bytes from 7 to 5
+^C2021/09/11 19:34:48 socat[6074] N socat_signal(): handling signal 2
+2021/09/11 19:34:48 socat[6074] N exiting on signal 2
+2021/09/11 19:34:48 socat[6074] N socat_signal(): finishing signal 2
+2021/09/11 19:34:48 socat[6074] N exit(130)
+2021/09/11 19:34:48 socat[6074] I close(5)
+2021/09/11 19:34:48 socat[6074] I close(7)
+```
+
+关键输出
+```
+2021/09/11 19:18:03 socat[6074] N PTY is /dev/pts/0
+2021/09/11 19:18:03 socat[6074] N PTY is /dev/pts/1
+```
+标识开启了两个模拟串口:
+- `/dev/pts/0`
+- `/dev/pts/1`
+一个用来发送，一个用来接收。
