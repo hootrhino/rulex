@@ -154,8 +154,9 @@ func testResourceState(resource XResource, e *RuleEngine, id string) {
 	if resource.Status() == UP {
 		e.GetInEnd(id).SetState(UP)
 	} else {
+		e.GetInEnd(id).SetState(DOWN)
 		// 当资源挂了以后先给停止，然后重启
-		log.Warnf("resource %s down. try to restart it", resource.Details().Id)
+		log.Warnf("resource %v down. try to restart it", resource.Details().Id)
 		resource.Stop()
 		resource.Start()
 	}
@@ -216,10 +217,11 @@ func startTarget(target XTarget, out *outEnd, e RuleX) error {
 // Test Target State
 func testTargetState(target XTarget, e RuleX, id string) {
 	if target.Status() == UP {
-		e.GetInEnd(id).SetState(UP)
+		e.GetOutEnd(id).State = UP
 	} else {
+		e.GetOutEnd(id).State = DOWN
 		// 当资源挂了以后先给停止，然后重启
-		log.Warnf("Target %s down. try to restart it", target)
+		log.Warnf("Target %v down. try to restart it", target.Details())
 		target.Stop()
 		target.Start()
 	}

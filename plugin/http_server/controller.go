@@ -166,7 +166,6 @@ func CreateOutEnd(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
 		if err1 != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"msg": err1.Error()})
 		} else {
-			// TODO : Load newest OutEnd
 			uuid := utils.MakeUUID("OUTEND")
 			hh.InsertMOutEnd(&MOutEnd{
 				UUID:        uuid,

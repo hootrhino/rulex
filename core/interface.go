@@ -92,6 +92,7 @@ type XResource interface {
 // Stream from resource and to target
 //
 type XTarget interface {
+	Details() *outEnd
 	Test(outEndId string) bool      //0
 	Register(outEndId string) error //1
 	Start() error                   //2

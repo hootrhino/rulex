@@ -6,4 +6,5 @@ rulex-*
 *.out
 *.zip
 *.json
+rulex.db
 *.db

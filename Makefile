@@ -47,6 +47,7 @@ cover:
 .PHONY: clean
 clean:
 	go clean
+	rm *.db
 	rm ${APP}-${VERSION}
 	rm ${APP}-${VERSION}.zip
 	rm metainfo.json

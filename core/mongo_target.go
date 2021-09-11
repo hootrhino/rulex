@@ -80,7 +80,14 @@ func (m *MongoTarget) Pause() {
 }
 
 func (m *MongoTarget) Status() State {
-	return m.RuleEngine.GetOutEnd(m.PointId).State
+	err1 := m.client.Ping(context.Background(), nil)
+	if err1 != nil {
+		log.Error(err1)
+		return DOWN
+	} else {
+		m.RuleEngine.GetOutEnd(m.PointId).State = UP
+		return UP
+	}
 }
 
 func (m *MongoTarget) Stop() {
@@ -94,4 +101,7 @@ func (m *MongoTarget) To(data interface{}) error {
 		log.Error("Mongo To Failed:", err)
 	}
 	return err
+}
+func (m *MongoTarget) Details() *outEnd {
+	return m.RuleEngine.GetOutEnd(m.PointId)
 }
