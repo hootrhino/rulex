@@ -88,6 +88,8 @@ socat -d -d -d  pty,raw,echo=0 pty,raw,echo=1
 2021/09/11 19:18:03 socat[6074] N PTY is /dev/pts/1
 ```
 标识开启了两个模拟串口:
+
 - `/dev/pts/0`
 - `/dev/pts/1`
+
 一个用来发送，一个用来接收。
