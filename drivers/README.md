@@ -70,16 +70,7 @@ socat -d -d -d  pty,raw,echo=0 pty,raw,echo=1
 2021/09/11 19:18:03 socat[6074] I setting option "echo" to 1
 2021/09/11 19:18:03 socat[6074] I openpty({7}, {8}, {"/dev/pts/1"},,) -> 0
 2021/09/11 19:18:03 socat[6074] N PTY is /dev/pts/1
-2021/09/11 19:18:03 socat[6074] I resolved and opened all sock addresses
-2021/09/11 19:18:03 socat[6074] N starting data transfer loop with FDs [5,5] and [7,7]
-2021/09/11 19:18:09 socat[6074] I transferred 6 bytes from 5 to 7
-2021/09/11 19:18:09 socat[6074] I transferred 8 bytes from 7 to 5
-^C2021/09/11 19:34:48 socat[6074] N socat_signal(): handling signal 2
-2021/09/11 19:34:48 socat[6074] N exiting on signal 2
-2021/09/11 19:34:48 socat[6074] N socat_signal(): finishing signal 2
-2021/09/11 19:34:48 socat[6074] N exit(130)
-2021/09/11 19:34:48 socat[6074] I close(5)
-2021/09/11 19:34:48 socat[6074] I close(7)
+
 ```
 
 关键输出
