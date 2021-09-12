@@ -39,6 +39,7 @@ func LoadJqLib(e RuleX, vm *lua.LState) int {
 		},
 	})
 	vm.Push(mod)
+	// return 参数个数 
 	return 1
 }
 

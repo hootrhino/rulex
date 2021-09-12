@@ -2,6 +2,8 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/ngaut/log"
+	"github.com/urfave/cli/v2"
 	"os"
 	"os/signal"
 	"rulex/core"
@@ -9,10 +11,8 @@ import (
 	httpserver "rulex/plugin/http_server"
 	"strings"
 	"syscall"
-
-	"github.com/ngaut/log"
-	"github.com/urfave/cli/v2"
 )
+
 
 //
 func main() {

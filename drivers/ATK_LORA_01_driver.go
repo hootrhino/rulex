@@ -71,7 +71,7 @@ func (a *ATK_LORA_01Driver) Init() error {
 						a.Stop()
 						return
 					} else {
-						log.Debug("SerialPort Received:", response)
+						log.Debug("SerialPort Received:", string(response))
 					}
 				}
 			}
