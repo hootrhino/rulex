@@ -13,10 +13,9 @@ import (
 	"syscall"
 )
 
-
 //
 func main() {
-
+	core.InitGlobalConfig()
 	app := &cli.App{
 		Name:  "RULEX, a lightweight iot data rule gateway",
 		Usage: "http://rulex.ezlinker.cn",

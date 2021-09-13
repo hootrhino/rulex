@@ -8,3 +8,4 @@ rulex-*
 *.json
 rulex.db
 *.db
+go.sum

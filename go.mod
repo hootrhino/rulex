@@ -4,6 +4,7 @@ go 1.15
 
 require (
 	github.com/StackExchange/wmi v1.2.0 // indirect
+	github.com/containerd/containerd v1.5.5
 	github.com/eclipse/paho.mqtt.golang v1.3.5
 	github.com/gin-gonic/gin v1.7.2
 	github.com/go-ole/go-ole v1.2.5 // indirect
@@ -25,7 +26,7 @@ require (
 	github.com/yuin/gopher-lua v0.0.0-20210529063254-f4c35e4016d9
 	go.bug.st/serial v1.3.1
 	go.mongodb.org/mongo-driver v1.5.4
-	google.golang.org/grpc v1.32.0
+	google.golang.org/grpc v1.33.2
 	google.golang.org/protobuf v1.27.1
 	gopkg.in/ini.v1 v1.63.0
 	gopkg.in/square/go-jose.v2 v2.5.1

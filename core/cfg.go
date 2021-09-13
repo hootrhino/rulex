@@ -20,7 +20,7 @@ var GlobalConfig RulexConfig
 //
 // Init config
 //
-func init() {
+func InitGlobalConfig() {
 	log.Info("Init rulex config")
 	cfg, err := ini.Load("conf/rulex.ini")
 	if err != nil {
