@@ -9,3 +9,4 @@ rulex-*
 rulex.db
 *.db
 go.sum
+*.sum

@@ -158,6 +158,8 @@ func testResourceState(resource XResource, e *RuleEngine, id string) {
 		// 当资源挂了以后先给停止，然后重启
 		log.Warnf("resource %v down. try to restart it", resource.Details().Id)
 		resource.Stop()
+		runtime.Gosched()
+		runtime.GC()
 		resource.Start()
 	}
 }
@@ -223,6 +225,8 @@ func testTargetState(target XTarget, e RuleX, id string) {
 		// 当资源挂了以后先给停止，然后重启
 		log.Warnf("Target %v down. try to restart it", target.Details())
 		target.Stop()
+		runtime.Gosched()
+		runtime.GC()
 		target.Start()
 	}
 }

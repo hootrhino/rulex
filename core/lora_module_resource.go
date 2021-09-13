@@ -1,10 +1,9 @@
 package core
 
 import (
-	"rulex/drivers"
-
 	"github.com/ngaut/log"
 	"github.com/tarm/serial"
+	"rulex/drivers"
 )
 
 type LoraModuleResource struct {

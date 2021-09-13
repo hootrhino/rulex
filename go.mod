@@ -12,8 +12,6 @@ require (
 	github.com/google/uuid v1.2.0
 	github.com/itchyny/gojq v0.12.4
 	github.com/mattn/go-sqlite3 v1.14.7
-	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
-	github.com/modern-go/reflect2 v1.0.1 // indirect
 	github.com/ngaut/log v0.0.0-20180314031856-b8e36e7ba5ac
 	github.com/plgd-dev/go-coap/v2 v2.4.0
 	github.com/shirou/gopsutil v3.21.6+incompatible
