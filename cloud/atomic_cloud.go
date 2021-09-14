@@ -9,9 +9,9 @@ import (
 )
 
 type httpResult struct {
-	Code int
-	Msg  string
-	Data interface{}
+	Name        string      `json:"name"`
+	Doc         string      `json:"doc"`
+	Description interface{} `json:"description"`
 }
 
 //

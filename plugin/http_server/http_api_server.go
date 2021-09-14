@@ -60,10 +60,16 @@ func (hh *HttpApiServer) Install(env *core.XPluginEnv) (*core.XPluginMetaInfo, e
 // HttpApiServer Start
 //
 func (hh *HttpApiServer) Start(env *core.XPluginEnv) error {
+
 	//
 	// Render dashboard index
 	//
 	hh.ginEngine.GET(DASHBOARD_ROOT, hh.addRoute(Index))
+	//
+	// List CloudServices
+	//
+	hh.ginEngine.GET(API_ROOT+"cloudServices", hh.addRoute(CloudServices))
+
 	//
 	// Get all plugins
 	//

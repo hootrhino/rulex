@@ -202,7 +202,7 @@ type XStream interface {
 }
 
 //
-// 驱动接口
+// Abstract driver interface
 //
 type XDriver interface {
 	Init() error

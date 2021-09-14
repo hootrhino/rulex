@@ -254,7 +254,20 @@
                                     <el-table-column prop="license" label="协议">
                                     </el-table-column>
                                 </el-table>
-                            </template></el-tab-pane>
+                            </template>
+                        </el-tab-pane>
+                        <!-- // -->
+                        <el-tab-pane label="云服务" name="cloudServices"><template>
+                                <el-table :data="cloudServices" style="width: 100%">
+                                    <el-table-column prop="name" label="名称" width="180">
+                                    </el-table-column>
+                                    <el-table-column prop="doc" label="文档" width="180">
+                                    </el-table-column>
+                                    <el-table-column prop="description" label="备注信息">
+                                    </el-table-column>
+                                </el-table>
+                            </template>
+                        </el-tab-pane>
 
                     </el-tabs>
                 </template>
@@ -302,7 +315,7 @@
                 outEndData: [],
                 ruleData: [],
                 pluginData: [],
-
+                cloudServices: []
             };
         },
         mounted() {
@@ -369,6 +382,14 @@
                                 thiz.statisticData = response.data.data
                                 //console.log(response.data.data)
 
+                            })
+                            .catch(error => thiz.$message.error('请求失败'))
+                        break;
+                    case "cloudServices":
+                        axios.get(HOST + 'cloudServices')
+                            .then(response => {
+                                thiz.cloudServices = response.data.data
+                                //console.log(response.data.data)
                             })
                             .catch(error => thiz.$message.error('请求失败'))
                         break;

@@ -37,7 +37,7 @@ func Index(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
 //
 // List cloud Services
 //
-func Services(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
+func CloudServices(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
 	c.PureJSON(http.StatusOK, Result{
 		Code: http.StatusOK,
 		Msg:  "查询成功",
