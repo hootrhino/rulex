@@ -91,6 +91,7 @@ func (mm *MqttInEndResource) DataModels() *map[string]XDataModel {
 }
 
 func (mm *MqttInEndResource) Stop() {
+	mm.client.Disconnect(0)
 
 }
 func (mm *MqttInEndResource) Reload() {
@@ -100,7 +101,11 @@ func (mm *MqttInEndResource) Pause() {
 
 }
 func (mm *MqttInEndResource) Status() State {
-	return mm.RuleEngine.GetInEnd(mm.PointId).GetState()
+	if mm.client.IsConnected() {
+		return UP
+	} else {
+		return DOWN
+	}
 }
 
 func (mm *MqttInEndResource) Register(inEndId string) error {

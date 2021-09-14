@@ -9,8 +9,9 @@ import "sync"
 type State int
 
 const (
-	UP   State = 1
 	DOWN State = 0
+	UP   State = 1
+	PAUSE State = 2
 )
 
 //
