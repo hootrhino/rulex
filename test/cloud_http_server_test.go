@@ -20,23 +20,23 @@ type Service struct {
 func T1() {
 	router = gin.Default()
 	router.GET("/services", func(c *gin.Context) {
-		datas := []Service{}
-		datas = append(datas, Service{
+		data := []Service{}
+		data = append(data, Service{
 			Name:        "语音识别",
 			Doc:         "http://www.google.com",
 			Description: "语音识别接口",
 		})
-		datas = append(datas, Service{
+		data = append(data, Service{
 			Name:        "人脸识别",
 			Doc:         "http://www.google.com",
 			Description: "人脸识别接口",
 		})
-		datas = append(datas, Service{
+		data = append(data, Service{
 			Name:        "活体识别",
 			Doc:         "http://www.google.com",
 			Description: "活体识别接口",
 		})
-		c.JSON(http.StatusOK, datas)
+		c.JSON(http.StatusOK, data)
 
 	})
 	router.Run(":9990")

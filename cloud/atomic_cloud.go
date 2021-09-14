@@ -3,13 +3,34 @@
 //
 package cloud
 
-type AtomicCloud struct {
+import (
+	"encoding/json"
+	"rulex/core"
+)
+
+type httpResult struct {
+	Code int
+	Msg  string
+	Data interface{}
 }
 
-func (a *AtomicCloud) ListService(pageIndex int, pageSize int) []CloudService {
-
-	return []CloudService{}
+//
+//
+//
+func ListService(pageIndex int, pageSize int) []httpResult {
+	r := GetCloud(
+		core.GlobalConfig.Token,
+		core.GlobalConfig.Secret,
+		core.GlobalConfig.Path+"/data.json",
+	)
+	results := []httpResult{}
+	json.Unmarshal([]byte(r), &results)
+	return results
 }
-func (a *AtomicCloud) CallService(id string, args []ServiceArg) CallResult {
+
+//
+//
+//
+func CallService(id string, args []ServiceArg) CallResult {
 	return CallResult{}
 }

@@ -111,7 +111,7 @@ func Run() {
 		}
 	}
 	signal := <-c
-	log.Info(signal)
+	log.Info("Received stop signal:", signal)
 	engine.Stop()
 	os.Exit(0)
 }

@@ -310,7 +310,7 @@ func (e *RuleEngine) AllRule() map[string]*rule {
 // Stop
 //
 func (e *RuleEngine) Stop() {
-	log.Info("Stop Rulex")
+	log.Info("Stopping Rulex......")
 	for _, inEnd := range *e.InEnds {
 		if inEnd.Resource != nil {
 			log.Info("Stop InEnd:", inEnd.Name, inEnd.Id)

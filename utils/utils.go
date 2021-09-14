@@ -39,19 +39,3 @@ func post(data map[string]interface{}, api string) string {
 	}
 	return string(body)
 }
-
-//
-//
-//
-func get(api string) string {
-	r, errs := http.Get(api)
-	if errs != nil {
-		log.Error(errs)
-	}
-	defer r.Body.Close()
-	body, errs2 := ioutil.ReadAll(r.Body)
-	if errs2 != nil {
-		log.Error(errs2)
-	}
-	return string(body)
-}

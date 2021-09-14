@@ -2,6 +2,7 @@ package httpserver
 
 import (
 	"net/http"
+	"rulex/cloud"
 	"rulex/core"
 	"rulex/statistics"
 	"rulex/utils"
@@ -34,18 +35,29 @@ func Index(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
 }
 
 //
+// List cloud Services
+//
+func Services(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
+	c.PureJSON(http.StatusOK, Result{
+		Code: http.StatusOK,
+		Msg:  "查询成功",
+		Data: cloud.ListService(1, 50),
+	})
+}
+
+//
 // Get all plugins
 //
 func Plugins(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
 	cros(c)
-	datas := []interface{}{}
+	data := []interface{}{}
 	for _, v := range *e.AllPlugins() {
-		datas = append(datas, v)
+		data = append(data, v)
 	}
 	c.PureJSON(http.StatusOK, Result{
 		Code: http.StatusOK,
 		Msg:  "查询成功",
-		Data: datas,
+		Data: data,
 	})
 }
 
@@ -77,14 +89,14 @@ func System(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
 //
 func InEnds(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
 	cros(c)
-	datas := []interface{}{}
+	data := []interface{}{}
 	for _, v := range e.AllInEnd() {
-		datas = append(datas, v)
+		data = append(data, v)
 	}
 	c.PureJSON(http.StatusOK, Result{
 		Code: http.StatusOK,
 		Msg:  "查询成功",
-		Data: datas,
+		Data: data,
 	})
 }
 
@@ -93,14 +105,14 @@ func InEnds(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
 //
 func OutEnds(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
 	cros(c)
-	datas := []interface{}{}
+	data := []interface{}{}
 	for _, v := range e.AllOutEnd() {
-		datas = append(datas, v)
+		data = append(data, v)
 	}
 	c.PureJSON(http.StatusOK, Result{
 		Code: http.StatusOK,
 		Msg:  "查询成功",
-		Data: datas,
+		Data: data,
 	})
 }
 
@@ -109,14 +121,14 @@ func OutEnds(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
 //
 func Rules(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
 	cros(c)
-	datas := []interface{}{}
+	data := []interface{}{}
 	for _, v := range e.AllRule() {
-		datas = append(datas, v)
+		data = append(data, v)
 	}
 	c.PureJSON(http.StatusOK, Result{
 		Code: http.StatusOK,
 		Msg:  "查询成功",
-		Data: datas,
+		Data: data,
 	})
 }
 

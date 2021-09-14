@@ -49,7 +49,11 @@ func pipLine(vm *lua.LState, acc int, funcs map[string]*lua.LFunction, arg lua.L
 	}
 }
 
+//
+// validate lua callback
+//
 func validate(values []lua.LValue, f func() (lua.LValue, error)) (lua.LValue, error) {
+	// Lua call back must have 2 args!!!
 	if len(values) != 2 {
 		return nil, errors.New("action callback must have 2 arguments:[bool, T]")
 	} else {
