@@ -100,7 +100,7 @@ func (mm *MqttInEndResource) Reload() {
 func (mm *MqttInEndResource) Pause() {
 
 }
-func (mm *MqttInEndResource) Status() State {
+func (mm *MqttInEndResource) Status() ResourceState {
 	if mm.client.IsConnected() {
 		return UP
 	} else {

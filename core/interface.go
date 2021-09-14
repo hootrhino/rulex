@@ -4,14 +4,15 @@ package core
 // !!! All 'RuleEngine' parameter passed by pseudo constructure function !!!
 //
 import "sync"
+import "rulex/drivers"
 
 // Resource State
-type State int
+type ResourceState int
 
 const (
-	DOWN State = 0
-	UP   State = 1
-	PAUSE State = 2
+	DOWN  ResourceState = 0
+	UP    ResourceState = 1
+	PAUSE ResourceState = 2
 )
 
 //
@@ -85,7 +86,7 @@ type XResource interface {
 	DataModels() *map[string]XDataModel
 	Reload()
 	Pause()
-	Status() State
+	Status() ResourceState
 	Stop()
 }
 
@@ -100,7 +101,7 @@ type XTarget interface {
 	Enabled() bool
 	Reload()
 	Pause()
-	Status() State
+	Status() ResourceState
 	To(data interface{}) error
 	Stop()
 }
@@ -204,7 +205,11 @@ type XStream interface {
 //
 // Abstract driver interface
 //
+
 type XDriver interface {
+	Test() (error, string)
 	Init() error
+	Work() error
+	State() drivers.DriverState
 	Stop() error
 }

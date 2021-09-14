@@ -79,7 +79,7 @@ func (m *MongoTarget) Pause() {
 
 }
 
-func (m *MongoTarget) Status() State {
+func (m *MongoTarget) Status() ResourceState {
 	err1 := m.client.Ping(context.Background(), nil)
 	if err1 != nil {
 		log.Error(err1)

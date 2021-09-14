@@ -69,7 +69,7 @@ func (cc *CoAPInEndResource) Reload() {
 func (cc *CoAPInEndResource) Pause() {
 
 }
-func (cc *CoAPInEndResource) Status() State {
+func (cc *CoAPInEndResource) Status() ResourceState {
 	return UP
 }
 

@@ -7,7 +7,7 @@ import "rulex/utils"
 type inEnd struct {
 	sync.Mutex
 	Id          string                  `json:"id"`
-	State       State                   `json:"state"`
+	State       ResourceState           `json:"state"`
 	Type        string                  `json:"type"`
 	Name        string                  `json:"name"`
 	Description string                  `json:"description"`
@@ -16,14 +16,14 @@ type inEnd struct {
 	Resource    XResource               `json:"-"`
 }
 
-func (in *inEnd) GetState() State {
+func (in *inEnd) GetState() ResourceState {
 	in.Lock()
 	defer in.Unlock()
 	return in.State
 }
 
 //
-func (in *inEnd) SetState(s State) {
+func (in *inEnd) SetState(s ResourceState) {
 	in.Lock()
 	defer in.Unlock()
 	in.State = s

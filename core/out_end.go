@@ -10,21 +10,21 @@ type outEnd struct {
 	sync.Mutex
 	Id          string                  `json:"id"`
 	Type        string                  `json:"type"`
-	State       State                   `json:"state"`
+	State       ResourceState           `json:"state"`
 	Name        string                  `json:"name"`
 	Description string                  `json:"description"`
 	Config      *map[string]interface{} `json:"config"`
 	Target      XTarget                 `json:"-"`
 }
 
-func (o *outEnd) GetState() State {
+func (o *outEnd) GetState() ResourceState {
 	o.Lock()
 	defer o.Unlock()
 	return o.State
 }
 
 //
-func (o *outEnd) SetState(s State) {
+func (o *outEnd) SetState(s ResourceState) {
 	o.Lock()
 	defer o.Unlock()
 	o.State = s

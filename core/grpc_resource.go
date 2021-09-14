@@ -94,7 +94,7 @@ func (g *GrpcInEndResource) Reload() {
 func (g *GrpcInEndResource) Pause() {
 
 }
-func (g *GrpcInEndResource) Status() State {
+func (g *GrpcInEndResource) Status() ResourceState {
 	return g.RuleEngine.GetInEnd(g.PointId).State
 }
 

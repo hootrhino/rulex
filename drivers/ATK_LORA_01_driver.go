@@ -1,4 +1,4 @@
-package gpio
+package drivers
 
 import (
 	"context"
@@ -57,6 +57,16 @@ func NewATK_LORA_01Driver(serialPort *serial.Port) *ATK_LORA_01Driver {
 //
 //
 func (a *ATK_LORA_01Driver) Init() error {
+	// 初始化配置参数
+	// write(a, "")
+	// write(a, "")
+	// write(a, "")
+	// write(a, "")
+	// write(a, "")
+
+	return nil
+}
+func (a *ATK_LORA_01Driver) Work() error {
 	go func(context.Context) {
 		log.Debug("ATK LORA 01 Driver Start Listening...")
 		for {
@@ -79,6 +89,11 @@ func (a *ATK_LORA_01Driver) Init() error {
 		}
 	}(a.ctx)
 	return nil
+
+}
+func (a *ATK_LORA_01Driver) State() DriverState {
+	return RUNNING
+
 }
 func (a *ATK_LORA_01Driver) Stop() error {
 	a.ctx.Done()

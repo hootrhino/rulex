@@ -8,7 +8,7 @@ import (
 
 type LoraModuleResource struct {
 	XStatus
-	loraDriver *gpio.ATK_LORA_01Driver
+	loraDriver *drivers.ATK_LORA_01Driver
 }
 
 func NewLoraModuleResource(inEndId string, e *RuleEngine) *LoraModuleResource {
@@ -64,8 +64,9 @@ func (s *LoraModuleResource) Start() error {
 		log.Error("LoraModuleResource start failed:", err)
 		return err
 	} else {
-		s.loraDriver = gpio.NewATK_LORA_01Driver(serialPort)
+		s.loraDriver = drivers.NewATK_LORA_01Driver(serialPort)
 		s.loraDriver.Init()
+		s.loraDriver.Work()
 		log.Info("LoraModuleResource start success.")
 		return nil
 	}
@@ -85,7 +86,7 @@ func (s *LoraModuleResource) Details() *inEnd {
 	return s.RuleEngine.GetInEnd(s.PointId)
 }
 
-func (s *LoraModuleResource) Status() State {
+func (s *LoraModuleResource) Status() ResourceState {
 	if s.loraDriver != nil {
 		if err, _ := s.loraDriver.Test(); err != nil {
 			log.Error(err)

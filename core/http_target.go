@@ -48,7 +48,7 @@ func (ht *HTTPTarget) Reload() {
 func (ht *HTTPTarget) Pause() {
 
 }
-func (ht *HTTPTarget) Status() State {
+func (ht *HTTPTarget) Status() ResourceState {
 	return UP
 
 }

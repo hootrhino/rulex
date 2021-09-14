@@ -31,7 +31,7 @@ func (d *DemoTarget) Reload() {
 func (d *DemoTarget) Pause() {
 }
 
-func (d *DemoTarget) Status() State {
+func (d *DemoTarget) Status() ResourceState {
 	return UP
 }
 
