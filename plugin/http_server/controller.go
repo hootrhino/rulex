@@ -18,6 +18,15 @@ import (
 )
 
 //
+//
+//
+type Result struct {
+	Code int
+	Msg  string
+	Data interface{}
+}
+
+//
 // Render dashboard index
 //
 func Index(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
@@ -29,8 +38,14 @@ func Index(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
 //
 func Plugins(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
 	cros(c)
-	c.PureJSON(http.StatusOK, gin.H{
-		"plugins": e.AllPlugins(),
+	datas := []interface{}{}
+	for _, v := range *e.AllPlugins() {
+		datas = append(datas, v)
+	}
+	c.PureJSON(http.StatusOK, Result{
+		Code: http.StatusOK,
+		Msg:  "查询成功",
+		Data: datas,
 	})
 }
 
@@ -44,13 +59,17 @@ func System(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
 	memInfo, _ := mem.VirtualMemory()
 	parts, _ := disk.Partitions(true)
 	diskInfo, _ := disk.Usage(parts[0].Mountpoint)
-	c.JSON(http.StatusOK, gin.H{
-		"diskInfo":   diskInfo.UsedPercent,
-		"memInfo":    memInfo.UsedPercent,
-		"cpuPercent": percent[0],
-		"os":         runtime.GOOS,
-		"arch":       runtime.GOARCH,
-		"cpus":       runtime.GOMAXPROCS(0)})
+	c.PureJSON(http.StatusOK, Result{
+		Code: http.StatusOK,
+		Msg:  "查询成功",
+		Data: gin.H{
+			"diskInfo":   diskInfo.UsedPercent,
+			"memInfo":    memInfo.UsedPercent,
+			"cpuPercent": percent[0],
+			"os":         runtime.GOOS,
+			"arch":       runtime.GOARCH,
+			"cpus":       runtime.GOMAXPROCS(0)},
+	})
 }
 
 //
@@ -58,7 +77,15 @@ func System(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
 //
 func InEnds(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
 	cros(c)
-	c.JSON(http.StatusOK, gin.H{"inends": e.AllInEnd()})
+	datas := []interface{}{}
+	for _, v := range e.AllInEnd() {
+		datas = append(datas, v)
+	}
+	c.PureJSON(http.StatusOK, Result{
+		Code: http.StatusOK,
+		Msg:  "查询成功",
+		Data: datas,
+	})
 }
 
 //
@@ -66,7 +93,15 @@ func InEnds(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
 //
 func OutEnds(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
 	cros(c)
-	c.JSON(http.StatusOK, gin.H{"outends": e.AllOutEnd()})
+	datas := []interface{}{}
+	for _, v := range e.AllOutEnd() {
+		datas = append(datas, v)
+	}
+	c.PureJSON(http.StatusOK, Result{
+		Code: http.StatusOK,
+		Msg:  "查询成功",
+		Data: datas,
+	})
 }
 
 //
@@ -74,7 +109,15 @@ func OutEnds(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
 //
 func Rules(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
 	cros(c)
-	c.JSON(http.StatusOK, gin.H{"rules": e.AllRule()})
+	datas := []interface{}{}
+	for _, v := range e.AllRule() {
+		datas = append(datas, v)
+	}
+	c.PureJSON(http.StatusOK, Result{
+		Code: http.StatusOK,
+		Msg:  "查询成功",
+		Data: datas,
+	})
 }
 
 //
@@ -82,30 +125,24 @@ func Rules(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
 //
 func Statistics(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
 	cros(c)
-	c.JSON(http.StatusOK, gin.H{"statistics": statistics.AllStatistics()})
+	c.PureJSON(http.StatusOK, Result{
+		Code: http.StatusOK,
+		Msg:  "查询成功",
+		Data: statistics.AllStatistics(),
+	})
 }
 
 //
-//
+// All Users
 //
 func Users(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
 	cros(c)
-	type Form struct {
-		Username string `json:"username" binding:"required"`
-		Password string `json:"password" binding:"required"`
-	}
-	form := Form{}
-	err0 := c.ShouldBindJSON(&form)
-	if err0 != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"msg": err0.Error()})
-	} else {
-		user, err1 := hh.GetMUser(form.Username, form.Password)
-		if err1 != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"msg": err1.Error()})
-		} else {
-			c.JSON(http.StatusOK, gin.H{"msg": "success", "data": user.ID})
-		}
-	}
+	users := hh.AllMUser()
+	c.PureJSON(http.StatusOK, Result{
+		Code: http.StatusOK,
+		Msg:  "查询成功",
+		Data: users,
+	})
 }
 
 //
