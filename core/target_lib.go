@@ -27,16 +27,12 @@ func LoadTargetLib(e RuleX, vm *lua.LState) int {
 	vm.Push(mod)
 	return 1
 }
-
-//
-//
-//
-func DataToMongo(e RuleX, id string, data string) {
+func handleDataFormat(e RuleX, id string, data string) {
 	bson := &map[string]interface{}{}
 	err := json.Unmarshal([]byte(data), bson)
 	if err != nil {
 		statistics.IncOutFailed()
-		log.Error("Mongo data must be JSON format:", data, " ==> ", err)
+		log.Error("Data must be JSON format:", data, ", But current is: ", err)
 	} else {
 		statistics.IncOut()
 		(*e.AllOutEnd()[id]).Target.To(bson)
@@ -46,14 +42,20 @@ func DataToMongo(e RuleX, id string, data string) {
 //
 //
 //
+func DataToMongo(e RuleX, id string, data string) {
+	handleDataFormat(e, id, data)
+}
+
+//
+//
+//
 func DataToHttpServer(e RuleX, id string, data string) {
-	bson := &map[string]interface{}{}
-	err := json.Unmarshal([]byte(data), bson)
-	if err != nil {
-		statistics.IncOutFailed()
-		log.Error("DataToHttpServer data must be JSON format:", data, " ==> ", err)
-	} else {
-		statistics.IncOut()
-		(e.AllOutEnd())[id].Target.To(bson)
-	}
+	handleDataFormat(e, id, data)
+}
+
+//
+//
+//
+func DataToMqttBroker(e RuleX, id string, data string) {
+	handleDataFormat(e, id, data)
 }
