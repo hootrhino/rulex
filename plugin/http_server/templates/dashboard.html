@@ -309,7 +309,7 @@
             let thiz = this;
             axios.get(HOST + 'system')
                 .then(response => {
-                    thiz.systemData = response.data
+                    thiz.systemData = response.data.data
                 })
         },
         methods: {
@@ -319,7 +319,8 @@
                     case "inend":
                         axios.get(HOST + 'inends')
                             .then(response => {
-                                thiz.inEndData = Object.values(response.data.inends)
+                                thiz.inEndData = response.data.data
+                                //console.log(response.data.data)
                             })
                             .catch(error => thiz.$message.error('请求失败'))
                         break;
@@ -327,7 +328,8 @@
                     case "outend":
                         axios.get(HOST + 'outends')
                             .then(response => {
-                                thiz.outEndData = Object.values(response.data.outends)
+                                thiz.outEndData = response.data.data
+                                //console.log(response.data.data)
 
                             })
                             .catch(error => thiz.$message.error('请求失败'))
@@ -336,7 +338,9 @@
                     case "plugin":
                         axios.get(HOST + 'plugins')
                             .then(response => {
-                                thiz.pluginData = Object.values(response.data.plugins)
+                                thiz.pluginData = response.data.data
+                                //console.log(response.data.data)
+
                             })
                             .catch(error => thiz.$message.error('请求失败'))
                         break;
@@ -344,21 +348,27 @@
                     case "system":
                         axios.get(HOST + 'system')
                             .then(response => {
-                                thiz.systemData = response.data
+                                thiz.systemData = response.data.data
+                                //console.log(response.data.data)
+
                             })
                             .catch(error => thiz.$message.error('请求失败'))
                         break;
                     case "rule":
                         axios.get(HOST + 'rules')
                             .then(response => {
-                                thiz.ruleData = Object.values(response.data.rules)
+                                thiz.ruleData = response.data.data
+                                //console.log(response.data.data)
+
                             })
                             .catch(error => thiz.$message.error('请求失败'))
                         break;
                     case "statistic":
                         axios.get(HOST + 'statistics')
                             .then(response => {
-                                thiz.statisticData = response.data.statistics
+                                thiz.statisticData = response.data.data
+                                //console.log(response.data.data)
+
                             })
                             .catch(error => thiz.$message.error('请求失败'))
                         break;
