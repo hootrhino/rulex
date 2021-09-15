@@ -3,6 +3,7 @@ package core
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"reflect"
@@ -96,22 +97,22 @@ func (e *RuleEngine) GetConfig(k string) interface{} {
 }
 
 func (e *RuleEngine) LoadInEnd(in *inEnd) error {
-	if in.Type == "MQTT" {
+	if in.Type == MQTT {
 		return startResources(NewMqttInEndResource(in.Id, e), in, e)
 	}
-	if in.Type == "HTTP" {
+	if in.Type == HTTP {
 		return startResources(NewHttpInEndResource(in.Id, e), in, e)
 	}
-	if in.Type == "COAP" {
+	if in.Type == COAP {
 		return startResources(NewCoAPInEndResource(in.Id, e), in, e)
 	}
-	if in.Type == "GRPC" {
+	if in.Type == GRPC {
 		return startResources(NewGrpcInEndResource(in.Id, e), in, e)
 	}
-	if in.Type == "LoraATK" {
+	if in.Type == LoraATK {
 		return startResources(NewLoraModuleResource(in.Id, e), in, e)
 	}
-	return errors.New("unsupported rule type:" + in.Type)
+	return errors.New(fmt.Sprintf("unsupported rule type:%s", in.Type))
 }
 
 //

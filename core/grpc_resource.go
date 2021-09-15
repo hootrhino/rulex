@@ -2,6 +2,7 @@ package core
 
 import (
 	"context"
+	"fmt"
 	"net"
 	"rulex/rulexrpc"
 
@@ -51,7 +52,21 @@ func NewGrpcInEndResource(inEndId string, e RuleX) *GrpcInEndResource {
 //
 func (g *GrpcInEndResource) Start() error {
 	config := g.RuleEngine.GetInEnd(g.PointId).Config
-	port := ":" + (*config)["port"].(string)
+	var port = ""
+	switch (*config)["port"].(type) {
+	case string:
+		port = ":" + (*config)["port"].(string)
+		break
+	case int:
+		port = fmt.Sprintf(":%v", (*config)["port"].(int))
+		break
+	case int64:
+		port = fmt.Sprintf(":%v", (*config)["port"].(int))
+		break
+	case float64:
+		port = fmt.Sprintf(":%v", (*config)["port"].(int))
+		break
+	}
 	// transport
 	// TCP SSL HTTP HTTPS
 	// transPort := (*config)["port"].(string)
@@ -61,7 +76,7 @@ func (g *GrpcInEndResource) Start() error {
 		listener, err = net.Listen(DEFAULT_TRANSPORT, DEFAULT_PORT)
 
 	} else {
-		listener, err = net.Listen(DEFAULT_TRANSPORT, ":"+(*config)["port"].(string))
+		listener, err = net.Listen(DEFAULT_TRANSPORT, port)
 	}
 	if err != nil {
 		return err
@@ -72,10 +87,11 @@ func (g *GrpcInEndResource) Start() error {
 	g.rulexServer.grpcInEndResource = g
 	//
 	rulexrpc.RegisterRulexRpcServer(g.rpcServer, g.rulexServer)
-	go func(context.Context) {
-		log.Info("GrpcInEndResource Started At:", listener.Addr())
+	go func(c context.Context) {
+		log.Info("GrpcResource Started At:", listener.Addr())
 		g.rpcServer.Serve(listener)
 	}(context.Background())
+
 	return nil
 }
 
@@ -86,6 +102,7 @@ func (g *GrpcInEndResource) DataModels() *map[string]XDataModel {
 
 //
 func (g *GrpcInEndResource) Stop() {
+	g.rpcServer.Stop()
 
 }
 func (g *GrpcInEndResource) Reload() {
@@ -95,7 +112,7 @@ func (g *GrpcInEndResource) Pause() {
 
 }
 func (g *GrpcInEndResource) Status() ResourceState {
-	return g.RuleEngine.GetInEnd(g.PointId).State
+	return UP
 }
 
 func (g *GrpcInEndResource) Register(inEndId string) error {
@@ -108,7 +125,7 @@ func (g *GrpcInEndResource) Test(inEndId string) bool {
 }
 
 func (g *GrpcInEndResource) Enabled() bool {
-	return g.Enable
+	return true
 }
 
 func (g *GrpcInEndResource) Details() *inEnd {

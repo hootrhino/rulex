@@ -8,7 +8,7 @@ type inEnd struct {
 	sync.Mutex
 	Id          string                  `json:"id"`
 	State       ResourceState           `json:"state"`
-	Type        string                  `json:"type"`
+	Type        InEndType               `json:"type"`
 	Name        string                  `json:"name"`
 	Description string                  `json:"description"`
 	Binds       *map[string]rule        `json:"-"`
@@ -37,7 +37,7 @@ func NewInEnd(t string,
 
 	return &inEnd{
 		Id:          utils.MakeUUID("INEND"),
-		Type:        t,
+		Type:        InEndType(t),
 		Name:        n,
 		Description: d,
 		Binds:       &map[string]rule{},

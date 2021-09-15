@@ -191,9 +191,7 @@ type XModule interface {
 //--------------------------------------------------------------
 // Remote Stream
 // ┌───────────────┐          ┌────────────────┐
-// │               │          │                │
 // │   RULEX       │ ◄─────── │   SERVER       │
-// │               │ ◄─────── │                │
 // └───────────────┘          └────────────────┘
 // Rulex Stream use GRPC for transport layer
 //--------------------------------------------------------------
@@ -202,6 +200,12 @@ type XStream interface {
 	OnStreamApproached(data string) error
 	State() XStatus
 	Close()
+}
+
+//
+// User's Protocol
+//
+type XProtocol interface {
 }
 
 //
@@ -215,3 +219,24 @@ type XDriver interface {
 	State() drivers.DriverState
 	Stop() error
 }
+
+//
+//
+//
+type InEndType string
+
+func (i InEndType) String() string {
+	return string(i)
+}
+
+const (
+	MQTT InEndType = "MQTT"
+
+	HTTP InEndType = "HTTP"
+
+	COAP InEndType = "COAP"
+
+	GRPC InEndType = "GRPC"
+
+	LoraATK InEndType = "LoraATK"
+)
