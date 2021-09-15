@@ -58,11 +58,11 @@ func NewATK_LORA_01Driver(serialPort *serial.Port) *ATK_LORA_01Driver {
 //
 func (a *ATK_LORA_01Driver) Init() error {
 	// 初始化配置参数
-	// write(a, "") 配置串口
-	// write(a, "") 配置功率
-	// write(a, "") 配置信道
-	// write(a, "") 配置地址
-	// write(a, "") 配置模式
+	// write(a, "") 配置串口 115200
+	// write(a, "") 配置功率 20
+	// write(a, "") 配置信道 20
+	// write(a, "") 配置地址 1
+	// write(a, "") 配置模式 透明模式
 
 	return nil
 }
