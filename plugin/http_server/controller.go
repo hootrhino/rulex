@@ -375,17 +375,38 @@ func CreateUser(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
 		})
 		return
 	}
-	hh.InsertMUser(&MUser{
-		Role:        form.Role,
-		Username:    form.Username,
-		Password:    form.Password,
-		Description: form.Description,
-	})
-	c.PureJSON(http.StatusOK, Result{
-		Code: http.StatusOK,
-		Msg:  "用户创建成功",
-		Data: form.Username,
-	})
+
+	if user, err := hh.GetMUser(form.Username, form.Password); err != nil {
+		c.PureJSON(http.StatusOK, Result{
+			Code: http.StatusBadGateway,
+			Msg:  err.Error(),
+			Data: nil,
+		})
+		return
+	} else {
+		if user.ID > 0 {
+			c.PureJSON(http.StatusOK, Result{
+				Code: http.StatusBadGateway,
+				Msg:  "用户已存在:" + user.Username,
+				Data: nil,
+			})
+			return
+		} else {
+			hh.InsertMUser(&MUser{
+				Role:        form.Role,
+				Username:    form.Username,
+				Password:    form.Password,
+				Description: form.Description,
+			})
+			c.PureJSON(http.StatusOK, Result{
+				Code: http.StatusOK,
+				Msg:  "用户创建成功",
+				Data: form.Username,
+			})
+			return
+		}
+	}
+
 }
 
 //
