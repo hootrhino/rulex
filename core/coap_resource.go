@@ -30,7 +30,7 @@ func (cc *CoAPInEndResource) Start() error {
 
 	cc.router.Use(func(next mux.Handler) mux.Handler {
 		return mux.HandlerFunc(func(w mux.ResponseWriter, r *mux.Message) {
-			log.Debugf("ClientAddress %v, %v\n", w.Client().RemoteAddr(), r.String())
+			log.Debugf("Client Address %v, %v\n", w.Client().RemoteAddr(), r.String())
 			next.ServeCOAP(w, r)
 		})
 	})
@@ -51,13 +51,13 @@ func (cc *CoAPInEndResource) Start() error {
 		}
 	}(context.Background())
 	cc.Enable = true
-
+	log.Info("Coap Server run at [udp] => :5688")
 	return nil
 }
 
 //
 func (cc *CoAPInEndResource) Stop() {
-
+	log.Info("Coap Server stopped")
 }
 
 func (mm *CoAPInEndResource) DataModels() *map[string]XDataModel {
@@ -82,7 +82,7 @@ func (cc *CoAPInEndResource) Test(inEndId string) bool {
 	return true
 }
 func (cc *CoAPInEndResource) Enabled() bool {
-	return cc.Enable
+	return true
 }
 func (cc *CoAPInEndResource) Details() *inEnd {
 	return cc.RuleEngine.GetInEnd(cc.PointId)
