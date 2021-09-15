@@ -3,8 +3,10 @@ package core
 //
 // !!! All 'RuleEngine' parameter passed by pseudo constructure function !!!
 //
-import "sync"
-import "rulex/drivers"
+import (
+	"rulex/drivers"
+	"sync"
+)
 
 // Resource State
 type ResourceState int
@@ -207,7 +209,7 @@ type XStream interface {
 //
 
 type XDriver interface {
-	Test() (error, string)
+	Test() (string, error)
 	Init() error
 	Work() error
 	State() drivers.DriverState

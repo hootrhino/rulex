@@ -31,7 +31,7 @@ func (mm *LoraModuleResource) DataModels() *map[string]XDataModel {
 }
 
 func (s *LoraModuleResource) Test(inEndId string) bool {
-	if err, _ := s.loraDriver.Test(); err != nil {
+	if _, err := s.loraDriver.Test(); err != nil {
 		log.Error(err)
 		return false
 	} else {
@@ -88,7 +88,7 @@ func (s *LoraModuleResource) Details() *inEnd {
 
 func (s *LoraModuleResource) Status() ResourceState {
 	if s.loraDriver != nil {
-		if err, _ := s.loraDriver.Test(); err != nil {
+		if _, err := s.loraDriver.Test(); err != nil {
 			log.Error(err)
 			return DOWN
 		} else {

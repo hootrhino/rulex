@@ -14,19 +14,19 @@ import (
 //
 // 串口数据写入
 //
-func write(a *ATK_LORA_01Driver, k string) (error, string) {
+func write(a *ATK_LORA_01Driver, k string) (string, error) {
 	_, err := a.serialPort.Write([]byte(k + "\r\n"))
 	if err != nil {
-		return err, ""
+		return "", err
 	}
 	for {
 		response := make([]byte, 4)
 		size, err := a.serialPort.Read(response)
 		if err != nil {
-			return err, ""
+			return "", err
 		}
 		if size > 0 {
-			return nil, string(response)
+			return string(response), nil
 		}
 	}
 }
@@ -58,11 +58,11 @@ func NewATK_LORA_01Driver(serialPort *serial.Port) *ATK_LORA_01Driver {
 //
 func (a *ATK_LORA_01Driver) Init() error {
 	// 初始化配置参数
-	// write(a, "")
-	// write(a, "")
-	// write(a, "")
-	// write(a, "")
-	// write(a, "")
+	// write(a, "") 配置串口
+	// write(a, "") 配置功率
+	// write(a, "") 配置信道
+	// write(a, "") 配置地址
+	// write(a, "") 配置模式
 
 	return nil
 }
@@ -104,83 +104,83 @@ func (a *ATK_LORA_01Driver) Stop() error {
 // AT\r\n
 // -----------------------------
 
-func (a *ATK_LORA_01Driver) Test() (error, string) {
+func (a *ATK_LORA_01Driver) Test() (string, error) {
 	return write(a, "AT\r\n")
 }
 
 // 设置命令回显
 // 获取参数
-func (a *ATK_LORA_01Driver) GetProperty(k string) (error, string) {
+func (a *ATK_LORA_01Driver) GetProperty(k string) (string, error) {
 	return write(a, k)
 }
 
 // 设置命令回显
 // -----------------------------
 
-func (a *ATK_LORA_01Driver) SetEcho() (error, string) {
+func (a *ATK_LORA_01Driver) SetEcho() (string, error) {
 	return write(a, "")
 }
 
 // 重置参数
 // -----------------------------
 
-func (a *ATK_LORA_01Driver) Reset() (error, string) {
+func (a *ATK_LORA_01Driver) Reset() (string, error) {
 	return write(a, "")
 }
 
 // 保存参数
 // -----------------------------
 
-func (a *ATK_LORA_01Driver) SaveConfig() (error, string) {
+func (a *ATK_LORA_01Driver) SaveConfig() (string, error) {
 	return write(a, "")
 }
 
 // 恢复出厂
 // -----------------------------
 
-func (a *ATK_LORA_01Driver) RevoverFactory() (error, string) {
+func (a *ATK_LORA_01Driver) RevoverFactory() (string, error) {
 	return write(a, "")
 }
 
 // 设置地址
 // -----------------------------
 
-func (a *ATK_LORA_01Driver) SetAddr(k string, v string) (error, string) {
+func (a *ATK_LORA_01Driver) SetAddr(k string, v string) (string, error) {
 	return write(a, "")
 }
 
 // 设置功率
 // -----------------------------
 
-func (a *ATK_LORA_01Driver) SetPower(power int) (error, string) {
+func (a *ATK_LORA_01Driver) SetPower(power int) (string, error) {
 	return write(a, "")
 }
 
 // 设置WMode
 // -----------------------------
 
-func (a *ATK_LORA_01Driver) SetCWMode(mode int) (error, string) {
+func (a *ATK_LORA_01Driver) SetCWMode(mode int) (string, error) {
 	return write(a, "")
 }
 
 // 设置SetTMode
 // -----------------------------
 
-func (a *ATK_LORA_01Driver) SetTMode(mode int) (error, string) {
+func (a *ATK_LORA_01Driver) SetTMode(mode int) (string, error) {
 	return write(a, "")
 }
 
 // 设置波特率
 // -----------------------------
 
-func (a *ATK_LORA_01Driver) SetRate(rate int, channel int) (error, string) {
+func (a *ATK_LORA_01Driver) SetRate(rate int, channel int) (string, error) {
 	return write(a, "")
 }
 
 // 设置时间
 // -----------------------------
 
-func (a *ATK_LORA_01Driver) SetTime(time int) (error, string) {
+func (a *ATK_LORA_01Driver) SetTime(time int) (string, error) {
 	return write(a, "")
 }
 
@@ -190,6 +190,6 @@ func (a *ATK_LORA_01Driver) SetTime(time int) (error, string) {
 // +UART:<bps>,<par> OK
 // -----------------------------
 
-func (a *ATK_LORA_01Driver) SetUart(bps int, par int) (error, string) {
+func (a *ATK_LORA_01Driver) SetUart(bps int, par int) (string, error) {
 	return write(a, "")
 }
