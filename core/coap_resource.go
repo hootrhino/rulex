@@ -39,7 +39,7 @@ func (cc *CoAPInEndResource) Start() error {
 		cc.e.Work(cc.e.GetInEnd(cc.PointId), msg.String())
 		err := w.SetResponse(codes.Content, message.TextPlain, bytes.NewReader([]byte("ok")))
 		if err != nil {
-			log.Errorf("cannot set response: %v", err)
+			log.Errorf("Cannot set response: %v", err)
 		}
 	}))
 	go func(ctx context.Context) {
