@@ -21,12 +21,8 @@ windows:
 
 .PHONY: package
 package:
-	echo "{" > metainfo.json
-	echo '"version":"${VERSION}",' >> metainfo.json
-	echo '"app":"${APP}",' >> metainfo.json
-	echo '"build_ts":' '"$(shell date '+%Y-%m-%d %H:%M:%S')"' >> metainfo.json
-	echo "}" >> metainfo.json
-	zip ${APP}-${VERSION}.zip ./${APP}-${VERSION} ./metainfo.json
+	echo ${VERSION} > VERSION
+	zip ${APP}-${VERSION}.zip ./${APP}-${VERSION}
 
 .PHONY: run
 run:
