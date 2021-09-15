@@ -184,8 +184,8 @@ func (p *XPluginEnv) Set(k string, v interface{}) {
 type XModuleInfo struct {
 }
 type XModule interface {
-	load() XModuleInfo
-	unLoad() error
+	Load() XModuleInfo
+	UnLoad() error
 }
 
 //--------------------------------------------------------------
