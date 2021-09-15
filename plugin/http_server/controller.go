@@ -31,7 +31,10 @@ type Result struct {
 // Render dashboard index
 //
 func Index(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
-	c.HTML(http.StatusOK, "dashboard.html", gin.H{})
+	c.HTML(http.StatusOK, "index.html", gin.H{})
+}
+func Login(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
+	c.HTML(http.StatusOK, "login.html", gin.H{})
 }
 
 //

@@ -55,7 +55,8 @@ func Run() {
 	signal.Notify(c, syscall.SIGINT, syscall.SIGABRT)
 	engine := core.NewRuleEngine()
 	engine.Start()
-	hh := httpserver.NewHttpApiServer(2580, "plugin/http_server/templates/*", engine)
+	hh := httpserver.NewHttpApiServer(2580, "plugin/http_server/templates", engine)
+	
 	// HttpApiServer loaded default
 	if err := engine.LoadPlugin(hh); err != nil {
 		log.Fatal("rule load failed:", err)
