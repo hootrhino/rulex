@@ -63,21 +63,28 @@ func Run() {
 	}
 	// Load a demo plugin
 	if err := engine.LoadPlugin(demo_plugin.NewDemoPlugin()); err != nil {
-		log.Fatal("Rule load failed:", err)
+		log.Error("Rule load failed:", err)
 	}
-	// grpc Inend
+	// Grpc Inend
 	grpcInend := core.NewInEnd("GRPC", "Rulex Grpc InEnd", "Rulex Grpc InEnd", &map[string]interface{}{
 		"port": "2581",
 	})
 	if err := engine.LoadInEnd(grpcInend); err != nil {
-		log.Fatal("Rule load failed:", err)
+		log.Error("Rule load failed:", err)
 	}
 	// CoAP Inend
 	coapInend := core.NewInEnd("COAP", "Rulex COAP InEnd", "Rulex COAP InEnd", &map[string]interface{}{
-		"port": "2581",
+		"port": "2582",
 	})
 	if err := engine.LoadInEnd(coapInend); err != nil {
-		log.Fatal("Rule load failed:", err)
+		log.Error("Rule load failed:", err)
+	}
+	// Http Inend
+	httpInend := core.NewInEnd("HTTP", "Rulex HTTP InEnd", "Rulex HTTP InEnd", &map[string]interface{}{
+		"port": "2583",
+	})
+	if err := engine.LoadInEnd(httpInend); err != nil {
+		log.Error("Rule load failed:", err)
 	}
 	//
 	// Load inend from sqlite
