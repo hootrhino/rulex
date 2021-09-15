@@ -142,8 +142,6 @@ func (hh *HttpApiServer) GetMUser(username string, password string) (*MUser, err
 
 func (hh *HttpApiServer) InsertMUser(o *MUser) {
 	hh.sqliteDb.Table("m_users").Create(o)
-	log.Debug("Create outend success")
-
 }
 
 func (hh *HttpApiServer) UpdateMUser(id int, o *MUser) error {

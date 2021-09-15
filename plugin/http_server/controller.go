@@ -357,6 +357,38 @@ func DeleteRule(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
 }
 
 //
+// CreateUser
+//
+func CreateUser(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
+	type Form struct {
+		Role        string `json:"role" binding:"required"`
+		Username    string `json:"username" binding:"required"`
+		Password    string `json:"password" binding:"required"`
+		Description string `json:"description"`
+	}
+	form := Form{}
+	if err := c.ShouldBindJSON(&form); err != nil {
+		c.PureJSON(http.StatusOK, Result{
+			Code: http.StatusBadGateway,
+			Msg:  err.Error(),
+			Data: nil,
+		})
+		return
+	}
+	hh.InsertMUser(&MUser{
+		Role:        form.Role,
+		Username:    form.Username,
+		Password:    form.Password,
+		Description: form.Description,
+	})
+	c.PureJSON(http.StatusOK, Result{
+		Code: http.StatusOK,
+		Msg:  "用户创建成功",
+		Data: form.Username,
+	})
+}
+
+//
 // Auth
 //
 func Auth(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
@@ -368,13 +400,25 @@ func Auth(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
 	form := Form{}
 	err0 := c.ShouldBindJSON(&form)
 	if err0 != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"msg": err0.Error()})
+		c.PureJSON(http.StatusOK, Result{
+			Code: http.StatusBadGateway,
+			Msg:  err0.Error(),
+			Data: nil,
+		})
 	} else {
 		user, err1 := hh.GetMUser(form.Username, form.Password)
 		if err1 != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"msg": err1.Error()})
+			c.PureJSON(http.StatusOK, Result{
+				Code: http.StatusBadGateway,
+				Msg:  err1.Error(),
+				Data: nil,
+			})
 		} else {
-			c.JSON(http.StatusOK, gin.H{"msg": "success", "data": user.ID})
+			c.PureJSON(http.StatusOK, Result{
+				Code: http.StatusOK,
+				Msg:  "认证成功",
+				Data: user.Username,
+			})
 		}
 	}
 }

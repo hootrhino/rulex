@@ -105,6 +105,7 @@ func (hh *HttpApiServer) Start(env *core.XPluginEnv) error {
 	//
 	// Auth
 	//
+	hh.ginEngine.POST(API_ROOT+"users", hh.addRoute(CreateUser))
 	hh.ginEngine.POST(API_ROOT+"auth", hh.addRoute(Auth))
 	//
 	// Create InEnd
