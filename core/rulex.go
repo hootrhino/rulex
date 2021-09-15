@@ -112,7 +112,7 @@ func (e *RuleEngine) LoadInEnd(in *inEnd) error {
 	if in.Type == LoraATK {
 		return startResources(NewLoraModuleResource(in.Id, e), in, e)
 	}
-	return errors.New(fmt.Sprintf("unsupported rule type:%s", in.Type))
+	return errors.New(fmt.Sprintf("Unsupported rule type:%s", in.Type))
 }
 
 //
@@ -157,7 +157,7 @@ func testResourceState(resource XResource, e *RuleEngine, id string) {
 	} else {
 		e.GetInEnd(id).SetState(DOWN)
 		// 当资源挂了以后先给停止，然后重启
-		log.Warnf("resource %v down. try to restart it", resource.Details().Id)
+		log.Warnf("Resource %v down. try to restart it", resource.Details().Id)
 		resource.Stop()
 		runtime.Gosched()
 		runtime.GC()
@@ -179,7 +179,7 @@ func tryCreateOutEnd(out *outEnd, e RuleX) error {
 	if out.Type == "mongo" {
 		return startTarget(NewMongoTarget(e), out, e)
 	}
-	return errors.New("unsupported target type:" + out.Type)
+	return errors.New("Unsupported target type:" + out.Type)
 
 }
 
@@ -254,7 +254,7 @@ func (e *RuleEngine) LoadRule(r *rule) error {
 			}
 		}
 	}
-	return errors.New("from can not be empty")
+	return errors.New("From can not be empty")
 
 }
 
@@ -294,7 +294,7 @@ func (e *RuleEngine) RemoveRule(ruleId string) error {
 		delete((*e.Rules), ruleId)
 		return nil
 	} else {
-		return errors.New("rule:" + ruleId + " not exists")
+		return errors.New("Rule:" + ruleId + " not exists")
 	}
 }
 
@@ -384,10 +384,10 @@ func VerifyCallback(r *rule) error {
 			valid = (reflect.TypeOf(f).Elem().Name() == "LFunction")
 		})
 		if !valid {
-			return errors.New("invalid function type")
+			return errors.New("Invalid function type")
 		}
 	} else {
-		return errors.New("actions must be a functions table")
+		return errors.New("Actions must be a functions table")
 	}
 	return nil
 }
@@ -405,7 +405,7 @@ func (r *rule) ExecuteActions(arg lua.LValue) (lua.LValue, error) {
 		})
 		return runPipline(r.VM, funcs, arg)
 	} else {
-		return nil, errors.New("actions not a lua table or not exist")
+		return nil, errors.New("Actions not a lua table or not exist")
 	}
 }
 
@@ -428,15 +428,15 @@ func execute(vm *lua.LState, k string, args ...lua.LValue) (interface{}, error) 
 		return callLuaFunc(vm, callable.(*lua.LFunction), args...)
 	}
 	if name == "LNilType" {
-		return nil, errors.New("target:" + k + " is not exists")
+		return nil, errors.New("Target:" + k + " is not exists")
 	}
-	return nil, errors.New("target:" + k + " is not a lua function")
+	return nil, errors.New("Target:" + k + " is not a lua function")
 }
 
 // callLuaFunc
 func callLuaFunc(vm *lua.LState, callable *lua.LFunction, args ...lua.LValue) ([]lua.LValue, error) {
 	if callable == nil {
-		return nil, errors.New("callable function is not exists")
+		return nil, errors.New("Callable function is not exists")
 	} else {
 		coroutine, _ := vm.NewThread()
 		state, err, lValues := vm.Resume(coroutine, callable, args...)
@@ -460,7 +460,7 @@ func (e *RuleEngine) LoadPlugin(p XPlugin) error {
 			return err1
 		} else {
 			if (*e.Plugins)[metaInfo.Name] != nil {
-				return errors.New("plugin already installed:" + metaInfo.Name)
+				return errors.New("Plugin already installed:" + metaInfo.Name)
 			} else {
 				(*e.Plugins)[metaInfo.Name] = metaInfo
 				if err2 := p.Start(env); err2 != nil {
@@ -550,7 +550,7 @@ func (e *RuleEngine) AllOutEnd() map[string]*outEnd {
 //F
 func (e *RuleEngine) LoadHook(h XHook) error {
 	if (*e.Hooks)[h.Name()] != nil {
-		return errors.New("hook have been loaded")
+		return errors.New("Hook have been loaded")
 	} else {
 		(*e.Hooks)[h.Name()] = h
 		return nil
