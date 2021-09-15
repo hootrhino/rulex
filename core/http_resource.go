@@ -43,7 +43,7 @@ func (hh *HttpInEndResource) Start() error {
 	go func(ctx context.Context) {
 		http.ListenAndServe(":"+(*config)["port"].(string), hh.engine)
 	}(context.Background())
-	log.Info("HTTP Resource start successfully")
+	log.Info("HTTP resource started on" + " [0.0.0.0]:" + (*config)["port"].(string))
 
 	return nil
 }
@@ -64,7 +64,7 @@ func (hh *HttpInEndResource) Pause() {
 
 }
 func (hh *HttpInEndResource) Status() ResourceState {
-	return hh.RuleEngine.GetInEnd(hh.PointId).State
+	return UP
 }
 
 func (hh *HttpInEndResource) Register(inEndId string) error {

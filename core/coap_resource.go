@@ -3,6 +3,7 @@ package core
 import (
 	"bytes"
 	"context"
+	"fmt"
 
 	"github.com/ngaut/log"
 	coap "github.com/plgd-dev/go-coap/v2"
@@ -15,19 +16,34 @@ import (
 type CoAPInEndResource struct {
 	XStatus
 	router *mux.Router
-	e      *RuleEngine
 }
 
 func NewCoAPInEndResource(inEndId string, e *RuleEngine) *CoAPInEndResource {
 	c := CoAPInEndResource{}
 	c.PointId = inEndId
 	c.router = mux.NewRouter()
-	c.e = e
+	c.RuleEngine = e
 	return &c
 }
 
 func (cc *CoAPInEndResource) Start() error {
+	config := cc.RuleEngine.GetInEnd(cc.PointId).Config
 
+	var port = ""
+	switch (*config)["port"].(type) {
+	case string:
+		port = ":" + (*config)["port"].(string)
+		break
+	case int:
+		port = fmt.Sprintf(":%v", (*config)["port"].(int))
+		break
+	case int64:
+		port = fmt.Sprintf(":%v", (*config)["port"].(int))
+		break
+	case float64:
+		port = fmt.Sprintf(":%v", (*config)["port"].(int))
+		break
+	}
 	cc.router.Use(func(next mux.Handler) mux.Handler {
 		return mux.HandlerFunc(func(w mux.ResponseWriter, r *mux.Message) {
 			log.Debugf("Client Address %v, %v\n", w.Client().RemoteAddr(), r.String())
@@ -36,14 +52,14 @@ func (cc *CoAPInEndResource) Start() error {
 	})
 	cc.router.Handle("/in", mux.HandlerFunc(func(w mux.ResponseWriter, msg *mux.Message) {
 		log.Debugf("Received Coap Data: %#v", msg)
-		cc.e.Work(cc.e.GetInEnd(cc.PointId), msg.String())
+		cc.RuleEngine.Work(cc.RuleEngine.GetInEnd(cc.PointId), msg.String())
 		err := w.SetResponse(codes.Content, message.TextPlain, bytes.NewReader([]byte("ok")))
 		if err != nil {
 			log.Errorf("Cannot set response: %v", err)
 		}
 	}))
 	go func(ctx context.Context) {
-		err := coap.ListenAndServe("udp", ":5688", cc.router)
+		err := coap.ListenAndServe("udp", port, cc.router)
 		if err != nil {
 			return
 		} else {
@@ -51,13 +67,13 @@ func (cc *CoAPInEndResource) Start() error {
 		}
 	}(context.Background())
 	cc.Enable = true
-	log.Info("Coap Server run at [udp] => :5688")
+	log.Info("Coap resource started on [udp]" + port)
 	return nil
 }
 
 //
 func (cc *CoAPInEndResource) Stop() {
-	log.Info("Coap Server stopped")
+	log.Info("Coap server stopped")
 }
 
 func (mm *CoAPInEndResource) DataModels() *map[string]XDataModel {
