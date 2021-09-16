@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"strings"
 
-	"rulex/core"
+	"rulex/engine"
 	httpserver "rulex/plugin/http_server"
 	"rulex/rulexrpc"
 
@@ -26,7 +26,7 @@ import (
 //
 func TestHttpAPi(t *testing.T) {
 
-	engine := core.NewRuleEngine()
+	engine := engine.NewRuleEngine()
 	engine.Start()
 	////////
 	hh := httpserver.NewHttpApiServer(2580, "../plugin/http_server/templates/*", engine)
@@ -209,7 +209,7 @@ func publish() {
 }
 
 func TestHttpInEnd(t *testing.T) {
-	engine := core.NewRuleEngine()
+	engine := engine.NewRuleEngine()
 	engine.Start()
 	////////
 	hh := httpserver.NewHttpApiServer(2580, "../plugin/http_server/templates/*", engine)
@@ -240,7 +240,7 @@ func TestHttpInEnd(t *testing.T) {
 }
 
 func TestGrpcInEnd(t *testing.T) {
-	engine := core.NewRuleEngine()
+	engine := engine.NewRuleEngine()
 	engine.Start()
 	////////
 	hh := httpserver.NewHttpApiServer(2580, "../plugin/http_server/templates/*", engine)
