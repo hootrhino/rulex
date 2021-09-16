@@ -7,7 +7,7 @@ all:
 .PHONY: build
 build:
 	go mod tidy
-	go build -ldflags "-s -w" -o ${APP}-${VERSION} main.go
+	go build -ldflags "-s -w" -o ${APP} main.go
 
 .PHONY: xx
 xx:
@@ -17,7 +17,7 @@ xx:
 windows:
 	go mod tidy
 	SET GOOS=windows
-	go build -ldflags "-s -w" -o ${APP}-${VERSION}.exe main.go
+	go build -ldflags "-s -w" -o ${APP}.exe main.go
 
 .PHONY: package
 package:
@@ -44,7 +44,6 @@ cover:
 clean:
 	go clean
 	rm *.db
-	rm ${APP}-${VERSION}.*
 
 .PHONY: tag
 tag:
