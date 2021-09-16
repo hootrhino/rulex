@@ -1,20 +1,21 @@
 package test
 
 import (
-	"encoding/json"
+	"context"
 	"os"
 	"os/signal"
 	"rulex/core"
 	"rulex/engine"
 	"rulex/plugin/demo_plugin"
 	httpserver "rulex/plugin/http_server"
+	"rulex/rulexrpc"
 	"rulex/typex"
-	"strings"
 	"syscall"
 	"testing"
 	"time"
 
 	"github.com/ngaut/log"
+	"google.golang.org/grpc"
 )
 
 func TestFullyRun(t *testing.T) {
@@ -73,51 +74,38 @@ func Run() {
 		log.Error("Rule load failed:", err)
 	}
 	//
-	// Load inend from sqlite
+	// Load Rule
 	//
-	for _, minEnd := range hh.AllMInEnd() {
-		config := map[string]interface{}{}
-		if err := json.Unmarshal([]byte(minEnd.Config), &config); err != nil {
-			log.Error(err)
-		}
-		in1 := typex.NewInEnd(minEnd.Type, minEnd.Name, minEnd.Description, &config)
-		// Important !!!!!!!!
-		in1.Id = minEnd.UUID
-		if err := engine.LoadInEnd(in1); err != nil {
-			log.Error("InEnd load failed:", err)
-		}
+	rule := typex.NewRule(engine,
+		"Just a test",
+		"Just a test",
+		[]string{grpcInend.Id},
+		`function Success() print("[LUA Success]==========================> OK") end`,
+		`
+		Actions = {
+			function(data)
+			    print("[LUA Actions Callback]==========================> ", data)
+				return true, data
+			end
+		}`,
+		`function Failed(error) print("[LUA Failed]==========================> OK", error) end`)
+	if err := engine.LoadRule(rule); err != nil {
+		log.Error(err)
 	}
+	conn, err := grpc.Dial("127.0.0.1:2581", grpc.WithInsecure())
+	if err != nil {
+		log.Error("grpc.Dial err: %v", err)
+	}
+	defer conn.Close()
+	client := rulexrpc.NewRulexRpcClient(conn)
+	resp, err := client.Work(context.Background(), &rulexrpc.Data{
+		Value: `{"temp":100,"hum":30, "co2":123.4, "lex":22.56}`,
+	})
+	if err != nil {
+		log.Error("grpc.Dial err: %v", err)
+	}
+	log.Debugf("Rulex Rpc Call Result ====>>: %v", resp.GetMessage())
 
-	//
-	// Load rule from sqlite
-	//
-	for _, mRule := range hh.AllMRules() {
-		rule := typex.NewRule(engine,
-			mRule.Name,
-			mRule.Description,
-			strings.Split(mRule.From, ","),
-			mRule.Success,
-			mRule.Actions,
-			mRule.Failed)
-		if err := engine.LoadRule(rule); err != nil {
-			log.Error(err)
-		}
-	}
-	//
-	// Load out end from sqlite
-	//
-	for _, mOutEnd := range hh.AllMOutEnd() {
-		config := map[string]interface{}{}
-		if err := json.Unmarshal([]byte(mOutEnd.Config), &config); err != nil {
-			log.Error(err)
-		}
-		newOutEnd := typex.NewOutEnd(mOutEnd.Type, mOutEnd.Name, mOutEnd.Description, &config)
-		// Important !!!!!!!!
-		newOutEnd.Id = mOutEnd.UUID
-		if err := engine.LoadOutEnd(newOutEnd); err != nil {
-			log.Error("OutEnd load failed:", err)
-		}
-	}
 	time.Sleep(5 * time.Second)
 	engine.Stop()
 }
