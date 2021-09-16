@@ -34,7 +34,7 @@ func (hh *HttpApiServer) Load() *core.XPluginEnv {
 //
 func (hh *HttpApiServer) Init(env *core.XPluginEnv) error {
 	gin.SetMode(gin.ReleaseMode)
-	hh.ginEngine = gin.Default()
+	hh.ginEngine = gin.New()
 	hh.ginEngine.Use(Authorize())
 	hh.InitDb()
 	hh.ginEngine.LoadHTMLFiles(hh.Root+"/login.html", hh.Root+"/view/rulex/index.html")
@@ -42,6 +42,10 @@ func (hh *HttpApiServer) Init(env *core.XPluginEnv) error {
 	hh.ginEngine.Static("/dashboard/v1/admin", hh.Root+"/admin")
 	hh.ginEngine.Static("/dashboard/v1/view", hh.Root+"/view")
 	hh.ginEngine.Static("/dashboard/v1/config", hh.Root+"/config")
+	hh.ginEngine.Static("/component", hh.Root+"/component")
+	hh.ginEngine.Static("/admin", hh.Root+"/admin")
+	hh.ginEngine.Static("/view", hh.Root+"/view")
+	hh.ginEngine.Static("/config", hh.Root+"/config")
 
 	// 后台管理员页面
 	ctx := context.Background()
@@ -70,6 +74,7 @@ func (hh *HttpApiServer) Start(env *core.XPluginEnv) error {
 	//
 	// Render dashboard index
 	//
+	hh.ginEngine.GET("/", hh.addRoute(Login))
 	hh.ginEngine.GET(DASHBOARD_ROOT, hh.addRoute(Login))
 	hh.ginEngine.GET(DASHBOARD_ROOT+"login", hh.addRoute(Login))
 	hh.ginEngine.GET(DASHBOARD_ROOT+"index", hh.addRoute(Index))
@@ -132,7 +137,7 @@ func (hh *HttpApiServer) Start(env *core.XPluginEnv) error {
 	//
 	hh.ginEngine.DELETE(API_ROOT+"rules", hh.addRoute(DeleteRule))
 	//
-	log.Info("Http web dashboard started on:http://127.0.0.1:2580" + DASHBOARD_ROOT + "login")
+	log.Info("Http server started on http://127.0.0.1:2580" + DASHBOARD_ROOT)
 	return nil
 }
 

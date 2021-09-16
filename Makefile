@@ -45,9 +45,6 @@ clean:
 	go clean
 	rm *.db
 	rm ${APP}-${VERSION}
-	rm ${APP}-${VERSION}.zip
-	rm metainfo.json
-	rm coverage.out
 
 .PHONY: tag
 tag:
