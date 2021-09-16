@@ -44,7 +44,7 @@ cover:
 clean:
 	go clean
 	rm *.db
-	rm ${APP}-${VERSION}
+	rm ${APP}-${VERSION}.*
 
 .PHONY: tag
 tag:
