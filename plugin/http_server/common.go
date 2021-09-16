@@ -31,6 +31,15 @@ func Authorize() gin.HandlerFunc {
 }
 
 //
+//
+//
+func Cros() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		cros(c)
+	}
+}
+
+//
 func cros(c *gin.Context) {
 	method := c.Request.Method
 	origin := c.Request.Header.Get("Origin")
@@ -46,6 +55,7 @@ func cros(c *gin.Context) {
 	if method == "OPTIONS" {
 		c.JSON(http.StatusOK, "ok!")
 	}
+	c.Next()
 }
 
 //

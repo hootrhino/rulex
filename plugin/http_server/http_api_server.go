@@ -36,6 +36,7 @@ func (hh *HttpApiServer) Init(env *core.XPluginEnv) error {
 	gin.SetMode(gin.ReleaseMode)
 	hh.ginEngine = gin.New()
 	hh.ginEngine.Use(Authorize())
+	hh.ginEngine.Use(Cros())
 	hh.InitDb()
 	hh.ginEngine.LoadHTMLFiles(hh.Root+"/login.html", hh.Root+"/view/rulex/index.html")
 	hh.ginEngine.Static("/dashboard/v1/component", hh.Root+"/component")
@@ -46,8 +47,6 @@ func (hh *HttpApiServer) Init(env *core.XPluginEnv) error {
 	hh.ginEngine.Static("/admin", hh.Root+"/admin")
 	hh.ginEngine.Static("/view", hh.Root+"/view")
 	hh.ginEngine.Static("/config", hh.Root+"/config")
-
-	// 后台管理员页面
 	ctx := context.Background()
 	go func(ctx context.Context, port int) {
 		hh.ginEngine.Run(":" + strconv.Itoa(port))
