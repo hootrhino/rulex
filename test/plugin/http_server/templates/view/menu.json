@@ -1,0 +1,83 @@
+[
+	{
+		"id": "homeIndex",
+		"title": "控制后台",
+		"icon": "layui-icon layui-icon-console",
+		"type": 1,
+		"openType": "_iframe",
+		"href": "view/rulex/home.html"
+	},
+	{
+		"id": "atomicCloud",
+		"title": "服务管理",
+		"icon": "layui-icon layui-icon-util",
+		"type": 0,
+		"href": "",
+		"children": [
+			{
+				"id": 2001,
+				"title": "当前服务",
+				"icon": "layui-icon layui-icon-util",
+				"type": 1,
+				"openType": "_iframe",
+				"href": "view/rulex/services.html"
+			},
+			{
+				"id": 2002,
+				"title": "服务市场",
+				"icon": "layui-icon layui-icon-util",
+				"type": 1,
+				"openType": "_iframe",
+				"href": "view/rulex/services_market.html"
+			}
+		]
+	},
+	{
+		"id": "rulexResource",
+		"title": "资源管理",
+		"icon": "layui-icon layui-icon-chart",
+		"type": 0,
+		"href": "",
+		"children": [
+			{
+				"id": 3001,
+				"title": "资源输入",
+				"icon": "layui-icon layui-icon-face-smile",
+				"type": 1,
+				"openType": "_iframe",
+				"href": "view/rulex/inends.html"
+			},
+			{
+				"id": 3002,
+				"title": "目标输出",
+				"icon": "layui-icon layui-icon-face-smile",
+				"type": 1,
+				"openType": "_iframe",
+				"href": "view/rulex/outends.html"
+			},
+			{
+				"id": 3003,
+				"title": "规则管理",
+				"icon": "layui-icon layui-icon-face-smile",
+				"type": 1,
+				"openType": "_iframe",
+				"href": "view/rulex/rules.html"
+			},
+			{
+				"id": 3004,
+				"title": "插件管理",
+				"icon": "layui-icon layui-icon-face-smile",
+				"type": 1,
+				"openType": "_iframe",
+				"href": "view/rulex/plugins.html"
+			}
+		]
+	},
+	{
+		"id": "rulexDoc",
+		"title": "社区文档",
+		"icon": "layui-icon layui-icon-util",
+		"type": 1,
+		"href": "https://github.com/wwhai/rulex"
+	}
+]

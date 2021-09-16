@@ -1,0 +1,21 @@
+openapi: "3.0.2"
+info:
+  title: RuleX 开放接口
+  description: "RuleX HTTP API 开放接口，主要用于对RuleX的基础管理"
+  version: "0.0.1"
+servers:
+  - url: https://127.0.0.1/api/v1
+paths:
+  /system:
+    get:
+      tags:
+        - "获取系统参数"
+      responses:
+        "200":
+          description: "获取系统参数"
+          content:
+            application/json:
+              example:
+                k: 1
+                v: 1
+

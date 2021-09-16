@@ -15,7 +15,6 @@ import (
 	"time"
 
 	"github.com/ngaut/log"
-	"github.com/urfave/cli/v2"
 )
 
 func TestFullyRun(t *testing.T) {
@@ -25,27 +24,7 @@ func TestFullyRun(t *testing.T) {
 //
 func runTest() {
 	core.InitGlobalConfig()
-	app := &cli.App{
-		Name:  "RULEX, a lightweight iot data rule gateway",
-		Usage: "http://rulex.ezlinker.cn",
-		Commands: []*cli.Command{
-			{
-				Name:  "run",
-				Usage: "Run rulex immediately",
-				Action: func(c *cli.Context) error {
-					Run()
-					log.Debug("Run rulex successfully.")
-					return nil
-				},
-			},
-		},
-	}
-
-	err := app.Run(os.Args)
-	if err != nil {
-		log.Fatal(err)
-	}
-
+	Run()
 }
 
 //
@@ -141,5 +120,4 @@ func Run() {
 	}
 	time.Sleep(5 * time.Second)
 	engine.Stop()
-	os.Exit(0)
 }
