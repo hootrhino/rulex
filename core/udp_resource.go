@@ -33,7 +33,7 @@ func (u *UdpResource) Start() error {
 		for u1.CanWrite {
 			n, remoteAddr, err := u1.uDPConn.ReadFromUDP(data)
 			if err != nil {
-				log.Error("Failed to read UDP msg because of ", err.Error())
+				log.Error(err.Error())
 			} else {
 				// fmt.Printf("Receive udp data:<%s> %s\n", remoteAddr, data[:n])
 				u.RuleEngine.Work(u.RuleEngine.GetInEnd(u.PointId), string(data[:n]))
