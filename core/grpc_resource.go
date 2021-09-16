@@ -88,7 +88,7 @@ func (g *GrpcInEndResource) Start() error {
 	//
 	rulexrpc.RegisterRulexRpcServer(g.rpcServer, g.rulexServer)
 	go func(c context.Context) {
-		log.Info("Grpc resource started on", listener.Addr())
+		log.Info("RulexRpc resource started on", listener.Addr())
 		g.rpcServer.Serve(listener)
 	}(context.Background())
 

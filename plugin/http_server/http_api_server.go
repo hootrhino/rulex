@@ -137,7 +137,7 @@ func (hh *HttpApiServer) Start(env *core.XPluginEnv) error {
 	//
 	hh.ginEngine.DELETE(API_ROOT+"rules", hh.addRoute(DeleteRule))
 	//
-	log.Info("Http server started on http://127.0.0.1:2580" + DASHBOARD_ROOT)
+	log.Info("Http server started on http://127.0.0.1:2580")
 	return nil
 }
 
