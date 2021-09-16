@@ -73,7 +73,6 @@ func (cc *CoAPInEndResource) Start() error {
 
 //
 func (cc *CoAPInEndResource) Stop() {
-	log.Info("Coap server stopped")
 }
 
 func (mm *CoAPInEndResource) DataModels() *map[string]XDataModel {

@@ -233,6 +233,7 @@ const (
 	MQTT InEndType = "MQTT"
 
 	HTTP InEndType = "HTTP"
+	UDP  InEndType = "UDP"
 
 	COAP InEndType = "COAP"
 

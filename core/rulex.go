@@ -112,7 +112,10 @@ func (e *RuleEngine) LoadInEnd(in *inEnd) error {
 	if in.Type == LoraATK {
 		return startResources(NewLoraModuleResource(in.Id, e), in, e)
 	}
-	return errors.New(fmt.Sprintf("Unsupported rule type:%s", in.Type))
+	if in.Type == UDP {
+		return startResources(NewUdpInEndResource(in.Id, e), in, e)
+	}
+	return fmt.Errorf("Unsupported rule type:%s", in.Type)
 }
 
 //

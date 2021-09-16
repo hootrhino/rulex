@@ -86,6 +86,13 @@ func Run() {
 	if err := engine.LoadInEnd(httpInend); err != nil {
 		log.Error("Rule load failed:", err)
 	}
+	// Udp Inend
+	udpInend := core.NewInEnd("UDP", "Rulex UDP InEnd", "Rulex UDP InEnd", &map[string]interface{}{
+		"port": "2584",
+	})
+	if err := engine.LoadInEnd(udpInend); err != nil {
+		log.Error("Rule load failed:", err)
+	}
 	//
 	// Load inend from sqlite
 	//
