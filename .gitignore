@@ -5,7 +5,6 @@ rulex-*
 *.zip
 *.out
 *.zip
-*.json
 rulex.db
 *.db
 go.sum

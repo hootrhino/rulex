@@ -1,0 +1,14 @@
+{
+    "code": 0,
+    "msg": "...",
+    "count": 3,
+    "data": [
+        {
+            "id": "IN-000010xFFFF",
+            "name": "测试数据",
+            "state": 1,
+            "type": "MQTT",
+            "description": "MQTT测试入口"
+        }
+    ]
+}
