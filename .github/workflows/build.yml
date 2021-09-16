@@ -18,4 +18,4 @@ jobs:
           go-version: 1.16
 
       - name: Build
-        run: make && ./rulex run
+        run: go test -timeout 30s -run ^TestFullyRun$ rulex/test -v
