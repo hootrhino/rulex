@@ -2,7 +2,7 @@ package httpserver
 
 import (
 	"context"
-	"rulex/core"
+	"rulex/typex"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -21,18 +21,18 @@ type HttpApiServer struct {
 	Root       string
 	sqliteDb   *gorm.DB
 	ginEngine  *gin.Engine
-	ruleEngine core.RuleX
+	ruleEngine typex.RuleX
 }
 
-func NewHttpApiServer(port int, root string, e core.RuleX) *HttpApiServer {
+func NewHttpApiServer(port int, root string, e typex.RuleX) *HttpApiServer {
 	return &HttpApiServer{Port: port, Root: root, ruleEngine: e}
 }
-func (hh *HttpApiServer) Load() *core.XPluginEnv {
-	return core.NewXPluginEnv()
+func (hh *HttpApiServer) Load() *typex.XPluginEnv {
+	return typex.NewXPluginEnv()
 }
 
 //
-func (hh *HttpApiServer) Init(env *core.XPluginEnv) error {
+func (hh *HttpApiServer) Init(env *typex.XPluginEnv) error {
 	gin.SetMode(gin.ReleaseMode)
 	hh.ginEngine = gin.New()
 	hh.ginEngine.Use(Authorize())
@@ -53,8 +53,8 @@ func (hh *HttpApiServer) Init(env *core.XPluginEnv) error {
 	}(ctx, hh.Port)
 	return nil
 }
-func (hh *HttpApiServer) Install(env *core.XPluginEnv) (*core.XPluginMetaInfo, error) {
-	return &core.XPluginMetaInfo{
+func (hh *HttpApiServer) Install(env *typex.XPluginEnv) (*typex.XPluginMetaInfo, error) {
+	return &typex.XPluginMetaInfo{
 		Name:     "HttpApiServer",
 		Version:  "0.0.1",
 		Homepage: "www.ezlinker.cn",
@@ -68,7 +68,7 @@ func (hh *HttpApiServer) Install(env *core.XPluginEnv) (*core.XPluginMetaInfo, e
 //
 // HttpApiServer Start
 //
-func (hh *HttpApiServer) Start(env *core.XPluginEnv) error {
+func (hh *HttpApiServer) Start(env *typex.XPluginEnv) error {
 
 	//
 	// Render dashboard index
@@ -140,7 +140,7 @@ func (hh *HttpApiServer) Start(env *core.XPluginEnv) error {
 	return nil
 }
 
-func (hh *HttpApiServer) Uninstall(env *core.XPluginEnv) error {
+func (hh *HttpApiServer) Uninstall(env *typex.XPluginEnv) error {
 	return nil
 }
 func (hh *HttpApiServer) Clean() {

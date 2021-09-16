@@ -1,10 +1,11 @@
-package core
+package resource
 
 import (
 	"context"
 	"fmt"
 	"net"
 	"rulex/rulexrpc"
+	"rulex/typex"
 
 	"github.com/ngaut/log"
 	"google.golang.org/grpc"
@@ -36,13 +37,13 @@ func (r *RulexRpcServer) Work(ctx context.Context, in *rulexrpc.Data) (*rulexrpc
 // Resource interface
 //
 type GrpcInEndResource struct {
-	XStatus
+	typex.XStatus
 	rulexServer *RulexRpcServer
 	rpcServer   *grpc.Server
 }
 
 //
-func NewGrpcInEndResource(inEndId string, e RuleX) *GrpcInEndResource {
+func NewGrpcInEndResource(inEndId string, e typex.RuleX) *GrpcInEndResource {
 	h := GrpcInEndResource{}
 	h.PointId = inEndId
 	h.RuleEngine = e
@@ -96,8 +97,8 @@ func (g *GrpcInEndResource) Start() error {
 }
 
 //
-func (g *GrpcInEndResource) DataModels() *map[string]XDataModel {
-	return &map[string]XDataModel{}
+func (g *GrpcInEndResource) DataModels() *map[string]typex.XDataModel {
+	return &map[string]typex.XDataModel{}
 }
 
 //
@@ -111,8 +112,8 @@ func (g *GrpcInEndResource) Reload() {
 func (g *GrpcInEndResource) Pause() {
 
 }
-func (g *GrpcInEndResource) Status() ResourceState {
-	return UP
+func (g *GrpcInEndResource) Status() typex.ResourceState {
+	return typex.UP
 }
 
 func (g *GrpcInEndResource) Register(inEndId string) error {
@@ -128,6 +129,6 @@ func (g *GrpcInEndResource) Enabled() bool {
 	return true
 }
 
-func (g *GrpcInEndResource) Details() *inEnd {
+func (g *GrpcInEndResource) Details() *typex.InEnd {
 	return g.RuleEngine.GetInEnd(g.PointId)
 }

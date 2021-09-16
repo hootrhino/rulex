@@ -1,7 +1,8 @@
-package core
+package target
 
 import (
 	"context"
+	"rulex/typex"
 
 	"github.com/ngaut/log"
 	"go.mongodb.org/mongo-driver/bson"
@@ -11,12 +12,12 @@ import (
 
 //
 type MongoTarget struct {
-	XStatus
+	typex.XStatus
 	client     *mongo.Client
 	collection *mongo.Collection
 }
 
-func NewMongoTarget(e RuleX) *MongoTarget {
+func NewMongoTarget(e typex.RuleX) *MongoTarget {
 	mg := new(MongoTarget)
 	mg.RuleEngine = e
 	return mg
@@ -79,14 +80,14 @@ func (m *MongoTarget) Pause() {
 
 }
 
-func (m *MongoTarget) Status() ResourceState {
+func (m *MongoTarget) Status() typex.ResourceState {
 	err1 := m.client.Ping(context.Background(), nil)
 	if err1 != nil {
 		log.Error(err1)
-		return DOWN
+		return typex.DOWN
 	} else {
-		m.RuleEngine.GetOutEnd(m.PointId).State = UP
-		return UP
+		m.RuleEngine.GetOutEnd(m.PointId).State = typex.UP
+		return typex.UP
 	}
 }
 
@@ -102,6 +103,6 @@ func (m *MongoTarget) To(data interface{}) error {
 	}
 	return err
 }
-func (m *MongoTarget) Details() *outEnd {
+func (m *MongoTarget) Details() *typex.OutEnd {
 	return m.RuleEngine.GetOutEnd(m.PointId)
 }

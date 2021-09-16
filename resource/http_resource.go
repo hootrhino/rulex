@@ -1,8 +1,9 @@
-package core
+package resource
 
 import (
 	"context"
 	"net/http"
+	"rulex/typex"
 
 	"github.com/gin-gonic/gin"
 	"github.com/ngaut/log"
@@ -10,11 +11,11 @@ import (
 
 //
 type HttpInEndResource struct {
-	XStatus
+	typex.XStatus
 	engine *gin.Engine
 }
 
-func NewHttpInEndResource(inEndId string, e RuleX) *HttpInEndResource {
+func NewHttpInEndResource(inEndId string, e typex.RuleX) *HttpInEndResource {
 	h := HttpInEndResource{}
 	h.PointId = inEndId
 	h.engine = gin.Default()
@@ -49,8 +50,8 @@ func (hh *HttpInEndResource) Start() error {
 }
 
 //
-func (mm *HttpInEndResource) DataModels() *map[string]XDataModel {
-	return &map[string]XDataModel{}
+func (mm *HttpInEndResource) DataModels() *map[string]typex.XDataModel {
+	return &map[string]typex.XDataModel{}
 }
 
 //
@@ -63,8 +64,8 @@ func (hh *HttpInEndResource) Reload() {
 func (hh *HttpInEndResource) Pause() {
 
 }
-func (hh *HttpInEndResource) Status() ResourceState {
-	return UP
+func (hh *HttpInEndResource) Status() typex.ResourceState {
+	return typex.UP
 }
 
 func (hh *HttpInEndResource) Register(inEndId string) error {
@@ -79,6 +80,6 @@ func (hh *HttpInEndResource) Test(inEndId string) bool {
 func (hh *HttpInEndResource) Enabled() bool {
 	return hh.Enable
 }
-func (hh *HttpInEndResource) Details() *inEnd {
+func (hh *HttpInEndResource) Details() *typex.InEnd {
 	return hh.RuleEngine.GetInEnd(hh.PointId)
 }

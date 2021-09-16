@@ -1,7 +1,8 @@
-package core
+package resource
 
 import (
 	"fmt"
+	"rulex/typex"
 	"time"
 
 	"github.com/ngaut/log"
@@ -17,11 +18,11 @@ const DEFAULT_TOPIC string = "$X_IN_END"
 
 //
 type MqttInEndResource struct {
-	XStatus
+	typex.XStatus
 	client mqtt.Client
 }
 
-func NewMqttInEndResource(inEndId string, e RuleX) *MqttInEndResource {
+func NewMqttInEndResource(inEndId string, e typex.RuleX) *MqttInEndResource {
 	m := new(MqttInEndResource)
 	m.PointId = inEndId
 	m.RuleEngine = e
@@ -41,13 +42,13 @@ func (mm *MqttInEndResource) Start() error {
 		log.Infof("Mqtt InEnd Connected Success")
 		// TODO support multipul topics
 		client.Subscribe(DEFAULT_TOPIC, 2, nil)
-		mm.RuleEngine.GetInEnd(mm.PointId).SetState(UP)
+		mm.RuleEngine.GetInEnd(mm.PointId).SetState(typex.UP)
 	}
 
 	var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err error) {
 		log.Infof("Connect lost: %v\n", err)
 		time.Sleep(5 * time.Second)
-		mm.RuleEngine.GetInEnd(mm.PointId).SetState(DOWN)
+		mm.RuleEngine.GetInEnd(mm.PointId).SetState(typex.DOWN)
 	}
 	config := mm.RuleEngine.GetInEnd(mm.PointId).Config
 	opts := mqtt.NewClientOptions()
@@ -86,8 +87,8 @@ func (mm *MqttInEndResource) Start() error {
 
 }
 
-func (mm *MqttInEndResource) DataModels() *map[string]XDataModel {
-	return &map[string]XDataModel{}
+func (mm *MqttInEndResource) DataModels() *map[string]typex.XDataModel {
+	return &map[string]typex.XDataModel{}
 }
 
 func (mm *MqttInEndResource) Stop() {
@@ -100,11 +101,11 @@ func (mm *MqttInEndResource) Reload() {
 func (mm *MqttInEndResource) Pause() {
 
 }
-func (mm *MqttInEndResource) Status() ResourceState {
+func (mm *MqttInEndResource) Status() typex.ResourceState {
 	if mm.client.IsConnected() {
-		return UP
+		return typex.UP
 	} else {
-		return DOWN
+		return typex.DOWN
 	}
 }
 
@@ -120,6 +121,6 @@ func (mm *MqttInEndResource) Test(inEndId string) bool {
 func (mm *MqttInEndResource) Enabled() bool {
 	return mm.Enable
 }
-func (mm *MqttInEndResource) Details() *inEnd {
+func (mm *MqttInEndResource) Details() *typex.InEnd {
 	return mm.RuleEngine.GetInEnd(mm.PointId)
 }

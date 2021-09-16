@@ -3,8 +3,9 @@ package httpserver
 import (
 	"net/http"
 	"rulex/cloud"
-	"rulex/core"
+	"rulex/engine"
 	"rulex/statistics"
+	"rulex/typex"
 	"rulex/utils"
 	"runtime"
 	"strings"
@@ -30,17 +31,17 @@ type Result struct {
 //
 // Render dashboard index
 //
-func Index(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
+func Index(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	c.HTML(http.StatusOK, "index.html", gin.H{})
 }
-func Login(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
+func Login(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	c.HTML(http.StatusOK, "login.html", gin.H{})
 }
 
 //
 // List cloud Services
 //
-func CloudServices(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
+func CloudServices(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	c.PureJSON(http.StatusOK, Result{
 		Code: http.StatusOK,
 		Msg:  "查询成功",
@@ -51,7 +52,7 @@ func CloudServices(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
 //
 // Get all plugins
 //
-func Plugins(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
+func Plugins(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	data := []interface{}{}
 	for _, v := range *e.AllPlugins() {
 		data = append(data, v)
@@ -66,7 +67,7 @@ func Plugins(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
 //
 // Get system infomation
 //
-func System(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
+func System(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	percent, _ := cpu.Percent(time.Second, false)
 	memInfo, _ := mem.VirtualMemory()
 	parts, _ := disk.Partitions(true)
@@ -87,7 +88,7 @@ func System(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
 //
 // Get all inends
 //
-func InEnds(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
+func InEnds(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	data := []interface{}{}
 	for _, v := range e.AllInEnd() {
 		data = append(data, v)
@@ -102,7 +103,7 @@ func InEnds(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
 //
 // Get all outends
 //
-func OutEnds(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
+func OutEnds(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	data := []interface{}{}
 	for _, v := range e.AllOutEnd() {
 		data = append(data, v)
@@ -117,7 +118,7 @@ func OutEnds(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
 //
 // Get all rules
 //
-func Rules(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
+func Rules(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	data := []interface{}{}
 	for _, v := range e.AllRule() {
 		data = append(data, v)
@@ -132,7 +133,7 @@ func Rules(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
 //
 // Get statistics data
 //
-func Statistics(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
+func Statistics(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	c.PureJSON(http.StatusOK, Result{
 		Code: http.StatusOK,
 		Msg:  "查询成功",
@@ -143,7 +144,7 @@ func Statistics(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
 //
 // All Users
 //
-func Users(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
+func Users(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	users := hh.AllMUser()
 	c.PureJSON(http.StatusOK, Result{
 		Code: http.StatusOK,
@@ -155,7 +156,7 @@ func Users(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
 //
 // Create InEnd
 //
-func CreateInend(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
+func CreateInend(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	type Form struct {
 		Type        string                 `json:"type" binding:"required"`
 		Name        string                 `json:"name" binding:"required"`
@@ -192,7 +193,7 @@ func CreateInend(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
 //
 // Create OutEnd
 //
-func CreateOutEnd(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
+func CreateOutEnd(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	type Form struct {
 		Type        string                 `json:"type" binding:"required"`
 		Name        string                 `json:"name" binding:"required"`
@@ -229,7 +230,7 @@ func CreateOutEnd(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
 //
 // Create rule
 //
-func CreateRule(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
+func CreateRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	type Form struct {
 		From        string `json:"from" binding:"required"`
 		Name        string `json:"name" binding:"required"`
@@ -243,7 +244,7 @@ func CreateRule(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
 	if err0 != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": err0.Error()})
 	} else {
-		rule := core.NewRule(nil,
+		rule := typex.NewRule(nil,
 			form.Name,
 			form.Description,
 			nil,
@@ -263,7 +264,7 @@ func CreateRule(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
 					return
 				}
 			}
-			if err1 := core.VerifyCallback(rule); err1 != nil {
+			if err1 := engine.VerifyCallback(rule); err1 != nil {
 				c.JSON(http.StatusBadRequest, gin.H{"msg": err1.Error()})
 			} else {
 				mRule := &MRule{
@@ -275,7 +276,7 @@ func CreateRule(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
 					Actions:     form.Actions,
 				}
 				hh.InsertMRule(mRule)
-				rule := core.NewRule(hh.ruleEngine,
+				rule := typex.NewRule(hh.ruleEngine,
 					mRule.Name,
 					mRule.Description,
 					strings.Split(mRule.From, ","),
@@ -297,7 +298,7 @@ func CreateRule(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
 //
 // Delete inend by UUID
 //
-func DeleteInend(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
+func DeleteInend(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	uuid, exists := c.GetQuery("uuid")
 	if exists {
 		// Important !!!!!
@@ -313,7 +314,7 @@ func DeleteInend(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
 //
 // Delete outend by UUID
 //
-func DeleteOutend(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
+func DeleteOutend(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	uuid, exists := c.GetQuery("uuid")
 	if exists {
 		// Important !!!!!
@@ -329,7 +330,7 @@ func DeleteOutend(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
 //
 // Delete rule by UUID
 //
-func DeleteRule(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
+func DeleteRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	uuid, exists := c.GetQuery("uuid")
 	if exists {
 		// Important !!!!! e.RemoveRule(uuid)
@@ -345,7 +346,7 @@ func DeleteRule(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
 //
 // CreateUser
 //
-func CreateUser(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
+func CreateUser(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	type Form struct {
 		Role        string `json:"role" binding:"required"`
 		Username    string `json:"username" binding:"required"`
@@ -398,7 +399,7 @@ func CreateUser(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
 //
 // Auth
 //
-func Auth(c *gin.Context, hh *HttpApiServer, e core.RuleX) {
+func Auth(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	type Form struct {
 		Username string `json:"username" binding:"required"`
 		Password string `json:"password" binding:"required"`

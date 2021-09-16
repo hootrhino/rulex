@@ -1,6 +1,8 @@
 package demo_plugin
 
-import "rulex/core"
+import (
+	"rulex/typex"
+)
 
 type DemoPlugin struct {
 }
@@ -8,16 +10,17 @@ type DemoPlugin struct {
 func NewDemoPlugin() *DemoPlugin {
 	return &DemoPlugin{}
 }
-func (dm *DemoPlugin) Load() *core.XPluginEnv {
-	return core.NewXPluginEnv()
+func (dm *DemoPlugin) Load() *typex.XPluginEnv {
+	return typex.NewXPluginEnv()
 }
-func (dm *DemoPlugin) Init(*core.XPluginEnv) error {
+func (dm *DemoPlugin) Init(*typex.XPluginEnv) error {
 	return nil
 
 }
+
 //
-func (dm *DemoPlugin) Install(*core.XPluginEnv) (*core.XPluginMetaInfo, error) {
-	return &core.XPluginMetaInfo{
+func (dm *DemoPlugin) Install(*typex.XPluginEnv) (*typex.XPluginMetaInfo, error) {
+	return &typex.XPluginMetaInfo{
 		Name:     "DemoPlugin",
 		Version:  "0.0.1",
 		Homepage: "www.ezlinker.cn",
@@ -27,10 +30,10 @@ func (dm *DemoPlugin) Install(*core.XPluginEnv) (*core.XPluginMetaInfo, error) {
 		License:  "MIT",
 	}, nil
 }
-func (dm *DemoPlugin) Start(*core.XPluginEnv) error {
+func (dm *DemoPlugin) Start(*typex.XPluginEnv) error {
 	return nil
 }
-func (dm *DemoPlugin) Uninstall(*core.XPluginEnv) error {
+func (dm *DemoPlugin) Uninstall(*typex.XPluginEnv) error {
 	return nil
 }
 func (dm *DemoPlugin) Clean() {

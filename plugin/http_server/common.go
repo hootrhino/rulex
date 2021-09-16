@@ -2,7 +2,7 @@ package httpserver
 
 import (
 	"net/http"
-	"rulex/core"
+	"rulex/typex"
 
 	"github.com/gin-gonic/gin"
 	"github.com/ngaut/log"
@@ -61,7 +61,7 @@ func cros(c *gin.Context) {
 //
 // Add api route
 //
-func (h *HttpApiServer) addRoute(f func(*gin.Context, *HttpApiServer, core.RuleX)) func(*gin.Context) {
+func (h *HttpApiServer) addRoute(f func(*gin.Context, *HttpApiServer, typex.RuleX)) func(*gin.Context) {
 
 	return func(c *gin.Context) {
 		f(c, h, h.ruleEngine)
@@ -78,7 +78,7 @@ func (hh *HttpApiServer) LoadNewestInEnd(uuid string) error {
 		log.Error(err)
 		return err
 	} else {
-		in := core.NewInEnd(mInEnd.Type, mInEnd.Name, mInEnd.Description, &config)
+		in := typex.NewInEnd(mInEnd.Type, mInEnd.Name, mInEnd.Description, &config)
 		// Important !!!!!!!! in.Id = mInEnd.UUID
 		in.Id = mInEnd.UUID
 		if err := hh.ruleEngine.LoadInEnd(in); err != nil {
@@ -99,7 +99,7 @@ func (hh *HttpApiServer) LoadNewestOutEnd(uuid string) error {
 	if err := json.Unmarshal([]byte(mOutEnd.Config), &config); err != nil {
 		return err
 	} else {
-		out := core.NewOutEnd(mOutEnd.Type, mOutEnd.Name, mOutEnd.Description, &config)
+		out := typex.NewOutEnd(mOutEnd.Type, mOutEnd.Name, mOutEnd.Description, &config)
 		// Important !!!!!!!!
 		out.Id = mOutEnd.UUID
 		if err := hh.ruleEngine.LoadOutEnd(out); err != nil {

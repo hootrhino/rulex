@@ -1,4 +1,4 @@
-package core
+package typex
 
 //
 // !!! All 'RuleEngine' parameter passed by pseudo constructure function !!!
@@ -48,29 +48,29 @@ type XDataModel struct {
 //
 type RuleX interface {
 	Start() *map[string]interface{}
-	Work(in *inEnd, data string) (bool, error)
+	Work(in *InEnd, data string) (bool, error)
 	//
 	GetConfig(k string) interface{}
 	//
-	LoadInEnd(in *inEnd) error
-	GetInEnd(id string) *inEnd
-	SaveInEnd(in *inEnd)
+	LoadInEnd(in *InEnd) error
+	GetInEnd(id string) *InEnd
+	SaveInEnd(in *InEnd)
 	RemoveInEnd(id string)
-	AllInEnd() map[string]*inEnd
+	AllInEnd() map[string]*InEnd
 	//
-	LoadOutEnd(out *outEnd) error
-	AllOutEnd() map[string]*outEnd
-	GetOutEnd(id string) *outEnd
-	SaveOutEnd(out *outEnd)
-	RemoveOutEnd(out *outEnd)
+	LoadOutEnd(out *OutEnd) error
+	AllOutEnd() map[string]*OutEnd
+	GetOutEnd(id string) *OutEnd
+	SaveOutEnd(out *OutEnd)
+	RemoveOutEnd(out *OutEnd)
 	//
 	LoadHook(h XHook) error
 	//
 	LoadPlugin(p XPlugin) error
 	AllPlugins() *map[string]*XPluginMetaInfo
 	//
-	LoadRule(r *rule) error
-	AllRule() map[string]*rule
+	LoadRule(r *Rule) error
+	AllRule() map[string]*Rule
 	RemoveRule(uuid string) error
 	//
 	Stop()
@@ -80,7 +80,7 @@ type RuleX interface {
 // XResource: 终端资源，比如实际上的 MQTT 客户端
 //
 type XResource interface {
-	Details() *inEnd
+	Details() *InEnd
 	Test(inEndId string) bool      //0
 	Register(inEndId string) error //1
 	Start() error                  //2
@@ -96,7 +96,7 @@ type XResource interface {
 // Stream from resource and to target
 //
 type XTarget interface {
-	Details() *outEnd
+	Details() *OutEnd
 	Test(outEndId string) bool      //0
 	Register(outEndId string) error //1
 	Start() error                   //2

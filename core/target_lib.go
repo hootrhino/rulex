@@ -3,13 +3,14 @@ package core
 import (
 	"encoding/json"
 	"rulex/statistics"
+	"rulex/typex"
 
 	"github.com/ngaut/log"
 	lua "github.com/yuin/gopher-lua"
 )
 
 // Loader
-func LoadTargetLib(e RuleX, vm *lua.LState) int {
+func LoadTargetLib(e typex.RuleX, vm *lua.LState) int {
 	mod := vm.SetFuncs(vm.G.Global, map[string]lua.LGFunction{
 		"DataToMongo": func(l *lua.LState) int {
 			id := l.ToString(1)
@@ -27,7 +28,7 @@ func LoadTargetLib(e RuleX, vm *lua.LState) int {
 	vm.Push(mod)
 	return 1
 }
-func handleDataFormat(e RuleX, id string, data string) {
+func handleDataFormat(e typex.RuleX, id string, data string) {
 	bson := &map[string]interface{}{}
 	err := json.Unmarshal([]byte(data), bson)
 	if err != nil {
@@ -42,20 +43,20 @@ func handleDataFormat(e RuleX, id string, data string) {
 //
 //
 //
-func DataToMongo(e RuleX, id string, data string) {
+func DataToMongo(e typex.RuleX, id string, data string) {
 	handleDataFormat(e, id, data)
 }
 
 //
 //
 //
-func DataToHttpServer(e RuleX, id string, data string) {
+func DataToHttpServer(e typex.RuleX, id string, data string) {
 	handleDataFormat(e, id, data)
 }
 
 //
 //
 //
-func DataToMqttBroker(e RuleX, id string, data string) {
+func DataToMqttBroker(e typex.RuleX, id string, data string) {
 	handleDataFormat(e, id, data)
 }

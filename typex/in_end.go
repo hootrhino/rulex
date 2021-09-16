@@ -1,29 +1,31 @@
-package core
+package typex
 
-import "sync"
-import "rulex/utils"
+import (
+	"rulex/utils"
+	"sync"
+)
 
 //
-type inEnd struct {
+type InEnd struct {
 	sync.Mutex
 	Id          string                  `json:"id"`
 	State       ResourceState           `json:"state"`
 	Type        InEndType               `json:"type"`
 	Name        string                  `json:"name"`
 	Description string                  `json:"description"`
-	Binds       *map[string]rule        `json:"-"`
+	Binds       *map[string]Rule        `json:"-"`
 	Config      *map[string]interface{} `json:"config"`
 	Resource    XResource               `json:"-"`
 }
 
-func (in *inEnd) GetState() ResourceState {
+func (in *InEnd) GetState() ResourceState {
 	in.Lock()
 	defer in.Unlock()
 	return in.State
 }
 
 //
-func (in *inEnd) SetState(s ResourceState) {
+func (in *InEnd) SetState(s ResourceState) {
 	in.Lock()
 	defer in.Unlock()
 	in.State = s
@@ -33,17 +35,17 @@ func (in *inEnd) SetState(s ResourceState) {
 func NewInEnd(t string,
 	n string,
 	d string,
-	c *map[string]interface{}) *inEnd {
+	c *map[string]interface{}) *InEnd {
 
-	return &inEnd{
+	return &InEnd{
 		Id:          utils.MakeUUID("INEND"),
 		Type:        InEndType(t),
 		Name:        n,
 		Description: d,
-		Binds:       &map[string]rule{},
+		Binds:       &map[string]Rule{},
 		Config:      c,
 	}
 }
-func (in *inEnd) GetConfig(k string) interface{} {
+func (in *InEnd) GetConfig(k string) interface{} {
 	return (*in.Config)[k]
 }

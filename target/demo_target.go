@@ -1,10 +1,12 @@
-package core
+package target
+
+import "rulex/typex"
 
 type DemoTarget struct {
-	XStatus
+	typex.XStatus
 }
 
-func (d *DemoTarget) Details() *outEnd {
+func (d *DemoTarget) Details() *typex.OutEnd {
 	return d.RuleEngine.GetOutEnd(d.PointId)
 }
 
@@ -31,8 +33,8 @@ func (d *DemoTarget) Reload() {
 func (d *DemoTarget) Pause() {
 }
 
-func (d *DemoTarget) Status() ResourceState {
-	return UP
+func (d *DemoTarget) Status() typex.ResourceState {
+	return typex.UP
 }
 
 func (d *DemoTarget) To(data interface{}) error {

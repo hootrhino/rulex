@@ -1,9 +1,10 @@
-package core
+package resource
 
 import (
 	"bytes"
 	"context"
 	"fmt"
+	"rulex/typex"
 
 	"github.com/ngaut/log"
 	coap "github.com/plgd-dev/go-coap/v2"
@@ -14,11 +15,11 @@ import (
 
 //
 type CoAPInEndResource struct {
-	XStatus
+	typex.XStatus
 	router *mux.Router
 }
 
-func NewCoAPInEndResource(inEndId string, e *RuleEngine) *CoAPInEndResource {
+func NewCoAPInEndResource(inEndId string, e typex.RuleX) *CoAPInEndResource {
 	c := CoAPInEndResource{}
 	c.PointId = inEndId
 	c.router = mux.NewRouter()
@@ -75,8 +76,8 @@ func (cc *CoAPInEndResource) Start() error {
 func (cc *CoAPInEndResource) Stop() {
 }
 
-func (mm *CoAPInEndResource) DataModels() *map[string]XDataModel {
-	return &map[string]XDataModel{}
+func (mm *CoAPInEndResource) DataModels() *map[string]typex.XDataModel {
+	return &map[string]typex.XDataModel{}
 }
 func (cc *CoAPInEndResource) Reload() {
 
@@ -84,8 +85,8 @@ func (cc *CoAPInEndResource) Reload() {
 func (cc *CoAPInEndResource) Pause() {
 
 }
-func (cc *CoAPInEndResource) Status() ResourceState {
-	return UP
+func (cc *CoAPInEndResource) Status() typex.ResourceState {
+	return typex.UP
 }
 
 func (cc *CoAPInEndResource) Register(inEndId string) error {
@@ -99,6 +100,6 @@ func (cc *CoAPInEndResource) Test(inEndId string) bool {
 func (cc *CoAPInEndResource) Enabled() bool {
 	return true
 }
-func (cc *CoAPInEndResource) Details() *inEnd {
+func (cc *CoAPInEndResource) Details() *typex.InEnd {
 	return cc.RuleEngine.GetInEnd(cc.PointId)
 }

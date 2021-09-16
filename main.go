@@ -2,15 +2,18 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/ngaut/log"
-	"github.com/urfave/cli/v2"
 	"os"
 	"os/signal"
 	"rulex/core"
+	"rulex/engine"
 	"rulex/plugin/demo_plugin"
 	httpserver "rulex/plugin/http_server"
+	"rulex/typex"
 	"strings"
 	"syscall"
+
+	"github.com/ngaut/log"
+	"github.com/urfave/cli/v2"
 )
 
 //
@@ -33,7 +36,7 @@ func main() {
 				Name:  "install",
 				Usage: "Install rulex to your path",
 				Action: func(c *cli.Context) error {
-					log.Debug("Install to: /usr/bin/rule core.")
+					log.Debug("Install to: /usr/bin/rule typex.")
 					os.Exit(0)
 					return nil
 				},
@@ -53,7 +56,7 @@ func Run() {
 
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, syscall.SIGINT, syscall.SIGABRT)
-	engine := core.NewRuleEngine()
+	engine := engine.NewRuleEngine()
 	engine.Start()
 	hh := httpserver.NewHttpApiServer(2580, "plugin/http_server/templates", engine)
 
@@ -66,28 +69,28 @@ func Run() {
 		log.Error("Rule load failed:", err)
 	}
 	// Grpc Inend
-	grpcInend := core.NewInEnd("GRPC", "Rulex Grpc InEnd", "Rulex Grpc InEnd", &map[string]interface{}{
+	grpcInend := typex.NewInEnd("GRPC", "Rulex Grpc InEnd", "Rulex Grpc InEnd", &map[string]interface{}{
 		"port": "2581",
 	})
 	if err := engine.LoadInEnd(grpcInend); err != nil {
 		log.Error("Rule load failed:", err)
 	}
 	// CoAP Inend
-	coapInend := core.NewInEnd("COAP", "Rulex COAP InEnd", "Rulex COAP InEnd", &map[string]interface{}{
+	coapInend := typex.NewInEnd("COAP", "Rulex COAP InEnd", "Rulex COAP InEnd", &map[string]interface{}{
 		"port": "2582",
 	})
 	if err := engine.LoadInEnd(coapInend); err != nil {
 		log.Error("Rule load failed:", err)
 	}
 	// Http Inend
-	httpInend := core.NewInEnd("HTTP", "Rulex HTTP InEnd", "Rulex HTTP InEnd", &map[string]interface{}{
+	httpInend := typex.NewInEnd("HTTP", "Rulex HTTP InEnd", "Rulex HTTP InEnd", &map[string]interface{}{
 		"port": "2583",
 	})
 	if err := engine.LoadInEnd(httpInend); err != nil {
 		log.Error("Rule load failed:", err)
 	}
 	// Udp Inend
-	udpInend := core.NewInEnd("UDP", "Rulex UDP InEnd", "Rulex UDP InEnd", &map[string]interface{}{
+	udpInend := typex.NewInEnd("UDP", "Rulex UDP InEnd", "Rulex UDP InEnd", &map[string]interface{}{
 		"port": "2584",
 	})
 	if err := engine.LoadInEnd(udpInend); err != nil {
@@ -101,7 +104,7 @@ func Run() {
 		if err := json.Unmarshal([]byte(minEnd.Config), &config); err != nil {
 			log.Error(err)
 		}
-		in1 := core.NewInEnd(minEnd.Type, minEnd.Name, minEnd.Description, &config)
+		in1 := typex.NewInEnd(minEnd.Type, minEnd.Name, minEnd.Description, &config)
 		// Important !!!!!!!!
 		in1.Id = minEnd.UUID
 		if err := engine.LoadInEnd(in1); err != nil {
@@ -113,7 +116,7 @@ func Run() {
 	// Load rule from sqlite
 	//
 	for _, mRule := range hh.AllMRules() {
-		rule := core.NewRule(engine,
+		rule := typex.NewRule(engine,
 			mRule.Name,
 			mRule.Description,
 			strings.Split(mRule.From, ","),
@@ -132,7 +135,7 @@ func Run() {
 		if err := json.Unmarshal([]byte(mOutEnd.Config), &config); err != nil {
 			log.Error(err)
 		}
-		newOutEnd := core.NewOutEnd(mOutEnd.Type, mOutEnd.Name, mOutEnd.Description, &config)
+		newOutEnd := typex.NewOutEnd(mOutEnd.Type, mOutEnd.Name, mOutEnd.Description, &config)
 		// Important !!!!!!!!
 		newOutEnd.Id = mOutEnd.UUID
 		if err := engine.LoadOutEnd(newOutEnd); err != nil {

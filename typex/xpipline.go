@@ -1,7 +1,8 @@
-package core
+package typex
 
 import (
 	"errors"
+	"reflect"
 	"strconv"
 
 	lua "github.com/yuin/gopher-lua"
@@ -10,7 +11,7 @@ import (
 //
 //  Run lua as pipline
 //
-func runPipline(vm *lua.LState, funcs map[string]*lua.LFunction, arg lua.LValue) (lua.LValue, error) {
+func RunPipline(vm *lua.LState, funcs map[string]*lua.LFunction, arg lua.LValue) (lua.LValue, error) {
 	acc := 1
 	return pipLine(vm, acc, funcs, arg)
 }
@@ -58,5 +59,37 @@ func validate(values []lua.LValue, f func() (lua.LValue, error)) (lua.LValue, er
 		return nil, errors.New("action callback must have 2 arguments:[bool, T]")
 	} else {
 		return f()
+	}
+}
+
+//
+//
+//
+
+// Execute Lua function
+func Execute(vm *lua.LState, k string, args ...lua.LValue) (interface{}, error) {
+	callable := vm.GetGlobal(k)
+	name := reflect.TypeOf(callable).Elem().Name()
+	if name == "LFunction" {
+		return callLuaFunc(vm, callable.(*lua.LFunction), args...)
+	}
+	if name == "LNilType" {
+		return nil, errors.New("Target:" + k + " is not exists")
+	}
+	return nil, errors.New("Target:" + k + " is not a lua function")
+}
+
+// callLuaFunc
+func callLuaFunc(vm *lua.LState, callable *lua.LFunction, args ...lua.LValue) ([]lua.LValue, error) {
+	if callable == nil {
+		return nil, errors.New("Callable function is not exists")
+	} else {
+		coroutine, _ := vm.NewThread()
+		state, err, lValues := vm.Resume(coroutine, callable, args...)
+		if state != lua.ResumeOK {
+			return nil, err
+		} else {
+			return lValues, nil
+		}
 	}
 }

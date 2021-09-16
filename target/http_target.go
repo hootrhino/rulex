@@ -1,4 +1,4 @@
-package core
+package target
 
 import (
 	"bytes"
@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"rulex/typex"
 )
 
 func post(data interface{}, url string) (string, error) {
@@ -27,7 +28,7 @@ func post(data interface{}, url string) (string, error) {
 }
 
 type HTTPTarget struct {
-	XStatus
+	typex.XStatus
 }
 
 func (ht *HTTPTarget) Register(outEndId string) {
@@ -48,8 +49,8 @@ func (ht *HTTPTarget) Reload() {
 func (ht *HTTPTarget) Pause() {
 
 }
-func (ht *HTTPTarget) Status() ResourceState {
-	return UP
+func (ht *HTTPTarget) Status() typex.ResourceState {
+	return typex.UP
 
 }
 func (ht *HTTPTarget) To(data interface{}) error {

@@ -1,17 +1,19 @@
-package core
+package resource
 
 import (
+	"rulex/drivers"
+	"rulex/typex"
+
 	"github.com/ngaut/log"
 	"github.com/tarm/serial"
-	"rulex/drivers"
 )
 
 type LoraModuleResource struct {
-	XStatus
+	typex.XStatus
 	loraDriver *drivers.ATK_LORA_01Driver
 }
 
-func NewLoraModuleResource(inEndId string, e *RuleEngine) *LoraModuleResource {
+func NewLoraModuleResource(inEndId string, e typex.RuleX) *LoraModuleResource {
 	s := LoraModuleResource{}
 	s.PointId = inEndId
 	s.RuleEngine = e
@@ -19,10 +21,10 @@ func NewLoraModuleResource(inEndId string, e *RuleEngine) *LoraModuleResource {
 	return &s
 }
 
-func (mm *LoraModuleResource) DataModels() *map[string]XDataModel {
-	return &map[string]XDataModel{
+func (mm *LoraModuleResource) DataModels() *map[string]typex.XDataModel {
+	return &map[string]typex.XDataModel{
 		"NodeData": {
-			Type:      T_JSON,
+			Type:      typex.T_JSON,
 			Name:      "NodeSendMsg",
 			MinLength: 2,
 			MaxLength: 1024,
@@ -82,20 +84,20 @@ func (s *LoraModuleResource) Reload() {
 func (s *LoraModuleResource) Pause() {
 
 }
-func (s *LoraModuleResource) Details() *inEnd {
+func (s *LoraModuleResource) Details() *typex.InEnd {
 	return s.RuleEngine.GetInEnd(s.PointId)
 }
 
-func (s *LoraModuleResource) Status() ResourceState {
+func (s *LoraModuleResource) Status() typex.ResourceState {
 	if s.loraDriver != nil {
 		if _, err := s.loraDriver.Test(); err != nil {
 			log.Error(err)
-			return DOWN
+			return typex.DOWN
 		} else {
-			return UP
+			return typex.UP
 		}
 	}
-	return DOWN
+	return typex.DOWN
 }
 
 func (s *LoraModuleResource) Stop() {

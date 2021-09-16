@@ -2,6 +2,7 @@ package core
 
 import (
 	"encoding/json"
+	"rulex/typex"
 
 	"github.com/itchyny/gojq"
 	"github.com/ngaut/log"
@@ -9,7 +10,7 @@ import (
 )
 
 // Loader
-func LoadJqLib(e RuleX, vm *lua.LState) int {
+func LoadJqLib(e typex.RuleX, vm *lua.LState) int {
 	mod := vm.SetFuncs(vm.G.Global, map[string]lua.LGFunction{
 		"Select": func(l *lua.LState) int {
 			jqExpression := l.ToString(1)

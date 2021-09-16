@@ -1,19 +1,20 @@
-package core
+package resource
 
 import (
 	"context"
 	"net"
+	"rulex/typex"
 
 	"github.com/ngaut/log"
 )
 
 type UdpResource struct {
-	XStatus
+	typex.XStatus
 	uDPConn  *net.UDPConn
 	CanWrite bool
 }
 
-func NewUdpInEndResource(inEndId string, e RuleX) *UdpResource {
+func NewUdpInEndResource(inEndId string, e typex.RuleX) *UdpResource {
 	u := UdpResource{
 		CanWrite: false,
 	}
@@ -49,7 +50,7 @@ func (u *UdpResource) Start() error {
 
 }
 
-func (u *UdpResource) Details() *inEnd {
+func (u *UdpResource) Details() *typex.InEnd {
 	return u.RuleEngine.GetInEnd(u.PointId)
 }
 
@@ -66,8 +67,8 @@ func (u *UdpResource) Enabled() bool {
 	return true
 }
 
-func (u *UdpResource) DataModels() *map[string]XDataModel {
-	return &map[string]XDataModel{}
+func (u *UdpResource) DataModels() *map[string]typex.XDataModel {
+	return &map[string]typex.XDataModel{}
 }
 
 func (u *UdpResource) Reload() {
@@ -76,8 +77,8 @@ func (u *UdpResource) Reload() {
 func (u *UdpResource) Pause() {
 }
 
-func (u *UdpResource) Status() ResourceState {
-	return UP
+func (u *UdpResource) Status() typex.ResourceState {
+	return typex.UP
 }
 
 func (u *UdpResource) Stop() {

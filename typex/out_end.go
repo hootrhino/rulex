@@ -1,12 +1,14 @@
-package core
+package typex
 
-import "sync"
-import "rulex/utils"
+import (
+	"rulex/utils"
+	"sync"
+)
 
 //
 //
 //
-type outEnd struct {
+type OutEnd struct {
 	sync.Mutex
 	Id          string                  `json:"id"`
 	Type        string                  `json:"type"`
@@ -17,14 +19,14 @@ type outEnd struct {
 	Target      XTarget                 `json:"-"`
 }
 
-func (o *outEnd) GetState() ResourceState {
+func (o *OutEnd) GetState() ResourceState {
 	o.Lock()
 	defer o.Unlock()
 	return o.State
 }
 
 //
-func (o *outEnd) SetState(s ResourceState) {
+func (o *OutEnd) SetState(s ResourceState) {
 	o.Lock()
 	defer o.Unlock()
 	o.State = s
@@ -36,8 +38,8 @@ func (o *outEnd) SetState(s ResourceState) {
 func NewOutEnd(t string,
 	n string,
 	d string,
-	c *map[string]interface{}) *outEnd {
-	return &outEnd{
+	c *map[string]interface{}) *OutEnd {
+	return &OutEnd{
 		Id:          utils.MakeUUID("OUTEND"),
 		Type:        t,
 		State:       DOWN,
@@ -50,6 +52,6 @@ func NewOutEnd(t string,
 //
 //
 //
-func (out *outEnd) GetConfig(k string) interface{} {
+func (out *OutEnd) GetConfig(k string) interface{} {
 	return (*out.Config)[k]
 }
