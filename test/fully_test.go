@@ -107,13 +107,5 @@ func Run() {
 	}
 	log.Debugf("Rulex Rpc Call Result ====>>: %v", resp.GetMessage())
 	time.Sleep(2 * time.Second)
-
-	cmd := exec.Command("curl http://127.0.0.1:2580/api/v1/system | jq")
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		log.Error(err)
-	}
-	log.Info(string(out))
-	time.Sleep(2 * time.Second)
 	engine.Stop()
 }
