@@ -19,5 +19,6 @@ jobs:
 
       - name: Build
         run: |
+            sudo apt update -y
             sudo apt install jq -y
             go test -timeout 30s -run ^TestFullyRun$ rulex/test -v
