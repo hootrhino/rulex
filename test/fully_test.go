@@ -2,8 +2,9 @@ package test
 
 import (
 	"context"
+	"github.com/ngaut/log"
+	"google.golang.org/grpc"
 	"os"
-	"os/exec"
 	"os/signal"
 	"rulex/core"
 	"rulex/engine"
@@ -14,9 +15,6 @@ import (
 	"syscall"
 	"testing"
 	"time"
-
-	"github.com/ngaut/log"
-	"google.golang.org/grpc"
 )
 
 func TestFullyRun(t *testing.T) {
