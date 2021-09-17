@@ -11,7 +11,7 @@ import (
 type OutEnd struct {
 	sync.Mutex
 	Id          string                  `json:"id"`
-	Type        string                  `json:"type"`
+	Type        TargetType              `json:"type"`
 	State       ResourceState           `json:"state"`
 	Name        string                  `json:"name"`
 	Description string                  `json:"description"`

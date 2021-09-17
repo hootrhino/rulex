@@ -179,13 +179,13 @@ func (e *RuleEngine) LoadOutEnd(out *typex.OutEnd) error {
 }
 
 //
-//
+// CreateOutEnd
 //
 func tryCreateOutEnd(out *typex.OutEnd, e typex.RuleX) error {
-	if out.Type == "mongo" {
+	if out.Type == typex.MONGO_SINGLE {
 		return startTarget(target.NewMongoTarget(e), out, e)
 	}
-	return errors.New("Unsupported target type:" + out.Type)
+	return errors.New("Unsupported target type:" + out.Type.String())
 
 }
 
@@ -260,7 +260,7 @@ func (e *RuleEngine) LoadRule(r *typex.Rule) error {
 			}
 		}
 	}
-	return errors.New("From can not be empty")
+	return errors.New("'From' can not be empty")
 
 }
 
@@ -364,23 +364,21 @@ func (e *RuleEngine) runLuaCallbacks(in *typex.InEnd, data string) {
 // Verify Lua Syntax
 func VerifyCallback(r *typex.Rule) error {
 	vm := r.VM
-	e1 := vm.DoString(r.Success)
-	if e1 != nil {
-		return e1
+	if err := vm.DoString(r.Success); err != nil {
+		return err
 	}
 	if vm.GetGlobal("Success").Type() != lua.LTFunction {
-		return errors.New("success not submit")
+		return errors.New("'Success' callback function missed")
 	}
-	e2 := vm.DoString(r.Failed)
-	if e2 != nil {
-		return e2
+
+	if err := vm.DoString(r.Failed); err != nil {
+		return err
 	}
 	if vm.GetGlobal("Failed").Type() != lua.LTFunction {
-		return errors.New("failed not submit")
+		return errors.New("'Failed' callback function missed")
 	}
-	e3 := vm.DoString(r.Actions)
-	if e3 != nil {
-		return e3
+	if err := vm.DoString(r.Actions); err != nil {
+		return err
 	}
 	// validate Syntax
 	actionsTable := vm.GetGlobal("Actions")
@@ -393,7 +391,7 @@ func VerifyCallback(r *typex.Rule) error {
 			return errors.New("Invalid function type")
 		}
 	} else {
-		return errors.New("Actions must be a functions table")
+		return errors.New("'Actions' must be a functions table")
 	}
 	return nil
 }
@@ -421,6 +419,32 @@ func (e *RuleEngine) LoadPlugin(p typex.XPlugin) error {
 
 		}
 	}
+}
+
+//
+// LoadHook
+//
+func (e *RuleEngine) LoadHook(h typex.XHook) error {
+	if (*e.Hooks)[h.Name()] != nil {
+		return errors.New("Hook have been loaded:" + h.Name())
+	} else {
+		(*e.Hooks)[h.Name()] = h
+		return nil
+	}
+}
+
+//
+// RunHooks
+//
+func (e *RuleEngine) runHooks(data string) {
+	for _, h := range *e.Hooks {
+		if err := runHook(h, data); err != nil {
+			h.Error(err)
+		}
+	}
+}
+func runHook(h typex.XHook, data string) error {
+	return h.Work(data)
 }
 
 //
@@ -493,30 +517,4 @@ func (e *RuleEngine) AllOutEnd() map[string]*typex.OutEnd {
 	e.Lock()
 	defer e.Unlock()
 	return (*e.OutEnds)
-}
-
-//
-// LoadHook
-//F
-func (e *RuleEngine) LoadHook(h typex.XHook) error {
-	if (*e.Hooks)[h.Name()] != nil {
-		return errors.New("Hook have been loaded")
-	} else {
-		(*e.Hooks)[h.Name()] = h
-		return nil
-	}
-}
-
-//
-// RunHooks
-//
-func (e *RuleEngine) runHooks(data string) {
-	for _, h := range *e.Hooks {
-		if err := runHook(h, data); err != nil {
-			h.Error(err)
-		}
-	}
-}
-func runHook(h typex.XHook, data string) error {
-	return h.Work(data)
 }

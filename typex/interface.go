@@ -221,7 +221,7 @@ type XDriver interface {
 }
 
 //
-//
+// InEndType
 //
 type InEndType string
 
@@ -230,14 +230,28 @@ func (i InEndType) String() string {
 }
 
 const (
-	MQTT InEndType = "MQTT"
-
-	HTTP InEndType = "HTTP"
-	UDP  InEndType = "UDP"
-
-	COAP InEndType = "COAP"
-
-	GRPC InEndType = "GRPC"
-
+	MQTT    InEndType = "MQTT"
+	HTTP    InEndType = "HTTP"
+	UDP     InEndType = "UDP"
+	COAP    InEndType = "COAP"
+	GRPC    InEndType = "GRPC"
 	LoraATK InEndType = "LoraATK"
+)
+
+//
+// TargetType
+//
+type TargetType string
+
+func (i TargetType) String() string {
+	return string(i)
+}
+
+const (
+	MONGO_SINGLE  TargetType = "MONGO_SINGLE"
+	MONGO_CLUSTER TargetType = "MONGO_CLUSTER"
+	REDIS_SINGLE  TargetType = "REDIS_SINGLE"
+	FLINK_SINGLE  TargetType = "FLINK_SINGLE"
+	MYSQL         TargetType = "MYSQL"
+	PGSQL         TargetType = "PGSQL"
 )
