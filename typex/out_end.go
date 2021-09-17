@@ -41,7 +41,7 @@ func NewOutEnd(t string,
 	c *map[string]interface{}) *OutEnd {
 	return &OutEnd{
 		Id:          utils.MakeUUID("OUTEND"),
-		Type:        t,
+		Type:        TargetType(t),
 		State:       DOWN,
 		Name:        n,
 		Description: d,
