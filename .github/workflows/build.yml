@@ -21,7 +21,4 @@ jobs:
         run: |
             sudo apt update -y
             sudo apt install jq -y
-            go test -timeout 30s -run ^TestFullyRun$ rulex/test -v &
-            sleep 1
-            curl http://127.0.0.1:2580/api/v1/system | jq
-
+            go test -timeout 30s -run ^TestFullyRun$ rulex/test -v

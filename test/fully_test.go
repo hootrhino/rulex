@@ -2,8 +2,8 @@ package test
 
 import (
 	"context"
-	"github.com/ngaut/log"
-	"google.golang.org/grpc"
+	"io/ioutil"
+	"net/http"
 	"os"
 	"os/signal"
 	"rulex/core"
@@ -15,6 +15,9 @@ import (
 	"syscall"
 	"testing"
 	"time"
+
+	"github.com/ngaut/log"
+	"google.golang.org/grpc"
 )
 
 func TestFullyRun(t *testing.T) {
@@ -105,5 +108,28 @@ func Run() {
 	}
 	log.Debugf("Rulex Rpc Call Result ====>>: %v", resp.GetMessage())
 	time.Sleep(2 * time.Second)
+	log.Info("Test Http Api===> " + HttpGet("http://127.0.0.1:2580/api/v1/system"))
 	engine.Stop()
+}
+
+func HttpGet(api string) string {
+	var err error
+	request, err := http.NewRequest("GET", api, nil)
+	if err != nil {
+		log.Error(err)
+		return ""
+	}
+
+	response, err := (&http.Client{}).Do(request)
+	if err != nil {
+		log.Error(err)
+		return ""
+	}
+	defer response.Body.Close()
+	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		log.Error(err)
+		return ""
+	}
+	return string(body)
 }
