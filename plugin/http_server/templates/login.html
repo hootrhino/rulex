@@ -3,7 +3,7 @@
 
 <head>
 	<meta charset="utf-8">
-	<title>Login Page</title>
+	<title>登录</title>
 	<!-- 样 式 文 件 -->
 	<link rel="stylesheet" href="component/pear/css/pear.css" />
 	<link rel="stylesheet" href="admin/css/other/login.css" />
@@ -11,22 +11,24 @@
 <!-- 代 码 结 构 -->
 
 <body style="background-size: cover;">
-	<form class="layui-form" action="javascript:void(0);">
+	<form class="layui-form" action="javascript:void(0);"
+		style="padding-left: 8px;padding-right: 8px;border: 1px solid rgb(123, 123, 123);box-shadow: 2px 2px 2px rgb(133, 132, 132);">
+		<div class="layui-form-item" style="text-align: center;">
+			<strong>
+				<h1 style="color: dodgerblue;font-size: 40px;">RULEX</h1>
+			</strong>
+		</div>
 		<div class="layui-form-item">
-			<img class="logo" src="admin/images/logo.png" />
-			<div class="title">Rulex Admin</div>
+			<input placeholder="账 户" lay-verify="required" hover value="" type="text" class="layui-input" />
+		</div>
+		<div class="layui-form-item">
+			<input placeholder="密 码" lay-verify="required" hover value="" type="password" class="layui-input" />
+		</div>
 
-		</div>
 		<div class="layui-form-item">
-			<input placeholder="账 户 : admin " lay-verify="required" hover value="admin" class="layui-input" />
-		</div>
-		<div class="layui-form-item">
-			<input placeholder="密 码 : admin " lay-verify="required" hover value="123456" class="layui-input" />
-		</div>
-
-		<div class="layui-form-item">
-			<button type="button" class="pear-btn pear-btn-success login" lay-submit lay-filter="login">
-				登 入
+			<button style="background-color: dodgerblue;" class="layui-btn login" lay-submit
+				lay-filter="login">
+				登 录
 			</button>
 		</div>
 	</form>
@@ -41,12 +43,7 @@
 
 			// 登 录 提 交
 			form.on('submit(login)', function (data) {
-
-				/// 验证
-
-				/// 登录
-
-				/// 动画
+				console.log("login:", data)
 				button.load({
 					elem: '.login',
 					time: 100,

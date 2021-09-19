@@ -1,249 +1,104 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en"  xmlns:th="http://www.thymeleaf.org">
 <head>
-	<meta charset="utf-8">
-	<title>资源输出</title>
-	<link rel="stylesheet" href="../../component/pear/css/pear.css" />
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="../../../component/pear/css/pear.css" />
 </head>
+<body>
+<form class="layui-form" action="">
+    <div class="mainBox">
+        <div class="main-container">
+            <div class="main-container">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">账号</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="username" lay-verify="title" autocomplete="off" placeholder="请输入标题" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">姓名</label>
+                    <div class="layui-input-block">
+                        <input type="text"  name="realName" lay-verify="title" autocomplete="off" placeholder="请输入标题" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">邮箱</label>
+                    <div class="layui-input-block">
+                        <input type="text"  name="email" lay-verify="title" autocomplete="off" placeholder="请输入标题" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">密码</label>
+                    <div class="layui-input-block">
+                        <input type="text"  name="password" lay-verify="title" autocomplete="off" placeholder="请输入标题" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">电话</label>
+                    <div class="layui-input-block">
+                        <input type="text"  name="phone" lay-verify="title" autocomplete="off" placeholder="请输入标题" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">性别</label>
+                    <div class="layui-input-block">
+                        <input type="radio" name="sex" value="0" title="男">
+                        <input type="radio" name="sex" value="1" title="女" checked>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="bottom">
+        <div class="button-container">
+            <button type="submit" class="pear-btn pear-btn-primary pear-btn-sm" lay-submit="" lay-filter="user-save">
+                <i class="layui-icon layui-icon-ok"></i>
+                提交
+            </button>
+            <button type="reset" class="pear-btn pear-btn-sm">
+                <i class="layui-icon layui-icon-refresh"></i>
+                重置
+            </button>
+        </div>
+    </div>
+</form>
+<script src="../../../component/layui/layui.js"></script>
+<script src="../../../component/pear/pear.js"></script>
+<script>
+layui.use(['form','jquery'],function(){
+    let form = layui.form;
+    let $ = layui.jquery;
 
-<body class="pear-container">
-
-	<div class="layui-card">
-		<div class="layui-card-body">
-			<table id="outends-table" lay-filter="outends-table"></table>
-		</div>
-	</div>
-
-	<script type="text/html" id="outends-toolbar">
-			<button class="pear-btn pear-btn-primary pear-btn-md" lay-event="add">
-		        <i class="layui-icon layui-icon-add-1"></i>
-		        新增
-		    </button>
-		    <button class="pear-btn pear-btn-danger pear-btn-md" lay-event="batchRemove">
-		        <i class="layui-icon layui-icon-delete"></i>
-		        删除
-		    </button>
-		</script>
-
-	<script type="text/html" id="outends-bar">
-			<button class="pear-btn pear-btn-primary pear-btn-sm" lay-event="edit"><i class="layui-icon layui-icon-edit"></i></button>
-		    <button class="pear-btn pear-btn-danger pear-btn-sm" lay-event="remove"><i class="layui-icon layui-icon-delete"></i></button>
-		</script>
-
-	<script type="text/html" id="outends-enable">
-			<input type="checkbox" name="enable" value="{{d.id}}" lay-skin="switch" lay-text="启用|禁用" lay-filter="outends-enable" {{ d.enable== true ? 'checked' : '' }} />
-		</script>
-
-	<script type="text/html" id="outends-sex">
-			{{#if (d.sex == 1) { }}
-		    <span>男</span>
-		    {{# }else if(d.sex == 2){ }}
-		    <span>女</span>
-		    {{# } }}
-		</script>
-
-	<script type="text/html" id="outends-login">
-			{{#if (d.login == 0) { }}
-		    <span>在线</span>
-		    {{# }else if(d.sex == 1){ }}
-		    <span>离线</span>
-		    {{# } }}
-		</script>
-
-	<script type="text/html" id="outends-createTime">
-			{{layui.util.toDateString(d.createTime, 'yyyy-MM-dd')}}
-		</script>
-
-	<script src="../../component/layui/layui.js"></script>
-	<script src="../../component/pear/pear.js"></script>
-	<script>
-		layui.use(['table', 'form', 'jquery', 'common'], function () {
-			let table = layui.table;
-			let form = layui.form;
-			let $ = layui.jquery;
-			let common = layui.common;
-
-			let MODULE_PATH = "operate/";
-
-			let cols = [
-				[{
-					type: 'checkbox'
-				},
-				{
-					title: 'ID',
-					field: 'id',
-					align: 'center',
-					width: 200
-				},
-				{
-					title: '名称',
-					field: 'name',
-					align: 'center',
-
-				},
-				{
-					title: '状态',
-					field: 'state',
-					align: 'center',
-
-				},
-				{
-					title: '类型',
-					field: 'type',
-					align: 'center',
-
-				},
-				{
-					title: '备注信息',
-					field: 'description',
-					align: 'center',
-
-				},
-				]
-			]
-
-			table.render({
-				elem: '#outends-table',
-				url: '../rulex/mock/outends.json',
-				page: false,
-				cols: cols,
-				skin: 'line',
-				toolbar: '#outends-toolbar',
-				defaultToolbar: [{
-					title: '刷新',
-					layEvent: 'refresh',
-					icon: 'layui-icon-refresh',
-				}, 'filter', 'print', 'exports']
-			});
-
-			table.on('tool(outends-table)', function (obj) {
-				if (obj.event === 'remove') {
-					window.remove(obj);
-				} else if (obj.event === 'edit') {
-					window.edit(obj);
-				}
-			});
-
-			table.on('toolbar(outends-table)', function (obj) {
-				if (obj.event === 'add') {
-					window.add();
-				} else if (obj.event === 'refresh') {
-					window.refresh();
-				} else if (obj.event === 'batchRemove') {
-					window.batchRemove(obj);
-				}
-			});
-
-			form.on('submit(outends-query)', function (data) {
-				table.reload('outends-table', {
-					where: data.field
-				})
-				return false;
-			});
-
-			form.on('switch(outends-enable)', function (obj) {
-				layer.tips(this.value + ' ' + this.name + '：' + obj.elem.checked, obj.othis);
-			});
-
-			window.add = function () {
-				layer.open({
-					type: 2,
-					title: '新增',
-					shade: 0.1,
-					area: [common.isModile() ? '100%' : '500px', common.isModile() ? '100%' : '400px'],
-					content: MODULE_PATH + 'add.html'
-				});
-			}
-
-			window.edit = function (obj) {
-				layer.open({
-					type: 2,
-					title: '修改',
-					shade: 0.1,
-					area: ['500px', '400px'],
-					content: MODULE_PATH + 'edit.html'
-				});
-			}
-
-			window.remove = function (obj) {
-				layer.confirm('确定要删除该资源', {
-					icon: 3,
-					title: '提示'
-				}, function (index) {
-					layer.close(index);
-					let loading = layer.load();
-					$.ajax({
-						url: MODULE_PATH + "remove/" + obj.data['outendsId'],
-						dataType: 'json',
-						type: 'delete',
-						success: function (result) {
-							layer.close(loading);
-							if (result.success) {
-								layer.msg(result.msg, {
-									icon: 1,
-									time: 1000
-								}, function () {
-									obj.del();
-								});
-							} else {
-								layer.msg(result.msg, {
-									icon: 2,
-									time: 1000
-								});
-							}
-						}
-					})
-				});
-			}
-
-			window.batchRemove = function (obj) {
-
-				var checkIds = common.checkField(obj, 'outendsId');
-
-				if (checkIds === "") {
-					layer.msg("未选中数据", {
-						icon: 3,
-						time: 1000
-					});
-					return false;
-				}
-
-				layer.confirm('确定要删除这些资源', {
-					icon: 3,
-					title: '提示'
-				}, function (index) {
-					layer.close(index);
-					let loading = layer.load();
-					$.ajax({
-						url: MODULE_PATH + "batchRemove/" + ids,
-						dataType: 'json',
-						type: 'delete',
-						success: function (result) {
-							layer.close(loading);
-							if (result.success) {
-								layer.msg(result.msg, {
-									icon: 1,
-									time: 1000
-								}, function () {
-									table.reload('outends-table');
-								});
-							} else {
-								layer.msg(result.msg, {
-									icon: 2,
-									time: 1000
-								});
-							}
-						}
-					})
-				});
-			}
-
-			window.refresh = function (param) {
-				table.reload('outends-table');
-			}
-		})
-	</script>
+    form.on('submit(user-save)', function(data){
+        let roleIds = "";
+        $('input[type=checkbox]:checked').each(function() {
+            roleIds += $(this).val()+",";
+        });
+        roleIds = roleIds.substr(0,roleIds.length-1);
+        data.field.roleIds = roleIds;
+        $.ajax({
+            url:'/system/user/save',
+            data:JSON.stringify(data.field),
+            dataType:'json',
+            contentType:'application/json',
+            type:'post',
+            success:function(result){
+                if(result.success){
+                    layer.msg(result.msg,{icon:1,time:1000},function(){
+                        parent.layer.close(parent.layer.getFrameIndex(window.name));//关闭当前页
+                        parent.layui.table.reload("user-table");
+                    });
+                }else{
+                    layer.msg(result.msg,{icon:2,time:1000});
+                }
+            }
+        })
+        return false;
+    });
+})
+</script>
+<script>
+</script>
 </body>
-
 </html>
