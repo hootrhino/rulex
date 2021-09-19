@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"os"
 
 	"github.com/google/uuid"
 	"github.com/ngaut/log"
@@ -38,4 +39,37 @@ func post(data map[string]interface{}, api string) string {
 		log.Error(errs5)
 	}
 	return string(body)
+}
+
+//
+// show banner
+//
+func ShowBanner() {
+	//
+	defaultBanner :=
+		`
+-----------------------------------------------------------
+~~~/=====\       ██████╗ ██╗   ██╗██╗     ███████╗██╗  ██╗
+~~~||\\\||--->o  ██╔══██╗██║   ██║██║     ██╔════╝╚██╗██╔╝
+~~~||///||--->o  ██████╔╝██║   ██║██║     █████╗   ╚███╔╝ 
+~~~||///||--->o  ██╔══██╗██║   ██║██║     ██╔══╝   ██╔██╗ 
+~~~||\\\||--->o  ██║  ██║╚██████╔╝███████╗███████╗██╔╝ ██╗
+~~~\=====/       ╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚══════╝╚═╝  ╚═╝
+-----------------------------------------------------------
+`
+	file, err := os.Open("conf/banner.txt")
+	defer file.Close()
+	if err != nil {
+		log.Warn("No banner found, print default banner")
+		log.Info(defaultBanner)
+	} else {
+		data, err := ioutil.ReadAll(file)
+		if err != nil {
+			log.Warn("No banner found, print default banner")
+			log.Info(defaultBanner)
+		} else {
+			log.Info("\n", string(data))
+		}
+	}
+	log.Info("rulex start successfully")
 }

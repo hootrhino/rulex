@@ -9,6 +9,7 @@ import (
 	"rulex/plugin/demo_plugin"
 	httpserver "rulex/plugin/http_server"
 	"rulex/typex"
+	"rulex/utils"
 	"strings"
 	"syscall"
 
@@ -27,7 +28,8 @@ func main() {
 				Name:  "run",
 				Usage: "Run rulex immediately",
 				Action: func(c *cli.Context) error {
-					Run()
+					utils.ShowBanner()
+					runRulex()
 					log.Debug("Run rulex successfully.")
 					return nil
 				},
@@ -52,8 +54,9 @@ func main() {
 }
 
 //
-func Run() {
-
+//
+//
+func runRulex() {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, syscall.SIGINT, syscall.SIGABRT)
 	engine := engine.NewRuleEngine()

@@ -4,8 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io/ioutil"
-	"os"
 	"reflect"
 	"rulex/resource"
 	"rulex/statistics"
@@ -63,33 +61,6 @@ func (e *RuleEngine) AllPlugins() *map[string]*typex.XPluginMetaInfo {
 //
 func (e *RuleEngine) Start() *map[string]interface{} {
 	e.ConfigMap = &map[string]interface{}{}
-	//
-	defaultBanner :=
-		`
------------------------------------------------------------
-~~~/=====\       ██████╗ ██╗   ██╗██╗     ███████╗██╗  ██╗
-~~~||\\\||--->o  ██╔══██╗██║   ██║██║     ██╔════╝╚██╗██╔╝
-~~~||///||--->o  ██████╔╝██║   ██║██║     █████╗   ╚███╔╝ 
-~~~||///||--->o  ██╔══██╗██║   ██║██║     ██╔══╝   ██╔██╗ 
-~~~||\\\||--->o  ██║  ██║╚██████╔╝███████╗███████╗██╔╝ ██╗
-~~~\=====/       ╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚══════╝╚═╝  ╚═╝
------------------------------------------------------------
-`
-	file, err := os.Open("conf/banner.txt")
-	if err != nil {
-		log.Warn("No banner found, print default banner")
-		log.Info(defaultBanner)
-	} else {
-		data, err := ioutil.ReadAll(file)
-		if err != nil {
-			log.Warn("No banner found, print default banner")
-			log.Info(defaultBanner)
-		} else {
-			log.Info("\n", string(data))
-		}
-	}
-	log.Info("rulex start successfully")
-	file.Close()
 	return e.ConfigMap
 }
 
@@ -121,6 +92,8 @@ func (e *RuleEngine) LoadInEnd(in *typex.InEnd) error {
 	return fmt.Errorf("Unsupported rule type:%s", in.Type)
 }
 
+//
+// startResources
 //
 func startResources(resource typex.XResource, in *typex.InEnd, e *RuleEngine) error {
 	// Save to rule engine first
@@ -172,8 +145,8 @@ func testResourceState(resource typex.XResource, e *RuleEngine, id string) {
 }
 
 //
-//
 // LoadOutEnd
+//
 func (e *RuleEngine) LoadOutEnd(out *typex.OutEnd) error {
 	return tryCreateOutEnd(out, e)
 }
