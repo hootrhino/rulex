@@ -1,4 +1,4 @@
-package drivers
+package driver
 
 type DriverState int
 

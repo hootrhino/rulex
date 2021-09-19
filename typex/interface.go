@@ -4,7 +4,7 @@ package typex
 // !!! All 'RuleEngine' parameter passed by pseudo constructure function !!!
 //
 import (
-	"rulex/drivers"
+	"rulex/driver"
 	"sync"
 )
 
@@ -216,7 +216,7 @@ type XDriver interface {
 	Test() (string, error)
 	Init() error
 	Work() error
-	State() drivers.DriverState
+	State() driver.DriverState
 	Stop() error
 }
 

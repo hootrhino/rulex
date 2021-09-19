@@ -1,7 +1,7 @@
 package resource
 
 import (
-	"rulex/drivers"
+	"rulex/driver"
 	"rulex/typex"
 
 	"github.com/ngaut/log"
@@ -10,7 +10,7 @@ import (
 
 type LoraModuleResource struct {
 	typex.XStatus
-	loraDriver *drivers.ATK_LORA_01Driver
+	loraDriver *driver.ATK_LORA_01Driver
 }
 
 func NewLoraModuleResource(inEndId string, e typex.RuleX) *LoraModuleResource {
@@ -66,7 +66,7 @@ func (s *LoraModuleResource) Start() error {
 		log.Error("LoraModuleResource start failed:", err)
 		return err
 	} else {
-		s.loraDriver = drivers.NewATK_LORA_01Driver(serialPort)
+		s.loraDriver = driver.NewATK_LORA_01Driver(serialPort)
 		s.loraDriver.Init()
 		s.loraDriver.Work()
 		log.Info("LoraModuleResource start success.")
