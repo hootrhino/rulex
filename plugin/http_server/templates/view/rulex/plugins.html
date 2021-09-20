@@ -77,11 +77,20 @@
 
 			table.render({
 				elem: '#plugins-table',
-				url: '../rulex/mock/plugins.json',
+				url: ' http://127.0.0.1:2580/api/v1/plugins',
 				page: false,
 				cols: cols,
 				skin: 'line',
 				toolbar: '#plugins-toolbar',
+				parseData: function (response) {
+					
+					return {
+						"code": 0,
+						"msg": response.msg,
+						"count": 30,
+						"data": response.data
+					};
+				},
 				defaultToolbar: [{
 					title: '刷新',
 					layEvent: 'refresh',

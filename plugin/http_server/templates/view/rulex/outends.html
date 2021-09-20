@@ -11,11 +11,11 @@
 
 	<div class="layui-card">
 		<div class="layui-card-body">
-			<table id="plugins-table" lay-filter="plugins-table"></table>
+			<table id="outends-table" lay-filter="outends-table"></table>
 		</div>
 	</div>
 
-	<script type="text/html" id="plugins-toolbar">
+	<script type="text/html" id="outends-toolbar">
 			<button class="pear-btn pear-btn-primary pear-btn-md" lay-event="add">
 		        <i class="layui-icon layui-icon-add-1"></i>
 		        新增
@@ -72,12 +72,21 @@
 				]
 			]
 			table.render({
-				elem: '#plugins-table',
-				url: '../rulex/mock/outends.json',
+				elem: '#outends-table',
+				url: ' http://127.0.0.1:2580/api/v1/outends',
 				page: false,
 				cols: cols,
 				skin: 'line',
-				toolbar: '#plugins-toolbar',
+				toolbar: '#outends-toolbar',
+				parseData: function (response) {
+					
+					return {
+						"code": 0,
+						"msg": response.msg,
+						"count": 30,
+						"data": response.data
+					};
+				},
 				defaultToolbar: [{
 					title: '刷新',
 					layEvent: 'refresh',
@@ -85,7 +94,7 @@
 				}, 'filter', 'print', 'exports']
 			});
 
-			table.on('tool(plugins-table)', function (obj) {
+			table.on('tool(outends-table)', function (obj) {
 				if (obj.event === 'remove') {
 					window.remove(obj);
 				} else if (obj.event === 'edit') {
@@ -93,7 +102,7 @@
 				}
 			});
 
-			table.on('toolbar(plugins-table)', function (obj) {
+			table.on('toolbar(outends-table)', function (obj) {
 				if (obj.event === 'add') {
 					window.add();
 				} else if (obj.event === 'refresh') {
@@ -103,14 +112,14 @@
 				}
 			});
 
-			form.on('submit(plugins-query)', function (data) {
-				table.reload('plugins-table', {
+			form.on('submit(outends-query)', function (data) {
+				table.reload('outends-table', {
 					where: data.field
 				})
 				return false;
 			});
 
-			form.on('switch(plugins-enable)', function (obj) {
+			form.on('switch(outends-enable)', function (obj) {
 				layer.tips(this.value + ' ' + this.name + '：' + obj.elem.checked, obj.othis);
 			});
 
@@ -142,7 +151,7 @@
 					layer.close(index);
 					let loading = layer.load();
 					$.ajax({
-						url: MODULE_PATH + "remove/" + obj.data['pluginsId'],
+						url: MODULE_PATH + "remove/" + obj.data['outendsId'],
 						dataType: 'json',
 						type: 'delete',
 						success: function (result) {
@@ -167,7 +176,7 @@
 
 			window.batchRemove = function (obj) {
 
-				var checkIds = common.checkField(obj, 'pluginsId');
+				var checkIds = common.checkField(obj, 'outendsId');
 
 				if (checkIds === "") {
 					layer.msg("未选中数据", {
@@ -194,7 +203,7 @@
 									icon: 1,
 									time: 1000
 								}, function () {
-									table.reload('plugins-table');
+									table.reload('outends-table');
 								});
 							} else {
 								layer.msg(result.msg, {
@@ -208,7 +217,7 @@
 			}
 
 			window.refresh = function (param) {
-				table.reload('plugins-table');
+				table.reload('outends-table');
 			}
 		})
 	</script>
