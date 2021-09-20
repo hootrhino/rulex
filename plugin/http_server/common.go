@@ -41,6 +41,7 @@ func Cros() gin.HandlerFunc {
 
 //
 func cros(c *gin.Context) {
+	c.Header("Cache-Control", "private, max-age=10")
 	method := c.Request.Method
 	origin := c.Request.Header.Get("Origin")
 	if origin != "" {

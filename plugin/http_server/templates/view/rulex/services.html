@@ -15,46 +15,6 @@
 		</div>
 	</div>
 
-	<script type="text/html" id="services-toolbar">
-			<button class="pear-btn pear-btn-primary pear-btn-md" lay-event="add">
-		        <i class="layui-icon layui-icon-add-1"></i>
-		        新增
-		    </button>
-		    <button class="pear-btn pear-btn-danger pear-btn-md" lay-event="batchRemove">
-		        <i class="layui-icon layui-icon-delete"></i>
-		        删除
-		    </button>
-		</script>
-
-	<script type="text/html" id="services-bar">
-			<button class="pear-btn pear-btn-primary pear-btn-sm" lay-event="edit"><i class="layui-icon layui-icon-edit"></i></button>
-		    <button class="pear-btn pear-btn-danger pear-btn-sm" lay-event="remove"><i class="layui-icon layui-icon-delete"></i></button>
-		</script>
-
-	<script type="text/html" id="services-enable">
-			<input type="checkbox" name="enable" value="{{d.id}}" lay-skin="switch" lay-text="启用|禁用" lay-filter="services-enable" {{ d.enable== true ? 'checked' : '' }} />
-		</script>
-
-	<script type="text/html" id="services-sex">
-			{{#if (d.sex == 1) { }}
-		    <span>男</span>
-		    {{# }else if(d.sex == 2){ }}
-		    <span>女</span>
-		    {{# } }}
-		</script>
-
-	<script type="text/html" id="services-login">
-			{{#if (d.login == 0) { }}
-		    <span>在线</span>
-		    {{# }else if(d.sex == 1){ }}
-		    <span>离线</span>
-		    {{# } }}
-		</script>
-
-	<script type="text/html" id="services-createTime">
-			{{layui.util.toDateString(d.createTime, 'yyyy-MM-dd')}}
-		</script>
-
 	<script src="../../component/layui/layui.js"></script>
 	<script src="../../component/pear/pear.js"></script>
 	<script>

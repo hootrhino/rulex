@@ -4,7 +4,7 @@ logo:
   ## 网站名称
   title: "Rulex Admin"
   ## 网站图标
-  image: "admin/images/logo.png"
+  image: "admin/images/logo.svg"
 ## 菜单配置
 menu: 
   ## 菜单数据来源
@@ -41,7 +41,7 @@ tab:
 ## 主题配置
 theme: 
   ## 默认主题色，对应 colors 配置中的 ID 标识
-  defaultColor: "4"
+  defaultColor: "1"
   ## 默认的菜单主题 dark-theme 黑 / light-theme 白
   defaultMenu: "dark-theme"
   ## 是否允许用户切换主题，false 时关闭自定义主题面板
@@ -49,28 +49,20 @@ theme:
 ## 主题色配置列表
 colors: 
 - id: "1"
-  color: "#2d8cf0"
-- id: "2"
-  color: "#36b368"
-- id: "3"
-  color: "#f6ad55"
-- id: "4"
-  color: "#f56c6c"
-- id: "5"
   color: "#3963bc"
 ## 主题面板的链接列表
 links: 
 - text: "官方网站"
-  href: "http://www.pearadmin.com"
+  href: "http://www.ezlinker.cn"
   icon: "layui-icon layui-icon-website"
 
 ## 其他配置
 other: 
   ## 主页动画时长
-  keepLoad: "200"
+  keepLoad: "10"
   ## 布局顶部主题
   autoHead: false
 ## 头部配置
 header:
   ## 站内消息，通过 false 设置关闭
-  message: "admin/data/message.json"
+  # message: "admin/data/message.json"

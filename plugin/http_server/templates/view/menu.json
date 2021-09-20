@@ -72,12 +72,5 @@
 				"href": "view/rulex/plugins.html"
 			}
 		]
-	},
-	{
-		"id": "rulexDoc",
-		"title": "社区文档",
-		"icon": "layui-icon layui-icon-util",
-		"type": 1,
-		"href": "https://github.com/wwhai/rulex"
 	}
 ]

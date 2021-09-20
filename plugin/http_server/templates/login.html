@@ -19,15 +19,16 @@
 			</strong>
 		</div>
 		<div class="layui-form-item">
-			<input placeholder="账 户" lay-verify="required" hover value="" type="text" class="layui-input" />
+			<input placeholder="账 户" name="username" lay-verify="required" hover value="" type="text"
+				class="layui-input" />
 		</div>
 		<div class="layui-form-item">
-			<input placeholder="密 码" lay-verify="required" hover value="" type="password" class="layui-input" />
+			<input placeholder="密 码" name="password" lay-verify="required" hover value="" type="password"
+				class="layui-input" />
 		</div>
 
 		<div class="layui-form-item">
-			<button style="background-color: dodgerblue;" class="layui-btn login" lay-submit
-				lay-filter="login">
+			<button class="layui-btn login" lay-submit lay-filter="login">
 				登 录
 			</button>
 		</div>
@@ -38,21 +39,19 @@
 	<script>
 		layui.use(['form', 'button', 'popup'], function () {
 			var form = layui.form;
-			var button = layui.button;
 			var popup = layui.popup;
 
 			// 登 录 提 交
 			form.on('submit(login)', function (data) {
-				console.log("login:", data)
-				button.load({
-					elem: '.login',
-					time: 100,
-					done: function () {
-						popup.success("登录成功", function () {
-							location.href = "/dashboard/v1/index";
-						});
-					}
-				})
+				if (data.field.username === "rulex" && data.field.password === "rulex") {
+					popup.success("登录成功", function () {
+						location.href = "/dashboard/v1/index";
+
+					});
+				} else {
+					popup.failure("登录失败,请检查账户", function () {
+					});
+				}
 				return false;
 			});
 		})

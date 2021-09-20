@@ -37,6 +37,7 @@ func (hh *HttpApiServer) Init(env *typex.XPluginEnv) error {
 	hh.ginEngine = gin.New()
 	hh.ginEngine.Use(Authorize())
 	hh.ginEngine.Use(Cros())
+
 	hh.InitDb()
 	hh.ginEngine.LoadHTMLFiles(hh.Root+"/login.html", hh.Root+"/view/rulex/index.html")
 	hh.ginEngine.Static("/dashboard/v1/component", hh.Root+"/component")
