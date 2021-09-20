@@ -1,5 +1,4 @@
 # RuleX
-> 当前处于极其不稳定阶段,请勿尝试.
 
 ```
 -----------------------------------------------------------
@@ -12,50 +11,46 @@
 -----------------------------------------------------------
 ```
 
-RuleX 是一个轻量级规则引擎。主要用来中转上游数据，筛选数据到目标点，可以理解为一个数据路由器。被设计用来做物联网网关或者服务端存在流式数据筛选的场景下。
+RuleX 是一个轻量级网关，支持多种数据接入以及数据流筛选，可以理解为一个数据路由器。
 
-> 更多功能请查看文档
+> 当前处于极其不稳定阶段,请勿尝试.
+## 快速开始
+### 构建
+```sh
+git clone https://github.com/wwhai/rulex.git
+cd rulex
+make # on windows: make windows
+```
+### 启动
+```sh
+./rulex run
+2021/09/20 17:09:05 cfg.go:24: [info] Init rulex config 
+2021/09/20 17:09:05 cfg.go:34: [info] Rulex config init success. 
+2021/09/20 17:09:05 utils.go:71: [info] 
+ -----------------------------------------------------------     
+~~~/=====\       ██████╗ ██╗   ██╗██╗     ███████╗██╗  ██╗       
+~~~||\\\||--->o  ██╔══██╗██║   ██║██║     ██╔════╝╚██╗██╔╝       
+~~~||///||--->o  ██████╔╝██║   ██║██║     █████╗   ╚███╔╝        
+~~~||///||--->o  ██╔══██╗██║   ██║██║     ██╔══╝   ██╔██╗        
+~~~||\\\||--->o  ██║  ██║╚██████╔╝███████╗███████╗██╔╝ ██╗       
+~~~\=====/       ╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚══════╝╚═╝  ╚═╝
+-----------------------------------------------------------
+2021/09/20 17:09:05 utils.go:74: [info] rulex start successfully
+2021/09/20 17:09:05 http_api_server.go:139: [info] Http server started on http://127.0.0.1:2580
+2021/09/20 17:09:05 grpc_resource.go:92: [info] RulexRpc resource started on [::]:2581
+2021/09/20 17:09:05 coap_resource.go:71: [info] Coap resource started on [udp]:2582
+2021/09/20 17:09:05 http_resource.go:47: [info] HTTP resource started on [0.0.0.0]:2583
+2021/09/20 17:09:05 udp_resource.go:50: [info] UDP resource started on [0.0.0.0]:2584
+```
 
-## 文档
+## Dashboard
+```
+http://127.0.0.1:2580
+```
+
+## HTTP API
+```
+
+```
+## 详细文档
 <a href="https://wwhai.github.io/rulex_doc_html/inde core.html">查看文档</a>
-
-## Todo list
-以下功能计划在 ` 0.0.1 ` 版本发布
-### 支持以下数据输入端
-- MQTT Client
-- HTTP Post
-- COAP Client
-- Grpc Client
-- UART Input
-- CAN 总线
-- MODBUS
-
-### 支持以下数据输出端
-- MongoDB
-- Mysql
-- Mqtt Server
-- Redis
-- kafka
-- Flink
-
-### 支持以下云端计算功能
-- 人脸图像识别
-- 身份证件识别
-  
-
-### 性能测试报告
-- windows(AMD64) 测试
-- macos(AMD64) 测试
-- Linux(AMD64) 测试
-- ARM 芯片测试
-
-### 以下特性
-- 完整命令行支持
-- HTTP API 支持
-- 数据迁移支持
-- 容器化部署支持
-- 更友好的文档
-- 二次开发教程
-
-#### 当前时间:`2021年9月16日`
-> 期待第一个正式版发布，这可能是个很漫长的过程，不过每天都会完善起来。
