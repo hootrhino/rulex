@@ -1,6 +1,8 @@
 package httpserver
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/gorm"
+)
 
 type MRule struct {
 	gorm.Model
@@ -38,4 +40,9 @@ type MUser struct {
 	Username    string `gorm:"not null"`
 	Password    string `gorm:"not null"`
 	Description string
+}
+
+type MLock struct {
+	Name     string `gorm:"not null"`
+	InitLock int    `gorm:"not null"`
 }

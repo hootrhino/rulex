@@ -37,8 +37,11 @@ func (hh *HttpApiServer) Init(env *typex.XPluginEnv) error {
 	hh.ginEngine = gin.New()
 	hh.ginEngine.Use(Authorize())
 	hh.ginEngine.Use(Cros())
-
-	hh.InitDb()
+	if dbPath := (*env).Get("dbPath"); dbPath == "" {
+		hh.InitDb("./rulex.db")
+	} else {
+		hh.InitDb(dbPath.(string))
+	}
 	hh.ginEngine.LoadHTMLFiles(hh.Root+"/login.html", hh.Root+"/view/rulex/index.html")
 	hh.ginEngine.Static("/dashboard/v1/component", hh.Root+"/component")
 	hh.ginEngine.Static("/dashboard/v1/admin", hh.Root+"/admin")
@@ -145,4 +148,8 @@ func (hh *HttpApiServer) Uninstall(env *typex.XPluginEnv) error {
 	return nil
 }
 func (hh *HttpApiServer) Clean() {
+}
+
+func (hh *HttpApiServer) Db() *gorm.DB {
+	return hh.sqliteDb
 }

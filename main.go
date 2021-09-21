@@ -6,7 +6,6 @@ import (
 	"os/signal"
 	"rulex/core"
 	"rulex/engine"
-	"rulex/plugin/demo_plugin"
 	httpserver "rulex/plugin/http_server"
 	"rulex/typex"
 	"rulex/utils"
@@ -35,10 +34,11 @@ func main() {
 				},
 			},
 			{
-				Name:  "install",
-				Usage: "Install rulex to your path",
+				Name:  "init",
+				Usage: "Init rulex data",
 				Action: func(c *cli.Context) error {
-					log.Debug("Install to: /usr/bin/rule typex.")
+					initData()
+					log.Debug("Init data successfully")
 					os.Exit(0)
 					return nil
 				},
@@ -62,43 +62,8 @@ func runRulex() {
 	engine := engine.NewRuleEngine()
 	engine.Start()
 	hh := httpserver.NewHttpApiServer(2580, "plugin/http_server/templates", engine)
+	engine.LoadPlugin(hh)
 
-	// HttpApiServer loaded default
-	if err := engine.LoadPlugin(hh); err != nil {
-		log.Fatal("Rule load failed:", err)
-	}
-	// Load a demo plugin
-	if err := engine.LoadPlugin(demo_plugin.NewDemoPlugin()); err != nil {
-		log.Error("Rule load failed:", err)
-	}
-	// Grpc Inend
-	grpcInend := typex.NewInEnd("GRPC", "Rulex Grpc InEnd", "Rulex Grpc InEnd", &map[string]interface{}{
-		"port": "2581",
-	})
-	if err := engine.LoadInEnd(grpcInend); err != nil {
-		log.Error("Rule load failed:", err)
-	}
-	// CoAP Inend
-	coapInend := typex.NewInEnd("COAP", "Rulex COAP InEnd", "Rulex COAP InEnd", &map[string]interface{}{
-		"port": "2582",
-	})
-	if err := engine.LoadInEnd(coapInend); err != nil {
-		log.Error("Rule load failed:", err)
-	}
-	// Http Inend
-	httpInend := typex.NewInEnd("HTTP", "Rulex HTTP InEnd", "Rulex HTTP InEnd", &map[string]interface{}{
-		"port": "2583",
-	})
-	if err := engine.LoadInEnd(httpInend); err != nil {
-		log.Error("Rule load failed:", err)
-	}
-	// Udp Inend
-	udpInend := typex.NewInEnd("UDP", "Rulex UDP InEnd", "Rulex UDP InEnd", &map[string]interface{}{
-		"port": "2584",
-	})
-	if err := engine.LoadInEnd(udpInend); err != nil {
-		log.Error("Rule load failed:", err)
-	}
 	//
 	// Load inend from sqlite
 	//
@@ -149,4 +114,89 @@ func runRulex() {
 	log.Info("Received stop signal:", signal)
 	engine.Stop()
 	os.Exit(0)
+}
+
+//
+//
+//
+func initData() {
+	engine := engine.NewRuleEngine()
+	hh := httpserver.NewHttpApiServer(2580, "plugin/http_server/templates", engine)
+	// HttpApiServer loaded default
+	if err := engine.LoadPlugin(hh); err != nil {
+		log.Fatal("Rule load failed:", err)
+	}
+	hh.Truncate()
+	// Grpc Inend
+	grpcInend := typex.NewInEnd("GRPC", "Rulex Grpc InEnd", "Rulex Grpc InEnd", &map[string]interface{}{
+		"port": "2581",
+	})
+	b1, _ := json.Marshal(grpcInend.Config)
+	hh.InsertMInEnd(&httpserver.MInEnd{
+		UUID:        grpcInend.Id,
+		Type:        grpcInend.Type.String(),
+		Name:        grpcInend.Name,
+		Config:      string(b1),
+		Description: grpcInend.Description,
+	})
+	// CoAP Inend
+	coapInend := typex.NewInEnd("COAP", "Rulex COAP InEnd", "Rulex COAP InEnd", &map[string]interface{}{
+		"port": "2582",
+	})
+	b2, _ := json.Marshal(coapInend.Config)
+	hh.InsertMInEnd(&httpserver.MInEnd{
+		UUID:        coapInend.Id,
+		Type:        coapInend.Type.String(),
+		Name:        coapInend.Name,
+		Config:      string(b2),
+		Description: coapInend.Description,
+	})
+	// Http Inend
+	httpInend := typex.NewInEnd("HTTP", "Rulex HTTP InEnd", "Rulex HTTP InEnd", &map[string]interface{}{
+		"port": "2583",
+	})
+	b3, _ := json.Marshal(httpInend.Config)
+	hh.InsertMInEnd(&httpserver.MInEnd{
+		UUID:        httpInend.Id,
+		Type:        httpInend.Type.String(),
+		Name:        httpInend.Name,
+		Config:      string(b3),
+		Description: httpInend.Description,
+	})
+
+	// Udp Inend
+	udpInend := typex.NewInEnd("UDP", "Rulex UDP InEnd", "Rulex UDP InEnd", &map[string]interface{}{
+		"port": "2584",
+	})
+	b4, _ := json.Marshal(udpInend.Config)
+	hh.InsertMInEnd(&httpserver.MInEnd{
+		UUID:        udpInend.Id,
+		Type:        udpInend.Type.String(),
+		Name:        udpInend.Name,
+		Config:      string(b4),
+		Description: udpInend.Description,
+	})
+
+	rule := typex.NewRule(engine,
+		"Just a test",
+		"Just a test",
+		[]string{grpcInend.Id},
+		`function Success() print("[LUA Success]OK") end`,
+		`
+			Actions = {
+				function(data)
+					print("[LUA Actions Callback]", data)
+					return true, data
+				end
+			}`,
+		`function Failed(error) print("[LUA Failed]OK", error) end`)
+	hh.InsertMRule(&httpserver.MRule{
+		Name:        rule.Name,
+		Description: rule.Description,
+		From:        rule.From[0],
+		Actions:     rule.Actions,
+		Success:     rule.Success,
+		Failed:      rule.Failed,
+	})
+
 }

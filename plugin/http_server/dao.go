@@ -7,9 +7,9 @@ import (
 	"gorm.io/gorm"
 )
 
-func (hh *HttpApiServer) InitDb() {
+func (hh *HttpApiServer) InitDb(dbPath string) {
 	var err error
-	hh.sqliteDb, err = gorm.Open(sqlite.Open("./rulex.db"))
+	hh.sqliteDb, err = gorm.Open(sqlite.Open(dbPath))
 	if err != nil {
 		panic(err)
 	}
@@ -17,6 +17,7 @@ func (hh *HttpApiServer) InitDb() {
 	hh.sqliteDb.AutoMigrate(&MRule{})
 	hh.sqliteDb.AutoMigrate(&MOutEnd{})
 	hh.sqliteDb.AutoMigrate(&MUser{})
+	hh.sqliteDb.AutoMigrate(&MLock{})
 }
 
 //-----------------------------------------------------------------------------------
@@ -186,5 +187,6 @@ func (hh *HttpApiServer) Truncate() error {
 	hh.sqliteDb.Unscoped().Where("1 = 1").Delete(&MInEnd{})
 	hh.sqliteDb.Unscoped().Where("1 = 1").Delete(&MOutEnd{})
 	hh.sqliteDb.Unscoped().Where("1 = 1").Delete(&MRule{})
+	hh.sqliteDb.Unscoped().Where("1 = 1").Delete(&MLock{})
 	return nil
 }
