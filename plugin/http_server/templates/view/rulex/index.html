@@ -83,9 +83,7 @@
 			var $ = layui.jquery;
 			var convert = layui.convert;
 			var popup = layui.popup;
-
-			admin.setAvatar("admin/images/logo.png", "RulexAdmin");
-
+			admin.setAvatar("admin/images/logo.png", "Rulex Admin");
 			admin.setConfigType("yml");
 			admin.setConfigPath("config/pear.config.yml");
 
@@ -99,12 +97,6 @@
 				// 注销逻辑 返回 true / false
 				return true;
 			})
-
-			// 初始化消息回调
-			admin.message();
-
-			// 实现消息回调 [消息列表点击事件]
-			// admin.message(function(id, title, context, form) {});
 		})
 	</script>
 </body>
