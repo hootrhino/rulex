@@ -11,22 +11,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
           go-version: 1.16
-
-      - name: BuildApp
+      - name: Build && Test
         run: |
             sudo apt update -y
             sudo apt install jq -y
             go test -timeout 30s -run ^TestFullyRun$ rulex/test -v
-      ##----------------------------------------------------------------------
-      - name: Mirror the Github Gitee.
-        uses: Yikun/hub-mirror-action@master
-        with:
-          src: github/wwhai
-          dst: gitee/wwhai
-          dst_key: ${{ secrets.GITEE_PRIV }}
-          dst_token:  ${{ secrets.GITEE_TOKEN }}
