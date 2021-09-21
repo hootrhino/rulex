@@ -20,12 +20,13 @@ type HttpApiServer struct {
 	Port       int
 	Root       string
 	sqliteDb   *gorm.DB
+	dbPath     string
 	ginEngine  *gin.Engine
 	ruleEngine typex.RuleX
 }
 
-func NewHttpApiServer(port int, root string, e typex.RuleX) *HttpApiServer {
-	return &HttpApiServer{Port: port, Root: root, ruleEngine: e}
+func NewHttpApiServer(port int, root string, dbPath string, e typex.RuleX) *HttpApiServer {
+	return &HttpApiServer{Port: port, Root: root, dbPath: dbPath, ruleEngine: e}
 }
 func (hh *HttpApiServer) Load() *typex.XPluginEnv {
 	return typex.NewXPluginEnv()
@@ -37,10 +38,10 @@ func (hh *HttpApiServer) Init(env *typex.XPluginEnv) error {
 	hh.ginEngine = gin.New()
 	hh.ginEngine.Use(Authorize())
 	hh.ginEngine.Use(Cros())
-	if dbPath := (*env).Get("dbPath"); dbPath == "" {
+	if hh.dbPath == "" {
 		hh.InitDb("./rulex.db")
 	} else {
-		hh.InitDb(dbPath.(string))
+		hh.InitDb(hh.dbPath)
 	}
 	hh.ginEngine.LoadHTMLFiles(hh.Root+"/login.html", hh.Root+"/view/rulex/index.html")
 	hh.ginEngine.Static("/dashboard/v1/component", hh.Root+"/component")

@@ -25,10 +25,15 @@ func main() {
 		Commands: []*cli.Command{
 			{
 				Name:  "run",
-				Usage: "Run rulex immediately",
+				Usage: "rulex run [path of 'rulex.db']",
 				Action: func(c *cli.Context) error {
 					utils.ShowBanner()
-					runRulex()
+					if c.Args().Len() > 0 {
+						log.Info("Use config db:", c.Args().Get(0))
+						runRulex(c.Args().Get(0))
+					} else {
+						runRulex("rulex.db")
+					}
 					log.Debug("Run rulex successfully.")
 					return nil
 				},
@@ -56,12 +61,12 @@ func main() {
 //
 //
 //
-func runRulex() {
+func runRulex(dbPath string) {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, syscall.SIGINT, syscall.SIGABRT)
 	engine := engine.NewRuleEngine()
 	engine.Start()
-	hh := httpserver.NewHttpApiServer(2580, "plugin/http_server/templates", engine)
+	hh := httpserver.NewHttpApiServer(2580, "plugin/http_server/templates", dbPath, engine)
 	engine.LoadPlugin(hh)
 
 	//
@@ -121,7 +126,7 @@ func runRulex() {
 //
 func initData() {
 	engine := engine.NewRuleEngine()
-	hh := httpserver.NewHttpApiServer(2580, "plugin/http_server/templates", engine)
+	hh := httpserver.NewHttpApiServer(3580, "plugin/http_server/templates", "rulex.db", engine)
 	// HttpApiServer loaded default
 	if err := engine.LoadPlugin(hh); err != nil {
 		log.Fatal("Rule load failed:", err)
