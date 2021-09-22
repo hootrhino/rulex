@@ -37,7 +37,7 @@ func Run() {
 	signal.Notify(c, syscall.SIGINT, syscall.SIGABRT)
 	engine := engine.NewRuleEngine()
 	engine.Start()
-	hh := httpserver.NewHttpApiServer(2580, "plugin/http_server/templates", engine)
+	hh := httpserver.NewHttpApiServer(2580, "plugin/http_server/templates","./rulex.db", engine)
 
 	// HttpApiServer loaded default
 	if err := engine.LoadPlugin(hh); err != nil {
