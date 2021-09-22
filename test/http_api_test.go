@@ -29,7 +29,7 @@ func TestHttpAPi(t *testing.T) {
 	engine := engine.NewRuleEngine()
 	engine.Start()
 	////////
-	hh := httpserver.NewHttpApiServer(2580, "../plugin/http_server/templates/*", engine)
+	hh := httpserver.NewHttpApiServer(2580, "../plugin/http_server/templates/*", "./rulx.db", engine)
 	if e := engine.LoadPlugin(hh); e != nil {
 		log.Fatal("rule load failed:", e)
 	}
@@ -212,7 +212,7 @@ func TestHttpInEnd(t *testing.T) {
 	engine := engine.NewRuleEngine()
 	engine.Start()
 	////////
-	hh := httpserver.NewHttpApiServer(2580, "../plugin/http_server/templates/*", engine)
+	hh := httpserver.NewHttpApiServer(2580, "../plugin/http_server/templates/*", "./rulx.db", engine)
 	if e := engine.LoadPlugin(hh); e != nil {
 		log.Fatal("rule load failed:", e)
 	}
