@@ -17,6 +17,8 @@ import (
 )
 
 //
+//go:generate ./get_version.sh
+//
 func main() {
 	core.InitGlobalConfig()
 	app := &cli.App{

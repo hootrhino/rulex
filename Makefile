@@ -7,6 +7,7 @@ all:
 .PHONY: build
 build:
 	go mod tidy
+	go generate
 	go build -ldflags "-s -w" -o ${APP} main.go
 
 .PHONY: xx
