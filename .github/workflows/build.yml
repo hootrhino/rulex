@@ -27,4 +27,4 @@ jobs:
           target_repo_url:
             git@github.com:wwhai/rulex.git
           ssh_private_key:
-            ${{ secrets.GITEE_TOKEN }}
+            ${{ secrets.GITEE_PRIV }}
