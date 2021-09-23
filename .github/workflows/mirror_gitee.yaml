@@ -23,5 +23,4 @@ jobs:
           dst: 'gitee/wwhai'
           dst_key: ${{ secrets.GITEE_PRIVATE_KEY }}
           dst_token:  ${{ secrets.GITEE_TOKEN }}
-          static_list: ${{ github.event.repository.name }}
-          white_list: ${{ github.event.repository.name }}
+          white_list: 'rulex'
