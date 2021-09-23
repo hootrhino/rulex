@@ -3,7 +3,7 @@ package httpserver
 import (
 	"net/http"
 	"rulex/cloud"
-	"rulex/engine"
+	"rulex/core"
 	"rulex/statistics"
 	"rulex/typex"
 	"rulex/utils"
@@ -264,7 +264,7 @@ func CreateRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 					return
 				}
 			}
-			if err1 := engine.VerifyCallback(rule); err1 != nil {
+			if err1 := core.VerifyCallback(rule); err1 != nil {
 				c.JSON(http.StatusBadRequest, gin.H{"msg": err1.Error()})
 			} else {
 				mRule := &MRule{

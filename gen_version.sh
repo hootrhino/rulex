@@ -1,10 +1,5 @@
-#! /bin/bash
-
+#! /bin/sh
 VERSION=$(git describe --abbrev=0 --tags)
-if [ ! -n $VERSION ] ;then
-    echo "Version error!"
-    exit 0
-fi
 echo "Current Version:" $VERSION
 cat >./VERSION <<EOF
 $VERSION
@@ -22,7 +17,7 @@ type ver struct {
 }
 
 var defaultVer = ver{
-	Version:   "$VERSION",
+	Version:   \`$VERSION\`,
 	ReleaseTime: "$(echo $(date "+%Y-%m-%d %H:%M:%S"))",
 }
 EOF
