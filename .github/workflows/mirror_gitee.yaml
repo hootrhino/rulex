@@ -1,17 +1,16 @@
-name: 'GitHub Actions Mirror'
-
-on: [push, delete]
-
+name: Sync to Gitee
+on: [push]
 jobs:
-  mirror_to_gitee:
+  sync:
+    needs: build-and-deploy
     runs-on: ubuntu-latest
     steps:
-      - name: 'Checkout'
-        uses: actions/checkout@v1
-      - name: 'Mirror to gitee'
-        uses: pixta-dev/repository-mirroring-action@v1
-        with:
-          target_repo_url:
-            git@github.com:wwhai/rulex.git
-          ssh_private_key:
-            ${{ secrets.GITEE_PRIV }}
+    - name: Sync to Gitee
+      uses: wearerequired/git-mirror-action@master
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.W_RSA_PRIV }}
+      with:
+        # 来源仓库
+        source-repo: "git@github.com:wwhai/rulex.git"
+        # 目标仓库
+        destination-repo: "git@gitee.com:wwhai/rulex.git"
