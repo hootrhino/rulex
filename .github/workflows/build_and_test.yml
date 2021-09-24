@@ -21,5 +21,9 @@ jobs:
             sudo apt install jq -y
             sudo apt install cloc -y
             cloc ./
+            chmod 755 ./gen_version.sh
+            chmod +x ./gen_version.sh
+            chmod 755 ./gen_proto.sh
+            chmod +x ./gen_proto.sh
             make
             go test -timeout 30s -run ^TestFullyRun$ rulex/test -v
