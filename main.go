@@ -35,16 +35,6 @@ func main() {
 					return nil
 				},
 			},
-			{
-				Name:  "init",
-				Usage: "Init rulex data",
-				Action: func(c *cli.Context) error {
-					engine.InitData()
-					log.Debug("Init data successfully")
-					os.Exit(0)
-					return nil
-				},
-			},
 		},
 	}
 
@@ -52,5 +42,4 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
 }
