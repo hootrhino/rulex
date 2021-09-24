@@ -11,5 +11,5 @@ type ver struct {
 
 var defaultVer = ver{
 	Version:   `0.0.1-preview`,
-	ReleaseTime: "2021-09-23 19:45:39",
+	ReleaseTime: "2021-09-24 10:39:08",
 }

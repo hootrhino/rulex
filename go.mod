@@ -10,6 +10,7 @@ require (
 	github.com/go-ole/go-ole v1.2.5 // indirect
 	github.com/go-playground/assert/v2 v2.0.1
 	github.com/google/uuid v1.2.0
+	github.com/grpc-ecosystem/grpc-gateway/v2 v2.6.0
 	github.com/itchyny/gojq v0.12.4
 	github.com/kr/text v0.2.0 // indirect
 	github.com/mattn/go-sqlite3 v1.14.7
@@ -27,7 +28,12 @@ require (
 	github.com/yuin/gopher-lua v0.0.0-20210529063254-f4c35e4016d9
 	go.bug.st/serial v1.3.1
 	go.mongodb.org/mongo-driver v1.5.4
-	google.golang.org/grpc v1.36.0
+	golang.org/x/net v0.0.0-20210917221730-978cfadd31cf // indirect
+	golang.org/x/sys v0.0.0-20210923061019-b8560ed6a9b7 // indirect
+	golang.org/x/text v0.3.7 // indirect
+	google.golang.org/genproto v0.0.0-20210924002016-3dee208752a0
+	google.golang.org/grpc v1.40.0
+	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.1.0 // indirect
 	google.golang.org/protobuf v1.27.1
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
 	gopkg.in/ini.v1 v1.63.0

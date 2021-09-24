@@ -1,21 +1,43 @@
 syntax = "proto3";
-
 option go_package = "./;xstream";
 option java_multiple_files = false;
 option java_package = "xstream";
-option java_outer_classname = "RulexXStream";
+option java_outer_classname = "XStream";
 
 package xstream;
+//
+import "google/api/annotations.proto";
 
 service XStream {
-  rpc OnStreamApproached (stream Data) returns (Response) {}
+  // 收到来自其他端点的请求
+  rpc OnApproached (stream Data) returns (Response) {}
+  // 给其他端点发送请求
+  rpc SendStream (stream Data) returns (Response) {}
 }
 
 message Data {
+  // 参数全部为String
   string value = 1;
 }
 
 message Response {
   int32 code = 1;
   string message = 2;
+  string data=3;
+}
+
+ message StringMessage {
+   string value = 1;
+ }
+//
+//
+//
+service HttpDemoService {
+  rpc Echo1(StringMessage) returns (StringMessage) {}
+  rpc Echo2(StringMessage) returns (StringMessage) {
+    option (google.api.http) = {
+      post: "/v1/example/echo"
+      body: "*"
+    };
+  }
 }

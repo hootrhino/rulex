@@ -51,12 +51,7 @@ tag:
 	make package
 	gh release create $(VERSION) ./${APP}-${VERSION}.zip -F changelog.md
 
-.PHONY: proto
-proto:
-	go get google.golang.org/protobuf/cmd/protoc-gen-go@latest
-	protoc --go_out=. --go_opt=paths=source_relative \
-    --go-grpc_out=. --go-grpc_opt=paths=source_relative \
-    ./rulexrpc/grpc_resource.proto
 .PHONY: clean-grpc
 clean-grpc:
 	rm ./rulexrpc/*.pb.go
+	rm ./xstream/*.pb.go

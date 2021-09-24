@@ -12,6 +12,7 @@ import (
 
 //
 //go:generate ./gen_version.sh
+//go:generate ./gen_proto.sh
 //
 func main() {
 	core.InitGlobalConfig()
