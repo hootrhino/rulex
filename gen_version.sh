@@ -1,6 +1,6 @@
 #! /bin/sh
-VERSION=$(git describe --abbrev=0 --tags)
-echo "Current Version:" $VERSION
+VERSION="$(git describe --tags $(git rev-list --tags --max-count=1))-$(git rev-list --tags --max-count=1)"
+echo "Current Version:" ${VERSION}
 cat >./VERSION <<EOF
 $VERSION
 EOF
