@@ -20,6 +20,7 @@ git clone https://github.com/wwhai/rulex.git
 cd rulex
 make # on windows: make windows
 ```
+> ProtoFile需要在Linux下编译, 需要安装: `sudo apt install protobuf-compiler -y`
 ### 启动
 ```sh
 ./rulex run
