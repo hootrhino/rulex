@@ -9,7 +9,7 @@
       "name": "XStream"
     },
     {
-      "name": "HttpDemoService"
+      "name": "HttpHelloWorldService"
     }
   ],
   "consumes": [
@@ -21,7 +21,7 @@
   "paths": {
     "/v1/example/echo": {
       "post": {
-        "operationId": "HttpDemoService_Echo2",
+        "operationId": "HttpHelloWorldService_HelloWorld",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -47,7 +47,7 @@
           }
         ],
         "tags": [
-          "HttpDemoService"
+          "HttpHelloWorldService"
         ]
       }
     }

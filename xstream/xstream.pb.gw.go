@@ -31,7 +31,7 @@ var _ = runtime.String
 var _ = utilities.NewDoubleArray
 var _ = metadata.Join
 
-func request_HttpDemoService_Echo2_0(ctx context.Context, marshaler runtime.Marshaler, client HttpDemoServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_HttpHelloWorldService_HelloWorld_0(ctx context.Context, marshaler runtime.Marshaler, client HttpHelloWorldServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq StringMessage
 	var metadata runtime.ServerMetadata
 
@@ -43,12 +43,12 @@ func request_HttpDemoService_Echo2_0(ctx context.Context, marshaler runtime.Mars
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	msg, err := client.Echo2(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.HelloWorld(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }
 
-func local_request_HttpDemoService_Echo2_0(ctx context.Context, marshaler runtime.Marshaler, server HttpDemoServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_HttpHelloWorldService_HelloWorld_0(ctx context.Context, marshaler runtime.Marshaler, server HttpHelloWorldServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq StringMessage
 	var metadata runtime.ServerMetadata
 
@@ -60,29 +60,29 @@ func local_request_HttpDemoService_Echo2_0(ctx context.Context, marshaler runtim
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	msg, err := server.Echo2(ctx, &protoReq)
+	msg, err := server.HelloWorld(ctx, &protoReq)
 	return msg, metadata, err
 
 }
 
-// RegisterHttpDemoServiceHandlerServer registers the http handlers for service HttpDemoService to "mux".
-// UnaryRPC     :call HttpDemoServiceServer directly.
+// RegisterHttpHelloWorldServiceHandlerServer registers the http handlers for service HttpHelloWorldService to "mux".
+// UnaryRPC     :call HttpHelloWorldServiceServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
-// Note that using this registration option will cause many gRPC library features to stop working. Consider using RegisterHttpDemoServiceHandlerFromEndpoint instead.
-func RegisterHttpDemoServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux, server HttpDemoServiceServer) error {
+// Note that using this registration option will cause many gRPC library features to stop working. Consider using RegisterHttpHelloWorldServiceHandlerFromEndpoint instead.
+func RegisterHttpHelloWorldServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux, server HttpHelloWorldServiceServer) error {
 
-	mux.Handle("POST", pattern_HttpDemoService_Echo2_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_HttpHelloWorldService_HelloWorld_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/xstream.HttpDemoService/Echo2", runtime.WithHTTPPathPattern("/v1/example/echo"))
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/xstream.HttpHelloWorldService/HelloWorld", runtime.WithHTTPPathPattern("/v1/example/echo"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_HttpDemoService_Echo2_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_HttpHelloWorldService_HelloWorld_0(rctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -90,16 +90,16 @@ func RegisterHttpDemoServiceHandlerServer(ctx context.Context, mux *runtime.Serv
 			return
 		}
 
-		forward_HttpDemoService_Echo2_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_HttpHelloWorldService_HelloWorld_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
 	return nil
 }
 
-// RegisterHttpDemoServiceHandlerFromEndpoint is same as RegisterHttpDemoServiceHandler but
+// RegisterHttpHelloWorldServiceHandlerFromEndpoint is same as RegisterHttpHelloWorldServiceHandler but
 // automatically dials to "endpoint" and closes the connection when "ctx" gets done.
-func RegisterHttpDemoServiceHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
+func RegisterHttpHelloWorldServiceHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
 	conn, err := grpc.Dial(endpoint, opts...)
 	if err != nil {
 		return err
@@ -119,39 +119,39 @@ func RegisterHttpDemoServiceHandlerFromEndpoint(ctx context.Context, mux *runtim
 		}()
 	}()
 
-	return RegisterHttpDemoServiceHandler(ctx, mux, conn)
+	return RegisterHttpHelloWorldServiceHandler(ctx, mux, conn)
 }
 
-// RegisterHttpDemoServiceHandler registers the http handlers for service HttpDemoService to "mux".
+// RegisterHttpHelloWorldServiceHandler registers the http handlers for service HttpHelloWorldService to "mux".
 // The handlers forward requests to the grpc endpoint over "conn".
-func RegisterHttpDemoServiceHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
-	return RegisterHttpDemoServiceHandlerClient(ctx, mux, NewHttpDemoServiceClient(conn))
+func RegisterHttpHelloWorldServiceHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
+	return RegisterHttpHelloWorldServiceHandlerClient(ctx, mux, NewHttpHelloWorldServiceClient(conn))
 }
 
-// RegisterHttpDemoServiceHandlerClient registers the http handlers for service HttpDemoService
-// to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "HttpDemoServiceClient".
-// Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "HttpDemoServiceClient"
+// RegisterHttpHelloWorldServiceHandlerClient registers the http handlers for service HttpHelloWorldService
+// to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "HttpHelloWorldServiceClient".
+// Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "HttpHelloWorldServiceClient"
 // doesn't go through the normal gRPC flow (creating a gRPC client etc.) then it will be up to the passed in
-// "HttpDemoServiceClient" to call the correct interceptors.
-func RegisterHttpDemoServiceHandlerClient(ctx context.Context, mux *runtime.ServeMux, client HttpDemoServiceClient) error {
+// "HttpHelloWorldServiceClient" to call the correct interceptors.
+func RegisterHttpHelloWorldServiceHandlerClient(ctx context.Context, mux *runtime.ServeMux, client HttpHelloWorldServiceClient) error {
 
-	mux.Handle("POST", pattern_HttpDemoService_Echo2_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_HttpHelloWorldService_HelloWorld_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/xstream.HttpDemoService/Echo2", runtime.WithHTTPPathPattern("/v1/example/echo"))
+		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/xstream.HttpHelloWorldService/HelloWorld", runtime.WithHTTPPathPattern("/v1/example/echo"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_HttpDemoService_Echo2_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_HttpHelloWorldService_HelloWorld_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_HttpDemoService_Echo2_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_HttpHelloWorldService_HelloWorld_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -159,9 +159,9 @@ func RegisterHttpDemoServiceHandlerClient(ctx context.Context, mux *runtime.Serv
 }
 
 var (
-	pattern_HttpDemoService_Echo2_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "example", "echo"}, ""))
+	pattern_HttpHelloWorldService_HelloWorld_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "example", "echo"}, ""))
 )
 
 var (
-	forward_HttpDemoService_Echo2_0 = runtime.ForwardResponseMessage
+	forward_HttpHelloWorldService_HelloWorld_0 = runtime.ForwardResponseMessage
 )

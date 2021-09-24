@@ -32,9 +32,8 @@ message Response {
 //
 //
 //
-service HttpDemoService {
-  rpc Echo1(StringMessage) returns (StringMessage) {}
-  rpc Echo2(StringMessage) returns (StringMessage) {
+service HttpHelloWorldService {
+  rpc HelloWorld(StringMessage) returns (StringMessage) {
     option (google.api.http) = {
       post: "/v1/example/echo"
       body: "*"

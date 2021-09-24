@@ -208,122 +208,86 @@ var XStream_ServiceDesc = grpc.ServiceDesc{
 	Metadata: "xstream.proto",
 }
 
-// HttpDemoServiceClient is the client API for HttpDemoService service.
+// HttpHelloWorldServiceClient is the client API for HttpHelloWorldService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type HttpDemoServiceClient interface {
-	Echo1(ctx context.Context, in *StringMessage, opts ...grpc.CallOption) (*StringMessage, error)
-	Echo2(ctx context.Context, in *StringMessage, opts ...grpc.CallOption) (*StringMessage, error)
+type HttpHelloWorldServiceClient interface {
+	HelloWorld(ctx context.Context, in *StringMessage, opts ...grpc.CallOption) (*StringMessage, error)
 }
 
-type httpDemoServiceClient struct {
+type httpHelloWorldServiceClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewHttpDemoServiceClient(cc grpc.ClientConnInterface) HttpDemoServiceClient {
-	return &httpDemoServiceClient{cc}
+func NewHttpHelloWorldServiceClient(cc grpc.ClientConnInterface) HttpHelloWorldServiceClient {
+	return &httpHelloWorldServiceClient{cc}
 }
 
-func (c *httpDemoServiceClient) Echo1(ctx context.Context, in *StringMessage, opts ...grpc.CallOption) (*StringMessage, error) {
+func (c *httpHelloWorldServiceClient) HelloWorld(ctx context.Context, in *StringMessage, opts ...grpc.CallOption) (*StringMessage, error) {
 	out := new(StringMessage)
-	err := c.cc.Invoke(ctx, "/xstream.HttpDemoService/Echo1", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/xstream.HttpHelloWorldService/HelloWorld", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *httpDemoServiceClient) Echo2(ctx context.Context, in *StringMessage, opts ...grpc.CallOption) (*StringMessage, error) {
-	out := new(StringMessage)
-	err := c.cc.Invoke(ctx, "/xstream.HttpDemoService/Echo2", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-// HttpDemoServiceServer is the server API for HttpDemoService service.
-// All implementations must embed UnimplementedHttpDemoServiceServer
+// HttpHelloWorldServiceServer is the server API for HttpHelloWorldService service.
+// All implementations must embed UnimplementedHttpHelloWorldServiceServer
 // for forward compatibility
-type HttpDemoServiceServer interface {
-	Echo1(context.Context, *StringMessage) (*StringMessage, error)
-	Echo2(context.Context, *StringMessage) (*StringMessage, error)
-	mustEmbedUnimplementedHttpDemoServiceServer()
+type HttpHelloWorldServiceServer interface {
+	HelloWorld(context.Context, *StringMessage) (*StringMessage, error)
+	mustEmbedUnimplementedHttpHelloWorldServiceServer()
 }
 
-// UnimplementedHttpDemoServiceServer must be embedded to have forward compatible implementations.
-type UnimplementedHttpDemoServiceServer struct {
+// UnimplementedHttpHelloWorldServiceServer must be embedded to have forward compatible implementations.
+type UnimplementedHttpHelloWorldServiceServer struct {
 }
 
-func (UnimplementedHttpDemoServiceServer) Echo1(context.Context, *StringMessage) (*StringMessage, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Echo1 not implemented")
+func (UnimplementedHttpHelloWorldServiceServer) HelloWorld(context.Context, *StringMessage) (*StringMessage, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method HelloWorld not implemented")
 }
-func (UnimplementedHttpDemoServiceServer) Echo2(context.Context, *StringMessage) (*StringMessage, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Echo2 not implemented")
-}
-func (UnimplementedHttpDemoServiceServer) mustEmbedUnimplementedHttpDemoServiceServer() {}
+func (UnimplementedHttpHelloWorldServiceServer) mustEmbedUnimplementedHttpHelloWorldServiceServer() {}
 
-// UnsafeHttpDemoServiceServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to HttpDemoServiceServer will
+// UnsafeHttpHelloWorldServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to HttpHelloWorldServiceServer will
 // result in compilation errors.
-type UnsafeHttpDemoServiceServer interface {
-	mustEmbedUnimplementedHttpDemoServiceServer()
+type UnsafeHttpHelloWorldServiceServer interface {
+	mustEmbedUnimplementedHttpHelloWorldServiceServer()
 }
 
-func RegisterHttpDemoServiceServer(s grpc.ServiceRegistrar, srv HttpDemoServiceServer) {
-	s.RegisterService(&HttpDemoService_ServiceDesc, srv)
+func RegisterHttpHelloWorldServiceServer(s grpc.ServiceRegistrar, srv HttpHelloWorldServiceServer) {
+	s.RegisterService(&HttpHelloWorldService_ServiceDesc, srv)
 }
 
-func _HttpDemoService_Echo1_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _HttpHelloWorldService_HelloWorld_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(StringMessage)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(HttpDemoServiceServer).Echo1(ctx, in)
+		return srv.(HttpHelloWorldServiceServer).HelloWorld(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/xstream.HttpDemoService/Echo1",
+		FullMethod: "/xstream.HttpHelloWorldService/HelloWorld",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(HttpDemoServiceServer).Echo1(ctx, req.(*StringMessage))
+		return srv.(HttpHelloWorldServiceServer).HelloWorld(ctx, req.(*StringMessage))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _HttpDemoService_Echo2_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(StringMessage)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(HttpDemoServiceServer).Echo2(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/xstream.HttpDemoService/Echo2",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(HttpDemoServiceServer).Echo2(ctx, req.(*StringMessage))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-// HttpDemoService_ServiceDesc is the grpc.ServiceDesc for HttpDemoService service.
+// HttpHelloWorldService_ServiceDesc is the grpc.ServiceDesc for HttpHelloWorldService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var HttpDemoService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "xstream.HttpDemoService",
-	HandlerType: (*HttpDemoServiceServer)(nil),
+var HttpHelloWorldService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "xstream.HttpHelloWorldService",
+	HandlerType: (*HttpHelloWorldServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "Echo1",
-			Handler:    _HttpDemoService_Echo1_Handler,
-		},
-		{
-			MethodName: "Echo2",
-			Handler:    _HttpDemoService_Echo2_Handler,
+			MethodName: "HelloWorld",
+			Handler:    _HttpHelloWorldService_HelloWorld_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
