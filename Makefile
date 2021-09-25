@@ -7,6 +7,12 @@ all:
 .PHONY: build
 build:
 	go mod tidy
+	chmod 755 ./gen_version.sh
+	chmod +x ./gen_version.sh
+	chmod 755 ./gen_proto.sh
+	chmod +x ./gen_proto.sh
+	sed -i "s/\r//" ./gen_proto.sh
+	sed -i "s/\r//" ./gen_version.sh
 	go generate
 	go build -ldflags "-s -w" -o ${APP} main.go
 

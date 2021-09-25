@@ -25,18 +25,3 @@ message Response {
   string message = 2;
   string data=3;
 }
-
- message StringMessage {
-   string value = 1;
- }
-//
-//
-//
-service HttpHelloWorldService {
-  rpc HelloWorld(StringMessage) returns (StringMessage) {
-    option (google.api.http) = {
-      post: "/v1/example/echo"
-      body: "*"
-    };
-  }
-}

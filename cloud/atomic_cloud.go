@@ -27,10 +27,3 @@ func ListService(pageIndex int, pageSize int) []httpResult {
 	json.Unmarshal([]byte(r), &results)
 	return results
 }
-
-//
-//
-//
-func CallService(id string, args []ServiceArg) CallResult {
-	return CallResult{}
-}

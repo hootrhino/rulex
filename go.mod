@@ -1,6 +1,6 @@
 module rulex
 
-go 1.15
+go 1.16
 
 require (
 	github.com/StackExchange/wmi v1.2.0 // indirect
@@ -19,7 +19,6 @@ require (
 	github.com/plgd-dev/go-coap/v2 v2.4.0
 	github.com/shirou/gopsutil v3.21.6+incompatible
 	github.com/smartystreets/goconvey v1.6.4 // indirect
-	github.com/stretchr/testify v1.7.0 // indirect
 	github.com/tarm/serial v0.0.0-20180830185346-98f6abe2eb07
 	github.com/tklauser/go-sysconf v0.3.6 // indirect
 	github.com/ugorji/go v1.1.13 // indirect
@@ -32,7 +31,7 @@ require (
 	golang.org/x/sys v0.0.0-20210923061019-b8560ed6a9b7 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/genproto v0.0.0-20210924002016-3dee208752a0
-	google.golang.org/grpc v1.40.0
+	google.golang.org/grpc v1.41.0
 	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.1.0 // indirect
 	google.golang.org/protobuf v1.27.1
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect

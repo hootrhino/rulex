@@ -7,9 +7,6 @@
   "tags": [
     {
       "name": "XStream"
-    },
-    {
-      "name": "HttpHelloWorldService"
     }
   ],
   "consumes": [
@@ -18,40 +15,7 @@
   "produces": [
     "application/json"
   ],
-  "paths": {
-    "/v1/example/echo": {
-      "post": {
-        "operationId": "HttpHelloWorldService_HelloWorld",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/xstreamStringMessage"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/xstreamStringMessage"
-            }
-          }
-        ],
-        "tags": [
-          "HttpHelloWorldService"
-        ]
-      }
-    }
-  },
+  "paths": {},
   "definitions": {
     "protobufAny": {
       "type": "object",
@@ -91,14 +55,6 @@
           "type": "string"
         },
         "data": {
-          "type": "string"
-        }
-      }
-    },
-    "xstreamStringMessage": {
-      "type": "object",
-      "properties": {
-        "value": {
           "type": "string"
         }
       }

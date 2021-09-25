@@ -23,3 +23,12 @@ protoc -I ./xstream \
     --openapiv2_out ./xstream \
     --openapiv2_opt logtostderr=true \
     ./xstream/xstream.proto
+# Stream
+echo "Generate Cloud Proto"
+protoc -I ./cloud \
+    --go_out ./cloud --go_opt paths=source_relative \
+    --go-grpc_out ./cloud --go-grpc_opt paths=source_relative \
+    --grpc-gateway_out ./cloud --grpc-gateway_opt paths=source_relative \
+    --openapiv2_out ./cloud \
+    --openapiv2_opt logtostderr=true \
+    ./cloud/atomic_cloud.proto
