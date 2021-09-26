@@ -28,15 +28,15 @@ func LoadTargetLib(e typex.RuleX, vm *lua.LState) int {
 	vm.Push(mod)
 	return 1
 }
-func handleDataFormat(e typex.RuleX, id string, data string) {
-	bson := &map[string]interface{}{}
-	err := json.Unmarshal([]byte(data), bson)
+func handleDataFormat(e typex.RuleX, id string, incoming string) {
+	data := &map[string]interface{}{}
+	err := json.Unmarshal([]byte(incoming), data)
 	if err != nil {
 		statistics.IncOutFailed()
-		log.Error("Data must be JSON format:", data, ", But current is: ", err)
+		log.Error("Data must be JSON format:", incoming, ", But current is: ", err)
 	} else {
 		statistics.IncOut()
-		(*e.AllOutEnd()[id]).Target.To(bson)
+		(*e.AllOutEnd()[id]).Target.To(data)
 	}
 }
 

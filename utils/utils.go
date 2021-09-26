@@ -22,23 +22,25 @@ func MakeUUID(prefix string) string {
 //
 //
 
-func post(data map[string]interface{}, api string) string {
-	p, errs1 := json.Marshal(data)
+func Post(data interface{}, api string) (string, error) {
+	bites, errs1 := json.Marshal(data)
 	if errs1 != nil {
 		log.Error(errs1)
+		return "", errs1
 	}
 	r, errs2 := http.Post(api, "application/json",
-		bytes.NewBuffer(p))
+		bytes.NewBuffer(bites))
 	if errs2 != nil {
 		log.Error(errs2)
+		return "", errs2
 	}
 	defer r.Body.Close()
-
-	body, errs5 := ioutil.ReadAll(r.Body)
-	if errs5 != nil {
-		log.Error(errs5)
+	body, errs3 := ioutil.ReadAll(r.Body)
+	if errs3 != nil {
+		log.Error(errs3)
+		return "", errs3
 	}
-	return string(body)
+	return string(body), nil
 }
 
 //

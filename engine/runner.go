@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"os"
 	"os/signal"
+	"rulex/core"
 	httpserver "rulex/plugin/http_server"
 	"rulex/typex"
 	"strings"
@@ -16,6 +17,7 @@ import (
 //
 //
 func RunRulex(dbPath string) {
+	core.InitGlobalConfig()
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, syscall.SIGINT, syscall.SIGABRT)
 	engine := NewRuleEngine()

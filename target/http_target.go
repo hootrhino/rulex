@@ -1,38 +1,21 @@
 package target
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"net/http"
 	"rulex/typex"
+	"rulex/utils"
 )
-
-func post(data interface{}, url string) (string, error) {
-	p, err1 := json.Marshal(data)
-	if err1 != nil {
-		return "", err1
-	}
-	r, err2 := http.Post(url, "application/json", bytes.NewBuffer(p))
-	if err2 != nil {
-		return "", err2
-	}
-	defer r.Body.Close()
-
-	body, err3 := ioutil.ReadAll(r.Body)
-	if err3 != nil {
-		return "", err3
-	}
-	return string(body), nil
-}
 
 type HTTPTarget struct {
 	typex.XStatus
+	url string
 }
 
 func (ht *HTTPTarget) Register(outEndId string) {
 	ht.PointId = outEndId
+	config := ht.RuleEngine.GetOutEnd(ht.PointId).Config
+	ht.url = (*config)["url"].(string)
+
 }
 func (ht *HTTPTarget) Start() {
 	fmt.Println("OK")
@@ -54,8 +37,7 @@ func (ht *HTTPTarget) Status() typex.ResourceState {
 
 }
 func (ht *HTTPTarget) To(data interface{}) error {
-	config := ht.RuleEngine.GetOutEnd(ht.PointId).Config
-	_, err := post(data, (*config)["url"].(string))
+	_, err := utils.Post(data, ht.url)
 	return err
 }
 

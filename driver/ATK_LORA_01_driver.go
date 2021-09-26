@@ -58,11 +58,13 @@ func NewATK_LORA_01Driver(serialPort *serial.Port) *ATK_LORA_01Driver {
 //
 func (a *ATK_LORA_01Driver) Init() error {
 	// 初始化配置参数
+	// GPIO set 22 High 模块配置模式需要拉高一个脚
 	// write(a, "") 配置串口 115200
 	// write(a, "") 配置功率 20
 	// write(a, "") 配置信道 20
 	// write(a, "") 配置地址 1
 	// write(a, "") 配置模式 透明模式
+	// GPIO set 22 Low 退出配置模式
 
 	return nil
 }

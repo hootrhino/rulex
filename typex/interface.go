@@ -134,7 +134,7 @@ type XHook interface {
 //
 type XStatus struct {
 	sync.Mutex
-	PointId    string
+	PointId    string // 真实资源的ID，是绑定关系
 	Enable     bool
 	RuleEngine RuleX
 }

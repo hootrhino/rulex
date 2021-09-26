@@ -1,8 +1,8 @@
 package main
 
 import (
+	"fmt"
 	"os"
-	"rulex/core"
 	"rulex/engine"
 	"rulex/utils"
 
@@ -15,7 +15,6 @@ import (
 //go:generate ./gen_proto.sh
 //
 func main() {
-	core.InitGlobalConfig()
 	app := &cli.App{
 		Name:  "RULEX, a lightweight iot data rule gateway",
 		Usage: "http://rulex.ezlinker.cn",
@@ -32,6 +31,14 @@ func main() {
 						engine.RunRulex("rulex.db")
 					}
 					log.Debug("Run rulex successfully.")
+					return nil
+				},
+			},
+			{
+				Name:  "version",
+				Usage: "rulex version",
+				Action: func(c *cli.Context) error {
+					fmt.Println("Current Version is: " + engine.Version().Version)
 					return nil
 				},
 			},
