@@ -20,5 +20,8 @@ var defaultVer = ver{
 	Version:   \`$VERSION\`,
 	ReleaseTime: "$(echo $(date "+%Y-%m-%d %H:%M:%S"))",
 }
+func Version() ver{
+	return defaultVer
+}
 EOF
 echo "Generate Version Susseccfully"
