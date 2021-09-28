@@ -1,5 +1,5 @@
 APP=rulex
-VERSION=preview
+VERSION=V0.0.1
 .PHONY: all
 all:
 	make build
@@ -54,9 +54,9 @@ clean:
 
 .PHONY: tag
 tag:
-	git tag -a "${VERSION}" -m "$(<notes/${VERSION}.txt)"
+	git tag -a "${VERSION}" -m "$(<./notes/${VERSION}.txt)"
 	git commit -m "release: ${VERSION}"
-	git push origin ${VERSION}
+	git push origin ${VERSION} -f
 
 .PHONY: clean-grpc
 clean-grpc:
