@@ -52,12 +52,6 @@ clean:
 	go clean
 	rm *.db
 
-.PHONY: tag
-tag:
-	git tag -a "${VERSION}" -m "$(<./notes/${VERSION}.txt)"
-	git commit -m "release: ${VERSION}"
-	git push origin ${VERSION} -f
-
 .PHONY: clean-grpc
 clean-grpc:
 	rm ./rulexrpc/*.pb.go
