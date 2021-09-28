@@ -54,8 +54,9 @@ clean:
 
 .PHONY: tag
 tag:
-	make package
-	gh release create $(VERSION) ./${APP}-${VERSION}.zip -F changelog.md
+	git tag -a "${VERSION}" -m "$(<notes/${VERSION}.txt)"
+	git commit -m "release: ${VERSION}"
+	git push origin ${VERSION}
 
 .PHONY: clean-grpc
 clean-grpc:
