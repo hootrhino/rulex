@@ -22,7 +22,7 @@ service AtomicCloudService {
    rpc CallCloud(Service) returns (CallResult) {
      option (google.api.http) = {
        post: "/api/v1/CallCloud"
-       body: "*"
+       body: "Service"
      };
    }
  }
