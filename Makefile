@@ -26,11 +26,6 @@ windows:
 	SET GOOS=windows
 	go build -ldflags "-s -w" -o ${APP}.exe main.go
 
-.PHONY: package
-package:
-	echo ${VERSION} > VERSION
-	zip ${APP}-${VERSION}.zip ./${APP}-${VERSION}
-
 .PHONY: run
 run:
 	go run -race main.go run
