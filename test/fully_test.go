@@ -33,11 +33,14 @@ func runTest() {
 //
 func Run() {
 
+	core.InitGlobalConfig()
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, syscall.SIGINT, syscall.SIGABRT)
 	engine := engine.NewRuleEngine()
 	engine.Start()
-	hh := httpserver.NewHttpApiServer(2580, "plugin/http_server/templates","./rulex.db", engine)
+	core.InitXQueue(10*(2<<10), engine)
+
+	hh := httpserver.NewHttpApiServer(2580, "plugin/http_server/templates", "./rulex.db", engine)
 
 	// HttpApiServer loaded default
 	if err := engine.LoadPlugin(hh); err != nil {
