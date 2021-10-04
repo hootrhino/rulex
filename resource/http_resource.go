@@ -26,15 +26,18 @@ func NewHttpInEndResource(inEndId string, e typex.RuleX) *HttpInEndResource {
 //
 func (hh *HttpInEndResource) Start() error {
 	config := hh.RuleEngine.GetInEnd(hh.PointId).Config
-	hh.engine.GET("/in", func(c *gin.Context) {
-		inForm := struct{ data string }{}
-		err := c.BindJSON(inForm)
+	hh.engine.POST("/in", func(c *gin.Context) {
+		type Form struct {
+			Data string
+		}
+		var inForm Form
+		err := c.BindJSON(&inForm)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"message": err.Error(),
 			})
 		} else {
-			hh.RuleEngine.Work(hh.RuleEngine.GetInEnd(hh.PointId), inForm.data)
+			hh.RuleEngine.Work(hh.RuleEngine.GetInEnd(hh.PointId), inForm.Data)
 			c.JSON(200, gin.H{
 				"message": "ok",
 				"data":    inForm,
