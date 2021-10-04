@@ -73,6 +73,10 @@ type RuleX interface {
 	AllRule() map[string]*Rule
 	RemoveRule(uuid string) error
 	//
+	RunLuaCallbacks(in *InEnd, data string)
+	//
+	RunHooks(data string)
+	//
 	Stop()
 }
 

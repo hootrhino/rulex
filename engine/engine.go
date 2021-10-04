@@ -315,17 +315,19 @@ func (e *RuleEngine) Stop() {
 // Work
 func (e *RuleEngine) Work(in *typex.InEnd, data string) (bool, error) {
 	statistics.IncIn()
-	//
-	// Run Lua
-	//
-	e.runLuaCallbacks(in, data)
-	//
-	// Run Hook
-	//
-	e.runHooks(data)
-	return false, nil
+	err := core.DefaultDataCacheQueue.Push(core.QueueData{
+		In:   in,
+		E:    e,
+		Data: data,
+	})
+	if err != nil {
+		return false, err
+	} else {
+		return true, nil
+	}
 }
-func (e *RuleEngine) runLuaCallbacks(in *typex.InEnd, data string) {
+
+func (e *RuleEngine) RunLuaCallbacks(in *typex.InEnd, data string) {
 	for _, rule := range *in.Binds {
 		_, err := rule.ExecuteActions(lua.LString(data))
 		if err != nil {
@@ -377,7 +379,7 @@ func (e *RuleEngine) LoadHook(h typex.XHook) error {
 //
 // RunHooks
 //
-func (e *RuleEngine) runHooks(data string) {
+func (e *RuleEngine) RunHooks(data string) {
 	for _, h := range *e.Hooks {
 		if err := runHook(h, data); err != nil {
 			h.Error(err)
