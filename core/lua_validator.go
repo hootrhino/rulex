@@ -32,7 +32,10 @@ func VerifyCallback(r *typex.Rule) error {
 	if actionsTable != nil && actionsTable.Type() == lua.LTTable {
 		valid := false
 		actionsTable.(*lua.LTable).ForEach(func(idx, f lua.LValue) {
-			valid = (reflect.TypeOf(f).Elem().Name() == "LFunction")
+			//
+			// golang function in lua is '*lua.LFunction' type
+			//
+			valid = (reflect.TypeOf(f).String() == "*lua.LFunction")
 		})
 		if !valid {
 			return errors.New("Invalid function type")

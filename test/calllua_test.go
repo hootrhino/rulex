@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"reflect"
 	"testing"
-	"time"
 
 	"github.com/yuin/gopher-lua"
 )
@@ -85,13 +84,6 @@ func TestAgs(t *testing.T) {
 		}
 	}
 }
-func TestRunLua(t *testing.T) {
-
-	err1 := luaVM.DoString("print('helloworld')")
-	if err1 != nil {
-		panic(err1)
-	}
-}
 
 func TestCallFailed(t *testing.T) {
 	err1 := luaVM.DoString(Script1)
@@ -122,29 +114,4 @@ func TestCallFailed(t *testing.T) {
 		}
 
 	}
-}
-
-func TestRunLuaBench(t *testing.T) {
-	var s1 = `
-	function f(a,b)
-		print("f=", a + b)
-	end
-`
-	t1 := time.Now().UnixNano()
-	err1 := luaVM.DoString(s1)
-	fmt.Println("luaVM.DoString cost time:", time.Now().UnixNano()-t1, "ns")
-	if err1 != nil {
-		panic(err1)
-	}
-	t2 := time.Now().UnixNano()
-	f := luaVM.GetGlobal("f")
-	if reflect.TypeOf(f).Elem().Name() == "LFunction" {
-		coroutine, _ := luaVM.NewThread()
-		state, err2, _ := luaVM.Resume(coroutine, f.(*lua.LFunction), lua.LNumber(1), lua.LNumber(1))
-		if state == lua.ResumeError {
-			fmt.Println(err2.Error())
-		}
-	}
-	fmt.Println("luaVM.Resume:", time.Now().UnixNano()-t2, "ns")
-
 }
