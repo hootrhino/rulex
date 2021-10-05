@@ -14,29 +14,7 @@ import (
 	"github.com/ngaut/log"
 )
 
-/*
-*
-* XQueue
-*
- */
-type XQueue interface {
-	GetQueue() chan QueueData
-	GetSize() int
-	Push(QueueData) error
-}
-
-//
-type QueueData struct {
-	In   *typex.InEnd
-	E    typex.RuleX
-	Data string
-}
-
-func (qd QueueData) String() string {
-	return "QueueData@In:" + qd.In.Id + ", Data:" + qd.Data
-}
-
-var DefaultDataCacheQueue XQueue
+var DefaultDataCacheQueue typex.XQueue
 
 /*
 *
@@ -48,9 +26,9 @@ func InitXQueue(size int, rulex typex.RuleX) {
 	log.Info("Init XQueue max size is:", size)
 	DefaultDataCacheQueue = &DataCacheQueue{
 		Size:  size,
-		Queue: make(chan QueueData, size),
+		Queue: make(chan typex.QueueData, size),
 	}
-	go func(ctx context.Context, xQueue XQueue) {
+	go func(ctx context.Context, xQueue typex.XQueue) {
 		for {
 			log.Info("Size is: ", xQueue.GetSize())
 			select {
@@ -71,7 +49,7 @@ func InitXQueue(size int, rulex typex.RuleX) {
  */
 type DataCacheQueue struct {
 	Size  int
-	Queue chan QueueData
+	Queue chan typex.QueueData
 }
 
 func (q *DataCacheQueue) GetSize() int {
@@ -83,7 +61,7 @@ func (q *DataCacheQueue) GetSize() int {
 * Push
 *
  */
-func (q *DataCacheQueue) Push(d QueueData) error {
+func (q *DataCacheQueue) Push(d typex.QueueData) error {
 	if len(q.Queue)+1 > q.Size {
 		msg := fmt.Sprintf("attached max queue size, max size is:%v, current size is: %v", q.Size, len(q.Queue)+1)
 		log.Error(msg)
@@ -99,6 +77,6 @@ func (q *DataCacheQueue) Push(d QueueData) error {
 * GetQueue
 *
  */
-func (q *DataCacheQueue) GetQueue() chan QueueData {
+func (q *DataCacheQueue) GetQueue() chan typex.QueueData {
 	return q.Queue
 }
