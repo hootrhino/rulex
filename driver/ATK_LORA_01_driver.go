@@ -59,11 +59,12 @@ func NewATK_LORA_01Driver(serialPort *serial.Port) *ATK_LORA_01Driver {
 func (a *ATK_LORA_01Driver) Init() error {
 	// 初始化配置参数
 	// GPIO set 22 High 模块配置模式需要拉高一个脚
-	// write(a, "") 配置串口 115200
-	// write(a, "") 配置功率 20
-	// write(a, "") 配置信道 20
-	// write(a, "") 配置地址 1
-	// write(a, "") 配置模式 透明模式
+	// AT+UART=7,0 配置串口波特率: 115200, 无校验
+	write(a, "AT+UART=7,0")
+	// AT+WLRATE=23,5  信道: 433Hz 功率：19.2kbps
+	write(a, "AT+WLRATE=23,5")
+	// AT+ADDR=0000000000000001 配置地址 1
+	write(a, "AT+ADDR=0000000000000001")
 	// GPIO set 22 Low 退出配置模式
 
 	return nil
