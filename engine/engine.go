@@ -315,7 +315,7 @@ func (e *RuleEngine) Stop() {
 // Work
 func (e *RuleEngine) Work(in *typex.InEnd, data string) (bool, error) {
 	statistics.IncIn()
-	err := core.DefaultDataCacheQueue.Push(core.QueueData{
+	err := core.DefaultDataCacheQueue.Push(typex.QueueData{
 		In:   in,
 		E:    e,
 		Data: data,
