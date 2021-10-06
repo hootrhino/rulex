@@ -27,15 +27,19 @@ func VerifyCallback(r *typex.Rule) error {
 	if err := vm.DoString(r.Actions); err != nil {
 		return err
 	}
-	// validate Syntax
+	//
+	// validate lua syntax
+	//
 	actionsTable := vm.GetGlobal("Actions")
 	if actionsTable != nil && actionsTable.Type() == lua.LTTable {
-		valid := false
+		valid := true
 		actionsTable.(*lua.LTable).ForEach(func(idx, f lua.LValue) {
 			//
 			// golang function in lua is '*lua.LFunction' type
 			//
-			valid = (reflect.TypeOf(f).String() == "*lua.LFunction")
+			if !(reflect.TypeOf(f).String() == "*lua.LFunction") {
+				valid = false
+			}
 		})
 		if !valid {
 			return errors.New("Invalid function type")
