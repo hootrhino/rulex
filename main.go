@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"rulex/engine"
+	"rulex/typex"
 	"rulex/utils"
 
 	"github.com/ngaut/log"
@@ -34,11 +35,12 @@ func main() {
 					return nil
 				},
 			},
+			// version
 			{
 				Name:  "version",
 				Usage: "rulex version",
 				Action: func(c *cli.Context) error {
-					fmt.Println("Current Version is: " + engine.Version().Version)
+					fmt.Println("Current Version is: " + typex.DefaultVersion.Version)
 					return nil
 				},
 			},

@@ -77,6 +77,9 @@ type RuleX interface {
 	//
 	RunHooks(data string)
 	//
+	//
+	Version() Version
+	//
 	Stop()
 }
 

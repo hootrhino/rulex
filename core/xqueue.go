@@ -23,16 +23,14 @@ var DefaultDataCacheQueue typex.XQueue
  */
 
 func InitXQueue(size int, rulex typex.RuleX) {
-	log.Info("Init XQueue max size is:", size)
+ 	log.Info("Init XQueue, max queue size is:", size)
 	DefaultDataCacheQueue = &DataCacheQueue{
 		Size:  size,
 		Queue: make(chan typex.QueueData, size),
 	}
 	go func(ctx context.Context, xQueue typex.XQueue) {
 		for {
-			log.Info("Size is: ", xQueue.GetSize())
 			select {
-
 			case qd := <-xQueue.GetQueue():
 				qd.E.RunLuaCallbacks(qd.In, qd.Data)
 				qd.E.RunHooks(qd.Data)

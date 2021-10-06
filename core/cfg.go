@@ -31,6 +31,6 @@ func InitGlobalConfig() {
 	GlobalConfig.Path = cfg.Section("cloud").Key("path").MustString("")
 	GlobalConfig.Token = cfg.Section("cloud").Key("token").MustString("")
 	GlobalConfig.Secret = cfg.Section("cloud").Key("secret").MustString("")
-	log.Info("Rulex config init success.")
+	log.Info("Rulex config init successfully")
 
 }

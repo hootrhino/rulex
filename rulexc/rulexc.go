@@ -55,41 +55,23 @@ func get(host string, api string) string {
 func main() {
 	app := &cli.App{
 		Action: func(c *cli.Context) error {
-			// log.Debug(c.String("host"))
-			// log.Debug(c.String("username"))
-			// log.Debug(c.String("password"))
 			return nil
 		},
 		Commands: []*cli.Command{
-			// Auth
+			// SystemInfo
 			{
-				Name:  "auth",
-				Usage: "auth",
+				Name:  "system-info",
+				Usage: "system-info",
 				Flags: []cli.Flag{
 					&cli.StringFlag{
 						Name:  "host",
 						Usage: "Host of rulex",
 						Value: "127.0.0.1",
 					},
-					&cli.StringFlag{
-						Name:     "username",
-						Required: true,
-						Usage:    "Username of rulex",
-					},
-					&cli.StringFlag{
-						Name:     "password",
-						Required: true,
-						Usage:    "Password of rulex",
-					},
 				},
 				Action: func(c *cli.Context) error {
 					host := c.String("host")
-					username := c.String("username")
-					password := c.String("password")
-					_, result := post(map[string]interface{}{
-						"username": username,
-						"password": password,
-					}, host, "auth")
+					result := get(host, "system")
 					fmt.Println(result)
 					return nil
 				},
@@ -112,8 +94,43 @@ func main() {
 					return nil
 				},
 			},
+			// List all outends
+			{
+				Name:  "outend-list",
+				Usage: "outend-list",
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:  "host",
+						Usage: "Host of rulex",
+						Value: "127.0.0.1",
+					},
+				},
+				Action: func(c *cli.Context) error {
+					host := c.String("host")
+					result := get(host, "outends")
+					fmt.Println(result)
+					return nil
+				},
+			},
+			// List all rules
+			{
+				Name:  "rules-list",
+				Usage: "rules-list",
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:  "host",
+						Usage: "Host of rulex",
+						Value: "127.0.0.1",
+					},
+				},
+				Action: func(c *cli.Context) error {
+					host := c.String("host")
+					result := get(host, "rules")
+					fmt.Println(result)
+					return nil
+				},
+			},
 			// Create InEnd
-			//go run .\rulexc.go inend-create --config  '{\"name\":\"test\",\"type\":\"MQTT\",\"config\":{\"server\":\"127.0.0.1\",\"port\":1883,\"username\":\"test\",\"password\":\"test\",\"clientId\":\"test\"},\"description\":\"Description\"}'
 			{
 				Name:  "inend-create",
 				Usage: "inend-create",
@@ -144,11 +161,75 @@ func main() {
 					return nil
 				},
 			},
+			// create outend
+			{
+				Name:  "outend-create",
+				Usage: "outend-create",
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:  "host",
+						Usage: "Host of rulex",
+						Value: "127.0.0.1",
+					},
+					&cli.StringFlag{
+						Name:     "config",
+						Usage:    "Config of rulex",
+						Value:    "",
+						Required: true,
+					},
+				},
+				Action: func(c *cli.Context) error {
+					host := c.String("host")
+					config := c.String("config")
+					maps := map[string]interface{}{}
+					err := json.Unmarshal([]byte(config), &maps)
+					if err != nil {
+						log.Error(config, err)
+					} else {
+						_, result := post(maps, host, "outends")
+						fmt.Println(result)
+					}
+					return nil
+				},
+			},
+			// create rule
+			{
+				Name:  "rule-create",
+				Usage: "rule-create",
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:  "host",
+						Usage: "Host of rulex",
+						Value: "127.0.0.1",
+					},
+					&cli.StringFlag{
+						Name:     "config",
+						Usage:    "Config of rulex",
+						Value:    "",
+						Required: true,
+					},
+				},
+				Action: func(c *cli.Context) error {
+					host := c.String("host")
+					config := c.String("config")
+					maps := map[string]interface{}{}
+					err := json.Unmarshal([]byte(config), &maps)
+					if err != nil {
+						log.Error(config, err)
+					} else {
+						_, result := post(maps, host, "rules")
+						fmt.Println(result)
+					}
+					return nil
+				},
+			},
 		},
 	}
 
 	err := app.Run(os.Args)
 	if err != nil {
 		log.Fatal(err)
+	} else {
+		log.Info("Finished.")
 	}
 }

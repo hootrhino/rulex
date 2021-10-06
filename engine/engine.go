@@ -57,8 +57,12 @@ func (e *RuleEngine) AllPlugins() *map[string]*typex.XPluginMetaInfo {
 	defer e.Unlock()
 	return e.Plugins
 }
-func (e *RuleEngine) Version() ver {
-	return defaultVer
+
+//
+//
+//
+func (e *RuleEngine) Version() typex.Version {
+	return typex.DefaultVersion
 }
 
 //

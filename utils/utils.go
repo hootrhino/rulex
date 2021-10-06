@@ -73,5 +73,5 @@ func ShowBanner() {
 			log.Info("\n", string(data))
 		}
 	}
-	log.Info("rulex start successfully")
+	log.Info("Rulex start successfully")
 }

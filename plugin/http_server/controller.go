@@ -76,12 +76,13 @@ func System(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		Code: http.StatusOK,
 		Msg:  "查询成功",
 		Data: gin.H{
-			"diskInfo":   diskInfo.UsedPercent,
-			"memInfo":    memInfo.UsedPercent,
-			"cpuPercent": percent[0],
-			"os":         runtime.GOOS,
-			"arch":       runtime.GOARCH,
-			"cpus":       runtime.GOMAXPROCS(0)},
+			"rulexVersion": e.Version().Version,
+			"diskInfo":     diskInfo.UsedPercent,
+			"memInfo":      memInfo.UsedPercent,
+			"cpuPercent":   percent[0],
+			"os":           runtime.GOOS,
+			"arch":         runtime.GOARCH,
+			"cpus":         runtime.GOMAXPROCS(0)},
 	})
 }
 
