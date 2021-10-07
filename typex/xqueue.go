@@ -14,6 +14,7 @@ type XQueue interface {
 //
 type QueueData struct {
 	In   *InEnd
+	Out  *OutEnd
 	E    RuleX
 	Data string
 }

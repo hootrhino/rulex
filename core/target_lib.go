@@ -36,7 +36,13 @@ func handleDataFormat(e typex.RuleX, id string, incoming string) {
 		log.Error("Data must be JSON format:", incoming, ", But current is: ", err)
 	} else {
 		statistics.IncOut()
-		(*e.AllOutEnd()[id]).Target.To(data)
+		DefaultDataCacheQueue.Push(typex.QueueData{
+			In:   nil,
+			Out:  &(*e.AllOutEnd()[id]),
+			E:    e,
+			Data: incoming,
+		})
+
 	}
 }
 
