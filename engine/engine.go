@@ -7,6 +7,7 @@ import (
 	"rulex/core"
 	"rulex/resource"
 	"rulex/statistics"
+	"rulex/stdlib"
 	"rulex/target"
 	"rulex/typex"
 	"runtime"
@@ -232,6 +233,8 @@ func (e *RuleEngine) LoadRule(r *typex.Rule) error {
 					// ...
 					// }
 					(*in.Binds)[r.Id] = *r
+					stdlib.LoadTargetLib(e, r.VM)
+					stdlib.LoadJqLib(e, r.VM)
 					e.SaveRule(r)
 					return nil
 				} else {
@@ -335,8 +338,7 @@ func (e *RuleEngine) Work(in *typex.InEnd, data string) (bool, error) {
 func (e *RuleEngine) RunLuaCallbacks(in *typex.InEnd, data string) {
 	for _, rule := range *in.Binds {
 		_, err := rule.ExecuteActions(lua.LString(data))
-		if err != nil {
-			log.Error(err)
+		if err != nil { 
 			rule.ExecuteFailed(lua.LString(err.Error()))
 		} else {
 			rule.ExecuteSuccess()

@@ -12,6 +12,7 @@ import (
 //  Run lua as pipline
 //
 func RunPipline(vm *lua.LState, funcs map[string]*lua.LFunction, arg lua.LValue) (lua.LValue, error) {
+	// start 1
 	acc := 1
 	return pipLine(vm, acc, funcs, arg)
 }
@@ -85,11 +86,17 @@ func callLuaFunc(vm *lua.LState, callable *lua.LFunction, args ...lua.LValue) ([
 		return nil, errors.New("Callable function is not exists")
 	} else {
 		coroutine, _ := vm.NewThread()
+		//
+		// callback return value :lValues =[bool, T]
+		//
 		state, err, lValues := vm.Resume(coroutine, callable, args...)
-		if state != lua.ResumeOK {
-			return nil, err
-		} else {
-			return lValues, nil
+		if state == lua.ResumeError {
+			return nil, errors.New("current state is not lua.ResumeOK:" + err.Error())
 		}
+		if state == lua.ResumeOK {
+			// only need T
+			return lValues[1:], nil
+		}
+		return nil, errors.New("current state is not lua.ResumeOK")
 	}
 }

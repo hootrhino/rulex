@@ -40,8 +40,6 @@ func NewRule(e RuleX,
 		RegistryMaxSize:  1024 * 80,
 		RegistryGrowStep: 32,
 	})
-	// LoadTargetLib(e, vm)
-	// LoadJqLib(e, vm)
 	luajson.Preload(vm)
 	return &Rule{
 		Id:          utils.MakeUUID("RULE"),

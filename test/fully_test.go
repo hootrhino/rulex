@@ -85,15 +85,31 @@ func Run() {
 		"Just a test",
 		"Just a test",
 		[]string{grpcInend.Id},
-		`function Success() print("[LUA Success]==========================> OK") end`,
+		`function Success() print("[LUA Success Callback]=> OK") end`,
 		`
 		Actions = {
 			function(data)
-			    print("[LUA Actions Callback]==========================> ", data)
+			    local V1 = JqSelect(".[] | select(.temp > 50000000)", data)
+			    print("[LUA Actions Callback 1 === .[] | select(.temp >= 50000000)]=> ", V1)
+				return true, V1
+			end,
+			function(data)
+			    local V2 = JqSelect(".[] | select(.hum < 20)", data)
+			    print("[LUA Actions Callback 2 === .[] | select(.hum < 20)]=> ", V2)
+				return true, V2
+			end,
+			function(data)
+			    local V3 = JqSelect(".[] | select(.co2 > 50)", data)
+			    print("[LUA Actions Callback 3 === .[] | select(.co2 > 50]=> ", V3)
+				return true, data
+			end,
+			function(data)
+			    local V4 = JqSelect(".[] | select(.lex > 50)", data)
+			    print("[LUA Actions Callback 4 === .[] | select(.lex > 50)]=> ", V4)
 				return true, data
 			end
 		}`,
-		`function Failed(error) print("[LUA Failed]==========================> OK", error) end`)
+		`function Failed(error) print("[LUA Failed Callback]=> OK", error) end`)
 	if err := engine.LoadRule(rule); err != nil {
 		log.Error(err)
 	}
@@ -104,7 +120,13 @@ func Run() {
 	defer conn.Close()
 	client := rulexrpc.NewRulexRpcClient(conn)
 	resp, err := client.Work(context.Background(), &rulexrpc.Data{
-		Value: `{"temp":100,"hum":30, "co2":123.4, "lex":22.56}`,
+		Value: `
+[
+	{"co2":10,"hum":30,"lex":22,"temp":100},
+	{"co2":100,"hum":300,"lex":220,"temp":1000},
+	{"co2":1000,"hum":3000,"lex":2200,"temp":10000}
+]
+`,
 	})
 	if err != nil {
 		log.Error("grpc.Dial err: %v", err)

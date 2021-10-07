@@ -1,7 +1,8 @@
-package core
+package stdlib
 
 import (
 	"encoding/json"
+	"rulex/core"
 	"rulex/statistics"
 	"rulex/typex"
 
@@ -36,7 +37,7 @@ func handleDataFormat(e typex.RuleX, id string, incoming string) {
 		log.Error("Data must be JSON format:", incoming, ", But current is: ", err)
 	} else {
 		statistics.IncOut()
-		DefaultDataCacheQueue.Push(typex.QueueData{
+		core.DefaultDataCacheQueue.Push(typex.QueueData{
 			In:   nil,
 			Out:  &(*e.AllOutEnd()[id]),
 			E:    e,

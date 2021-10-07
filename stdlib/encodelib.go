@@ -1,16 +1,17 @@
-package core
+package stdlib
 
 import (
+	"rulex/typex"
+
 	"github.com/ngaut/log"
 	lua "github.com/yuin/gopher-lua"
-	"rulex/typex"
 )
 
 // Loader
-func LoadDecodeLib(e *typex.RuleX, L *lua.LState) int {
+func LoadEncodeLib(e *typex.RuleX, L *lua.LState) int {
 	mod := L.SetFuncs(L.G.Global, map[string]lua.LGFunction{
-		"LoadDecodeLibOk": func(L *lua.LState) int {
-			log.Debug("LoadDecodeLibOk")
+		"LoadEncodeLibOk": func(L *lua.LState) int {
+			log.Debug("LoadEncodeLibOk")
 			return 0
 		},
 	})
