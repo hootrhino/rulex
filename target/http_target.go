@@ -1,9 +1,10 @@
 package target
 
 import (
-	"fmt"
 	"rulex/typex"
 	"rulex/utils"
+
+	"github.com/ngaut/log"
 )
 
 type HTTPTarget struct {
@@ -18,7 +19,8 @@ func (ht *HTTPTarget) Register(outEndId string) {
 
 }
 func (ht *HTTPTarget) Start() {
-	fmt.Println("OK")
+	ht.Enable = true
+	log.Info("HTTPTarget started")
 }
 func (ht *HTTPTarget) Test(outEndId string) bool {
 	return true
