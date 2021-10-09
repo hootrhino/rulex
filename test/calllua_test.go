@@ -69,6 +69,7 @@ func TestAgs(t *testing.T) {
 	var s1 = `
 		function f(a,b)
 			print("f=", a + b)
+            print("f=", t1f:t1f())
 		end
 	`
 	err1 := luaVM.DoString(s1)
@@ -76,6 +77,10 @@ func TestAgs(t *testing.T) {
 		panic(err1)
 	}
 	f := luaVM.GetGlobal("f")
+	luaVM.SetGlobal("t1f", luaVM.G.Global)
+	luaVM.SetField(luaVM.G.Global, "t1f", luaVM.NewFunction(func(state *lua.LState) int {
+		return 0
+	}))
 	if reflect.TypeOf(f).Elem().Name() == "LFunction" {
 		coroutine, _ := luaVM.NewThread()
 		state, err2, _ := luaVM.Resume(coroutine, f.(*lua.LFunction), lua.LNumber(1), lua.LNumber(1))
@@ -113,5 +118,39 @@ func TestCallFailed(t *testing.T) {
 			fmt.Println("Nil")
 		}
 
+	}
+}
+func TestCF(t *testing.T) {
+	var s1 = `
+		function f()
+            print("f=", M:Fun(1,2,3))
+		end
+	`
+	err1 := luaVM.DoString(s1)
+	if err1 != nil {
+		panic(err1)
+	}
+	luaVM.SetGlobal("M", luaVM.G.Global)
+	luaVM.SetField(luaVM.G.Global, "Fun", luaVM.NewFunction(func(state *lua.LState) int {
+		fmt.Println("------------------------------------")
+		n0 := state.ToNumber(0)
+		n1 := state.ToNumber(1)
+		n2 := state.ToNumber(2)
+		n3 := state.ToNumber(3)
+		n4 := state.ToNumber(4)
+		fmt.Println(n0, n1, n2, n3, n4)
+		fmt.Println("------------------------------------")
+		state.Push(lua.LString("ok1"))
+		state.Push(lua.LString("ok2"))
+		state.Push(lua.LString("ok3"))
+		return 3
+	}))
+	f := luaVM.GetGlobal("f")
+	if reflect.TypeOf(f).Elem().Name() == "LFunction" {
+		coroutine, _ := luaVM.NewThread()
+		state, err2, _ := luaVM.Resume(coroutine, f.(*lua.LFunction))
+		if state == lua.ResumeError {
+			fmt.Println(err2.Error())
+		}
 	}
 }

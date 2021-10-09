@@ -8,7 +8,7 @@ import (
 	lua "github.com/yuin/gopher-lua"
 )
 
-//
+// RunPipline
 //  Run lua as pipline
 //
 func RunPipline(vm *lua.LState, funcs map[string]*lua.LFunction, arg lua.LValue) (lua.LValue, error) {
@@ -95,7 +95,8 @@ func callLuaFunc(vm *lua.LState, callable *lua.LFunction, args ...lua.LValue) ([
 		}
 		if state == lua.ResumeOK {
 			// only need T
-			return lValues[1:], nil
+
+			return lValues[:2], nil
 		}
 		return nil, errors.New("current state is not lua.ResumeOK")
 	}

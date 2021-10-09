@@ -89,23 +89,24 @@ func Run() {
 		`
 		Actions = {
 			function(data)
-			    local V1 = JqSelect(".[] | select(.temp > 50000000)", data)
-			    print("[LUA Actions Callback 1 === .[] | select(.temp >= 50000000)]=> ", V1)
-				return true, V1
-			end,
-			function(data)
-			    local V2 = JqSelect(".[] | select(.hum < 20)", data)
-			    print("[LUA Actions Callback 2 === .[] | select(.hum < 20)]=> ", V2)
-				return true, V2
-			end,
-			function(data)
-			    local V3 = JqSelect(".[] | select(.co2 > 50)", data)
-			    print("[LUA Actions Callback 3 === .[] | select(.co2 > 50]=> ", V3)
+			    -- local V1 = stdlib:JqSelect(".[] | select(.temp > 50000000)", data)
+                print("[LUA Actions Callback 1 ===> Data is:", data)
+			    print("[LUA Actions Callback 1 ===> .[] | select(.temp >= 50000000)] return => ", stdlib:JqSelect(".[] | select(.temp > 50000000)", data))
 				return true, data
 			end,
 			function(data)
-			    local V4 = JqSelect(".[] | select(.lex > 50)", data)
-			    print("[LUA Actions Callback 4 === .[] | select(.lex > 50)]=> ", V4)
+			    local V2 = stdlib:JqSelect(".[] | select(.hum < 20)", data)
+			    print("[LUA Actions Callback 2 ===> .[] | select(.hum < 20)] return => ", stdlib:JqSelect(".[] | select(.hum < 20)", data))
+				return true, data
+			end,
+			function(data)
+			    local V3 = stdlib:JqSelect(".[] | select(.co2 > 50)", data)
+			    print("[LUA Actions Callback 3 ===> .[] | select(.co2 > 50] return => ", stdlib:JqSelect(".[] | select(.co2 > 50)", data))
+				return true, data
+			end,
+			function(data)
+			    local V4 = stdlib:JqSelect(".[] | select(.lex > 50)", data)
+			    print("[LUA Actions Callback 4 ===> .[] | select(.lex > 50)] return => ", stdlib:JqSelect(".[] | select(.lex > 50)", data))
 				return true, data
 			end
 		}`,

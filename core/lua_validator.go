@@ -8,7 +8,7 @@ import (
 	lua "github.com/yuin/gopher-lua"
 )
 
-// Verify Lua Syntax
+// VerifyCallback Verify Lua Syntax
 func VerifyCallback(r *typex.Rule) error {
 	vm := r.VM
 	if err := vm.DoString(r.Success); err != nil {
