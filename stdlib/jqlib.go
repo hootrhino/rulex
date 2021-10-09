@@ -2,7 +2,6 @@ package stdlib
 
 import (
 	"encoding/json"
-	"fmt"
 	"rulex/typex"
 
 	"github.com/itchyny/gojq"
@@ -54,16 +53,9 @@ func LoadJqLib(e typex.RuleX, vm *lua.LState) {
 			//         |   Data    |
 			//         ------------
 			// Doc: https://github.com/lichuang/Lua-Source-Internal/blob/master/doc/ch03-Lua%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%A0%88%E7%BB%93%E6%9E%84%E5%8F%8A%E7%9B%B8%E5%85%B3%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84.md
-			fmt.Println("------------------------------------")
-			n1 := stateStack.ToString(1)
-			n2 := stateStack.ToString(2)
-			n3 := stateStack.ToString(3)
-			fmt.Println("Start Call, Top:", stateStack.GetTop(), " n1", n1, "n2", n2, "n3", n3)
-			fmt.Println("------------------------------------")
 			jqExpression := stateStack.ToString(2)
 			data := stateStack.ToString(3)
 			var jsonData []interface{}
-			// vm.Push(lua.LBool(true))
 			if err := json.Unmarshal([]byte(data), &jsonData); err != nil {
 				stateStack.Push(lua.LNil)
 				log.Error(err, jsonData, data)

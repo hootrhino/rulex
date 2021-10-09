@@ -11,3 +11,4 @@ rulex.exe
 *.db
 go.sum
 *.sum
+.idea
