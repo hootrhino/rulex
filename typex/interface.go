@@ -228,7 +228,7 @@ const (
 )
 
 type XDriver interface {
-	Test() (string, error)
+	Test() error
 	Init() error
 	Work() error
 	State() DriverState

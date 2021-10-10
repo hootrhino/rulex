@@ -15,21 +15,9 @@ import (
 //
 // 串口数据写入
 //
-func write(a *ATK_LORA_01Driver, k string) (string, error) {
-	_, err := a.serialPort.Write([]byte(k + "\r\n"))
-	if err != nil {
-		return "", err
-	}
-	for {
-		response := make([]byte, 4)
-		size, err := a.serialPort.Read(response)
-		if err != nil {
-			return "", err
-		}
-		if size > 0 {
-			return string(response), nil
-		}
-	}
+func write(a *ATK_LORA_01Driver, k string) error {
+	a.serialPort.Write([]byte(k))
+	return nil
 }
 
 //------------------------------------------------------------------------
@@ -73,26 +61,34 @@ func (a *ATK_LORA_01Driver) Work() error {
 				return
 			default:
 				{
-					response := make([]byte, 16) // byte
-					size, err := a.serialPort.Read(response)
-					if err != nil {
-						a.Stop()
-						return
-					} else {
-						// log.Debug("SerialPort Received:", string(response))
-						err := a.RuleEngine.PushQueue(typex.QueueData{
-							In:   a.In,
-							Out:  nil,
-							E:    a.RuleEngine,
-							Data: string(response[:size]),
-						})
-						if err != nil {
-							log.Error("ATK_LORA_01Driver error: ", err)
-						}
-					}
 				}
 			}
 
+			response1 := make([]byte, 1)   // byte
+			response2 := make([]byte, 128) // byte
+			size1, err1 := a.serialPort.Read(response1)
+			size2, err2 := a.serialPort.Read(response2)
+
+			if err1 != nil || err2 != nil {
+				err := a.Stop()
+				if err != nil {
+					return
+				}
+				log.Error("ATK_LORA_01Driver error: ", err1, err2)
+				return
+			} else {
+				response := string(append(response1, response2...))
+				//log.Debug("SerialPort Received:", size1+size2)
+				err0 := a.RuleEngine.PushQueue(typex.QueueData{
+					In:   a.In,
+					Out:  nil,
+					E:    a.RuleEngine,
+					Data: response[:(size1 + size2)],
+				})
+				if err0 != nil {
+					log.Error("ATK_LORA_01Driver error: ", err0)
+				}
+			}
 		}
 	}(a.ctx)
 	return nil
@@ -107,6 +103,6 @@ func (a *ATK_LORA_01Driver) Stop() error {
 	return nil
 }
 
-func (a *ATK_LORA_01Driver) Test() (string, error) {
-	return write(a, "AT\r\n")
+func (a *ATK_LORA_01Driver) Test() error {
+	return write(a, "PING")
 }

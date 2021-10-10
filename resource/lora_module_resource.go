@@ -33,7 +33,7 @@ func (mm *LoraModuleResource) DataModels() *map[string]typex.XDataModel {
 }
 
 func (s *LoraModuleResource) Test(inEndId string) bool {
-	if _, err := s.loraDriver.Test(); err != nil {
+	if err := s.loraDriver.Test(); err != nil {
 		log.Error(err)
 		return false
 	} else {
@@ -67,8 +67,14 @@ func (s *LoraModuleResource) Start() error {
 		return err
 	} else {
 		s.loraDriver = driver.NewATK_LORA_01Driver(serialPort, s.Details(), s.RuleEngine)
-		s.loraDriver.Init()
-		s.loraDriver.Work()
+		err0 := s.loraDriver.Init()
+		if err != nil {
+			return err0
+		}
+		err1 := s.loraDriver.Work()
+		if err != nil {
+			return err1
+		}
 		log.Info("LoraModuleResource start success.")
 		return nil
 	}
@@ -90,13 +96,15 @@ func (s *LoraModuleResource) Details() *typex.InEnd {
 
 func (s *LoraModuleResource) Status() typex.ResourceState {
 	if s.loraDriver != nil {
-		if _, err := s.loraDriver.Test(); err != nil {
+		if err := s.loraDriver.Test(); err != nil {
 			log.Error(err)
 			return typex.DOWN
 		} else {
 			return typex.UP
 		}
 	}
+	log.Debug(s.loraDriver.Test())
+
 	return typex.DOWN
 }
 

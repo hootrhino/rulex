@@ -33,9 +33,11 @@ type Result struct {
 //
 func Index(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	c.HTML(http.StatusOK, "index.html", gin.H{})
+	return
 }
 func Login(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	c.HTML(http.StatusOK, "login.html", gin.H{})
+	return
 }
 
 //
@@ -47,6 +49,7 @@ func CloudServices(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		Msg:  "Success",
 		Data: cloud.ListService(1, 50),
 	})
+	return
 }
 
 //
@@ -62,6 +65,7 @@ func Plugins(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		Msg:  "Success",
 		Data: data,
 	})
+	return
 }
 
 //
@@ -84,6 +88,7 @@ func System(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 			"arch":         runtime.GOARCH,
 			"cpus":         runtime.GOMAXPROCS(0)},
 	})
+	return
 }
 
 //
@@ -99,6 +104,7 @@ func InEnds(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		Msg:  "Success",
 		Data: data,
 	})
+	return
 }
 
 //
@@ -114,6 +120,7 @@ func OutEnds(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		Msg:  "Success",
 		Data: data,
 	})
+	return
 }
 
 //
@@ -129,6 +136,7 @@ func Rules(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		Msg:  "Success",
 		Data: data,
 	})
+	return
 }
 
 //
@@ -140,6 +148,7 @@ func Statistics(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		Msg:  "Success",
 		Data: statistics.AllStatistics(),
 	})
+	return
 }
 
 //
@@ -152,6 +161,7 @@ func Users(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		Msg:  "Success",
 		Data: users,
 	})
+	return
 }
 
 //
@@ -168,10 +178,12 @@ func CreateInend(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	err0 := c.ShouldBindJSON(&form)
 	if err0 != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": err0.Error()})
+		return
 	} else {
 		configJson, err1 := json.Marshal(form.Config)
 		if err1 != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"msg": err1.Error()})
+			return
 		} else {
 			uuid := utils.MakeUUID("INEND")
 			hh.InsertMInEnd(&MInEnd{
@@ -184,8 +196,10 @@ func CreateInend(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 			if err := hh.LoadNewestInEnd(uuid); err != nil {
 				log.Error(err)
 				c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
+				return
 			} else {
-				c.JSON(http.StatusOK, gin.H{"msg": "create success"})
+				c.PureJSON(http.StatusOK, gin.H{"msg": "create success"})
+				return
 			}
 		}
 	}
@@ -205,10 +219,12 @@ func CreateOutEnd(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	err0 := c.ShouldBindJSON(&form)
 	if err0 != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": err0.Error()})
+		return
 	} else {
 		configJson, err1 := json.Marshal(form.Config)
 		if err1 != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"msg": err1.Error()})
+			return
 		} else {
 			uuid := utils.MakeUUID("OUTEND")
 			hh.InsertMOutEnd(&MOutEnd{
@@ -221,8 +237,10 @@ func CreateOutEnd(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 			err := hh.LoadNewestOutEnd(uuid)
 			if err != nil {
 				c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
+				return
 			} else {
 				c.JSON(http.StatusOK, gin.H{"msg": "create success"})
+				return
 			}
 		}
 	}
@@ -244,6 +262,7 @@ func CreateRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	err0 := c.ShouldBindJSON(&form)
 	if err0 != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": err0.Error()})
+		return
 	} else {
 		rule := typex.NewRule(nil,
 			form.Name,
@@ -267,6 +286,7 @@ func CreateRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 			}
 			if err1 := core.VerifyCallback(rule); err1 != nil {
 				c.JSON(http.StatusBadRequest, gin.H{"msg": err1.Error()})
+				return
 			} else {
 				mRule := &MRule{
 					Name:        form.Name,
@@ -289,9 +309,11 @@ func CreateRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 				} else {
 					c.JSON(http.StatusOK, gin.H{"msg": "create success"})
 				}
+				return
 			}
 		} else {
 			c.JSON(http.StatusBadRequest, gin.H{"msg": "from can't empty"})
+			return
 		}
 	}
 }
@@ -310,6 +332,7 @@ func DeleteInend(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	} else {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": "rule not exists"})
 	}
+	return
 }
 
 //
@@ -326,6 +349,7 @@ func DeleteOutend(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	} else {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": "rule not exists"})
 	}
+	return
 }
 
 //
@@ -342,6 +366,7 @@ func DeleteRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	} else {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": "rule not exists"})
 	}
+	return
 }
 
 //
@@ -394,7 +419,6 @@ func CreateUser(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 			return
 		}
 	}
-
 }
 
 //
@@ -429,4 +453,5 @@ func Auth(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 			})
 		}
 	}
+	return
 }
