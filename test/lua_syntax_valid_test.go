@@ -16,7 +16,6 @@ func TestLuaSyntax1(t *testing.T) {
 	signal.Notify(c, syscall.SIGINT, syscall.SIGABRT)
 	engine := engine.NewRuleEngine()
 	engine.Start()
-	core.InitXQueue(10*(2<<10), engine)
 	// Grpc Inend
 	grpcInend := typex.NewInEnd("GRPC", "Rulex Grpc InEnd", "Rulex Grpc InEnd", &map[string]interface{}{
 		"port": "2581",
@@ -48,7 +47,6 @@ func TestLuaSyntax2(t *testing.T) {
 	signal.Notify(c, syscall.SIGINT, syscall.SIGABRT)
 	engine := engine.NewRuleEngine()
 	engine.Start()
-	core.InitXQueue(10*(2<<10), engine)
 	// Grpc Inend
 	grpcInend := typex.NewInEnd("GRPC", "Rulex Grpc InEnd", "Rulex Grpc InEnd", &map[string]interface{}{
 		"port": "2581",

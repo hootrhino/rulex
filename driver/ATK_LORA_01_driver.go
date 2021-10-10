@@ -2,6 +2,7 @@ package driver
 
 import (
 	"context"
+	"rulex/typex"
 
 	"github.com/ngaut/log"
 	"github.com/tarm/serial"
@@ -40,14 +41,18 @@ type ATK_LORA_01Driver struct {
 	serialPort *serial.Port
 	channel    chan bool
 	ctx        context.Context
+	In         *typex.InEnd
+	RuleEngine typex.RuleX
 }
 
 //
 // 初始化一个驱动
 //
-func NewATK_LORA_01Driver(serialPort *serial.Port) *ATK_LORA_01Driver {
-	m := new(ATK_LORA_01Driver)
+func NewATK_LORA_01Driver(serialPort *serial.Port, in *typex.InEnd, e typex.RuleX) typex.XDriver {
+	m := &ATK_LORA_01Driver{}
 	m.channel = make(chan bool)
+	m.In = in
+	m.RuleEngine = e
 	m.serialPort = serialPort
 	m.ctx = context.Background()
 	return m
@@ -57,16 +62,6 @@ func NewATK_LORA_01Driver(serialPort *serial.Port) *ATK_LORA_01Driver {
 //
 //
 func (a *ATK_LORA_01Driver) Init() error {
-	// 初始化配置参数
-	// GPIO set 22 High 模块配置模式需要拉高一个脚
-	// AT+UART=7,0 配置串口波特率: 115200, 无校验
-	write(a, "AT+UART=7,0")
-	// AT+WLRATE=23,5  信道: 433Hz 功率：19.2kbps
-	write(a, "AT+WLRATE=23,5")
-	// AT+ADDR=0000000000000001 配置地址 1
-	write(a, "AT+ADDR=0000000000000001")
-	// GPIO set 22 Low 退出配置模式
-
 	return nil
 }
 func (a *ATK_LORA_01Driver) Work() error {
@@ -78,13 +73,22 @@ func (a *ATK_LORA_01Driver) Work() error {
 				return
 			default:
 				{
-					response := make([]byte, 16)
-					_, err := a.serialPort.Read(response)
+					response := make([]byte, 16) // byte
+					size, err := a.serialPort.Read(response)
 					if err != nil {
 						a.Stop()
 						return
 					} else {
-						log.Debug("SerialPort Received:", string(response))
+						// log.Debug("SerialPort Received:", string(response))
+						err := a.RuleEngine.PushQueue(typex.QueueData{
+							In:   a.In,
+							Out:  nil,
+							E:    a.RuleEngine,
+							Data: string(response[:size]),
+						})
+						if err != nil {
+							log.Error("ATK_LORA_01Driver error: ", err)
+						}
 					}
 				}
 			}
@@ -94,8 +98,8 @@ func (a *ATK_LORA_01Driver) Work() error {
 	return nil
 
 }
-func (a *ATK_LORA_01Driver) State() DriverState {
-	return RUNNING
+func (a *ATK_LORA_01Driver) State() typex.DriverState {
+	return typex.RUNNING
 
 }
 func (a *ATK_LORA_01Driver) Stop() error {
@@ -103,96 +107,6 @@ func (a *ATK_LORA_01Driver) Stop() error {
 	return nil
 }
 
-// -----------------------------
-// AT\r\n
-// -----------------------------
-
 func (a *ATK_LORA_01Driver) Test() (string, error) {
 	return write(a, "AT\r\n")
-}
-
-// 设置命令回显
-// 获取参数
-func (a *ATK_LORA_01Driver) GetProperty(k string) (string, error) {
-	return write(a, k)
-}
-
-// 设置命令回显
-// -----------------------------
-
-func (a *ATK_LORA_01Driver) SetEcho() (string, error) {
-	return write(a, "")
-}
-
-// 重置参数
-// -----------------------------
-
-func (a *ATK_LORA_01Driver) Reset() (string, error) {
-	return write(a, "")
-}
-
-// 保存参数
-// -----------------------------
-
-func (a *ATK_LORA_01Driver) SaveConfig() (string, error) {
-	return write(a, "")
-}
-
-// 恢复出厂
-// -----------------------------
-
-func (a *ATK_LORA_01Driver) RevoverFactory() (string, error) {
-	return write(a, "")
-}
-
-// 设置地址
-// -----------------------------
-
-func (a *ATK_LORA_01Driver) SetAddr(k string, v string) (string, error) {
-	return write(a, "")
-}
-
-// 设置功率
-// -----------------------------
-
-func (a *ATK_LORA_01Driver) SetPower(power int) (string, error) {
-	return write(a, "")
-}
-
-// 设置WMode
-// -----------------------------
-
-func (a *ATK_LORA_01Driver) SetCWMode(mode int) (string, error) {
-	return write(a, "")
-}
-
-// 设置SetTMode
-// -----------------------------
-
-func (a *ATK_LORA_01Driver) SetTMode(mode int) (string, error) {
-	return write(a, "")
-}
-
-// 设置波特率
-// -----------------------------
-
-func (a *ATK_LORA_01Driver) SetRate(rate int, channel int) (string, error) {
-	return write(a, "")
-}
-
-// 设置时间
-// -----------------------------
-
-func (a *ATK_LORA_01Driver) SetTime(time int) (string, error) {
-	return write(a, "")
-}
-
-// 设置串口参数
-// -----------------------------
-// AT+UART=<bps>,<par>
-// +UART:<bps>,<par> OK
-// -----------------------------
-
-func (a *ATK_LORA_01Driver) SetUart(bps int, par int) (string, error) {
-	return write(a, "")
 }

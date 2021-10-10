@@ -4,7 +4,6 @@ package typex
 // !!! All 'RuleEngine' parameter passed by pseudo constructure function !!!
 //
 import (
-	"rulex/driver"
 	"sync"
 )
 
@@ -48,6 +47,9 @@ type XDataModel struct {
 //
 type RuleX interface {
 	Start() *map[string]interface{}
+	//
+	PushQueue(QueueData) error
+	//
 	Work(in *InEnd, data string) (bool, error)
 	//
 	GetConfig(k string) interface{}
@@ -218,12 +220,18 @@ type XProtocol interface {
 //
 // Abstract driver interface
 //
+type DriverState int
+
+const (
+	STOP    DriverState = 0
+	RUNNING DriverState = 1
+)
 
 type XDriver interface {
 	Test() (string, error)
 	Init() error
 	Work() error
-	State() driver.DriverState
+	State() DriverState
 	Stop() error
 }
 

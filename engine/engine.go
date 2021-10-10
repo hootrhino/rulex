@@ -19,6 +19,7 @@ import (
 )
 
 //
+//
 // RuleEngine
 //
 type RuleEngine struct {
@@ -48,6 +49,59 @@ func NewRuleEngine() typex.RuleX {
 //
 //
 //
+func (e *RuleEngine) Start() *map[string]interface{} {
+	e.ConfigMap = &map[string]interface{}{}
+	log.Info("Init XQueue, max queue size is:", 204800)
+	typex.DefaultDataCacheQueue = &typex.DataCacheQueue{
+		Queue: make(chan typex.QueueData, 204800),
+	}
+	go func(ctx context.Context, xQueue typex.XQueue) {
+		for {
+			select {
+			case qd := <-xQueue.GetQueue():
+				//
+				// 消息队列有2种用法:
+				// 1 进来的数据缓存
+				// 2 出去的消息缓存
+				// 只需要判断 in 或者 out 是不是 nil即可
+				//
+				if qd.In != nil {
+					//
+					// 传 In 进来为了查找 Rule 去执行
+					// 内存中的数据关联性 Key: In, Value: Rules...
+					//
+					qd.E.RunLuaCallbacks(qd.In, qd.Data)
+					qd.E.RunHooks(qd.Data)
+				}
+				if qd.Out != nil {
+					//  传 Out 为了实现数据外流
+					(*qd.E.AllOutEnd()[qd.Out.Id]).Target.To(qd.Data)
+				}
+			}
+		}
+	}(context.Background(), typex.DefaultDataCacheQueue)
+	return e.ConfigMap
+}
+
+//
+//
+//
+func (e *RuleEngine) PushQueue(qd typex.QueueData) error {
+	err := typex.DefaultDataCacheQueue.Push(typex.QueueData{
+		In:   qd.In,
+		Out:  nil,
+		E:    e,
+		Data: qd.Data,
+	})
+	if err != nil {
+		log.Error("ATK_LORA_01Driver error: ", err)
+	}
+	return err
+}
+
+//
+//
+//
 func (e *RuleEngine) GetPlugins() *map[string]*typex.XPluginMetaInfo {
 	e.Lock()
 	defer e.Unlock()
@@ -64,12 +118,6 @@ func (e *RuleEngine) AllPlugins() *map[string]*typex.XPluginMetaInfo {
 //
 func (e *RuleEngine) Version() typex.Version {
 	return typex.DefaultVersion
-}
-
-//
-func (e *RuleEngine) Start() *map[string]interface{} {
-	e.ConfigMap = &map[string]interface{}{}
-	return e.ConfigMap
 }
 
 //
@@ -322,7 +370,7 @@ func (e *RuleEngine) Stop() {
 // Work
 func (e *RuleEngine) Work(in *typex.InEnd, data string) (bool, error) {
 	statistics.IncIn()
-	err := core.DefaultDataCacheQueue.Push(typex.QueueData{
+	err := e.PushQueue(typex.QueueData{
 		In:   in,
 		Out:  nil,
 		E:    e,
@@ -338,7 +386,7 @@ func (e *RuleEngine) Work(in *typex.InEnd, data string) (bool, error) {
 func (e *RuleEngine) RunLuaCallbacks(in *typex.InEnd, data string) {
 	for _, rule := range *in.Binds {
 		_, err := rule.ExecuteActions(lua.LString(data))
-		if err != nil { 
+		if err != nil {
 			rule.ExecuteFailed(lua.LString(err.Error()))
 		} else {
 			rule.ExecuteSuccess()

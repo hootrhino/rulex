@@ -22,7 +22,6 @@ func RunRulex(dbPath string) {
 	signal.Notify(c, syscall.SIGINT, syscall.SIGABRT)
 	engine := NewRuleEngine()
 	engine.Start()
-	core.InitXQueue(10*(2<<10), engine)
 
 	hh := httpserver.NewHttpApiServer(2580, "plugin/http_server/templates", dbPath, engine)
 	engine.LoadPlugin(hh)
