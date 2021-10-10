@@ -21,15 +21,8 @@ import (
 )
 
 func TestFullyRun(t *testing.T) {
-	runTest()
-}
-
-//
-func runTest() {
-	core.InitGlobalConfig()
 	Run()
 }
-
 //
 func Run() {
 
@@ -89,7 +82,7 @@ func Run() {
 		`
 		Actions = {
 			function(data)
-			    -- local V1 = stdlib:JqSelect(".[] | select(.temp > 50000000)", data)
+			    local V1 = stdlib:JqSelect(".[] | select(.temp > 50000000)", data)
                 print("[LUA Actions Callback 1 ===> Data is:", data)
 			    print("[LUA Actions Callback 1 ===> .[] | select(.temp >= 50000000)] return => ", stdlib:JqSelect(".[] | select(.temp > 50000000)", data))
 				return true, data
@@ -133,7 +126,7 @@ func Run() {
 		log.Error("grpc.Dial err: %v", err)
 	}
 	log.Debugf("Rulex Rpc Call Result ====>>: %v", resp.GetMessage())
-	time.Sleep(2 * time.Second)
+	time.Sleep(1 * time.Second)
 	log.Info("Test Http Api===> " + HttpGet("http://127.0.0.1:2580/api/v1/system"))
 	engine.Stop()
 }

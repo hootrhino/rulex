@@ -12,36 +12,6 @@ import (
 // Loader
 func LoadJqLib(e typex.RuleX, vm *lua.LState) {
 	vm.SetGlobal("stdlib", vm.G.Global)
-	//vm.SetField(vm.G.Global, "JqSelect", vm.NewFunction(func(state *lua.LState) int {
-	//	jqExpression := state.ToString(1)
-	//	data := state.ToString(2)
-	//	fmt.Println(jqExpression, "----------- ",vm.ToString(-1))
-	//	fmt.Println(jqExpression, "----------- ",vm.ToString(0))
-	//	fmt.Println(jqExpression, "----------- ",vm.ToString(1))
-	//	fmt.Println(jqExpression, "----------- ",vm.ToString(2))
-	//	fmt.Println(jqExpression, "----------- ",vm.ToString(3))
-	//
-	//	var jsonData []interface{}
-	//	if err := json.Unmarshal([]byte(data), &jsonData); err != nil {
-	//		vm.Push(lua.LNil)
-	//		log.Error(err, jsonData, data)
-	//		return 1
-	//	}
-	//	selectResult, err0 := JqSelect(jqExpression, jsonData)
-	//	if err0 != nil {
-	//		vm.Push(lua.LNil)
-	//		log.Error(err0)
-	//		return 1
-	//	}
-	//	resultString, err1 := json.Marshal(selectResult)
-	//	if err1 != nil {
-	//		log.Error(err1)
-	//		vm.Push(lua.LNil)
-	//		return 1
-	//	}
-	//	vm.Push(lua.LString(resultString))
-	//	return 1
-	//}))
 	vm.SetFuncs(vm.G.Global, map[string]lua.LGFunction{
 		"JqSelect": func(stateStack *lua.LState) int {
 			// LUA Args: Jq, Data ->
@@ -58,17 +28,17 @@ func LoadJqLib(e typex.RuleX, vm *lua.LState) {
 			var jsonData []interface{}
 			if err := json.Unmarshal([]byte(data), &jsonData); err != nil {
 				stateStack.Push(lua.LNil)
-				log.Error(err, jsonData, data)
+				log.Error("Internal Error: ", err, ", InputData:", string(data))
 			}
 			selectResult, err0 := JqSelect(jqExpression, jsonData)
 			if err0 != nil {
 				stateStack.Push(lua.LNil)
-				log.Error(err0)
+				log.Error("JqSelect Error:", err0)
 			}
 			resultString, err1 := json.Marshal(selectResult)
 			if err1 != nil {
 				stateStack.Push(lua.LNil)
-				log.Error(err1)
+				log.Error("Json Marshal 'selectResult' error:", err1)
 			}
 
 			if string(resultString) == "[null]" {
@@ -83,9 +53,8 @@ func LoadJqLib(e typex.RuleX, vm *lua.LState) {
 }
 
 func VerifyJqExpression(jqExpression string) (*gojq.Query, error) {
-	query, err := gojq.Parse(jqExpression)
-	if err != nil {
-		log.Error("VerifyJqExpression failed:", err)
+	if query, err := gojq.Parse(jqExpression); err != nil {
+		log.Error("VerifyJqExpression failed:", jqExpression, ", error:", err)
 		return nil, err
 	} else {
 		return query, nil
