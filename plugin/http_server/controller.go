@@ -44,7 +44,7 @@ func Login(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 func CloudServices(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	c.PureJSON(http.StatusOK, Result{
 		Code: http.StatusOK,
-		Msg:  "查询成功",
+		Msg:  "Success",
 		Data: cloud.ListService(1, 50),
 	})
 }
@@ -59,7 +59,7 @@ func Plugins(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	}
 	c.PureJSON(http.StatusOK, Result{
 		Code: http.StatusOK,
-		Msg:  "查询成功",
+		Msg:  "Success",
 		Data: data,
 	})
 }
@@ -74,7 +74,7 @@ func System(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	diskInfo, _ := disk.Usage(parts[0].Mountpoint)
 	c.PureJSON(http.StatusOK, Result{
 		Code: http.StatusOK,
-		Msg:  "查询成功",
+		Msg:  "Success",
 		Data: gin.H{
 			"rulexVersion": e.Version().Version,
 			"diskInfo":     diskInfo.UsedPercent,
@@ -96,7 +96,7 @@ func InEnds(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	}
 	c.PureJSON(http.StatusOK, Result{
 		Code: http.StatusOK,
-		Msg:  "查询成功",
+		Msg:  "Success",
 		Data: data,
 	})
 }
@@ -111,7 +111,7 @@ func OutEnds(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	}
 	c.PureJSON(http.StatusOK, Result{
 		Code: http.StatusOK,
-		Msg:  "查询成功",
+		Msg:  "Success",
 		Data: data,
 	})
 }
@@ -126,7 +126,7 @@ func Rules(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	}
 	c.PureJSON(http.StatusOK, Result{
 		Code: http.StatusOK,
-		Msg:  "查询成功",
+		Msg:  "Success",
 		Data: data,
 	})
 }
@@ -137,7 +137,7 @@ func Rules(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 func Statistics(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	c.PureJSON(http.StatusOK, Result{
 		Code: http.StatusOK,
-		Msg:  "查询成功",
+		Msg:  "Success",
 		Data: statistics.AllStatistics(),
 	})
 }
@@ -149,7 +149,7 @@ func Users(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	users := hh.AllMUser()
 	c.PureJSON(http.StatusOK, Result{
 		Code: http.StatusOK,
-		Msg:  "查询成功",
+		Msg:  "Success",
 		Data: users,
 	})
 }
