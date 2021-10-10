@@ -12,31 +12,19 @@ end
 -- Actions
 Actions = {
     function(data)
-        local V = Select(".[] | select(.temp > 50)", data)
-        if V ~=nil then
-            dataToKafka("kafka001", V)
-        end
+        print("[LUA Actions Callback 1 ===> .[] | select(.temp >= 50000000)] return => ", stdlib:JqSelect(".[] | select(.temp > 50000000)", data))
         return true, data
     end,
     function(data)
-        local V = Select(".[] | select(.hum < 30)", data)
-        if V ~=nil then
-            dataToMongo("mongo001", V)
-        end
+        print("[LUA Actions Callback 2 ===> .[] | select(.hum < 20)] return => ", stdlib:JqSelect(".[] | select(.hum < 20)", data))
         return true, data
     end,
     function(data)
-        local V = Select(".[] | select(.lex > 500)", data)
-        if V ~=nil then
-            dataToMysql("mysql001", V)
-        end
+        print("[LUA Actions Callback 3 ===> .[] | select(.co2 > 50] return => ", stdlib:JqSelect(".[] | select(.co2 > 50)", data))
         return true, data
     end,
     function(data)
-        local V = Select(".[] | select(.co2 > 30) | select(.co2 < 50)", data)
-        if V ~=nil then
-            data["co2"] = 0
-        end
+        print("[LUA Actions Callback 4 ===> .[] | select(.lex > 50)] return => ", stdlib:JqSelect(".[] | select(.lex > 50)", data))
         return true, data
     end
 }

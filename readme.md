@@ -52,7 +52,90 @@ make # on windows: make windows
 ```
 源码根目录下：`plugin\http_server\openapi.yml`
 ```
+
+## 规则引擎
+### 规则定义
+```lua
+
+function Success()
+    -- do some things
+end
+
+function Failed(error)
+    -- do some things
+end
+
+Actions = {
+    function(data)
+        return true, data
+    end
+}
+
+```
+
+### 数据筛选
+```lua
+function Success()
+    -- do some things
+end
+
+function Failed(error)
+    -- do some things
+end
+
+Actions = {
+    function(data)
+        print("return => ", stdlib:JqSelect(".[] | select(.hum < 20)", data))
+        return true, data
+    end
+}
+```
+### 数据中转
+
+```lua
+function Success()
+    -- do some things
+end
+
+function Failed(error)
+    -- do some things
+end
+
+Actions = {
+    function(data)
+        -- 持久化到 MongoDb:
+        stdlib:DataToMongo("OUTEND_83775a94-9f64-4d37-be17-45dd0c90f56d", data)
+        -- 持久化到 Mysql:
+        stdlib:DataToMysql("OUTEND_83775a94-9f64-4d37-be17-45dd0c90f56d", data)
+        -- 推送化到 Kafka:
+        stdlib:DataToKafka("OUTEND_83775a94-9f64-4d37-be17-45dd0c90f56d", data)
+        return true, data
+    end
+}
+```
+### 云端计算
+```lua
+function Success()
+    -- do some things
+end
+
+function Failed(error)
+    -- do some things
+end
+
+Actions = {
+    function(data)
+        -- PyTorch 训练数据:
+        cloud:PyTorchTrainCNN(data)
+        -- PyTorch 识别:
+        local V = cloud:PyTorchCNN(data)
+        print(V)
+        return true, data
+    end
+}
+```
+
 ## 详细文档
 <div style="text-align:center;">
-    <a href="https://wwhai.github.io/rulex_doc_html">[点我查看文档]</a>
+    <a href="https://wwhai.github.io/rulex_doc_html">[点我查看详细文档]</a>
 <div>
