@@ -16,10 +16,6 @@ jobs:
         run: Install-Module 7Zip4PowerShell -Force -Verbose
       - uses: actions/checkout@v2
 
-      - name: ipconfig
-        shell: powershell
-        run: ipconfig
-
       - name: Install Chocolate
         shell: powershell
         run: |
@@ -30,6 +26,10 @@ jobs:
         shell: powershell
         run: choco install visualcpp-build-tools -Y
         
+      - name: Install C Runtime
+        shell: powershell
+        run: choco install kb3118401 -Y
+          
       - name: Install Make
         shell: powershell
         run: choco install make -Y
@@ -58,16 +58,21 @@ jobs:
         shell: powershell
         run: choco install git -Y
           
-      - name: Install Erlang OTP-24
-        shell: powershell
-        run: choco install erlang -Y
-          
-      - name: Build EMQX
+      - name: Print Root Tree
         shell: powershell
         run: |
-          $env:Path += ";C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Tools\MSVC\14.16.27023\bin\Hostx64\x64"
-          set include="C:\Program Files (x86)\Windows Kits\10\Include\10.0.17763.0\ucrt;C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Tools\MSVC\14.16.27023\include"
-          git clone https://github.com/emqx/emqx.git
-          cd emqx
-          make
+          TREE C:
+          
+      # - name: Install Erlang OTP-24
+      #   shell: powershell
+      #   run: choco install erlang -Y
+          
+      # - name: Build EMQX
+      #   shell: powershell
+      #   run: |
+      #     $env:Path += ";C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Tools\MSVC\14.16.27023\bin\Hostx64\x64"
+      #     set include="C:\Program Files (x86)\Windows Kits\10\Include\10.0.17763.0\ucrt;C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Tools\MSVC\14.16.27023\include"
+      #     git clone https://github.com/emqx/emqx.git
+      #     cd emqx
+      #     make
           
