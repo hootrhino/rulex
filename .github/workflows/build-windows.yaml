@@ -1,0 +1,16 @@
+on:
+  push:
+    tags:
+      - 'V*' # Push events to matching v*, i.e. v1.0, v20.15.10
+
+name: Windows Build Test
+
+jobs:
+  build:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-dotnet@v1
+
+      - name: ipconfig
+        run: ipconfig
