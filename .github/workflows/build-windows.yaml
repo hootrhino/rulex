@@ -25,42 +25,38 @@ jobs:
         run: |
           Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString("https://community.chocolatey.org/install.ps1"))
           choco feature enable -n=allowGlobalConfirmation
+  
       - name: Install Erlang Make
         shell: powershell
-        run: choco install make
+        run: choco install make -Y
           
-
-      - name: Install Cgywin
+      - name: Install Cygwin
         shell: powershell
-        run: choco install cgywin
+        run: choco install cygwin -Y
           
       - name: Install curl
         shell: powershell
-        run: choco install curl
+        run: choco install curl -Y
           
       - name: Install jq
         shell: powershell
-        run: choco install jq
+        run: choco install jq -Y
           
       - name: Install zip
         shell: powershell
-        run: choco install zip
+        run: choco install zip -Y
           
       - name: Install unzip
         shell: powershell
-        run: choco install unzip
+        run: choco install unzip -Y
           
       - name: Install git
         shell: powershell
-        run: choco install git
+        run: choco install git -Y
           
       - name: Install Erlang OTP-24
         shell: powershell
-        run: choco install erlang
-          
-      - name: Test Erlang OTP-24 Install
-        shell: powershell
-        run: escript.exe
+        run: choco install erlang -Y
           
       - name: Build EMQX
         shell: powershell
