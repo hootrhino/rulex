@@ -60,7 +60,7 @@ jobs:
           
       - name: Test Assert.c
         shell: powershell
-        run: gcc ./.github/workflow/_assert_test.c
+        run: gcc ./.github/workflows/_assert_test.c
           
       - name: Install Erlang OTP-24
         shell: powershell
