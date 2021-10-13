@@ -25,11 +25,7 @@ jobs:
       - name: Install Visualcpp-build-tools
         shell: powershell
         run: choco install visualcpp-build-tools -Y
-        
-      - name: Install C Runtime
-        shell: powershell
-        run: choco install kb3118401 -Y
-          
+
       - name: Install Make
         shell: powershell
         run: choco install make -Y
@@ -38,39 +34,11 @@ jobs:
         shell: powershell
         run: choco install cygwin -Y
           
-      - name: Install curl
+      - name: Install Visualcpp-build-tools
         shell: powershell
-        run: choco install curl -Y
-          
-      - name: Install jq
+        run: choco install golang -Y
+        
+      - name: Build
         shell: powershell
-        run: choco install jq -Y
-          
-      - name: Install zip
-        shell: powershell
-        run: choco install zip -Y
-          
-      - name: Install unzip
-        shell: powershell
-        run: choco install unzip -Y
-          
-      - name: Install git
-        shell: powershell
-        run: choco install git -Y
-          
-      - name: Test Assert.c
-        shell: powershell
-        run: gcc ./.github/workflows/_assert_test.c
-          
-      - name: Install Erlang OTP-24
-        shell: powershell
-        run: choco install erlang -Y
-          
-      - name: Build EMQX
-        shell: powershell
-        run: |
-          refreshenv
-          $env:Path += ";C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Tools\MSVC\14.16.27023\bin\Hostx64\x64"
-          set include="C:\Program Files (x86)\Windows Kits\10\Include\10.0.17763.0\ucrt;C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Tools\MSVC\14.16.27023\include"
-          make
-          
+        run: make windows
+               
