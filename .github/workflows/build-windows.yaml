@@ -15,6 +15,57 @@ jobs:
         shell: powershell
         run: Install-Module 7Zip4PowerShell -Force -Verbose
       - uses: actions/checkout@v2
+
       - name: ipconfig
         shell: powershell
         run: ipconfig
+
+      - name: Install Chocolate
+        shell: powershell
+        run: |
+          Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString("https://community.chocolatey.org/install.ps1"))
+
+      - name: Install Erlang Make
+        shell: powershell
+        run: choco install make
+          
+
+      - name: Install Cgywin
+        shell: powershell
+        run: choco install cgywin
+          
+      - name: Install curl
+        shell: powershell
+        run: choco install curl
+          
+      - name: Install jq
+        shell: powershell
+        run: choco install jq
+          
+      - name: Install zip
+        shell: powershell
+        run: choco install zip
+          
+      - name: Install unzip
+        shell: powershell
+        run: choco install unzip
+          
+      - name: Install git
+        shell: powershell
+        run: choco install git
+          
+      - name: Install Erlang OTP-24
+        shell: powershell
+        run: choco install erlang
+          
+      - name: Test Erlang OTP-24 Install
+        shell: powershell
+        run: escript.exe
+          
+      - name: Build EMQX
+        shell: powershell
+        run: |
+          git clone https://github.com/emqx/emqx.git
+          cd emqx
+          make
+          
