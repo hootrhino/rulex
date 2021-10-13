@@ -26,7 +26,11 @@ jobs:
           Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString("https://community.chocolatey.org/install.ps1"))
           choco feature enable -n=allowGlobalConfirmation
   
-      - name: Install Erlang Make
+      - name: Install Visualcpp-build-tools
+        shell: powershell
+        run: choco install visualcpp-build-tools -Y
+        
+      - name: Install Make
         shell: powershell
         run: choco install make -Y
           
@@ -61,6 +65,7 @@ jobs:
       - name: Build EMQX
         shell: powershell
         run: |
+          $env:Path += ";C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Tools\MSVC\14.16.27023\bin\Hostx64\x64"
           git clone https://github.com/emqx/emqx.git
           cd emqx
           make
