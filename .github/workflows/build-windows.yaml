@@ -1,17 +1,20 @@
 on:
   push:
-    branches: [ master ]
+    branches: [master]
   pull_request:
-    branches: [ master ]
+    branches: [master]
 
 name: Windows Build Test
 
 jobs:
-  build:
-    runs-on: windows-2022
+  create_release:
+    name: Create GitHub Release
+    runs-on: windows-2019
     steps:
+      - name: Install 7Zip PowerShell Module
+        shell: powershell
+        run: Install-Module 7Zip4PowerShell -Force -Verbose
       - uses: actions/checkout@v2
-      - uses: actions/setup-dotnet@v1
-
       - name: ipconfig
+        shell: powershell
         run: ipconfig
