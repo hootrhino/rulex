@@ -17,7 +17,7 @@ type MongoTarget struct {
 	collection *mongo.Collection
 }
 
-func NewMongoTarget(e typex.RuleX) *MongoTarget {
+func NewMongoTarget(e typex.RuleX) typex.XTarget {
 	mg := new(MongoTarget)
 	mg.RuleEngine = e
 	return mg

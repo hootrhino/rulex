@@ -24,10 +24,17 @@ func LoadTargetLib(e typex.RuleX, vm *lua.LState) int {
 			DataToHttpServer(e, id, data)
 			return 0
 		},
+		"DataToMqttServer": func(l *lua.LState) int {
+			id := l.ToString(1)
+			data := l.ToString(2)
+			DataToMqttBroker(e, id, data)
+			return 0
+		},
 	})
 	vm.Push(mod)
 	return 1
 }
+
 func handleDataFormat(e typex.RuleX, id string, incoming string) {
 	data := &map[string]interface{}{}
 	err := json.Unmarshal([]byte(incoming), data)
@@ -38,12 +45,19 @@ func handleDataFormat(e typex.RuleX, id string, incoming string) {
 		statistics.IncOut()
 		e.PushQueue(typex.QueueData{
 			In:   nil,
-			Out:  &(*e.AllOutEnd()[id]),
+			Out:  e.AllOutEnd()[id],
 			E:    e,
 			Data: incoming,
 		})
 
 	}
+}
+
+//
+//
+//
+func DataToMqttServer(e typex.RuleX, id string, data string) {
+	handleDataFormat(e, id, data)
 }
 
 //

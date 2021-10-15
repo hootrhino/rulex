@@ -267,6 +267,7 @@ const (
 	MONGO_CLUSTER TargetType = "MONGO_CLUSTER"
 	REDIS_SINGLE  TargetType = "REDIS_SINGLE"
 	FLINK_SINGLE  TargetType = "FLINK_SINGLE"
-	MYSQL         TargetType = "MYSQL"
-	PGSQL         TargetType = "PGSQL"
+	MQTT_TARGET   TargetType = "MQTT"
+	MYSQL_TARGET  TargetType = "MYSQL"
+	PGSQL_TARGET  TargetType = "PGSQL"
 )

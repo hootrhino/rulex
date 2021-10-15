@@ -11,11 +11,6 @@ jobs:
     name: Create GitHub Release
     runs-on: windows-2019
     steps:
-      - name: Install 7Zip PowerShell Module
-        shell: powershell
-        run: Install-Module 7Zip4PowerShell -Force -Verbose
-      - uses: actions/checkout@v2
-
       - name: Install Chocolate
         shell: powershell
         run: |
@@ -30,11 +25,7 @@ jobs:
         shell: powershell
         run: choco install make -Y
           
-      - name: Install Cygwin
-        shell: powershell
-        run: choco install cygwin -Y
-          
-      - name: Install Visualcpp-build-tools
+      - name: Install golang
         shell: powershell
         run: choco install golang -Y
         

@@ -214,6 +214,9 @@ func tryCreateOutEnd(out *typex.OutEnd, e typex.RuleX) error {
 	if out.Type == typex.MONGO_SINGLE {
 		return startTarget(target.NewMongoTarget(e), out, e)
 	}
+	if out.Type == typex.MQTT_TARGET {
+		return startTarget(target.NewMongoTarget(e), out, e)
+	}
 	return errors.New("Unsupported target type:" + out.Type.String())
 
 }
