@@ -104,5 +104,5 @@ func (a *ATK_LORA_01Driver) Stop() error {
 }
 
 func (a *ATK_LORA_01Driver) Test() error {
-	return write(a, "PING")
+	return nil
 }

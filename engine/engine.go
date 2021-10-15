@@ -87,12 +87,7 @@ func (e *RuleEngine) Start() *map[string]interface{} {
 //
 //
 func (e *RuleEngine) PushQueue(qd typex.QueueData) error {
-	err := typex.DefaultDataCacheQueue.Push(typex.QueueData{
-		In:   qd.In,
-		Out:  nil,
-		E:    e,
-		Data: qd.Data,
-	})
+	err := typex.DefaultDataCacheQueue.Push(qd)
 	if err != nil {
 		log.Error("ATK_LORA_01Driver error: ", err)
 	}
@@ -215,7 +210,7 @@ func tryCreateOutEnd(out *typex.OutEnd, e typex.RuleX) error {
 		return startTarget(target.NewMongoTarget(e), out, e)
 	}
 	if out.Type == typex.MQTT_TARGET {
-		return startTarget(target.NewMongoTarget(e), out, e)
+		return startTarget(target.NewMqttTarget(e), out, e)
 	}
 	return errors.New("Unsupported target type:" + out.Type.String())
 

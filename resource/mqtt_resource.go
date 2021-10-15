@@ -54,14 +54,14 @@ func (mm *MqttInEndResource) Start() error {
 	opts := mqtt.NewClientOptions()
 	opts.AddBroker(fmt.Sprintf("tcp://%s:%v", (*config)["server"], (*config)["port"]))
 	if (*config)["clientId"] != nil {
-		opts.SetClientID("x-client-main-" + (*config)["clientId"].(string))
+		opts.SetClientID((*config)["clientId"].(string))
 	} else {
-		opts.SetPassword(DEFAULT_CLIENT_ID)
+		opts.SetClientID(DEFAULT_CLIENT_ID)
 	}
 	if (*config)["username"] != nil {
 		opts.SetUsername((*config)["username"].(string))
 	} else {
-		opts.SetPassword(DEFAULT_USERNAME)
+		opts.SetUsername(DEFAULT_USERNAME)
 	}
 	if (*config)["password"] != nil {
 		opts.SetPassword((*config)["password"].(string))

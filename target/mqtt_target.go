@@ -23,45 +23,38 @@ type MqttOutEndTarget struct {
 	client mqtt.Client
 }
 
-func NewMqttTarget(inEndId string, e typex.RuleX) typex.XTarget {
+func NewMqttTarget(e typex.RuleX) typex.XTarget {
 	m := new(MqttOutEndTarget)
-	m.PointId = inEndId
 	m.RuleEngine = e
 	return m
 }
 
 func (mm *MqttOutEndTarget) Start() error {
 
-	var messageHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
-		if mm.Enable {
-			log.Debug("Message payload:", string(msg.Payload()))
-			mm.RuleEngine.Work(mm.RuleEngine.GetInEnd(mm.PointId), string(msg.Payload()))
-		}
-	}
 	//
 	var connectHandler mqtt.OnConnectHandler = func(client mqtt.Client) {
 		log.Infof("Mqtt InEnd Connected Success")
 		client.Subscribe(DEFAULT_SUB_TOPIC, 2, nil)
-		mm.RuleEngine.GetInEnd(mm.PointId).SetState(typex.UP)
+		mm.RuleEngine.GetOutEnd(mm.PointId).SetState(typex.UP)
 	}
 
 	var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err error) {
 		log.Errorf("Connect lost: %v\n", err)
 		time.Sleep(5 * time.Second)
-		mm.RuleEngine.GetInEnd(mm.PointId).SetState(typex.DOWN)
+		mm.RuleEngine.GetOutEnd(mm.PointId).SetState(typex.DOWN)
 	}
-	config := mm.RuleEngine.GetInEnd(mm.PointId).Config
+	config := mm.RuleEngine.GetOutEnd(mm.PointId).Config
 	opts := mqtt.NewClientOptions()
 	opts.AddBroker(fmt.Sprintf("tcp://%s:%v", (*config)["server"], (*config)["port"]))
 	if (*config)["clientId"] != nil {
 		opts.SetClientID((*config)["clientId"].(string))
 	} else {
-		opts.SetPassword(DEFAULT_CLIENT_ID)
+		opts.SetClientID(DEFAULT_CLIENT_ID)
 	}
 	if (*config)["username"] != nil {
 		opts.SetUsername((*config)["username"].(string))
 	} else {
-		opts.SetPassword(DEFAULT_USERNAME)
+		opts.SetUsername(DEFAULT_USERNAME)
 	}
 	if (*config)["password"] != nil {
 		opts.SetPassword((*config)["password"].(string))
@@ -70,7 +63,6 @@ func (mm *MqttOutEndTarget) Start() error {
 	}
 	opts.OnConnect = connectHandler
 	opts.OnConnectionLost = connectLostHandler
-	opts.SetDefaultPublishHandler(messageHandler)
 	opts.SetPingTimeout(10 * time.Second)
 	opts.SetAutoReconnect(true)
 	opts.OnReconnecting = func(mqtt.Client, *mqtt.ClientOptions) {
