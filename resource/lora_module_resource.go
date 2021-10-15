@@ -13,7 +13,7 @@ type LoraModuleResource struct {
 	loraDriver typex.XDriver
 }
 
-func NewLoraModuleResource(inEndId string, e typex.RuleX) *LoraModuleResource {
+func NewLoraModuleResource(inEndId string, e typex.RuleX) typex.XResource {
 	s := LoraModuleResource{}
 	s.PointId = inEndId
 	s.RuleEngine = e
