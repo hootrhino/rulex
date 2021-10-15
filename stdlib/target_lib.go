@@ -2,7 +2,6 @@ package stdlib
 
 import (
 	"encoding/json"
-	"fmt"
 	"rulex/statistics"
 	"rulex/typex"
 
