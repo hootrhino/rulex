@@ -118,7 +118,7 @@ type XHook interface {
 //
 type XStatus struct {
 	sync.Mutex
-	PointId    string // 真实资源的ID，是绑定关系
+	PointId    string // Input: Resource; Output: Target
 	Enable     bool
 	RuleEngine RuleX
 }
@@ -191,7 +191,6 @@ type XStream interface {
 //
 type XProtocol interface {
 }
-
 
 type XDriver interface {
 	Test() error

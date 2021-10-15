@@ -9,7 +9,7 @@ require (
 	github.com/gin-gonic/gin v1.7.2
 	github.com/go-ole/go-ole v1.2.5 // indirect
 	github.com/go-playground/assert/v2 v2.0.1
-	github.com/go-playground/validator/v10 v10.4.1 // indirect
+	github.com/go-playground/validator/v10 v10.4.1
 	github.com/goburrow/modbus v0.1.0
 	github.com/goburrow/serial v0.1.0 // indirect
 	github.com/golang/glog v1.0.0
@@ -36,7 +36,6 @@ require (
 	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/genproto v0.0.0-20210924002016-3dee208752a0
 	google.golang.org/grpc v1.41.0
-	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.1.0 // indirect
 	google.golang.org/protobuf v1.27.1
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
 	gopkg.in/ini.v1 v1.63.0

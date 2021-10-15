@@ -140,6 +140,9 @@ func (e *RuleEngine) LoadInEnd(in *typex.InEnd) error {
 	if in.Type == typex.UDP {
 		return startResources(resource.NewUdpInEndResource(in.Id, e), in, e)
 	}
+	if in.Type == typex.MODBUS_TCP_MASTER {
+		return startResources(resource.NewModbusTcpMasterResource(in.Id, e), in, e)
+	}
 	return fmt.Errorf("Unsupported rule type:%s", in.Type)
 }
 
@@ -157,7 +160,7 @@ func startResources(resource typex.XResource, in *typex.InEnd, e *RuleEngine) er
 	} else {
 		// 然后启动资源
 		if err1 := resource.Start(); err1 != nil {
-			log.Error(err1)
+			log.Error("resource start failed:", resource.Details().Id, ", errors:", err1)
 		}
 		// Set resources to inend
 		in.Resource = resource

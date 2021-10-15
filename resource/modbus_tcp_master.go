@@ -25,25 +25,30 @@ type RegisterParam struct {
 	// 	6		Write Single Holding Register
 	// 	15		Write Multiple Coils
 	// 	16		Write Multiple Holding Registers
-	Function int    `json:"function" validate:"1|2|3|4|"`      // Current version only support read
-	Address  uint16 `json:"address" validate:"gte=0,lte=255"`  // Address
-	Quantity uint16 `json:"quantity" validate:"gte=0,lte=255"` // Quantity
+	Function int    `json:"function" validate:"1|2|3|4|"`               // Current version only support read
+	Address  uint16 `json:"address" validate:"required,gte=0,lte=255"`  // Address
+	Quantity uint16 `json:"quantity" validate:"required,gte=0,lte=255"` // Quantity
 }
 type ModBusConfig struct {
 	Ip             string          `json:"ip" validate:"required"`
-	Port           int             `json:"port" validate:"gte=1024,lte=65535"`
-	Timeout        int             `json:"timeout" validate:"gte=1,lte=60"`
-	SlaverId       byte            `json:"slaverId" validate:"gte=1,lte=255"`
+	Port           int             `json:"port" validate:"required,gte=1,lte=65535"`
+	Timeout        int             `json:"timeout" validate:"required,gte=1,lte=60"`
+	SlaverId       byte            `json:"slaverId" validate:"required,gte=1,lte=255"`
+	Frequency      int64           `json:"frequency" validate:"required,gte=1,lte=10000"`
 	RegisterParams []RegisterParam `json:"registerParams" validate:"required"`
 }
 type ModbusTcpMasterResource struct {
 	typex.XStatus
-	client modbus.Client
+	client  modbus.Client
+	canWork bool
+	cxt     context.Context
 }
 
-func NewModbusTcpMasterResource(e typex.RuleX) typex.XResource {
+func NewModbusTcpMasterResource(id string, e typex.RuleX) typex.XResource {
 	m := ModbusTcpMasterResource{}
 	m.RuleEngine = e
+	m.canWork = false
+	m.cxt = context.Background()
 	return &m
 }
 
@@ -70,21 +75,25 @@ func (m *ModbusTcpMasterResource) Start() error {
 	handler := modbus.NewTCPClientHandler(
 		fmt.Sprintf("%s:%v", mainConfig.Ip, mainConfig.Port),
 	)
-	handler.Timeout = time.Duration(mainConfig.Timeout) * time.Second
+	handler.Timeout = time.Duration(mainConfig.Frequency) * time.Second
 	handler.SlaveId = mainConfig.SlaverId
-	handler.Logger = log.Logger()
 	if err := handler.Connect(); err != nil {
 		return err
 	}
 	m.client = modbus.NewClient(handler)
+	m.canWork = true
+	for _, rCfg := range mainConfig.RegisterParams {
+		log.Info("Start read register:", rCfg.Address)
 
-	for _, rcfg := range mainConfig.RegisterParams {
-		log.Info("Start read register:", rcfg.Address)
-
-		go func(ctx context.Context, p RegisterParam) {
+		go func(ctx context.Context, rp RegisterParam) {
+			// Modbus data is most often read and written as "registers" which are [16-bit] pieces of data. Most often,
+			// the register is either a signed or unsigned 16-bit integer. If a 32-bit integer or floating point is required,
+			// these values are actually read as a pair of registers.
 			var results []byte
 			var err error
+			ticker := time.NewTicker(time.Duration(mainConfig.Frequency) * time.Second)
 			for {
+				<-ticker.C
 				select {
 				case <-ctx.Done():
 					{
@@ -93,32 +102,41 @@ func (m *ModbusTcpMasterResource) Start() error {
 				default:
 					{
 
-						if p.Function == 1 {
-							results, err = m.client.ReadCoils(p.Address, p.Quantity)
+						if rp.Function == 1 {
+							results, err = m.client.ReadCoils(rp.Address, rp.Quantity)
 						}
-						if p.Function == 2 {
-							results, err = m.client.ReadDiscreteInputs(p.Address, p.Quantity)
+						if rp.Function == 2 {
+							results, err = m.client.ReadDiscreteInputs(rp.Address, rp.Quantity)
 						}
-						if p.Function == 3 {
-							results, err = m.client.ReadHoldingRegisters(p.Address, p.Quantity)
+						if rp.Function == 3 {
+							results, err = m.client.ReadHoldingRegisters(rp.Address, rp.Quantity)
 						}
-						if p.Function == 4 {
-							results, err = m.client.ReadInputRegisters(p.Address, p.Quantity)
+						if rp.Function == 4 {
+							results, err = m.client.ReadInputRegisters(rp.Address, rp.Quantity)
 						}
 						//
 						// error
 						//
 						if err != nil {
-							log.Error(err)
+							m.canWork = false
+							log.Error("NewModbusTcpMasterResource ReadData error: ", err)
 						} else {
-							log.Info("m.client.ReadCoils", results)
+							if err0 := m.RuleEngine.PushQueue(typex.QueueData{
+								In:   m.Details(),
+								Out:  nil,
+								E:    m.RuleEngine,
+								Data: string(results),
+							}); err0 != nil {
+								log.Error("NewModbusTcpMasterResource PushQueue error: ", err0)
+							}
 						}
+
 					}
 				}
 
 			}
 
-		}(context.Background(), rcfg)
+		}(m.cxt, rCfg)
 	}
 	return nil
 
@@ -149,9 +167,14 @@ func (m *ModbusTcpMasterResource) Pause() {
 }
 
 func (m *ModbusTcpMasterResource) Status() typex.ResourceState {
-	return typex.UP
+	if m.canWork {
+		return typex.UP
+	} else {
+		return typex.DOWN
+	}
 }
 
 func (m *ModbusTcpMasterResource) Stop() {
 
+	m.cxt.Done()
 }
