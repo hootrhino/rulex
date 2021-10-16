@@ -3,6 +3,7 @@ package utils
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/go-playground/validator/v10"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -74,4 +75,17 @@ func ShowBanner() {
 		}
 	}
 	log.Info("Rulex start successfully")
+}
+
+//
+// JSON String to a struct
+//
+func TransformConfig(s1 []byte, s2 interface{}) error {
+	if err := json.Unmarshal(s1, &s2); err != nil {
+		return err
+	}
+	if err := validator.New().Struct(s2); err != nil {
+		return err
+	}
+	return nil
 }

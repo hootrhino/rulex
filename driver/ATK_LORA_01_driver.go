@@ -13,16 +13,6 @@ import (
 //------------------------------------------------------------------------
 
 //
-// 串口数据写入
-//
-func write(a *ATK_LORA_01Driver, k string) error {
-	a.serialPort.Write([]byte(k))
-	return nil
-}
-
-//------------------------------------------------------------------------
-
-//
 // 正点原子的 Lora 模块封装
 //
 type ATK_LORA_01Driver struct {
@@ -36,7 +26,7 @@ type ATK_LORA_01Driver struct {
 //
 // 初始化一个驱动
 //
-func NewATK_LORA_01Driver(serialPort *serial.Port, in *typex.InEnd, e typex.RuleX) typex.XDriver {
+func NewATK_LORA_01Driver(serialPort *serial.Port, in *typex.InEnd, e typex.RuleX) typex.XExternalDriver {
 	m := &ATK_LORA_01Driver{}
 	m.channel = make(chan bool)
 	m.In = in
@@ -105,4 +95,15 @@ func (a *ATK_LORA_01Driver) Stop() error {
 
 func (a *ATK_LORA_01Driver) Test() error {
 	return nil
+}
+
+//
+func (a *ATK_LORA_01Driver) Read([]byte) (int, error) {
+
+	return 0, nil
+}
+
+//
+func (a *ATK_LORA_01Driver) Write([]byte) (int, error) {
+	return 0, nil
 }

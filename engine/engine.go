@@ -151,9 +151,9 @@ func (e *RuleEngine) LoadInEnd(in *typex.InEnd) error {
 //
 func startResources(resource typex.XResource, in *typex.InEnd, e *RuleEngine) error {
 	// Save to rule engine first
-	// 这么作主要是为了可以 预加载 进去，然后等环境恢复了以后自动复原
+	// 这么作主要是为了可以 预加载 进去, 然后等环境恢复了以后自动复原
 	e.SaveInEnd(in)
-	// 首先把资源ID给注册进去，作为资源的全局索引
+	// 首先把资源ID给注册进去, 作为资源的全局索引
 	if err := resource.Register(in.Id); err != nil {
 		log.Error(err)
 		return err
@@ -189,7 +189,7 @@ func testResourceState(resource typex.XResource, e *RuleEngine, id string) {
 		e.GetInEnd(id).SetState(typex.UP)
 	} else {
 		e.GetInEnd(id).SetState(typex.DOWN)
-		// 当资源挂了以后先给停止，然后重启
+		// 当资源挂了以后先给停止, 然后重启
 		log.Warnf("Resource %v down. try to restart it", resource.Details().Id)
 		resource.Stop()
 		runtime.Gosched()
@@ -259,7 +259,7 @@ func testTargetState(target typex.XTarget, e typex.RuleX, id string) {
 		e.GetOutEnd(id).State = typex.UP
 	} else {
 		e.GetOutEnd(id).State = typex.DOWN
-		// 当资源挂了以后先给停止，然后重启
+		// 当资源挂了以后先给停止, 然后重启
 		log.Warnf("Target %v down. try to restart it", target.Details())
 		target.Stop()
 		runtime.Gosched()

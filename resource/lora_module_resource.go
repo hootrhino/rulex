@@ -10,7 +10,7 @@ import (
 
 type LoraModuleResource struct {
 	typex.XStatus
-	loraDriver typex.XDriver
+	loraDriver typex.XExternalDriver
 }
 
 func NewLoraModuleResource(inEndId string, e typex.RuleX) typex.XResource {
@@ -22,14 +22,7 @@ func NewLoraModuleResource(inEndId string, e typex.RuleX) typex.XResource {
 }
 
 func (mm *LoraModuleResource) DataModels() *map[string]typex.XDataModel {
-	return &map[string]typex.XDataModel{
-		"NodeData": {
-			Type:      typex.T_JSON,
-			Name:      "NodeSendMsg",
-			MinLength: 2,
-			MaxLength: 1024,
-		},
-	}
+	return &map[string]typex.XDataModel{}
 }
 
 func (s *LoraModuleResource) Test(inEndId string) bool {
@@ -42,6 +35,7 @@ func (s *LoraModuleResource) Test(inEndId string) bool {
 }
 
 func (s *LoraModuleResource) Register(inEndId string) error {
+	s.PointId = inEndId
 	return nil
 }
 

@@ -190,12 +190,26 @@ type XStream interface {
 // User's Protocol
 //
 type XProtocol interface {
+	// 是否增加用户解码器接口？
+	// 这里就需要用lua来实现这么一套工具
 }
 
-type XDriver interface {
+//
+// 外挂驱动，比如串口，PLC等，驱动可以挂在输入或者输出资源上。
+// 典型案例：
+// 1. MODBUS TCP模式 ,数据输入后转JSON输出到串口屏幕上
+// 2. MODBUS TCP模式外挂了很多继电器,来自云端的 PLC 控制指令先到网关，然后网关决定推送到哪个外挂
+//
+type XExternalDriver interface {
 	Test() error
 	Init() error
 	Work() error
 	State() DriverState
+	//---------------------------------------------------
+	// 读写接口是给LUA标准库用的,驱动只管实现读写逻辑即可
+	//---------------------------------------------------
+	Read([]byte) (int, error)
+	Write([]byte) (int, error)
+	//---------------------------------------------------
 	Stop() error
 }

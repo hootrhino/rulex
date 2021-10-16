@@ -3,16 +3,27 @@ package resource
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"rulex/typex"
+	"rulex/utils"
 	"time"
 
-	"github.com/go-playground/validator/v10"
 	"github.com/ngaut/log"
 
 	"github.com/goburrow/modbus"
 )
+
+type ModBusConfig struct {
+	Mode           string          `json:"mode"`
+	Timeout        int             `json:"timeout" validate:"required,gte=1,lte=60"`
+	SlaverId       byte            `json:"slaverId" validate:"required,gte=1,lte=255"`
+	Frequency      int64           `json:"frequency" validate:"required,gte=1,lte=10000"`
+	RtuConfig      RtuConfig       `json:"rtuConfig" validate:"required"`
+	TcpConfig      TcpConfig       `json:"tcpConfig" validate:"required"`
+	RegisterParams []RegisterParam `json:"registerParams" validate:"required"`
+}
 
 type RegisterParam struct {
 	// 	Code |  Register Type
@@ -29,14 +40,33 @@ type RegisterParam struct {
 	Address  uint16 `json:"address" validate:"required,gte=0,lte=255"`  // Address
 	Quantity uint16 `json:"quantity" validate:"required,gte=0,lte=255"` // Quantity
 }
-type ModBusConfig struct {
-	Ip             string          `json:"ip" validate:"required"`
-	Port           int             `json:"port" validate:"required,gte=1,lte=65535"`
-	Timeout        int             `json:"timeout" validate:"required,gte=1,lte=60"`
-	SlaverId       byte            `json:"slaverId" validate:"required,gte=1,lte=255"`
-	Frequency      int64           `json:"frequency" validate:"required,gte=1,lte=10000"`
-	RegisterParams []RegisterParam `json:"registerParams" validate:"required"`
+
+//
+// Uart "/dev/ttyUSB0"
+// BaudRate = 115200
+// DataBits = 8
+// Parity = "N"
+// StopBits = 1
+// SlaveId = 1
+// Timeout = 5 * time.Second
+//
+type RtuConfig struct {
+	Uart     string `json:"uart" validate:"required"`
+	BaudRate int    `json:"baudRate" validate:"required"`
 }
+
+//
+//
+//
+type TcpConfig struct {
+	Ip   string `json:"ip" validate:"required"`
+	Port int    `json:"port" validate:"required,gte=1,lte=65535"`
+}
+
+//
+//
+//---------------------------------------------------------------------------
+
 type ModbusTcpMasterResource struct {
 	typex.XStatus
 	client  modbus.Client
@@ -68,20 +98,44 @@ func (m *ModbusTcpMasterResource) Start() error {
 	if err := json.Unmarshal(configBytes, &mainConfig); err != nil {
 		return err
 	}
-	if err := validator.New().Struct(mainConfig); err != nil {
+	if err := utils.TransformConfig(configBytes, &mainConfig); err != nil {
 		return err
 	}
 
-	handler := modbus.NewTCPClientHandler(
-		fmt.Sprintf("%s:%v", mainConfig.Ip, mainConfig.Port),
-	)
-	handler.Timeout = time.Duration(mainConfig.Frequency) * time.Second
-	handler.SlaveId = mainConfig.SlaverId
-	if err := handler.Connect(); err != nil {
-		return err
+	if mainConfig.Mode == "TCP" {
+		handler := modbus.NewTCPClientHandler(
+			fmt.Sprintf("%s:%v", mainConfig.TcpConfig.Ip, mainConfig.TcpConfig.Port),
+		)
+		handler.Timeout = time.Duration(mainConfig.Frequency) * time.Second
+		handler.SlaveId = mainConfig.SlaverId
+		if err := handler.Connect(); err != nil {
+			return err
+		}
+		m.client = modbus.NewClient(handler)
+	} else if mainConfig.Mode == "RTU" {
+		handler := modbus.NewRTUClientHandler(mainConfig.RtuConfig.Uart)
+		handler.BaudRate = mainConfig.RtuConfig.BaudRate
+		// Use default uart config
+		handler.DataBits = 8
+		handler.Parity = "N"
+		handler.StopBits = 1
+		//---------
+		handler.SlaveId = mainConfig.SlaverId
+		handler.Timeout = time.Duration(mainConfig.Frequency) * time.Second
+		//---------
+		if err := handler.Connect(); err != nil {
+			return err
+		}
+		m.client = modbus.NewClient(handler)
+	} else {
+		return errors.New("No supported mode:" + mainConfig.Mode)
 	}
-	m.client = modbus.NewClient(handler)
+	//---------------------------------------------------------------------------------
+	// Start
+	//---------------------------------------------------------------------------------
+
 	m.canWork = true
+	ticker := time.NewTicker(time.Duration(mainConfig.Frequency) * time.Second)
 	for _, rCfg := range mainConfig.RegisterParams {
 		log.Info("Start read register:", rCfg.Address)
 
@@ -91,7 +145,6 @@ func (m *ModbusTcpMasterResource) Start() error {
 			// these values are actually read as a pair of registers.
 			var results []byte
 			var err error
-			ticker := time.NewTicker(time.Duration(mainConfig.Frequency) * time.Second)
 			for {
 				<-ticker.C
 				select {
@@ -175,6 +228,5 @@ func (m *ModbusTcpMasterResource) Status() typex.ResourceState {
 }
 
 func (m *ModbusTcpMasterResource) Stop() {
-
 	m.cxt.Done()
 }
