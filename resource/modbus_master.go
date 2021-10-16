@@ -49,6 +49,14 @@ const (
 	WRITE_MULTIPLE_HOLDING_REGISTERS = 16
 )
 
+type ModBUSWriteParams struct {
+	Function int    `json:"function" validate:"required"`
+	Address  uint16 `json:"address" validate:"required"`
+	Quantity uint16 `json:"quantity" validate:"required"`
+	Value    []byte `json:"value" validate:"required"`
+	Values   []byte `json:"values" validate:"required"`
+}
+
 type RegisterParam struct {
 	Function int    `json:"function" validate:"required"`               // Current version only support read
 	Address  uint16 `json:"address" validate:"required,gte=0,lte=255"`  // Address
@@ -168,17 +176,16 @@ func (m *ModbusMasterResource) Start() error {
 					}
 				default:
 					{
-
-						if rp.Function == 1 {
+						if rp.Function == READ_COIL {
 							results, err = m.client.ReadCoils(rp.Address, rp.Quantity)
 						}
-						if rp.Function == 2 {
+						if rp.Function == READ_DISCRETE_INPUT {
 							results, err = m.client.ReadDiscreteInputs(rp.Address, rp.Quantity)
 						}
-						if rp.Function == 3 {
+						if rp.Function == READ_HOLDING_REGISTERS {
 							results, err = m.client.ReadHoldingRegisters(rp.Address, rp.Quantity)
 						}
-						if rp.Function == 4 {
+						if rp.Function == READ_INPUT_REGISTERS {
 							results, err = m.client.ReadInputRegisters(rp.Address, rp.Quantity)
 						}
 						//
@@ -197,12 +204,9 @@ func (m *ModbusMasterResource) Start() error {
 								log.Error("NewModbusMasterResource PushQueue error: ", err0)
 							}
 						}
-
 					}
 				}
-
 			}
-
 		}(m.cxt, rCfg)
 	}
 	return nil
@@ -245,21 +249,6 @@ func (m *ModbusMasterResource) Stop() {
 	m.cxt.Done()
 }
 
-//
-// OnStreamApproached
-// Modbus Write Function
-// 	5		Write Single Coil
-// 	6		Write Single Holding Register
-// 	15		Write Multiple Coils
-// 	16		Write Multiple Holding Registers
-type ModBUSWriteParams struct {
-	Function int    `json:"function" validate:"required"`
-	Address  uint16 `json:"address" validate:"required"`
-	Quantity uint16 `json:"quantity" validate:"required"`
-	Value    []byte `json:"value" validate:"required"`
-	Values   []byte `json:"values" validate:"required"`
-}
-
 func (m *ModbusMasterResource) OnStreamApproached(data string) error {
 	log.Debug("OnStreamApproached:", data)
 	var p ModBUSWriteParams
@@ -269,20 +258,17 @@ func (m *ModbusMasterResource) OnStreamApproached(data string) error {
 		log.Error(errs)
 		return errs
 	}
-	if p.Function == 5 {
+	if p.Function == WRITE_SINGLE_COIL {
 		results, errs = m.client.WriteSingleCoil(1, 1)
 	}
-	if p.Function == 6 {
+	if p.Function == WRITE_SINGLE_HOLDING_REGISTER {
 		results, errs = m.client.WriteSingleRegister(1, 1)
-
 	}
-	if p.Function == 15 {
+	if p.Function == WRITE_MULTIPLE_COILS {
 		results, errs = m.client.WriteMultipleCoils(p.Address, p.Quantity, p.Value)
-
 	}
-	if p.Function == 16 {
+	if p.Function == WRITE_MULTIPLE_HOLDING_REGISTERS {
 		results, errs = m.client.WriteMultipleRegisters(p.Address, p.Quantity, p.Values)
-
 	}
 	if errs != nil {
 		log.Error(errs)
