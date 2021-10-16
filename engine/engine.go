@@ -141,7 +141,7 @@ func (e *RuleEngine) LoadInEnd(in *typex.InEnd) error {
 		return startResources(resource.NewUdpInEndResource(in.Id, e), in, e)
 	}
 	if in.Type == typex.MODBUS_TCP_MASTER {
-		return startResources(resource.NewModbusTcpMasterResource(in.Id, e), in, e)
+		return startResources(resource.NewModbusMasterResource(in.Id, e), in, e)
 	}
 	return fmt.Errorf("Unsupported rule type:%s", in.Type)
 }
@@ -283,6 +283,7 @@ func (e *RuleEngine) LoadRule(r *typex.Rule) error {
 					// }
 					(*in.Binds)[r.Id] = *r
 					stdlib.LoadTargetLib(e, r.VM)
+					stdlib.LoadStreamLib(e, r.VM)
 					stdlib.LoadJqLib(e, r.VM)
 					e.SaveRule(r)
 					return nil

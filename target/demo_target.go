@@ -5,7 +5,9 @@ import "rulex/typex"
 type DemoTarget struct {
 	typex.XStatus
 }
-
+func (m *DemoTarget) OnStreamApproached(data string) error {
+	return nil
+}
 func (d *DemoTarget) Details() *typex.OutEnd {
 	return d.RuleEngine.GetOutEnd(d.PointId)
 }

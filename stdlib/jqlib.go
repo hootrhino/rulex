@@ -11,7 +11,6 @@ import (
 
 // Loader
 func LoadJqLib(e typex.RuleX, vm *lua.LState) {
-	vm.SetGlobal("stdlib", vm.G.Global)
 	vm.SetFuncs(vm.G.Global, map[string]lua.LGFunction{
 		"JqSelect": func(stateStack *lua.LState) int {
 			// LUA Args: Jq, Data ->

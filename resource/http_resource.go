@@ -86,3 +86,6 @@ func (hh *HttpInEndResource) Enabled() bool {
 func (hh *HttpInEndResource) Details() *typex.InEnd {
 	return hh.RuleEngine.GetInEnd(hh.PointId)
 }
+func (m *HttpInEndResource) OnStreamApproached(data string) error {
+	return nil
+}

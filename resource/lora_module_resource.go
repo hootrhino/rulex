@@ -33,7 +33,9 @@ func (s *LoraModuleResource) Test(inEndId string) bool {
 		return true
 	}
 }
-
+func (m *LoraModuleResource) OnStreamApproached(data string) error {
+	return nil
+}
 func (s *LoraModuleResource) Register(inEndId string) error {
 	s.PointId = inEndId
 	return nil

@@ -41,6 +41,7 @@ func NewRule(e RuleX,
 		RegistryGrowStep: 32,
 	})
 	luajson.Preload(vm)
+	vm.SetGlobal("stdlib", vm.G.Global)
 	return &Rule{
 		Id:          utils.MakeUUID("RULE"),
 		Name:        name,

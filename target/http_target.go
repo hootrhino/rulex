@@ -22,6 +22,9 @@ func (ht *HTTPTarget) Start() {
 	ht.Enable = true
 	log.Info("HTTPTarget started")
 }
+func (m *HTTPTarget) OnStreamApproached(data string) error {
+	return nil
+}
 func (ht *HTTPTarget) Test(outEndId string) bool {
 	return true
 }

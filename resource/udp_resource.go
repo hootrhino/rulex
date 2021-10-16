@@ -51,7 +51,9 @@ func (u *UdpResource) Start() error {
 	return nil
 
 }
-
+func (m *UdpResource) OnStreamApproached(data string) error {
+	return nil
+}
 func (u *UdpResource) Details() *typex.InEnd {
 	return u.RuleEngine.GetInEnd(u.PointId)
 }

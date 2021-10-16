@@ -25,18 +25,32 @@ type ModBusConfig struct {
 	RegisterParams []RegisterParam `json:"registerParams" validate:"required"`
 }
 
-type RegisterParam struct {
-	// 	Code |  Register Type
+const (
 	//-------------------------------------------
-	// 	1		Read Coil
-	// 	2		Read Discrete Input
-	// 	3		Read Holding Registers
-	// 	4		Read Input Registers
-	// 	5		Write Single Coil
-	// 	6		Write Single Holding Register
-	// 	15		Write Multiple Coils
-	// 	16		Write Multiple Holding Registers
-	Function int    `json:"function" validate:"1|2|3|4|"`               // Current version only support read
+	// 	Code |  Register Type
+	//-------|------------------------------------
+	// 	1	 |	Read Coil
+	// 	2	 |	Read Discrete Input
+	// 	3	 |	Read Holding Registers
+	// 	4	 |	Read Input Registers
+	// 	5	 |	Write Single Coil
+	// 	6	 |	Write Single Holding Register
+	// 	15	 |	Write Multiple Coils
+	// 	16	 |	Write Multiple Holding Registers
+	//-------------------------------------------
+
+	READ_COIL                        = 1
+	READ_DISCRETE_INPUT              = 2
+	READ_HOLDING_REGISTERS           = 3
+	READ_INPUT_REGISTERS             = 4
+	WRITE_SINGLE_COIL                = 5
+	WRITE_SINGLE_HOLDING_REGISTER    = 6
+	WRITE_MULTIPLE_COILS             = 15
+	WRITE_MULTIPLE_HOLDING_REGISTERS = 16
+)
+
+type RegisterParam struct {
+	Function int    `json:"function" validate:"required"`               // Current version only support read
 	Address  uint16 `json:"address" validate:"required,gte=0,lte=255"`  // Address
 	Quantity uint16 `json:"quantity" validate:"required,gte=0,lte=255"` // Quantity
 }
@@ -67,27 +81,27 @@ type TcpConfig struct {
 //
 //---------------------------------------------------------------------------
 
-type ModbusTcpMasterResource struct {
+type ModbusMasterResource struct {
 	typex.XStatus
 	client  modbus.Client
 	canWork bool
 	cxt     context.Context
 }
 
-func NewModbusTcpMasterResource(id string, e typex.RuleX) typex.XResource {
-	m := ModbusTcpMasterResource{}
+func NewModbusMasterResource(id string, e typex.RuleX) typex.XResource {
+	m := ModbusMasterResource{}
 	m.RuleEngine = e
 	m.canWork = false
 	m.cxt = context.Background()
 	return &m
 }
 
-func (m *ModbusTcpMasterResource) Register(inEndId string) error {
+func (m *ModbusMasterResource) Register(inEndId string) error {
 	m.PointId = inEndId
 	return nil
 }
 
-func (m *ModbusTcpMasterResource) Start() error {
+func (m *ModbusMasterResource) Start() error {
 
 	config := m.RuleEngine.GetInEnd(m.PointId).Config
 	configBytes, err := json.Marshal(config)
@@ -172,7 +186,7 @@ func (m *ModbusTcpMasterResource) Start() error {
 						//
 						if err != nil {
 							m.canWork = false
-							log.Error("NewModbusTcpMasterResource ReadData error: ", err)
+							log.Error("NewModbusMasterResource ReadData error: ", err)
 						} else {
 							if err0 := m.RuleEngine.PushQueue(typex.QueueData{
 								In:   m.Details(),
@@ -180,7 +194,7 @@ func (m *ModbusTcpMasterResource) Start() error {
 								E:    m.RuleEngine,
 								Data: string(results),
 							}); err0 != nil {
-								log.Error("NewModbusTcpMasterResource PushQueue error: ", err0)
+								log.Error("NewModbusMasterResource PushQueue error: ", err0)
 							}
 						}
 
@@ -195,31 +209,31 @@ func (m *ModbusTcpMasterResource) Start() error {
 
 }
 
-func (m *ModbusTcpMasterResource) Details() *typex.InEnd {
+func (m *ModbusMasterResource) Details() *typex.InEnd {
 	return m.RuleEngine.GetInEnd(m.PointId)
 }
 
-func (m *ModbusTcpMasterResource) Test(inEndId string) bool {
+func (m *ModbusMasterResource) Test(inEndId string) bool {
 	return true
 }
 
-func (m *ModbusTcpMasterResource) Enabled() bool {
+func (m *ModbusMasterResource) Enabled() bool {
 	return m.Enable
 }
 
-func (m *ModbusTcpMasterResource) DataModels() *map[string]typex.XDataModel {
+func (m *ModbusMasterResource) DataModels() *map[string]typex.XDataModel {
 	return &map[string]typex.XDataModel{}
 }
 
-func (m *ModbusTcpMasterResource) Reload() {
+func (m *ModbusMasterResource) Reload() {
 
 }
 
-func (m *ModbusTcpMasterResource) Pause() {
+func (m *ModbusMasterResource) Pause() {
 
 }
 
-func (m *ModbusTcpMasterResource) Status() typex.ResourceState {
+func (m *ModbusMasterResource) Status() typex.ResourceState {
 	if m.canWork {
 		return typex.UP
 	} else {
@@ -227,6 +241,54 @@ func (m *ModbusTcpMasterResource) Status() typex.ResourceState {
 	}
 }
 
-func (m *ModbusTcpMasterResource) Stop() {
+func (m *ModbusMasterResource) Stop() {
 	m.cxt.Done()
+}
+
+//
+// OnStreamApproached
+// Modbus Write Function
+// 	5		Write Single Coil
+// 	6		Write Single Holding Register
+// 	15		Write Multiple Coils
+// 	16		Write Multiple Holding Registers
+type ModBUSWriteParams struct {
+	Function int    `json:"function" validate:"required"`
+	Address  uint16 `json:"address" validate:"required"`
+	Quantity uint16 `json:"quantity" validate:"required"`
+	Value    []byte `json:"value" validate:"required"`
+	Values   []byte `json:"values" validate:"required"`
+}
+
+func (m *ModbusMasterResource) OnStreamApproached(data string) error {
+	log.Debug("OnStreamApproached:", data)
+	var p ModBUSWriteParams
+	var results []byte = []byte{}
+	var errs error = nil
+	if errs := utils.TransformConfig([]byte(data), p); errs != nil {
+		log.Error(errs)
+		return errs
+	}
+	if p.Function == 5 {
+		results, errs = m.client.WriteSingleCoil(1, 1)
+	}
+	if p.Function == 6 {
+		results, errs = m.client.WriteSingleRegister(1, 1)
+
+	}
+	if p.Function == 15 {
+		results, errs = m.client.WriteMultipleCoils(p.Address, p.Quantity, p.Value)
+
+	}
+	if p.Function == 16 {
+		results, errs = m.client.WriteMultipleRegisters(p.Address, p.Quantity, p.Values)
+
+	}
+	if errs != nil {
+		log.Error(errs)
+	} else {
+		// Push to server
+		log.Debug("------------------------->", results)
+	}
+	return errs
 }

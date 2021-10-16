@@ -5,7 +5,9 @@ import "rulex/typex"
 type DemoResource struct {
 	typex.XStatus
 }
-
+func (m *DemoResource) OnStreamApproached(data string) error {
+	return nil
+}
 func (d *DemoResource) Details() *typex.InEnd {
 	return d.RuleEngine.GetInEnd(d.PointId)
 }

@@ -132,3 +132,6 @@ func (g *GrpcInEndResource) Enabled() bool {
 func (g *GrpcInEndResource) Details() *typex.InEnd {
 	return g.RuleEngine.GetInEnd(g.PointId)
 }
+func (m *GrpcInEndResource) OnStreamApproached(data string) error {
+	return nil
+}

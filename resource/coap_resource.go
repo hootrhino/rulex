@@ -71,7 +71,9 @@ func (cc *CoAPInEndResource) Start() error {
 	log.Info("Coap resource started on [udp]" + port)
 	return nil
 }
-
+func (m *CoAPInEndResource) OnStreamApproached(data string) error {
+	return nil
+}
 //
 func (cc *CoAPInEndResource) Stop() {
 }

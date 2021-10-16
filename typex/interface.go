@@ -73,6 +73,7 @@ type XResource interface {
 	Reload()
 	Pause()
 	Status() ResourceState
+	OnStreamApproached(data string) error
 	Stop()
 }
 
@@ -89,6 +90,7 @@ type XTarget interface {
 	Pause()
 	Status() ResourceState
 	To(data interface{}) error
+	OnStreamApproached(data string) error
 	Stop()
 }
 
@@ -172,13 +174,14 @@ type XModule interface {
 	UnLoad() error
 }
 
-//--------------------------------------------------------------
-// Remote Stream
+//------------------------------------------------
+// 					Remote Stream
+//------------------------------------------------
 // ┌───────────────┐          ┌────────────────┐
-// │   RULEX       │ ◄─────── │   SERVER       │
+// │   RULEX       │ <─────── │   SERVER       │
+// │   RULEX       │  ───────>│   SERVER       │
 // └───────────────┘          └────────────────┘
-// Rulex Stream use GRPC for transport layer
-//--------------------------------------------------------------
+//------------------------------------------------
 type XStream interface {
 	Start() error
 	OnStreamApproached(data string) error

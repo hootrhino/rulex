@@ -90,7 +90,9 @@ func (mm *MqttInEndResource) Start() error {
 func (mm *MqttInEndResource) DataModels() *map[string]typex.XDataModel {
 	return &map[string]typex.XDataModel{}
 }
-
+func (m *MqttInEndResource) OnStreamApproached(data string) error {
+	return nil
+}
 func (mm *MqttInEndResource) Stop() {
 	mm.client.Disconnect(0)
 
