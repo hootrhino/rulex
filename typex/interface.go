@@ -5,6 +5,8 @@ package typex
 //
 import (
 	"sync"
+
+	lua "github.com/yuin/gopher-lua"
 )
 
 //
@@ -215,4 +217,12 @@ type XExternalDriver interface {
 	Write([]byte) (int, error)
 	//---------------------------------------------------
 	Stop() error
+}
+
+//
+// XLib: 库函数接口
+//
+type XLib interface {
+	LoadLib(name string, e RuleX, L *lua.LState) error
+	UnLoadLib(name string) error
 }
