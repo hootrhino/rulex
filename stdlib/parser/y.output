@@ -1,0 +1,62 @@
+
+state 0
+	$accept: .expr $end 
+
+	'['  shift 2
+	.  error
+
+	expr  goto 1
+
+state 1
+	$accept:  expr.$end 
+
+	$end  accept
+	.  error
+
+
+state 2
+	expr:  '['.F ':' N ']' 
+
+	F  shift 3
+	.  error
+
+
+state 3
+	expr:  '[' F.':' N ']' 
+
+	':'  shift 4
+	.  error
+
+
+state 4
+	expr:  '[' F ':'.N ']' 
+
+	N  shift 5
+	.  error
+
+
+state 5
+	expr:  '[' F ':' N.']' 
+
+	']'  shift 6
+	.  error
+
+
+state 6
+	expr:  '[' F ':' N ']'.    (1)
+
+	.  reduce 1 (src line 23)
+
+
+9 terminals, 2 nonterminals
+2 grammar rules, 7/16000 states
+0 shift/reduce, 0 reduce/reduce conflicts reported
+51 working sets used
+memory: parser 0/240000
+0 extra closures
+5 shift entries, 1 exceptions
+1 goto entries
+0 entries saved by goto default
+Optimizer space used: output 6/240000
+6 table entries, 0 zero
+maximum spread: 8, maximum offset: 8
