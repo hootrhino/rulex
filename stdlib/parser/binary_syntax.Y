@@ -1,32 +1,42 @@
 %{
-package parser
+      package parser
+      import(
+         "fmt"
+      )
 
-import (
-    //"fmt"
-)
+      type Pair struct {
+         k string
+         l int
+      }
+      func (p Pair) String() string{
+         return fmt.Sprintf("@Pair[%s,%v]", p.k, p.l)
+      }
+
 %}
 
 %union {
-   field    string
-   length   int
+   k string
+   l int
+   pair   Pair
 }
 
-%token <field>    F
-%token <length>   L
+%type <pair>      pair
 
-%token '[' ']' ',' ':' ' ' '\n'
+
+%token  <k>        k
+%token  <l>        l
+%token  lb         '<'
+%token  rb         '>'
+%token  as         ':'
+
+%start pair
 
 %%
 
-start: '[' pairs ']' {
+pair:  lb k as l rb
+    {
+     $$ = Pair{k: $2, l: $4}
+    }
+    ;
 
-};
-
-pairs: pair | pairs pair
-;
-
-pair: F ':' L {
-   $$=$1
-}
-;
 %%

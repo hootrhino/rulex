@@ -8,9 +8,7 @@ type BinaryParser struct {
 	input  []byte
 	index  int
 	buffer string
-	lval   yySymType
-	stack  [yyInitialStackSize]yySymType
-	char   int
+	lValue yySymType
 }
 
 func (l *BinaryParser) Lex(lval *yySymType) int {
@@ -19,35 +17,26 @@ func (l *BinaryParser) Lex(lval *yySymType) int {
 		return 0
 	}
 	fmt.Println("input expr =>", string(l.input))
+
 	for _, v := range l.input {
-
-		if v == '[' {
-			l.index++
-
+		fmt.Println("Current is:", string(v))
+		if v == '<' {
+			return lb
 		}
-		if v == ']' {
-			l.index++
-
-		}
-		if v == ',' {
-
+		if v == '>' {
+			return rb
 		}
 		if v == ':' {
-			fmt.Println("KV===>", (l.lval.field), ":", (l.lval.length))
-
+			return as
 		}
-		if string(v) != "" {
-
-		}
-		if int(v) > 0 {
-
-		}
-
+		// if v == ':' {
+		fmt.Println("KV ===>", (l.lValue.pair), ":", (l.lValue.l))
+		// }
 	}
 	return 0
 }
 func (l *BinaryParser) Error(s string) {
-	fmt.Println("Error:", s)
+	fmt.Println("Error:", s, "error @:", l.index, string(l.input[l.index]))
 }
 func Parse(b []byte) {
 	yyNewParser().Parse(&BinaryParser{
