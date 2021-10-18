@@ -17,6 +17,7 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.6.0
 	github.com/itchyny/gojq v0.12.4
 	github.com/kr/text v0.2.0 // indirect
+	github.com/lunixbochs/struc v0.0.0-20200707160740-784aaebc1d40
 	github.com/mattn/go-sqlite3 v1.14.7
 	github.com/ngaut/log v0.0.0-20180314031856-b8e36e7ba5ac
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
