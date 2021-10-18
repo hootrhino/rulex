@@ -6,10 +6,8 @@ ENV APP_NAME="rulex"
 ENV GO111MODULE=on \
     CGO_ENABLED=1 \
     GOPROXY="https://goproxy.cn,direct"
-RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories \
-            && apk add make build-base go git
 
-
+RUN apk add make build-base go git
 
 RUN git clone https://gitee.com/wwhai/rulex.git
 RUN cd rulex && go build -o rulex main.go

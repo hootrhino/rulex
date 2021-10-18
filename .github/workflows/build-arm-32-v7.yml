@@ -17,6 +17,4 @@ jobs:
           go-version: 1.16
       - name: Build && Test
         run: |
-              pwd
-              ls -a
               docker build -f ./.github/workflows/Dockerfile_arm32v7 . 
