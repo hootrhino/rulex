@@ -17,23 +17,18 @@ jobs:
           Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString("https://community.chocolatey.org/install.ps1"))
           choco feature enable -n=allowGlobalConfirmation
   
-      # - name: Install Visualcpp-build-tools
-      #   shell: powershell
-      #   run: choco install visualcpp-build-tools -Y
-  
-      - name: Test
+      - name: Install Visualcpp-build-tools
         shell: powershell
-        run: echo "Windows 10"
-
-      # - name: Install Make
-      #   shell: powershell
-      #   run: choco install make -Y
-          
-      # - name: Install golang
-      #   shell: powershell
-      #   run: choco install golang -Y
+        run: choco install visualcpp-build-tools -Y
+  
+      - name: Install golang
+        shell: powershell
+        run: |
+            choco upgrade chocolatey
+            choco install make -Y
+            choco install golang -Y
         
-      # - name: Build
-      #   shell: powershell
-      #   run: make windows
+      - name: Build
+        shell: powershell
+        run: make windows
                
