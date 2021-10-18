@@ -2,25 +2,31 @@
 package parser
 
 import (
-   "fmt"
+    //"fmt"
 )
 %}
 
 %union {
    field    string
    length   int
-   operator uint8
 }
 
 %token <field>    F
-%token <length>   N
-%token <operator> '[' ':' ']' ','
+%token <length>   L
 
-%start expr
+%token '[' ']' ',' ':' ' ' '\n'
 
 %%
 
-expr: '[' F ':' N ']' {
-   fmt.Println("=>",$1, $2)
+start: '[' pairs ']' {
+
 };
+
+pairs: pair | pairs pair
+;
+
+pair: F ':' L {
+   $$=$1
+}
+;
 %%
