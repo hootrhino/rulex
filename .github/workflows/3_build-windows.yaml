@@ -30,5 +30,7 @@ jobs:
         
       - name: Build
         shell: powershell
-        run: make windows
+        run: |
+            dir
+            make windows
                
