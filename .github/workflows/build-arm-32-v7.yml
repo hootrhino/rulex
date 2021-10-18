@@ -3,6 +3,9 @@ name: BuildArm32
 on:
   push:
     branches: [master]
+  pull_request:
+    branches: [master]
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -10,8 +13,5 @@ jobs:
       - name: BuildArm32
         id: docker_build
         uses: docker/build-push-action@v2
-        with:
-          context: ./
-          file: ./Dockerfile_arm32v7
-          push: false
-          tags: wwhai/rulex:latest
+        run: |
+              docker build -f .\Dockerfile_arm32v7 . 
