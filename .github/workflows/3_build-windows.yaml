@@ -26,7 +26,7 @@ jobs:
         run: |
             choco upgrade chocolatey
             choco install make -Y
-            choco install golang -Y
+            choco install golang --version 1.17.2 -Y
         
       - name: Build
         shell: powershell
