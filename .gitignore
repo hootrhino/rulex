@@ -12,3 +12,6 @@ rulex.exe
 go.sum
 *.sum
 .idea
+*.exe
+*.bin
+*.output

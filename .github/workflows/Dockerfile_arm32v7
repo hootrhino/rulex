@@ -7,7 +7,9 @@ ENV GO111MODULE=on \
     CGO_ENABLED=1 \
     GOPROXY="https://goproxy.cn,direct"
 
-RUN apk add make build-base go git
-
+RUN apk add make build-base go git zip
+WORKDIR /APP
 RUN git clone https://gitee.com/wwhai/rulex.git
 RUN cd rulex && go build -o rulex main.go
+RUN zip –q –r rulex.zip ./*
+ENTRYPOINT [ "/bin/bash" ]
