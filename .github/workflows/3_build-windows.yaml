@@ -33,6 +33,7 @@ jobs:
         run: |
             git clone https://gitee.com/wwhai/rulex.git
             cd rulex
-            go version
+            go mod tidy
+            SET GOOS=windows
             go build -ldflags "-s -w" -o ${APP}.exe main.go
                
