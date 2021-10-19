@@ -35,5 +35,5 @@ jobs:
             cd rulex
             go mod tidy
             SET GOOS=windows
-            go build -ldflags "-s -w" -o ${APP}.exe main.go
+            go build -o rulex.exe main.go
                
