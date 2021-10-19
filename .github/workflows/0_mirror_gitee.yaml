@@ -1,4 +1,4 @@
-name: 0-同步到 gitee
+name: 0- 仓库同步到 gitee
 on:
   push:
     branches:
@@ -15,7 +15,7 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Sync To Gitee
+      - name: 仓库同步到 gitee
         uses: Yikun/hub-mirror-action@master
         if: env.dst_key && env.dst_token && env.gitee_user
         with:

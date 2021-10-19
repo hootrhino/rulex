@@ -8,7 +8,7 @@ on:
 
 jobs:
   create_release:
-    name: Create GitHub Release
+    name: Windows构建测试
     runs-on: windows-2022
     steps:
       - name: Install Chocolate

@@ -1,4 +1,4 @@
-name: 4- Arm32 V7构建测试
+name: 4- Arm32-V7 构建测试
 
 on:
   push:
@@ -11,6 +11,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: BuildArm32 && Test
+      - name: Arm32-V7 构建测试
         run: |
               docker build -f ./.github/workflows/Dockerfile_arm32v7 . 
