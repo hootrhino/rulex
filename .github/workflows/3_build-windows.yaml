@@ -9,7 +9,7 @@ on:
 jobs:
   create_release:
     name: Create GitHub Release
-    runs-on: windows-2019
+    runs-on: windows-2022
     steps:
       - name: Install Chocolate
         shell: powershell
