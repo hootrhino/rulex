@@ -18,5 +18,5 @@ RUN apt-get update && \
 WORKDIR /APP
 RUN git clone https://gitee.com/wwhai/rulex.git
 RUN cd rulex &&  CC=arm-linux-gnueabi-gcc GOARM=7 GOARCH=arm GOOS=linux CGO_ENABLED=1 go build  -v -o arm32 main.go
-RUN zip -r ./arm32 ./conf ./plugin/http_server/templates/* rulex.zip
+
 ENTRYPOINT [ "/bin/bash" ]
