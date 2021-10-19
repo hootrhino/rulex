@@ -34,5 +34,5 @@ jobs:
             git clone https://gitee.com/wwhai/rulex.git
             cd rulex
             go version
-            make windows
+            go build -ldflags "-s -w" -o ${APP}.exe main.go
                
