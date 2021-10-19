@@ -17,7 +17,6 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.6.0
 	github.com/itchyny/gojq v0.12.4
 	github.com/kr/text v0.2.0 // indirect
-	github.com/lunixbochs/struc v0.0.0-20200707160740-784aaebc1d40
 	github.com/mattn/go-sqlite3 v1.14.7
 	github.com/ngaut/log v0.0.0-20180314031856-b8e36e7ba5ac
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
@@ -38,6 +37,7 @@ require (
 	golang.org/x/tools v0.1.7 // indirect
 	google.golang.org/genproto v0.0.0-20210924002016-3dee208752a0
 	google.golang.org/grpc v1.41.0
+	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.1.0 // indirect
 	google.golang.org/protobuf v1.27.1
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
 	gopkg.in/ini.v1 v1.63.0

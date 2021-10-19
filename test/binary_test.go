@@ -1,8 +1,11 @@
 package test
 
 import (
+	"encoding/binary"
 	"errors"
 	"fmt"
+	"rulex/stdlib"
+	"strconv"
 	"testing"
 )
 
@@ -51,4 +54,25 @@ func TestBinary(t *testing.T) {
 	fmt.Println(GetABitOnByte(v, 5))
 	fmt.Println(GetABitOnByte(v, 6))
 	fmt.Println(GetABitOnByte(v, 7))
+}
+
+func TestBinaryMatch(t *testing.T) {
+	// 00001111 10101010 00001010
+	kls := stdlib.Match("<a:1 b:3 b:5", []byte{0b00001111, 0b10101010, 0b00001010}, true)
+	var len uint = 0
+	for _, v := range kls {
+		len += v.L
+	}
+	t.Log("Len:", len)
+	t.Log(kls)
+}
+func TestBinaryParseInt(t *testing.T) {
+	if i, err := strconv.ParseInt("00001111", 2, 64); err != nil {
+		fmt.Println(err)
+	} else {
+		fmt.Println(i)
+	}
+	b := []byte{0b00011000, 0b00011000} //6168
+
+	fmt.Println(stdlib.ByteToInt(b, binary.LittleEndian))
 }
