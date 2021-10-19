@@ -1,4 +1,4 @@
-name: RulexBuild
+name: 2- 构建以及测试
 
 on:
   push:

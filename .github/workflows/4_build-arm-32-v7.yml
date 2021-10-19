@@ -1,4 +1,4 @@
-name: BuildArm32
+name: 4- Arm32 V7构建测试
 
 on:
   push:

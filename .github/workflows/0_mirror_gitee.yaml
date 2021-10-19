@@ -1,4 +1,4 @@
-name: Sync To Gitee
+name: 0-同步到 gitee
 on:
   push:
     branches:

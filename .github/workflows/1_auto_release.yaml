@@ -1,9 +1,9 @@
+name: 1- 自动发布版本
 on:
   push:
     tags:
       - 'V*' # Push events to matching v*, i.e. v1.0, v20.15.10
 
-name: Create Release
 
 jobs:
   build:

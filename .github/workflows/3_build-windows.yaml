@@ -1,10 +1,10 @@
+name: 3- Windows构建测试
 on:
   push:
     branches: [master]
   pull_request:
     branches: [master]
 
-name: Windows Build Test
 
 jobs:
   create_release:
@@ -31,6 +31,7 @@ jobs:
       - name: Build
         shell: powershell
         run: |
-            dir
+            git clone https://gitee.com/wwhai/rulex.git
+            cd rulex
             make windows
                

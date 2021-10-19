@@ -1,4 +1,4 @@
-name: "CodeQL"
+name: 5- 代码分析
 
 on:
   push:
