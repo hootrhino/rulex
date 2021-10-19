@@ -58,6 +58,7 @@ func TestBinary(t *testing.T) {
 
 func TestBinaryMatch(t *testing.T) {
 	// 00001111 10101010 00001010
+	t.Log("stdlib.Match ==> <a:1 b:3 b:5")
 	kls := stdlib.Match("<a:1 b:3 b:5", []byte{0b00001111, 0b10101010, 0b00001010}, true)
 	var len uint = 0
 	for _, v := range kls {
