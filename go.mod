@@ -14,6 +14,7 @@ require (
 	github.com/goburrow/serial v0.1.0 // indirect
 	github.com/golang/glog v1.0.0
 	github.com/google/uuid v1.2.0
+	github.com/gosnmp/gosnmp v1.33.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.6.0
 	github.com/itchyny/gojq v0.12.4
 	github.com/kr/text v0.2.0 // indirect
