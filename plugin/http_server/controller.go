@@ -29,18 +29,6 @@ type Result struct {
 }
 
 //
-// Render dashboard index
-//
-func Index(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
-	c.HTML(http.StatusOK, "index.html", gin.H{})
-	return
-}
-func Login(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
-	c.HTML(http.StatusOK, "login.html", gin.H{})
-	return
-}
-
-//
 // List cloud Services
 //
 func CloudServices(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
@@ -49,7 +37,6 @@ func CloudServices(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		Msg:  "Success",
 		Data: cloud.ListService(1, 50),
 	})
-	return
 }
 
 //
@@ -65,7 +52,6 @@ func Plugins(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		Msg:  "Success",
 		Data: data,
 	})
-	return
 }
 
 //
@@ -88,7 +74,6 @@ func System(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 			"arch":         runtime.GOARCH,
 			"cpus":         runtime.GOMAXPROCS(0)},
 	})
-	return
 }
 
 //
@@ -104,7 +89,6 @@ func InEnds(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		Msg:  "Success",
 		Data: data,
 	})
-	return
 }
 
 //
@@ -120,7 +104,6 @@ func OutEnds(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		Msg:  "Success",
 		Data: data,
 	})
-	return
 }
 
 //
@@ -136,7 +119,6 @@ func Rules(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		Msg:  "Success",
 		Data: data,
 	})
-	return
 }
 
 //
@@ -148,7 +130,6 @@ func Statistics(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		Msg:  "Success",
 		Data: statistics.AllStatistics(),
 	})
-	return
 }
 
 //
@@ -161,7 +142,6 @@ func Users(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		Msg:  "Success",
 		Data: users,
 	})
-	return
 }
 
 //
@@ -332,7 +312,6 @@ func DeleteInend(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	} else {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": "rule not exists"})
 	}
-	return
 }
 
 //
@@ -349,7 +328,6 @@ func DeleteOutend(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	} else {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": "rule not exists"})
 	}
-	return
 }
 
 //
@@ -366,7 +344,6 @@ func DeleteRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	} else {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": "rule not exists"})
 	}
-	return
 }
 
 //
@@ -448,10 +425,9 @@ func Auth(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		} else {
 			c.PureJSON(http.StatusOK, Result{
 				Code: http.StatusOK,
-				Msg:  "认证成功",
+				Msg:  "Auth Success",
 				Data: user.Username,
 			})
 		}
 	}
-	return
 }

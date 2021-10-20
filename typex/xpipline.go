@@ -2,7 +2,6 @@ package typex
 
 import (
 	"errors"
-	"reflect"
 	"strconv"
 
 	lua "github.com/yuin/gopher-lua"
@@ -70,12 +69,8 @@ func validate(values []lua.LValue, f func() (lua.LValue, error)) (lua.LValue, er
 // Execute Lua function
 func Execute(vm *lua.LState, k string, args ...lua.LValue) (interface{}, error) {
 	callable := vm.GetGlobal(k)
-	name := reflect.TypeOf(callable).Elem().Name()
-	if name == "LFunction" {
+	if callable.Type() == lua.LTFunction {
 		return callLuaFunc(vm, callable.(*lua.LFunction), args...)
-	}
-	if name == "LNilType" {
-		return nil, errors.New("Target:" + k + " is not exists")
 	}
 	return nil, errors.New("Target:" + k + " is not a lua function")
 }
@@ -83,21 +78,19 @@ func Execute(vm *lua.LState, k string, args ...lua.LValue) (interface{}, error) 
 // callLuaFunc
 func callLuaFunc(vm *lua.LState, callable *lua.LFunction, args ...lua.LValue) ([]lua.LValue, error) {
 	if callable == nil {
-		return nil, errors.New("Callable function is not exists")
+		return nil, errors.New("callable function is not exists")
 	} else {
 		coroutine, _ := vm.NewThread()
 		//
 		// callback return value :lValues =[bool, T]
 		//
 		state, err, lValues := vm.Resume(coroutine, callable, args...)
-		if state == lua.ResumeError {
-			return nil, errors.New("current state is not lua.ResumeOK:" + err.Error())
-		}
 		if state == lua.ResumeOK {
+			//
 			// only need T
-
+			//
 			return lValues[:2], nil
 		}
-		return nil, errors.New("current state is not lua.ResumeOK")
+		return nil, errors.New("Lua run error, message is: " + err.Error())
 	}
 }

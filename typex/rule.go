@@ -41,7 +41,7 @@ func NewRule(e RuleX,
 		RegistryGrowStep: 32,
 	})
 	luajson.Preload(vm)
-	vm.SetGlobal("stdlib", vm.G.Global)
+
 	return &Rule{
 		Id:          utils.MakeUUID("RULE"),
 		Name:        name,
@@ -83,7 +83,9 @@ func (r *Rule) ExecuteActions(arg lua.LValue) (lua.LValue, error) {
 }
 
 func (r *Rule) LoadLib(rx RuleX, lib XLib) {
-	r.VM.SetFuncs(r.VM.G.Global, map[string]lua.LGFunction{
+	r.VM.SetGlobal("stdlib", r.VM.G.Global)
+	mod := r.VM.SetFuncs(r.VM.G.Global, map[string]lua.LGFunction{
 		lib.Name(): lib.LibFun(rx),
 	})
+	r.VM.Push(mod)
 }

@@ -43,15 +43,6 @@ func (hh *HttpApiServer) Init(env *typex.XPluginEnv) error {
 	} else {
 		hh.InitDb(hh.dbPath)
 	}
-	hh.ginEngine.LoadHTMLFiles(hh.Root+"/login.html", hh.Root+"/view/rulex/index.html")
-	hh.ginEngine.Static("/dashboard/v1/component", hh.Root+"/component")
-	hh.ginEngine.Static("/dashboard/v1/admin", hh.Root+"/admin")
-	hh.ginEngine.Static("/dashboard/v1/view", hh.Root+"/view")
-	hh.ginEngine.Static("/dashboard/v1/config", hh.Root+"/config")
-	hh.ginEngine.Static("/component", hh.Root+"/component")
-	hh.ginEngine.Static("/admin", hh.Root+"/admin")
-	hh.ginEngine.Static("/view", hh.Root+"/view")
-	hh.ginEngine.Static("/config", hh.Root+"/config")
 	ctx := context.Background()
 	go func(ctx context.Context, port int) {
 		hh.ginEngine.Run(":" + strconv.Itoa(port))
@@ -75,13 +66,6 @@ func (hh *HttpApiServer) Install(env *typex.XPluginEnv) (*typex.XPluginMetaInfo,
 //
 func (hh *HttpApiServer) Start(env *typex.XPluginEnv) error {
 
-	//
-	// Render dashboard index
-	//
-	hh.ginEngine.GET("/", hh.addRoute(Login))
-	hh.ginEngine.GET(DASHBOARD_ROOT, hh.addRoute(Login))
-	hh.ginEngine.GET(DASHBOARD_ROOT+"login", hh.addRoute(Login))
-	hh.ginEngine.GET(DASHBOARD_ROOT+"index", hh.addRoute(Index))
 	//
 	// List CloudServices
 	//

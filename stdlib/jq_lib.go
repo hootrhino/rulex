@@ -13,7 +13,7 @@ type JqLib struct {
 }
 
 func NewJqLib() typex.XLib {
-	return &HttpLib{}
+	return &JqLib{}
 }
 func (l *JqLib) Name() string {
 	return "JqSelect"
