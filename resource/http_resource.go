@@ -18,7 +18,8 @@ type HttpInEndResource struct {
 func NewHttpInEndResource(inEndId string, e typex.RuleX) *HttpInEndResource {
 	h := HttpInEndResource{}
 	h.PointId = inEndId
-	h.engine = gin.Default()
+	gin.SetMode(gin.ReleaseMode)
+	h.engine = gin.New()
 	h.RuleEngine = e
 	return &h
 }
