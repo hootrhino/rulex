@@ -55,6 +55,10 @@ const (
 	MODBUS_RTU_MASTER InEndType = "MODBUS_RTU_MASTER"
 	MODBUS_TCP_SLAVER InEndType = "MODBUS_TCP_SLAVER"
 	MODBUS_RTU_SLAVER InEndType = "MODBUS_RTU_SLAVER"
+	//
+	// From snmp server provider
+	//
+	SNMP_SERVER       InEndType = "SNMP_SERVER"
 )
 
 //
