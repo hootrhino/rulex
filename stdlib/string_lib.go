@@ -9,9 +9,15 @@ import (
 type StringLib struct {
 }
 
-func (l *StringLib) LoadLib(name string, e typex.RuleX, L *lua.LState) error {
-	return nil
+func NewStringLib() typex.XLib {
+	return &StringLib{}
+
 }
-func (l *StringLib) UnLoadLib(name string) error {
-	return nil
+func (l *StringLib) Name() string {
+	return "String"
+}
+func (l *StringLib) LibFun(rx typex.RuleX) func(*lua.LState) int {
+	return func(l *lua.LState) int {
+		return 0
+	}
 }

@@ -282,9 +282,20 @@ func (e *RuleEngine) LoadRule(r *typex.Rule) error {
 					// ...
 					// }
 					(*in.Binds)[r.Id] = *r
-					stdlib.LoadTargetLib(e, r.VM)
-					stdlib.LoadStreamLib(e, r.VM)
-					stdlib.LoadJqLib(e, r.VM)
+					//
+					// Load Stdlib
+					//
+					r.LoadLib(e, stdlib.NewBinaryLib())
+					r.LoadLib(e, stdlib.NewMongoLib())
+					r.LoadLib(e, stdlib.NewHttpLib())
+					r.LoadLib(e, stdlib.NewMqttLib())
+					r.LoadLib(e, stdlib.NewJqLib())
+					r.LoadLib(e, stdlib.NewWriteInStreamLib())
+					r.LoadLib(e, stdlib.NewWriteOutStreamLib())
+					r.LoadLib(e, stdlib.NewStringLib())
+					//
+					// Save to rules map
+					//
 					e.SaveRule(r)
 					return nil
 				} else {

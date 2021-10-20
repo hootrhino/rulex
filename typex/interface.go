@@ -223,6 +223,6 @@ type XExternalDriver interface {
 // XLib: 库函数接口
 //
 type XLib interface {
-	LoadLib(name string, e RuleX, L *lua.LState) error
-	UnLoadLib(name string) error
+	Name() string
+	LibFun(RuleX) func(*lua.LState) int
 }

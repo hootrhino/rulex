@@ -9,46 +9,51 @@ import (
 	lua "github.com/yuin/gopher-lua"
 )
 
-// Loader
-func LoadJqLib(e typex.RuleX, vm *lua.LState) {
-	vm.SetFuncs(vm.G.Global, map[string]lua.LGFunction{
-		"JqSelect": func(stateStack *lua.LState) int {
-			// LUA Args: Jq, Data ->
-			// stack:  ------------
-			//         |   Nil(0)  |
-			//         ------------
-			//         |   Jq Exp  |
-			//         ------------
-			//         |   Data    |
-			//         ------------
-			// Doc: https://github.com/lichuang/Lua-Source-Internal/blob/master/doc/ch03-Lua%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%A0%88%E7%BB%93%E6%9E%84%E5%8F%8A%E7%9B%B8%E5%85%B3%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84.md
-			jqExpression := stateStack.ToString(2)
-			data := stateStack.ToString(3)
-			var jsonData []interface{}
-			if err := json.Unmarshal([]byte(data), &jsonData); err != nil {
-				stateStack.Push(lua.LNil)
-				log.Error("Internal Error: ", err, ", InputData:", string(data))
-			}
-			selectResult, err0 := JqSelect(jqExpression, jsonData)
-			if err0 != nil {
-				stateStack.Push(lua.LNil)
-				log.Error("JqSelect Error:", err0)
-			}
-			resultString, err1 := json.Marshal(selectResult)
-			if err1 != nil {
-				stateStack.Push(lua.LNil)
-				log.Error("Json Marshal 'selectResult' error:", err1)
-			}
+type JqLib struct {
+}
 
-			if string(resultString) == "[null]" {
-				stateStack.Push(lua.LNil)
-			} else {
-				stateStack.Push(lua.LString(resultString))
-			}
-			return 1
-		},
-	},
-	)
+func NewJqLib() typex.XLib {
+	return &HttpLib{}
+}
+func (l *JqLib) Name() string {
+	return "JqSelect"
+}
+func (l *JqLib) LibFun(rx typex.RuleX) func(*lua.LState) int {
+	return func(stateStack *lua.LState) int {
+		// LUA Args: Jq, Data ->
+		// stack:  ------------
+		//         |   Nil(0)  |
+		//         ------------
+		//         |   Jq Exp  |
+		//         ------------
+		//         |   Data    |
+		//         ------------
+		// Doc: https://github.com/lichuang/Lua-Source-Internal/blob/master/doc/ch03-Lua%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%A0%88%E7%BB%93%E6%9E%84%E5%8F%8A%E7%9B%B8%E5%85%B3%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84.md
+		jqExpression := stateStack.ToString(2)
+		data := stateStack.ToString(3)
+		var jsonData []interface{}
+		if err := json.Unmarshal([]byte(data), &jsonData); err != nil {
+			stateStack.Push(lua.LNil)
+			log.Error("Internal Error: ", err, ", InputData:", string(data))
+		}
+		selectResult, err0 := JqSelect(jqExpression, jsonData)
+		if err0 != nil {
+			stateStack.Push(lua.LNil)
+			log.Error("JqSelect Error:", err0)
+		}
+		resultString, err1 := json.Marshal(selectResult)
+		if err1 != nil {
+			stateStack.Push(lua.LNil)
+			log.Error("Json Marshal 'selectResult' error:", err1)
+		}
+
+		if string(resultString) == "[null]" {
+			stateStack.Push(lua.LNil)
+		} else {
+			stateStack.Push(lua.LString(resultString))
+		}
+		return 1
+	}
 }
 
 func VerifyJqExpression(jqExpression string) (*gojq.Query, error) {

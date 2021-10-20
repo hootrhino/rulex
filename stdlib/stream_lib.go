@@ -6,27 +6,43 @@ import (
 	lua "github.com/yuin/gopher-lua"
 )
 
-//
-// Loader
-//
-func LoadStreamLib(e typex.RuleX, vm *lua.LState) int {
-	mod := vm.SetFuncs(vm.G.Global, map[string]lua.LGFunction{
-		"WriteInStream": func(l *lua.LState) int {
-			id := l.ToString(2)
-			data := l.ToString(3)
-			WriteInStream(e, id, data)
-			return 0
-		},
-		"WriteOutStream": func(l *lua.LState) int {
-			id := l.ToString(2)
-			data := l.ToString(3)
-			WriteOutStream(e, id, data)
-			return 0
-		},
-	})
-	vm.Push(mod)
-	return 1
+type WriteInStreamLib struct {
 }
+
+func NewWriteInStreamLib() typex.XLib {
+	return &HttpLib{}
+}
+func (l *WriteInStreamLib) Name() string {
+	return "WriteInStream"
+}
+func (l *WriteInStreamLib) LibFun(rx typex.RuleX) func(*lua.LState) int {
+	return func(l *lua.LState) int {
+		id := l.ToString(2)
+		data := l.ToString(3)
+		WriteInStream(rx, id, data)
+		return 0
+	}
+}
+
+//
+type WriteOutStreamLib struct {
+}
+
+func NewWriteOutStreamLib() typex.XLib {
+	return &HttpLib{}
+}
+func (l *WriteOutStreamLib) Name() string {
+	return "WriteOutStream"
+}
+func (l *WriteOutStreamLib) LibFun(rx typex.RuleX) func(*lua.LState) int {
+	return func(l *lua.LState) int {
+		id := l.ToString(2)
+		data := l.ToString(3)
+		WriteOutStream(rx, id, data)
+		return 0
+	}
+}
+
 func WriteInStream(e typex.RuleX, id string, data string) {
 	e.GetInEnd(id).Resource.OnStreamApproached(data)
 }

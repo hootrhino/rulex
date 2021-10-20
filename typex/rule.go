@@ -81,3 +81,9 @@ func (r *Rule) ExecuteActions(arg lua.LValue) (lua.LValue, error) {
 		return nil, errors.New("Actions not a lua table or not exist")
 	}
 }
+
+func (r *Rule) LoadLib(rx RuleX, lib XLib) {
+	r.VM.SetFuncs(r.VM.G.Global, map[string]lua.LGFunction{
+		lib.Name(): lib.LibFun(rx),
+	})
+}

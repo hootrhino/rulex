@@ -23,19 +23,27 @@ func init() {
 }
 
 type BinaryLib struct {
-	bBuffer  *bytes.Buffer
 	regexper *regexp.Regexp
 }
 
 func NewBinaryLib() typex.XLib {
-
-	return nil
+	return &BinaryLib{
+		regexper: regexp.MustCompile(pattern),
+	}
 }
-func (l *BinaryLib) LoadLib(name string, e typex.RuleX, L *lua.LState) error {
-	return nil
+func (l *BinaryLib) Name() string {
+	return "MatchBinary"
 }
-func (l *BinaryLib) UnLoadLib(name string) error {
-	return nil
+func (l *BinaryLib) LibFun(rx typex.RuleX) func(*lua.LState) int {
+	return func(l *lua.LState) int {
+		expr := l.ToString(2)
+		data := l.ToString(3)
+		returnMore := l.ToBool(4)
+		log.Debug("BinaryLib:", expr, data, returnMore)
+		// DataToMongo(rx, id, data)
+		// Match(expr, []byte(data), returnMore)
+		return 0
+	}
 }
 
 //------------------------------------------------------------------------------------
@@ -44,7 +52,6 @@ func (l *BinaryLib) UnLoadLib(name string) error {
 
 //
 // 从一个字节里面提取某 1 个位的值，只有 0 1 两个值
-// 注意：这里取得是大端模式，也就是最高位在最前面，最低位在最后面
 //
 
 func GetABitOnByte(b byte, position uint8) (v uint8, errs error) {
@@ -70,23 +77,29 @@ func GetABitOnByte(b byte, position uint8) (v uint8, errs error) {
 func ByteToBitFormatString(b []byte) string {
 	s := ""
 	for _, v := range b {
+		log.Debug(v)
 		s += fmt.Sprintf("%08b", v)
 	}
 	return s
 }
 
 type Kl struct {
-	K  string
-	L  uint
-	BS interface{}
-	I  uint64
+	K  string      //Key
+	L  uint        //Length
+	BS interface{} //BitString
 }
 
 func (k Kl) String() string {
-	return fmt.Sprintf("K: %v, L: %v, BS: %v, I: %v", k.K, k.L, k.BS, k.I)
+	return fmt.Sprintf("KL@ K: %v,L: %v,BS: %v", k.K, k.L, k.BS)
 }
 
+//
+// Big-Endian:  高位字节放在内存的低地址端，低位字节放在内存的高地址端。
+// Little-Endian: 低位字节放在内存的低地址段，高位字节放在内存的高地址端
+//
 func ByteToInt(b []byte, order binary.ByteOrder) uint64 {
+	log.Debug(b)
+	log.Debugf("%08b\n", b)
 	var err error
 	// uint8
 	if len(b) == 1 {
@@ -138,46 +151,78 @@ func BitStringToBytes(s string) ([]byte, error) {
 	}
 	return b, nil
 }
-func endian(endian uint8) binary.ByteOrder {
+func endian(endian byte) binary.ByteOrder {
+	// < 小端 0x34 0x12
 	if endian == '>' {
 		return binary.BigEndian
 	}
-	// 小端 0x34 0x12
+	// > 大端 0x12 0x34
 	if endian == '<' {
 		return binary.LittleEndian
 	}
 	return binary.LittleEndian
 }
-func Match(s string, data []byte, returnMore bool) []Kl {
+
+//
+//
+//
+func append0Prefix(n int) string {
+	if (n % 8) == 7 {
+		return "0"
+	}
+	if (n % 8) == 6 {
+		return "00"
+	}
+	if (n % 8) == 5 {
+		return "000"
+	}
+	if (n % 8) == 4 {
+		return "0000"
+	}
+	if (n % 8) == 3 {
+		return "00000"
+	}
+	if (n % 8) == 2 {
+		return "000000"
+	}
+	if (n % 8) == 1 {
+		return "0000000"
+	}
+	return ""
+}
+
+//--------------------------------------------------------------
+// stdlib:Match
+//--------------------------------------------------------------
+
+func Match(expr string, data []byte, returnMore bool) []Kl {
 	cursor := 0
 	result := []Kl{}
-	matched, err0 := regexp.MatchString(pattern, s[1:])
+	matched, err0 := regexp.MatchString(pattern, expr[1:])
 	if matched {
 		bfs := ByteToBitFormatString(data)
+
 		// <a:12 b:12
-		for _, v := range regexper.FindAllString(s[1:], -1) {
+		for _, v := range regexper.FindAllString(expr[1:], -1) {
 			kl := strings.Split(v, ":")
 			k := kl[0]
 			if l, err1 := strconv.Atoi(kl[1]); err1 == nil {
-				if cursor+l < len(s) {
+				if cursor+l <= len(bfs) {
 					binString := bfs[cursor : cursor+l]
-					if b, err := BitStringToBytes(binString); err == nil {
-						intValue := ByteToInt(b, endian(s[0]))
-						result = append(result, Kl{k, uint(l), binString, intValue})
-					} else {
-						log.Error(err)
-						result = append(result, Kl{k, uint(l), binString, 0})
-					}
-
+					result = append(result, Kl{
+						K:  k,
+						L:  uint(l),
+						BS: append0Prefix(len(binString)) + binString,
+					})
 				} else {
-					result = append(result, Kl{k, uint(l), nil, 0})
+					result = append(result, Kl{k, uint(l), nil})
 				}
 				cursor += l
 			}
 		}
 		if returnMore {
-			if cursor < len(s) {
-				result = append(result, Kl{"_$", uint(len(bfs) - cursor), bfs[cursor:], 0})
+			if cursor < len(bfs) {
+				result = append(result, Kl{"_", uint(len(bfs) - cursor), append0Prefix(len(bfs[cursor:])) + bfs[cursor:]})
 			}
 		}
 
