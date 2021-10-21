@@ -1,11 +1,15 @@
 package httpserver
 
 import (
-	"gorm.io/gorm"
+	"time"
 )
 
+type RulexModel struct {
+	ID        uint `gorm:"primarykey"`
+	CreatedAt time.Time
+}
 type MRule struct {
-	gorm.Model
+	RulexModel
 	Name        string `gorm:"not null"`
 	Description string
 	From        string `gorm:"not null"`
@@ -15,7 +19,7 @@ type MRule struct {
 }
 
 type MInEnd struct {
-	gorm.Model
+	RulexModel
 	// UUID for origin resource ID
 	UUID        string `gorm:"not null"`
 	Type        string `gorm:"not null"`
@@ -25,7 +29,7 @@ type MInEnd struct {
 }
 
 type MOutEnd struct {
-	gorm.Model
+	RulexModel
 	// UUID for origin resource ID
 	UUID        string `gorm:"not null"`
 	Type        string `gorm:"not null"`
@@ -35,7 +39,7 @@ type MOutEnd struct {
 }
 
 type MUser struct {
-	gorm.Model
+	RulexModel
 	Role        string `gorm:"not null"`
 	Username    string `gorm:"not null"`
 	Password    string `gorm:"not null"`
