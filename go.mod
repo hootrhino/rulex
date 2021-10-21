@@ -28,6 +28,7 @@ require (
 	github.com/shirou/gopsutil v3.21.6+incompatible
 	github.com/smartystreets/goconvey v1.6.4 // indirect
 	github.com/tarm/serial v0.0.0-20180830185346-98f6abe2eb07
+	github.com/tbrandon/mbserver v0.0.0-20210320091329-a1f8ae952881
 	github.com/tklauser/go-sysconf v0.3.6 // indirect
 	github.com/ugorji/go v1.1.13 // indirect
 	github.com/urfave/cli/v2 v2.3.0
@@ -39,10 +40,8 @@ require (
 	golang.org/x/net v0.0.0-20210917221730-978cfadd31cf // indirect
 	golang.org/x/sys v0.0.0-20210923061019-b8560ed6a9b7 // indirect
 	golang.org/x/text v0.3.7 // indirect
-	golang.org/x/tools v0.1.7 // indirect
 	google.golang.org/genproto v0.0.0-20210924002016-3dee208752a0
 	google.golang.org/grpc v1.41.0
-	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.1.0 // indirect
 	google.golang.org/protobuf v1.27.1
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
 	gopkg.in/ini.v1 v1.63.0
