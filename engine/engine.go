@@ -293,8 +293,6 @@ func (e *RuleEngine) LoadRule(r *typex.Rule) error {
 					r.LoadLib(e, stdlib.NewWriteInStreamLib())
 					r.LoadLib(e, stdlib.NewWriteOutStreamLib())
 					r.LoadLib(e, stdlib.NewStringLib())
-					r.LoadLib(e, stdlib.NewJsonDecodeLib())
-					r.LoadLib(e, stdlib.NewJsonEncodeLib())
 					//--------------------------------------------------------------
 					// Save to rules map
 					//

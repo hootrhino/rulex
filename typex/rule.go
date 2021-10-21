@@ -4,6 +4,9 @@ import (
 	"errors"
 	"reflect"
 
+	"github.com/cjoudrey/gluaurl"
+	"github.com/ngaut/log"
+	json "github.com/wwhai/gopher-json"
 	luajson "github.com/wwhai/gopher-json"
 
 	"rulex/utils"
@@ -83,8 +86,14 @@ func (r *Rule) ExecuteActions(arg lua.LValue) (lua.LValue, error) {
 }
 
 func (r *Rule) LoadLib(rx RuleX, lib XLib) {
-	r.VM.SetGlobal("stdlib", r.VM.G.Global)
-	mod := r.VM.SetFuncs(r.VM.G.Global, map[string]lua.LGFunction{
+	log.Info("LoadLib:", lib.Name())
+	stdlib := r.VM.G.Global
+	//
+	r.VM.SetGlobal("stdlib", stdlib)
+	r.VM.PreloadModule("json", json.Loader)
+	r.VM.PreloadModule("url", gluaurl.Loader)
+	//
+	mod := r.VM.SetFuncs(stdlib, map[string]lua.LGFunction{
 		lib.Name(): lib.LibFun(rx),
 	})
 	r.VM.Push(mod)

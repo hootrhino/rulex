@@ -23,6 +23,7 @@ import (
 func TestFullyRun(t *testing.T) {
 	Run()
 }
+
 //
 func Run() {
 
@@ -100,9 +101,15 @@ func Run() {
 			    local V4 = stdlib:JqSelect(".[] | select(.lex > 50)", data)
 			    print("[LUA Actions Callback 4 ===> .[] | select(.lex > 50)] return => ", stdlib:JqSelect(".[] | select(.lex > 50)", data))
 				return true, data
+			end,
+			function(data)
+				local json = require("json")
+				print("[LUA Actions Callback 5, json.decode] ==>",json.decode(data))
+				print("[LUA Actions Callback 5, json.encode] ==>",json.encode(json.decode(data)))
+				return true, data
 			end
 		}`,
-		`function Failed(error) print("[LUA Failed Callback]=> OK", error) end`)
+		`function Failed(error) print("[LUA Failed Callback]", error) end`)
 	if err := engine.LoadRule(rule); err != nil {
 		log.Error(err)
 	}
@@ -124,7 +131,7 @@ func Run() {
 	if err != nil {
 		log.Error("grpc.Dial err: %v", err)
 	}
-	log.Debugf("Rulex Rpc Call Result ====>>: %v", resp.GetMessage())
+	log.Infof("Rulex Rpc Call Result ====>>: %v", resp.GetMessage())
 	time.Sleep(1 * time.Second)
 	log.Info("Test Http Api===> " + HttpGet("http://127.0.0.1:2580/api/v1/system"))
 	engine.Stop()
