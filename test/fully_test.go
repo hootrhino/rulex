@@ -107,6 +107,14 @@ func Run() {
 				print("[LUA Actions Callback 5, json.decode] ==>",json.decode(data))
 				print("[LUA Actions Callback 5, json.encode] ==>",json.encode(json.decode(data)))
 				return true, data
+			end,
+			function(data)
+				local json = require("json")
+				-- 0110_0001 0110_0001 0110_0010
+				-- <a:5 b:3 c:1 => a:00001100 b:00000001 c:0
+				local V6 = json.encode(stdlib:MatchBinary("<a:5 b:3 c:1", "aab", false))
+				print("[LUA Actions Callback 5, stdlib.MatchBinary] ==>", V6)
+				return true, data
 			end
 		}`,
 		`function Failed(error) print("[LUA Failed Callback]", error) end`)

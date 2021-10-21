@@ -31,7 +31,7 @@ jobs:
       - name: Build
         shell: powershell
         run: |
-            git clone https://gitee.com/wwhai/rulex.git
+            git clone https://github.com/wwhai/rulex.git
             cd rulex
             go mod tidy
             SET GOOS=windows

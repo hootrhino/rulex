@@ -14,13 +14,8 @@ import (
 	lua "github.com/yuin/gopher-lua"
 )
 
-var regexper *regexp.Regexp
+var regexper *regexp.Regexp = regexp.MustCompile(pattern)
 var pattern = `[a-z]+:[1-9]+`
-
-func init() {
-	regexper = regexp.MustCompile(pattern)
-
-}
 
 type BinaryLib struct {
 	regexper *regexp.Regexp
@@ -35,14 +30,17 @@ func (l *BinaryLib) Name() string {
 	return "MatchBinary"
 }
 func (l *BinaryLib) LibFun(rx typex.RuleX) func(*lua.LState) int {
-	return func(l *lua.LState) int {
-		expr := l.ToString(2)
-		data := l.ToString(3)
-		returnMore := l.ToBool(4)
-		log.Debug("BinaryLib:", expr, data, returnMore)
-		// DataToMongo(rx, id, data)
-		// Match(expr, []byte(data), returnMore)
-		return 0
+	return func(state *lua.LState) int {
+		expr := state.ToString(2)
+		data := state.ToString(3)
+		returnMore := state.ToBool(4)
+		// log.Debug(expr, data, returnMore)
+		t := lua.LTable{}
+		for _, kl := range Match(expr, []byte(data), returnMore) {
+			t.RawSetString(kl.K, lua.LString(kl.BS.(string)))
+		}
+		state.Push(&t)
+		return 1
 	}
 }
 
@@ -68,16 +66,12 @@ func GetABitOnByte(b byte, position uint8) (v uint8, errs error) {
 }
 
 //
-// TODO: 下一个大版本支持，至少3个月后
 //
-// 这里借鉴了下Erlang的二进制语法: <<A:5,B:4>> = <<"helloworld">>
-// 其中A = hello B= world
 //
 
 func ByteToBitFormatString(b []byte) string {
 	s := ""
 	for _, v := range b {
-		log.Debug(v)
 		s += fmt.Sprintf("%08b", v)
 	}
 	return s
@@ -98,8 +92,6 @@ func (k Kl) String() string {
 // Little-Endian: 低位字节放在内存的低地址段，高位字节放在内存的高地址端
 //
 func ByteToInt(b []byte, order binary.ByteOrder) uint64 {
-	log.Debug(b)
-	log.Debugf("%08b\n", b)
 	var err error
 	// uint8
 	if len(b) == 1 {
@@ -151,17 +143,18 @@ func BitStringToBytes(s string) ([]byte, error) {
 	}
 	return b, nil
 }
-func endian(endian byte) binary.ByteOrder {
-	// < 小端 0x34 0x12
-	if endian == '>' {
-		return binary.BigEndian
-	}
-	// > 大端 0x12 0x34
-	if endian == '<' {
-		return binary.LittleEndian
-	}
-	return binary.LittleEndian
-}
+
+// func endian(endian byte) binary.ByteOrder {
+// 	// < 小端 0x34 0x12
+// 	if endian == '>' {
+// 		return binary.BigEndian
+// 	}
+// 	// > 大端 0x12 0x34
+// 	if endian == '<' {
+// 		return binary.LittleEndian
+// 	}
+// 	return binary.LittleEndian
+// }
 
 //
 //
@@ -198,10 +191,10 @@ func append0Prefix(n int) string {
 func Match(expr string, data []byte, returnMore bool) []Kl {
 	cursor := 0
 	result := []Kl{}
-	matched, err0 := regexp.MatchString(pattern, expr[1:])
+	// log.Debug(pattern, expr[1:])
+	matched, err := regexp.MatchString(pattern, expr[1:])
 	if matched {
 		bfs := ByteToBitFormatString(data)
-
 		// <a:12 b:12
 		for _, v := range regexper.FindAllString(expr[1:], -1) {
 			kl := strings.Split(v, ":")
@@ -222,13 +215,12 @@ func Match(expr string, data []byte, returnMore bool) []Kl {
 		}
 		if returnMore {
 			if cursor < len(bfs) {
+				// 是否最后补上剩下的字节
 				result = append(result, Kl{"_", uint(len(bfs) - cursor), append0Prefix(len(bfs[cursor:])) + bfs[cursor:]})
 			}
 		}
-
 	} else {
-		log.Error(err0)
+		log.Error(matched, err)
 	}
-
 	return result
 }
