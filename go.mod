@@ -3,6 +3,7 @@ module rulex
 go 1.16
 
 require (
+	github.com/DrmagicE/gmqtt v0.4.1
 	github.com/StackExchange/wmi v1.2.0 // indirect
 	github.com/containerd/containerd v1.5.5
 	github.com/eclipse/paho.mqtt.golang v1.3.5
@@ -18,6 +19,7 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.6.0
 	github.com/itchyny/gojq v0.12.4
 	github.com/kr/text v0.2.0 // indirect
+	github.com/logrusorgru/aurora v2.0.3+incompatible
 	github.com/mattn/go-sqlite3 v1.14.7
 	github.com/ngaut/log v0.0.0-20180314031856-b8e36e7ba5ac
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
@@ -32,6 +34,7 @@ require (
 	github.com/yuin/gopher-lua v0.0.0-20210529063254-f4c35e4016d9
 	go.bug.st/serial v1.3.1
 	go.mongodb.org/mongo-driver v1.5.4
+	go.uber.org/zap v1.19.1
 	golang.org/x/net v0.0.0-20210917221730-978cfadd31cf // indirect
 	golang.org/x/sys v0.0.0-20210923061019-b8560ed6a9b7 // indirect
 	golang.org/x/text v0.3.7 // indirect
