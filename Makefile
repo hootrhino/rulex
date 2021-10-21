@@ -14,6 +14,7 @@ build:
 	sed -i "s/\r//" ./gen_proto.sh
 	sed -i "s/\r//" ./gen_version.sh
 	go generate
+	CGO_ENABLED=1 GOOS=linux
 	go build -ldflags "-s -w" -o ${APP} main.go
 
 .PHONY: xx
@@ -25,6 +26,15 @@ windows:
 	go mod tidy
 	SET GOOS=windows
 	go build -ldflags "-s -w" -o ${APP}.exe main.go
+
+.PHONY: arm32
+arm32:
+	CC=arm-linux-gnueabi-gcc # Support ubuntu 1804, should install 'gcc-arm-linux-gnueabi'
+	GOARM=7
+	GOARCH=arm
+	GOOS=linux
+	CGO_ENABLED=1
+	go build -ldflags "-s -w" -o ${APP} -ldflags "-linkmode external -extldflags -static" main.go
 
 .PHONY: run
 run:

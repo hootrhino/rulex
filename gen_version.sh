@@ -23,4 +23,5 @@ var DefaultVersion = Version{
 }
 
 EOF
+echo ${VERSION}-${HASH:0:15} > ./VERSION
 echo "Generate Version Susseccfully"
