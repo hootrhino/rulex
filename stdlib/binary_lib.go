@@ -37,7 +37,7 @@ func (l *BinaryLib) LibFun(rx typex.RuleX) func(*lua.LState) int {
 		// log.Debug(expr, data, returnMore)
 		t := lua.LTable{}
 		for _, kl := range Match(expr, []byte(data), returnMore) {
-			t.RawSetString(kl.K, lua.LString(kl.BS.(string)))
+			t.RawSetString(kl.K, lua.LString(kl.BS))
 		}
 		state.Push(&t)
 		return 1
@@ -78,9 +78,9 @@ func ByteToBitFormatString(b []byte) string {
 }
 
 type Kl struct {
-	K  string      //Key
-	L  uint        //Length
-	BS interface{} //BitString
+	K  string //Key
+	L  uint   //Length
+	BS string //BitString
 }
 
 func (k Kl) String() string {
@@ -208,7 +208,7 @@ func Match(expr string, data []byte, returnMore bool) []Kl {
 						BS: append0Prefix(len(binString)) + binString,
 					})
 				} else {
-					result = append(result, Kl{k, uint(l), nil})
+					result = append(result, Kl{k, uint(l), ""})
 				}
 				cursor += l
 			}
