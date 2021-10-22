@@ -52,7 +52,7 @@ func TestByteToBitFormatString(t *testing.T) {
 	// 0 1 1 0 0 0 0 1
 	// 原始数据是1个字节
 	originData := []byte{0b_0110_0001, 0b_0110_0001}
-	t.Log("originData:", stdlib.ByteToBitFormatString(originData))
+	t.Log("originData:", stdlib.ByteToBitString(originData))
 	// 到了网关后被转成字符串
 	formatData := string(originData)
 	t.Log("formatData:", formatData)
@@ -71,6 +71,6 @@ func TestBinaryParseInt(t *testing.T) {
 	fmt.Println(stdlib.ByteToInt(b, binary.LittleEndian))
 }
 
-func TestEndian(t *testing.T) {
+func TestBitStringToBytes(t *testing.T) {
 	t.Log(stdlib.BitStringToBytes("000000010000000110000000"))
 }
