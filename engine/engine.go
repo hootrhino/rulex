@@ -292,7 +292,8 @@ func (e *RuleEngine) LoadRule(r *typex.Rule) error {
 					r.LoadLib(e, stdlib.NewJqLib())
 					r.LoadLib(e, stdlib.NewWriteInStreamLib())
 					r.LoadLib(e, stdlib.NewWriteOutStreamLib())
-					r.LoadLib(e, stdlib.NewStringLib())
+					r.LoadLib(e, stdlib.NewByteToBitStringLib())
+					r.LoadLib(e, stdlib.NewGetABitOnByteLib())
 					//--------------------------------------------------------------
 					// Save to rules map
 					//

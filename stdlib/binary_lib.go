@@ -44,6 +44,50 @@ func (l *BinaryLib) LibFun(rx typex.RuleX) func(*lua.LState) int {
 	}
 }
 
+type GetABitOnByteLib struct {
+}
+
+func (l *GetABitOnByteLib) Name() string {
+	return "GetABitOnByte"
+}
+func (l *GetABitOnByteLib) LibFun(rx typex.RuleX) func(*lua.LState) int {
+	return func(state *lua.LState) int {
+		if state.Get(2).Type() != lua.LTNumber {
+			state.Push(nil)
+			return 1
+		}
+		b := uint8(state.ToInt(2))
+		pos := uint8(state.ToInt(3))
+		if v, err := GetABitOnByte(b, pos); err != nil {
+			state.Push(nil)
+		} else {
+			state.Push(lua.LNumber(v))
+		}
+		return 1
+	}
+}
+func NewGetABitOnByteLib() typex.XLib {
+	return &GetABitOnByteLib{}
+}
+
+type ByteToBitStringLib struct {
+}
+
+func (l *ByteToBitStringLib) Name() string {
+	return "ByteToBitString"
+}
+func (l *ByteToBitStringLib) LibFun(rx typex.RuleX) func(*lua.LState) int {
+	return func(state *lua.LState) int {
+		state.Push(nil)
+		return 1
+	}
+}
+
+func NewByteToBitStringLib() typex.XLib {
+
+	return &ByteToBitStringLib{}
+}
+
 //------------------------------------------------------------------------------------
 // 自定义实现函数
 //------------------------------------------------------------------------------------
@@ -69,7 +113,7 @@ func GetABitOnByte(b byte, position uint8) (v uint8, errs error) {
 //
 //
 
-func ByteToBitFormatString(b []byte) string {
+func ByteToBitString(b []byte) string {
 	s := ""
 	for _, v := range b {
 		s += fmt.Sprintf("%08b", v)
@@ -144,17 +188,17 @@ func BitStringToBytes(s string) ([]byte, error) {
 	return b, nil
 }
 
-// func endian(endian byte) binary.ByteOrder {
-// 	// < 小端 0x34 0x12
-// 	if endian == '>' {
-// 		return binary.BigEndian
-// 	}
-// 	// > 大端 0x12 0x34
-// 	if endian == '<' {
-// 		return binary.LittleEndian
-// 	}
-// 	return binary.LittleEndian
-// }
+func Endian(endian byte) binary.ByteOrder {
+	// < 小端 0x34 0x12
+	if endian == '>' {
+		return binary.BigEndian
+	}
+	// > 大端 0x12 0x34
+	if endian == '<' {
+		return binary.LittleEndian
+	}
+	return binary.LittleEndian
+}
 
 //
 //
@@ -194,7 +238,7 @@ func Match(expr string, data []byte, returnMore bool) []Kl {
 	// log.Debug(pattern, expr[1:])
 	matched, err := regexp.MatchString(pattern, expr[1:])
 	if matched {
-		bfs := ByteToBitFormatString(data)
+		bfs := ByteToBitString(data)
 		// <a:12 b:12
 		for _, v := range regexper.FindAllString(expr[1:], -1) {
 			kl := strings.Split(v, ":")
