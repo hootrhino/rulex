@@ -51,31 +51,32 @@ func NewRuleEngine() typex.RuleX {
 //
 func (e *RuleEngine) Start() *map[string]interface{} {
 	e.ConfigMap = &map[string]interface{}{}
-	log.Info("Init XQueue, max queue size is:", 204800)
+	log.Info("Init XQueue, max queue size is:", core.GlobalConfig.MaxQueueSize)
 	typex.DefaultDataCacheQueue = &typex.DataCacheQueue{
-		Queue: make(chan typex.QueueData, 204800),
+		Queue: make(chan typex.QueueData, core.GlobalConfig.MaxQueueSize),
 	}
 	go func(ctx context.Context, xQueue typex.XQueue) {
 		for {
-			select {
-			case qd := <-xQueue.GetQueue():
-				//
-				// 消息队列有2种用法:
-				// 1 进来的数据缓存
-				// 2 出去的消息缓存
-				// 只需要判断 in 或者 out 是不是 nil即可
-				//
-				if qd.In != nil {
+			for qd := range xQueue.GetQueue() {
+				{
 					//
-					// 传 In 进来为了查找 Rule 去执行
-					// 内存中的数据关联性 Key: In, Value: Rules...
+					// 消息队列有2种用法:
+					// 1 进来的数据缓存
+					// 2 出去的消息缓存
+					// 只需要判断 in 或者 out 是不是 nil即可
 					//
-					qd.E.RunLuaCallbacks(qd.In, qd.Data)
-					qd.E.RunHooks(qd.Data)
-				}
-				if qd.Out != nil {
-					//  传 Out 为了实现数据外流
-					(*qd.E.AllOutEnd()[qd.Out.Id]).Target.To(qd.Data)
+					if qd.In != nil {
+						//
+						// 传 In 进来为了查找 Rule 去执行
+						// 内存中的数据关联性 Key: In, Value: Rules...
+						//
+						qd.E.RunLuaCallbacks(qd.In, qd.Data)
+						qd.E.RunHooks(qd.Data)
+					}
+					if qd.Out != nil {
+						//  传 Out 为了实现数据外流
+						(*qd.E.AllOutEnd()[qd.Out.Id]).Target.To(qd.Data)
+					}
 				}
 			}
 		}
