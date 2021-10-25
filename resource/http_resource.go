@@ -54,8 +54,8 @@ func (hh *HttpInEndResource) Start() error {
 }
 
 //
-func (mm *HttpInEndResource) DataModels() *map[string]typex.XDataModel {
-	return &map[string]typex.XDataModel{}
+func (mm *HttpInEndResource) DataModels() []typex.XDataModel {
+	return []typex.XDataModel{}
 }
 
 //

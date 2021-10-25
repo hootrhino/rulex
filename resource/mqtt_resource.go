@@ -87,8 +87,8 @@ func (mm *MqttInEndResource) Start() error {
 
 }
 
-func (mm *MqttInEndResource) DataModels() *map[string]typex.XDataModel {
-	return &map[string]typex.XDataModel{}
+func (mm *MqttInEndResource) DataModels() []typex.XDataModel {
+	return []typex.XDataModel{}
 }
 func (m *MqttInEndResource) OnStreamApproached(data string) error {
 	return nil

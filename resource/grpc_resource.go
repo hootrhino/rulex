@@ -97,8 +97,8 @@ func (g *GrpcInEndResource) Start() error {
 }
 
 //
-func (g *GrpcInEndResource) DataModels() *map[string]typex.XDataModel {
-	return &map[string]typex.XDataModel{}
+func (g *GrpcInEndResource) DataModels() []typex.XDataModel {
+	return []typex.XDataModel{}
 }
 
 //

@@ -5,6 +5,7 @@ import "rulex/typex"
 type DemoResource struct {
 	typex.XStatus
 }
+
 func (m *DemoResource) OnStreamApproached(data string) error {
 	return nil
 }
@@ -29,8 +30,8 @@ func (d *DemoResource) Enabled() bool {
 	return true
 }
 
-func (d *DemoResource) DataModels() *map[string]typex.XDataModel {
-	return &map[string]typex.XDataModel{}
+func (d *DemoResource) DataModels() []typex.XDataModel {
+	return []typex.XDataModel{}
 }
 
 func (d *DemoResource) Reload() {

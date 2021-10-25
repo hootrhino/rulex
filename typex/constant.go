@@ -58,7 +58,7 @@ const (
 	//
 	// From snmp server provider
 	//
-	SNMP_SERVER       InEndType = "SNMP_SERVER"
+	SNMP_SERVER InEndType = "SNMP_SERVER"
 )
 
 //
@@ -79,3 +79,16 @@ const (
 	MYSQL_TARGET  TargetType = "MYSQL"
 	PGSQL_TARGET  TargetType = "PGSQL"
 )
+
+//
+//
+// 创建资源的时候雨需要一个通用配置类, XConfig 可认为是接收参数的Form
+//
+//
+type XConfig struct {
+	Name        string
+	Type        string
+	Config      map[string]interface{}
+	DataModels  map[string]XDataModel
+	Description string
+}

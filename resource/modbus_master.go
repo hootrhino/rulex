@@ -162,6 +162,7 @@ func (m *ModbusMasterResource) Start() error {
 		log.Info("Start read register:", rCfg.Address)
 
 		go func(ctx context.Context, rp RegisterParam) {
+			defer ticker.Stop()
 			// Modbus data is most often read and written as "registers" which are [16-bit] pieces of data. Most often,
 			// the register is either a signed or unsigned 16-bit integer. If a 32-bit integer or floating point is required,
 			// these values are actually read as a pair of registers.
@@ -225,8 +226,8 @@ func (m *ModbusMasterResource) Enabled() bool {
 	return m.Enable
 }
 
-func (m *ModbusMasterResource) DataModels() *map[string]typex.XDataModel {
-	return &map[string]typex.XDataModel{}
+func (m *ModbusMasterResource) DataModels() []typex.XDataModel {
+	return []typex.XDataModel{}
 }
 
 func (m *ModbusMasterResource) Reload() {

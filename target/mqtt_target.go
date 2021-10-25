@@ -81,8 +81,8 @@ func (mm *MqttOutEndTarget) Start() error {
 func (m *MqttOutEndTarget) OnStreamApproached(data string) error {
 	return nil
 }
-func (mm *MqttOutEndTarget) DataModels() *map[string]typex.XDataModel {
-	return &map[string]typex.XDataModel{}
+func (mm *MqttOutEndTarget) DataModels() []typex.XDataModel {
+	return []typex.XDataModel{}
 }
 
 func (mm *MqttOutEndTarget) Stop() {

@@ -71,8 +71,8 @@ func (u *UdpResource) Enabled() bool {
 	return true
 }
 
-func (u *UdpResource) DataModels() *map[string]typex.XDataModel {
-	return &map[string]typex.XDataModel{}
+func (u *UdpResource) DataModels() []typex.XDataModel {
+	return []typex.XDataModel{}
 }
 
 func (u *UdpResource) Reload() {

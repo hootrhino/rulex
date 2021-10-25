@@ -7,17 +7,116 @@ package test
 import (
 	"fmt"
 	"log"
+	"strings"
 	"testing"
 
+	"github.com/gosnmp/gosnmp"
 	g "github.com/gosnmp/gosnmp"
 )
+
 //
 // https://www.alvestrand.no/objectid/top.html
 //
-func TestSnmp(t *testing.T) {
+type SystemInfo struct {
+	snmpClient *g.GoSNMP
+}
 
-	// Default is a pointer to a GoSNMP struct that contains sensible defaults
-	// eg port 161, community public, etc
+func (si *SystemInfo) SystemDescrption() string {
+	s := ""
+	si.snmpClient.Walk(".1.3.6.1.2.1.1.1.0", func(variable g.SnmpPDU) error {
+		if variable.Type == gosnmp.OctetString {
+			s = string(variable.Value.([]byte))
+		}
+		return nil
+	})
+	return s
+}
+func (si *SystemInfo) PCName() string {
+	s := ""
+	si.snmpClient.Walk(".1.3.6.1.2.1.1.5.0", func(variable g.SnmpPDU) error {
+		if variable.Type == gosnmp.OctetString {
+			s = string(variable.Value.([]byte))
+		}
+		return nil
+	})
+	return s
+}
+func (si *SystemInfo) TotalMemory() int {
+	v := 0
+	si.snmpClient.Walk(".1.3.6.1.2.1.25.2.2.0", func(variable g.SnmpPDU) error {
+		if variable.Type == gosnmp.Integer {
+			v = int(variable.Value.(int))
+		}
+		return nil
+	})
+	return v
+
+}
+func (si *SystemInfo) CPUs() map[string]int {
+	oid := ".1.3.6.1.2.1.25.3.3.1.2"
+	r := map[string]int{}
+	si.snmpClient.Walk(oid, func(variable g.SnmpPDU) error {
+		if variable.Type == gosnmp.Integer {
+			k := strings.Replace(variable.Name, ".1.3.6.1.2.1.25.3.3.1.2.", "", 1)
+			r[k] = variable.Value.(int)
+		}
+		return nil
+	})
+	return r
+}
+func (si *SystemInfo) ProcessList() []string {
+	ss := []string{}
+	si.snmpClient.Walk(".1.3.6.1.2.1.25.4.2.1.2", func(variable g.SnmpPDU) error {
+		if variable.Type == gosnmp.OctetString {
+			ss = append(ss, string(variable.Value.([]byte)))
+		}
+		return nil
+	})
+
+	return ss
+}
+func (si *SystemInfo) InterfaceIPs() []string {
+	oid := "1.3.6.1.2.1.4.20.1.2"
+	r := []string{}
+	si.snmpClient.Walk(oid, func(variable g.SnmpPDU) error {
+		if variable.Type == gosnmp.Integer {
+			ip := strings.Replace(variable.Name, ".1.3.6.1.2.1.4.20.1.2.", "", 1)
+			if ip != "127.0.0.1" {
+				r = append(r, ip)
+			}
+		}
+		return nil
+	})
+	return r
+}
+func (si *SystemInfo) HardwareNetInterfaceName() []string {
+	oid := ".1.3.6.1.2.1.2.2.1.2"
+	ss := []string{}
+	si.snmpClient.Walk(oid, func(variable g.SnmpPDU) error {
+		if variable.Type == gosnmp.OctetString {
+			ss = append(ss, string(variable.Value.([]byte)))
+		}
+		return nil
+	})
+	return ss
+}
+func (si *SystemInfo) HardwareNetInterfaceMac() []string {
+	oid := ".1.3.6.1.2.1.2.2.1.6"
+	ss := []string{}
+	si.snmpClient.Walk(oid, func(variable g.SnmpPDU) error {
+		if variable.Type == gosnmp.OctetString {
+			mac := variable.Value.([]uint8)
+			for _, v := range mac {
+				fmt.Println(v)
+
+			}
+			ss = append(ss, string(variable.Value.([]uint8)))
+		}
+		return nil
+	})
+	return ss
+}
+func TestSnmp(t *testing.T) {
 	g.Default.Target = "127.0.0.1"
 	g.Default.Community = "public"
 	err := g.Default.Connect()
@@ -26,21 +125,50 @@ func TestSnmp(t *testing.T) {
 	}
 	defer g.Default.Conn.Close()
 
-	oids := []string{".1.3.6.1.2.1.1.1.0"}
-	result, err2 := g.Default.Get(oids)
-	if err2 != nil {
-		log.Fatalf("Get() err: %v", err2)
-	}
+	si := &SystemInfo{snmpClient: g.Default}
+	t.Log(si.SystemDescrption())
+	t.Log(si.TotalMemory())
+	t.Log(si.PCName())
+	t.Log(si.CPUs())
+	t.Log(si.ProcessList())
+	t.Log(si.HardwareNetInterfaceName())
+	t.Log(si.HardwareNetInterfaceMac())
+	t.Log(si.InterfaceIPs())
 
+}
+
+// OID	                描述				备注		请求方式
+// .1.3.6.1.2.1.1.1.0	获取系统基本信息	 SysDesc	 GET
+// .1.3.6.1.2.1.1.5.0	获取机器名			SysName	     GET
+func getPDUValue(client *g.GoSNMP, oids []string) {
+	result, _ := g.Default.Get(oids)
 	for i, variable := range result.Variables {
-		fmt.Printf("%d: oid: %s ", i, variable.Name)
-
-		switch variable.Type {
-		case g.OctetString:
-			fmt.Printf("string: %s\n", string(variable.Value.([]byte)))
-		default:
-
-			fmt.Printf("number: %d\n", g.ToBigInt(variable.Value))
+		if variable.Type == gosnmp.OctetString {
+			fmt.Printf("%d: oid: %s ", i, variable.Name)
+			fmt.Printf("%v\n", string(variable.Value.([]byte)))
 		}
+		if variable.Type == gosnmp.Integer {
+			fmt.Printf("%d: oid: %s ", i, variable.Name)
+			fmt.Printf("%v\n", int(variable.Value.(int)))
+		}
+
 	}
+}
+
+func walkPDUValue(client *g.GoSNMP, oid string) {
+	g.Default.Walk(oid, func(variable g.SnmpPDU) error {
+		if variable.Type == gosnmp.OctetString {
+			fmt.Printf("%v  %v  %v\n", variable.Type, variable.Name, (variable.Value.([]byte)))
+			fmt.Printf("%v  %v  %v\n", variable.Type, variable.Name, string(variable.Value.([]byte)))
+		}
+		if variable.Type == gosnmp.Integer {
+			fmt.Printf("%v  %v  %v\n", variable.Type, variable.Name, int(variable.Value.(int)))
+		}
+		if variable.Type == gosnmp.Gauge32 {
+			fmt.Printf("%v  %v  %v\n", variable.Type, variable.Name, (variable.Value.(uint)))
+		}
+		return nil
+
+	})
+
 }

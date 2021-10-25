@@ -74,12 +74,13 @@ func (cc *CoAPInEndResource) Start() error {
 func (m *CoAPInEndResource) OnStreamApproached(data string) error {
 	return nil
 }
+
 //
 func (cc *CoAPInEndResource) Stop() {
 }
 
-func (mm *CoAPInEndResource) DataModels() *map[string]typex.XDataModel {
-	return &map[string]typex.XDataModel{}
+func (mm *CoAPInEndResource) DataModels() []typex.XDataModel {
+	return []typex.XDataModel{}
 }
 func (cc *CoAPInEndResource) Reload() {
 

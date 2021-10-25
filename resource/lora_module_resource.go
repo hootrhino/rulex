@@ -21,8 +21,8 @@ func NewLoraModuleResource(inEndId string, e typex.RuleX) typex.XResource {
 	return &s
 }
 
-func (mm *LoraModuleResource) DataModels() *map[string]typex.XDataModel {
-	return &map[string]typex.XDataModel{}
+func (mm *LoraModuleResource) DataModels() []typex.XDataModel {
+	return []typex.XDataModel{}
 }
 
 func (s *LoraModuleResource) Test(inEndId string) bool {
@@ -99,8 +99,6 @@ func (s *LoraModuleResource) Status() typex.ResourceState {
 			return typex.UP
 		}
 	}
-	log.Debug(s.loraDriver.Test())
-
 	return typex.DOWN
 }
 

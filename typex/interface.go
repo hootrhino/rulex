@@ -71,7 +71,7 @@ type XResource interface {
 	Register(inEndId string) error //1
 	Start() error                  //2
 	Enabled() bool
-	DataModels() *map[string]XDataModel
+	DataModels() []XDataModel
 	Reload()
 	Pause()
 	Status() ResourceState

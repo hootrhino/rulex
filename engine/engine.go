@@ -144,12 +144,24 @@ func (e *RuleEngine) LoadInEnd(in *typex.InEnd) error {
 	if in.Type == typex.MODBUS_TCP_MASTER {
 		return startResources(resource.NewModbusMasterResource(in.Id, e), in, e)
 	}
-	return fmt.Errorf("Unsupported rule type:%s", in.Type)
+	if in.Type == typex.SNMP_SERVER {
+		return startResources(resource.NewSNMPInEndResource(in.Id, e), in, e)
+	}
+	return fmt.Errorf("Unsupported InEnd type:%s", in.Type)
 }
 
 //
-// startResources
+// start Resources
 //
+/*
+* Life cycle
++------------------+       +------------------+   +---------------+        +---------------+
+|     Register     |------>|   Start          |-->|     Test      |--+ --->|  Stop         |
++------------------+  |    +------------------+   +---------------+  |     +---------------+
+                      |                                              |
+                      |                                              |
+                      +-------------------Error ---------------------+
+*/
 func startResources(resource typex.XResource, in *typex.InEnd, e *RuleEngine) error {
 	// Save to rule engine first
 	// 这么作主要是为了可以 预加载 进去, 然后等环境恢复了以后自动复原
@@ -161,7 +173,7 @@ func startResources(resource typex.XResource, in *typex.InEnd, e *RuleEngine) er
 	} else {
 		// 然后启动资源
 		if err1 := resource.Start(); err1 != nil {
-			log.Error("resource start failed:", resource.Details().Id, ", errors:", err1)
+			log.Error("Resource start failed:", resource.Details().Id, ", errors:", err1)
 		}
 		// Set resources to inend
 		in.Resource = resource
@@ -170,6 +182,7 @@ func startResources(resource typex.XResource, in *typex.InEnd, e *RuleEngine) er
 			// 5 seconds
 			ticker := time.NewTicker(time.Duration(time.Second * 5))
 			defer resource.Stop()
+			defer ticker.Stop()
 			for {
 				<-ticker.C
 				// log.Debug("Test state...", resource.Details().Id)
@@ -191,7 +204,7 @@ func testResourceState(resource typex.XResource, e *RuleEngine, id string) {
 	} else {
 		e.GetInEnd(id).SetState(typex.DOWN)
 		// 当资源挂了以后先给停止, 然后重启
-		log.Warnf("Resource %v down. try to restart it", resource.Details().Id)
+		log.Warnf("Resource %v %v down. try to restart it", resource.Details().Id, resource.Details().Name)
 		resource.Stop()
 		runtime.Gosched()
 		runtime.GC()
