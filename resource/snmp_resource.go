@@ -3,6 +3,7 @@ package resource
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"rulex/typex"
 	"rulex/utils"
 	"strings"
@@ -100,28 +101,25 @@ func (s *SNMPResource) InterfaceIPs(i int) []string {
 	})
 	return r
 }
-func (s *SNMPResource) HardwareNetInterfaceName(i int) []string {
-	oid := ".1.3.6.1.2.1.2.2.1.2"
-	ss := []string{}
-	s.GetClient(i).Walk(oid, func(variable gosnmp.SnmpPDU) error {
-		if variable.Type == gosnmp.OctetString {
-			ss = append(ss, string(variable.Value.([]byte)))
-		}
-		return nil
-	})
-	return ss
-}
+
 func (s *SNMPResource) HardwareNetInterfaceMac(i int) []string {
 	oid := ".1.3.6.1.2.1.2.2.1.6"
-	ss := []string{}
+	maps := map[string]string{}
 	s.GetClient(i).Walk(oid, func(variable gosnmp.SnmpPDU) error {
 		if variable.Type == gosnmp.OctetString {
-			mac := variable.Value.([]uint8)
-			ss = append(ss, string(mac))
+			macByte := variable.Value.([]byte)
+			if len(macByte) == 6 {
+				mac := fmt.Sprintf("%0x-%0x-%0x-%0x-%0x-%0x", macByte[0], macByte[1], macByte[2], macByte[3], macByte[4], macByte[5])
+				maps[mac] = ""
+			}
 		}
 		return nil
 	})
-	return ss
+	result := make([]string, 0)
+	for k := range maps {
+		result = append(result, k)
+	}
+	return result
 }
 
 //----------------------------------------------------------------------------------
@@ -193,7 +191,6 @@ func (s *SNMPResource) Start() error {
 						data := map[string]interface{}{
 							"cpus":        s.CPUs(i),
 							"netsMac":     s.HardwareNetInterfaceMac(i),
-							"netsName":    s.HardwareNetInterfaceName(i),
 							"memory":      s.TotalMemory(i),
 							"ips":         s.InterfaceIPs(i),
 							"name":        s.PCName(i),

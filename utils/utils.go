@@ -3,10 +3,12 @@ package utils
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/go-playground/validator/v10"
 	"io/ioutil"
 	"net/http"
 	"os"
+	"unicode"
+
+	"github.com/go-playground/validator/v10"
 
 	"github.com/google/uuid"
 	"github.com/ngaut/log"
@@ -106,4 +108,18 @@ func BindResourceConfig(config *map[string]interface{}, s interface{}) error {
 		return err
 	}
 	return nil
+}
+
+//
+// 去掉\u0000字符
+//
+func TrimZero(s string) string {
+	str := make([]rune, 0, len(s))
+	for _, v := range s {
+		if !unicode.IsLetter(v) && !unicode.IsDigit(v) {
+			continue
+		}
+		str = append(str, v)
+	}
+	return string(str)
 }
