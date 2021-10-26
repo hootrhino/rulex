@@ -5,7 +5,6 @@ import (
 	"reflect"
 
 	"github.com/cjoudrey/gluaurl"
-	"github.com/ngaut/log"
 	json "github.com/wwhai/gopher-json"
 	luajson "github.com/wwhai/gopher-json"
 
