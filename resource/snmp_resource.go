@@ -183,28 +183,26 @@ func (s *SNMPResource) Start() error {
 			return err
 		}
 		go func(ctx context.Context, c *gosnmp.GoSNMP) {
-			ticker := time.NewTicker(4 * time.Second)
+			ticker := time.NewTicker(5 * time.Second)
 			for {
 				select {
 				case <-ticker.C:
-					{
-						data := map[string]interface{}{
-							"cpus":        s.CPUs(i),
-							"netsMac":     s.HardwareNetInterfaceMac(i),
-							"memory":      s.TotalMemory(i),
-							"ips":         s.InterfaceIPs(i),
-							"name":        s.PCName(i),
-							"description": s.SystemDescrption(i),
-						}
-						dataBytes, _ := json.Marshal(data)
-						if err0 := s.RuleEngine.PushQueue(typex.QueueData{
-							In:   s.Details(),
-							Out:  nil,
-							E:    s.RuleEngine,
-							Data: string(dataBytes),
-						}); err0 != nil {
-							log.Error("SNMPResource error: ", err0)
-						}
+					data := map[string]interface{}{
+						"cpus":        s.CPUs(i),
+						"netsMac":     s.HardwareNetInterfaceMac(i),
+						"memory":      s.TotalMemory(i),
+						"ips":         s.InterfaceIPs(i),
+						"name":        s.PCName(i),
+						"description": s.SystemDescrption(i),
+					}
+					dataBytes, _ := json.Marshal(data)
+					if err0 := s.RuleEngine.PushQueue(typex.QueueData{
+						In:   s.Details(),
+						Out:  nil,
+						E:    s.RuleEngine,
+						Data: string(dataBytes),
+					}); err0 != nil {
+						log.Error("SNMPResource error: ", err0)
 					}
 				default:
 					{

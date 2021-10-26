@@ -7,7 +7,6 @@ import (
 	"rulex/core"
 	httpserver "rulex/plugin/http_server"
 	"rulex/typex"
-	"strings"
 	"syscall"
 
 	"github.com/ngaut/log"
@@ -49,7 +48,7 @@ func RunRulex(dbPath string) {
 		rule := typex.NewRule(engine,
 			mRule.Name,
 			mRule.Description,
-			strings.Split(mRule.From, ","),
+			mRule.From,
 			mRule.Success,
 			mRule.Actions,
 			mRule.Failed)
@@ -155,7 +154,7 @@ func InitData() {
 	hh.InsertMRule(&httpserver.MRule{
 		Name:        rule.Name,
 		Description: rule.Description,
-		From:        rule.From[0],
+		From:        rule.From,
 		Actions:     rule.Actions,
 		Success:     rule.Success,
 		Failed:      rule.Failed,

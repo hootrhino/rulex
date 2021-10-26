@@ -5,11 +5,14 @@ import (
 	"github.com/ngaut/log"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 func (hh *HttpApiServer) InitDb(dbPath string) {
 	var err error
-	hh.sqliteDb, err = gorm.Open(sqlite.Open(dbPath))
+	hh.sqliteDb, err = gorm.Open(sqlite.Open(dbPath), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Warn),
+	})
 	if err != nil {
 		panic(err)
 	}
@@ -39,8 +42,8 @@ func (hh *HttpApiServer) GetMRuleWithUUID(uuid string) (*MRule, error) {
 	}
 }
 
-func (hh *HttpApiServer) InsertMRule(r *MRule) {
-	hh.sqliteDb.Table("m_rules").Create(r)
+func (hh *HttpApiServer) InsertMRule(r *MRule) error {
+	return hh.sqliteDb.Table("m_rules").Create(r).Error
 }
 
 func (hh *HttpApiServer) DeleteMRule(uuid string) {
@@ -158,7 +161,7 @@ func (hh *HttpApiServer) UpdateMUser(id int, o *MUser) error {
 //-----------------------------------------------------------------------------------
 func (hh *HttpApiServer) AllMRules() []MRule {
 	rules := []MRule{}
-	hh.sqliteDb.Find(&rules)
+	hh.sqliteDb.Table("m_rules").Find(&rules)
 	return rules
 }
 

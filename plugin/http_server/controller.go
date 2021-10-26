@@ -8,7 +8,6 @@ import (
 	"rulex/typex"
 	"rulex/utils"
 	"runtime"
-	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -231,12 +230,12 @@ func CreateOutEnd(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 //
 func CreateRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	type Form struct {
-		From        string `json:"from" binding:"required"`
-		Name        string `json:"name" binding:"required"`
-		Description string `json:"description"`
-		Actions     string `json:"actions"`
-		Success     string `json:"success"`
-		Failed      string `json:"failed"`
+		From        []string `json:"from" binding:"required"`
+		Name        string   `json:"name" binding:"required"`
+		Description string   `json:"description"`
+		Actions     string   `json:"actions"`
+		Success     string   `json:"success"`
+		Failed      string   `json:"failed"`
 	}
 	form := Form{}
 	err0 := c.ShouldBindJSON(&form)
@@ -244,27 +243,28 @@ func CreateRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": err0.Error()})
 		return
 	} else {
-		rule := typex.NewRule(nil,
-			form.Name,
-			form.Description,
-			nil,
-			form.Success,
-			form.Actions,
-			form.Failed)
-		if len(strings.Split(form.From, ",")) > 0 {
-			for _, id := range strings.Split(form.From, ",") {
-				// must be: 111,222,333... style
+
+		if len(form.From) > 0 {
+			for _, id := range form.From {
 				if id != "" {
 					if e.GetInEnd(id) == nil {
 						c.JSON(http.StatusBadRequest, gin.H{"msg": "inend not exists:" + id})
 						return
 					}
 				} else {
-					c.JSON(http.StatusOK, gin.H{"msg": "invalid 'from' string format:" + form.From})
+					c.JSON(http.StatusOK, gin.H{"msg": "invalid 'from'"})
 					return
 				}
 			}
-			if err1 := core.VerifyCallback(rule); err1 != nil {
+			tmpRule := typex.NewRule(nil,
+				form.Name,
+				form.Description,
+				nil,
+				form.Success,
+				form.Actions,
+				form.Failed)
+
+			if err1 := core.VerifyCallback(tmpRule); err1 != nil {
 				c.JSON(http.StatusBadRequest, gin.H{"msg": err1.Error()})
 				return
 			} else {
@@ -276,11 +276,14 @@ func CreateRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 					Failed:      form.Failed,
 					Actions:     form.Actions,
 				}
-				hh.InsertMRule(mRule)
+				if err := hh.InsertMRule(mRule); err != nil {
+					c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
+					return
+				}
 				rule := typex.NewRule(hh.ruleEngine,
 					mRule.Name,
 					mRule.Description,
-					strings.Split(mRule.From, ","),
+					mRule.From,
 					mRule.Success,
 					mRule.Actions,
 					mRule.Failed)

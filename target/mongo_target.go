@@ -38,7 +38,7 @@ func (m *MongoTarget) Start() error {
 	} else {
 		clientOptions = options.Client().ApplyURI("mongodb://localhost:27017")
 	}
-	client, err0 := mongo.Connect(context.TODO(), clientOptions)
+	client, err0 := mongo.Connect(context.Background(), clientOptions)
 	if err0 != nil {
 		return err0
 	}

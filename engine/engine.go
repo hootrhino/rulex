@@ -57,7 +57,8 @@ func (e *RuleEngine) Start() *map[string]interface{} {
 	}
 	go func(ctx context.Context, xQueue typex.XQueue) {
 		for {
-			for qd := range xQueue.GetQueue() {
+			select {
+			case qd := <-xQueue.GetQueue():
 				{
 					//
 					// 消息队列有2种用法:
@@ -77,6 +78,9 @@ func (e *RuleEngine) Start() *map[string]interface{} {
 						//  传 Out 为了实现数据外流
 						(*qd.E.AllOutEnd()[qd.Out.Id]).Target.To(qd.Data)
 					}
+				}
+			default:
+				{
 				}
 			}
 		}
@@ -185,10 +189,8 @@ func startResources(resource typex.XResource, in *typex.InEnd, e *RuleEngine) er
 			for {
 				select {
 				case <-ticker.C:
-					{
-						if resource.Status() == typex.DOWN {
-							testResourceState(resource, e, in.Id)
-						}
+					if resource.Status() == typex.DOWN {
+						testResourceState(resource, e, in.Id)
 					}
 				default:
 					{
@@ -197,6 +199,8 @@ func startResources(resource typex.XResource, in *typex.InEnd, e *RuleEngine) er
 			}
 
 		}(context.Background())
+		log.Infof("InEnd %v %v load successfully", in.Name, in.Id)
+
 		return nil
 	}
 }
@@ -264,10 +268,8 @@ func startTarget(target typex.XTarget, out *typex.OutEnd, e typex.RuleX) error {
 			for {
 				select {
 				case <-ticker.C:
-					{
-						if target.Status() == typex.DOWN {
-							testTargetState(target, e, out.Id)
-						}
+					if target.Status() == typex.DOWN {
+						testTargetState(target, e, out.Id)
 					}
 				default:
 					{
@@ -324,6 +326,7 @@ func (e *RuleEngine) LoadRule(r *typex.Rule) error {
 					// Save to rules map
 					//
 					e.SaveRule(r)
+					log.Infof("Rule %v %v load successfully", r.Name, r.Id)
 					return nil
 				} else {
 					return errors.New("'InEnd':" + inId + " is not exists")
@@ -425,8 +428,10 @@ func (e *RuleEngine) Work(in *typex.InEnd, data string) (bool, error) {
 
 func (e *RuleEngine) RunLuaCallbacks(in *typex.InEnd, data string) {
 	for _, rule := range *in.Binds {
+		log.Debug("RunLuaCallbacks: ", rule)
 		_, err := rule.ExecuteActions(lua.LString(data))
 		if err != nil {
+			log.Error("RunLuaCallbacks error:", err)
 			rule.ExecuteFailed(lua.LString(err.Error()))
 		} else {
 			rule.ExecuteSuccess()
@@ -440,23 +445,20 @@ func (e *RuleEngine) LoadPlugin(p typex.XPlugin) error {
 	err0 := p.Init(env)
 	if err0 != nil {
 		return err0
-	} else {
-		metaInfo, err1 := p.Install(env)
-		if err1 != nil {
-			return err1
-		} else {
-			if (*e.Plugins)[metaInfo.Name] != nil {
-				return errors.New("plugin already installed:" + metaInfo.Name)
-			} else {
-				(*e.Plugins)[metaInfo.Name] = metaInfo
-				if err2 := p.Start(env); err2 != nil {
-					return err2
-				}
-				return nil
-			}
-
-		}
 	}
+	metaInfo, err1 := p.Install(env)
+	if err1 != nil {
+		return err1
+	}
+	if (*e.Plugins)[metaInfo.Name] != nil {
+		return errors.New("plugin already installed:" + metaInfo.Name)
+	}
+	(*e.Plugins)[metaInfo.Name] = metaInfo
+	if err2 := p.Start(env); err2 != nil {
+		return err2
+	}
+	return nil
+
 }
 
 //
