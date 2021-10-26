@@ -182,7 +182,6 @@ func startResources(resource typex.XResource, in *typex.InEnd, e *RuleEngine) er
 			// 5 seconds
 			ticker := time.NewTicker(time.Duration(time.Second * 5))
 			defer resource.Stop()
-			defer ticker.Stop()
 			for {
 				<-ticker.C
 				// log.Debug("Test state...", resource.Details().Id)
@@ -255,7 +254,6 @@ func startTarget(target typex.XTarget, out *typex.OutEnd, e typex.RuleX) error {
 		go func(ctx context.Context) {
 			// 5 seconds
 			ticker := time.NewTicker(time.Duration(time.Second * 5))
-			defer target.Stop()
 			for {
 				<-ticker.C
 				if target.Status() == typex.DOWN {

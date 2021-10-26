@@ -5,25 +5,138 @@ import (
 	"encoding/json"
 	"rulex/typex"
 	"rulex/utils"
+	"strings"
+	"sync"
 	"time"
 
 	"github.com/gosnmp/gosnmp"
 	"github.com/ngaut/log"
 )
 
+//----------------------------------------------------------------------------------
+
 type SNMPResource struct {
+	sync.Mutex
 	typex.XStatus
-	snmpClient *gosnmp.GoSNMP
+	snmpClients []*gosnmp.GoSNMP
 }
 
-// GoSNMP represents GoSNMP library state.
-type SNMPConfig struct {
+func (s *SNMPResource) GetClient(i int) *gosnmp.GoSNMP {
+	s.Lock()
+	defer s.Unlock()
+	return s.snmpClients[i]
+}
+func (s *SNMPResource) SetClient(i int, c *gosnmp.GoSNMP) {
+	s.Lock()
+	defer s.Unlock()
+	s.snmpClients[i] = c
+}
+
+func (s *SNMPResource) SystemDescrption(i int) string {
+	r := ""
+	s.GetClient(i).Walk(".1.3.6.1.2.1.1.1.0", func(variable gosnmp.SnmpPDU) error {
+		if variable.Type == gosnmp.OctetString {
+			r = string(variable.Value.([]byte))
+		}
+		return nil
+	})
+	return r
+}
+func (s *SNMPResource) PCName(i int) string {
+	r := ""
+	s.GetClient(i).Walk(".1.3.6.1.2.1.1.5.0", func(variable gosnmp.SnmpPDU) error {
+		if variable.Type == gosnmp.OctetString {
+			r = string(variable.Value.([]byte))
+		}
+		return nil
+	})
+	return r
+}
+func (s *SNMPResource) TotalMemory(i int) int {
+	v := 0
+	s.GetClient(i).Walk(".1.3.6.1.2.1.25.2.2.0", func(variable gosnmp.SnmpPDU) error {
+		if variable.Type == gosnmp.Integer {
+			v = int(variable.Value.(int))
+		}
+		return nil
+	})
+	return v
+
+}
+func (s *SNMPResource) CPUs(i int) map[string]int {
+	oid := ".1.3.6.1.2.1.25.3.3.1.2"
+	r := map[string]int{}
+	s.GetClient(i).Walk(oid, func(variable gosnmp.SnmpPDU) error {
+		if variable.Type == gosnmp.Integer {
+			k := strings.Replace(variable.Name, ".1.3.6.1.2.1.25.3.3.1.2.", "", 1)
+			r[k] = variable.Value.(int)
+		}
+		return nil
+	})
+	return r
+}
+func (s *SNMPResource) ProcessList(i int) []string {
+	ss := []string{}
+	s.GetClient(i).Walk(".1.3.6.1.2.1.25.4.2.1.2", func(variable gosnmp.SnmpPDU) error {
+		if variable.Type == gosnmp.OctetString {
+			ss = append(ss, string(variable.Value.([]byte)))
+		}
+		return nil
+	})
+
+	return ss
+}
+func (s *SNMPResource) InterfaceIPs(i int) []string {
+	oid := "1.3.6.1.2.1.4.20.1.2"
+	r := []string{}
+	s.GetClient(i).Walk(oid, func(variable gosnmp.SnmpPDU) error {
+		if variable.Type == gosnmp.Integer {
+			ip := strings.Replace(variable.Name, ".1.3.6.1.2.1.4.20.1.2.", "", 1)
+			if ip != "127.0.0.1" {
+				r = append(r, ip)
+			}
+		}
+		return nil
+	})
+	return r
+}
+func (s *SNMPResource) HardwareNetInterfaceName(i int) []string {
+	oid := ".1.3.6.1.2.1.2.2.1.2"
+	ss := []string{}
+	s.GetClient(i).Walk(oid, func(variable gosnmp.SnmpPDU) error {
+		if variable.Type == gosnmp.OctetString {
+			ss = append(ss, string(variable.Value.([]byte)))
+		}
+		return nil
+	})
+	return ss
+}
+func (s *SNMPResource) HardwareNetInterfaceMac(i int) []string {
+	oid := ".1.3.6.1.2.1.2.2.1.6"
+	ss := []string{}
+	s.GetClient(i).Walk(oid, func(variable gosnmp.SnmpPDU) error {
+		if variable.Type == gosnmp.OctetString {
+			mac := variable.Value.([]uint8)
+			ss = append(ss, string(mac))
+		}
+		return nil
+	})
+	return ss
+}
+
+//----------------------------------------------------------------------------------
+type target struct {
 	Target     string             `json:"target" validate:"required"`
 	Port       uint16             `json:"port" validate:"required"`
 	Transport  string             `json:"transport" validate:"required"`
 	Community  string             `json:"community" validate:"required"`
 	Version    uint8              `json:"version" validate:"required"`
 	DataModels []typex.XDataModel `json:"dataModels" validate:"required"`
+}
+
+// GoSNMP represents GoSNMP library state.
+type SNMPConfig struct {
+	Targets []target `json:"targets" validate:"required"`
 }
 
 //--------------------------------------------------------------------------------
@@ -38,12 +151,15 @@ func NewSNMPInEndResource(inEndId string, e typex.RuleX) *SNMPResource {
 }
 
 func (s *SNMPResource) Test(inEndId string) bool {
-	if err := s.snmpClient.Connect(); err != nil {
-		log.Errorf("SnmpClient Connect err: %v", err)
-		return false
-	} else {
-		return true
+	r := []bool{}
+	for i := 0; i < len(s.snmpClients); i++ {
+		if err := s.GetClient(i).Connect(); err != nil {
+			log.Errorf("SnmpClient [%v] Connect err: %v", s.GetClient(i).Target, err)
+		} else {
+			r = append(r, true)
+		}
 	}
+	return len(r) == len(s.snmpClients)
 
 }
 
@@ -54,51 +170,57 @@ func (s *SNMPResource) Register(inEndId string) error {
 
 func (s *SNMPResource) Start() error {
 	config := s.RuleEngine.GetInEnd(s.PointId).Config
-	configBytes, err0 := json.Marshal(config)
-	if err0 != nil {
-		return err0
-	}
-	var mainConfig SNMPConfig
-	if err1 := json.Unmarshal(configBytes, &mainConfig); err1 != nil {
-		return err1
-	}
-	if err2 := utils.TransformConfig(configBytes, &mainConfig); err2 != nil {
-		return err2
-	}
-	s.snmpClient = gosnmp.Default
-	s.snmpClient.Target = mainConfig.Target
-	s.snmpClient.Community = mainConfig.Community
-	// s.snmpClient.Version = gosnmp.SnmpVersion(mainConfig.Version)
-	ticker := time.NewTicker(5 * time.Second)
-
-	if err := s.snmpClient.Connect(); err != nil {
-		log.Errorf("SnmpClient Connect err: %v", err)
+	mainConfig := SNMPConfig{}
+	if err := utils.BindResourceConfig(config, &mainConfig); err != nil {
 		return err
-	} else {
-		go func(ctx context.Context, snmpClient *gosnmp.GoSNMP) {
-			defer ticker.Stop()
-			for {
-				<-ticker.C
-				result, err2 := s.snmpClient.Get([]string{".1.3.6.1.2.1.1.1.0"})
-				if err2 != nil {
-					log.Error(err2)
-				}
-				for i, variable := range result.Variables {
-					log.Infof("%d: oid: %s ", i, variable.Name)
+	}
+	s.snmpClients = make([]*gosnmp.GoSNMP, len(mainConfig.Targets))
+	for i, v := range mainConfig.Targets {
+		s.SetClient(i, gosnmp.Default)
+		s.GetClient(i).Target = v.Target
+		s.GetClient(i).Community = v.Community
 
-					switch variable.Type {
-					case gosnmp.OctetString:
-						log.Infof("string: %s\n", string(variable.Value.([]byte)))
-					default:
-						log.Infof("number: %d\n", gosnmp.ToBigInt(variable.Value))
+		if err := s.GetClient(i).Connect(); err != nil {
+			log.Errorf("SnmpClient Connect err: %v", err)
+			return err
+		}
+		go func(ctx context.Context, c *gosnmp.GoSNMP) {
+			ticker := time.NewTicker(4 * time.Second)
+			for {
+				select {
+				case <-ticker.C:
+					{
+						data := map[string]interface{}{
+							"cpus":        s.CPUs(i),
+							"netsMac":     s.HardwareNetInterfaceMac(i),
+							"netsName":    s.HardwareNetInterfaceName(i),
+							"memory":      s.TotalMemory(i),
+							"ips":         s.InterfaceIPs(i),
+							"name":        s.PCName(i),
+							"description": s.SystemDescrption(i),
+						}
+						dataBytes, _ := json.Marshal(data)
+						if err0 := s.RuleEngine.PushQueue(typex.QueueData{
+							In:   s.Details(),
+							Out:  nil,
+							E:    s.RuleEngine,
+							Data: string(dataBytes),
+						}); err0 != nil {
+							log.Error("SNMPResource error: ", err0)
+						}
+					}
+				default:
+					{
 					}
 				}
+
 			}
 
-		}(context.Background(), s.snmpClient)
+		}(context.Background(), s.GetClient(i))
 		log.Info("SNMPResource start successfully!")
-		return nil
 	}
+
+	return nil
 }
 
 func (s *SNMPResource) Enabled() bool {
@@ -122,11 +244,19 @@ func (s *SNMPResource) Pause() {
 }
 
 func (s *SNMPResource) Status() typex.ResourceState {
-	if err := s.snmpClient.Connect(); err != nil {
-		log.Errorf("SnmpClient Connect err: %v", err)
-		return typex.DOWN
-	} else {
+	r := []bool{}
+	for i := 0; i < len(s.snmpClients); i++ {
+		if err := s.GetClient(i).Connect(); err != nil {
+			log.Errorf("SnmpClient [%v] Connect err: %v", s.GetClient(i).Target, err)
+		} else {
+			r = append(r, true)
+		}
+	}
+
+	if len(r) == len(s.snmpClients) {
 		return typex.UP
+	} else {
+		return typex.DOWN
 	}
 }
 

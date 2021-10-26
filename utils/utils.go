@@ -89,3 +89,21 @@ func TransformConfig(s1 []byte, s2 interface{}) error {
 	}
 	return nil
 }
+
+//
+// Bind config to struct
+// config: a Map, s: a struct variable
+//
+func BindResourceConfig(config *map[string]interface{}, s interface{}) error {
+	configBytes, err0 := json.Marshal(config)
+	if err0 != nil {
+		return err0
+	}
+	if err := json.Unmarshal(configBytes, &s); err != nil {
+		return err
+	}
+	if err := validator.New().Struct(s); err != nil {
+		return err
+	}
+	return nil
+}
