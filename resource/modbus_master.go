@@ -253,29 +253,25 @@ func (m *ModbusMasterResource) Stop() {
 func (m *ModbusMasterResource) OnStreamApproached(data string) error {
 	log.Debug("OnStreamApproached:", data)
 	var p ModBUSWriteParams
-	var results []byte = []byte{}
 	var errs error = nil
 	if errs := utils.TransformConfig([]byte(data), p); errs != nil {
 		log.Error(errs)
 		return errs
 	}
 	if p.Function == WRITE_SINGLE_COIL {
-		results, errs = m.client.WriteSingleCoil(1, 1)
+		_, errs = m.client.WriteSingleCoil(1, 1)
 	}
 	if p.Function == WRITE_SINGLE_HOLDING_REGISTER {
-		results, errs = m.client.WriteSingleRegister(1, 1)
+		_, errs = m.client.WriteSingleRegister(1, 1)
 	}
 	if p.Function == WRITE_MULTIPLE_COILS {
-		results, errs = m.client.WriteMultipleCoils(p.Address, p.Quantity, p.Value)
+		_, errs = m.client.WriteMultipleCoils(p.Address, p.Quantity, p.Value)
 	}
 	if p.Function == WRITE_MULTIPLE_HOLDING_REGISTERS {
-		results, errs = m.client.WriteMultipleRegisters(p.Address, p.Quantity, p.Values)
+		_, errs = m.client.WriteMultipleRegisters(p.Address, p.Quantity, p.Values)
 	}
 	if errs != nil {
 		log.Error(errs)
-	} else {
-		// Push to server
-		log.Debug("------------------------->", results)
 	}
 	return errs
 }

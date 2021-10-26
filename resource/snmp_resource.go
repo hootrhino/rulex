@@ -23,13 +23,9 @@ type SNMPResource struct {
 }
 
 func (s *SNMPResource) GetClient(i int) *gosnmp.GoSNMP {
-	s.Lock()
-	defer s.Unlock()
 	return s.snmpClients[i]
 }
 func (s *SNMPResource) SetClient(i int, c *gosnmp.GoSNMP) {
-	s.Lock()
-	defer s.Unlock()
 	s.snmpClients[i] = c
 }
 
@@ -134,7 +130,8 @@ type target struct {
 
 // GoSNMP represents GoSNMP library state.
 type SNMPConfig struct {
-	Targets []target `json:"targets" validate:"required"`
+	Frequency int64    `json:"frequency" validate:"required,gte=1,lte=10000"`
+	Targets   []target `json:"targets" validate:"required"`
 }
 
 //--------------------------------------------------------------------------------
@@ -173,27 +170,29 @@ func (s *SNMPResource) Start() error {
 		return err
 	}
 	s.snmpClients = make([]*gosnmp.GoSNMP, len(mainConfig.Targets))
-	for i, v := range mainConfig.Targets {
+	for i, target := range mainConfig.Targets {
 		s.SetClient(i, gosnmp.Default)
-		s.GetClient(i).Target = v.Target
-		s.GetClient(i).Community = v.Community
+		s.GetClient(i).Target = target.Target
+		s.GetClient(i).Community = target.Community
 
 		if err := s.GetClient(i).Connect(); err != nil {
 			log.Errorf("SnmpClient Connect err: %v", err)
 			return err
 		}
-		go func(ctx context.Context, c *gosnmp.GoSNMP) {
-			ticker := time.NewTicker(5 * time.Second)
+
+		go func(ctx context.Context, idx int) {
+			log.Info("SnmpClient start working:", s.GetClient(i).Target)
+			ticker := time.NewTicker(time.Duration(mainConfig.Frequency) * time.Second)
 			for {
 				select {
-				case <-ticker.C:
+				case t := <-ticker.C:
 					data := map[string]interface{}{
-						"cpus":        s.CPUs(i),
-						"netsMac":     s.HardwareNetInterfaceMac(i),
-						"memory":      s.TotalMemory(i),
-						"ips":         s.InterfaceIPs(i),
-						"name":        s.PCName(i),
-						"description": s.SystemDescrption(i),
+						"cpus":        s.CPUs(idx),
+						"netsMac":     s.HardwareNetInterfaceMac(idx),
+						"memory":      s.TotalMemory(idx),
+						"ips":         s.InterfaceIPs(idx),
+						"name":        s.PCName(idx),
+						"description": s.SystemDescrption(idx),
 					}
 					dataBytes, _ := json.Marshal(data)
 					if err0 := s.RuleEngine.PushQueue(typex.QueueData{
@@ -202,16 +201,14 @@ func (s *SNMPResource) Start() error {
 						E:    s.RuleEngine,
 						Data: string(dataBytes),
 					}); err0 != nil {
-						log.Error("SNMPResource error: ", err0)
+						log.Error("SNMPResource PushQueue error: ", err0, t)
 					}
 				default:
 					{
 					}
 				}
-
 			}
-
-		}(context.Background(), s.GetClient(i))
+		}(context.Background(), i)
 		log.Info("SNMPResource start successfully!")
 	}
 

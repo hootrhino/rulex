@@ -428,7 +428,6 @@ func (e *RuleEngine) Work(in *typex.InEnd, data string) (bool, error) {
 
 func (e *RuleEngine) RunLuaCallbacks(in *typex.InEnd, data string) {
 	for _, rule := range *in.Binds {
-		log.Debug("RunLuaCallbacks: ", rule)
 		_, err := rule.ExecuteActions(lua.LString(data))
 		if err != nil {
 			log.Error("RunLuaCallbacks error:", err)
