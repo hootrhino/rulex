@@ -151,7 +151,6 @@ func getPDUValue(client *g.GoSNMP, oids []string) {
 			fmt.Printf("%d: oid: %s ", i, variable.Name)
 			fmt.Printf("%v\n", int(variable.Value.(int)))
 		}
-
 	}
 }
 

@@ -39,7 +39,10 @@ func (u *UdpResource) Start() error {
 				}
 			} else {
 				// fmt.Printf("Receive udp data:<%s> %s\n", remoteAddr, data[:n])
-				u.RuleEngine.Work(u.RuleEngine.GetInEnd(u.PointId), string(data[:n]))
+				work, err := u.RuleEngine.Work(u.RuleEngine.GetInEnd(u.PointId), string(data[:n]))
+				if !work {
+					log.Error(err)
+				}
 				_, err = u1.uDPConn.WriteToUDP([]byte("ok"), remoteAddr)
 				if err != nil {
 					log.Error(err)
@@ -51,7 +54,7 @@ func (u *UdpResource) Start() error {
 	return nil
 
 }
-func (m *UdpResource) OnStreamApproached(data string) error {
+func (u *UdpResource) OnStreamApproached(data string) error {
 	return nil
 }
 func (u *UdpResource) Details() *typex.InEnd {

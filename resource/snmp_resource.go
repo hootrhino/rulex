@@ -29,64 +29,71 @@ func (s *SNMPResource) SetClient(i int, c *gosnmp.GoSNMP) {
 	s.snmpClients[i] = c
 }
 
-func (s *SNMPResource) SystemDescrption(i int) string {
+func (s *SNMPResource) SystemDescription(i int) string {
 	r := ""
-	s.GetClient(i).Walk(".1.3.6.1.2.1.1.1.0", func(variable gosnmp.SnmpPDU) error {
+	results, err := s.GetClient(i).Get([]string{".1.3.6.1.2.1.1.1.0"})
+	if err != nil {
+		log.Error(err)
+		return ""
+	}
+	for _, variable := range results.Variables {
 		if variable.Type == gosnmp.OctetString {
 			r = string(variable.Value.([]byte))
 		}
-		return nil
-	})
+	}
 	return r
 }
-func (s *SNMPResource) PCName(i int) string {
-	r := ""
-	s.GetClient(i).Walk(".1.3.6.1.2.1.1.5.0", func(variable gosnmp.SnmpPDU) error {
-		if variable.Type == gosnmp.OctetString {
-			r = string(variable.Value.([]byte))
-		}
-		return nil
-	})
-	return r
-}
-func (s *SNMPResource) TotalMemory(i int) int {
-	v := 0
-	s.GetClient(i).Walk(".1.3.6.1.2.1.25.2.2.0", func(variable gosnmp.SnmpPDU) error {
-		if variable.Type == gosnmp.Integer {
-			v = int(variable.Value.(int))
-		}
-		return nil
-	})
-	return v
 
+func (s *SNMPResource) PCName(i int) string {
+	//
+	r := ""
+	results, err := s.GetClient(i).Get([]string{".1.3.6.1.2.1.1.5.0"})
+	if err != nil {
+		log.Error(err)
+		return ""
+	}
+	for _, variable := range results.Variables {
+		if variable.Type == gosnmp.OctetString {
+			r = string(variable.Value.([]byte))
+		}
+	}
+	return r
+}
+
+func (s *SNMPResource) TotalMemory(i int) int {
+	r := 0
+	results, err := s.GetClient(i).Get([]string{".1.3.6.1.2.1.25.2.2.0"})
+	if err != nil {
+		log.Error(err)
+		return 0
+	}
+	for _, variable := range results.Variables {
+		if variable.Type == gosnmp.Integer {
+			r = variable.Value.(int)
+		}
+	}
+	return r
 }
 func (s *SNMPResource) CPUs(i int) map[string]int {
 	oid := ".1.3.6.1.2.1.25.3.3.1.2"
 	r := map[string]int{}
-	s.GetClient(i).Walk(oid, func(variable gosnmp.SnmpPDU) error {
+	err := s.GetClient(i).Walk(oid, func(variable gosnmp.SnmpPDU) error {
 		if variable.Type == gosnmp.Integer {
 			k := strings.Replace(variable.Name, ".1.3.6.1.2.1.25.3.3.1.2.", "", 1)
 			r[k] = variable.Value.(int)
 		}
 		return nil
 	})
+	if err != nil {
+		log.Error(err)
+		return r
+	}
 	return r
-}
-func (s *SNMPResource) ProcessList(i int) []string {
-	ss := []string{}
-	s.GetClient(i).Walk(".1.3.6.1.2.1.25.4.2.1.2", func(variable gosnmp.SnmpPDU) error {
-		if variable.Type == gosnmp.OctetString {
-			ss = append(ss, string(variable.Value.([]byte)))
-		}
-		return nil
-	})
-
-	return ss
 }
 func (s *SNMPResource) InterfaceIPs(i int) []string {
 	oid := "1.3.6.1.2.1.4.20.1.2"
-	r := []string{}
-	s.GetClient(i).Walk(oid, func(variable gosnmp.SnmpPDU) error {
+	var r []string
+	err := s.GetClient(i).Walk(oid, func(variable gosnmp.SnmpPDU) error {
 		if variable.Type == gosnmp.Integer {
 			ip := strings.Replace(variable.Name, ".1.3.6.1.2.1.4.20.1.2.", "", 1)
 			if ip != "127.0.0.1" {
@@ -95,13 +102,19 @@ func (s *SNMPResource) InterfaceIPs(i int) []string {
 		}
 		return nil
 	})
+	if err != nil {
+		log.Error(err)
+		return r
+	}
 	return r
 }
 
 func (s *SNMPResource) HardwareNetInterfaceMac(i int) []string {
 	oid := ".1.3.6.1.2.1.2.2.1.6"
 	maps := map[string]string{}
-	s.GetClient(i).Walk(oid, func(variable gosnmp.SnmpPDU) error {
+	result := make([]string, 0)
+
+	err := s.GetClient(i).Walk(oid, func(variable gosnmp.SnmpPDU) error {
 		if variable.Type == gosnmp.OctetString {
 			macByte := variable.Value.([]byte)
 			if len(macByte) == 6 {
@@ -111,7 +124,10 @@ func (s *SNMPResource) HardwareNetInterfaceMac(i int) []string {
 		}
 		return nil
 	})
-	result := make([]string, 0)
+	if err != nil {
+		log.Error(err)
+		return result
+	}
 	for k := range maps {
 		result = append(result, k)
 	}
@@ -128,6 +144,7 @@ type target struct {
 	DataModels []typex.XDataModel `json:"dataModels" validate:"required"`
 }
 
+// SNMPConfig
 // GoSNMP represents GoSNMP library state.
 type SNMPConfig struct {
 	Frequency int64    `json:"frequency" validate:"required,gte=1,lte=10000"`
@@ -146,7 +163,7 @@ func NewSNMPInEndResource(inEndId string, e typex.RuleX) *SNMPResource {
 }
 
 func (s *SNMPResource) Test(inEndId string) bool {
-	r := []bool{}
+	var r []bool
 	for i := 0; i < len(s.snmpClients); i++ {
 		if err := s.GetClient(i).Connect(); err != nil {
 			log.Errorf("SnmpClient [%v] Connect err: %v", s.GetClient(i).Target, err)
@@ -181,28 +198,44 @@ func (s *SNMPResource) Start() error {
 		}
 
 		go func(ctx context.Context, idx int) {
-			log.Info("SnmpClient start working:", s.GetClient(i).Target)
-			ticker := time.NewTicker(time.Duration(mainConfig.Frequency) * time.Second)
+			ticker := time.NewTicker(6 * time.Second)
+			defer func() {
+				if err := recover(); err != nil {
+					log.Error("Work failed with:", err)
+				}
+			}()
+
 			for {
 				select {
-				case t := <-ticker.C:
+				case <-ticker.C:
+					cpus := s.CPUs(idx)
+					netsMac := s.HardwareNetInterfaceMac(idx)
+					memory := s.TotalMemory(idx)
+					ips := s.InterfaceIPs(idx)
+					name := s.PCName(idx)
+					description := s.SystemDescription(idx)
 					data := map[string]interface{}{
-						"cpus":        s.CPUs(idx),
-						"netsMac":     s.HardwareNetInterfaceMac(idx),
-						"memory":      s.TotalMemory(idx),
-						"ips":         s.InterfaceIPs(idx),
-						"name":        s.PCName(idx),
-						"description": s.SystemDescrption(idx),
+						"cpus":        cpus,
+						"netsMac":     netsMac,
+						"memory":      memory,
+						"ips":         ips,
+						"name":        name,
+						"description": description,
 					}
-					dataBytes, _ := json.Marshal(data)
-					if err0 := s.RuleEngine.PushQueue(typex.QueueData{
-						In:   s.Details(),
-						Out:  nil,
-						E:    s.RuleEngine,
-						Data: string(dataBytes),
-					}); err0 != nil {
-						log.Error("SNMPResource PushQueue error: ", err0, t)
+					dataBytes, err := json.Marshal(data)
+					if err != nil {
+						log.Error("SNMPResource json Marshal error: ", err)
+					} else {
+						if err0 := s.RuleEngine.PushQueue(typex.QueueData{
+							In:   s.Details(),
+							Out:  nil,
+							E:    s.RuleEngine,
+							Data: string(dataBytes),
+						}); err0 != nil {
+							log.Error("SNMPResource PushQueue error: ", err0)
+						}
 					}
+
 				default:
 					{
 					}
@@ -236,7 +269,7 @@ func (s *SNMPResource) Pause() {
 }
 
 func (s *SNMPResource) Status() typex.ResourceState {
-	r := []bool{}
+	var r []bool
 	for i := 0; i < len(s.snmpClients); i++ {
 		if err := s.GetClient(i).Connect(); err != nil {
 			log.Errorf("SnmpClient [%v] Connect err: %v", s.GetClient(i).Target, err)
