@@ -79,7 +79,7 @@ func (r *Rule) ExecuteActions(arg lua.LValue) (lua.LValue, error) {
 		})
 		return RunPipline(r.VM, funcs, arg)
 	} else {
-		return nil, errors.New("Actions not a lua table or not exist")
+		return nil, errors.New("'Actions' not a lua table or not exist")
 	}
 }
 

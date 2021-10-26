@@ -43,7 +43,7 @@ func pipLine(vm *lua.LState, acc int, funcs map[string]*lua.LFunction, arg lua.L
 						return result, nil
 					}
 				} else {
-					return nil, errors.New("action callback first argument is must be bool")
+					return nil, errors.New("'Action' callback first argument is must be bool")
 				}
 			})
 		}
@@ -56,7 +56,7 @@ func pipLine(vm *lua.LState, acc int, funcs map[string]*lua.LFunction, arg lua.L
 func validate(values []lua.LValue, f func() (lua.LValue, error)) (lua.LValue, error) {
 	// Lua call back must have 2 args!!!
 	if len(values) != 2 {
-		return nil, errors.New("action callback must have 2 arguments:[bool, T]")
+		return nil, errors.New("'Action' callback must have 2 arguments:[bool, T]")
 	} else {
 		return f()
 	}
@@ -72,7 +72,7 @@ func Execute(vm *lua.LState, k string, args ...lua.LValue) (interface{}, error) 
 	if callable.Type() == lua.LTFunction {
 		return callLuaFunc(vm, callable.(*lua.LFunction), args...)
 	}
-	return nil, errors.New("Target:" + k + " is not a lua function")
+	return nil, errors.New("target:" + k + " is not a lua function")
 }
 
 // callLuaFunc
@@ -91,6 +91,6 @@ func callLuaFunc(vm *lua.LState, callable *lua.LFunction, args ...lua.LValue) ([
 			//
 			return lValues[:2], nil
 		}
-		return nil, errors.New("Lua run error, message is: " + err.Error())
+		return nil, errors.New("lua run error, message is: " + err.Error())
 	}
 }

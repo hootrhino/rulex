@@ -228,7 +228,7 @@ func tryCreateOutEnd(out *typex.OutEnd, e typex.RuleX) error {
 	if out.Type == typex.MQTT_TARGET {
 		return startTarget(target.NewMqttTarget(e), out, e)
 	}
-	return errors.New("Unsupported target type:" + out.Type.String())
+	return errors.New("unsupported target type:" + out.Type.String())
 
 }
 
@@ -312,7 +312,7 @@ func (e *RuleEngine) LoadRule(r *typex.Rule) error {
 					e.SaveRule(r)
 					return nil
 				} else {
-					return errors.New("InEnd:" + inId + " is not exists")
+					return errors.New("'InEnd':" + inId + " is not exists")
 				}
 			}
 		}
@@ -357,7 +357,7 @@ func (e *RuleEngine) RemoveRule(ruleId string) error {
 		delete((*e.Rules), ruleId)
 		return nil
 	} else {
-		return errors.New("Rule:" + ruleId + " not exists")
+		return errors.New("'Rule':" + ruleId + " not exists")
 	}
 }
 
@@ -432,7 +432,7 @@ func (e *RuleEngine) LoadPlugin(p typex.XPlugin) error {
 			return err1
 		} else {
 			if (*e.Plugins)[metaInfo.Name] != nil {
-				return errors.New("Plugin already installed:" + metaInfo.Name)
+				return errors.New("plugin already installed:" + metaInfo.Name)
 			} else {
 				(*e.Plugins)[metaInfo.Name] = metaInfo
 				if err2 := p.Start(env); err2 != nil {
@@ -450,7 +450,7 @@ func (e *RuleEngine) LoadPlugin(p typex.XPlugin) error {
 //
 func (e *RuleEngine) LoadHook(h typex.XHook) error {
 	if (*e.Hooks)[h.Name()] != nil {
-		return errors.New("Hook have been loaded:" + h.Name())
+		return errors.New("hook have been loaded:" + h.Name())
 	} else {
 		(*e.Hooks)[h.Name()] = h
 		return nil

@@ -150,7 +150,7 @@ func (m *ModbusMasterResource) Start() error {
 		}
 		m.client = modbus.NewClient(handler)
 	} else {
-		return errors.New("No supported mode:" + mainConfig.Mode)
+		return errors.New("no supported mode:" + mainConfig.Mode)
 	}
 	//---------------------------------------------------------------------------------
 	// Start

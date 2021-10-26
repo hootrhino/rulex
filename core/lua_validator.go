@@ -42,7 +42,7 @@ func VerifyCallback(r *typex.Rule) error {
 			}
 		})
 		if !valid {
-			return errors.New("Invalid function type")
+			return errors.New("invalid function type")
 		}
 	} else {
 		return errors.New("'Actions' must be a functions table")
