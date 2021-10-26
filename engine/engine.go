@@ -183,12 +183,19 @@ func startResources(resource typex.XResource, in *typex.InEnd, e *RuleEngine) er
 			ticker := time.NewTicker(time.Duration(time.Second * 5))
 			defer resource.Stop()
 			for {
-				<-ticker.C
-				// log.Debug("Test state...", resource.Details().Id)
-				if resource.Status() == typex.DOWN {
-					testResourceState(resource, e, in.Id)
+				select {
+				case <-ticker.C:
+					{
+						if resource.Status() == typex.DOWN {
+							testResourceState(resource, e, in.Id)
+						}
+					}
+				default:
+					{
+					}
 				}
 			}
+
 		}(context.Background())
 		return nil
 	}
@@ -255,9 +262,16 @@ func startTarget(target typex.XTarget, out *typex.OutEnd, e typex.RuleX) error {
 			// 5 seconds
 			ticker := time.NewTicker(time.Duration(time.Second * 5))
 			for {
-				<-ticker.C
-				if target.Status() == typex.DOWN {
-					testTargetState(target, e, out.Id)
+				select {
+				case <-ticker.C:
+					{
+						if target.Status() == typex.DOWN {
+							testTargetState(target, e, out.Id)
+						}
+					}
+				default:
+					{
+					}
 				}
 			}
 		}(context.Background())

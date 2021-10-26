@@ -54,7 +54,7 @@ func (m *MongoTarget) Start() error {
 	}
 	m.client = client
 	m.Enable = true
-	log.Info("Mqtt connect successfully")
+	log.Info("MongoTarget connect successfully")
 	return nil
 
 }
