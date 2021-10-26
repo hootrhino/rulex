@@ -5,7 +5,6 @@ import (
 	"reflect"
 
 	"github.com/cjoudrey/gluaurl"
-	json "github.com/wwhai/gopher-json"
 	luajson "github.com/wwhai/gopher-json"
 
 	"rulex/utils"
@@ -89,7 +88,7 @@ func (r *Rule) LoadLib(rx RuleX, lib XLib) {
 	stdlib := r.VM.G.Global
 	//
 	r.VM.SetGlobal("stdlib", stdlib)
-	r.VM.PreloadModule("json", json.Loader)
+	r.VM.PreloadModule("json", luajson.Loader)
 	r.VM.PreloadModule("url", gluaurl.Loader)
 	//
 	mod := r.VM.SetFuncs(stdlib, map[string]lua.LGFunction{
