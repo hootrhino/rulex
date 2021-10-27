@@ -57,16 +57,12 @@ func (g *GrpcInEndResource) Start() error {
 	switch (*config)["port"].(type) {
 	case string:
 		port = ":" + (*config)["port"].(string)
-		break
 	case int:
 		port = fmt.Sprintf(":%v", (*config)["port"].(int))
-		break
 	case int64:
 		port = fmt.Sprintf(":%v", (*config)["port"].(int))
-		break
 	case float64:
 		port = fmt.Sprintf(":%v", (*config)["port"].(int))
-		break
 	}
 	// transport
 	// TCP SSL HTTP HTTPS

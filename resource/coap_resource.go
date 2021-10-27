@@ -34,16 +34,12 @@ func (cc *CoAPInEndResource) Start() error {
 	switch (*config)["port"].(type) {
 	case string:
 		port = ":" + (*config)["port"].(string)
-		break
 	case int:
 		port = fmt.Sprintf(":%v", (*config)["port"].(int))
-		break
 	case int64:
 		port = fmt.Sprintf(":%v", (*config)["port"].(int))
-		break
 	case float64:
 		port = fmt.Sprintf(":%v", (*config)["port"].(int))
-		break
 	}
 	cc.router.Use(func(next mux.Handler) mux.Handler {
 		return mux.HandlerFunc(func(w mux.ResponseWriter, r *mux.Message) {
