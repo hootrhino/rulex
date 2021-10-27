@@ -2,8 +2,7 @@ package test
 
 import (
 	"context"
-	"io/ioutil"
-	"net/http"
+
 	"os"
 	"os/signal"
 	"rulex/core"
@@ -150,26 +149,4 @@ func Run() {
 	log.Info("Test Http outends Api===> " + HttpGet("http://127.0.0.1:2580/api/v1/outends"))
 	log.Info("Test Http rules Api===> " + HttpGet("http://127.0.0.1:2580/api/v1/rules"))
 	engine.Stop()
-}
-
-func HttpGet(api string) string {
-	var err error
-	request, err := http.NewRequest("GET", api, nil)
-	if err != nil {
-		log.Error(err)
-		return ""
-	}
-
-	response, err := (&http.Client{}).Do(request)
-	if err != nil {
-		log.Error(err)
-		return ""
-	}
-	defer response.Body.Close()
-	body, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		log.Error(err)
-		return ""
-	}
-	return string(body)
 }

@@ -139,8 +139,8 @@ func (e *RuleEngine) LoadInEnd(in *typex.InEnd) error {
 	if in.Type == typex.GRPC {
 		return startResources(resource.NewGrpcInEndResource(in.Id, e), in, e)
 	}
-	if in.Type == typex.LoraATK {
-		return startResources(resource.NewLoraModuleResource(in.Id, e), in, e)
+	if in.Type == typex.UART_MODULE {
+		return startResources(resource.NewUartModuleResource(in.Id, e), in, e)
 	}
 	if in.Type == typex.UDP {
 		return startResources(resource.NewUdpInEndResource(in.Id, e), in, e)

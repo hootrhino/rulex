@@ -8,24 +8,24 @@ import (
 	"github.com/tarm/serial"
 )
 
-type LoraModuleResource struct {
+type UartModuleResource struct {
 	typex.XStatus
 	loraDriver typex.XExternalDriver
 }
 
-func NewLoraModuleResource(inEndId string, e typex.RuleX) typex.XResource {
-	s := LoraModuleResource{}
+func NewUartModuleResource(inEndId string, e typex.RuleX) typex.XResource {
+	s := UartModuleResource{}
 	s.PointId = inEndId
 	s.RuleEngine = e
 	//
 	return &s
 }
 
-func (mm *LoraModuleResource) DataModels() []typex.XDataModel {
+func (mm *UartModuleResource) DataModels() []typex.XDataModel {
 	return []typex.XDataModel{}
 }
 
-func (s *LoraModuleResource) Test(inEndId string) bool {
+func (s *UartModuleResource) Test(inEndId string) bool {
 	if err := s.loraDriver.Test(); err != nil {
 		log.Error(err)
 		return false
@@ -33,15 +33,15 @@ func (s *LoraModuleResource) Test(inEndId string) bool {
 		return true
 	}
 }
-func (m *LoraModuleResource) OnStreamApproached(data string) error {
+func (m *UartModuleResource) OnStreamApproached(data string) error {
 	return nil
 }
-func (s *LoraModuleResource) Register(inEndId string) error {
+func (s *UartModuleResource) Register(inEndId string) error {
 	s.PointId = inEndId
 	return nil
 }
 
-func (s *LoraModuleResource) Start() error {
+func (s *UartModuleResource) Start() error {
 	config := s.RuleEngine.GetInEnd(s.PointId).Config
 	name := (*config)["name"]
 	baud := (*config)["baud"]
@@ -59,10 +59,10 @@ func (s *LoraModuleResource) Start() error {
 		StopBits:    1,
 	})
 	if err != nil {
-		log.Error("LoraModuleResource start failed:", err)
+		log.Error("UartModuleResource start failed:", err)
 		return err
 	} else {
-		s.loraDriver = driver.NewATK_LORA_01Driver(serialPort, s.Details(), s.RuleEngine)
+		s.loraDriver = driver.NewUartDriver(serialPort, s.Details(), s.RuleEngine)
 		err0 := s.loraDriver.Init()
 		if err != nil {
 			return err0
@@ -71,26 +71,26 @@ func (s *LoraModuleResource) Start() error {
 		if err != nil {
 			return err1
 		}
-		log.Info("LoraModuleResource start success.")
+		log.Info("UartModuleResource start success.")
 		return nil
 	}
 }
 
-func (s *LoraModuleResource) Enabled() bool {
+func (s *UartModuleResource) Enabled() bool {
 	return true
 }
 
-func (s *LoraModuleResource) Reload() {
+func (s *UartModuleResource) Reload() {
 }
 
-func (s *LoraModuleResource) Pause() {
+func (s *UartModuleResource) Pause() {
 
 }
-func (s *LoraModuleResource) Details() *typex.InEnd {
+func (s *UartModuleResource) Details() *typex.InEnd {
 	return s.RuleEngine.GetInEnd(s.PointId)
 }
 
-func (s *LoraModuleResource) Status() typex.ResourceState {
+func (s *UartModuleResource) Status() typex.ResourceState {
 	if s.loraDriver != nil {
 		if err := s.loraDriver.Test(); err != nil {
 			log.Error(err)
@@ -102,7 +102,7 @@ func (s *LoraModuleResource) Status() typex.ResourceState {
 	return typex.DOWN
 }
 
-func (s *LoraModuleResource) Stop() {
+func (s *UartModuleResource) Stop() {
 	if s.loraDriver != nil {
 		s.loraDriver.Stop()
 	}

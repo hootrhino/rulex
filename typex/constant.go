@@ -50,7 +50,7 @@ const (
 	UDP               InEndType = "UDP"
 	COAP              InEndType = "COAP"
 	GRPC              InEndType = "GRPC"
-	LoraATK           InEndType = "LoraATK"
+	UART_MODULE       InEndType = "UART_MODULE"
 	MODBUS_TCP_MASTER InEndType = "MODBUS_TCP_MASTER"
 	MODBUS_RTU_MASTER InEndType = "MODBUS_RTU_MASTER"
 	MODBUS_TCP_SLAVER InEndType = "MODBUS_TCP_SLAVER"

@@ -1,5 +1,13 @@
 package resource
 
+//-----------------------------------------------------------------------------
+//                              Warning
+// github.com/gosnmp/gosnmp:
+//    这个库有点问题，效率不高，因为大量用了循环导致监控点数量多了以后，就会大量吃CPU
+// 因此这个SNMP的监控[不推荐正式场景]使用，后期可能会找个好点的库重写这个功能.
+//
+//------------------------------------------------------------------------------
+
 import (
 	"context"
 	"encoding/json"
@@ -37,6 +45,11 @@ func (s *SNMPResource) SystemInfo(i int) map[string]interface{} {
 	})
 	if err != nil {
 		log.Error(err)
+		return map[string]interface{}{
+			"info":        "",
+			"pcName":      "",
+			"totalMemory": 0,
+		}
 	}
 	if len(results.Variables) == 3 {
 		Info := string(results.Variables[0].Value.([]byte))
@@ -184,24 +197,30 @@ func (s *SNMPResource) Start() error {
 		ticker := time.NewTicker(time.Duration(mainConfig.Frequency) * time.Second)
 		go func(ctx context.Context, idx int, sr *SNMPResource) {
 			for {
-				t := <-ticker.C
-				data := map[string]interface{}{
-					"systemInfo": sr.SystemInfo(i),
-					"time":       t.Format("2006-01-02 15:04:05"),
-				}
-				dataBytes, err := json.Marshal(data)
-				if err != nil {
-					log.Error("SNMPResource json Marshal error: ", err)
-				} else {
-					if err0 := sr.RuleEngine.PushQueue(typex.QueueData{
-						In:   sr.Details(),
-						Out:  nil,
-						E:    sr.RuleEngine,
-						Data: string(dataBytes),
-					}); err0 != nil {
-						log.Error("SNMPResource PushQueue error: ", err0)
+				select {
+				case t := <-ticker.C:
+					data := map[string]interface{}{
+						"systemInfo": sr.SystemInfo(i),// Waining: CPU maybe used 100%
+						"time":       t.Format("2006-01-02 15:04:05"),
+					}
+					dataBytes, err := json.Marshal(data)
+					if err != nil {
+						log.Error("SNMPResource json Marshal error: ", err)
+					} else {
+						if err0 := sr.RuleEngine.PushQueue(typex.QueueData{
+							In:   sr.Details(),
+							Out:  nil,
+							E:    sr.RuleEngine,
+							Data: string(dataBytes),
+						}); err0 != nil {
+							log.Error("SNMPResource PushQueue error: ", err0)
+						}
+					}
+				default:
+					{
 					}
 				}
+
 			}
 		}(context.Background(), i, s)
 		log.Info("SNMPResource start successfully!")
