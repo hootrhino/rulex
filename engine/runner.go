@@ -7,6 +7,7 @@ import (
 	"rulex/core"
 	httpserver "rulex/plugin/http_server"
 	"rulex/typex"
+	"runtime"
 	"syscall"
 
 	"github.com/ngaut/log"
@@ -17,6 +18,8 @@ import (
 //
 func RunRulex(dbPath string) {
 	core.InitGlobalConfig()
+	core.SetLogLevel()
+	core.SetPerformance()
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, syscall.SIGINT, syscall.SIGABRT)
 	engine := NewRuleEngine()

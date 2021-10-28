@@ -15,7 +15,7 @@ build:
 	sed -i "s/\r//" ./gen_version.sh
 	go generate
 	CGO_ENABLED=1 GOOS=linux
-	go build -ldflags "-s -w" -o ${APP} main.go
+	go build -v -ldflags "-s -w" -o ${APP} main.go
 
 .PHONY: xx
 xx:

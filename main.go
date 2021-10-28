@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"net/http"
 
 	"github.com/ngaut/log"
 	"github.com/urfave/cli/v2"
@@ -12,7 +11,6 @@ import (
 	"rulex/engine"
 	"rulex/typex"
 	"rulex/utils"
-	"runtime"
 )
 
 //
@@ -20,14 +18,6 @@ import (
 //go:generate ./gen_proto.sh
 //
 func main() {
-	// pprof 分析：
-	// https://segmentfault.com/a/1190000016412013
-	//--------------------------------------
-	runtime.GOMAXPROCS(1)
-	runtime.SetMutexProfileFraction(1)
-	runtime.SetBlockProfileRate(1)
-	go http.ListenAndServe("0.0.0.0:6060", nil)
-
 	//--------------------------------------
 	app := &cli.App{
 		Name:  "RULEX, a lightweight iot data rule gateway",

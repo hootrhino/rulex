@@ -151,7 +151,7 @@ func (e *RuleEngine) LoadInEnd(in *typex.InEnd) error {
 	if in.Type == typex.SNMP_SERVER {
 		return startResources(resource.NewSNMPInEndResource(in.Id, e), in, e)
 	}
-	return fmt.Errorf("Unsupported InEnd type:%s", in.Type)
+	return fmt.Errorf("unsupported InEnd type:%s", in.Type)
 }
 
 //
