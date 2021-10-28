@@ -15,7 +15,7 @@ import (
 //
 func TestInitData(t *testing.T) {
 	engine := engine.NewRuleEngine()
-	hh := httpserver.NewHttpApiServer(3580, "plugin/http_server/templates", "rulex-defaule-data.db", engine)
+	hh := httpserver.NewHttpApiServer(3580, "plugin/http_server/templates", "rulex-default-data.db", engine)
 	// HttpApiServer loaded default
 	if err := engine.LoadPlugin(hh); err != nil {
 		log.Fatal("Rule load failed:", err)
@@ -92,5 +92,5 @@ func TestInitData(t *testing.T) {
 		Success:     rule.Success,
 		Failed:      rule.Failed,
 	})
-
+	engine.Stop()
 }

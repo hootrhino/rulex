@@ -33,7 +33,7 @@ func (hh *HttpApiServer) Load() *typex.XPluginEnv {
 }
 
 //
-func (hh *HttpApiServer) Init(env *typex.XPluginEnv) error {
+func (hh *HttpApiServer) Init() error {
 	gin.SetMode(gin.ReleaseMode)
 	hh.ginEngine = gin.New()
 	hh.ginEngine.Use(Authorize())
@@ -49,22 +49,15 @@ func (hh *HttpApiServer) Init(env *typex.XPluginEnv) error {
 	}(ctx, hh.Port)
 	return nil
 }
-func (hh *HttpApiServer) Install(env *typex.XPluginEnv) (*typex.XPluginMetaInfo, error) {
-	return &typex.XPluginMetaInfo{
-		Name:     "HttpApiServer",
-		Version:  "0.0.1",
-		Homepage: "www.ezlinker.cn",
-		HelpLink: "www.ezlinker.cn",
-		Author:   "wwhai",
-		Email:    "cnwwhai@gmail.com",
-		License:  "MIT",
-	}, nil
+func (hh *HttpApiServer) Install() error {
+	return nil
+
 }
 
 //
 // HttpApiServer Start
 //
-func (hh *HttpApiServer) Start(env *typex.XPluginEnv) error {
+func (hh *HttpApiServer) Start() error {
 
 	//
 	// List CloudServices
@@ -129,7 +122,7 @@ func (hh *HttpApiServer) Start(env *typex.XPluginEnv) error {
 	return nil
 }
 
-func (hh *HttpApiServer) Uninstall(env *typex.XPluginEnv) error {
+func (hh *HttpApiServer) Uninstall() error {
 	return nil
 }
 func (hh *HttpApiServer) Clean() {
@@ -137,4 +130,19 @@ func (hh *HttpApiServer) Clean() {
 
 func (hh *HttpApiServer) Db() *gorm.DB {
 	return hh.sqliteDb
+}
+func (hh *HttpApiServer) XPluginMetaInfo() typex.XPluginMetaInfo {
+	return typex.XPluginMetaInfo{
+		Name:     "HttpApiServer",
+		Version:  "0.0.1",
+		Homepage: "www.ezlinker.cn",
+		HelpLink: "www.ezlinker.cn",
+		Author:   "wwhai",
+		Email:    "cnwwhai@gmail.com",
+		License:  "MIT",
+	}
+}
+func (hh *HttpApiServer) XPluginEnv() typex.XPluginEnv {
+
+	return typex.XPluginEnv{}
 }

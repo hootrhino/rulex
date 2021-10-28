@@ -43,7 +43,7 @@ func CloudServices(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 //
 func Plugins(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	data := []interface{}{}
-	for _, v := range *e.AllPlugins() {
+	for _, v := range e.AllPlugins() {
 		data = append(data, v)
 	}
 	c.PureJSON(http.StatusOK, Result{

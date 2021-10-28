@@ -10,17 +10,30 @@ type DemoPlugin struct {
 func NewDemoPlugin() *DemoPlugin {
 	return &DemoPlugin{}
 }
-func (dm *DemoPlugin) Load() *typex.XPluginEnv {
-	return typex.NewXPluginEnv()
+func (dm *DemoPlugin) Load() error {
+	return nil
 }
-func (dm *DemoPlugin) Init(*typex.XPluginEnv) error {
+func (dm *DemoPlugin) Init() error {
 	return nil
 
 }
 
 //
-func (dm *DemoPlugin) Install(*typex.XPluginEnv) (*typex.XPluginMetaInfo, error) {
-	return &typex.XPluginMetaInfo{
+func (dm *DemoPlugin) Install() error {
+	return nil
+}
+func (dm *DemoPlugin) Start() error {
+	return nil
+}
+func (dm *DemoPlugin) Uninstall() error {
+	return nil
+}
+func (dm *DemoPlugin) Clean() {
+
+}
+
+func (hh *DemoPlugin) XPluginMetaInfo() typex.XPluginMetaInfo {
+	return typex.XPluginMetaInfo{
 		Name:     "DemoPlugin",
 		Version:  "0.0.1",
 		Homepage: "www.ezlinker.cn",
@@ -28,14 +41,9 @@ func (dm *DemoPlugin) Install(*typex.XPluginEnv) (*typex.XPluginMetaInfo, error)
 		Author:   "wwhai",
 		Email:    "cnwwhai@gmail.com",
 		License:  "MIT",
-	}, nil
+	}
 }
-func (dm *DemoPlugin) Start(*typex.XPluginEnv) error {
-	return nil
-}
-func (dm *DemoPlugin) Uninstall(*typex.XPluginEnv) error {
-	return nil
-}
-func (dm *DemoPlugin) Clean() {
+func (hh *DemoPlugin) XPluginEnv() typex.XPluginEnv {
 
+	return typex.XPluginEnv{}
 }

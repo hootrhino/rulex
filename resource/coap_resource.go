@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"rulex/typex"
+	"rulex/utils"
 
 	"github.com/ngaut/log"
 	coap "github.com/plgd-dev/go-coap/v2"
@@ -14,9 +15,16 @@ import (
 )
 
 //
+type CoAPConfig struct {
+	Port       uint16             `json:"port" validate:"required"`
+	DataModels []typex.XDataModel `json:"dataModels" validate:"required"`
+}
+
+//
 type CoAPInEndResource struct {
 	typex.XStatus
-	router *mux.Router
+	router     *mux.Router
+	dataModels []typex.XDataModel
 }
 
 func NewCoAPInEndResource(inEndId string, e typex.RuleX) *CoAPInEndResource {
@@ -29,18 +37,12 @@ func NewCoAPInEndResource(inEndId string, e typex.RuleX) *CoAPInEndResource {
 
 func (cc *CoAPInEndResource) Start() error {
 	config := cc.RuleEngine.GetInEnd(cc.PointId).Config
-
-	var port = ""
-	switch (*config)["port"].(type) {
-	case string:
-		port = ":" + (*config)["port"].(string)
-	case int:
-		port = fmt.Sprintf(":%v", (*config)["port"].(int))
-	case int64:
-		port = fmt.Sprintf(":%v", (*config)["port"].(int))
-	case float64:
-		port = fmt.Sprintf(":%v", (*config)["port"].(int))
+	var mainConfig CoAPConfig
+	if err := utils.BindResourceConfig(config, &mainConfig); err != nil {
+		return err
 	}
+	port := fmt.Sprintf(":%v", mainConfig.Port)
+	cc.dataModels = mainConfig.DataModels
 	cc.router.Use(func(next mux.Handler) mux.Handler {
 		return mux.HandlerFunc(func(w mux.ResponseWriter, r *mux.Message) {
 			log.Debugf("Client Address %v, %v\n", w.Client().RemoteAddr(), r.String())
@@ -75,8 +77,8 @@ func (m *CoAPInEndResource) OnStreamApproached(data string) error {
 func (cc *CoAPInEndResource) Stop() {
 }
 
-func (mm *CoAPInEndResource) DataModels() []typex.XDataModel {
-	return []typex.XDataModel{}
+func (cc *CoAPInEndResource) DataModels() []typex.XDataModel {
+	return cc.dataModels
 }
 func (cc *CoAPInEndResource) Reload() {
 

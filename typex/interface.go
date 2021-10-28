@@ -23,7 +23,7 @@ type XDataModel struct {
 // RuleX interface
 //
 type RuleX interface {
-	Start() *map[string]interface{}
+	Start() map[string]interface{}
 	//
 	PushQueue(QueueData) error
 	//
@@ -46,7 +46,7 @@ type RuleX interface {
 	LoadHook(h XHook) error
 	//
 	LoadPlugin(p XPlugin) error
-	AllPlugins() *map[string]*XPluginMetaInfo
+	AllPlugins() map[string]XPlugin
 	//
 	LoadRule(r *Rule) error
 	AllRule() map[string]*Rule
@@ -100,11 +100,12 @@ type XTarget interface {
 // External Plugin
 //
 type XPlugin interface {
-	Load() *XPluginEnv
-	Init(*XPluginEnv) error
-	Install(*XPluginEnv) (*XPluginMetaInfo, error)
-	Start(*XPluginEnv) error
-	Uninstall(*XPluginEnv) error
+	Init() error
+	Install() error
+	Start() error
+	Uninstall() error
+	XPluginMetaInfo() XPluginMetaInfo
+	XPluginEnv() XPluginEnv
 	Clean()
 }
 
@@ -131,7 +132,7 @@ type XStatus struct {
 // External Plugin
 //
 type XPluginEnv struct {
-	env *map[string]interface{}
+	env map[string]interface{}
 }
 
 //
@@ -153,18 +154,18 @@ func NewXPluginMetaInfo() *XPluginMetaInfo {
 //
 func NewXPluginEnv() *XPluginEnv {
 	return &XPluginEnv{
-		env: &map[string]interface{}{},
+		env: map[string]interface{}{},
 	}
 }
 
 //
 func (p *XPluginEnv) Get(k string) interface{} {
-	return (*(p.env))[k]
+	return (p.env)[k]
 }
 
 //
 func (p *XPluginEnv) Set(k string, v interface{}) {
-	(*(p.env))[k] = v
+	(p.env)[k] = v
 }
 
 // GoPlugins support

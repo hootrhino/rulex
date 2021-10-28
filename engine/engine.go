@@ -24,12 +24,12 @@ import (
 //
 type RuleEngine struct {
 	sync.Mutex
-	Hooks     *map[string]typex.XHook            `json:"-"`
-	Rules     *map[string]*typex.Rule            `json:"-"`
-	Plugins   *map[string]*typex.XPluginMetaInfo `json:"plugins"`
-	InEnds    *map[string]*typex.InEnd           `json:"inends"`
-	OutEnds   *map[string]*typex.OutEnd          `json:"outends"`
-	ConfigMap *map[string]interface{}            `json:"configMap"`
+	Hooks     map[string]typex.XHook   `json:"-"`
+	Rules     map[string]*typex.Rule   `json:"-"`
+	Plugins   map[string]typex.XPlugin `json:"plugins"`
+	InEnds    map[string]*typex.InEnd  `json:"inends"`
+	OutEnds   map[string]*typex.OutEnd `json:"outends"`
+	ConfigMap map[string]interface{}   `json:"configMap"`
 }
 
 //
@@ -37,20 +37,20 @@ type RuleEngine struct {
 //
 func NewRuleEngine() typex.RuleX {
 	return &RuleEngine{
-		Plugins:   &map[string]*typex.XPluginMetaInfo{},
-		Hooks:     &map[string]typex.XHook{},
-		Rules:     &map[string]*typex.Rule{},
-		InEnds:    &map[string]*typex.InEnd{},
-		OutEnds:   &map[string]*typex.OutEnd{},
-		ConfigMap: &map[string]interface{}{},
+		Plugins:   map[string]typex.XPlugin{},
+		Hooks:     map[string]typex.XHook{},
+		Rules:     map[string]*typex.Rule{},
+		InEnds:    map[string]*typex.InEnd{},
+		OutEnds:   map[string]*typex.OutEnd{},
+		ConfigMap: map[string]interface{}{},
 	}
 }
 
 //
 //
 //
-func (e *RuleEngine) Start() *map[string]interface{} {
-	e.ConfigMap = &map[string]interface{}{}
+func (e *RuleEngine) Start() map[string]interface{} {
+	e.ConfigMap = map[string]interface{}{}
 	log.Info("Init XQueue, max queue size is:", core.GlobalConfig.MaxQueueSize)
 	typex.DefaultDataCacheQueue = &typex.DataCacheQueue{
 		Queue: make(chan typex.QueueData, core.GlobalConfig.MaxQueueSize),
@@ -102,12 +102,12 @@ func (e *RuleEngine) PushQueue(qd typex.QueueData) error {
 //
 //
 //
-func (e *RuleEngine) GetPlugins() *map[string]*typex.XPluginMetaInfo {
+func (e *RuleEngine) GetPlugins() map[string]typex.XPlugin {
 	e.Lock()
 	defer e.Unlock()
 	return e.Plugins
 }
-func (e *RuleEngine) AllPlugins() *map[string]*typex.XPluginMetaInfo {
+func (e *RuleEngine) AllPlugins() map[string]typex.XPlugin {
 	e.Lock()
 	defer e.Unlock()
 	return e.Plugins
@@ -123,7 +123,7 @@ func (e *RuleEngine) Version() typex.Version {
 //
 //
 func (e *RuleEngine) GetConfig(k string) interface{} {
-	return (*e.ConfigMap)[k]
+	return (e.ConfigMap)[k]
 }
 
 func (e *RuleEngine) LoadInEnd(in *typex.InEnd) error {
@@ -344,7 +344,7 @@ func (e *RuleEngine) LoadRule(r *typex.Rule) error {
 func (e *RuleEngine) GetRule(id string) *typex.Rule {
 	e.Lock()
 	defer e.Unlock()
-	return (*e.Rules)[id]
+	return (e.Rules)[id]
 }
 
 //
@@ -353,7 +353,7 @@ func (e *RuleEngine) GetRule(id string) *typex.Rule {
 func (e *RuleEngine) SaveRule(r *typex.Rule) {
 	e.Lock()
 	defer e.Unlock()
-	(*e.Rules)[r.Id] = r
+	(e.Rules)[r.Id] = r
 
 }
 
@@ -364,14 +364,14 @@ func (e *RuleEngine) RemoveRule(ruleId string) error {
 	e.Lock()
 	defer e.Unlock()
 	if rule := e.GetRule(ruleId); rule != nil {
-		for _, inEnd := range *e.InEnds {
+		for _, inEnd := range e.InEnds {
 			for _, rule := range *inEnd.Binds {
 				if rule.Id == ruleId {
 					delete(*inEnd.Binds, ruleId)
 				}
 			}
 		}
-		delete((*e.Rules), ruleId)
+		delete((e.Rules), ruleId)
 		return nil
 	} else {
 		return errors.New("'Rule':" + ruleId + " not exists")
@@ -384,7 +384,7 @@ func (e *RuleEngine) RemoveRule(ruleId string) error {
 func (e *RuleEngine) AllRule() map[string]*typex.Rule {
 	e.Lock()
 	defer e.Unlock()
-	return (*e.Rules)
+	return (e.Rules)
 }
 
 //
@@ -392,18 +392,24 @@ func (e *RuleEngine) AllRule() map[string]*typex.Rule {
 //
 func (e *RuleEngine) Stop() {
 	log.Info("Stopping Rulex......")
-	for _, inEnd := range *e.InEnds {
+	for _, inEnd := range e.InEnds {
 		if inEnd.Resource != nil {
 			log.Info("Stop InEnd:", inEnd.Name, inEnd.Id)
 			inEnd.Resource.Stop()
 		}
 	}
 
-	for _, outEnd := range *e.OutEnds {
+	for _, outEnd := range e.OutEnds {
 		if outEnd.Target != nil {
 			log.Info("Stop Target:", outEnd.Name, outEnd.Id)
 			outEnd.Target.Stop()
 		}
+	}
+
+	for _, plugin := range e.Plugins {
+		plugin.Uninstall()
+		plugin.Clean()
+
 	}
 	runtime.Gosched()
 	runtime.GC()
@@ -440,20 +446,19 @@ func (e *RuleEngine) RunLuaCallbacks(in *typex.InEnd, data string) {
 
 //
 func (e *RuleEngine) LoadPlugin(p typex.XPlugin) error {
-	env := p.Load()
-	err0 := p.Init(env)
+	err0 := p.Init()
 	if err0 != nil {
 		return err0
 	}
-	metaInfo, err1 := p.Install(env)
+	err1 := p.Install()
 	if err1 != nil {
 		return err1
 	}
-	if (*e.Plugins)[metaInfo.Name] != nil {
-		return errors.New("plugin already installed:" + metaInfo.Name)
+	if (e.Plugins)[p.XPluginMetaInfo().Name] != nil {
+		return errors.New("plugin already installed:" + p.XPluginMetaInfo().Name)
 	}
-	(*e.Plugins)[metaInfo.Name] = metaInfo
-	if err2 := p.Start(env); err2 != nil {
+	(e.Plugins)[p.XPluginMetaInfo().Name] = p
+	if err2 := p.Start(); err2 != nil {
 		return err2
 	}
 	return nil
@@ -464,10 +469,10 @@ func (e *RuleEngine) LoadPlugin(p typex.XPlugin) error {
 // LoadHook
 //
 func (e *RuleEngine) LoadHook(h typex.XHook) error {
-	if (*e.Hooks)[h.Name()] != nil {
+	if (e.Hooks)[h.Name()] != nil {
 		return errors.New("hook have been loaded:" + h.Name())
 	} else {
-		(*e.Hooks)[h.Name()] = h
+		(e.Hooks)[h.Name()] = h
 		return nil
 	}
 }
@@ -476,7 +481,7 @@ func (e *RuleEngine) LoadHook(h typex.XHook) error {
 // RunHooks
 //
 func (e *RuleEngine) RunHooks(data string) {
-	for _, h := range *e.Hooks {
+	for _, h := range e.Hooks {
 		if err := runHook(h, data); err != nil {
 			h.Error(err)
 		}
@@ -492,7 +497,7 @@ func runHook(h typex.XHook, data string) error {
 func (e *RuleEngine) GetInEnd(id string) *typex.InEnd {
 	e.Lock()
 	defer e.Unlock()
-	return (*e.InEnds)[id]
+	return (e.InEnds)[id]
 }
 
 //
@@ -501,7 +506,7 @@ func (e *RuleEngine) GetInEnd(id string) *typex.InEnd {
 func (e *RuleEngine) SaveInEnd(in *typex.InEnd) {
 	e.Lock()
 	defer e.Unlock()
-	(*e.InEnds)[in.Id] = in
+	(e.InEnds)[in.Id] = in
 }
 
 //
@@ -510,7 +515,7 @@ func (e *RuleEngine) SaveInEnd(in *typex.InEnd) {
 func (e *RuleEngine) RemoveInEnd(id string) {
 	e.Lock()
 	defer e.Unlock()
-	delete((*e.InEnds), id)
+	delete((e.InEnds), id)
 }
 
 //
@@ -519,7 +524,7 @@ func (e *RuleEngine) RemoveInEnd(id string) {
 func (e *RuleEngine) AllInEnd() map[string]*typex.InEnd {
 	e.Lock()
 	defer e.Unlock()
-	return (*e.InEnds)
+	return (e.InEnds)
 }
 
 //
@@ -528,7 +533,7 @@ func (e *RuleEngine) AllInEnd() map[string]*typex.InEnd {
 func (e *RuleEngine) GetOutEnd(id string) *typex.OutEnd {
 	e.Lock()
 	defer e.Unlock()
-	return (*e.OutEnds)[id]
+	return (e.OutEnds)[id]
 }
 
 //
@@ -537,7 +542,7 @@ func (e *RuleEngine) GetOutEnd(id string) *typex.OutEnd {
 func (e *RuleEngine) SaveOutEnd(out *typex.OutEnd) {
 	e.Lock()
 	defer e.Unlock()
-	(*e.OutEnds)[out.Id] = out
+	(e.OutEnds)[out.Id] = out
 }
 
 //
@@ -546,7 +551,7 @@ func (e *RuleEngine) SaveOutEnd(out *typex.OutEnd) {
 func (e *RuleEngine) RemoveOutEnd(out *typex.OutEnd) {
 	e.Lock()
 	defer e.Unlock()
-	delete((*e.OutEnds), out.Id)
+	delete((e.OutEnds), out.Id)
 }
 
 //
@@ -555,5 +560,5 @@ func (e *RuleEngine) RemoveOutEnd(out *typex.OutEnd) {
 func (e *RuleEngine) AllOutEnd() map[string]*typex.OutEnd {
 	e.Lock()
 	defer e.Unlock()
-	return (*e.OutEnds)
+	return (e.OutEnds)
 }
