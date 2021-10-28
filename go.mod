@@ -28,7 +28,6 @@ require (
 	github.com/shirou/gopsutil v3.21.6+incompatible
 	github.com/smartystreets/goconvey v1.6.4 // indirect
 	github.com/tarm/serial v0.0.0-20180830185346-98f6abe2eb07
-	github.com/tbrandon/mbserver v0.0.0-20210320091329-a1f8ae952881
 	github.com/tklauser/go-sysconf v0.3.6 // indirect
 	github.com/ugorji/go v1.1.13 // indirect
 	github.com/urfave/cli/v2 v2.3.0

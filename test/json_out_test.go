@@ -2,7 +2,6 @@ package test
 
 import (
 	"encoding/json"
-	"fmt"
 	"strings"
 	"testing"
 )
@@ -33,5 +32,5 @@ func TestJson(t *testing.T) {
 			   end`,
 	}
 	b, _ := json.Marshal(&rule)
-	fmt.Printf(string(b))
+	t.Log(string(b))
 }

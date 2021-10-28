@@ -28,7 +28,7 @@ func (s *AtomicCloudServiceServer) CallCloud(ctx context.Context, cs *cloud.Serv
 func run() error {
 	server := grpc.NewServer()
 	ctx := context.Background()
-	ctx, cancel := context.WithCancel(ctx)
+	_, cancel := context.WithCancel(ctx)
 	defer cancel()
 	mux := runtime.NewServeMux()
 	// opts := []grpc.DialOption{grpc.WithInsecure()}
