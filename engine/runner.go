@@ -7,7 +7,6 @@ import (
 	"rulex/core"
 	httpserver "rulex/plugin/http_server"
 	"rulex/typex"
-	"runtime"
 	"syscall"
 
 	"github.com/ngaut/log"
