@@ -5,8 +5,6 @@ option java_package = "xstream";
 option java_outer_classname = "XStream";
 
 package xstream;
-//
-import "google/api/annotations.proto";
 
 service XStream {
   // 收到来自其他端点的请求

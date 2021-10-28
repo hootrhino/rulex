@@ -2,7 +2,6 @@ package httpserver
 
 import (
 	"net/http"
-	"rulex/cloud"
 	"rulex/core"
 	"rulex/statistics"
 	"rulex/typex"
@@ -34,7 +33,7 @@ func CloudServices(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	c.PureJSON(http.StatusOK, Result{
 		Code: http.StatusOK,
 		Msg:  "Success",
-		Data: cloud.ListService(1, 50),
+		Data: map[string]interface{}{},
 	})
 }
 
