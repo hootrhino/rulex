@@ -1,8 +1,5 @@
 package typex
 
-//
-// !!! All 'RuleEngine' parameter passed by pseudo constructure function !!!
-//
 import (
 	"sync"
 
