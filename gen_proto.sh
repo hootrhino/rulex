@@ -1,9 +1,9 @@
 #! /bin/bash
 # Rpc
 echo "Generate Rpc Proto"
-go get -d google.golang.org/grpc
-go get -d google.golang.org/protobuf/cmd/protoc-gen-go
-go get -d google.golang.org/grpc/cmd/protoc-gen-go-grpc
+go get -u google.golang.org/grpc
+go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.1
 #
 export GOROOT=/usr/local/go
 export GOPATH=$HOME/go
