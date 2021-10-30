@@ -25,15 +25,18 @@ func main() {
 		Commands: []*cli.Command{
 			{
 				Name:  "run",
-				Usage: "rulex run [path of 'rulex.db']",
+				Usage: "Start rulex",
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:  "db",
+						Usage: "Database of rulex",
+						Value: "rulex.db",
+					},
+				},
 				Action: func(c *cli.Context) error {
 					utils.ShowBanner()
-					if c.Args().Len() > 0 {
-						log.Info("Use config db:", c.Args().Get(0))
-						engine.RunRulex(c.Args().Get(0))
-					} else {
-						engine.RunRulex("rulex.db")
-					}
+					log.Info("Load config db:", c.String("db"))
+					engine.RunRulex(c.String("db"))
 					log.Debug("Run rulex successfully.")
 					return nil
 				},
@@ -41,9 +44,15 @@ func main() {
 			// version
 			{
 				Name:  "version",
-				Usage: "rulex version",
+				Usage: "Rulex version",
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:  "version",
+						Usage: "Rulex version",
+					},
+				},
 				Action: func(c *cli.Context) error {
-					fmt.Println("Current Version is: " + typex.DefaultVersion.Version)
+					fmt.Println("Current Version is: [" + typex.DefaultVersion.Version + "]")
 					return nil
 				},
 			},

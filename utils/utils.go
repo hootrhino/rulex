@@ -3,6 +3,7 @@ package utils
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -63,17 +64,17 @@ func ShowBanner() {
 -----------------------------------------------------------
 `
 	file, err := os.Open("conf/banner.txt")
-	defer file.Close()
 	if err != nil {
 		log.Warn("No banner found, print default banner")
 		log.Info(defaultBanner)
 	} else {
+		defer file.Close()
 		data, err := ioutil.ReadAll(file)
 		if err != nil {
 			log.Warn("No banner found, print default banner")
 			log.Info(defaultBanner)
 		} else {
-			log.Info("\n", string(data))
+			fmt.Println("\n", string(data))
 		}
 	}
 	log.Info("Rulex start successfully")
