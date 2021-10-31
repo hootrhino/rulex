@@ -10,7 +10,7 @@ type WriteInStreamLib struct {
 }
 
 func NewWriteInStreamLib() typex.XLib {
-	return &HttpLib{}
+	return &WriteInStreamLib{}
 }
 func (l *WriteInStreamLib) Name() string {
 	return "WriteInStream"
@@ -29,7 +29,7 @@ type WriteOutStreamLib struct {
 }
 
 func NewWriteOutStreamLib() typex.XLib {
-	return &HttpLib{}
+	return &WriteOutStreamLib{}
 }
 func (l *WriteOutStreamLib) Name() string {
 	return "WriteOutStream"

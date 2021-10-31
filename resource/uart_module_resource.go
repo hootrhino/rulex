@@ -3,14 +3,24 @@ package resource
 import (
 	"rulex/driver"
 	"rulex/typex"
+	"rulex/utils"
+	"time"
 
+	"github.com/goburrow/serial"
 	"github.com/ngaut/log"
-	"github.com/tarm/serial"
 )
 
 type UartModuleResource struct {
 	typex.XStatus
 	loraDriver typex.XExternalDriver
+}
+type UartConfig struct {
+	Address  string `json:"address" validate:"required"`
+	BaudRate int    `json:"baudRate" validate:"required"`
+	DataBits int    `json:"dataBits" validate:"required"`
+	StopBits int    `json:"stopBits" validate:"required"`
+	Parity   string `json:"parity" validate:"required"`
+	Timeout  int64  `json:"timeout" validate:"required"`
 }
 
 func NewUartModuleResource(inEndId string, e typex.RuleX) typex.XResource {
@@ -34,6 +44,7 @@ func (s *UartModuleResource) Test(inEndId string) bool {
 	}
 }
 func (m *UartModuleResource) OnStreamApproached(data string) error {
+	m.loraDriver.Write([]byte(data))
 	return nil
 }
 func (s *UartModuleResource) Register(inEndId string) error {
@@ -43,25 +54,23 @@ func (s *UartModuleResource) Register(inEndId string) error {
 
 func (s *UartModuleResource) Start() error {
 	config := s.RuleEngine.GetInEnd(s.PointId).Config
-	name := (*config)["name"]
-	baud := (*config)["baud"]
-	//readTimeout := (*config)["readTimeout"]
-	//size := (*config)["size"]
-	//parity := (*config)["parity"]
-	//stopbits := (*config)["stopbits"]
-
-	serialPort, err := serial.OpenPort(&serial.Config{
-		Name:        name.(string),
-		Baud:        int(baud.(float64)),
-		Parity:      'N',
-		ReadTimeout: 0,
-		Size:        0,
-		StopBits:    1,
+	mainConfig := UartConfig{}
+	if err := utils.BindResourceConfig(config, &mainConfig); err != nil {
+		return err
+	}
+	serialPort, err := serial.Open(&serial.Config{
+		Address:  mainConfig.Address,
+		BaudRate: mainConfig.BaudRate, //115200
+		DataBits: mainConfig.DataBits, //8
+		StopBits: mainConfig.StopBits, //1
+		Parity:   "N",                 //'N'
+		Timeout:  time.Duration(mainConfig.Timeout) * time.Second,
 	})
 	if err != nil {
 		log.Error("UartModuleResource start failed:", err)
 		return err
 	} else {
+
 		s.loraDriver = driver.NewUartDriver(serialPort, s.Details(), s.RuleEngine)
 		err0 := s.loraDriver.Init()
 		if err != nil {
