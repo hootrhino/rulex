@@ -9,6 +9,11 @@ import (
 	"github.com/ngaut/log"
 )
 
+// 数据缓冲区,单位: 字节
+const max_BUFFER_SIZE = 1024 * 4 // 4KB
+
+var buffer = [max_BUFFER_SIZE]byte{}
+
 //------------------------------------------------------------------------
 // 内部函数
 //------------------------------------------------------------------------
@@ -27,14 +32,17 @@ type UartDriver struct {
 //
 // 初始化一个驱动
 //
-func NewUartDriver(serialPort serial.Port, in *typex.InEnd, e typex.RuleX) typex.XExternalDriver {
-	m := &UartDriver{}
-	m.In = in
-	m.RuleEngine = e
-	m.serialPort = serialPort
-	m.ctx = context.Background()
-	m.state = typex.STOP
-	return m
+func NewUartDriver(
+	serialPort serial.Port,
+	in *typex.InEnd,
+	e typex.RuleX, bufferSize int64) typex.XExternalDriver {
+	return &UartDriver{
+		In:         in,
+		RuleEngine: e,
+		serialPort: serialPort,
+		ctx:        context.Background(),
+		state:      typex.STOP,
+	}
 }
 
 //
@@ -48,7 +56,6 @@ func (a *UartDriver) Work() error {
 	go func(ctx context.Context) {
 		acc := 0
 		ticker := time.NewTicker(time.Duration(time.Microsecond * 100))
-		buffer := [512]byte{}
 		for {
 			<-ticker.C
 			select {
@@ -128,8 +135,8 @@ func (a *UartDriver) Write(b []byte) (int, error) {
 }
 func (a *UartDriver) DriverDetail() *typex.DriverDetail {
 	return &typex.DriverDetail{
-		Name:        "UartDriver",
-		Type:        "UartDriver",
-		Description: "UartDriver",
+		Name:        "Generic Uart Driver",
+		Type:        "UART",
+		Description: "A Generic Uart Driver",
 	}
 }

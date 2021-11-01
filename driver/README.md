@@ -1,6 +1,7 @@
 # 注意
 这个目录下的文件是专门针对树莓派开发的一些模块，在不同的硬件上需要调整规范，并不通用。
 ## 生成序列号
+这是一段测试代码，用来生成序列号，一般情况下建议写到数据库里面。
 ```c
 #include <stdio.h>
 #include <stdlib.h>
@@ -30,23 +31,35 @@ int main(int argc, char const *argv[])
 Config:
 ```json
 {
-	"name": "LoraATKModule",
-	"type": "LoraATK",
-	"config": {
-		"name": "COM2",
-		"baud": 115200,
-		"readTimeout": "test",
-		"size": 8,
-		"parity": "N",
-		"stopbits": 1
-	},
-	"description": "Lora ATK Module"
+    "name": "UART_MODULE",
+    "type": "UART_MODULE",
+    "config": {
+        "address": "COM2",
+        "baudRate": 115200,
+        "timeout": 3,
+        "dataBits": 8,
+        "parity": "N",
+        "stopBits": 1
+    },
+    "description": "UART_MODULE"
 }
 ```
 Test:
 
 ```sh
-go run ./rulexc.go inend-create --config  '{\"name\":\"LoraATKModule\",\"type\":\"LoraATK\",\"config\":{\"name\":\"COM1\",\"baud\":\"115200\",\"readTimeout\":\"0\",\"size\":\"8\",\"parity\":\"N\",\"stopbits\":\"1\"},\"description\":\"Lora ATK Module\"}'
+rulexc inend-create --config  '{
+    "name": "UART_MODULE",
+    "type": "UART_MODULE",
+    "config": {
+        "address": "COM2",
+        "baudRate": 115200,
+        "timeout": 3,
+        "dataBits": 8,
+        "parity": "N",
+        "stopBits": 1
+    },
+    "description": "UART_MODULE"
+}'
 ```
 ## 模拟串口测试
 ### 安装 socat
@@ -73,7 +86,7 @@ socat -d -d -d  pty,raw,echo=0 pty,raw,echo=1
 
 ```
 
-关键输出
+## 关键输出
 ```
 2021/09/11 19:18:03 socat[6074] N PTY is /dev/pts/0
 2021/09/11 19:18:03 socat[6074] N PTY is /dev/pts/1
@@ -84,3 +97,23 @@ socat -d -d -d  pty,raw,echo=0 pty,raw,echo=1
 - `/dev/pts/1`
 
 一个用来发送，一个用来接收。
+
+## 测试软件
+![res](../README_RES/uart1.png)
+
+## 如何实现一个驱动
+只需实现下面的接口即可,具体可看串口驱动：
+
+```go
+type XExternalDriver interface {
+	Test() error
+	Init() error
+	Work() error
+	State() DriverState
+	Read([]byte) (int, error)
+	Write([]byte) (int, error)
+	DriverDetail() *DriverDetail
+	Stop() error
+}
+
+```
