@@ -1,9 +1,7 @@
 package driver
 
 import (
-	"bytes"
 	"context"
-	"encoding/binary"
 	"rulex/typex"
 	"time"
 
@@ -19,8 +17,8 @@ import (
 // 正点原子的 Lora 模块封装
 //
 type UartDriver struct {
+	state      typex.DriverState
 	serialPort serial.Port
-	channel    chan byte
 	ctx        context.Context
 	In         *typex.InEnd
 	RuleEngine typex.RuleX
@@ -31,12 +29,11 @@ type UartDriver struct {
 //
 func NewUartDriver(serialPort serial.Port, in *typex.InEnd, e typex.RuleX) typex.XExternalDriver {
 	m := &UartDriver{}
-	// 缓冲区： 4KB
-	m.channel = make(chan byte, 4096)
 	m.In = in
 	m.RuleEngine = e
 	m.serialPort = serialPort
 	m.ctx = context.Background()
+	m.state = typex.STOP
 	return m
 }
 
@@ -48,78 +45,63 @@ func (a *UartDriver) Init() error {
 }
 func (a *UartDriver) Work() error {
 
-	go func(context.Context) {
-		log.Debug("UartDriver Start Listening")
+	go func(ctx context.Context) {
+		acc := 0
+		ticker := time.NewTicker(time.Duration(time.Microsecond * 100))
+		buffer := [512]byte{}
 		for {
-			time.Sleep(400 * time.Millisecond)
-			data := make([]byte, 256) // byte
+			<-ticker.C
+			select {
+			case <-ctx.Done():
+				{
+					break
+				}
+			default:
+				{
+				}
+			}
+			data := make([]byte, 1)
 			size, err0 := a.serialPort.Read(data)
 			if err0 != nil {
-				log.Error("UartDriver error: ", err0)
-				continue
-			}
-			for i := 0; i < size; i++ {
-				a.channel <- data[i]
-			}
-			// 数据包头长度位 3 字节
-			if len(a.channel) > 3 && len(a.channel) <= 256 {
-				// 包头：
-				// -----------------------------------
-				// | 包长1 | 包长2 | 类型 | 数据······|
-				// -===============+++++++############
-				//
-				dataBytes := [3]byte{}
-				// 前两个字节保存数据长度，最大长256个字节
-				dataBytes[0] = <-a.channel
-				dataBytes[1] = <-a.channel
-				// 第三个字节表示数据包类型
-				dataBytes[2] = <-a.channel
-				// log.Info(dataBytes)
-				var dataLen uint16
-				if err := binary.Read(bytes.NewReader([]byte{dataBytes[0], dataBytes[1]}), binary.BigEndian, &dataLen); err != nil {
-					log.Error(err)
-					continue
+				// log.Error("UartDriver error: ", err0)
+				if a.state == typex.STOP {
+					return
 				}
-				// 读数据包类型
-				var dataType uint8
-				if err := binary.Read(bytes.NewReader([]byte{dataBytes[2]}), binary.BigEndian, &dataType); err != nil {
-					log.Error(err)
-					continue
-				}
-				//
-				// log.Infof("len(channel):%d  dataLen:%d Type is: %d", len(a.channel), dataLen, dataType)
-				// 允许最大可读 256 字节
-				if dataLen <= (256) && dataLen > 0 {
-					var buffer = make([]byte, dataLen)
-					// 当前的数据够不够读
-					// log.Infof("len(channel):%d  dataLen is: %d", len(a.channel), (dataLen))
-					if len(a.channel) >= int(dataLen) {
-						for i := 0; i < int(dataLen); i++ {
-							buffer = append(buffer, <-a.channel)
-						}
-						log.Info("SerialPort Received:", string(buffer))
-						a.RuleEngine.PushQueue(typex.QueueData{
-							In:   a.In,
-							Out:  nil,
-							E:    a.RuleEngine,
-							Data: string(buffer),
-						})
+			}
+			if size == 1 {
+				if data[0] == '#' {
+					// log.Info("bytes => ", string(buffer[:acc]), buffer[:acc], acc)
+					a.RuleEngine.PushQueue(typex.QueueData{
+						In:   a.In,
+						Out:  nil,
+						E:    a.RuleEngine,
+						Data: string(buffer[1:acc]),
+					})
+					// 重新初始化缓冲区
+					for i := 0; i < acc-1; i++ {
+						buffer[i] = 0
 					}
-
+					acc = 0
 				}
 
+				if (data[0] != 0) && (data[0] != '\r') && (data[0] != '\n') {
+					buffer[acc] = data[0]
+					acc += 1
+				}
 			}
 		}
 
 	}(a.ctx)
+	a.state = typex.RUNNING
 	return nil
 
 }
 func (a *UartDriver) State() typex.DriverState {
-	return typex.RUNNING
+	return a.state
 
 }
 func (a *UartDriver) Stop() error {
+	a.state = typex.STOP
 	a.ctx.Done()
 	return a.serialPort.Close()
 }
@@ -129,9 +111,8 @@ func (a *UartDriver) Test() error {
 }
 
 //
-func (a *UartDriver) Read([]byte) (int, error) {
-
-	return 0, nil
+func (a *UartDriver) Read(b []byte) (int, error) {
+	return a.serialPort.Read(b)
 }
 
 //
@@ -144,4 +125,11 @@ func (a *UartDriver) Write(b []byte) (int, error) {
 		return n, nil
 	}
 
+}
+func (a *UartDriver) DriverDetail() *typex.DriverDetail {
+	return &typex.DriverDetail{
+		Name:        "UartDriver",
+		Type:        "UartDriver",
+		Description: "UartDriver",
+	}
 }

@@ -158,7 +158,9 @@ func NewSNMPInEndResource(inEndId string, e typex.RuleX) *SNMPResource {
 	s.PointId = inEndId
 	return &s
 }
-
+func (*SNMPResource) Driver() typex.XExternalDriver {
+	return nil
+}
 func (s *SNMPResource) Test(inEndId string) bool {
 	var r []bool
 	for i := 0; i < len(s.snmpClients); i++ {
@@ -200,7 +202,7 @@ func (s *SNMPResource) Start() error {
 				select {
 				case t := <-ticker.C:
 					data := map[string]interface{}{
-						"systemInfo": sr.SystemInfo(i),// Waining: CPU maybe used 100%
+						"systemInfo": sr.SystemInfo(i), // Waining: CPU maybe used 100%
 						"time":       t.Format("2006-01-02 15:04:05"),
 					}
 					dataBytes, err := json.Marshal(data)

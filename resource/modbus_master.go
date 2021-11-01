@@ -275,3 +275,6 @@ func (m *ModbusMasterResource) OnStreamApproached(data string) error {
 	}
 	return errs
 }
+func (*ModbusMasterResource) Driver() typex.XExternalDriver {
+	return nil
+}

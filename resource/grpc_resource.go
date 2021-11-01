@@ -131,3 +131,6 @@ func (g *GrpcInEndResource) Details() *typex.InEnd {
 func (m *GrpcInEndResource) OnStreamApproached(data string) error {
 	return nil
 }
+func (*GrpcInEndResource) Driver() typex.XExternalDriver {
+	return nil
+}

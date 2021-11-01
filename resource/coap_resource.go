@@ -104,3 +104,7 @@ func (cc *CoAPInEndResource) Enabled() bool {
 func (cc *CoAPInEndResource) Details() *typex.InEnd {
 	return cc.RuleEngine.GetInEnd(cc.PointId)
 }
+
+func (cc *CoAPInEndResource) Driver() typex.XExternalDriver {
+	return nil
+}

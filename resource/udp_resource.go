@@ -92,3 +92,6 @@ func (u *UdpResource) Stop() {
 	u.CanWrite = false
 	u.uDPConn.Close()
 }
+func (*UdpResource) Driver() typex.XExternalDriver {
+	return nil
+}

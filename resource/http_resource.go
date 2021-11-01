@@ -90,3 +90,6 @@ func (hh *HttpInEndResource) Details() *typex.InEnd {
 func (m *HttpInEndResource) OnStreamApproached(data string) error {
 	return nil
 }
+func (*HttpInEndResource) Driver() typex.XExternalDriver {
+	return nil
+}

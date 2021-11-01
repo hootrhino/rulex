@@ -24,3 +24,7 @@ func (d *DemoDriver) State() typex.DriverState {
 func (d *DemoDriver) Stop() error {
 	panic("not implemented") // TODO: Implement
 }
+
+func (d *DemoDriver) DriverDetail() *typex.DriverDetail {
+	return nil
+}

@@ -24,34 +24,36 @@ type RuleX interface {
 	//
 	PushQueue(QueueData) error
 	//
-	Work(in *InEnd, data string) (bool, error)
+	Work(*InEnd, string) (bool, error)
 	//
 	GetConfig(k string) interface{}
 	//
-	LoadInEnd(in *InEnd) error
-	GetInEnd(id string) *InEnd
-	SaveInEnd(in *InEnd)
-	RemoveInEnd(id string)
+	LoadInEnd(*InEnd) error
+	GetInEnd(string) *InEnd
+	SaveInEnd(*InEnd)
+	RemoveInEnd(string)
 	AllInEnd() map[string]*InEnd
 	//
-	LoadOutEnd(out *OutEnd) error
+	LoadOutEnd(*OutEnd) error
 	AllOutEnd() map[string]*OutEnd
-	GetOutEnd(id string) *OutEnd
-	SaveOutEnd(out *OutEnd)
-	RemoveOutEnd(out *OutEnd)
+	GetOutEnd(string) *OutEnd
+	SaveOutEnd(*OutEnd)
+	RemoveOutEnd(*OutEnd)
 	//
-	LoadHook(h XHook) error
+	LoadHook(XHook) error
 	//
-	LoadPlugin(p XPlugin) error
+	LoadPlugin(XPlugin) error
 	AllPlugins() map[string]XPlugin
 	//
-	LoadRule(r *Rule) error
+	LoadRule(*Rule) error
 	AllRule() map[string]*Rule
 	RemoveRule(uuid string) error
 	//
-	RunLuaCallbacks(in *InEnd, data string)
+	RunLuaCallbacks(*InEnd, string)
 	//
-	RunHooks(data string)
+	RunHooks(string)
+	//
+	LoadDriver(XExternalDriver) error
 	//
 	//
 	Version() Version
@@ -73,6 +75,7 @@ type XResource interface {
 	Pause()
 	Status() ResourceState
 	OnStreamApproached(data string) error
+	Driver() XExternalDriver
 	Stop()
 }
 
@@ -203,17 +206,23 @@ type XProtocol interface {
 // 1. MODBUS TCP模式 ,数据输入后转JSON输出到串口屏幕上
 // 2. MODBUS TCP模式外挂了很多继电器,来自云端的 PLC 控制指令先到网关，然后网关决定推送到哪个外挂
 //
+type DriverDetail struct {
+	Name        string
+	Type        string
+	Description string
+}
 type XExternalDriver interface {
 	Test() error
 	Init() error
 	Work() error
 	State() DriverState
 	//---------------------------------------------------
-	// 读写接口是给LUA标准库用的,驱动只管实现读写逻辑即可
+	// 读写接口是给LUA标准库用的, 驱动只管实现读写逻辑即可
 	//---------------------------------------------------
 	Read([]byte) (int, error)
 	Write([]byte) (int, error)
 	//---------------------------------------------------
+	DriverDetail() *DriverDetail
 	Stop() error
 }
 

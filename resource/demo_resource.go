@@ -6,6 +6,9 @@ type DemoResource struct {
 	typex.XStatus
 }
 
+func (*DemoResource) Driver() typex.XExternalDriver {
+	return nil
+}
 func (m *DemoResource) OnStreamApproached(data string) error {
 	return nil
 }

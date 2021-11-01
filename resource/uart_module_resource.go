@@ -63,24 +63,14 @@ func (s *UartModuleResource) Start() error {
 		BaudRate: mainConfig.BaudRate, //115200
 		DataBits: mainConfig.DataBits, //8
 		StopBits: mainConfig.StopBits, //1
-		Parity:   "N",                 //'N'
+		Parity:   mainConfig.Parity,   //'N'
 		Timeout:  time.Duration(mainConfig.Timeout) * time.Second,
 	})
 	if err != nil {
 		log.Error("UartModuleResource start failed:", err)
 		return err
 	} else {
-
 		s.loraDriver = driver.NewUartDriver(serialPort, s.Details(), s.RuleEngine)
-		err0 := s.loraDriver.Init()
-		if err != nil {
-			return err0
-		}
-		err1 := s.loraDriver.Work()
-		if err != nil {
-			return err1
-		}
-		log.Info("UartModuleResource start success.")
 		return nil
 	}
 }
@@ -115,4 +105,7 @@ func (s *UartModuleResource) Stop() {
 	if s.loraDriver != nil {
 		s.loraDriver.Stop()
 	}
+}
+func (s *UartModuleResource) Driver() typex.XExternalDriver {
+	return s.loraDriver
 }

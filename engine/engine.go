@@ -24,12 +24,13 @@ import (
 //
 type RuleEngine struct {
 	sync.Mutex
-	Hooks     map[string]typex.XHook   `json:"-"`
-	Rules     map[string]*typex.Rule   `json:"-"`
-	Plugins   map[string]typex.XPlugin `json:"plugins"`
-	InEnds    map[string]*typex.InEnd  `json:"inends"`
-	OutEnds   map[string]*typex.OutEnd `json:"outends"`
-	ConfigMap map[string]interface{}   `json:"configMap"`
+	Hooks     map[string]typex.XHook           `json:"-"`
+	Rules     map[string]*typex.Rule           `json:"-"`
+	Plugins   map[string]typex.XPlugin         `json:"plugins"`
+	InEnds    map[string]*typex.InEnd          `json:"inends"`
+	OutEnds   map[string]*typex.OutEnd         `json:"outends"`
+	Drivers   map[string]typex.XExternalDriver `json:"drivers"`
+	ConfigMap map[string]interface{}           `json:"configMap"`
 }
 
 //
@@ -42,8 +43,18 @@ func NewRuleEngine() typex.RuleX {
 		Rules:     map[string]*typex.Rule{},
 		InEnds:    map[string]*typex.InEnd{},
 		OutEnds:   map[string]*typex.OutEnd{},
+		Drivers:   map[string]typex.XExternalDriver{},
 		ConfigMap: map[string]interface{}{},
 	}
+}
+
+//
+//
+//
+func (e *RuleEngine) LoadDriver(typex.XExternalDriver) error {
+
+	return nil
+
 }
 
 //
@@ -182,25 +193,33 @@ func startResources(resource typex.XResource, in *typex.InEnd, e *RuleEngine) er
 		// Set resources to inend
 		in.Resource = resource
 		testResourceState(resource, e, in.Id)
+		testDriverState(resource, e, in.Id)
 		go func(ctx context.Context) {
 			// 5 seconds
 			ticker := time.NewTicker(time.Duration(time.Second * 5))
 			defer resource.Stop()
 			for {
+				<-ticker.C
 				select {
-				case <-ticker.C:
-					if resource.Status() == typex.DOWN {
-						testResourceState(resource, e, in.Id)
+				case <-ctx.Done():
+					{
+						return
 					}
 				default:
 					{
 					}
 				}
+				//------------------------------------
+				// 驱动挂了资源也挂了，因此检查驱动状态在先
+				//------------------------------------
+				testResourceState(resource, e, in.Id)
+				testDriverState(resource, e, in.Id)
+				//------------------------------------
+
 			}
 
 		}(context.Background())
 		log.Infof("InEnd %v %v load successfully", in.Name, in.Id)
-
 		return nil
 	}
 }
@@ -209,16 +228,48 @@ func startResources(resource typex.XResource, in *typex.InEnd, e *RuleEngine) er
 // test ResourceState
 //
 func testResourceState(resource typex.XResource, e *RuleEngine, id string) {
-	if resource.Status() == typex.UP {
-		e.GetInEnd(id).SetState(typex.UP)
-	} else {
+	if resource.Status() != typex.UP {
 		e.GetInEnd(id).SetState(typex.DOWN)
+		//----------------------------------
 		// 当资源挂了以后先给停止, 然后重启
+		//----------------------------------
 		log.Warnf("Resource %v %v down. try to restart it", resource.Details().Id, resource.Details().Name)
 		resource.Stop()
+		//----------------------------------
+		// 驱动也要停了
+		//----------------------------------
+		if resource.Driver() != nil {
+			resource.Driver().Stop()
+		}
+		//----------------------------------
+		// 主动垃圾回收一波
+		//----------------------------------
 		runtime.Gosched()
 		runtime.GC()
 		resource.Start()
+	}
+}
+func testDriverState(resource typex.XResource, e *RuleEngine, id string) {
+	if resource.Driver() != nil {
+		// println("testDriverState:", resource.Driver().State())
+		if resource.Status() == typex.UP {
+			if resource.Driver().State() == typex.STOP {
+				log.Warn("Driver stoped:", resource.Driver().DriverDetail().Name)
+				e.GetInEnd(id).SetState(typex.DOWN)
+				// Start driver
+				if err := resource.Driver().Init(); err != nil {
+					log.Error("Driver initial error:", err)
+				} else {
+					log.Info("Try to start driver: ", resource.Driver().DriverDetail().Name)
+					if err := resource.Driver().Work(); err != nil {
+						log.Error("Driver initial error:", err)
+					} else {
+						log.Info("Driver start successfully:", resource.Driver().DriverDetail().Name)
+					}
+				}
+			}
+		}
+
 	}
 }
 
@@ -392,10 +443,12 @@ func (e *RuleEngine) AllRule() map[string]*typex.Rule {
 //
 func (e *RuleEngine) Stop() {
 	log.Info("Stopping Rulex......")
+	context.Background().Done()
 	for _, inEnd := range e.InEnds {
 		if inEnd.Resource != nil {
 			log.Info("Stop InEnd:", inEnd.Name, inEnd.Id)
 			inEnd.Resource.Stop()
+			inEnd.Resource.Driver().Stop()
 		}
 	}
 

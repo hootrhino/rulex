@@ -28,7 +28,9 @@ func NewMqttInEndResource(inEndId string, e typex.RuleX) *MqttInEndResource {
 	m.RuleEngine = e
 	return m
 }
-
+func (*MqttInEndResource) Driver() typex.XExternalDriver {
+	return nil
+}
 func (mm *MqttInEndResource) Start() error {
 
 	var messageHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {

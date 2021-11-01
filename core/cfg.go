@@ -68,6 +68,9 @@ func SetLogLevel() {
 
 	case "info":
 		log.SetLevel(log.LogLevel(log.LOG_INFO))
+	case "all":
+		log.SetLevel(log.LogLevel(log.LOG_LEVEL_ALL))
+
 	}
 
 }

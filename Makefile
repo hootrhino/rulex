@@ -25,6 +25,7 @@ xx:
 windows:
 	go mod tidy
 	SET GOOS=windows
+	SET CGO_ENABLED=1
 	go build -ldflags "-s -w" -o ${APP}.exe main.go
 
 .PHONY: arm32
