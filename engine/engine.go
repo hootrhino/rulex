@@ -448,7 +448,9 @@ func (e *RuleEngine) Stop() {
 		if inEnd.Resource != nil {
 			log.Info("Stop InEnd:", inEnd.Name, inEnd.Id)
 			inEnd.Resource.Stop()
-			inEnd.Resource.Driver().Stop()
+			if inEnd.Resource.Driver() != nil {
+				inEnd.Resource.Driver().Stop()
+			}
 		}
 	}
 
