@@ -251,10 +251,10 @@ func testResourceState(resource typex.XResource, e *RuleEngine, id string) {
 }
 func testDriverState(resource typex.XResource, e *RuleEngine, id string) {
 	if resource.Driver() != nil {
-		// println("testDriverState:", resource.Driver().State())
+		// 只有资源启动状态才拉起驱动
 		if resource.Status() == typex.UP {
 			if resource.Driver().State() == typex.STOP {
-				log.Warn("Driver stoped:", resource.Driver().DriverDetail().Name)
+				log.Warn("Driver stopped:", resource.Driver().DriverDetail().Name)
 				e.GetInEnd(id).SetState(typex.DOWN)
 				// Start driver
 				if err := resource.Driver().Init(); err != nil {
