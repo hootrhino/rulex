@@ -35,7 +35,7 @@ type UartDriver struct {
 func NewUartDriver(
 	serialPort serial.Port,
 	in *typex.InEnd,
-	e typex.RuleX, bufferSize int64) typex.XExternalDriver {
+	e typex.RuleX) typex.XExternalDriver {
 	return &UartDriver{
 		In:         in,
 		RuleEngine: e,
