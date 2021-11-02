@@ -53,6 +53,11 @@ func (a *UartDriver) Init() error {
 	a.state = typex.RUNNING
 	return nil
 }
+
+func (a *UartDriver) SetState(state typex.DriverState) {
+	a.state = state
+
+}
 func (a *UartDriver) Work() error {
 
 	go func(ctx context.Context) {
@@ -108,8 +113,6 @@ func (a *UartDriver) State() typex.DriverState {
 
 }
 func (a *UartDriver) Stop() error {
-	a.state = typex.STOP
-	a.ctx.Done()
 	return a.serialPort.Close()
 }
 

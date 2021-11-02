@@ -21,7 +21,7 @@ type UartConfig struct {
 	StopBits  int    `json:"stopBits" validate:"required"`
 	Parity    string `json:"parity" validate:"required"`
 	Separator string `json:"separator" validate:"required"`
-	Timeout   int64  `json:"timeout" validate:"required"`
+	Timeout   *int64 `json:"timeout" validate:"required"`
 }
 
 func NewUartModuleResource(inEndId string, e typex.RuleX) typex.XResource {
@@ -65,7 +65,7 @@ func (u *UartModuleResource) Start() error {
 		DataBits: mainConfig.DataBits, //8
 		StopBits: mainConfig.StopBits, //1
 		Parity:   mainConfig.Parity,   //'N'
-		Timeout:  time.Duration(mainConfig.Timeout) * time.Second,
+		Timeout:  time.Duration(*mainConfig.Timeout) * time.Second,
 	})
 	if err != nil {
 		log.Error("UartModuleResource start failed:", err)
@@ -108,7 +108,7 @@ func (u *UartModuleResource) Status() typex.ResourceState {
 }
 
 func (u *UartModuleResource) Stop() {
-
+	u.RuleEngine.GetInEnd(u.PointId).SetState(typex.DOWN)
 }
 func (u *UartModuleResource) Driver() typex.XExternalDriver {
 	return u.loraDriver

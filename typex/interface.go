@@ -216,6 +216,7 @@ type XExternalDriver interface {
 	Init() error
 	Work() error
 	State() DriverState
+	SetState(DriverState)
 	//---------------------------------------------------
 	// 读写接口是给LUA标准库用的, 驱动只管实现读写逻辑即可
 	//---------------------------------------------------

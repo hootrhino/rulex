@@ -192,25 +192,25 @@ func startResources(resource typex.XResource, in *typex.InEnd, e *RuleEngine) er
 		startResource(resource, e, in.Id)
 		go func(ctx context.Context) {
 			// 5 seconds
-			ticker := time.NewTicker(time.Duration(time.Second * 5))
+			//ticker := time.NewTicker(time.Duration(time.Second * 5))
 			defer resource.Stop()
 			for {
-				<-ticker.C
+				//<-ticker.C
 				select {
 				case <-ctx.Done():
 					{
 						return
 					}
-				default:
+				case <-time.After(time.Second * 3):
 					{
+						//------------------------------------
+						// 驱动挂了资源也挂了，因此检查驱动状态在先
+						//------------------------------------
+						testResourceState(resource, e, in.Id)
+						testDriverState(resource, e, in.Id)
+						//------------------------------------
 					}
 				}
-				//------------------------------------
-				// 驱动挂了资源也挂了，因此检查驱动状态在先
-				//------------------------------------
-				testDriverState(resource, e, in.Id)
-				testResourceState(resource, e, in.Id)
-				//------------------------------------
 
 			}
 
@@ -247,7 +247,16 @@ func testResourceState(resource typex.XResource, e *RuleEngine, id string) {
 //
 func startResource(resource typex.XResource, e *RuleEngine, id string) {
 	if err := resource.Start(); err != nil {
-		log.Error("Resource start error:", err)
+		log.Error("Resource start error:", err, resource.Status())
+		if resource.Status() == typex.UP {
+			resource.Stop()
+		}
+		if resource.Driver() != nil {
+			if resource.Driver().State() == typex.RUNNING {
+				resource.Driver().Stop()
+			}
+		}
+
 	} else {
 		//----------------------------------
 		// 驱动也要停了
@@ -457,13 +466,14 @@ func (e *RuleEngine) AllRule() map[string]*typex.Rule {
 //
 func (e *RuleEngine) Stop() {
 	log.Info("Stopping Rulex......")
-	context.Background().Done()
+
 	for _, inEnd := range e.InEnds {
 		if inEnd.Resource != nil {
 			log.Info("Stop InEnd:", inEnd.Name, inEnd.Id)
 			e.GetInEnd(inEnd.Id).SetState(typex.DOWN)
 			inEnd.Resource.Stop()
 			if inEnd.Resource.Driver() != nil {
+				inEnd.Resource.Driver().SetState(typex.STOP)
 				inEnd.Resource.Driver().Stop()
 			}
 		}
@@ -481,6 +491,7 @@ func (e *RuleEngine) Stop() {
 		plugin.Clean()
 
 	}
+	context.Background().Done()
 	runtime.Gosched()
 	runtime.GC()
 	log.Info("Stop Rulex successfully")
