@@ -62,48 +62,36 @@ func (a *UartDriver) Work() error {
 
 	go func(ctx context.Context) {
 		acc := 0
+		data := make([]byte, 1)
 		ticker := time.NewTicker(time.Duration(time.Microsecond * 400))
-		for {
+		for a.state == typex.RUNNING {
 			<-ticker.C
-			select {
-			case <-ctx.Done():
-				{
-					break
-				}
-			default:
-				{
-				}
-			}
-			data := make([]byte, 1)
-			size, err0 := a.serialPort.Read(data)
-			if err0 != nil {
+			if _, err0 := a.serialPort.Read(data); err0 != nil {
 				a.Stop()
 				return
 			}
-			if size == 1 {
-				// # 分隔符
-				if data[0] == '#' {
-					// log.Info("bytes => ", string(buffer[:acc]), buffer[:acc], acc)
-					a.RuleEngine.PushQueue(typex.QueueData{
-						In:   a.In,
-						Out:  nil,
-						E:    a.RuleEngine,
-						Data: string(buffer[1:acc]),
-					})
-					// 重新初始化缓冲区
-					for i := 0; i < acc-1; i++ {
-						buffer[i] = 0
-					}
-					acc = 0
+			// # 分隔符
+			if data[0] == '#' {
+				// log.Info("bytes => ", string(buffer[:acc]), buffer[:acc], acc)
+				a.RuleEngine.PushQueue(typex.QueueData{
+					In:   a.In,
+					Out:  nil,
+					E:    a.RuleEngine,
+					Data: string(buffer[1:acc]),
+				})
+				// 重新初始化缓冲区
+				for i := 0; i < acc-1; i++ {
+					buffer[i] = 0
 				}
+				data[0] = 0
+				acc = 0
+			}
 
-				if (data[0] != 0) && (data[0] != '\r') && (data[0] != '\n') {
-					buffer[acc] = data[0]
-					acc += 1
-				}
+			if (data[0] != 0) && (data[0] != '\r') && (data[0] != '\n') {
+				buffer[acc] = data[0]
+				acc += 1
 			}
 		}
-
 	}(a.ctx)
 	return nil
 
