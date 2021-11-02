@@ -219,7 +219,7 @@ func startResources(resource typex.XResource, in *typex.InEnd, e *RuleEngine) er
 			}
 
 		}(context.Background())
-		log.Infof("InEnd %v %v load successfully", in.Name, in.Id)
+		log.Infof("InEnd [%v, %v] load successfully", in.Name, in.Id)
 		return nil
 	}
 }
@@ -256,11 +256,12 @@ func testDriverState(resource typex.XResource, e *RuleEngine, id string) {
 			if resource.Driver().State() == typex.STOP {
 				log.Warn("Driver stopped:", resource.Driver().DriverDetail().Name)
 				e.GetInEnd(id).SetState(typex.DOWN)
+				resource.Driver().Stop()
 				// Start driver
 				if err := resource.Driver().Init(); err != nil {
 					log.Error("Driver initial error:", err)
 				} else {
-					log.Info("Try to start driver: ", resource.Driver().DriverDetail().Name)
+					log.Infof("Try to start driver: [%v]", resource.Driver().DriverDetail().Name)
 					if err := resource.Driver().Work(); err != nil {
 						log.Error("Driver initial error:", err)
 					} else {
@@ -377,7 +378,7 @@ func (e *RuleEngine) LoadRule(r *typex.Rule) error {
 					// Save to rules map
 					//
 					e.SaveRule(r)
-					log.Infof("Rule %v %v load successfully", r.Name, r.Id)
+					log.Infof("Rule [%v, %v] load successfully", r.Name, r.Id)
 					return nil
 				} else {
 					return errors.New("'InEnd':" + inId + " is not exists")
