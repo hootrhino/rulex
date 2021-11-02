@@ -10,7 +10,7 @@ import (
 )
 
 // 数据缓冲区,单位: 字节
-const max_BUFFER_SIZE = 1024 * 4 // 4KB
+const max_BUFFER_SIZE = 1024 * 2 // 4KB
 
 var buffer = [max_BUFFER_SIZE]byte{}
 
@@ -27,6 +27,7 @@ type UartDriver struct {
 	ctx        context.Context
 	In         *typex.InEnd
 	RuleEngine typex.RuleX
+	Separator  uint8
 }
 
 //
@@ -35,13 +36,13 @@ type UartDriver struct {
 func NewUartDriver(
 	serialPort serial.Port,
 	in *typex.InEnd,
-	e typex.RuleX) typex.XExternalDriver {
+	e typex.RuleX,
+	separator uint8) typex.XExternalDriver {
 	return &UartDriver{
 		In:         in,
 		RuleEngine: e,
 		serialPort: serialPort,
 		ctx:        context.Background(),
-		state:      typex.STOP,
 	}
 }
 
@@ -49,13 +50,14 @@ func NewUartDriver(
 //
 //
 func (a *UartDriver) Init() error {
+	a.state = typex.RUNNING
 	return nil
 }
 func (a *UartDriver) Work() error {
 
 	go func(ctx context.Context) {
 		acc := 0
-		ticker := time.NewTicker(time.Duration(time.Microsecond * 100))
+		ticker := time.NewTicker(time.Duration(time.Microsecond * 400))
 		for {
 			<-ticker.C
 			select {
@@ -70,12 +72,11 @@ func (a *UartDriver) Work() error {
 			data := make([]byte, 1)
 			size, err0 := a.serialPort.Read(data)
 			if err0 != nil {
-				// log.Error("UartDriver error: ", err0)
-				if a.state == typex.STOP {
-					return
-				}
+				a.Stop()
+				continue
 			}
 			if size == 1 {
+				// # 分隔符
 				if data[0] == '#' {
 					// log.Info("bytes => ", string(buffer[:acc]), buffer[:acc], acc)
 					a.RuleEngine.PushQueue(typex.QueueData{
@@ -99,7 +100,6 @@ func (a *UartDriver) Work() error {
 		}
 
 	}(a.ctx)
-	a.state = typex.RUNNING
 	return nil
 
 }

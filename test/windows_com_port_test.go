@@ -1,36 +1,26 @@
 package test
 
 import (
-	"fmt"
 	"testing"
 
+	"github.com/goburrow/serial"
 	"github.com/ngaut/log"
-	"go.bug.st/serial"
 )
 
 func TestComPort(t *testing.T) {
-
-	mode := &serial.Mode{
-		BaudRate: 115200,
-	}
-	port, err := serial.Open("COM6", mode)
+	port, err := serial.Open(&serial.Config{Address: "COM4", BaudRate: 115200})
 	if err != nil {
 		log.Fatal(err)
 	}
-	if err := port.SetMode(mode); err != nil {
-		log.Fatal(err)
-	}
-	buff := make([]byte, 100)
+	defer port.Close()
+
+	buffer := make([]byte, 1)
+	_, err = port.Read(buffer)
 	for {
-		n, err := port.Read(buff)
 		if err != nil {
 			log.Fatal(err)
-			break
+		} else {
+			print((string(buffer)))
 		}
-		if n == 0 {
-			fmt.Println("\nEOF")
-			break
-		}
-		fmt.Printf("%v", string(buff[:n]))
 	}
 }
