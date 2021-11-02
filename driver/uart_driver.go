@@ -73,7 +73,7 @@ func (a *UartDriver) Work() error {
 			size, err0 := a.serialPort.Read(data)
 			if err0 != nil {
 				a.Stop()
-				continue
+				return
 			}
 			if size == 1 {
 				// # 分隔符
