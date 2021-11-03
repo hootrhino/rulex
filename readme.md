@@ -86,10 +86,6 @@ make # on windows: make windows
 ```
 
 ## HTTP API
-```
-openapi 规范位于源码根目录下：`plugin\http_server\openapi.yml`
-```
-
 ## 规则引擎
 ### 规则定义
 ```lua
@@ -185,3 +181,4 @@ Actions = {
 <div style="text-align:center;">
     <a href="https://wwhai.github.io/rulex_doc_html">[点我查看详细文档]</a>
 <div>
+
