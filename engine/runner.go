@@ -66,7 +66,7 @@ func RunRulex(dbPath string) {
 		if err := json.Unmarshal([]byte(mOutEnd.Config), &config); err != nil {
 			log.Error(err)
 		}
-		newOutEnd := typex.NewOutEnd(mOutEnd.Type, mOutEnd.Name, mOutEnd.Description, &config)
+		newOutEnd := typex.NewOutEnd(mOutEnd.Type, mOutEnd.Name, mOutEnd.Description, config)
 		// Important !!!!!!!!
 		newOutEnd.Id = mOutEnd.UUID
 		if err := engine.LoadOutEnd(newOutEnd); err != nil {

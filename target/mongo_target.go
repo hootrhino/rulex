@@ -33,8 +33,8 @@ func (m *MongoTarget) Register(outEndId string) error {
 func (m *MongoTarget) Start() error {
 	config := m.RuleEngine.GetOutEnd(m.PointId).Config
 	var clientOptions *options.ClientOptions
-	if (*config)["mongourl"] != nil {
-		clientOptions = options.Client().ApplyURI((*config)["mongourl"].(string))
+	if (config)["mongourl"] != nil {
+		clientOptions = options.Client().ApplyURI((config)["mongourl"].(string))
 	} else {
 		clientOptions = options.Client().ApplyURI("mongodb://localhost:27017")
 	}
@@ -43,11 +43,11 @@ func (m *MongoTarget) Start() error {
 		return err0
 	}
 
-	if (*config)["database"] != nil {
-		if (*config)["collection"] != nil {
-			m.collection = client.Database((*config)["database"].(string)).Collection((*config)["collection"].(string))
+	if (config)["database"] != nil {
+		if (config)["collection"] != nil {
+			m.collection = client.Database((config)["database"].(string)).Collection((config)["collection"].(string))
 		} else {
-			m.collection = client.Database((*config)["mongourl"].(string)).Collection("rulex_data")
+			m.collection = client.Database((config)["mongourl"].(string)).Collection("rulex_data")
 		}
 	} else {
 		m.collection = client.Database("rulex").Collection("rulex_data")

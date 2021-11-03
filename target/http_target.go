@@ -15,7 +15,7 @@ type HTTPTarget struct {
 func (ht *HTTPTarget) Register(outEndId string) {
 	ht.PointId = outEndId
 	config := ht.RuleEngine.GetOutEnd(ht.PointId).Config
-	ht.url = (*config)["url"].(string)
+	ht.url = (config)["url"].(string)
 
 }
 func (ht *HTTPTarget) Start() {

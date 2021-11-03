@@ -100,7 +100,7 @@ func (hh *HttpApiServer) LoadNewestOutEnd(uuid string) error {
 	if err := json.Unmarshal([]byte(mOutEnd.Config), &config); err != nil {
 		return err
 	} else {
-		out := typex.NewOutEnd(mOutEnd.Type, mOutEnd.Name, mOutEnd.Description, &config)
+		out := typex.NewOutEnd(mOutEnd.Type, mOutEnd.Name, mOutEnd.Description, config)
 		// Important !!!!!!!!
 		out.Id = mOutEnd.UUID
 		if err := hh.ruleEngine.LoadOutEnd(out); err != nil {
