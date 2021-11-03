@@ -17,7 +17,7 @@ import (
 //
 type CoAPConfig struct {
 	Port       uint16             `json:"port" validate:"required"`
-	DataModels []typex.XDataModel `json:"dataModels" validate:"required"`
+	DataModels []typex.XDataModel `json:"dataModels"`
 }
 
 //

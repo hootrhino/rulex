@@ -2,7 +2,6 @@ package test
 
 import (
 	"context"
-
 	"os"
 	"os/signal"
 	"rulex/core"
@@ -20,12 +19,6 @@ import (
 )
 
 func TestFullyRun(t *testing.T) {
-	Run()
-}
-
-//
-func Run() {
-
 	core.InitGlobalConfig()
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, syscall.SIGINT, syscall.SIGABRT)
@@ -51,21 +44,21 @@ func Run() {
 	}
 	// CoAP Inend
 	coapInend := typex.NewInEnd("COAP", "Rulex COAP InEnd", "Rulex COAP InEnd", map[string]interface{}{
-		"port": "2582",
+		"port": 2582,
 	})
 	if err := engine.LoadInEnd(coapInend); err != nil {
 		log.Error("Rule load failed:", err)
 	}
 	// Http Inend
 	httpInend := typex.NewInEnd("HTTP", "Rulex HTTP InEnd", "Rulex HTTP InEnd", map[string]interface{}{
-		"port": "2583",
+		"port": 2583,
 	})
 	if err := engine.LoadInEnd(httpInend); err != nil {
 		log.Error("Rule load failed:", err)
 	}
 	// Udp Inend
 	udpInend := typex.NewInEnd("UDP", "Rulex UDP InEnd", "Rulex UDP InEnd", map[string]interface{}{
-		"port": "2584",
+		"port": 2584,
 	})
 	if err := engine.LoadInEnd(udpInend); err != nil {
 		log.Error("Rule load failed:", err)
@@ -144,9 +137,14 @@ func Run() {
 	}
 
 	time.Sleep(1 * time.Second)
+	log.Info("Test Http Resource Api===> " + HttpPost(map[string]interface{}{
+		"hello": "world",
+	}, "http://127.0.0.1:2583/in"))
+
 	log.Info("Test Http system Api===> " + HttpGet("http://127.0.0.1:2580/api/v1/system"))
 	log.Info("Test Http inends Api===> " + HttpGet("http://127.0.0.1:2580/api/v1/inends"))
 	log.Info("Test Http outends Api===> " + HttpGet("http://127.0.0.1:2580/api/v1/outends"))
 	log.Info("Test Http rules Api===> " + HttpGet("http://127.0.0.1:2580/api/v1/rules"))
+
 	engine.Stop()
 }

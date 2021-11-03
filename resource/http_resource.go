@@ -2,12 +2,20 @@ package resource
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"rulex/typex"
+	"rulex/utils"
 
 	"github.com/gin-gonic/gin"
 	"github.com/ngaut/log"
 )
+
+//
+type HttpConfig struct {
+	Port       uint16             `json:"port" validate:"required"`
+	DataModels []typex.XDataModel `json:"dataModels"`
+}
 
 //
 type HttpInEndResource struct {
@@ -27,6 +35,10 @@ func NewHttpInEndResource(inEndId string, e typex.RuleX) *HttpInEndResource {
 //
 func (hh *HttpInEndResource) Start() error {
 	config := hh.RuleEngine.GetInEnd(hh.PointId).Config
+	var mainConfig HttpConfig
+	if err := utils.BindResourceConfig(config, &mainConfig); err != nil {
+		return err
+	}
 	hh.engine.POST("/in", func(c *gin.Context) {
 		type Form struct {
 			Data string
@@ -46,9 +58,9 @@ func (hh *HttpInEndResource) Start() error {
 		}
 	})
 	go func(ctx context.Context) {
-		http.ListenAndServe(":"+(config)["port"].(string), hh.engine)
+		http.ListenAndServe(fmt.Sprintf(":%v", mainConfig.Port), hh.engine)
 	}(context.Background())
-	log.Info("HTTP resource started on" + " [0.0.0.0]:" + (config)["port"].(string))
+	log.Info("HTTP resource started on" + " [0.0.0.0]:" + fmt.Sprintf("%v", mainConfig.Port))
 
 	return nil
 }
