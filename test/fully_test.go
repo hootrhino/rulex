@@ -43,28 +43,28 @@ func Run() {
 		log.Error("Rule load failed:", err)
 	}
 	// Grpc Inend
-	grpcInend := typex.NewInEnd("GRPC", "Rulex Grpc InEnd", "Rulex Grpc InEnd", &map[string]interface{}{
+	grpcInend := typex.NewInEnd("GRPC", "Rulex Grpc InEnd", "Rulex Grpc InEnd", map[string]interface{}{
 		"port": "2581",
 	})
 	if err := engine.LoadInEnd(grpcInend); err != nil {
 		log.Error("Rule load failed:", err)
 	}
 	// CoAP Inend
-	coapInend := typex.NewInEnd("COAP", "Rulex COAP InEnd", "Rulex COAP InEnd", &map[string]interface{}{
+	coapInend := typex.NewInEnd("COAP", "Rulex COAP InEnd", "Rulex COAP InEnd", map[string]interface{}{
 		"port": "2582",
 	})
 	if err := engine.LoadInEnd(coapInend); err != nil {
 		log.Error("Rule load failed:", err)
 	}
 	// Http Inend
-	httpInend := typex.NewInEnd("HTTP", "Rulex HTTP InEnd", "Rulex HTTP InEnd", &map[string]interface{}{
+	httpInend := typex.NewInEnd("HTTP", "Rulex HTTP InEnd", "Rulex HTTP InEnd", map[string]interface{}{
 		"port": "2583",
 	})
 	if err := engine.LoadInEnd(httpInend); err != nil {
 		log.Error("Rule load failed:", err)
 	}
 	// Udp Inend
-	udpInend := typex.NewInEnd("UDP", "Rulex UDP InEnd", "Rulex UDP InEnd", &map[string]interface{}{
+	udpInend := typex.NewInEnd("UDP", "Rulex UDP InEnd", "Rulex UDP InEnd", map[string]interface{}{
 		"port": "2584",
 	})
 	if err := engine.LoadInEnd(udpInend); err != nil {

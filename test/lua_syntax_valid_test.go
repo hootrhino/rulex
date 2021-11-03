@@ -17,7 +17,7 @@ func TestLuaSyntax1(t *testing.T) {
 	engine := engine.NewRuleEngine()
 	engine.Start()
 	// Grpc Inend
-	grpcInend := typex.NewInEnd("GRPC", "Rulex Grpc InEnd", "Rulex Grpc InEnd", &map[string]interface{}{
+	grpcInend := typex.NewInEnd("GRPC", "Rulex Grpc InEnd", "Rulex Grpc InEnd", map[string]interface{}{
 		"port": "2581",
 	})
 	rule := typex.NewRule(engine,
@@ -48,7 +48,7 @@ func TestLuaSyntax2(t *testing.T) {
 	engine := engine.NewRuleEngine()
 	engine.Start()
 	// Grpc Inend
-	grpcInend := typex.NewInEnd("GRPC", "Rulex Grpc InEnd", "Rulex Grpc InEnd", &map[string]interface{}{
+	grpcInend := typex.NewInEnd("GRPC", "Rulex Grpc InEnd", "Rulex Grpc InEnd", map[string]interface{}{
 		"port": "2581",
 	})
 	rule := typex.NewRule(engine,

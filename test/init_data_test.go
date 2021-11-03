@@ -22,7 +22,7 @@ func TestInitData(t *testing.T) {
 	}
 	hh.Truncate()
 	// Grpc Inend
-	grpcInend := typex.NewInEnd("GRPC", "Rulex Grpc InEnd", "Rulex Grpc InEnd", &map[string]interface{}{
+	grpcInend := typex.NewInEnd("GRPC", "Rulex Grpc InEnd", "Rulex Grpc InEnd", map[string]interface{}{
 		"port": "2581",
 	})
 	b1, _ := json.Marshal(grpcInend.Config)
@@ -34,7 +34,7 @@ func TestInitData(t *testing.T) {
 		Description: grpcInend.Description,
 	})
 	// CoAP Inend
-	coapInend := typex.NewInEnd("COAP", "Rulex COAP InEnd", "Rulex COAP InEnd", &map[string]interface{}{
+	coapInend := typex.NewInEnd("COAP", "Rulex COAP InEnd", "Rulex COAP InEnd", map[string]interface{}{
 		"port": "2582",
 	})
 	b2, _ := json.Marshal(coapInend.Config)
@@ -46,7 +46,7 @@ func TestInitData(t *testing.T) {
 		Description: coapInend.Description,
 	})
 	// Http Inend
-	httpInend := typex.NewInEnd("HTTP", "Rulex HTTP InEnd", "Rulex HTTP InEnd", &map[string]interface{}{
+	httpInend := typex.NewInEnd("HTTP", "Rulex HTTP InEnd", "Rulex HTTP InEnd", map[string]interface{}{
 		"port": "2583",
 	})
 	b3, _ := json.Marshal(httpInend.Config)
@@ -59,7 +59,7 @@ func TestInitData(t *testing.T) {
 	})
 
 	// Udp Inend
-	udpInend := typex.NewInEnd("UDP", "Rulex UDP InEnd", "Rulex UDP InEnd", &map[string]interface{}{
+	udpInend := typex.NewInEnd("UDP", "Rulex UDP InEnd", "Rulex UDP InEnd", map[string]interface{}{
 		"port": "2584",
 	})
 	b4, _ := json.Marshal(udpInend.Config)
