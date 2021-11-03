@@ -95,8 +95,13 @@ func (a *UartDriver) Work() error {
 			}
 
 			if (data[0] != 0) && (data[0] != '\r') && (data[0] != '\n') {
-				buffer[acc] = data[0]
-				acc += 1
+				if acc <= max_BUFFER_SIZE {
+					buffer[acc] = data[0]
+					acc += 1
+				} else {
+					log.Error("max buffer reached!")
+				}
+
 			}
 		}
 	}(a.ctx)
