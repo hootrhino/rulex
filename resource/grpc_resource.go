@@ -54,15 +54,15 @@ func NewGrpcInEndResource(inEndId string, e typex.RuleX) *GrpcInEndResource {
 func (g *GrpcInEndResource) Start() error {
 	config := g.RuleEngine.GetInEnd(g.PointId).Config
 	var port = ""
-	switch (*config)["port"].(type) {
+	switch (config)["port"].(type) {
 	case string:
-		port = ":" + (*config)["port"].(string)
+		port = ":" + (config)["port"].(string)
 	case int:
-		port = fmt.Sprintf(":%v", (*config)["port"].(int))
+		port = fmt.Sprintf(":%v", (config)["port"].(int))
 	case int64:
-		port = fmt.Sprintf(":%v", (*config)["port"].(int))
+		port = fmt.Sprintf(":%v", (config)["port"].(int))
 	case float64:
-		port = fmt.Sprintf(":%v", (*config)["port"].(int))
+		port = fmt.Sprintf(":%v", (config)["port"].(int))
 	}
 	// transport
 	// TCP SSL HTTP HTTPS

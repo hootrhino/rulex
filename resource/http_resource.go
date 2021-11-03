@@ -46,9 +46,9 @@ func (hh *HttpInEndResource) Start() error {
 		}
 	})
 	go func(ctx context.Context) {
-		http.ListenAndServe(":"+(*config)["port"].(string), hh.engine)
+		http.ListenAndServe(":"+(config)["port"].(string), hh.engine)
 	}(context.Background())
-	log.Info("HTTP resource started on" + " [0.0.0.0]:" + (*config)["port"].(string))
+	log.Info("HTTP resource started on" + " [0.0.0.0]:" + (config)["port"].(string))
 
 	return nil
 }

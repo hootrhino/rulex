@@ -279,7 +279,7 @@ func startResource(resource typex.XResource, e *RuleEngine, id string) {
 				if err := resource.Driver().Work(); err != nil {
 					log.Error("Driver work error:", err)
 				} else {
-					log.Info("Driver start successfully:", resource.Driver().DriverDetail().Name)
+					log.Infof("Driver start successfully: [%v]", resource.Driver().DriverDetail().Name)
 				}
 			}
 		}
@@ -319,22 +319,26 @@ func startTarget(target typex.XTarget, out *typex.OutEnd, e typex.RuleX) error {
 	e.SaveOutEnd(out)
 	out.Target = target
 	// Register outend to target
-	if err0 := target.Register(out.Id); err0 != nil {
-		return err0
+	if err := target.Register(out.Id); err != nil {
+		log.Error(err)
+		return err
 	} else {
+		//
 		if err1 := target.Start(); err1 != nil {
 			log.Error(err1)
 		}
-		testTargetState(target, e, out.Id)
-		//
 		go func(ctx context.Context) {
 			// 5 seconds
 			ticker := time.NewTicker(time.Duration(time.Second * 5))
 			for {
 				select {
+				case <-ctx.Done():
+					{
+						return
+					}
 				case <-ticker.C:
 					if target.Status() == typex.DOWN {
-						testTargetState(target, e, out.Id)
+						checkTargetState(target, e, out.Id)
 					}
 				default:
 					{
@@ -347,13 +351,10 @@ func startTarget(target typex.XTarget, out *typex.OutEnd, e typex.RuleX) error {
 }
 
 // Test Target State
-func testTargetState(target typex.XTarget, e typex.RuleX, id string) {
-	if target.Status() == typex.UP {
-		e.GetOutEnd(id).State = typex.UP
-	} else {
-		e.GetOutEnd(id).State = typex.DOWN
+func checkTargetState(target typex.XTarget, e typex.RuleX, id string) {
+	if target.Status() == typex.DOWN {
 		// 当资源挂了以后先给停止, 然后重启
-		log.Warnf("Target %v down. try to restart it", target.Details())
+		log.Warnf("Target [%v, %v] down. try to restart it", target.Details().Name, target.Details().Id)
 		target.Stop()
 		runtime.Gosched()
 		runtime.GC()
@@ -374,7 +375,7 @@ func (e *RuleEngine) LoadRule(r *typex.Rule) error {
 					// ...
 					// ...
 					// }
-					(*in.Binds)[r.Id] = *r
+					(in.Binds)[r.Id] = *r
 					//
 					// Load Stdlib
 					//--------------------------------------------------------------
@@ -430,9 +431,9 @@ func (e *RuleEngine) RemoveRule(ruleId string) error {
 	defer e.Unlock()
 	if rule := e.GetRule(ruleId); rule != nil {
 		for _, inEnd := range e.InEnds {
-			for _, rule := range *inEnd.Binds {
+			for _, rule := range inEnd.Binds {
 				if rule.Id == ruleId {
-					delete(*inEnd.Binds, ruleId)
+					delete(inEnd.Binds, ruleId)
 				}
 			}
 		}
@@ -505,7 +506,7 @@ func (e *RuleEngine) Work(in *typex.InEnd, data string) (bool, error) {
 }
 
 func (e *RuleEngine) RunLuaCallbacks(in *typex.InEnd, data string) {
-	for _, rule := range *in.Binds {
+	for _, rule := range in.Binds {
 		_, err := rule.ExecuteActions(lua.LString(data))
 		if err != nil {
 			log.Error("RunLuaCallbacks error:", err)

@@ -35,7 +35,7 @@ func RunRulex(dbPath string) {
 		if err := json.Unmarshal([]byte(minEnd.Config), &config); err != nil {
 			log.Error(err)
 		}
-		in1 := typex.NewInEnd(minEnd.Type, minEnd.Name, minEnd.Description, &config)
+		in1 := typex.NewInEnd(minEnd.Type, minEnd.Name, minEnd.Description, config)
 		// Important !!!!!!!!
 		in1.Id = minEnd.UUID
 		if err := engine.LoadInEnd(in1); err != nil {
@@ -74,7 +74,7 @@ func RunRulex(dbPath string) {
 		}
 	}
 	signal := <-c
-	log.Info("Received stop signal:", signal)
+	log.Warn("Received stop signal:", signal)
 	engine.Stop()
 	os.Exit(0)
 }

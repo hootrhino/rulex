@@ -71,7 +71,7 @@ func (u *UartModuleResource) Start() error {
 		log.Error("UartModuleResource start failed:", err)
 		return err
 	} else {
-		log.Info("Uart port open successfully:", mainConfig.Address)
+		log.Infof("Uart port open successfully: [%v]", mainConfig.Address)
 		u.loraDriver = driver.NewUartDriver(
 			serialPort,
 			u.Details(),

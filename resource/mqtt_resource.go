@@ -54,19 +54,19 @@ func (mm *MqttInEndResource) Start() error {
 	}
 	config := mm.RuleEngine.GetInEnd(mm.PointId).Config
 	opts := mqtt.NewClientOptions()
-	opts.AddBroker(fmt.Sprintf("tcp://%s:%v", (*config)["server"], (*config)["port"]))
-	if (*config)["clientId"] != nil {
-		opts.SetClientID((*config)["clientId"].(string))
+	opts.AddBroker(fmt.Sprintf("tcp://%s:%v", (config)["server"], (config)["port"]))
+	if (config)["clientId"] != nil {
+		opts.SetClientID((config)["clientId"].(string))
 	} else {
 		opts.SetClientID(DEFAULT_CLIENT_ID)
 	}
-	if (*config)["username"] != nil {
-		opts.SetUsername((*config)["username"].(string))
+	if (config)["username"] != nil {
+		opts.SetUsername((config)["username"].(string))
 	} else {
 		opts.SetUsername(DEFAULT_USERNAME)
 	}
-	if (*config)["password"] != nil {
-		opts.SetPassword((*config)["password"].(string))
+	if (config)["password"] != nil {
+		opts.SetPassword((config)["password"].(string))
 	} else {
 		opts.SetPassword(DEFAULT_PASSWORD)
 	}

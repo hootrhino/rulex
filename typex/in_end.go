@@ -13,8 +13,8 @@ type InEnd struct {
 	Type        InEndType               `json:"type"`
 	Name        string                  `json:"name"`
 	Description string                  `json:"description"`
-	Binds       *map[string]Rule        `json:"-"`
-	Config      *map[string]interface{} `json:"config"`
+	Binds       map[string]Rule        `json:"-"`
+	Config      map[string]interface{} `json:"config"`
 	Resource    XResource               `json:"-"`
 }
 
@@ -35,17 +35,17 @@ func (in *InEnd) SetState(s ResourceState) {
 func NewInEnd(t string,
 	n string,
 	d string,
-	c *map[string]interface{}) *InEnd {
+	c map[string]interface{}) *InEnd {
 
 	return &InEnd{
 		Id:          utils.MakeUUID("INEND"),
 		Type:        InEndType(t),
 		Name:        n,
 		Description: d,
-		Binds:       &map[string]Rule{},
+		Binds:       map[string]Rule{},
 		Config:      c,
 	}
 }
 func (in *InEnd) GetConfig(k string) interface{} {
-	return (*in.Config)[k]
+	return (in.Config)[k]
 }

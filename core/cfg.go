@@ -51,6 +51,7 @@ func InitGlobalConfig() {
 
 }
 func SetLogLevel() {
+	log.SetHighlighting(true)
 	switch GlobalConfig.LogLevel {
 	case "fatal":
 		log.SetLevel(log.LogLevel(log.LOG_FATAL))
