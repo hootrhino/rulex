@@ -222,7 +222,6 @@ func checkDriverState(resource typex.XResource, e *RuleEngine, id string) {
 				log.Warn("Driver stopped:", resource.Driver().DriverDetail().Name)
 				// 只需要把资源给拉闸, 就会触发重启
 				resource.Stop()
-				e.GetInEnd(id).SetState(typex.DOWN)
 			}
 		}
 	}
@@ -235,7 +234,6 @@ func checkDriverState(resource typex.XResource, e *RuleEngine, id string) {
 func tryIfRestartResource(resource typex.XResource, e *RuleEngine, id string) {
 	checkDriverState(resource, e, id)
 	if resource.Status() == typex.DOWN {
-		e.GetInEnd(id).SetState(typex.DOWN)
 		//----------------------------------
 		// 当资源挂了以后先给停止, 然后重启
 		//----------------------------------
@@ -247,8 +245,6 @@ func tryIfRestartResource(resource typex.XResource, e *RuleEngine, id string) {
 		runtime.Gosched()
 		runtime.GC() // GC 比较慢, 但是是良性卡顿, 问题不大
 		startResource(resource, e, id)
-	} else {
-		e.GetInEnd(id).SetState(typex.UP)
 	}
 }
 
@@ -259,12 +255,10 @@ func startResource(resource typex.XResource, e *RuleEngine, id string) {
 	if err := resource.Start(); err != nil {
 		log.Error("Resource start error:", err)
 		if resource.Status() == typex.UP {
-			e.GetInEnd(id).SetState(typex.DOWN)
 			resource.Stop()
 		}
 		if resource.Driver() != nil {
 			if resource.Driver().State() == typex.RUNNING {
-				resource.Driver().SetState(typex.STOP)
 				resource.Driver().Stop()
 			}
 		}
@@ -275,7 +269,6 @@ func startResource(resource typex.XResource, e *RuleEngine, id string) {
 		//----------------------------------
 		if resource.Driver() != nil {
 			if resource.Driver().State() == typex.RUNNING {
-				resource.Driver().SetState(typex.STOP)
 				resource.Driver().Stop()
 			}
 			// Start driver
