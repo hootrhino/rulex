@@ -3,6 +3,7 @@ package driver
 import (
 	"context"
 	"rulex/typex"
+	"strings"
 	"time"
 
 	"github.com/goburrow/serial"
@@ -67,8 +68,14 @@ func (a *UartDriver) Work() error {
 		for a.state == typex.RUNNING {
 			<-ticker.C
 			if _, err0 := a.serialPort.Read(data); err0 != nil {
-				a.Stop()
-				return
+				// 有的串口因为CPU频率原因 超时属于正常情况，所以不计为错误
+				if !strings.Contains(err0.Error(), "timeout") {
+					log.Error("error:", err0)
+					a.Stop()
+					return
+				} else {
+					continue
+				}
 			}
 			// # 分隔符
 			if data[0] == '#' {
@@ -101,6 +108,7 @@ func (a *UartDriver) State() typex.DriverState {
 
 }
 func (a *UartDriver) Stop() error {
+	a.state = typex.STOP
 	return a.serialPort.Close()
 }
 

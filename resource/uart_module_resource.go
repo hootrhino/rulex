@@ -108,7 +108,11 @@ func (u *UartModuleResource) Status() typex.ResourceState {
 }
 
 func (u *UartModuleResource) Stop() {
-	u.RuleEngine.GetInEnd(u.PointId).SetState(typex.DOWN)
+	if u.loraDriver != nil {
+		u.loraDriver.Stop()
+		u.loraDriver = nil
+	}
+
 }
 func (u *UartModuleResource) Driver() typex.XExternalDriver {
 	return u.loraDriver
