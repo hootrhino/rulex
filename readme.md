@@ -28,10 +28,10 @@ make # on windows: make windows
 | 平台    | 架构   | 编译测试 |
 | ------- | ------ | -------- |
 | Windows | X86-64 | 通过     |
-| Linux   | X86-64     | 通过     |
+| Linux   | X86-64 | 通过     |
 | ARM64   | ARM-64 | 通过     |
 | ARM32   | ARM-32 | 通过     |
-| MacOS   | X86-64     | 通过     |
+| MacOS   | X86-64 | 通过     |
 | 其他    | 未知   | 未知     |
 
 > 注意:` Arm32位`下编译比较麻烦，推荐使用`Ubuntu18-04`安装交叉编译工具进行编译:
@@ -54,8 +54,18 @@ make # on windows: make windows
 > CC=arm-linux-gnueabi-gcc GOARM=7 GOARCH=arm GOOS=linux CGO_ENABLED=1 go build -v -o arm32 -ldflags "-linkmode external -extldflags -static" main.go
 > 
 > ```
->
-> 
+
+## 交叉编译
+交叉编译一般在你需要多平台分发的时候才用，平时直接本地编译即可。为什么要交叉编译？主要是我们引入了一个 `Sqlite` 的库，这个库底层是 `C` 实现的，所以需要有环境。首先安装工具链，下面以 `Ubuntu-1804` 版本为例：
+
+```sh
+# 本地编译使用
+sudo apt install gcc make
+# 交叉编译 Windows 使用
+sudo apt install gcc-mingw-w64-x86-64 -y
+# 交叉编译 ARM 使用
+sudo apt install gcc-arm-linux-gnueabi -y
+```
 
 ### 启动
 

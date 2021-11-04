@@ -1,9 +1,8 @@
 *.log
 .vscode/
-rulex
+rulex*
 rulex-*
 .DS_Store
-*.zip
 *.out
 *.zip
 rulex.db
@@ -16,3 +15,4 @@ go.sum
 *.bin
 *.output
 profile*
+_release

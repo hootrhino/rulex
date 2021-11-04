@@ -56,9 +56,7 @@ cover:
 .PHONY: clean
 clean:
 	go clean
+	rm ./_release -rf
 	rm *.db
 
 .PHONY: clean-grpc
-clean-grpc:
-	rm ./rulexrpc/*.pb.go
-	rm ./xstream/*.pb.go
