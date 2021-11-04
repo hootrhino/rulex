@@ -110,7 +110,7 @@ func GetABitOnByte(b byte, position uint8) (v uint8, errs error) {
 }
 
 //
-//
+// 字节转位串
 //
 
 func ByteToBitString(b []byte) string {
@@ -176,6 +176,12 @@ func ByteToInt(b []byte, order binary.ByteOrder) uint64 {
 
 	return 0
 }
+
+/*
+*
+* 位串转字节
+*
+ */
 func BitStringToBytes(s string) ([]byte, error) {
 	b := make([]byte, (len(s)+(8-1))/8)
 	for i := 0; i < len(s); i++ {
@@ -188,6 +194,11 @@ func BitStringToBytes(s string) ([]byte, error) {
 	return b, nil
 }
 
+/*
+*
+* 大小端判断
+*
+ */
 func Endian(endian byte) binary.ByteOrder {
 	// < 小端 0x34 0x12
 	if endian == '>' {
@@ -201,7 +212,7 @@ func Endian(endian byte) binary.ByteOrder {
 }
 
 //
-//
+// 字节空位补位0
 //
 func append0Prefix(n int) string {
 	if (n % 8) == 7 {
@@ -267,4 +278,35 @@ func Match(expr string, data []byte, returnMore bool) []Kl {
 		log.Error(matched, err)
 	}
 	return result
+}
+
+/*
+*
+* 逆转位顺序
+*
+ */
+func ReverseBitOrder(b byte) byte {
+	// get bit
+	mask := byte(0x01)
+	bytes := [8]byte{}
+	for i := 0; i < 8; i++ {
+		bytes[i] = b & (mask << (7 - i)) >> (7 - i)
+	}
+	return ((bytes[0] << 0) | (bytes[1] << 1) |
+		(bytes[2] << 2) | (bytes[3] << 3) |
+		(bytes[4] << 4) | (bytes[5] << 5) |
+		(bytes[6] << 6) | (bytes[7] << 7))
+
+}
+
+/*
+*
+* 逆转字节顺序
+*
+ */
+func ReverseByteOrder(b []byte) []byte {
+	for i, j := 0, len(b)-1; i < j; i, j = i+1, j-1 {
+		b[i], b[j] = b[j], b[i]
+	}
+	return b
 }
