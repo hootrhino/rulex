@@ -196,6 +196,11 @@ func startResources(resource typex.XResource, in *typex.InEnd, e *RuleEngine) er
 			// 5 seconds
 			ticker := time.NewTicker(time.Duration(time.Second * 5))
 			for {
+				//
+				// TODO 这边有个不影响使用的问题，后期再优化吧
+				// 症状：当规则引擎停了以后, 恰好赶上计时器已经再等了，所以会触发一次 tryIfRestartResource
+				// 解决办法：限制for循环条件就行了
+				//
 				<-ticker.C
 				{
 					//------------------------------------
@@ -213,6 +218,12 @@ func startResources(resource typex.XResource, in *typex.InEnd, e *RuleEngine) er
 	}
 }
 
+/*
+*
+* 检查是否需要重新拉起资源
+* 这里也有优化点：不能手动控制内存回收可能会产生垃圾
+*
+ */
 func checkDriverState(resource typex.XResource, e *RuleEngine, id string) {
 	if resource.Driver() != nil {
 		// 只有资源启动状态才拉起驱动
@@ -528,6 +539,7 @@ func (e *RuleEngine) LoadPlugin(p typex.XPlugin) error {
 	}
 
 	(e.Plugins)[p.XPluginMetaInfo().Name] = p
+	log.Infof("Plugin start successfully:[%v]", p.XPluginMetaInfo().Name)
 	return nil
 
 }

@@ -1,18 +1,15 @@
 package mqttserver
 
 import (
-	"context"
-	"net"
 	"rulex/typex"
 
-	"github.com/DrmagicE/gmqtt/config"
-	"github.com/DrmagicE/gmqtt/server"
+	mqttServer "github.com/mochi-co/mqtt/server"
+	"github.com/mochi-co/mqtt/server/listeners"
 	"github.com/ngaut/log"
-	"go.uber.org/zap"
 )
 
 type MqttServer struct {
-	mqttServer server.Server
+	mqttServer *mqttServer.Server
 }
 
 func NewMqttServer() typex.XPlugin {
@@ -24,29 +21,29 @@ func (s *MqttServer) Init() error {
 }
 
 func (s *MqttServer) Start() error {
-	tcpPort, err := net.Listen("tcp", ":1883")
-	if err != nil {
-		log.Error(err.Error())
+	server := mqttServer.New()
+	tcpPort := listeners.NewTCP("tcp", ":1883")
+
+	if err := server.AddListener(tcpPort, nil); err != nil {
 		return err
 	}
 
-	logger, _ := zap.NewDevelopment()
-	mqttServer := server.New(
-		server.WithTCPListener(tcpPort),
-		server.WithLogger(logger),
-		server.WithConfig(config.DefaultConfig()),
-	)
-	if err := mqttServer.Run(); err != nil {
+	if err := server.Serve(); err != nil {
 		return err
 	}
-	s.mqttServer = mqttServer
-	log.Info("MqttServer start successfully")
+	
+	s.mqttServer = server
+	log.Info("MqttServer start at [0.0.0.0:1883] successfully")
 	return nil
 }
 
 func (s *MqttServer) Stop() error {
-	log.Info("MqttServer stop successfully")
-	return s.mqttServer.Stop(context.Background())
+	if s.mqttServer != nil {
+		return s.mqttServer.Close()
+	} else {
+		return nil
+	}
+
 }
 
 func (s *MqttServer) XPluginMetaInfo() typex.XPluginMetaInfo {

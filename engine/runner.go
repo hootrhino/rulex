@@ -6,7 +6,7 @@ import (
 	"os/signal"
 	"rulex/core"
 	httpserver "rulex/plugin/http_server"
-	// mqttserver "rulex/plugin/mqtt_server"
+	mqttserver "rulex/plugin/mqtt_server"
 	"rulex/typex"
 	"syscall"
 
@@ -30,10 +30,10 @@ func RunRulex(dbPath string) {
 	engine.LoadPlugin(hh)
 	// Load Mqtt Server
 
-	// if err := engine.LoadPlugin(mqttserver.NewMqttServer()); err != nil {
-	// 	log.Error(err)
-	// 	panic(err)
-	// }
+	if err := engine.LoadPlugin(mqttserver.NewMqttServer()); err != nil {
+		log.Error(err)
+		panic(err)
+	}
 	//
 	// Load inend from sqlite
 	//

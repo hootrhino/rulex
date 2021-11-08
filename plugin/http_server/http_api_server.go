@@ -123,7 +123,7 @@ func (hh *HttpApiServer) Db() *gorm.DB {
 }
 func (hh *HttpApiServer) XPluginMetaInfo() typex.XPluginMetaInfo {
 	return typex.XPluginMetaInfo{
-		Name:     "HttpApiServer",
+		Name:     "Http Api Server",
 		Version:  "0.0.1",
 		Homepage: "www.ezlinker.cn",
 		HelpLink: "www.ezlinker.cn",

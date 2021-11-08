@@ -24,6 +24,7 @@ require (
 	github.com/logrusorgru/aurora v2.0.3+incompatible
 	github.com/mattn/go-sqlite3 v1.14.7
 	github.com/matttproud/golang_protobuf_extensions v1.0.2-0.20181231171920-c182affec369 // indirect
+	github.com/mochi-co/mqtt v1.0.0
 	github.com/ngaut/log v0.0.0-20180314031856-b8e36e7ba5ac
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
 	github.com/plgd-dev/go-coap/v2 v2.4.0
