@@ -478,10 +478,8 @@ func (e *RuleEngine) Stop() {
 	}
 
 	for _, plugin := range e.Plugins {
-		log.Info("Uninstall plugin:", plugin.XPluginMetaInfo().Name)
-		plugin.Uninstall()
-		plugin.Clean()
-
+		log.Info("Stop plugin:", plugin.XPluginMetaInfo().Name)
+		plugin.Stop()
 	}
 	context.Background().Done()
 	runtime.Gosched()
@@ -519,21 +517,17 @@ func (e *RuleEngine) RunLuaCallbacks(in *typex.InEnd, data string) {
 
 //
 func (e *RuleEngine) LoadPlugin(p typex.XPlugin) error {
-	err0 := p.Init()
-	if err0 != nil {
-		return err0
+	if err := p.Init(); err != nil {
+		return err
 	}
-	err1 := p.Install()
-	if err1 != nil {
-		return err1
+	if err := p.Start(); err != nil {
+		return err
 	}
 	if (e.Plugins)[p.XPluginMetaInfo().Name] != nil {
 		return errors.New("plugin already installed:" + p.XPluginMetaInfo().Name)
 	}
+
 	(e.Plugins)[p.XPluginMetaInfo().Name] = p
-	if err2 := p.Start(); err2 != nil {
-		return err2
-	}
 	return nil
 
 }

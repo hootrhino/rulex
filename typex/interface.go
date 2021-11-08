@@ -101,12 +101,9 @@ type XTarget interface {
 //
 type XPlugin interface {
 	Init() error
-	Install() error
 	Start() error
-	Uninstall() error
+	Stop() error
 	XPluginMetaInfo() XPluginMetaInfo
-	XPluginEnv() XPluginEnv
-	Clean()
 }
 
 //

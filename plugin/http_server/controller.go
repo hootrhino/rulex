@@ -27,17 +27,6 @@ type Result struct {
 }
 
 //
-// List cloud Services
-//
-func CloudServices(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
-	c.PureJSON(http.StatusOK, Result{
-		Code: http.StatusOK,
-		Msg:  "Success",
-		Data: map[string]interface{}{},
-	})
-}
-
-//
 // Get all plugins
 //
 func Plugins(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {

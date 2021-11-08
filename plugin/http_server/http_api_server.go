@@ -49,20 +49,11 @@ func (hh *HttpApiServer) Init() error {
 	}(ctx, hh.Port)
 	return nil
 }
-func (hh *HttpApiServer) Install() error {
-	return nil
-
-}
 
 //
 // HttpApiServer Start
 //
 func (hh *HttpApiServer) Start() error {
-
-	//
-	// List CloudServices
-	//
-	hh.ginEngine.GET(API_ROOT+"cloudServices", hh.addRoute(CloudServices))
 
 	//
 	// Get all plugins
@@ -122,11 +113,10 @@ func (hh *HttpApiServer) Start() error {
 	return nil
 }
 
-func (hh *HttpApiServer) Uninstall() error {
+func (hh *HttpApiServer) Stop() error {
 	return nil
 }
-func (hh *HttpApiServer) Clean() {
-}
+
 
 func (hh *HttpApiServer) Db() *gorm.DB {
 	return hh.sqliteDb
@@ -141,8 +131,4 @@ func (hh *HttpApiServer) XPluginMetaInfo() typex.XPluginMetaInfo {
 		Email:    "cnwwhai@gmail.com",
 		License:  "MIT",
 	}
-}
-func (hh *HttpApiServer) XPluginEnv() typex.XPluginEnv {
-
-	return typex.XPluginEnv{}
 }
