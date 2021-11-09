@@ -2,7 +2,8 @@
 
 RuleX 是一个轻量级网关，支持多种数据接入以及数据流筛选，可以理解为一个数据路由器。
 
-> 当前处于极其不稳定阶段,请勿尝试.
+> 当前处于极其不稳定阶段，每天都会有大批量更新, 请勿尝试用于生产.
+
 ## 预览
 ### 架构
 ![res](README_RES/atom2.png)
@@ -34,26 +35,7 @@ make # on windows: make windows
 | MacOS   | X86-64 | 通过     |
 | 其他    | 未知   | 未知     |
 
-> 注意:` Arm32位`下编译比较麻烦，推荐使用`Ubuntu18-04`安装交叉编译工具进行编译:
->
-> ```sh
-> apt-get update && \
-> apt-get upgrade -y && \
->     apt-get install -y \
->       build-essential \
->       git \
->       zip \
->       make \
->       gcc-arm-linux-gnueabi \
->       bzip2 \
->       wget && \
->     apt-get clean
-> 
-> git clone https://gitee.com/wwhai/rulex.git
-> cd rulex
-> CC=arm-linux-gnueabi-gcc GOARM=7 GOARCH=arm GOOS=linux CGO_ENABLED=1 go build -v -o arm32 -ldflags "-linkmode external -extldflags -static" main.go
-> 
-> ```
+> 注意:` Arm32位`下编译比较麻烦，推荐使用`Ubuntu18-04`安装交叉编译工具进行编译, 具体步骤请参考 `.github\workflows\4_build-arm-32-v7.yml` 里面的脚本。
 
 ## 交叉编译
 交叉编译一般在你需要多平台分发的时候才用，平时直接本地编译即可。为什么要交叉编译？主要是我们引入了一个 `Sqlite` 的库，这个库底层是 `C` 实现的，所以需要有环境。首先安装工具链，下面以 `Ubuntu-1804` 版本为例：
@@ -95,7 +77,6 @@ sudo apt install gcc-arm-linux-gnueabi -y
 浏览器输入：http://127.0.0.1:2580
 ```
 
-## HTTP API
 ## 规则引擎
 ### 规则定义
 ```lua
@@ -188,7 +169,9 @@ Actions = {
 
 ## 详细文档
 
-<div style="text-align:center;">
-    <a href="https://wwhai.github.io/rulex_doc_html">[点我查看详细文档]</a>
-<div>
+<a href="https://wwhai.github.io/rulex_doc_html">[点我查看详细文档]</a>
 
+
+## 社区
+- QQ群：475512169
+- 博客：https://wwhai.github.io
