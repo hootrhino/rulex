@@ -38,7 +38,7 @@ type RuleX interface {
 	AllOutEnd() map[string]*OutEnd
 	GetOutEnd(string) *OutEnd
 	SaveOutEnd(*OutEnd)
-	RemoveOutEnd(*OutEnd)
+	RemoveOutEnd(string)
 	//
 	LoadHook(XHook) error
 	//

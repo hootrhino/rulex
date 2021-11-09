@@ -17,6 +17,7 @@ import (
 //
 type Rule struct {
 	Id          string      `json:"id"`
+	UUID        string      `json:"uuid"`
 	Name        string      `json:"name"`
 	Description string      `json:"description"`
 	VM          *lua.LState `json:"-"`
@@ -43,7 +44,7 @@ func NewRule(e RuleX,
 	})
 
 	return &Rule{
-		Id:          utils.MakeUUID("RULE"),
+		UUID:        utils.MakeUUID("RULE"),
 		Name:        name,
 		Description: description,
 		From:        from,

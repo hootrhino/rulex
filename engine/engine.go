@@ -403,7 +403,7 @@ func (e *RuleEngine) LoadRule(r *typex.Rule) error {
 					// Save to rules map
 					//
 					e.SaveRule(r)
-					log.Infof("Rule [%v, %v] load successfully", r.Name, r.Id)
+					log.Infof("Rule [%v, %v] load successfully", r.Name, r.UUID)
 					return nil
 				} else {
 					return errors.New("'InEnd':" + inId + " is not exists")
@@ -416,7 +416,7 @@ func (e *RuleEngine) LoadRule(r *typex.Rule) error {
 }
 
 //
-// Remove a rule
+// GetRule a rule
 //
 func (e *RuleEngine) GetRule(id string) *typex.Rule {
 	e.Lock()
@@ -438,17 +438,9 @@ func (e *RuleEngine) SaveRule(r *typex.Rule) {
 // RemoveRule and inend--rule bindings
 //
 func (e *RuleEngine) RemoveRule(ruleId string) error {
-	e.Lock()
-	defer e.Unlock()
 	if rule := e.GetRule(ruleId); rule != nil {
-		for _, inEnd := range e.InEnds {
-			for _, rule := range inEnd.Binds {
-				if rule.Id == ruleId {
-					delete(inEnd.Binds, ruleId)
-				}
-			}
-		}
-		delete((e.Rules), ruleId)
+		delete(e.Rules, ruleId)
+		log.Infof("Rule [%v] has been deleted", ruleId)
 		return nil
 	} else {
 		return errors.New("'Rule':" + ruleId + " not exists")
@@ -595,6 +587,7 @@ func (e *RuleEngine) RemoveInEnd(id string) {
 	e.Lock()
 	defer e.Unlock()
 	delete((e.InEnds), id)
+	log.Infof("InEnd [%v] has been deleted", id)
 }
 
 //
@@ -627,10 +620,11 @@ func (e *RuleEngine) SaveOutEnd(out *typex.OutEnd) {
 //
 //
 //
-func (e *RuleEngine) RemoveOutEnd(out *typex.OutEnd) {
+func (e *RuleEngine) RemoveOutEnd(uuid string) {
 	e.Lock()
 	defer e.Unlock()
-	delete((e.OutEnds), out.Id)
+	delete((e.OutEnds), uuid)
+	log.Infof("OutEnd [%v] has been deleted", uuid)
 }
 
 //

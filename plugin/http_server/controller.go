@@ -257,6 +257,7 @@ func CreateRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 				return
 			} else {
 				mRule := &MRule{
+					UUID:        utils.MakeUUID("RULE"),
 					Name:        form.Name,
 					Description: form.Description,
 					From:        form.From,
@@ -293,16 +294,17 @@ func CreateRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 // Delete inend by UUID
 //
 func DeleteInend(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
-	uuid, exists := c.GetQuery("uuid")
-	if exists {
-		// Important !!!!!
-		e.GetInEnd(uuid).Resource.Stop()
-		e.RemoveInEnd(uuid)  //1
-		hh.DeleteMRule(uuid) //2
-		//
-		c.JSON(http.StatusOK, gin.H{"msg": "remove success"})
+	uuid, _ := c.GetQuery("uuid")
+	_, err := hh.GetMInEnd(uuid)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
 	} else {
-		c.JSON(http.StatusBadRequest, gin.H{"msg": "rule not exists"})
+		if err := hh.DeleteMInEnd(uuid); err != nil {
+			e.RemoveInEnd(uuid)
+			c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
+		} else {
+			c.JSON(http.StatusOK, gin.H{"msg": "remove success"})
+		}
 	}
 }
 
@@ -310,16 +312,17 @@ func DeleteInend(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 // Delete outend by UUID
 //
 func DeleteOutend(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
-	uuid, exists := c.GetQuery("uuid")
-	if exists {
-		// Important !!!!!
-		e.GetOutEnd(uuid).Target.Stop()
-		e.RemoveRule(uuid)     //1
-		hh.DeleteMOutEnd(uuid) //2
-		//
-		c.JSON(http.StatusOK, gin.H{"msg": "remove success"})
+	uuid, _ := c.GetQuery("uuid")
+	_, err := hh.GetMOutEnd(uuid)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
 	} else {
-		c.JSON(http.StatusBadRequest, gin.H{"msg": "rule not exists"})
+		if err := hh.DeleteMOutEnd(uuid); err != nil {
+			e.RemoveOutEnd(uuid)
+			c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
+		} else {
+			c.JSON(http.StatusOK, gin.H{"msg": "remove success"})
+		}
 	}
 }
 
@@ -327,15 +330,17 @@ func DeleteOutend(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 // Delete rule by UUID
 //
 func DeleteRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
-	uuid, exists := c.GetQuery("uuid")
-	if exists {
-		// Important !!!!! e.RemoveRule(uuid)
-		e.RemoveRule(uuid)   //1
-		hh.DeleteMRule(uuid) //2
-		//
-		c.JSON(http.StatusOK, gin.H{"msg": "remove success"})
+	uuid, _ := c.GetQuery("uuid")
+	_, err := hh.GetMRule(uuid)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
 	} else {
-		c.JSON(http.StatusBadRequest, gin.H{"msg": "rule not exists"})
+		if err := hh.DeleteMRule(uuid); err != nil {
+			e.RemoveRule(uuid)
+			c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
+		} else {
+			c.JSON(http.StatusOK, gin.H{"msg": "remove success"})
+		}
 	}
 }
 

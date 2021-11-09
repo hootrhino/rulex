@@ -24,6 +24,7 @@ func (f *from) Scan(data interface{}) error {
 
 type MRule struct {
 	RulexModel
+	UUID        string `gorm:"not null"`
 	Name        string `gorm:"not null"`
 	Description string
 	From        from   `gorm:"not null type:string[]"`
