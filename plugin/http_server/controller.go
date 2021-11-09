@@ -296,6 +296,7 @@ func DeleteInend(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	uuid, exists := c.GetQuery("uuid")
 	if exists {
 		// Important !!!!!
+		e.GetInEnd(uuid).Resource.Stop()
 		e.RemoveInEnd(uuid)  //1
 		hh.DeleteMRule(uuid) //2
 		//
@@ -312,6 +313,7 @@ func DeleteOutend(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	uuid, exists := c.GetQuery("uuid")
 	if exists {
 		// Important !!!!!
+		e.GetOutEnd(uuid).Target.Stop()
 		e.RemoveRule(uuid)     //1
 		hh.DeleteMOutEnd(uuid) //2
 		//
