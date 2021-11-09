@@ -3,8 +3,13 @@
 #
 create_pkg() {
     VERSION=$(cat ./VERSION)
-    zip -r _release/rulex-$1-$VERSION.zip ./rulex-$1 ./VERSION ./conf/
-    rm ./rulex-$1
+    if [ "$1"=="x64windows" ]; then
+        zip -r _release/rulex-$1-$VERSION.zip ./rulex-$1.exe ./VERSION ./conf/
+        rm ./rulex-$1
+    else
+        zip -r _release/rulex-$1-$VERSION.zip ./rulex-$1 ./VERSION ./conf/
+        rm ./rulex-$1
+    fi
 }
 #
 make_zip() {
@@ -51,8 +56,8 @@ cross_compile() {
         echo "Compile target => ["$arch"]"
         if [[ "${arch}" == "x64windows" ]]; then
             # sudo apt install gcc-mingw-w64-x86-64 -y
-            build_x64windows $arch
-            make_zip $arch.exe
+            build_x64xindows $arch
+            make_zip $arch
             echo "Compile target => ["$arch"] Ok."
         fi
         if [[ "${arch}" == "x86linux" ]]; then
