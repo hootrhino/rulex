@@ -12,6 +12,26 @@ jobs:
     - uses: actions/checkout@v2
     - name: Build
       run: cargo build --release
+
+    - uses: actions/checkout@v2
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.16
+    - name: 构建发布包
+      run: |
+          sudo apt update -y
+          sudo apt install jq cloc protobuf-compiler -y
+          cloc ./
+          chmod 755 ./gen_version.sh
+          chmod +x ./gen_version.sh
+          chmod 755 ./gen_proto.sh
+          chmod +x ./gen_proto.sh
+          chmod 755 ./release_pkg.sh
+          chmod +x ./release_pkg.sh
+          make
+          bash ./release_pkg.sh
+
     - name: Upload binaries to release
       uses: svenstaro/upload-release-action@v2
       with:
