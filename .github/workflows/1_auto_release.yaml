@@ -2,23 +2,21 @@ name: 1- 自动发布版本
 on:
   push:
     tags:
-      - 'V*' # Push events to matching v*, i.e. v1.0, v20.15.10
-
+      - 'V*'
 
 jobs:
   build:
-    name: 自动发布版本
+    name: 上传发布包
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.REL_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          draft: false
-          prerelease: false
+    - uses: actions/checkout@v2
+    - name: Build
+      run: cargo build --release
+    - name: Upload binaries to release
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: _release/rulex-*.zip
+        tag: ${{ github.ref }}
+        overwrite: true
+        file_glob: true
