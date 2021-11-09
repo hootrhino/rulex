@@ -20,7 +20,6 @@ func TestInitData(t *testing.T) {
 	if err := engine.LoadPlugin(hh); err != nil {
 		log.Fatal("Rule load failed:", err)
 	}
-	hh.Truncate()
 	// Grpc Inend
 	grpcInend := typex.NewInEnd("GRPC", "Rulex Grpc InEnd", "Rulex Grpc InEnd", map[string]interface{}{
 		"port": "2581",
