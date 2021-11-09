@@ -52,7 +52,7 @@ cross_compile() {
         if [[ "${arch}" == "x64windows" ]]; then
             # sudo apt install gcc-mingw-w64-x86-64 -y
             build_x64windows $arch
-            make_zip $arch
+            make_zip $arch.exe
             echo "Compile target => ["$arch"] Ok."
         fi
         if [[ "${arch}" == "x86linux" ]]; then
