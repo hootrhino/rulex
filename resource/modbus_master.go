@@ -91,15 +91,13 @@ type TcpConfig struct {
 
 type ModbusMasterResource struct {
 	typex.XStatus
-	client  modbus.Client
-	canWork bool
-	cxt     context.Context
+	client modbus.Client
+	cxt    context.Context
 }
 
 func NewModbusMasterResource(id string, e typex.RuleX) typex.XResource {
 	m := ModbusMasterResource{}
 	m.RuleEngine = e
-	m.canWork = false
 	m.cxt = context.Background()
 	return &m
 }
@@ -156,7 +154,6 @@ func (m *ModbusMasterResource) Start() error {
 	// Start
 	//---------------------------------------------------------------------------------
 
-	m.canWork = true
 	ticker := time.NewTicker(time.Duration(mainConfig.Frequency) * time.Second)
 	for _, rCfg := range mainConfig.RegisterParams {
 		log.Info("Start read register:", rCfg.Address)
@@ -193,7 +190,6 @@ func (m *ModbusMasterResource) Start() error {
 						// error
 						//
 						if err != nil {
-							m.canWork = false
 							log.Error("NewModbusMasterResource ReadData error: ", err)
 						} else {
 							if err0 := m.RuleEngine.PushQueue(typex.QueueData{
@@ -239,11 +235,8 @@ func (m *ModbusMasterResource) Pause() {
 }
 
 func (m *ModbusMasterResource) Status() typex.ResourceState {
-	if m.canWork {
-		return typex.UP
-	} else {
-		return typex.DOWN
-	}
+	return typex.UP
+
 }
 
 func (m *ModbusMasterResource) Stop() {

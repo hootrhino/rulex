@@ -245,6 +245,7 @@ func checkDriverState(resource typex.XResource, e *RuleEngine, id string) {
 func tryIfRestartResource(resource typex.XResource, e *RuleEngine, id string) {
 	checkDriverState(resource, e, id)
 	if resource.Status() == typex.DOWN {
+		resource.Details().SetState(typex.DOWN)
 		//----------------------------------
 		// 当资源挂了以后先给停止, 然后重启
 		//----------------------------------
@@ -256,6 +257,8 @@ func tryIfRestartResource(resource typex.XResource, e *RuleEngine, id string) {
 		runtime.Gosched()
 		runtime.GC() // GC 比较慢, 但是是良性卡顿, 问题不大
 		startResource(resource, e, id)
+	} else {
+		resource.Details().SetState(typex.UP)
 	}
 }
 
@@ -273,7 +276,6 @@ func startResource(resource typex.XResource, e *RuleEngine, id string) {
 				resource.Driver().Stop()
 			}
 		}
-
 	} else {
 		//----------------------------------
 		// 驱动也要停了
