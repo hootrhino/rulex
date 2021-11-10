@@ -3,13 +3,8 @@
 #
 create_pkg() {
     VERSION=$(cat ./VERSION)
-    if [ "$1"=="x64windows" ]; then
-        zip -r _release/rulex-$1-$VERSION.zip ./rulex-$1.exe ./VERSION ./conf/
-        rm ./rulex-$1
-    else
-        zip -r _release/rulex-$1-$VERSION.zip ./rulex-$1 ./VERSION ./conf/
-        rm ./rulex-$1
-    fi
+    zip -r _release/rulex-$1-$VERSION.zip ./rulex-$1 ./VERSION ./conf/
+    rm ./rulex-$1
 }
 #
 make_zip() {
@@ -28,7 +23,7 @@ make_zip() {
 }
 
 build_x64windows() {
-    CGO_ENABLED=1 GOOS=windows GOARCH=amd64 CC=x86_64-w64-mingw32-gcc go build -v -ldflags "-s -w" -o rulex-$1 main.go
+    CGO_ENABLED=1 GOOS=windows GOARCH=amd64 CC=x86_64-w64-mingw32-gcc go build -v -ldflags "-s -w" -o rulex-$1.exe main.go
 }
 build_x86linux() {
     CGO_ENABLED=1 GOOS=linux GO386=softfloat go build -v -ldflags "-s -w" -o rulex-$1 main.go
