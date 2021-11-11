@@ -400,32 +400,52 @@ func CreateUser(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 // Auth
 //
 func Auth(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
-	type Form struct {
-		Username string `json:"username" binding:"required"`
-		Password string `json:"password" binding:"required"`
-	}
-	form := Form{}
-	err0 := c.ShouldBindJSON(&form)
-	if err0 != nil {
-		c.PureJSON(http.StatusOK, Result{
-			Code: http.StatusBadGateway,
-			Msg:  err0.Error(),
-			Data: nil,
-		})
-	} else {
-		user, err1 := hh.GetMUser(form.Username, form.Password)
-		if err1 != nil {
-			c.PureJSON(http.StatusOK, Result{
-				Code: http.StatusBadGateway,
-				Msg:  err1.Error(),
-				Data: nil,
-			})
-		} else {
-			c.PureJSON(http.StatusOK, Result{
-				Code: http.StatusOK,
-				Msg:  "Auth Success",
-				Data: user.Username,
-			})
-		}
-	}
+	// type Form struct {
+	// 	Username string `json:"username" binding:"required"`
+	// 	Password string `json:"password" binding:"required"`
+	// }
+	// form := Form{}
+	// err0 := c.ShouldBindJSON(&form)
+	// if err0 != nil {
+	// 	c.PureJSON(http.StatusOK, Result{
+	// 		Code: http.StatusBadGateway,
+	// 		Msg:  err0.Error(),
+	// 		Data: nil,
+	// 	})
+	// } else {
+	// 	user, err1 := hh.GetMUser(form.Username, form.Password)
+	// 	if err1 != nil {
+	// 		c.PureJSON(http.StatusOK, Result{
+	// 			Code: http.StatusBadGateway,
+	// 			Msg:  err1.Error(),
+	// 			Data: nil,
+	// 		})
+	// 	} else {
+	// 		c.PureJSON(http.StatusOK, Result{
+	// 			Code: http.StatusOK,
+	// 			Msg:  "Auth Success",
+	// 			Data: user.Username,
+	// 		})
+	// 	}
+	// }
+	c.PureJSON(http.StatusOK, Result{
+		Code: http.StatusOK,
+		Msg:  "Auth Success",
+		Data: map[string]interface{}{
+			"token":  "defe7c05fea849c78cec647273427ee7",
+			"avatar": "rulex",
+			"name":   "rulex",
+		},
+	})
+}
+func Info(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+	c.PureJSON(http.StatusOK, Result{
+		Code: http.StatusOK,
+		Msg:  "Auth Success",
+		Data: map[string]interface{}{
+			"token":  "defe7c05fea849c78cec647273427ee7",
+			"avatar": "rulex",
+			"name":   "rulex",
+		},
+	})
 }

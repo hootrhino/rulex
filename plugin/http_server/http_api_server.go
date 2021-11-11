@@ -84,6 +84,8 @@ func (hh *HttpApiServer) Start() error {
 	//
 	hh.ginEngine.POST(API_ROOT+"users", hh.addRoute(CreateUser))
 	hh.ginEngine.POST(API_ROOT+"auth", hh.addRoute(Auth))
+	hh.ginEngine.POST(API_ROOT+"login", hh.addRoute(Auth))
+	hh.ginEngine.GET(API_ROOT+"info", hh.addRoute(Info))
 	//
 	// Create InEnd
 	//
@@ -116,7 +118,6 @@ func (hh *HttpApiServer) Start() error {
 func (hh *HttpApiServer) Stop() error {
 	return nil
 }
-
 
 func (hh *HttpApiServer) Db() *gorm.DB {
 	return hh.sqliteDb
