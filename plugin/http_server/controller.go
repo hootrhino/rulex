@@ -142,34 +142,33 @@ func CreateInend(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		Config      map[string]interface{} `json:"config" binding:"required"`
 	}
 	form := Form{}
-	err0 := c.ShouldBindJSON(&form)
-	if err0 != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"msg": err0.Error()})
+
+	if err := c.ShouldBindJSON(&form); err != nil {
+		c.JSON(http.StatusBadRequest, Error400(err))
+		return
+	}
+	configJson, err1 := json.Marshal(form.Config)
+	if err1 != nil {
+		c.JSON(http.StatusBadRequest, Error400(err1))
+		return
+	}
+	uuid := utils.MakeUUID("INEND")
+	hh.InsertMInEnd(&MInEnd{
+		UUID:        uuid,
+		Type:        form.Type,
+		Name:        form.Name,
+		Description: form.Description,
+		Config:      string(configJson),
+	})
+	if err := hh.LoadNewestInEnd(uuid); err != nil {
+		log.Error(err)
+		c.JSON(http.StatusBadRequest, Error400(err))
 		return
 	} else {
-		configJson, err1 := json.Marshal(form.Config)
-		if err1 != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"msg": err1.Error()})
-			return
-		} else {
-			uuid := utils.MakeUUID("INEND")
-			hh.InsertMInEnd(&MInEnd{
-				UUID:        uuid,
-				Type:        form.Type,
-				Name:        form.Name,
-				Description: form.Description,
-				Config:      string(configJson),
-			})
-			if err := hh.LoadNewestInEnd(uuid); err != nil {
-				log.Error(err)
-				c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
-				return
-			} else {
-				c.PureJSON(http.StatusOK, gin.H{"msg": "create success"})
-				return
-			}
-		}
+		c.JSON(http.StatusOK, Ok())
+		return
 	}
+
 }
 
 //

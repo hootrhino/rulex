@@ -37,6 +37,6 @@ func (lw *LogWriter) Close(p []byte) (err string) {
 }
 
 func StartLogWatcher() {
-	// log.SetOutput(NewLogWriter(GlobalConfig.LogPath))
+	log.SetOutput(NewLogWriter(GlobalConfig.LogPath))
 	log.SetRotateByDay()
 }

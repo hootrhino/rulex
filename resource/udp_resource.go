@@ -90,7 +90,9 @@ func (u *UdpResource) Status() typex.ResourceState {
 
 func (u *UdpResource) Stop() {
 	u.CanWrite = false
-	u.uDPConn.Close()
+	if u.uDPConn != nil {
+		u.uDPConn.Close()
+	}
 }
 func (*UdpResource) Driver() typex.XExternalDriver {
 	return nil

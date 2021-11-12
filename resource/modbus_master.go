@@ -110,15 +110,8 @@ func (m *ModbusMasterResource) Register(inEndId string) error {
 func (m *ModbusMasterResource) Start() error {
 
 	config := m.RuleEngine.GetInEnd(m.PointId).Config
-	configBytes, err := json.Marshal(config)
-	if err != nil {
-		return err
-	}
 	var mainConfig ModBusConfig
-	if err := json.Unmarshal(configBytes, &mainConfig); err != nil {
-		return err
-	}
-	if err := utils.TransformConfig(configBytes, &mainConfig); err != nil {
+	if err := utils.BindResourceConfig(config, &mainConfig); err != nil {
 		return err
 	}
 

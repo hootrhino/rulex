@@ -1,14 +1,25 @@
 package resource
 
 import (
+	"encoding/json"
 	"fmt"
 	"rulex/typex"
+	"rulex/utils"
 	"time"
 
 	"github.com/ngaut/log"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
+
+//
+type MqttConfig struct {
+	Host     string `json:"host" validate:"required"`
+	Port     int    `json:"port" validate:"required"`
+	ClientId string `json:"clientID" validate:"required"`
+	Username string `json:"username" validate:"required"`
+	Password string `json:"password" validate:"required"`
+}
 
 //
 const DEFAULT_CLIENT_ID string = "X_IN_END_CLIENT"
@@ -35,7 +46,7 @@ func (mm *MqttInEndResource) Start() error {
 
 	var messageHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
 		if mm.Enable {
-			log.Debug("Message payload:", string(msg.Payload()))
+			// log.Debug("Message payload:", string(msg.Payload()))
 			mm.RuleEngine.Work(mm.RuleEngine.GetInEnd(mm.PointId), string(msg.Payload()))
 		}
 	}
@@ -48,25 +59,31 @@ func (mm *MqttInEndResource) Start() error {
 	}
 
 	var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err error) {
-		log.Infof("Connect lost: %v\n", err)
+		log.Warnf("Connect lost: %v\n", err)
 		time.Sleep(5 * time.Second)
 		mm.RuleEngine.GetInEnd(mm.PointId).SetState(typex.DOWN)
 	}
 	config := mm.RuleEngine.GetInEnd(mm.PointId).Config
+	var mainConfig MqttConfig
+
+	if err := utils.BindResourceConfig(config, &mainConfig); err != nil {
+		return err
+	}
+
 	opts := mqtt.NewClientOptions()
-	opts.AddBroker(fmt.Sprintf("tcp://%s:%v", (config)["server"], (config)["port"]))
+	opts.AddBroker(fmt.Sprintf("tcp://%s:%v", mainConfig.Host, mainConfig.Port))
 	if (config)["clientId"] != nil {
-		opts.SetClientID((config)["clientId"].(string))
+		opts.SetClientID(mainConfig.ClientId)
 	} else {
 		opts.SetClientID(DEFAULT_CLIENT_ID)
 	}
 	if (config)["username"] != nil {
-		opts.SetUsername((config)["username"].(string))
+		opts.SetUsername(mainConfig.Username)
 	} else {
 		opts.SetUsername(DEFAULT_USERNAME)
 	}
 	if (config)["password"] != nil {
-		opts.SetPassword((config)["password"].(string))
+		opts.SetPassword(mainConfig.Password)
 	} else {
 		opts.SetPassword(DEFAULT_PASSWORD)
 	}
@@ -106,11 +123,16 @@ func (mm *MqttInEndResource) Pause() {
 
 }
 func (mm *MqttInEndResource) Status() typex.ResourceState {
-	if mm.client.IsConnected() {
-		return typex.UP
+	if mm.client != nil {
+		if mm.client.IsConnected() {
+			return typex.UP
+		} else {
+			return typex.DOWN
+		}
 	} else {
 		return typex.DOWN
 	}
+
 }
 
 func (mm *MqttInEndResource) Register(inEndId string) error {
