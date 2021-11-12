@@ -22,6 +22,7 @@ type RulexConfig struct {
 	GomaxProcs              int
 	EnablePProf             bool
 	LogLevel                string
+	LogPath                 string
 }
 
 var GlobalConfig RulexConfig
@@ -36,6 +37,7 @@ func InitGlobalConfig() {
 		log.Fatalf("Fail to read config file: %v", err)
 		os.Exit(1)
 	}
+
 	//---------------------------------------
 	GlobalConfig.Name = cfg.Section("app").Key("name").MustString("rulex")
 	GlobalConfig.MaxQueueSize = cfg.Section("app").Key("max_queue_size").MustInt(5000)
@@ -43,15 +45,18 @@ func InitGlobalConfig() {
 	GlobalConfig.GomaxProcs = cfg.Section("app").Key("gomax_procs").MustInt(2)
 	GlobalConfig.EnablePProf = cfg.Section("app").Key("enable_pprof").MustBool(false)
 	GlobalConfig.LogLevel = cfg.Section("app").Key("log_level").MustString("info")
+	GlobalConfig.LogPath = cfg.Section("app").Key("log_path").MustString("./rulex-log.txt")
 	//---------------------------------------
 	GlobalConfig.Path = cfg.Section("cloud").Key("path").MustString("")
 	GlobalConfig.Token = cfg.Section("cloud").Key("token").MustString("")
 	GlobalConfig.Secret = cfg.Section("cloud").Key("secret").MustString("")
+
 	log.Info("Rulex config init successfully")
 
 }
+
 func SetLogLevel() {
-	log.SetHighlighting(true)
+
 	switch GlobalConfig.LogLevel {
 	case "fatal":
 		log.SetLevel(log.LogLevel(log.LOG_FATAL))

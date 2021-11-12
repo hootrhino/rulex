@@ -53,8 +53,6 @@ type RuleX interface {
 	//
 	RunHooks(string)
 	//
-	LoadDriver(XExternalDriver) error
-	//
 	//
 	Version() Version
 	//

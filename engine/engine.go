@@ -51,15 +51,6 @@ func NewRuleEngine() typex.RuleX {
 //
 //
 //
-func (e *RuleEngine) LoadDriver(typex.XExternalDriver) error {
-
-	return nil
-
-}
-
-//
-//
-//
 func (e *RuleEngine) Start() map[string]interface{} {
 	e.ConfigMap = map[string]interface{}{}
 	log.Info("Init XQueue, max queue size is:", core.GlobalConfig.MaxQueueSize)
@@ -116,13 +107,11 @@ func (e *RuleEngine) PushQueue(qd typex.QueueData) error {
 //
 //
 func (e *RuleEngine) GetPlugins() map[string]typex.XPlugin {
-	e.Lock()
-	defer e.Unlock()
+
 	return e.Plugins
 }
 func (e *RuleEngine) AllPlugins() map[string]typex.XPlugin {
-	e.Lock()
-	defer e.Unlock()
+
 	return e.Plugins
 }
 
@@ -203,6 +192,12 @@ func startResources(resource typex.XResource, in *typex.InEnd, e *RuleEngine) er
 				//
 				<-ticker.C
 				{
+					//
+					// 通过HTTP删除资源的时候，会把数据清了，只要检测到资源没了，这里也退出
+					//
+					if resource.Details() == nil {
+						return
+					}
 					//------------------------------------
 					// 驱动挂了资源也挂了，因此检查驱动状态在先
 					//------------------------------------
@@ -421,8 +416,7 @@ func (e *RuleEngine) LoadRule(r *typex.Rule) error {
 // GetRule a rule
 //
 func (e *RuleEngine) GetRule(id string) *typex.Rule {
-	e.Lock()
-	defer e.Unlock()
+
 	return (e.Rules)[id]
 }
 
@@ -430,8 +424,7 @@ func (e *RuleEngine) GetRule(id string) *typex.Rule {
 //
 //
 func (e *RuleEngine) SaveRule(r *typex.Rule) {
-	e.Lock()
-	defer e.Unlock()
+
 	(e.Rules)[r.Id] = r
 
 }
@@ -453,8 +446,7 @@ func (e *RuleEngine) RemoveRule(ruleId string) error {
 //
 //
 func (e *RuleEngine) AllRule() map[string]*typex.Rule {
-	e.Lock()
-	defer e.Unlock()
+
 	return (e.Rules)
 }
 
@@ -568,8 +560,7 @@ func runHook(h typex.XHook, data string) error {
 //
 //
 func (e *RuleEngine) GetInEnd(id string) *typex.InEnd {
-	e.Lock()
-	defer e.Unlock()
+
 	return (e.InEnds)[id]
 }
 
@@ -577,8 +568,7 @@ func (e *RuleEngine) GetInEnd(id string) *typex.InEnd {
 //
 //
 func (e *RuleEngine) SaveInEnd(in *typex.InEnd) {
-	e.Lock()
-	defer e.Unlock()
+
 	(e.InEnds)[in.Id] = in
 }
 
@@ -586,8 +576,7 @@ func (e *RuleEngine) SaveInEnd(in *typex.InEnd) {
 //
 //
 func (e *RuleEngine) RemoveInEnd(id string) {
-	e.Lock()
-	defer e.Unlock()
+
 	delete((e.InEnds), id)
 	log.Infof("InEnd [%v] has been deleted", id)
 }
@@ -596,8 +585,7 @@ func (e *RuleEngine) RemoveInEnd(id string) {
 //
 //
 func (e *RuleEngine) AllInEnd() map[string]*typex.InEnd {
-	e.Lock()
-	defer e.Unlock()
+
 	return (e.InEnds)
 }
 
@@ -605,8 +593,7 @@ func (e *RuleEngine) AllInEnd() map[string]*typex.InEnd {
 //
 //
 func (e *RuleEngine) GetOutEnd(id string) *typex.OutEnd {
-	e.Lock()
-	defer e.Unlock()
+
 	return (e.OutEnds)[id]
 }
 
@@ -614,8 +601,7 @@ func (e *RuleEngine) GetOutEnd(id string) *typex.OutEnd {
 //
 //
 func (e *RuleEngine) SaveOutEnd(out *typex.OutEnd) {
-	e.Lock()
-	defer e.Unlock()
+
 	(e.OutEnds)[out.Id] = out
 }
 
@@ -623,8 +609,7 @@ func (e *RuleEngine) SaveOutEnd(out *typex.OutEnd) {
 //
 //
 func (e *RuleEngine) RemoveOutEnd(uuid string) {
-	e.Lock()
-	defer e.Unlock()
+
 	delete((e.OutEnds), uuid)
 	log.Infof("OutEnd [%v] has been deleted", uuid)
 }
@@ -633,7 +618,5 @@ func (e *RuleEngine) RemoveOutEnd(uuid string) {
 //
 //
 func (e *RuleEngine) AllOutEnd() map[string]*typex.OutEnd {
-	e.Lock()
-	defer e.Unlock()
 	return (e.OutEnds)
 }

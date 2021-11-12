@@ -63,6 +63,7 @@ func (hh *HttpApiServer) Start() error {
 	// Get system infomation
 	//
 	hh.ginEngine.GET(API_ROOT+"system", hh.addRoute(System))
+	hh.ginEngine.GET(API_ROOT+"logs", hh.addRoute(Logs))
 	//
 	// Get all inends
 	//

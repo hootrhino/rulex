@@ -8,6 +8,7 @@ require (
 	github.com/adrianmo/go-nmea v1.4.0
 	github.com/cjoudrey/gluaurl v0.0.0-20161028222611-31cbb9bef199
 	github.com/eclipse/paho.mqtt.golang v1.3.5
+	github.com/fsnotify/fsnotify v1.5.1
 	github.com/gin-gonic/gin v1.7.2
 	github.com/go-ole/go-ole v1.2.5 // indirect
 	github.com/go-playground/assert/v2 v2.0.1

@@ -71,7 +71,7 @@ func InEnds(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	for _, v := range e.AllInEnd() {
 		data = append(data, v)
 	}
-	c.PureJSON(http.StatusOK, Result{
+	c.JSON(http.StatusOK, Result{
 		Code: http.StatusOK,
 		Msg:  "Success",
 		Data: data,
@@ -297,15 +297,16 @@ func DeleteInend(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
 	_, err := hh.GetMInEnd(uuid)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
-	} else {
-		if err := hh.DeleteMInEnd(uuid); err != nil {
-			e.RemoveInEnd(uuid)
-			c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
-		} else {
-			c.JSON(http.StatusOK, gin.H{"msg": "remove success"})
-		}
+		c.JSON(http.StatusBadRequest, Error400(err))
+		return
 	}
+	if err := hh.DeleteMInEnd(uuid); err != nil {
+		c.JSON(http.StatusBadRequest, Error400(err))
+	} else {
+		e.RemoveInEnd(uuid)
+		c.JSON(http.StatusOK, Ok())
+	}
+
 }
 
 //
@@ -447,5 +448,18 @@ func Info(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 			"avatar": "rulex",
 			"name":   "rulex",
 		},
+	})
+}
+func Logs(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+	logs := []string{}
+	for _, s := range core.LogSlot {
+		if s != "" {
+			logs = append(logs, s)
+		}
+	}
+	c.PureJSON(http.StatusOK, Result{
+		Code: http.StatusOK,
+		Msg:  "Success",
+		Data: logs,
 	})
 }

@@ -18,6 +18,7 @@ import (
 //
 func RunRulex(dbPath string) {
 	core.InitGlobalConfig()
+	core.StartLogWatcher()
 	core.SetLogLevel()
 	core.SetPerformance()
 	c := make(chan os.Signal, 1)

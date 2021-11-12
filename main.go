@@ -18,6 +18,7 @@ import (
 //go:generate ./gen_proto.sh
 //
 func main() {
+
 	//--------------------------------------
 	app := &cli.App{
 		Name:  "RULEX, a lightweight iot data rule gateway",
@@ -59,8 +60,7 @@ func main() {
 		},
 	}
 
-	err := app.Run(os.Args)
-	if err != nil {
+	if err := app.Run(os.Args); err != nil {
 		log.Fatal(err)
 	}
 }
