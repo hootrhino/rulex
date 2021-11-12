@@ -15,12 +15,12 @@ func init() {
 	}
 }
 func IncIn() {
-	lock.Lock()
-	defer lock.Unlock()
+
 	statisticsCache["inSuccess"] = statisticsCache["inSuccess"] + 1
 }
 func DecIn() {
 	lock.Lock()
+	defer lock.Unlock()
 	if statisticsCache["inSuccess"]-1 > 0 {
 		statisticsCache["inSuccess"] = statisticsCache["inSuccess"] - 1
 	}

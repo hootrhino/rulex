@@ -1,6 +1,7 @@
 package httpserver
 
 import (
+	"encoding/json"
 	"net/http"
 	"rulex/core"
 	"rulex/statistics"
@@ -13,8 +14,6 @@ import (
 	"github.com/ngaut/log"
 	"github.com/shirou/gopsutil/cpu"
 	"github.com/shirou/gopsutil/disk"
-	"github.com/shirou/gopsutil/mem"
-	"gopkg.in/square/go-jose.v2/json"
 )
 
 //
@@ -34,32 +33,38 @@ func Plugins(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	for _, v := range e.AllPlugins() {
 		data = append(data, v)
 	}
-	c.PureJSON(http.StatusOK, Result{
+	c.JSON(http.StatusOK, Result{
 		Code: http.StatusOK,
 		Msg:  "Success",
 		Data: data,
 	})
+}
+func bToMb(b uint64) uint64 {
+	return b / 1024 / 1024
 }
 
 //
 // Get system infomation
 //
 func System(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
-	percent, _ := cpu.Percent(time.Second, false)
-	memInfo, _ := mem.VirtualMemory()
+	cpuPercent, _ := cpu.Percent(time.Millisecond, true)
 	parts, _ := disk.Partitions(true)
 	diskInfo, _ := disk.Usage(parts[0].Mountpoint)
-	c.PureJSON(http.StatusOK, Result{
+	// For info on each, see: https://golang.org/pkg/runtime/#MemStats
+	var m runtime.MemStats
+	runtime.ReadMemStats(&m)
+	c.JSON(http.StatusOK, Result{
 		Code: http.StatusOK,
 		Msg:  "Success",
 		Data: gin.H{
-			"rulexVersion": e.Version().Version,
-			"diskInfo":     diskInfo.UsedPercent,
-			"memInfo":      memInfo.UsedPercent,
-			"cpuPercent":   percent[0],
-			"os":           runtime.GOOS,
-			"arch":         runtime.GOARCH,
-			"cpus":         runtime.GOMAXPROCS(0)},
+			"version":    e.Version().Version,
+			"diskInfo":   int(diskInfo.UsedPercent),
+			"system":     bToMb(m.Sys),
+			"alloc":      bToMb(m.Alloc),
+			"total":      bToMb(m.TotalAlloc),
+			"cpuPercent": cpuPercent,
+			"osArch":     runtime.GOOS + "-" + runtime.GOARCH,
+		},
 	})
 }
 
@@ -86,7 +91,7 @@ func OutEnds(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	for _, v := range e.AllOutEnd() {
 		data = append(data, v)
 	}
-	c.PureJSON(http.StatusOK, Result{
+	c.JSON(http.StatusOK, Result{
 		Code: http.StatusOK,
 		Msg:  "Success",
 		Data: data,
@@ -101,7 +106,7 @@ func Rules(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	for _, v := range e.AllRule() {
 		data = append(data, v)
 	}
-	c.PureJSON(http.StatusOK, Result{
+	c.JSON(http.StatusOK, Result{
 		Code: http.StatusOK,
 		Msg:  "Success",
 		Data: data,
@@ -112,10 +117,26 @@ func Rules(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 // Get statistics data
 //
 func Statistics(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
-	c.PureJSON(http.StatusOK, Result{
+	c.JSON(http.StatusOK, Result{
 		Code: http.StatusOK,
 		Msg:  "Success",
 		Data: statistics.AllStatistics(),
+	})
+}
+
+//
+// Get statistics data
+//
+func ResourceCount(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+	c.JSON(http.StatusOK, Result{
+		Code: http.StatusOK,
+		Msg:  "Success",
+		Data: map[string]int{
+			"inends":  len(e.AllInEnd()),
+			"outends": len(e.AllOutEnd()),
+			"rules":   len(e.AllRule()),
+			"plugins": len(e.AllPlugins()),
+		},
 	})
 }
 
@@ -124,7 +145,7 @@ func Statistics(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 //
 func Users(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	users := hh.AllMUser()
-	c.PureJSON(http.StatusOK, Result{
+	c.JSON(http.StatusOK, Result{
 		Code: http.StatusOK,
 		Msg:  "Success",
 		Data: users,
@@ -356,7 +377,7 @@ func CreateUser(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	}
 	form := Form{}
 	if err := c.ShouldBindJSON(&form); err != nil {
-		c.PureJSON(http.StatusOK, Result{
+		c.JSON(http.StatusOK, Result{
 			Code: http.StatusBadGateway,
 			Msg:  err.Error(),
 			Data: nil,
@@ -365,7 +386,7 @@ func CreateUser(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	}
 
 	if user, err := hh.GetMUser(form.Username, form.Password); err != nil {
-		c.PureJSON(http.StatusOK, Result{
+		c.JSON(http.StatusOK, Result{
 			Code: http.StatusBadGateway,
 			Msg:  err.Error(),
 			Data: nil,
@@ -373,7 +394,7 @@ func CreateUser(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		return
 	} else {
 		if user.ID > 0 {
-			c.PureJSON(http.StatusOK, Result{
+			c.JSON(http.StatusOK, Result{
 				Code: http.StatusBadGateway,
 				Msg:  "用户已存在:" + user.Username,
 				Data: nil,
@@ -386,7 +407,7 @@ func CreateUser(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 				Password:    form.Password,
 				Description: form.Description,
 			})
-			c.PureJSON(http.StatusOK, Result{
+			c.JSON(http.StatusOK, Result{
 				Code: http.StatusOK,
 				Msg:  "用户创建成功",
 				Data: form.Username,
@@ -407,7 +428,7 @@ func Auth(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	// form := Form{}
 	// err0 := c.ShouldBindJSON(&form)
 	// if err0 != nil {
-	// 	c.PureJSON(http.StatusOK, Result{
+	// 	c.JSON(http.StatusOK, Result{
 	// 		Code: http.StatusBadGateway,
 	// 		Msg:  err0.Error(),
 	// 		Data: nil,
@@ -415,20 +436,20 @@ func Auth(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	// } else {
 	// 	user, err1 := hh.GetMUser(form.Username, form.Password)
 	// 	if err1 != nil {
-	// 		c.PureJSON(http.StatusOK, Result{
+	// 		c.JSON(http.StatusOK, Result{
 	// 			Code: http.StatusBadGateway,
 	// 			Msg:  err1.Error(),
 	// 			Data: nil,
 	// 		})
 	// 	} else {
-	// 		c.PureJSON(http.StatusOK, Result{
+	// 		c.JSON(http.StatusOK, Result{
 	// 			Code: http.StatusOK,
 	// 			Msg:  "Auth Success",
 	// 			Data: user.Username,
 	// 		})
 	// 	}
 	// }
-	c.PureJSON(http.StatusOK, Result{
+	c.JSON(http.StatusOK, Result{
 		Code: http.StatusOK,
 		Msg:  "Auth Success",
 		Data: map[string]interface{}{
@@ -439,7 +460,7 @@ func Auth(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	})
 }
 func Info(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
-	c.PureJSON(http.StatusOK, Result{
+	c.JSON(http.StatusOK, Result{
 		Code: http.StatusOK,
 		Msg:  "Auth Success",
 		Data: map[string]interface{}{
@@ -450,13 +471,16 @@ func Info(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	})
 }
 func Logs(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
-	logs := []string{}
+	type Data struct {
+		Content string `json:"content" binding:"required"`
+	}
+	logs := []Data{}
 	for _, s := range core.LogSlot {
 		if s != "" {
-			logs = append(logs, s)
+			logs = append(logs, Data{s})
 		}
 	}
-	c.PureJSON(http.StatusOK, Result{
+	c.JSON(http.StatusOK, Result{
 		Code: http.StatusOK,
 		Msg:  "Success",
 		Data: logs,
