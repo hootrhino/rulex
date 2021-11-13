@@ -169,48 +169,54 @@ func (e *RuleEngine) LoadInEnd(in *typex.InEnd) error {
                       +-------------------Error ---------------------+
 */
 func startResources(resource typex.XResource, in *typex.InEnd, e *RuleEngine) error {
-	// Save to rule engine first
-	// 这么作主要是为了可以 预加载 进去, 然后等环境恢复了以后自动复原
+	//
+	// 先注册，如果出问题了直接删除就行
+	//
 	e.SaveInEnd(in)
+	if !resource.Test(in.Id) {
+		e.RemoveInEnd(in.Id)
+		return errors.New("resource test error")
+	}
 	// 首先把资源ID给注册进去, 作为资源的全局索引
 	if err := resource.Register(in.Id); err != nil {
 		log.Error(err)
+		e.RemoveInEnd(in.Id)
 		return err
-	} else {
-		// Set resources to inend
-		in.Resource = resource
-		// 然后启动资源
-		startResource(resource, e, in.Id)
-		go func(ctx context.Context) {
-			// 5 seconds
-			ticker := time.NewTicker(time.Duration(time.Second * 5))
-			for {
-				//
-				// TODO 这边有个不影响使用的问题，后期再优化吧
-				// 症状：当规则引擎停了以后, 恰好赶上计时器已经再等了，所以会触发一次 tryIfRestartResource
-				// 解决办法：限制for循环条件就行了
-				//
-				<-ticker.C
-				{
-					//
-					// 通过HTTP删除资源的时候，会把数据清了，只要检测到资源没了，这里也退出
-					//
-					if resource.Details() == nil {
-						return
-					}
-					//------------------------------------
-					// 驱动挂了资源也挂了，因此检查驱动状态在先
-					//------------------------------------
-					tryIfRestartResource(resource, e, in.Id)
-					// checkDriverState(resource, e, in.Id)
-					//------------------------------------
-				}
-			}
-
-		}(context.Background())
-		log.Infof("InEnd [%v, %v] load successfully", in.Name, in.Id)
-		return nil
 	}
+	// Set resources to inend
+	in.Resource = resource
+	// 然后启动资源
+	if err := startResource(resource, e, in.Id); err != nil {
+		log.Error(err)
+		e.RemoveInEnd(in.Id)
+		return err
+	}
+	go func(ctx context.Context) {
+		// 5 seconds
+		ticker := time.NewTicker(time.Duration(time.Second * 5))
+		for {
+			//
+			<-ticker.C
+			{
+				//
+				// 通过HTTP删除资源的时候，会把数据清了，只要检测到资源没了，这里也退出
+				//
+				if resource.Details() == nil {
+					return
+				}
+				//------------------------------------
+				// 驱动挂了资源也挂了，因此检查驱动状态在先
+				//------------------------------------
+				tryIfRestartResource(resource, e, in.Id)
+				// checkDriverState(resource, e, in.Id)
+				//------------------------------------
+			}
+		}
+
+	}(context.Background())
+	log.Infof("InEnd [%v, %v] load successfully", in.Name, in.Id)
+	return nil
+
 }
 
 /*
@@ -260,7 +266,7 @@ func tryIfRestartResource(resource typex.XResource, e *RuleEngine, id string) {
 //
 //
 //
-func startResource(resource typex.XResource, e *RuleEngine, id string) {
+func startResource(resource typex.XResource, e *RuleEngine, id string) error {
 	if err := resource.Start(); err != nil {
 		log.Error("Resource start error:", err)
 		if resource.Status() == typex.UP {
@@ -271,6 +277,7 @@ func startResource(resource typex.XResource, e *RuleEngine, id string) {
 				resource.Driver().Stop()
 			}
 		}
+		return err
 	} else {
 		//----------------------------------
 		// 驱动也要停了
@@ -282,15 +289,19 @@ func startResource(resource typex.XResource, e *RuleEngine, id string) {
 			// Start driver
 			if err := resource.Driver().Init(); err != nil {
 				log.Error("Driver initial error:", err)
+				return errors.New("Driver initial error:" + err.Error())
 			} else {
 				log.Infof("Try to start driver: [%v]", resource.Driver().DriverDetail().Name)
 				if err := resource.Driver().Work(); err != nil {
 					log.Error("Driver work error:", err)
+					return errors.New("Driver work error:" + err.Error())
 				} else {
 					log.Infof("Driver start successfully: [%v]", resource.Driver().DriverDetail().Name)
+					return nil
 				}
 			}
 		}
+		return nil
 	}
 
 }

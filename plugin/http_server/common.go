@@ -19,10 +19,10 @@ func Ok() R {
 	return R{200, "操作成功"}
 }
 func Error400(e error) R {
-	return R{400, e.Error()}
+	return R{4001, e.Error()}
 }
 func Error500(e error) R {
-	return R{500, e.Error()}
+	return R{5001, e.Error()}
 }
 func Authorize() gin.HandlerFunc {
 	return func(c *gin.Context) {
