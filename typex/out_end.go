@@ -10,7 +10,7 @@ import (
 //
 type OutEnd struct {
 	sync.Mutex
-	Id          string                 `json:"id"`
+	UUID        string                 `json:"uuid"`
 	Type        TargetType             `json:"type"`
 	State       ResourceState          `json:"state"`
 	Name        string                 `json:"name"`
@@ -40,7 +40,7 @@ func NewOutEnd(t string,
 	d string,
 	c map[string]interface{}) *OutEnd {
 	return &OutEnd{
-		Id:          utils.MakeUUID("OUTEND"),
+		UUID:        utils.MakeUUID("OUTEND"),
 		Type:        TargetType(t),
 		State:       DOWN,
 		Name:        n,

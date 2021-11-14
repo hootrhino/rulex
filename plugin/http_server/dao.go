@@ -50,7 +50,7 @@ func (s *HttpApiServer) InsertMRule(r *MRule) error {
 }
 
 func (s *HttpApiServer) DeleteMRule(uuid string) error {
-	return s.sqliteDb.Where("uuid=?", uuid).Unscoped().Delete(&MRule{}).Error
+	return s.sqliteDb.Table("m_rules").Where("uuid=?", uuid).Delete(&MRule{}).Error
 }
 
 func (s *HttpApiServer) UpdateMRule(uuid string, r *MRule) error {
@@ -86,7 +86,7 @@ func (s *HttpApiServer) InsertMInEnd(i *MInEnd) {
 }
 
 func (s *HttpApiServer) DeleteMInEnd(uuid string) error {
-	return s.sqliteDb.Where("uuid=?", uuid).Unscoped().Delete(&MInEnd{}).Error
+	return s.sqliteDb.Where("uuid=?", uuid).Delete(&MInEnd{}).Error
 }
 
 func (s *HttpApiServer) UpdateMInEnd(uuid string, i *MInEnd) error {
@@ -122,7 +122,7 @@ func (s *HttpApiServer) InsertMOutEnd(o *MOutEnd) {
 }
 
 func (s *HttpApiServer) DeleteMOutEnd(uuid string) error {
-	return s.sqliteDb.Where("uuid=?", uuid).Unscoped().Delete(&MOutEnd{}).Error
+	return s.sqliteDb.Where("uuid=?", uuid).Delete(&MOutEnd{}).Error
 }
 
 func (s *HttpApiServer) UpdateMOutEnd(uuid string, o *MOutEnd) error {

@@ -7,8 +7,6 @@ import (
 	"github.com/cjoudrey/gluaurl"
 	luajson "github.com/wwhai/gopher-json"
 
-	"rulex/utils"
-
 	lua "github.com/yuin/gopher-lua"
 )
 
@@ -31,6 +29,7 @@ type Rule struct {
 // New
 //
 func NewRule(e RuleX,
+	uuid string,
 	name string,
 	description string,
 	from []string,
@@ -44,7 +43,7 @@ func NewRule(e RuleX,
 	})
 
 	return &Rule{
-		UUID:        utils.MakeUUID("RULE"),
+		UUID:        uuid,
 		Name:        name,
 		Description: description,
 		From:        from,

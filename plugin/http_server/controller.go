@@ -2,6 +2,7 @@ package httpserver
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"rulex/core"
 	"rulex/statistics"
@@ -31,7 +32,7 @@ type Result struct {
 func Plugins(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	data := []interface{}{}
 	for _, v := range e.AllPlugins() {
-		data = append(data, v)
+		data = append(data, v.XPluginMetaInfo())
 	}
 	c.JSON(http.StatusOK, Result{
 		Code: http.StatusOK,
@@ -223,10 +224,10 @@ func CreateOutEnd(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 			})
 			err := hh.LoadNewestOutEnd(uuid)
 			if err != nil {
-				c.JSON(200, gin.H{"msg": err.Error()})
+				c.JSON(200, Error400(err))
 				return
 			} else {
-				c.JSON(http.StatusOK, gin.H{"msg": "create success"})
+				c.JSON(200, Ok())
 				return
 			}
 		}
@@ -246,68 +247,66 @@ func CreateRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		Failed      string   `json:"failed"`
 	}
 	form := Form{}
-	err0 := c.ShouldBindJSON(&form)
-	if err0 != nil {
-		c.JSON(200, gin.H{"msg": err0.Error()})
+
+	if err := c.ShouldBindJSON(&form); err != nil {
+		c.JSON(200, Error400(err))
 		return
-	} else {
+	}
 
-		if len(form.From) > 0 {
-			for _, id := range form.From {
-				if id != "" {
-					if e.GetInEnd(id) == nil {
-						c.JSON(200, gin.H{"msg": "inend not exists:" + id})
-						return
-					}
-				} else {
-					c.JSON(http.StatusOK, gin.H{"msg": "invalid 'from'"})
-					return
-				}
-			}
-			tmpRule := typex.NewRule(nil,
-				form.Name,
-				form.Description,
-				nil,
-				form.Success,
-				form.Actions,
-				form.Failed)
-
-			if err1 := core.VerifyCallback(tmpRule); err1 != nil {
-				c.JSON(200, gin.H{"msg": err1.Error()})
-				return
-			} else {
-				mRule := &MRule{
-					UUID:        utils.MakeUUID("RULE"),
-					Name:        form.Name,
-					Description: form.Description,
-					From:        form.From,
-					Success:     form.Success,
-					Failed:      form.Failed,
-					Actions:     form.Actions,
-				}
-				if err := hh.InsertMRule(mRule); err != nil {
-					c.JSON(200, gin.H{"msg": err.Error()})
-					return
-				}
-				rule := typex.NewRule(hh.ruleEngine,
-					mRule.Name,
-					mRule.Description,
-					mRule.From,
-					mRule.Success,
-					mRule.Actions,
-					mRule.Failed)
-				if err := e.LoadRule(rule); err != nil {
-					c.JSON(200, gin.H{"msg": err.Error()})
-				} else {
-					c.JSON(http.StatusOK, gin.H{"msg": "create success"})
-				}
+	if len(form.From) > 0 {
+		for _, id := range form.From {
+			if e.GetInEnd(id) == nil {
+				c.JSON(200, errors.New(`"inend not exists:" `+id))
 				return
 			}
+		}
+
+		tmpRule := typex.NewRule(nil,
+			"",
+			form.Name,
+			form.Description,
+			nil,
+			form.Success,
+			form.Actions,
+			form.Failed)
+
+		if err := core.VerifyCallback(tmpRule); err != nil {
+			c.JSON(200, Error400(err))
+			return
 		} else {
-			c.JSON(200, gin.H{"msg": "from can't empty"})
+			mRule := &MRule{
+				UUID:        utils.MakeUUID("RULE"),
+				Name:        form.Name,
+				Description: form.Description,
+				From:        form.From,
+				Success:     form.Success,
+				Failed:      form.Failed,
+				Actions:     form.Actions,
+			}
+			if err := hh.InsertMRule(mRule); err != nil {
+				c.JSON(200, gin.H{"msg": err.Error()})
+				return
+			}
+			rule := typex.NewRule(hh.ruleEngine,
+				mRule.UUID,
+				mRule.Name,
+				mRule.Description,
+				mRule.From,
+				mRule.Success,
+				mRule.Actions,
+				mRule.Failed)
+			if err := e.LoadRule(rule); err != nil {
+				c.JSON(200, Error400(err))
+			} else {
+				c.JSON(200, Ok())
+			}
 			return
 		}
+	} else {
+		c.JSON(200, Error400(errors.New("from can't empty")))
+		return
 	}
+
 }
 
 //
@@ -324,7 +323,7 @@ func DeleteInend(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		c.JSON(200, Error400(err))
 	} else {
 		e.RemoveInEnd(uuid)
-		c.JSON(http.StatusOK, Ok())
+		c.JSON(200, Ok())
 	}
 
 }
@@ -352,17 +351,18 @@ func DeleteOutend(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 //
 func DeleteRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
-	_, err := hh.GetMRule(uuid)
-	if err != nil {
-		c.JSON(200, gin.H{"msg": err.Error()})
-	} else {
-		if err := hh.DeleteMRule(uuid); err != nil {
-			e.RemoveRule(uuid)
-			c.JSON(200, gin.H{"msg": err.Error()})
-		} else {
-			c.JSON(http.StatusOK, gin.H{"msg": "remove success"})
-		}
+	_, err0 := hh.GetMRule(uuid)
+	if err0 != nil {
+		c.JSON(200, Error400(err0))
+		return
 	}
+	if err1 := hh.DeleteMRule(uuid); err1 != nil {
+		c.JSON(200, Error400(err1))
+	} else {
+		e.RemoveRule(uuid)
+		c.JSON(200, Ok())
+	}
+
 }
 
 //
@@ -472,12 +472,13 @@ func Info(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 }
 func Logs(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	type Data struct {
+		Id      int    `json:"id" binding:"required"`
 		Content string `json:"content" binding:"required"`
 	}
 	logs := []Data{}
-	for _, s := range core.LogSlot {
+	for i, s := range core.LogSlot {
 		if s != "" {
-			logs = append(logs, Data{s})
+			logs = append(logs, Data{i, s})
 		}
 	}
 	c.JSON(http.StatusOK, Result{

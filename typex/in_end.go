@@ -8,14 +8,14 @@ import (
 //
 type InEnd struct {
 	sync.Mutex
-	Id          string                  `json:"id"`
-	State       ResourceState           `json:"state"`
-	Type        InEndType               `json:"type"`
-	Name        string                  `json:"name"`
-	Description string                  `json:"description"`
+	UUID        string                 `json:"uuid"`
+	State       ResourceState          `json:"state"`
+	Type        InEndType              `json:"type"`
+	Name        string                 `json:"name"`
+	Description string                 `json:"description"`
 	Binds       map[string]Rule        `json:"-"`
 	Config      map[string]interface{} `json:"config"`
-	Resource    XResource               `json:"-"`
+	Resource    XResource              `json:"-"`
 }
 
 func (in *InEnd) GetState() ResourceState {
@@ -38,7 +38,7 @@ func NewInEnd(t string,
 	c map[string]interface{}) *InEnd {
 
 	return &InEnd{
-		Id:          utils.MakeUUID("INEND"),
+		UUID:        utils.MakeUUID("INEND"),
 		Type:        InEndType(t),
 		Name:        n,
 		Description: d,

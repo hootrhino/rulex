@@ -90,7 +90,7 @@ func (hh *HttpApiServer) LoadNewestInEnd(uuid string) error {
 	}
 	in := typex.NewInEnd(mInEnd.Type, mInEnd.Name, mInEnd.Description, config)
 	// Important !!!!!!!! in.Id = mInEnd.UUID
-	in.Id = mInEnd.UUID
+	in.UUID = mInEnd.UUID
 	if err2 := hh.ruleEngine.LoadInEnd(in); err2 != nil {
 		log.Error(err2)
 		return err2
@@ -111,7 +111,7 @@ func (hh *HttpApiServer) LoadNewestOutEnd(uuid string) error {
 	} else {
 		out := typex.NewOutEnd(mOutEnd.Type, mOutEnd.Name, mOutEnd.Description, config)
 		// Important !!!!!!!!
-		out.Id = mOutEnd.UUID
+		out.UUID = mOutEnd.UUID
 		if err := hh.ruleEngine.LoadOutEnd(out); err != nil {
 			return err
 		} else {

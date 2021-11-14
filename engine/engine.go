@@ -80,7 +80,7 @@ func (e *RuleEngine) Start() map[string]interface{} {
 					}
 					if qd.Out != nil {
 						//  传 Out 为了实现数据外流
-						(*qd.E.AllOutEnd()[qd.Out.Id]).Target.To(qd.Data)
+						(*qd.E.AllOutEnd()[qd.Out.UUID]).Target.To(qd.Data)
 					}
 				}
 			default:
@@ -130,28 +130,28 @@ func (e *RuleEngine) GetConfig(k string) interface{} {
 
 func (e *RuleEngine) LoadInEnd(in *typex.InEnd) error {
 	if in.Type == typex.MQTT {
-		return startResources(resource.NewMqttInEndResource(in.Id, e), in, e)
+		return startResources(resource.NewMqttInEndResource(in.UUID, e), in, e)
 	}
 	if in.Type == typex.HTTP {
-		return startResources(resource.NewHttpInEndResource(in.Id, e), in, e)
+		return startResources(resource.NewHttpInEndResource(in.UUID, e), in, e)
 	}
 	if in.Type == typex.COAP {
-		return startResources(resource.NewCoAPInEndResource(in.Id, e), in, e)
+		return startResources(resource.NewCoAPInEndResource(in.UUID, e), in, e)
 	}
 	if in.Type == typex.GRPC {
-		return startResources(resource.NewGrpcInEndResource(in.Id, e), in, e)
+		return startResources(resource.NewGrpcInEndResource(in.UUID, e), in, e)
 	}
 	if in.Type == typex.UART_MODULE {
-		return startResources(resource.NewUartModuleResource(in.Id, e), in, e)
+		return startResources(resource.NewUartModuleResource(in.UUID, e), in, e)
 	}
 	if in.Type == typex.UDP {
-		return startResources(resource.NewUdpInEndResource(in.Id, e), in, e)
+		return startResources(resource.NewUdpInEndResource(in.UUID, e), in, e)
 	}
 	if in.Type == typex.MODBUS_TCP_MASTER {
-		return startResources(resource.NewModbusMasterResource(in.Id, e), in, e)
+		return startResources(resource.NewModbusMasterResource(in.UUID, e), in, e)
 	}
 	if in.Type == typex.SNMP_SERVER {
-		return startResources(resource.NewSNMPInEndResource(in.Id, e), in, e)
+		return startResources(resource.NewSNMPInEndResource(in.UUID, e), in, e)
 	}
 	return fmt.Errorf("unsupported InEnd type:%s", in.Type)
 }
@@ -173,22 +173,22 @@ func startResources(resource typex.XResource, in *typex.InEnd, e *RuleEngine) er
 	// 先注册，如果出问题了直接删除就行
 	//
 	e.SaveInEnd(in)
-	if !resource.Test(in.Id) {
-		e.RemoveInEnd(in.Id)
+	if !resource.Test(in.UUID) {
+		e.RemoveInEnd(in.UUID)
 		return errors.New("resource test error")
 	}
 	// 首先把资源ID给注册进去, 作为资源的全局索引
-	if err := resource.Register(in.Id); err != nil {
+	if err := resource.Register(in.UUID); err != nil {
 		log.Error(err)
-		e.RemoveInEnd(in.Id)
+		e.RemoveInEnd(in.UUID)
 		return err
 	}
 	// Set resources to inend
 	in.Resource = resource
 	// 然后启动资源
-	if err := startResource(resource, e, in.Id); err != nil {
+	if err := startResource(resource, e, in.UUID); err != nil {
 		log.Error(err)
-		e.RemoveInEnd(in.Id)
+		e.RemoveInEnd(in.UUID)
 		return err
 	}
 	go func(ctx context.Context) {
@@ -207,14 +207,14 @@ func startResources(resource typex.XResource, in *typex.InEnd, e *RuleEngine) er
 				//------------------------------------
 				// 驱动挂了资源也挂了，因此检查驱动状态在先
 				//------------------------------------
-				tryIfRestartResource(resource, e, in.Id)
-				// checkDriverState(resource, e, in.Id)
+				tryIfRestartResource(resource, e, in.UUID)
+				// checkDriverState(resource, e, in.UUID)
 				//------------------------------------
 			}
 		}
 
 	}(context.Background())
-	log.Infof("InEnd [%v, %v] load successfully", in.Name, in.Id)
+	log.Infof("InEnd [%v, %v] load successfully", in.Name, in.UUID)
 	return nil
 
 }
@@ -250,7 +250,7 @@ func tryIfRestartResource(resource typex.XResource, e *RuleEngine, id string) {
 		//----------------------------------
 		// 当资源挂了以后先给停止, 然后重启
 		//----------------------------------
-		log.Warnf("Resource %v %v down. try to restart it", resource.Details().Id, resource.Details().Name)
+		log.Warnf("Resource %v %v down. try to restart it", resource.Details().UUID, resource.Details().Name)
 		resource.Stop()
 		//----------------------------------
 		// 主动垃圾回收一波
@@ -338,7 +338,7 @@ func startTarget(target typex.XTarget, out *typex.OutEnd, e typex.RuleX) error {
 	e.SaveOutEnd(out)
 	out.Target = target
 	// Register outend to target
-	if err := target.Register(out.Id); err != nil {
+	if err := target.Register(out.UUID); err != nil {
 		log.Error(err)
 		return err
 	} else {
@@ -357,7 +357,7 @@ func startTarget(target typex.XTarget, out *typex.OutEnd, e typex.RuleX) error {
 					}
 				case <-ticker.C:
 					if target.Status() == typex.DOWN {
-						checkTargetState(target, e, out.Id)
+						checkTargetState(target, e, out.UUID)
 					}
 				default:
 					{
@@ -373,7 +373,7 @@ func startTarget(target typex.XTarget, out *typex.OutEnd, e typex.RuleX) error {
 func checkTargetState(target typex.XTarget, e typex.RuleX, id string) {
 	if target.Status() == typex.DOWN {
 		// 当资源挂了以后先给停止, 然后重启
-		log.Warnf("Target [%v, %v] down. try to restart it", target.Details().Name, target.Details().Id)
+		log.Warnf("Target [%v, %v] down. try to restart it", target.Details().Name, target.Details().UUID)
 		target.Stop()
 		runtime.Gosched()
 		runtime.GC()
@@ -435,9 +435,7 @@ func (e *RuleEngine) GetRule(id string) *typex.Rule {
 //
 //
 func (e *RuleEngine) SaveRule(r *typex.Rule) {
-
-	(e.Rules)[r.Id] = r
-
+	(e.Rules)[r.UUID] = r
 }
 
 //
@@ -468,8 +466,8 @@ func (e *RuleEngine) Stop() {
 	log.Info("Ready to stop rulex")
 	for _, inEnd := range e.InEnds {
 		if inEnd.Resource != nil {
-			log.Info("Stop InEnd:", inEnd.Name, inEnd.Id)
-			e.GetInEnd(inEnd.Id).SetState(typex.DOWN)
+			log.Info("Stop InEnd:", inEnd.Name, inEnd.UUID)
+			e.GetInEnd(inEnd.UUID).SetState(typex.DOWN)
 			inEnd.Resource.Stop()
 			if inEnd.Resource.Driver() != nil {
 				inEnd.Resource.Driver().SetState(typex.STOP)
@@ -480,7 +478,7 @@ func (e *RuleEngine) Stop() {
 
 	for _, outEnd := range e.OutEnds {
 		if outEnd.Target != nil {
-			log.Info("Stop Target:", outEnd.Name, outEnd.Id)
+			log.Info("Stop Target:", outEnd.Name, outEnd.UUID)
 			outEnd.Target.Stop()
 		}
 	}
@@ -579,8 +577,7 @@ func (e *RuleEngine) GetInEnd(id string) *typex.InEnd {
 //
 //
 func (e *RuleEngine) SaveInEnd(in *typex.InEnd) {
-
-	(e.InEnds)[in.Id] = in
+	(e.InEnds)[in.UUID] = in
 }
 
 //
@@ -613,7 +610,7 @@ func (e *RuleEngine) GetOutEnd(id string) *typex.OutEnd {
 //
 func (e *RuleEngine) SaveOutEnd(out *typex.OutEnd) {
 
-	(e.OutEnds)[out.Id] = out
+	(e.OutEnds)[out.UUID] = out
 }
 
 //

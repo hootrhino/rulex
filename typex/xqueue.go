@@ -32,7 +32,7 @@ type QueueData struct {
 }
 
 func (qd QueueData) String() string {
-	return "QueueData@In:" + qd.In.Id + ", Data:" + qd.Data
+	return "QueueData@In:" + qd.In.UUID + ", Data:" + qd.Data
 }
 
 /*

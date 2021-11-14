@@ -45,7 +45,7 @@ func RunRulex(dbPath string) {
 		}
 		in1 := typex.NewInEnd(minEnd.Type, minEnd.Name, minEnd.Description, config)
 		// Important !!!!!!!!
-		in1.Id = minEnd.UUID
+		in1.UUID = minEnd.UUID
 		if err := engine.LoadInEnd(in1); err != nil {
 			log.Error("InEnd load failed:", err)
 		}
@@ -56,6 +56,7 @@ func RunRulex(dbPath string) {
 	//
 	for _, mRule := range hh.AllMRules() {
 		rule := typex.NewRule(engine,
+			mRule.UUID,
 			mRule.Name,
 			mRule.Description,
 			mRule.From,
@@ -76,7 +77,7 @@ func RunRulex(dbPath string) {
 		}
 		newOutEnd := typex.NewOutEnd(mOutEnd.Type, mOutEnd.Name, mOutEnd.Description, config)
 		// Important !!!!!!!!
-		newOutEnd.Id = mOutEnd.UUID
+		newOutEnd.UUID = mOutEnd.UUID
 		if err := engine.LoadOutEnd(newOutEnd); err != nil {
 			log.Error("OutEnd load failed:", err)
 		}
