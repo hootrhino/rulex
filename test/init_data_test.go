@@ -26,7 +26,7 @@ func TestInitData(t *testing.T) {
 	})
 	b1, _ := json.Marshal(grpcInend.Config)
 	hh.InsertMInEnd(&httpserver.MInEnd{
-		UUID:        grpcInend.Id,
+		UUID:        grpcInend.UUID,
 		Type:        grpcInend.Type.String(),
 		Name:        grpcInend.Name,
 		Config:      string(b1),
@@ -38,7 +38,7 @@ func TestInitData(t *testing.T) {
 	})
 	b2, _ := json.Marshal(coapInend.Config)
 	hh.InsertMInEnd(&httpserver.MInEnd{
-		UUID:        coapInend.Id,
+		UUID:        coapInend.UUID,
 		Type:        coapInend.Type.String(),
 		Name:        coapInend.Name,
 		Config:      string(b2),
@@ -50,7 +50,7 @@ func TestInitData(t *testing.T) {
 	})
 	b3, _ := json.Marshal(httpInend.Config)
 	hh.InsertMInEnd(&httpserver.MInEnd{
-		UUID:        httpInend.Id,
+		UUID:        httpInend.UUID,
 		Type:        httpInend.Type.String(),
 		Name:        httpInend.Name,
 		Config:      string(b3),
@@ -63,7 +63,7 @@ func TestInitData(t *testing.T) {
 	})
 	b4, _ := json.Marshal(udpInend.Config)
 	hh.InsertMInEnd(&httpserver.MInEnd{
-		UUID:        udpInend.Id,
+		UUID:        udpInend.UUID,
 		Type:        udpInend.Type.String(),
 		Name:        udpInend.Name,
 		Config:      string(b4),
@@ -71,9 +71,10 @@ func TestInitData(t *testing.T) {
 	})
 
 	rule := typex.NewRule(engine,
+		"uuid",
 		"Just a test",
 		"Just a test",
-		[]string{grpcInend.Id},
+		[]string{grpcInend.UUID},
 		`function Success() print("[LUA Success]OK") end`,
 		`
 			Actions = {

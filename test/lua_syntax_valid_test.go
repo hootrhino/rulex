@@ -21,9 +21,10 @@ func TestLuaSyntax1(t *testing.T) {
 		"port": "2581",
 	})
 	rule := typex.NewRule(engine,
+		"uuid",
 		"Just a test",
 		"Just a test",
-		[]string{grpcInend.Id},
+		[]string{grpcInend.UUID},
 		`function Success() print("[LUA Success]==========================> OK") end`,
 		`
 		Actions = {
@@ -52,9 +53,10 @@ func TestLuaSyntax2(t *testing.T) {
 		"port": "2581",
 	})
 	rule := typex.NewRule(engine,
+		"uuid",
 		"Just a test",
 		"Just a test",
-		[]string{grpcInend.Id},
+		[]string{grpcInend.UUID},
 		`function Success() print("[LUA Success]==========================> OK") end`,
 		`
 		Actions = {

@@ -67,9 +67,10 @@ func TestFullyRun(t *testing.T) {
 	// Load Rule
 	//
 	rule := typex.NewRule(engine,
+		"uuid",
 		"Just a test",
 		"Just a test",
-		[]string{grpcInend.Id},
+		[]string{grpcInend.UUID},
 		`function Success() print("[LUA Success Callback]=> OK") end`,
 		`
 		Actions = {
