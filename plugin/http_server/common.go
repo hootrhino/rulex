@@ -15,6 +15,15 @@ type R struct {
 	Msg  string `json:"msg" binding:"required"`
 }
 
+//
+//
+//
+type Result struct {
+	Code int         `json:"code"`
+	Msg  string      `json:"msg"`
+	Data interface{} `json:"data"`
+}
+
 func Ok() R {
 	return R{200, "操作成功"}
 }

@@ -37,12 +37,7 @@ func (mm *UartModuleResource) DataModels() []typex.XDataModel {
 }
 
 func (u *UartModuleResource) Test(inEndId string) bool {
-	if err := u.loraDriver.Test(); err != nil {
-		log.Error(err)
-		return false
-	} else {
-		return true
-	}
+	return true
 }
 func (m *UartModuleResource) OnStreamApproached(data string) error {
 	m.loraDriver.Write([]byte(data))

@@ -17,14 +17,6 @@ import (
 	"github.com/shirou/gopsutil/disk"
 )
 
-//
-//
-//
-type Result struct {
-	Code int         `json:"code"`
-	Msg  string      `json:"msg"`
-	Data interface{} `json:"data"`
-}
 
 //
 // Get all plugins
@@ -79,6 +71,23 @@ func InEnds(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	}
 	c.JSON(http.StatusOK, Result{
 		Code: http.StatusOK,
+		Msg:  "Success",
+		Data: data,
+	})
+}
+
+//
+// Get all Drivers
+//
+func Drivers(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+	data := []interface{}{}
+	for _, v := range e.AllInEnd() {
+		if v.Resource.Driver() != nil {
+			data = append(data, v.Resource.Driver().DriverDetail())
+		}
+	}
+	c.JSON(200, Result{
+		Code: 200,
 		Msg:  "Success",
 		Data: data,
 	})

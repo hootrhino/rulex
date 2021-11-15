@@ -70,6 +70,7 @@ func (hh *HttpApiServer) Start() error {
 	// Get all inends
 	//
 	hh.ginEngine.GET(API_ROOT+"inends", hh.addRoute(InEnds))
+	hh.ginEngine.GET(API_ROOT+"drivers", hh.addRoute(Drivers))
 	//
 	// Get all outends
 	//
