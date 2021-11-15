@@ -65,6 +65,7 @@ func (hh *HttpApiServer) Start() error {
 	hh.ginEngine.GET(API_ROOT+"system", hh.addRoute(System))
 	hh.ginEngine.GET(API_ROOT+"resourceCount", hh.addRoute(ResourceCount))
 	hh.ginEngine.GET(API_ROOT+"logs", hh.addRoute(Logs))
+	hh.ginEngine.GET(API_ROOT+"logOut", hh.addRoute(LogOut))
 	//
 	// Get all inends
 	//

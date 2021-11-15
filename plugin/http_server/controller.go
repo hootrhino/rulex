@@ -487,3 +487,7 @@ func Logs(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		Data: logs,
 	})
 }
+
+func LogOut(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+	c.JSON(http.StatusOK, Ok())
+}
