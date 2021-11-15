@@ -1,8 +1,10 @@
 package target
 
 import (
+	"errors"
 	"fmt"
 	"rulex/typex"
+	"rulex/utils"
 	"time"
 
 	"github.com/ngaut/log"
@@ -11,16 +13,20 @@ import (
 )
 
 //
-const DEFAULT_CLIENT_ID string = "X_OUT_END_CLIENT_00000000"
-const DEFAULT_USERNAME string = "X_OUT_END_CLIENT_00000000"
-const DEFAULT_PASSWORD string = "X_OUT_END"
-const DEFAULT_SUB_TOPIC string = "X_OUT_END_CLIENT_00000000/SUB"
-const DEFAULT_PUB_TOPIC string = "X_OUT_END_CLIENT_00000000/PUB"
+type mqttConfig struct {
+	Host     string `json:"host" validate:"required"`
+	Port     int    `json:"port" validate:"required"`
+	Topic    string `json:"topic" validate:"required"`
+	ClientId string `json:"clientId" validate:"required"`
+	Username string `json:"username" validate:"required"`
+	Password string `json:"password" validate:"required"`
+}
 
 //
 type MqttOutEndTarget struct {
 	typex.XStatus
 	client mqtt.Client
+	Topic  string
 }
 
 func NewMqttTarget(e typex.RuleX) typex.XTarget {
@@ -28,49 +34,42 @@ func NewMqttTarget(e typex.RuleX) typex.XTarget {
 	m.RuleEngine = e
 	return m
 }
-
+func (*MqttOutEndTarget) Driver() typex.XExternalDriver {
+	return nil
+}
 func (mm *MqttOutEndTarget) Start() error {
+	config := mm.RuleEngine.GetOutEnd(mm.PointId).Config
+	var mainConfig mqttConfig
+	if err := utils.BindResourceConfig(config, &mainConfig); err != nil {
+		return err
+	}
+	opts := mqtt.NewClientOptions()
 
+	var messageHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
+		mm.RuleEngine.GetOutEnd(mm.PointId).Target.To(string(msg.Payload()))
+	}
 	//
 	var connectHandler mqtt.OnConnectHandler = func(client mqtt.Client) {
-		log.Infof("Mqtt InEnd Connected Success")
-		client.Subscribe(DEFAULT_SUB_TOPIC, 2, nil)
-		mm.RuleEngine.GetOutEnd(mm.PointId).SetState(typex.UP)
+		log.Infof("Mqtt OutEnd Connected Success")
 	}
 
 	var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err error) {
-		log.Errorf("Connect lost: %v\n", err)
+		log.Warnf("Connect lost: %v, try to reconnect\n", err)
 		time.Sleep(5 * time.Second)
-		mm.RuleEngine.GetOutEnd(mm.PointId).SetState(typex.DOWN)
 	}
-	config := mm.RuleEngine.GetOutEnd(mm.PointId).Config
-	opts := mqtt.NewClientOptions()
-	opts.AddBroker(fmt.Sprintf("tcp://%s:%v", (config)["server"], (config)["port"]))
-	if (config)["clientId"] != nil {
-		opts.SetClientID((config)["clientId"].(string))
-	} else {
-		opts.SetClientID(DEFAULT_CLIENT_ID)
-	}
-	if (config)["username"] != nil {
-		opts.SetUsername((config)["username"].(string))
-	} else {
-		opts.SetUsername(DEFAULT_USERNAME)
-	}
-	if (config)["password"] != nil {
-		opts.SetPassword((config)["password"].(string))
-	} else {
-		opts.SetPassword(DEFAULT_PASSWORD)
-	}
+
+	opts.AddBroker(fmt.Sprintf("tcp://%s:%v", mainConfig.Host, mainConfig.Port))
+	opts.SetClientID(mainConfig.ClientId)
+	opts.SetUsername(mainConfig.Username)
+	opts.SetPassword(mainConfig.Password)
+	mm.Topic = mainConfig.Topic
 	opts.OnConnect = connectHandler
 	opts.OnConnectionLost = connectLostHandler
-	opts.SetPingTimeout(10 * time.Second)
+	opts.SetDefaultPublishHandler(messageHandler)
+	opts.SetPingTimeout(5 * time.Second)
 	opts.SetAutoReconnect(true)
-	opts.OnReconnecting = func(mqtt.Client, *mqtt.ClientOptions) {
-		log.Error("Client disconnected, Try to reconnect...")
-	}
 	opts.SetMaxReconnectInterval(5 * time.Second)
 	mm.client = mqtt.NewClient(opts)
-	mm.Enable = true
 	if token := mm.client.Connect(); token.Wait() && token.Error() != nil {
 		return token.Error()
 	} else {
@@ -78,13 +77,13 @@ func (mm *MqttOutEndTarget) Start() error {
 	}
 
 }
-func (m *MqttOutEndTarget) OnStreamApproached(data string) error {
-	return nil
-}
+
 func (mm *MqttOutEndTarget) DataModels() []typex.XDataModel {
 	return []typex.XDataModel{}
 }
-
+func (m *MqttOutEndTarget) OnStreamApproached(data string) error {
+	return nil
+}
 func (mm *MqttOutEndTarget) Stop() {
 	mm.client.Disconnect(0)
 
@@ -96,20 +95,28 @@ func (mm *MqttOutEndTarget) Pause() {
 
 }
 func (mm *MqttOutEndTarget) Status() typex.ResourceState {
-	if mm.client.IsConnected() {
-		return typex.UP
+	if mm.client != nil {
+		if mm.client.IsConnected() {
+			return typex.UP
+		} else {
+			return typex.DOWN
+		}
 	} else {
 		return typex.DOWN
 	}
+
 }
 
-func (mm *MqttOutEndTarget) Register(inEndId string) error {
-	mm.PointId = inEndId
+func (mm *MqttOutEndTarget) Register(outEndId string) error {
+	mm.PointId = outEndId
 	return nil
 }
 
-func (mm *MqttOutEndTarget) Test(inEndId string) bool {
-	return mm.client.IsConnected()
+func (mm *MqttOutEndTarget) Test(outEndId string) bool {
+	if mm.client != nil {
+		return mm.client.IsConnected()
+	}
+	return false
 }
 
 func (mm *MqttOutEndTarget) Enabled() bool {
@@ -122,6 +129,9 @@ func (mm *MqttOutEndTarget) Details() *typex.OutEnd {
 //
 //
 //
-func (m *MqttOutEndTarget) To(data interface{}) error {
-	return m.client.Publish(DEFAULT_PUB_TOPIC, 2, false, data).Error()
+func (mm *MqttOutEndTarget) To(data interface{}) error {
+	if mm.client != nil {
+		return mm.client.Publish(mm.Topic, 2, false, data).Error()
+	}
+	return errors.New("mqtt client is nil")
 }

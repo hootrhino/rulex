@@ -12,19 +12,14 @@ import (
 )
 
 //
-type MqttConfig struct {
+type mqttConfig struct {
 	Host     string `json:"host" validate:"required"`
 	Port     int    `json:"port" validate:"required"`
-	ClientId string `json:"clientID" validate:"required"`
+	Topic    string `json:"topic" validate:"required"`
+	ClientId string `json:"clientId" validate:"required"`
 	Username string `json:"username" validate:"required"`
 	Password string `json:"password" validate:"required"`
 }
-
-//
-const DEFAULT_CLIENT_ID string = "X_IN_END_CLIENT"
-const DEFAULT_USERNAME string = "X_IN_END"
-const DEFAULT_PASSWORD string = "X_IN_END"
-const DEFAULT_TOPIC string = "$X_IN_END"
 
 //
 type MqttInEndResource struct {
@@ -38,65 +33,41 @@ func NewMqttInEndResource(inEndId string, e typex.RuleX) *MqttInEndResource {
 	m.RuleEngine = e
 	return m
 }
-func (*MqttInEndResource) Driver() typex.XExternalDriver {
-	return nil
-}
+
 func (mm *MqttInEndResource) Start() error {
-
-	var messageHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
-		if mm.Enable {
-			// log.Debug("Message payload:", string(msg.Payload()))
-			mm.RuleEngine.Work(mm.RuleEngine.GetInEnd(mm.PointId), string(msg.Payload()))
-		}
-	}
-	//
-	var connectHandler mqtt.OnConnectHandler = func(client mqtt.Client) {
-		log.Infof("Mqtt InEnd Connected Success")
-		// TODO support multipul topics
-		client.Subscribe(DEFAULT_TOPIC, 2, nil)
-		mm.RuleEngine.GetInEnd(mm.PointId).SetState(typex.UP)
-	}
-
-	var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err error) {
-		log.Warnf("Connect lost: %v\n", err)
-		time.Sleep(5 * time.Second)
-		mm.RuleEngine.GetInEnd(mm.PointId).SetState(typex.DOWN)
-	}
 	config := mm.RuleEngine.GetInEnd(mm.PointId).Config
-	var mainConfig MqttConfig
+	var mainConfig mqttConfig
 
 	if err := utils.BindResourceConfig(config, &mainConfig); err != nil {
 		return err
 	}
 
+	var messageHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
+		mm.RuleEngine.Work(mm.RuleEngine.GetInEnd(mm.PointId), string(msg.Payload()))
+	}
+	//
+	var connectHandler mqtt.OnConnectHandler = func(client mqtt.Client) {
+		log.Infof("Mqtt InEnd Connected Success")
+		client.Subscribe(mainConfig.Topic, 2, nil)
+	}
+
+	var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err error) {
+		log.Warnf("Connect lost: %v, try to reconnect\n", err)
+	}
+
 	opts := mqtt.NewClientOptions()
 	opts.AddBroker(fmt.Sprintf("tcp://%s:%v", mainConfig.Host, mainConfig.Port))
-	if (config)["clientId"] != nil {
-		opts.SetClientID(mainConfig.ClientId)
-	} else {
-		opts.SetClientID(DEFAULT_CLIENT_ID)
-	}
-	if (config)["username"] != nil {
-		opts.SetUsername(mainConfig.Username)
-	} else {
-		opts.SetUsername(DEFAULT_USERNAME)
-	}
-	if (config)["password"] != nil {
-		opts.SetPassword(mainConfig.Password)
-	} else {
-		opts.SetPassword(DEFAULT_PASSWORD)
-	}
+	opts.SetClientID(mainConfig.ClientId)
+	opts.SetUsername(mainConfig.Username)
+	opts.SetPassword(mainConfig.Password)
 	opts.OnConnect = connectHandler
 	opts.OnConnectionLost = connectLostHandler
 	opts.SetDefaultPublishHandler(messageHandler)
 	opts.SetPingTimeout(10 * time.Second)
 	opts.SetAutoReconnect(true)
-	opts.OnReconnecting = func(mqtt.Client, *mqtt.ClientOptions) {
-		log.Warn("Client disconnected, Try to reconnect...")
-	}
+
 	opts.SetMaxReconnectInterval(5 * time.Second)
 	mm.client = mqtt.NewClient(opts)
-	mm.Enable = true
 	if token := mm.client.Connect(); token.Wait() && token.Error() != nil {
 		return token.Error()
 	} else {
@@ -113,7 +84,7 @@ func (m *MqttInEndResource) OnStreamApproached(data string) error {
 }
 func (mm *MqttInEndResource) Stop() {
 	mm.client.Disconnect(0)
-
+	mm = nil
 }
 func (mm *MqttInEndResource) Reload() {
 
@@ -140,7 +111,10 @@ func (mm *MqttInEndResource) Register(inEndId string) error {
 }
 
 func (mm *MqttInEndResource) Test(inEndId string) bool {
-	return mm.client.IsConnected()
+	if mm.client != nil {
+		return mm.client.IsConnected()
+	}
+	return false
 }
 
 func (mm *MqttInEndResource) Enabled() bool {
@@ -148,4 +122,7 @@ func (mm *MqttInEndResource) Enabled() bool {
 }
 func (mm *MqttInEndResource) Details() *typex.InEnd {
 	return mm.RuleEngine.GetInEnd(mm.PointId)
+}
+func (*MqttInEndResource) Driver() typex.XExternalDriver {
+	return nil
 }

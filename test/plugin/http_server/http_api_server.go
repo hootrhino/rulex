@@ -20,67 +20,37 @@ type HttpApiServer struct {
 	Port       int
 	Root       string
 	sqliteDb   *gorm.DB
+	dbPath     string
 	ginEngine  *gin.Engine
 	ruleEngine typex.RuleX
 }
 
-func NewHttpApiServer(port int, root string, e typex.RuleX) *HttpApiServer {
-	return &HttpApiServer{Port: port, Root: root, ruleEngine: e}
-}
-func (hh *HttpApiServer) Load() *typex.XPluginEnv {
-	return typex.NewXPluginEnv()
+func NewHttpApiServer(port int, root string, dbPath string, e typex.RuleX) *HttpApiServer {
+	return &HttpApiServer{Port: port, Root: root, dbPath: dbPath, ruleEngine: e}
 }
 
 //
-func (hh *HttpApiServer) Init(env *typex.XPluginEnv) error {
+func (hh *HttpApiServer) Init() error {
 	gin.SetMode(gin.ReleaseMode)
 	hh.ginEngine = gin.New()
 	hh.ginEngine.Use(Authorize())
 	hh.ginEngine.Use(Cros())
-	hh.InitDb()
-	hh.ginEngine.LoadHTMLFiles(hh.Root+"/login.html", hh.Root+"/view/rulex/index.html")
-	hh.ginEngine.Static("/dashboard/v1/component", hh.Root+"/component")
-	hh.ginEngine.Static("/dashboard/v1/admin", hh.Root+"/admin")
-	hh.ginEngine.Static("/dashboard/v1/view", hh.Root+"/view")
-	hh.ginEngine.Static("/dashboard/v1/config", hh.Root+"/config")
-	hh.ginEngine.Static("/component", hh.Root+"/component")
-	hh.ginEngine.Static("/admin", hh.Root+"/admin")
-	hh.ginEngine.Static("/view", hh.Root+"/view")
-	hh.ginEngine.Static("/config", hh.Root+"/config")
+	if hh.dbPath == "" {
+		hh.InitDb("./rulex.db")
+	} else {
+		hh.InitDb(hh.dbPath)
+	}
 	ctx := context.Background()
 	go func(ctx context.Context, port int) {
 		hh.ginEngine.Run(":" + strconv.Itoa(port))
 	}(ctx, hh.Port)
 	return nil
 }
-func (hh *HttpApiServer) Install(env *typex.XPluginEnv) (*typex.XPluginMetaInfo, error) {
-	return &typex.XPluginMetaInfo{
-		Name:     "HttpApiServer",
-		Version:  "0.0.1",
-		Homepage: "www.ezlinker.cn",
-		HelpLink: "www.ezlinker.cn",
-		Author:   "wwhai",
-		Email:    "cnwwhai@gmail.com",
-		License:  "MIT",
-	}, nil
-}
 
 //
 // HttpApiServer Start
 //
-func (hh *HttpApiServer) Start(env *typex.XPluginEnv) error {
-
-	//
-	// Render dashboard index
-	//
-	hh.ginEngine.GET("/", hh.addRoute(Login))
-	hh.ginEngine.GET(DASHBOARD_ROOT, hh.addRoute(Login))
-	hh.ginEngine.GET(DASHBOARD_ROOT+"login", hh.addRoute(Login))
-	hh.ginEngine.GET(DASHBOARD_ROOT+"index", hh.addRoute(Index))
-	//
-	// List CloudServices
-	//
-	hh.ginEngine.GET(API_ROOT+"cloudServices", hh.addRoute(CloudServices))
+func (hh *HttpApiServer) Start() error {
 
 	//
 	// Get all plugins
@@ -91,9 +61,25 @@ func (hh *HttpApiServer) Start(env *typex.XPluginEnv) error {
 	//
 	hh.ginEngine.GET(API_ROOT+"system", hh.addRoute(System))
 	//
+	//
+	//
+	hh.ginEngine.GET(API_ROOT+"resourceCount", hh.addRoute(ResourceCount))
+	//
+	//
+	//
+	hh.ginEngine.GET(API_ROOT+"logs", hh.addRoute(Logs))
+	//
+	//
+	//
+	hh.ginEngine.GET(API_ROOT+"logOut", hh.addRoute(LogOut))
+	//
 	// Get all inends
 	//
 	hh.ginEngine.GET(API_ROOT+"inends", hh.addRoute(InEnds))
+	//
+	//
+	//
+	hh.ginEngine.GET(API_ROOT+"drivers", hh.addRoute(Drivers))
 	//
 	// Get all outends
 	//
@@ -110,7 +96,14 @@ func (hh *HttpApiServer) Start(env *typex.XPluginEnv) error {
 	// Auth
 	//
 	hh.ginEngine.POST(API_ROOT+"users", hh.addRoute(CreateUser))
-	hh.ginEngine.POST(API_ROOT+"auth", hh.addRoute(Auth))
+	//
+	//
+	//
+	hh.ginEngine.POST(API_ROOT+"login", hh.addRoute(Login))
+	//
+	//
+	//
+	hh.ginEngine.GET(API_ROOT+"info", hh.addRoute(Info))
 	//
 	// Create InEnd
 	//
@@ -140,8 +133,21 @@ func (hh *HttpApiServer) Start(env *typex.XPluginEnv) error {
 	return nil
 }
 
-func (hh *HttpApiServer) Uninstall(env *typex.XPluginEnv) error {
+func (hh *HttpApiServer) Stop() error {
 	return nil
 }
-func (hh *HttpApiServer) Clean() {
+
+func (hh *HttpApiServer) Db() *gorm.DB {
+	return hh.sqliteDb
+}
+func (hh *HttpApiServer) XPluginMetaInfo() typex.XPluginMetaInfo {
+	return typex.XPluginMetaInfo{
+		Name:     "Http Api Server",
+		Version:  "0.0.1",
+		Homepage: "www.ezlinker.cn",
+		HelpLink: "www.ezlinker.cn",
+		Author:   "wwhai",
+		Email:    "cnwwhai@gmail.com",
+		License:  "MIT",
+	}
 }

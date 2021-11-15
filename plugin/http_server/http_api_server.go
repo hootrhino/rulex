@@ -28,9 +28,6 @@ type HttpApiServer struct {
 func NewHttpApiServer(port int, root string, dbPath string, e typex.RuleX) *HttpApiServer {
 	return &HttpApiServer{Port: port, Root: root, dbPath: dbPath, ruleEngine: e}
 }
-func (hh *HttpApiServer) Load() *typex.XPluginEnv {
-	return typex.NewXPluginEnv()
-}
 
 //
 func (hh *HttpApiServer) Init() error {

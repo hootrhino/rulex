@@ -3,12 +3,19 @@ package target
 import (
 	"context"
 	"rulex/typex"
+	"rulex/utils"
 
 	"github.com/ngaut/log"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
+
+type mongoConfig struct {
+	MongoUrl   string `json:"mongoUrl" validate:"required"`
+	Database   string `json:"satabase" validate:"required"`
+	Collection string `json:"collection" validate:"required"`
+}
 
 //
 type MongoTarget struct {
@@ -32,26 +39,16 @@ func (m *MongoTarget) Register(outEndId string) error {
 
 func (m *MongoTarget) Start() error {
 	config := m.RuleEngine.GetOutEnd(m.PointId).Config
-	var clientOptions *options.ClientOptions
-	if (config)["mongourl"] != nil {
-		clientOptions = options.Client().ApplyURI((config)["mongourl"].(string))
-	} else {
-		clientOptions = options.Client().ApplyURI("mongodb://localhost:27017")
+	var mainConfig mongoConfig
+	if err := utils.BindResourceConfig(config, &mainConfig); err != nil {
+		return err
 	}
+	clientOptions := options.Client().ApplyURI(mainConfig.MongoUrl)
 	client, err0 := mongo.Connect(context.Background(), clientOptions)
 	if err0 != nil {
 		return err0
 	}
-
-	if (config)["database"] != nil {
-		if (config)["collection"] != nil {
-			m.collection = client.Database((config)["database"].(string)).Collection((config)["collection"].(string))
-		} else {
-			m.collection = client.Database((config)["mongourl"].(string)).Collection("rulex_data")
-		}
-	} else {
-		m.collection = client.Database("rulex").Collection("rulex_data")
-	}
+	m.collection = client.Database(mainConfig.Database).Collection(mainConfig.Collection)
 	m.client = client
 	m.Enable = true
 	log.Info("MongoTarget connect successfully")
@@ -60,13 +57,17 @@ func (m *MongoTarget) Start() error {
 }
 
 func (m *MongoTarget) Test(outEndId string) bool {
-	err1 := m.client.Ping(context.Background(), nil)
-	if err1 != nil {
-		log.Error(err1)
-		return false
-	} else {
-		return true
+	if m.client != nil {
+		err1 := m.client.Ping(context.Background(), nil)
+		if err1 != nil {
+			log.Error(err1)
+			return false
+		} else {
+			return true
+		}
 	}
+	return false
+
 }
 
 func (m *MongoTarget) Enabled() bool {
@@ -94,6 +95,7 @@ func (m *MongoTarget) Status() typex.ResourceState {
 }
 
 func (m *MongoTarget) Stop() {
+	m.client.Disconnect(context.Background())
 	log.Info("Mongotarget Stop success")
 }
 

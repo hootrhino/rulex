@@ -6,15 +6,16 @@ import (
 	"rulex/utils"
 
 	"github.com/gin-gonic/gin"
+	"github.com/ngaut/log"
 	"gopkg.in/square/go-jose.v2/json"
 )
 
 //
-// Get all outends
+// Get all inends
 //
-func OutEnds(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+func InEnds(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	data := []interface{}{}
-	for _, v := range e.AllOutEnd() {
+	for _, v := range e.AllInEnd() {
 		data = append(data, v)
 	}
 	c.JSON(http.StatusOK, Result{
@@ -25,27 +26,9 @@ func OutEnds(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 }
 
 //
-// Delete outend by UUID
+// Create InEnd
 //
-func DeleteOutend(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
-	uuid, _ := c.GetQuery("uuid")
-	_, err := hh.GetMOutEnd(uuid)
-	if err != nil {
-		c.JSON(200, gin.H{"msg": err.Error()})
-	} else {
-		if err := hh.DeleteMOutEnd(uuid); err != nil {
-			e.RemoveOutEnd(uuid)
-			c.JSON(200, gin.H{"msg": err.Error()})
-		} else {
-			c.JSON(http.StatusOK, gin.H{"msg": "remove success"})
-		}
-	}
-}
-
-//
-// Create OutEnd
-//
-func CreateOutEnd(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+func CreateInend(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	type Form struct {
 		Type        string                 `json:"type" binding:"required"`
 		Name        string                 `json:"name" binding:"required"`
@@ -54,8 +37,8 @@ func CreateOutEnd(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	}
 	form := Form{}
 
-	if err0 := c.ShouldBindJSON(&form); err0 != nil {
-		c.JSON(200, Error400(err0))
+	if err := c.ShouldBindJSON(&form); err != nil {
+		c.JSON(200, Error400(err))
 		return
 	}
 	configJson, err1 := json.Marshal(form.Config)
@@ -63,24 +46,40 @@ func CreateOutEnd(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		c.JSON(200, Error400(err1))
 		return
 	}
-	uuid := utils.OutUuid()
-	if err := hh.InsertMOutEnd(&MOutEnd{
+	uuid := utils.MakeUUID("INEND")
+	hh.InsertMInEnd(&MInEnd{
 		UUID:        uuid,
 		Type:        form.Type,
 		Name:        form.Name,
 		Description: form.Description,
 		Config:      string(configJson),
-	}); err != nil {
-		c.JSON(200, Error400(err))
-		return
-	}
-
-	if err := hh.LoadNewestOutEnd(uuid); err != nil {
+	})
+	if err := hh.LoadNewestInEnd(uuid); err != nil {
+		log.Error(err)
 		c.JSON(200, Error400(err))
 		return
 	} else {
-		c.JSON(200, Ok())
+		c.JSON(http.StatusOK, Ok())
 		return
+	}
+
+}
+
+//
+// Delete inend by UUID
+//
+func DeleteInend(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+	uuid, _ := c.GetQuery("uuid")
+	_, err := hh.GetMInEnd(uuid)
+	if err != nil {
+		c.JSON(200, Error400(err))
+		return
+	}
+	if err := hh.DeleteMInEnd(uuid); err != nil {
+		c.JSON(200, Error400(err))
+	} else {
+		e.RemoveInEnd(uuid)
+		c.JSON(200, Ok())
 	}
 
 }

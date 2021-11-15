@@ -11,10 +11,28 @@ import (
 
 // Http Return
 type R struct {
-	Code int
-	Msg  string
+	Code int    `json:"code" binding:"required"`
+	Msg  string `json:"msg" binding:"required"`
 }
 
+//
+//
+//
+type Result struct {
+	Code int         `json:"code"`
+	Msg  string      `json:"msg"`
+	Data interface{} `json:"data"`
+}
+
+func Ok() R {
+	return R{200, "操作成功"}
+}
+func Error400(e error) R {
+	return R{4001, e.Error()}
+}
+func Error500(e error) R {
+	return R{5001, e.Error()}
+}
 func Authorize() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := c.Query("token")
@@ -41,6 +59,7 @@ func Cros() gin.HandlerFunc {
 
 //
 func cros(c *gin.Context) {
+	c.Header("Cache-Control", "private, max-age=10")
 	method := c.Request.Method
 	origin := c.Request.Header.Get("Origin")
 	if origin != "" {
@@ -74,20 +93,20 @@ func (h *HttpApiServer) addRoute(f func(*gin.Context, *HttpApiServer, typex.Rule
 func (hh *HttpApiServer) LoadNewestInEnd(uuid string) error {
 	mInEnd, _ := hh.GetMInEndWithUUID(uuid)
 	config := map[string]interface{}{}
-	if err := json.Unmarshal([]byte(mInEnd.Config), &config); err != nil {
-		log.Error(err)
-		return err
-	} else {
-		in := typex.NewInEnd(mInEnd.Type, mInEnd.Name, mInEnd.Description, config)
-		// Important !!!!!!!! in.Id = mInEnd.UUID
-		in.Id = mInEnd.UUID
-		if err := hh.ruleEngine.LoadInEnd(in); err != nil {
-			log.Error(err)
-			return err
-		} else {
-			return nil
-		}
+	if err1 := json.Unmarshal([]byte(mInEnd.Config), &config); err1 != nil {
+		log.Error(err1)
+		return err1
 	}
+	in := typex.NewInEnd(mInEnd.Type, mInEnd.Name, mInEnd.Description, config)
+	// Important !!!!!!!! in.Id = mInEnd.UUID
+	in.UUID = mInEnd.UUID
+	if err2 := hh.ruleEngine.LoadInEnd(in); err2 != nil {
+		log.Error(err2)
+		return err2
+	} else {
+		return nil
+	}
+
 }
 
 //
@@ -101,7 +120,7 @@ func (hh *HttpApiServer) LoadNewestOutEnd(uuid string) error {
 	} else {
 		out := typex.NewOutEnd(mOutEnd.Type, mOutEnd.Name, mOutEnd.Description, config)
 		// Important !!!!!!!!
-		out.Id = mOutEnd.UUID
+		out.UUID = mOutEnd.UUID
 		if err := hh.ruleEngine.LoadOutEnd(out); err != nil {
 			return err
 		} else {

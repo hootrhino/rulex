@@ -53,34 +53,32 @@ func CreateOutEnd(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		Config      map[string]interface{} `json:"config" binding:"required"`
 	}
 	form := Form{}
-
-	if err0 := c.ShouldBindJSON(&form); err0 != nil {
-		c.JSON(200, Error400(err0))
-		return
-	}
-	configJson, err1 := json.Marshal(form.Config)
-	if err1 != nil {
-		c.JSON(200, Error400(err1))
-		return
-	}
-	uuid := utils.OutUuid()
-	if err := hh.InsertMOutEnd(&MOutEnd{
-		UUID:        uuid,
-		Type:        form.Type,
-		Name:        form.Name,
-		Description: form.Description,
-		Config:      string(configJson),
-	}); err != nil {
-		c.JSON(200, Error400(err))
-		return
-	}
-
-	if err := hh.LoadNewestOutEnd(uuid); err != nil {
-		c.JSON(200, Error400(err))
+	err0 := c.ShouldBindJSON(&form)
+	if err0 != nil {
+		c.JSON(200, gin.H{"msg": err0.Error()})
 		return
 	} else {
-		c.JSON(200, Ok())
-		return
+		configJson, err1 := json.Marshal(form.Config)
+		if err1 != nil {
+			c.JSON(200, gin.H{"msg": err1.Error()})
+			return
+		} else {
+			uuid := utils.MakeUUID("OUTEND")
+			hh.InsertMOutEnd(&MOutEnd{
+				UUID:        uuid,
+				Type:        form.Type,
+				Name:        form.Name,
+				Description: form.Description,
+				Config:      string(configJson),
+			})
+			err := hh.LoadNewestOutEnd(uuid)
+			if err != nil {
+				c.JSON(200, Error400(err))
+				return
+			} else {
+				c.JSON(200, Ok())
+				return
+			}
+		}
 	}
-
 }

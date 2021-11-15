@@ -124,13 +124,6 @@ type XStatus struct {
 }
 
 //
-// External Plugin
-//
-type XPluginEnv struct {
-	env map[string]interface{}
-}
-
-//
 type XPluginMetaInfo struct {
 	Name     string `json:"name"`
 	Version  string `json:"version"`
@@ -139,28 +132,6 @@ type XPluginMetaInfo struct {
 	Author   string `json:"author"`
 	Email    string `json:"email"`
 	License  string `json:"license"`
-}
-
-//
-func NewXPluginMetaInfo() *XPluginMetaInfo {
-	return &XPluginMetaInfo{}
-}
-
-//
-func NewXPluginEnv() *XPluginEnv {
-	return &XPluginEnv{
-		env: map[string]interface{}{},
-	}
-}
-
-//
-func (p *XPluginEnv) Get(k string) interface{} {
-	return (p.env)[k]
-}
-
-//
-func (p *XPluginEnv) Set(k string, v interface{}) {
-	(p.env)[k] = v
 }
 
 // GoPlugins support
@@ -202,9 +173,9 @@ type XProtocol interface {
 // 2. MODBUS TCP模式外挂了很多继电器,来自云端的 PLC 控制指令先到网关，然后网关决定推送到哪个外挂
 //
 type DriverDetail struct {
-	Name        string
-	Type        string
-	Description string
+	Name        string `json:"name" binding:"required"`
+	Type        string `json:"type" binding:"required"`
+	Description string `json:"description" binding:"required"`
 }
 type XExternalDriver interface {
 	Test() error

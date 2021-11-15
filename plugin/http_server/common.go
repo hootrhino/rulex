@@ -117,14 +117,14 @@ func (hh *HttpApiServer) LoadNewestOutEnd(uuid string) error {
 	config := map[string]interface{}{}
 	if err := json.Unmarshal([]byte(mOutEnd.Config), &config); err != nil {
 		return err
-	} else {
-		out := typex.NewOutEnd(mOutEnd.Type, mOutEnd.Name, mOutEnd.Description, config)
-		// Important !!!!!!!!
-		out.UUID = mOutEnd.UUID
-		if err := hh.ruleEngine.LoadOutEnd(out); err != nil {
-			return err
-		} else {
-			return nil
-		}
 	}
+	out := typex.NewOutEnd(mOutEnd.Type, mOutEnd.Name, mOutEnd.Description, config)
+	// Important !!!!!!!!
+	out.UUID = mOutEnd.UUID
+	if err := hh.ruleEngine.LoadOutEnd(out); err != nil {
+		return err
+	} else {
+		return nil
+	}
+
 }

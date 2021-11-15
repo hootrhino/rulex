@@ -10,13 +10,15 @@ import (
 //
 type OutEnd struct {
 	sync.Mutex
-	UUID        string                 `json:"uuid"`
-	Type        TargetType             `json:"type"`
-	State       ResourceState          `json:"state"`
-	Name        string                 `json:"name"`
-	Description string                 `json:"description"`
-	Config      map[string]interface{} `json:"config"`
-	Target      XTarget                `json:"-"`
+	//
+	UUID        string        `json:"uuid"`
+	State       ResourceState `json:"state"`
+	Type        TargetType    `json:"type"`
+	Name        string        `json:"name"`
+	Description string        `json:"description"`
+	//
+	Config map[string]interface{} `json:"config"`
+	Target XTarget                `json:"-"`
 }
 
 func (o *OutEnd) GetState() ResourceState {

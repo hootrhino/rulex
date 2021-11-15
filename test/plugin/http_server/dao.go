@@ -1,129 +1,136 @@
 package httpserver
 
 import (
+	"os"
+
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/ngaut/log"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
-func (hh *HttpApiServer) InitDb() {
+func (s *HttpApiServer) InitDb(dbPath string) {
 	var err error
-	hh.sqliteDb, err = gorm.Open(sqlite.Open("./rulex.db"))
+	s.sqliteDb, err = gorm.Open(sqlite.Open(dbPath), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Error),
+	})
 	if err != nil {
-		panic(err)
+		log.Error(err)
+		os.Exit(1)
 	}
-	hh.sqliteDb.AutoMigrate(&MInEnd{})
-	hh.sqliteDb.AutoMigrate(&MRule{})
-	hh.sqliteDb.AutoMigrate(&MOutEnd{})
-	hh.sqliteDb.AutoMigrate(&MUser{})
+	s.sqliteDb.AutoMigrate(&MInEnd{})
+	s.sqliteDb.AutoMigrate(&MRule{})
+	s.sqliteDb.AutoMigrate(&MOutEnd{})
+	s.sqliteDb.AutoMigrate(&MUser{})
+	s.sqliteDb.AutoMigrate(&MLock{})
 }
 
 //-----------------------------------------------------------------------------------
-func (hh *HttpApiServer) GetMRule(id int) (*MRule, error) {
+func (s *HttpApiServer) GetMRule(uuid string) (*MRule, error) {
 	m := new(MRule)
-	if err := hh.sqliteDb.Where("Id=?", id).First(m).Error; err != nil {
+	if err := s.sqliteDb.Where("uuid=?", uuid).First(m).Error; err != nil {
 		return nil, err
 	} else {
 		return m, nil
 	}
 }
 
-func (hh *HttpApiServer) GetMRuleWithUUID(uuid string) (*MRule, error) {
+func (s *HttpApiServer) GetMRuleWithUUID(uuid string) (*MRule, error) {
 	m := new(MRule)
-	if err := hh.sqliteDb.Where("UUID=?", uuid).First(m).Error; err != nil {
+	if err := s.sqliteDb.Where("uuid=?", uuid).First(m).Error; err != nil {
 		return nil, err
 	} else {
 		return m, nil
 	}
 }
 
-func (hh *HttpApiServer) InsertMRule(r *MRule) {
-	hh.sqliteDb.Table("m_rules").Create(r)
+func (s *HttpApiServer) InsertMRule(r *MRule) error {
+	return s.sqliteDb.Table("m_rules").Create(r).Error
 }
 
-func (hh *HttpApiServer) DeleteMRule(uuid string) {
-	hh.sqliteDb.Where("UUID=?", uuid).Unscoped().Delete(&MRule{})
+func (s *HttpApiServer) DeleteMRule(uuid string) error {
+	return s.sqliteDb.Table("m_rules").Where("uuid=?", uuid).Delete(&MRule{}).Error
 }
 
-func (hh *HttpApiServer) UpdateMRule(id int, r *MRule) error {
+func (s *HttpApiServer) UpdateMRule(uuid string, r *MRule) error {
 	m := MRule{}
-	if err := hh.sqliteDb.Where("Id=?", id).First(&m).Error; err != nil {
+	if err := s.sqliteDb.Where("uuid=?", uuid).First(&m).Error; err != nil {
 		return err
 	} else {
-		hh.sqliteDb.Model(m).Updates(*r)
+		s.sqliteDb.Model(m).Updates(*r)
 		return nil
 	}
 }
 
 //-----------------------------------------------------------------------------------
-func (hh *HttpApiServer) GetMInEnd(id int) (*MInEnd, error) {
+func (s *HttpApiServer) GetMInEnd(uuid string) (*MInEnd, error) {
 	m := new(MInEnd)
-	if err := hh.sqliteDb.Table("m_in_ends").Where("Id=?", id).First(m).Error; err != nil {
+	if err := s.sqliteDb.Table("m_in_ends").Where("uuid=?", uuid).First(m).Error; err != nil {
 		return nil, err
 	} else {
 		return m, nil
 	}
 }
-func (hh *HttpApiServer) GetMInEndWithUUID(uuid string) (*MInEnd, error) {
+func (s *HttpApiServer) GetMInEndWithUUID(uuid string) (*MInEnd, error) {
 	m := new(MInEnd)
-	if err := hh.sqliteDb.Table("m_in_ends").Where("UUID=?", uuid).First(m).Error; err != nil {
+	if err := s.sqliteDb.Table("m_in_ends").Where("uuid=?", uuid).First(m).Error; err != nil {
 		return nil, err
 	} else {
 		return m, nil
 	}
 }
 
-func (hh *HttpApiServer) InsertMInEnd(i *MInEnd) {
-	hh.sqliteDb.Table("m_in_ends").Create(i)
+func (s *HttpApiServer) InsertMInEnd(i *MInEnd) {
+	s.sqliteDb.Table("m_in_ends").Create(i)
 }
 
-func (hh *HttpApiServer) DeleteMInEnd(uuid string) {
-	hh.sqliteDb.Where("UUID=?", uuid).Unscoped().Delete(&MInEnd{})
+func (s *HttpApiServer) DeleteMInEnd(uuid string) error {
+	return s.sqliteDb.Where("uuid=?", uuid).Delete(&MInEnd{}).Error
 }
 
-func (hh *HttpApiServer) UpdateMInEnd(id int, i *MInEnd) error {
+func (s *HttpApiServer) UpdateMInEnd(uuid string, i *MInEnd) error {
 	m := MInEnd{}
-	if err := hh.sqliteDb.Where("Id=?", id).First(&m).Error; err != nil {
+	if err := s.sqliteDb.Where("uuid=?", uuid).First(&m).Error; err != nil {
 		return err
 	} else {
-		hh.sqliteDb.Model(m).Updates(*i)
+		s.sqliteDb.Model(m).Updates(*i)
 		return nil
 	}
 }
 
 //-----------------------------------------------------------------------------------
-func (hh *HttpApiServer) GetMOutEnd(id int) (*MOutEnd, error) {
+func (s *HttpApiServer) GetMOutEnd(id string) (*MOutEnd, error) {
 	m := new(MOutEnd)
-	if err := hh.sqliteDb.Where("Id=?", id).First(m).Error; err != nil {
+	if err := s.sqliteDb.First(m).Error; err != nil {
 		return nil, err
 	} else {
 		return m, nil
 	}
 }
-func (hh *HttpApiServer) GetMOutEndWithUUID(uuid string) (*MOutEnd, error) {
+func (s *HttpApiServer) GetMOutEndWithUUID(uuid string) (*MOutEnd, error) {
 	m := new(MOutEnd)
-	if err := hh.sqliteDb.Where("UUID=?", uuid).First(m).Error; err != nil {
+	if err := s.sqliteDb.Where("uuid=?", uuid).First(m).Error; err != nil {
 		return nil, err
 	} else {
 		return m, nil
 	}
 }
 
-func (hh *HttpApiServer) InsertMOutEnd(o *MOutEnd) {
-	hh.sqliteDb.Table("m_out_ends").Create(o)
+func (s *HttpApiServer) InsertMOutEnd(o *MOutEnd) {
+	s.sqliteDb.Table("m_out_ends").Create(o)
 }
 
-func (hh *HttpApiServer) DeleteMOutEnd(uuid string) {
-	hh.sqliteDb.Where("UUID=?", uuid).Unscoped().Delete(&MOutEnd{})
+func (s *HttpApiServer) DeleteMOutEnd(uuid string) error {
+	return s.sqliteDb.Where("uuid=?", uuid).Delete(&MOutEnd{}).Error
 }
 
-func (hh *HttpApiServer) UpdateMOutEnd(id int, o *MOutEnd) error {
+func (s *HttpApiServer) UpdateMOutEnd(uuid string, o *MOutEnd) error {
 	m := MOutEnd{}
-	if err := hh.sqliteDb.Where("Id=?", id).First(&m).Error; err != nil {
+	if err := s.sqliteDb.Where("uuid=?", uuid).First(&m).Error; err != nil {
 		return err
 	} else {
-		hh.sqliteDb.Model(m).Updates(*o)
+		s.sqliteDb.Model(m).Updates(*o)
 		return nil
 	}
 }
@@ -131,60 +138,50 @@ func (hh *HttpApiServer) UpdateMOutEnd(id int, o *MOutEnd) error {
 //-----------------------------------------------------------------------------------
 
 //-----------------------------------------------------------------------------------
-func (hh *HttpApiServer) GetMUser(username string, password string) (*MUser, error) {
+func (s *HttpApiServer) GetMUser(username string, password string) (*MUser, error) {
 	m := new(MUser)
-	if err := hh.sqliteDb.Where("Username=?", username).Where("Password=?", password).First(m).Error; err != nil {
+	if err := s.sqliteDb.Where("Username=?", username).Where("Password=?", password).First(m).Error; err != nil {
 		return nil, err
 	} else {
 		return m, nil
 	}
 }
 
-func (hh *HttpApiServer) InsertMUser(o *MUser) {
-	hh.sqliteDb.Table("m_users").Create(o)
+func (s *HttpApiServer) InsertMUser(o *MUser) {
+	s.sqliteDb.Table("m_users").Create(o)
 }
 
-func (hh *HttpApiServer) UpdateMUser(id int, o *MUser) error {
+func (s *HttpApiServer) UpdateMUser(uuid string, o *MUser) error {
 	m := MUser{}
-	if err := hh.sqliteDb.Where("Id=?", id).First(&m).Error; err != nil {
+	if err := s.sqliteDb.Where("uuid=?", uuid).First(&m).Error; err != nil {
 		return err
 	} else {
-		hh.sqliteDb.Model(m).Updates(*o)
+		s.sqliteDb.Model(m).Updates(*o)
 		return nil
 	}
 }
 
 //-----------------------------------------------------------------------------------
-func (hh *HttpApiServer) AllMRules() []MRule {
+func (s *HttpApiServer) AllMRules() []MRule {
 	rules := []MRule{}
-	hh.sqliteDb.Find(&rules)
+	s.sqliteDb.Table("m_rules").Find(&rules)
 	return rules
 }
 
-func (hh *HttpApiServer) AllMInEnd() []MInEnd {
+func (s *HttpApiServer) AllMInEnd() []MInEnd {
 	inends := []MInEnd{}
-	hh.sqliteDb.Table("m_in_ends").Find(&inends)
+	s.sqliteDb.Table("m_in_ends").Find(&inends)
 	return inends
 }
 
-func (hh *HttpApiServer) AllMOutEnd() []MOutEnd {
+func (s *HttpApiServer) AllMOutEnd() []MOutEnd {
 	outends := []MOutEnd{}
-	hh.sqliteDb.Find(&outends)
+	s.sqliteDb.Find(&outends)
 	return outends
 }
 
-func (hh *HttpApiServer) AllMUser() []MUser {
+func (s *HttpApiServer) AllMUser() []MUser {
 	users := []MUser{}
-	hh.sqliteDb.Find(&users)
+	s.sqliteDb.Find(&users)
 	return users
-}
-
-//-----------------------------------------------------------------------------------
-func (hh *HttpApiServer) Truncate() error {
-	log.Warn("This operation will truncate table. So ONLY for test or debug!!")
-	hh.sqliteDb.Unscoped().Where("1 = 1").Delete(&MUser{})
-	hh.sqliteDb.Unscoped().Where("1 = 1").Delete(&MInEnd{})
-	hh.sqliteDb.Unscoped().Where("1 = 1").Delete(&MOutEnd{})
-	hh.sqliteDb.Unscoped().Where("1 = 1").Delete(&MRule{})
-	return nil
 }

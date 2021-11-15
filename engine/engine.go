@@ -334,50 +334,57 @@ func tryCreateOutEnd(out *typex.OutEnd, e typex.RuleX) error {
 // Register -> Start -> Test
 //
 func startTarget(target typex.XTarget, out *typex.OutEnd, e typex.RuleX) error {
-	// Important!!! Must save outend first
+	//
+	// 先注册，如果出问题了直接删除就行
+	//
 	e.SaveOutEnd(out)
-	out.Target = target
-	// Register outend to target
+	// 首先把资源ID给注册进去, 作为资源的全局索引
 	if err := target.Register(out.UUID); err != nil {
 		log.Error(err)
+		e.RemoveInEnd(out.UUID)
 		return err
-	} else {
-		//
-		if err1 := target.Start(); err1 != nil {
-			log.Error(err1)
-		}
-		go func(ctx context.Context) {
-			// 5 seconds
-			ticker := time.NewTicker(time.Duration(time.Second * 5))
-			for {
-				select {
-				case <-ctx.Done():
-					{
-						return
-					}
-				case <-ticker.C:
-					if target.Status() == typex.DOWN {
-						checkTargetState(target, e, out.UUID)
-					}
-				default:
-					{
-					}
-				}
-			}
-		}(context.Background())
-		return nil
 	}
+	// 然后启动资源
+	if err := target.Start(); err != nil {
+		log.Error(err)
+		e.RemoveInEnd(out.UUID)
+		return err
+	}
+	// Set resources to inend
+	out.Target = target
+	go func(ctx context.Context) {
+		// 5 seconds
+		ticker := time.NewTicker(time.Duration(time.Second * 5))
+		for {
+			//
+			<-ticker.C
+			{
+				if target.Details() == nil {
+					return
+				}
+				tryIfRestartTarget(target, e, out.UUID)
+
+			}
+		}
+
+	}(context.Background())
+	log.Infof("Target [%v, %v] load successfully", out.Name, out.UUID)
+	return nil
 }
 
-// Test Target State
-func checkTargetState(target typex.XTarget, e typex.RuleX, id string) {
+//
+// 监测状态，如果挂了重启
+//
+func tryIfRestartTarget(target typex.XTarget, e typex.RuleX, id string) {
 	if target.Status() == typex.DOWN {
-		// 当资源挂了以后先给停止, 然后重启
+		target.Details().SetState(typex.DOWN)
 		log.Warnf("Target [%v, %v] down. try to restart it", target.Details().Name, target.Details().UUID)
 		target.Stop()
 		runtime.Gosched()
 		runtime.GC()
 		target.Start()
+	} else {
+		target.Details().SetState(typex.UP)
 	}
 }
 

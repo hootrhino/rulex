@@ -117,8 +117,8 @@ func (s *HttpApiServer) GetMOutEndWithUUID(uuid string) (*MOutEnd, error) {
 	}
 }
 
-func (s *HttpApiServer) InsertMOutEnd(o *MOutEnd) {
-	s.sqliteDb.Table("m_out_ends").Create(o)
+func (s *HttpApiServer) InsertMOutEnd(o *MOutEnd) error {
+	return s.sqliteDb.Table("m_out_ends").Create(o).Error
 }
 
 func (s *HttpApiServer) DeleteMOutEnd(uuid string) error {

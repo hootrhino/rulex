@@ -1,21 +1,253 @@
-openapi: "3.0.2"
-info:
-  title: RuleX 开放接口
-  description: "RuleX HTTP API 开放接口，主要用于对RuleX的基础管理"
-  version: "0.0.1"
-servers:
-  - url: https://127.0.0.1/api/v1
-paths:
-  /system:
-    get:
-      tags:
-        - "获取系统参数"
-      responses:
-        "200":
-          description: "获取系统参数"
-          content:
-            application/json:
-              example:
-                k: 1
-                v: 1
-
+{
+  "openapi": "3.0.1",
+  "info": { "title": "RulexAPI", "version": "0.1.1" },
+  "paths":
+    {
+      "/api/v1/inends":
+        {
+          "post":
+            {
+              "summary": "创建输入资源",
+              "description": "",
+              "tags": ["RulexAPI"],
+              "parameters": [],
+              "requestBody":
+                {
+                  "content":
+                    {
+                      "application/json":
+                        {
+                          "schema": { "type": "object", "properties": {} },
+                          "example":
+                            {
+                              "name": "LoraATKModule",
+                              "type": "LoraATK",
+                              "config":
+                                {
+                                  "name": "/dev/pts/0",
+                                  "baud": 115200,
+                                  "readTimeout": "test",
+                                  "size": 8,
+                                  "parity": "N",
+                                  "stopbits": 1,
+                                },
+                              "description": "Lora ATK Module",
+                            },
+                        },
+                    },
+                },
+              "responses":
+                {
+                  "200":
+                    {
+                      "description": "成功",
+                      "content":
+                        {
+                          "application/json":
+                            {
+                              "schema": { "type": "object", "properties": {} },
+                              "examples": {},
+                            },
+                        },
+                    },
+                },
+            },
+          "get":
+            {
+              "summary": "获取输入资源",
+              "description": "",
+              "tags": ["RulexAPI"],
+              "parameters": [],
+              "responses":
+                {
+                  "200":
+                    {
+                      "description": "成功",
+                      "content":
+                        {
+                          "application/json":
+                            {
+                              "schema": { "type": "object", "properties": {} },
+                              "examples": {},
+                            },
+                        },
+                    },
+                },
+            },
+        },
+      "/api/v1/auth":
+        {
+          "post":
+            {
+              "summary": "用户认证",
+              "description": "",
+              "tags": ["RulexAPI"],
+              "parameters": [],
+              "requestBody":
+                {
+                  "content":
+                    {
+                      "application/json":
+                        {
+                          "schema": { "type": "object", "properties": {} },
+                          "example":
+                            { "username": "rulex", "password": "rulex" },
+                        },
+                    },
+                },
+              "responses":
+                {
+                  "200":
+                    {
+                      "description": "成功",
+                      "content":
+                        {
+                          "application/json":
+                            {
+                              "schema": { "type": "object", "properties": {} },
+                              "examples": {},
+                            },
+                        },
+                    },
+                },
+            },
+        },
+      "/api/v1/outends":
+        {
+          "get":
+            {
+              "summary": "获取输出资源",
+              "description": "",
+              "tags": ["RulexAPI"],
+              "parameters": [],
+              "responses":
+                {
+                  "200":
+                    {
+                      "description": "成功",
+                      "content":
+                        {
+                          "application/json":
+                            {
+                              "schema": { "type": "object", "properties": {} },
+                              "examples": {},
+                            },
+                        },
+                    },
+                },
+            },
+          "post":
+            {
+              "summary": "创建输出资源",
+              "description": "",
+              "tags": ["RulexAPI"],
+              "parameters": [],
+              "requestBody":
+                {
+                  "content":
+                    {
+                      "application/json":
+                        {
+                          "schema": { "type": "object", "properties": {} },
+                          "example":
+                            {
+                              "type": "mongo",
+                              "name": "Atlas test mongo-db",
+                              "description": "Atlas test mongo-db",
+                              "config":
+                                {
+                                  "mongourl": "mongodb://root:root@172.21.109.147:57017/rulextest?authSource=admin",
+                                },
+                            },
+                        },
+                    },
+                },
+              "responses":
+                {
+                  "200":
+                    {
+                      "description": "成功",
+                      "content":
+                        {
+                          "application/json":
+                            {
+                              "schema": { "type": "object", "properties": {} },
+                              "examples": {},
+                            },
+                        },
+                    },
+                },
+            },
+        },
+      "/api/v1/system":
+        {
+          "get":
+            {
+              "summary": "获取系统信息",
+              "description": "",
+              "tags": ["RulexAPI"],
+              "parameters": [],
+              "responses":
+                {
+                  "200":
+                    {
+                      "description": "成功",
+                      "content":
+                        {
+                          "application/json":
+                            {
+                              "schema": { "type": "object", "properties": {} },
+                              "examples": {},
+                            },
+                        },
+                    },
+                },
+            },
+        },
+      "/api/v1/rules":
+        {
+          "post":
+            {
+              "summary": "创建规则脚本",
+              "description": "",
+              "tags": ["RulexAPI"],
+              "parameters": [],
+              "requestBody":
+                {
+                  "content":
+                    {
+                      "application/json":
+                        {
+                          "schema": { "type": "object", "properties": {} },
+                          "example":
+                            {
+                              "actions": "\n\t\t\t\t\tlocal json = require(\"json\")\n\t\t\t\t\tActions = {\n\t\t\t\t\t\tfunction(data)\n\t\t\t\t\t\t\tlocal s = '{\"temp\":100,\"hum\":30, \"co2\":123.4, \"lex\":22.56}'\n\t\t\t\t\t\t\tprint(s == data)\n\t\t\t\t\t\t\tDataToMongo(\"m_Out_id_1.UUID\", s)\n\t\t\t\t\t\t\treturn true, data\n\t\t\t\t\t\tend\n\t\t\t\t\t}",
+                              "description": "just_a_test",
+                              "failed": "\n\t\t\t   function Failed(error)\n\t\t\t   print(\"call error:\",error)\n\t\t\t   end",
+                              "from": "INEND_38c149d1-b110-481d-a7ee-bdc395259d97",
+                              "name": "just_a_test",
+                              "success": "\n\t\t\t   function Success()\n\t\t\t   print(\"call success\")\n\t\t\t   end",
+                            },
+                        },
+                    },
+                },
+              "responses":
+                {
+                  "200":
+                    {
+                      "description": "成功",
+                      "content":
+                        {
+                          "application/json":
+                            {
+                              "schema": { "type": "object", "properties": {} },
+                              "examples": {},
+                            },
+                        },
+                    },
+                },
+            },
+        },
+    },
+  "components": { "schemas": {} },
+}
