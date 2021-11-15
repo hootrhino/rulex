@@ -87,8 +87,7 @@ func (hh *HttpApiServer) Start() error {
 	// Auth
 	//
 	hh.ginEngine.POST(API_ROOT+"users", hh.addRoute(CreateUser))
-	hh.ginEngine.POST(API_ROOT+"auth", hh.addRoute(Auth))
-	hh.ginEngine.POST(API_ROOT+"login", hh.addRoute(Auth))
+	hh.ginEngine.POST(API_ROOT+"login", hh.addRoute(Login))
 	hh.ginEngine.GET(API_ROOT+"info", hh.addRoute(Info))
 	//
 	// Create InEnd
