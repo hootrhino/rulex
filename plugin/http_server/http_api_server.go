@@ -63,13 +63,25 @@ func (hh *HttpApiServer) Start() error {
 	// Get system infomation
 	//
 	hh.ginEngine.GET(API_ROOT+"system", hh.addRoute(System))
+	//
+	//
+	//
 	hh.ginEngine.GET(API_ROOT+"resourceCount", hh.addRoute(ResourceCount))
+	//
+	//
+	//
 	hh.ginEngine.GET(API_ROOT+"logs", hh.addRoute(Logs))
+	//
+	//
+	//
 	hh.ginEngine.GET(API_ROOT+"logOut", hh.addRoute(LogOut))
 	//
 	// Get all inends
 	//
 	hh.ginEngine.GET(API_ROOT+"inends", hh.addRoute(InEnds))
+	//
+	//
+	//
 	hh.ginEngine.GET(API_ROOT+"drivers", hh.addRoute(Drivers))
 	//
 	// Get all outends
@@ -87,7 +99,13 @@ func (hh *HttpApiServer) Start() error {
 	// Auth
 	//
 	hh.ginEngine.POST(API_ROOT+"users", hh.addRoute(CreateUser))
+	//
+	//
+	//
 	hh.ginEngine.POST(API_ROOT+"login", hh.addRoute(Login))
+	//
+	//
+	//
 	hh.ginEngine.GET(API_ROOT+"info", hh.addRoute(Info))
 	//
 	// Create InEnd
