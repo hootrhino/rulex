@@ -125,7 +125,6 @@ func (mm *MqttOutEndTarget) Enabled() bool {
 func (mm *MqttOutEndTarget) Details() *typex.OutEnd {
 	return mm.RuleEngine.GetOutEnd(mm.PointId)
 }
-
 //
 //
 //
