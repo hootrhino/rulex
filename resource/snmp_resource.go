@@ -15,7 +15,6 @@ import (
 	"rulex/typex"
 	"rulex/utils"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/gosnmp/gosnmp"
@@ -25,7 +24,6 @@ import (
 //----------------------------------------------------------------------------------
 
 type SNMPResource struct {
-	sync.Mutex
 	typex.XStatus
 	snmpClients []*gosnmp.GoSNMP
 }

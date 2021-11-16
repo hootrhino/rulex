@@ -1,4 +1,5 @@
 *.log
+*_bin
 .vscode/
 rulex*
 rulex-*

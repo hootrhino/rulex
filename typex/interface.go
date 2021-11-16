@@ -1,7 +1,6 @@
 package typex
 
 import (
-	"sync"
 
 	lua "github.com/yuin/gopher-lua"
 )
@@ -117,7 +116,6 @@ type XHook interface {
 // XStatus for resource status
 //
 type XStatus struct {
-	sync.Mutex
 	PointId    string // Input: Resource; Output: Target
 	Enable     bool
 	RuleEngine RuleX

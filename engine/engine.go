@@ -11,7 +11,6 @@ import (
 	"rulex/target"
 	"rulex/typex"
 	"runtime"
-	"sync"
 	"time"
 
 	"github.com/ngaut/log"
@@ -23,7 +22,6 @@ import (
 // RuleEngine
 //
 type RuleEngine struct {
-	sync.Mutex
 	Hooks     map[string]typex.XHook           `json:"-"`
 	Rules     map[string]*typex.Rule           `json:"-"`
 	Plugins   map[string]typex.XPlugin         `json:"plugins"`
@@ -624,7 +622,6 @@ func (e *RuleEngine) SaveOutEnd(out *typex.OutEnd) {
 //
 //
 func (e *RuleEngine) RemoveOutEnd(uuid string) {
-
 	delete((e.OutEnds), uuid)
 	log.Infof("OutEnd [%v] has been deleted", uuid)
 }

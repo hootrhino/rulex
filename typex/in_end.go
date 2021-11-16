@@ -2,12 +2,10 @@ package typex
 
 import (
 	"rulex/utils"
-	"sync"
 )
 
 //
 type InEnd struct {
-	sync.Mutex
 	//
 	UUID        string          `json:"uuid"`
 	State       ResourceState   `json:"state"`
@@ -21,15 +19,11 @@ type InEnd struct {
 }
 
 func (in *InEnd) GetState() ResourceState {
-	in.Lock()
-	defer in.Unlock()
 	return in.State
 }
 
 //
 func (in *InEnd) SetState(s ResourceState) {
-	in.Lock()
-	defer in.Unlock()
 	in.State = s
 }
 
