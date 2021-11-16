@@ -214,7 +214,6 @@ func startResources(resource typex.XResource, in *typex.InEnd, e *RuleEngine) er
 	}(context.Background())
 	log.Infof("InEnd [%v, %v] load successfully", in.Name, in.UUID)
 	return nil
-
 }
 
 /*
@@ -237,7 +236,6 @@ func checkDriverState(resource typex.XResource, e *RuleEngine, id string) {
 	}
 
 }
-
 //
 // test ResourceState
 //
@@ -260,7 +258,6 @@ func tryIfRestartResource(resource typex.XResource, e *RuleEngine, id string) {
 		resource.Details().SetState(typex.UP)
 	}
 }
-
 //
 //
 //
@@ -310,7 +307,6 @@ func startResource(resource typex.XResource, e *RuleEngine, id string) error {
 func (e *RuleEngine) LoadOutEnd(out *typex.OutEnd) error {
 	return tryCreateOutEnd(out, e)
 }
-
 //
 // CreateOutEnd
 //
@@ -432,7 +428,6 @@ func (e *RuleEngine) LoadRule(r *typex.Rule) error {
 // GetRule a rule
 //
 func (e *RuleEngine) GetRule(id string) *typex.Rule {
-
 	return (e.Rules)[id]
 }
 
@@ -574,7 +569,6 @@ func runHook(h typex.XHook, data string) error {
 //
 //
 func (e *RuleEngine) GetInEnd(id string) *typex.InEnd {
-
 	return (e.InEnds)[id]
 }
 
@@ -589,7 +583,6 @@ func (e *RuleEngine) SaveInEnd(in *typex.InEnd) {
 //
 //
 func (e *RuleEngine) RemoveInEnd(id string) {
-
 	delete((e.InEnds), id)
 	log.Infof("InEnd [%v] has been deleted", id)
 }
@@ -598,7 +591,6 @@ func (e *RuleEngine) RemoveInEnd(id string) {
 //
 //
 func (e *RuleEngine) AllInEnd() map[string]*typex.InEnd {
-
 	return (e.InEnds)
 }
 
@@ -606,7 +598,6 @@ func (e *RuleEngine) AllInEnd() map[string]*typex.InEnd {
 //
 //
 func (e *RuleEngine) GetOutEnd(id string) *typex.OutEnd {
-
 	return (e.OutEnds)[id]
 }
 
@@ -614,7 +605,6 @@ func (e *RuleEngine) GetOutEnd(id string) *typex.OutEnd {
 //
 //
 func (e *RuleEngine) SaveOutEnd(out *typex.OutEnd) {
-
 	(e.OutEnds)[out.UUID] = out
 }
 
