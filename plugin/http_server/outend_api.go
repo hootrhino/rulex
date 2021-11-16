@@ -31,15 +31,16 @@ func DeleteOutend(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
 	_, err := hh.GetMOutEnd(uuid)
 	if err != nil {
-		c.JSON(200, gin.H{"msg": err.Error()})
-	} else {
-		if err := hh.DeleteMOutEnd(uuid); err != nil {
-			e.RemoveOutEnd(uuid)
-			c.JSON(200, gin.H{"msg": err.Error()})
-		} else {
-			c.JSON(http.StatusOK, gin.H{"msg": "remove success"})
-		}
+		c.JSON(200, Error400(err))
+		return
 	}
+	if err := hh.DeleteMOutEnd(uuid); err != nil {
+		c.JSON(200, Error400(err))
+	} else {
+		e.RemoveOutEnd(uuid)
+		c.JSON(200, Ok())
+	}
+
 }
 
 //
