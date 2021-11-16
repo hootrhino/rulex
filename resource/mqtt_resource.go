@@ -27,7 +27,7 @@ type MqttInEndResource struct {
 	client mqtt.Client
 }
 
-func NewMqttInEndResource(inEndId string, e typex.RuleX) *MqttInEndResource {
+func NewMqttInEndResource(inEndId string, e typex.RuleX) typex.XResource {
 	m := new(MqttInEndResource)
 	m.PointId = inEndId
 	m.RuleEngine = e

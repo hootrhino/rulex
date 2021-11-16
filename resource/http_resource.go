@@ -23,7 +23,7 @@ type HttpInEndResource struct {
 	engine *gin.Engine
 }
 
-func NewHttpInEndResource(inEndId string, e typex.RuleX) *HttpInEndResource {
+func NewHttpInEndResource(inEndId string, e typex.RuleX) typex.XResource {
 	h := HttpInEndResource{}
 	h.PointId = inEndId
 	gin.SetMode(gin.ReleaseMode)

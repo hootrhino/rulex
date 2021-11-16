@@ -1,6 +1,7 @@
 package typex
 
 import (
+	"sync"
 
 	lua "github.com/yuin/gopher-lua"
 )
@@ -19,7 +20,7 @@ type XDataModel struct {
 // RuleX interface
 //
 type RuleX interface {
-	Start() map[string]interface{}
+	Start() sync.Map
 	//
 	PushQueue(QueueData) error
 	//
@@ -31,10 +32,10 @@ type RuleX interface {
 	GetInEnd(string) *InEnd
 	SaveInEnd(*InEnd)
 	RemoveInEnd(string)
-	AllInEnd() map[string]*InEnd
+	AllInEnd() sync.Map
 	//
 	LoadOutEnd(*OutEnd) error
-	AllOutEnd() map[string]*OutEnd
+	AllOutEnd() sync.Map
 	GetOutEnd(string) *OutEnd
 	SaveOutEnd(*OutEnd)
 	RemoveOutEnd(string)
@@ -42,10 +43,10 @@ type RuleX interface {
 	LoadHook(XHook) error
 	//
 	LoadPlugin(XPlugin) error
-	AllPlugins() map[string]XPlugin
+	AllPlugins() sync.Map
 	//
 	LoadRule(*Rule) error
-	AllRule() map[string]*Rule
+	AllRule() sync.Map
 	RemoveRule(uuid string) error
 	//
 	RunLuaCallbacks(*InEnd, string)

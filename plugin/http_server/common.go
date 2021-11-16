@@ -72,7 +72,7 @@ func cros(c *gin.Context) {
 	}
 
 	if method == "OPTIONS" {
-		c.JSON(http.StatusOK, "ok!")
+		c.JSON(http.StatusOK, "")
 	}
 	c.Next()
 }

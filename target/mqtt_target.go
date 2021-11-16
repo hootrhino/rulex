@@ -38,7 +38,8 @@ func (*MqttOutEndTarget) Driver() typex.XExternalDriver {
 	return nil
 }
 func (mm *MqttOutEndTarget) Start() error {
-	config := mm.RuleEngine.GetOutEnd(mm.PointId).Config
+	outEnd := mm.RuleEngine.GetOutEnd(mm.PointId)
+	config := outEnd.Config
 	var mainConfig mqttConfig
 	if err := utils.BindResourceConfig(config, &mainConfig); err != nil {
 		return err
@@ -66,11 +67,13 @@ func (mm *MqttOutEndTarget) Start() error {
 	opts.OnConnect = connectHandler
 	opts.OnConnectionLost = connectLostHandler
 	opts.SetDefaultPublishHandler(messageHandler)
-	opts.SetPingTimeout(5 * time.Second)
+	opts.SetPingTimeout(3 * time.Second)
 	opts.SetAutoReconnect(true)
 	opts.SetMaxReconnectInterval(5 * time.Second)
 	mm.client = mqtt.NewClient(opts)
-	if token := mm.client.Connect(); token.Wait() && token.Error() != nil {
+	token := mm.client.Connect()
+	token.WaitTimeout(3 * time.Second)
+	if token.Wait() && token.Error() != nil {
 		return token.Error()
 	} else {
 		return nil
@@ -96,7 +99,7 @@ func (mm *MqttOutEndTarget) Pause() {
 }
 func (mm *MqttOutEndTarget) Status() typex.ResourceState {
 	if mm.client != nil {
-		if mm.client.IsConnected() {
+		if mm.client.IsConnectionOpen() {
 			return typex.UP
 		} else {
 			return typex.DOWN
@@ -125,6 +128,7 @@ func (mm *MqttOutEndTarget) Enabled() bool {
 func (mm *MqttOutEndTarget) Details() *typex.OutEnd {
 	return mm.RuleEngine.GetOutEnd(mm.PointId)
 }
+
 //
 //
 //

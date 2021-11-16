@@ -89,7 +89,6 @@ func (m *MongoTarget) Status() typex.ResourceState {
 		log.Error(err1)
 		return typex.DOWN
 	} else {
-		m.RuleEngine.GetOutEnd(m.PointId).State = typex.UP
 		return typex.UP
 	}
 }

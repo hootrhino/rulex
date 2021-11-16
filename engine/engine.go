@@ -11,6 +11,7 @@ import (
 	"rulex/target"
 	"rulex/typex"
 	"runtime"
+	"sync"
 	"time"
 
 	"github.com/ngaut/log"
@@ -22,13 +23,13 @@ import (
 // RuleEngine
 //
 type RuleEngine struct {
-	Hooks     map[string]typex.XHook           `json:"-"`
-	Rules     map[string]*typex.Rule           `json:"-"`
-	Plugins   map[string]typex.XPlugin         `json:"plugins"`
-	InEnds    map[string]*typex.InEnd          `json:"inends"`
-	OutEnds   map[string]*typex.OutEnd         `json:"outends"`
-	Drivers   map[string]typex.XExternalDriver `json:"drivers"`
-	ConfigMap map[string]interface{}           `json:"configMap"`
+	Hooks     sync.Map `json:"-"`
+	Rules     sync.Map `json:"-"`
+	Plugins   sync.Map `json:"plugins"`
+	InEnds    sync.Map `json:"inends"`
+	OutEnds   sync.Map `json:"outends"`
+	Drivers   sync.Map `json:"drivers"`
+	ConfigMap sync.Map `json:"configMap"`
 }
 
 //
@@ -36,21 +37,21 @@ type RuleEngine struct {
 //
 func NewRuleEngine() typex.RuleX {
 	return &RuleEngine{
-		Plugins:   map[string]typex.XPlugin{},
-		Hooks:     map[string]typex.XHook{},
-		Rules:     map[string]*typex.Rule{},
-		InEnds:    map[string]*typex.InEnd{},
-		OutEnds:   map[string]*typex.OutEnd{},
-		Drivers:   map[string]typex.XExternalDriver{},
-		ConfigMap: map[string]interface{}{},
+		Plugins:   sync.Map{},
+		Hooks:     sync.Map{},
+		Rules:     sync.Map{},
+		InEnds:    sync.Map{},
+		OutEnds:   sync.Map{},
+		Drivers:   sync.Map{},
+		ConfigMap: sync.Map{},
 	}
 }
 
 //
 //
 //
-func (e *RuleEngine) Start() map[string]interface{} {
-	e.ConfigMap = map[string]interface{}{}
+func (e *RuleEngine) Start() sync.Map {
+	e.ConfigMap = sync.Map{}
 	log.Info("Init XQueue, max queue size is:", core.GlobalConfig.MaxQueueSize)
 	typex.DefaultDataCacheQueue = &typex.DataCacheQueue{
 		Queue: make(chan typex.QueueData, core.GlobalConfig.MaxQueueSize),
@@ -78,7 +79,13 @@ func (e *RuleEngine) Start() map[string]interface{} {
 					}
 					if qd.Out != nil {
 						//  传 Out 为了实现数据外流
-						(*qd.E.AllOutEnd()[qd.Out.UUID]).Target.To(qd.Data)
+						//(*qd.E.AllOutEnd() [qd.Out.UUID]).Target.To(qd.Data)
+						outEnds := qd.E.AllOutEnd()
+						v, ok := outEnds.Load(qd.Out.UUID)
+						if ok {
+							v.(*typex.OutEnd).Target.To(qd.Data)
+						}
+
 					}
 				}
 			default:
@@ -104,12 +111,10 @@ func (e *RuleEngine) PushQueue(qd typex.QueueData) error {
 //
 //
 //
-func (e *RuleEngine) GetPlugins() map[string]typex.XPlugin {
-
+func (e *RuleEngine) GetPlugins() sync.Map {
 	return e.Plugins
 }
-func (e *RuleEngine) AllPlugins() map[string]typex.XPlugin {
-
+func (e *RuleEngine) AllPlugins() sync.Map {
 	return e.Plugins
 }
 
@@ -123,7 +128,12 @@ func (e *RuleEngine) Version() typex.Version {
 //
 //
 func (e *RuleEngine) GetConfig(k string) interface{} {
-	return (e.ConfigMap)[k]
+	v, ok := e.ConfigMap.Load(k)
+	if ok {
+		return v
+	} else {
+		return map[string]interface{}{}
+	}
 }
 
 func (e *RuleEngine) LoadInEnd(in *typex.InEnd) error {
@@ -236,6 +246,7 @@ func checkDriverState(resource typex.XResource, e *RuleEngine, id string) {
 	}
 
 }
+
 //
 // test ResourceState
 //
@@ -258,6 +269,7 @@ func tryIfRestartResource(resource typex.XResource, e *RuleEngine, id string) {
 		resource.Details().SetState(typex.UP)
 	}
 }
+
 //
 //
 //
@@ -307,6 +319,7 @@ func startResource(resource typex.XResource, e *RuleEngine, id string) error {
 func (e *RuleEngine) LoadOutEnd(out *typex.OutEnd) error {
 	return tryCreateOutEnd(out, e)
 }
+
 //
 // CreateOutEnd
 //
@@ -335,13 +348,13 @@ func startTarget(target typex.XTarget, out *typex.OutEnd, e typex.RuleX) error {
 	// 首先把资源ID给注册进去, 作为资源的全局索引
 	if err := target.Register(out.UUID); err != nil {
 		log.Error(err)
-		e.RemoveInEnd(out.UUID)
+		e.RemoveOutEnd(out.UUID)
 		return err
 	}
 	// 然后启动资源
 	if err := target.Start(); err != nil {
 		log.Error(err)
-		e.RemoveInEnd(out.UUID)
+		e.RemoveOutEnd(out.UUID)
 		return err
 	}
 	// Set resources to inend
@@ -428,14 +441,19 @@ func (e *RuleEngine) LoadRule(r *typex.Rule) error {
 // GetRule a rule
 //
 func (e *RuleEngine) GetRule(id string) *typex.Rule {
-	return (e.Rules)[id]
+	v, ok := (e.Rules).Load(id)
+	if ok {
+		return v.(*typex.Rule)
+	} else {
+		return nil
+	}
 }
 
 //
 //
 //
 func (e *RuleEngine) SaveRule(r *typex.Rule) {
-	(e.Rules)[r.UUID] = r
+	e.Rules.Store(r.UUID, r)
 }
 
 //
@@ -443,7 +461,7 @@ func (e *RuleEngine) SaveRule(r *typex.Rule) {
 //
 func (e *RuleEngine) RemoveRule(ruleId string) error {
 	if rule := e.GetRule(ruleId); rule != nil {
-		delete(e.Rules, ruleId)
+		e.Rules.Delete(ruleId)
 		log.Infof("Rule [%v] has been deleted", ruleId)
 		return nil
 	} else {
@@ -454,9 +472,8 @@ func (e *RuleEngine) RemoveRule(ruleId string) error {
 //
 //
 //
-func (e *RuleEngine) AllRule() map[string]*typex.Rule {
-
-	return (e.Rules)
+func (e *RuleEngine) AllRule() sync.Map {
+	return e.Rules
 }
 
 //
@@ -464,7 +481,8 @@ func (e *RuleEngine) AllRule() map[string]*typex.Rule {
 //
 func (e *RuleEngine) Stop() {
 	log.Info("Ready to stop rulex")
-	for _, inEnd := range e.InEnds {
+	e.InEnds.Range(func(key, value interface{}) bool {
+		inEnd := value.(*typex.InEnd)
 		if inEnd.Resource != nil {
 			log.Info("Stop InEnd:", inEnd.Name, inEnd.UUID)
 			e.GetInEnd(inEnd.UUID).SetState(typex.DOWN)
@@ -474,19 +492,24 @@ func (e *RuleEngine) Stop() {
 				inEnd.Resource.Driver().Stop()
 			}
 		}
-	}
-
-	for _, outEnd := range e.OutEnds {
+		return true
+	})
+	e.OutEnds.Range(func(key, value interface{}) bool {
+		outEnd := value.(*typex.OutEnd)
 		if outEnd.Target != nil {
 			log.Info("Stop Target:", outEnd.Name, outEnd.UUID)
 			outEnd.Target.Stop()
 		}
-	}
+		return true
+	})
 
-	for _, plugin := range e.Plugins {
+	e.Plugins.Range(func(key, value interface{}) bool {
+		plugin := value.(typex.XPlugin)
 		log.Info("Stop plugin:", plugin.XPluginMetaInfo().Name)
 		plugin.Stop()
-	}
+		return true
+	})
+
 	context.Background().Done()
 	runtime.Gosched()
 	runtime.GC()
@@ -526,14 +549,17 @@ func (e *RuleEngine) LoadPlugin(p typex.XPlugin) error {
 	if err := p.Init(); err != nil {
 		return err
 	}
-	if err := p.Start(); err != nil {
-		return err
-	}
-	if (e.Plugins)[p.XPluginMetaInfo().Name] != nil {
+
+	_, ok := e.Plugins.Load(p.XPluginMetaInfo().Name)
+	if ok {
 		return errors.New("plugin already installed:" + p.XPluginMetaInfo().Name)
 	}
 
-	(e.Plugins)[p.XPluginMetaInfo().Name] = p
+	if err := p.Start(); err != nil {
+		return err
+	}
+
+	e.Plugins.Store(p.XPluginMetaInfo().Name, p)
 	log.Infof("Plugin start successfully:[%v]", p.XPluginMetaInfo().Name)
 	return nil
 
@@ -543,10 +569,11 @@ func (e *RuleEngine) LoadPlugin(p typex.XPlugin) error {
 // LoadHook
 //
 func (e *RuleEngine) LoadHook(h typex.XHook) error {
-	if (e.Hooks)[h.Name()] != nil {
+	value, _ := e.Hooks.Load(h.Name())
+	if value != nil {
 		return errors.New("hook have been loaded:" + h.Name())
 	} else {
-		(e.Hooks)[h.Name()] = h
+		e.Hooks.Store(h.Name(), h)
 		return nil
 	}
 }
@@ -555,11 +582,12 @@ func (e *RuleEngine) LoadHook(h typex.XHook) error {
 // RunHooks
 //
 func (e *RuleEngine) RunHooks(data string) {
-	for _, h := range e.Hooks {
-		if err := runHook(h, data); err != nil {
-			h.Error(err)
+	e.Hooks.Range(func(key, value interface{}) bool {
+		if err := runHook(value.(typex.XHook), data); err != nil {
+			value.(typex.XHook).Error(err)
 		}
-	}
+		return true
+	})
 }
 func runHook(h typex.XHook, data string) error {
 	return h.Work(data)
@@ -569,56 +597,68 @@ func runHook(h typex.XHook, data string) error {
 //
 //
 func (e *RuleEngine) GetInEnd(id string) *typex.InEnd {
-	return (e.InEnds)[id]
+	v, ok := (e.InEnds).Load(id)
+	if ok {
+		return v.(*typex.InEnd)
+	} else {
+		return nil
+	}
 }
 
 //
 //
 //
 func (e *RuleEngine) SaveInEnd(in *typex.InEnd) {
-	(e.InEnds)[in.UUID] = in
+	e.InEnds.Store(in.UUID, in)
 }
 
 //
 //
 //
 func (e *RuleEngine) RemoveInEnd(id string) {
-	delete((e.InEnds), id)
+	e.InEnds.Delete(id)
 	log.Infof("InEnd [%v] has been deleted", id)
 }
 
 //
 //
 //
-func (e *RuleEngine) AllInEnd() map[string]*typex.InEnd {
-	return (e.InEnds)
+func (e *RuleEngine) AllInEnd() sync.Map {
+	return e.InEnds
 }
 
 //
 //
 //
 func (e *RuleEngine) GetOutEnd(id string) *typex.OutEnd {
-	return (e.OutEnds)[id]
+	v, ok := e.OutEnds.Load(id)
+	if ok {
+		return v.(*typex.OutEnd)
+	} else {
+		return nil
+	}
+
 }
 
 //
 //
 //
 func (e *RuleEngine) SaveOutEnd(out *typex.OutEnd) {
-	(e.OutEnds)[out.UUID] = out
+	e.OutEnds.Store(out.UUID, out)
+
 }
 
 //
 //
 //
 func (e *RuleEngine) RemoveOutEnd(uuid string) {
-	delete((e.OutEnds), uuid)
+	e.OutEnds.Delete(uuid)
 	log.Infof("OutEnd [%v] has been deleted", uuid)
 }
 
 //
 //
 //
-func (e *RuleEngine) AllOutEnd() map[string]*typex.OutEnd {
-	return (e.OutEnds)
+func (e *RuleEngine) AllOutEnd() sync.Map {
+	return e.OutEnds
 }

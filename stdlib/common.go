@@ -14,9 +14,11 @@ func handleDataFormat(e typex.RuleX, id string, incoming string) {
 	// 	return
 	// }
 	statistics.IncOut()
+	outEnds := (e.AllInEnd())
+	outEnd, _ := outEnds.Load(id)
 	e.PushQueue(typex.QueueData{
 		In:   nil,
-		Out:  e.AllOutEnd()[id],
+		Out:  outEnd.(*typex.OutEnd),
 		E:    e,
 		Data: incoming,
 	})

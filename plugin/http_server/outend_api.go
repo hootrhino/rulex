@@ -14,9 +14,11 @@ import (
 //
 func OutEnds(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	data := []interface{}{}
-	for _, v := range e.AllOutEnd() {
-		data = append(data, v)
-	}
+	outEnds := e.AllOutEnd()
+	outEnds.Range(func(key, value interface{}) bool {
+		data = append(data, value)
+		return true
+	})
 	c.JSON(http.StatusOK, Result{
 		Code: http.StatusOK,
 		Msg:  "Success",
