@@ -101,6 +101,14 @@ cross_compile() {
     done
 }
 #
+# fetch dashboard
+#
+fetch_dashboard() {
+    URL=""
+    wget URL dashboard.zip
+    unzip dashboard.zip -d _release/rulex/plugin/httpserver/template
+}
+#
 #
 #
 cross_compile
