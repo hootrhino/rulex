@@ -70,22 +70,15 @@ func (e *RuleEngine) Start() sync.Map {
 					// 只需要判断 in 或者 out 是不是 nil即可
 					//
 					if qd.In != nil {
-						//
-						// 传 In 进来为了查找 Rule 去执行
-						// 内存中的数据关联性 Key: In, Value: Rules...
-						//
 						qd.E.RunLuaCallbacks(qd.In, qd.Data)
 						qd.E.RunHooks(qd.Data)
 					}
 					if qd.Out != nil {
-						//  传 Out 为了实现数据外流
-						//(*qd.E.AllOutEnd() [qd.Out.UUID]).Target.To(qd.Data)
 						outEnds := qd.E.AllOutEnd()
 						v, ok := outEnds.Load(qd.Out.UUID)
 						if ok {
 							v.(*typex.OutEnd).Target.To(qd.Data)
 						}
-
 					}
 				}
 			default:
@@ -401,14 +394,14 @@ func (e *RuleEngine) LoadRule(r *typex.Rule) error {
 		return err
 	} else {
 		if len(r.From) > 0 {
-			for _, inId := range r.From {
-				if in := e.GetInEnd(inId); in != nil {
+			for _, inUUId := range r.From {
+				if in := e.GetInEnd(inUUId); in != nil {
 					// Bind to rule, Key:RuleId, Value: Rule
 					// RULE_0f8619ef-3cf2-452f-8dd7-aa1db4ecfdde {
 					// ...
 					// ...
 					// }
-					(in.Binds)[r.Id] = *r
+					(in.Binds)[r.UUID] = *r
 					//
 					// Load Stdlib
 					//--------------------------------------------------------------
@@ -421,6 +414,8 @@ func (e *RuleEngine) LoadRule(r *typex.Rule) error {
 					r.LoadLib(e, stdlib.NewWriteOutStreamLib())
 					r.LoadLib(e, stdlib.NewByteToBitStringLib())
 					r.LoadLib(e, stdlib.NewGetABitOnByteLib())
+					r.LoadLib(e, stdlib.NewByteToInt64Lib())
+					r.LoadLib(e, stdlib.NewBitStringToBytesLib())
 					//--------------------------------------------------------------
 					// Save to rules map
 					//
@@ -428,7 +423,7 @@ func (e *RuleEngine) LoadRule(r *typex.Rule) error {
 					log.Infof("Rule [%v, %v] load successfully", r.Name, r.UUID)
 					return nil
 				} else {
-					return errors.New("'InEnd':" + inId + " is not exists")
+					return errors.New("'InEnd':" + inUUId + " is not exists")
 				}
 			}
 		}
@@ -461,6 +456,18 @@ func (e *RuleEngine) SaveRule(r *typex.Rule) {
 //
 func (e *RuleEngine) RemoveRule(ruleId string) {
 	if rule := e.GetRule(ruleId); rule != nil {
+
+		// 清空 InEnd 的 bind
+		inEnds := e.AllInEnd()
+		inEnds.Range(func(key, value interface{}) bool {
+			inEnd := value.(*typex.InEnd)
+			for _, r := range inEnd.Binds {
+				if rule.UUID == r.UUID {
+					delete(inEnd.Binds, ruleId)
+				}
+			}
+			return true
+		})
 		e.Rules.Delete(ruleId)
 		rule = nil
 		log.Infof("Rule [%v] has been deleted", ruleId)
@@ -599,8 +606,8 @@ func runHook(h typex.XHook, data string) error {
 //
 //
 //
-func (e *RuleEngine) GetInEnd(id string) *typex.InEnd {
-	v, ok := (e.InEnds).Load(id)
+func (e *RuleEngine) GetInEnd(uuid string) *typex.InEnd {
+	v, ok := (e.InEnds).Load(uuid)
 	if ok {
 		return v.(*typex.InEnd)
 	} else {

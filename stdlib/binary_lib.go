@@ -14,8 +14,11 @@ import (
 	lua "github.com/yuin/gopher-lua"
 )
 
+//
+// 提取的 Key, 最长不能超过32个字母
+//
+var pattern = `[a-zA-Z0-9]{1,32}:[1-9]+`
 var regexper *regexp.Regexp = regexp.MustCompile(pattern)
-var pattern = `[a-z]+:[1-9]+`
 
 type BinaryLib struct {
 	regexper *regexp.Regexp
@@ -76,9 +79,11 @@ type ByteToBitStringLib struct {
 func (l *ByteToBitStringLib) Name() string {
 	return "ByteToBitString"
 }
+
 func (l *ByteToBitStringLib) LibFun(rx typex.RuleX) func(*lua.LState) int {
 	return func(state *lua.LState) int {
-		state.Push(nil)
+		data := state.ToString(2)
+		state.Push(lua.LValue(lua.LString(ByteToBitString([]byte(data)))))
 		return 1
 	}
 }
@@ -135,6 +140,33 @@ func (k Kl) String() string {
 // Big-Endian:  高位字节放在内存的低地址端，低位字节放在内存的高地址端。
 // Little-Endian: 低位字节放在内存的低地址段，高位字节放在内存的高地址端
 //
+type ByteToInt64Lib struct {
+}
+
+func (l *ByteToInt64Lib) Name() string {
+	return "ByteToInt64"
+}
+
+func (l *ByteToInt64Lib) LibFun(rx typex.RuleX) func(*lua.LState) int {
+	return func(state *lua.LState) int {
+		endian := state.ToInt(2)
+		data := state.ToString(3)
+		if endian == 1 {
+			v := ByteToInt([]byte(data), binary.BigEndian)
+			state.Push(lua.LNumber(v))
+		} else {
+			v := ByteToInt([]byte(data), binary.LittleEndian)
+			state.Push(lua.LNumber(v))
+		}
+		return 1
+	}
+}
+
+func NewByteToInt64Lib() typex.XLib {
+	return &ByteToInt64Lib{}
+}
+
+///
 func ByteToInt(b []byte, order binary.ByteOrder) uint64 {
 	var err error
 	// uint8
@@ -165,7 +197,7 @@ func ByteToInt(b []byte, order binary.ByteOrder) uint64 {
 		return uint64(x)
 	}
 	// uint64
-	if len(b) > 4 && len(b) <= 8 {
+	if len(b) > 4 {
 		var x uint64
 		err = binary.Read(bytes.NewBuffer(b), order, &x)
 		if err != nil {
@@ -182,6 +214,31 @@ func ByteToInt(b []byte, order binary.ByteOrder) uint64 {
 * 位串转字节
 *
  */
+type BitStringToBytesLib struct {
+}
+
+func (l *BitStringToBytesLib) Name() string {
+	return "BitStringToBytes"
+}
+
+func (l *BitStringToBytesLib) LibFun(rx typex.RuleX) func(*lua.LState) int {
+	return func(state *lua.LState) int {
+		data := state.ToString(2)
+		b, err := BitStringToBytes(data)
+		if err != nil {
+			state.Push(nil)
+		} else {
+			state.Push(lua.LString(string(b)))
+		}
+		return 1
+	}
+}
+
+func NewBitStringToBytesLib() typex.XLib {
+	return &BitStringToBytesLib{}
+}
+
+////////////////////////
 func BitStringToBytes(s string) ([]byte, error) {
 	b := make([]byte, (len(s)+(8-1))/8)
 	for i := 0; i < len(s); i++ {
@@ -252,9 +309,9 @@ func Match(expr string, data []byte, returnMore bool) []Kl {
 		bfs := ByteToBitString(data)
 		// <a:12 b:12
 		for _, v := range regexper.FindAllString(expr[1:], -1) {
-			kl := strings.Split(v, ":")
-			k := kl[0]
-			if l, err1 := strconv.Atoi(kl[1]); err1 == nil {
+			k_l := strings.Split(v, ":")
+			k := k_l[0]
+			if l, err1 := strconv.Atoi(k_l[1]); err1 == nil {
 				if cursor+l <= len(bfs) {
 					binString := bfs[cursor : cursor+l]
 					result = append(result, Kl{
