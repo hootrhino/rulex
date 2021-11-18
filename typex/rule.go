@@ -10,12 +10,22 @@ import (
 	lua "github.com/yuin/gopher-lua"
 )
 
+type RuleStatus int
+
+//
+//  规则状态：
+//  0: 停止
+//  1: 运行中
+const RULE_STOP RuleStatus = 0
+const RULE_RUNNING RuleStatus = 1
+
 //
 //
 //
 type Rule struct {
 	Id          string      `json:"id"`
 	UUID        string      `json:"uuid"`
+	Status      RuleStatus  `json:"status"`
 	Name        string      `json:"name"`
 	Description string      `json:"description"`
 	VM          *lua.LState `json:"-"`
@@ -47,6 +57,7 @@ func NewRule(e RuleX,
 		Name:        name,
 		Description: description,
 		From:        from,
+		Status:      1, // 默认为启用
 		Actions:     actions,
 		Success:     success,
 		Failed:      failed,

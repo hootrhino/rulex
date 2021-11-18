@@ -47,7 +47,8 @@ type RuleX interface {
 	//
 	LoadRule(*Rule) error
 	AllRule() sync.Map
-	RemoveRule(uuid string) error
+	GetRule(id string) *Rule
+	RemoveRule(uuid string)
 	//
 	RunLuaCallbacks(*InEnd, string)
 	//

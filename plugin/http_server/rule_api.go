@@ -14,17 +14,27 @@ import (
 // Get all rules
 //
 func Rules(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
-	data := []interface{}{}
-	rules := e.AllRule()
-	rules.Range(func(key, value interface{}) bool {
-		data = append(data, value)
-		return true
-	})
-	c.JSON(http.StatusOK, Result{
-		Code: http.StatusOK,
-		Msg:  "Success",
-		Data: data,
-	})
+
+	uuid, _ := c.GetQuery("uuid")
+	if uuid == "" {
+		data := []interface{}{}
+		allRules := e.AllRule()
+		allRules.Range(func(key, value interface{}) bool {
+			data = append(data, value)
+			return true
+		})
+		c.JSON(http.StatusOK, Result{
+			Code: http.StatusOK,
+			Msg:  "Success",
+			Data: data,
+		})
+	} else {
+		c.JSON(http.StatusOK, Result{
+			Code: http.StatusOK,
+			Msg:  "Success",
+			Data: e.GetRule(uuid),
+		})
+	}
 }
 
 //

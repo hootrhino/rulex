@@ -459,13 +459,11 @@ func (e *RuleEngine) SaveRule(r *typex.Rule) {
 //
 // RemoveRule and inend--rule bindings
 //
-func (e *RuleEngine) RemoveRule(ruleId string) error {
+func (e *RuleEngine) RemoveRule(ruleId string) {
 	if rule := e.GetRule(ruleId); rule != nil {
 		e.Rules.Delete(ruleId)
+		rule = nil
 		log.Infof("Rule [%v] has been deleted", ruleId)
-		return nil
-	} else {
-		return errors.New("'Rule':" + ruleId + " not exists")
 	}
 }
 
@@ -532,14 +530,19 @@ func (e *RuleEngine) Work(in *typex.InEnd, data string) (bool, error) {
 	}
 }
 
+//
+// 执行lua脚本
+//
 func (e *RuleEngine) RunLuaCallbacks(in *typex.InEnd, data string) {
 	for _, rule := range in.Binds {
-		_, err := rule.ExecuteActions(lua.LString(data))
-		if err != nil {
-			log.Error("RunLuaCallbacks error:", err)
-			rule.ExecuteFailed(lua.LString(err.Error()))
-		} else {
-			rule.ExecuteSuccess()
+		if rule.Status == typex.RULE_RUNNING {
+			_, err := rule.ExecuteActions(lua.LString(data))
+			if err != nil {
+				log.Error("RunLuaCallbacks error:", err)
+				rule.ExecuteFailed(lua.LString(err.Error()))
+			} else {
+				rule.ExecuteSuccess()
+			}
 		}
 	}
 }
@@ -616,8 +619,11 @@ func (e *RuleEngine) SaveInEnd(in *typex.InEnd) {
 //
 //
 func (e *RuleEngine) RemoveInEnd(id string) {
-	e.InEnds.Delete(id)
-	log.Infof("InEnd [%v] has been deleted", id)
+	if inEnd := e.GetInEnd(id); inEnd != nil {
+		e.InEnds.Delete(id)
+		inEnd = nil
+		log.Infof("InEnd [%v] has been deleted", id)
+	}
 }
 
 //
@@ -652,8 +658,11 @@ func (e *RuleEngine) SaveOutEnd(out *typex.OutEnd) {
 //
 //
 func (e *RuleEngine) RemoveOutEnd(uuid string) {
-	e.OutEnds.Delete(uuid)
-	log.Infof("OutEnd [%v] has been deleted", uuid)
+	if inEnd := e.GetOutEnd(uuid); inEnd != nil {
+		e.OutEnds.Delete(uuid)
+		inEnd = nil
+		log.Infof("InEnd [%v] has been deleted", uuid)
+	}
 }
 
 //

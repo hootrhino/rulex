@@ -13,17 +13,28 @@ import (
 // Get all outends
 //
 func OutEnds(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
-	data := []interface{}{}
-	outEnds := e.AllOutEnd()
-	outEnds.Range(func(key, value interface{}) bool {
-		data = append(data, value)
-		return true
-	})
-	c.JSON(http.StatusOK, Result{
-		Code: http.StatusOK,
-		Msg:  "Success",
-		Data: data,
-	})
+	uuid, _ := c.GetQuery("uuid")
+	if uuid == "" {
+		data := []interface{}{}
+		outEnds := e.AllOutEnd()
+		outEnds.Range(func(key, value interface{}) bool {
+			data = append(data, value)
+			return true
+		})
+		c.JSON(http.StatusOK, Result{
+			Code: http.StatusOK,
+			Msg:  "Success",
+			Data: data,
+		})
+	} else {
+
+		c.JSON(http.StatusOK, Result{
+			Code: http.StatusOK,
+			Msg:  "Success",
+			Data: e.GetOutEnd(uuid),
+		})
+	}
+
 }
 
 //
