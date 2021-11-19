@@ -66,10 +66,10 @@ func TestFullyRun(t *testing.T) {
 	//
 	// Load Rule
 	//
-	rule := typex.NewRule(engine,
-		"uuid",
-		"Just a test",
-		"Just a test",
+	rule1 := typex.NewRule(engine,
+		"uuid1",
+		"rule1",
+		"rule1",
 		[]string{grpcInend.UUID},
 		`function Success() print("[LUA Success Callback]=> OK") end`,
 		`
@@ -111,7 +111,51 @@ func TestFullyRun(t *testing.T) {
 			end
 		}`,
 		`function Failed(error) print("[LUA Failed Callback]", error) end`)
-	if err := engine.LoadRule(rule); err != nil {
+	//--------------------------------------------------
+	rule2 := typex.NewRule(engine,
+		"uuid2",
+		"rule2",
+		"rule2",
+		[]string{grpcInend.UUID},
+		`function Success() print("[LUA Success Callback]=> OK") end`,
+		`
+		Actions = {
+			function(data)
+				local json = require("json")
+				-- 0110_0001 0110_0001 0110_0010
+				-- <a:5 b:3 c:1 => a:00001100 b:00000001 c:0
+				local V6 = json.encode(stdlib:MatchBinary("<a:5 b:3 c:1", "aab", false))
+				print("[LUA Actions Callback RULE ==================> uuid2] ==>", V6)
+				return true, data
+			end
+		}`,
+		`function Failed(error) print("[LUA Failed Callback]", error) end`)
+	//--------------------------------------------------
+	rule3 := typex.NewRule(engine,
+		"uuid3",
+		"rule3",
+		"rule3",
+		[]string{grpcInend.UUID},
+		`function Success() print("[LUA Success Callback]=> OK") end`,
+		`
+		Actions = {
+			function(data)
+				local json = require("json")
+				-- 0110_0001 0110_0001 0110_0010
+				-- <a:5 b:3 c:1 => a:00001100 b:00000001 c:0
+				local V6 = json.encode(stdlib:MatchBinary("<a:5 b:3 c:1", "aab", false))
+				print("[LUA Actions Callback RULE ==================> uuid3] ==>", V6)
+				return true, data
+			end
+		}`,
+		`function Failed(error) print("[LUA Failed Callback]", error) end`)
+	if err := engine.LoadRule(rule1); err != nil {
+		log.Error(err)
+	}
+	if err := engine.LoadRule(rule2); err != nil {
+		log.Error(err)
+	}
+	if err := engine.LoadRule(rule3); err != nil {
 		log.Error(err)
 	}
 	conn, err := grpc.Dial("127.0.0.1:2581", grpc.WithInsecure())
