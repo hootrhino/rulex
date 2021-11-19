@@ -22,6 +22,7 @@ Actions =
         result['c'] = stdlib:ByteToInt64(1, stdlib:BitStringToBytes(tb["c"]))
         result['d1'] = stdlib:ByteToInt64(1, stdlib:BitStringToBytes(tb["d1"]))
         print("stdlib:MatchBinary 2:", json.encode(result))
+        stdlib:DataToMqttServer('OUTEND_bcb1b88c-7d83-49a3-88c0-d048e6368089', json.encode(result))
         return true, data
     end
 }
