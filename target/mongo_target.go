@@ -13,7 +13,7 @@ import (
 
 type mongoConfig struct {
 	MongoUrl   string `json:"mongoUrl" validate:"required"`
-	Database   string `json:"satabase" validate:"required"`
+	Database   string `json:"database" validate:"required"`
 	Collection string `json:"collection" validate:"required"`
 }
 
@@ -60,7 +60,6 @@ func (m *MongoTarget) Test(outEndId string) bool {
 	if m.client != nil {
 		err1 := m.client.Ping(context.Background(), nil)
 		if err1 != nil {
-			log.Error(err1)
 			return false
 		} else {
 			return true
