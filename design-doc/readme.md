@@ -9,3 +9,4 @@
 - 远程配置: <a href="./remote-config.md">Here</a>
 - 配置详解: <a href="./rulex-conf.md">Here</a>
 - 测试模拟: <a href="./test-dev.md">Here</a>
+- 双向通信: <a href="./control.md">Here</a>
