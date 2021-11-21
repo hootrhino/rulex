@@ -50,12 +50,7 @@ func NewRuleEngine() typex.RuleX {
 //
 //
 //
-func (e *RuleEngine) Start() sync.Map {
-	e.ConfigMap = sync.Map{}
-	log.Info("Init XQueue, max queue size is:", core.GlobalConfig.MaxQueueSize)
-	typex.DefaultDataCacheQueue = &typex.DataCacheQueue{
-		Queue: make(chan typex.QueueData, core.GlobalConfig.MaxQueueSize),
-	}
+func startQueue(xQueue typex.XQueue) {
 	go func(ctx context.Context, xQueue typex.XQueue) {
 		for {
 			select {
@@ -86,7 +81,18 @@ func (e *RuleEngine) Start() sync.Map {
 				}
 			}
 		}
-	}(context.Background(), typex.DefaultDataCacheQueue)
+	}(context.Background(), xQueue)
+}
+
+//
+//
+//
+func (e *RuleEngine) Start() sync.Map {
+	e.ConfigMap = sync.Map{}
+	log.Info("Init XQueue, max queue size is:", core.GlobalConfig.MaxQueueSize)
+	startQueue(&typex.DataCacheQueue{
+		Queue: make(chan typex.QueueData, core.GlobalConfig.MaxQueueSize),
+	})
 	return e.ConfigMap
 }
 
@@ -96,7 +102,7 @@ func (e *RuleEngine) Start() sync.Map {
 func (e *RuleEngine) PushQueue(qd typex.QueueData) error {
 	err := typex.DefaultDataCacheQueue.Push(qd)
 	if err != nil {
-		log.Error("ATK_LORA_01Driver error: ", err)
+		log.Error("PushQueue error: ", err)
 	}
 	return err
 }
