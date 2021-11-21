@@ -4,18 +4,6 @@ RuleX 是一个轻量级网关，支持多种数据接入以及数据流筛选�
 
 > 当前处于极其不稳定阶段，每天都会有大批量更新, 请勿尝试用于生产.
 
-## 预览
-### 架构
-![res](README_RES/atom2.png)
-### 登录
-![res](README_RES/1.png)
-### 首页
-![res](README_RES/2.png)
-### 服务
-![res](README_RES/3.png)
-### 资源
-![res](README_RES/4.png)
-
 ## 快速开始
 ### 构建
 ```sh
