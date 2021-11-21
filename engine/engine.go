@@ -358,7 +358,10 @@ func startTarget(target typex.XTarget, out *typex.OutEnd, e typex.RuleX) error {
 	}
 	// Set resources to inend
 	out.Target = target
+	//
+	tryIfRestartTarget(target, e, out.UUID)
 	go func(ctx context.Context) {
+
 		// 5 seconds
 		ticker := time.NewTicker(time.Duration(time.Second * 5))
 		for {
