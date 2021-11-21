@@ -90,9 +90,10 @@ func startQueue(xQueue typex.XQueue) {
 func (e *RuleEngine) Start() sync.Map {
 	e.ConfigMap = sync.Map{}
 	log.Info("Init XQueue, max queue size is:", core.GlobalConfig.MaxQueueSize)
-	startQueue(&typex.DataCacheQueue{
+	typex.DefaultDataCacheQueue = &typex.DataCacheQueue{
 		Queue: make(chan typex.QueueData, core.GlobalConfig.MaxQueueSize),
-	})
+	}
+	startQueue(typex.DefaultDataCacheQueue)
 	return e.ConfigMap
 }
 
