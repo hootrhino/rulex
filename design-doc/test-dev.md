@@ -40,9 +40,27 @@ socat -d -d -d  pty,raw,echo=0 pty,raw,echo=1
 2021/09/11 19:18:03 socat[6074] N PTY is /dev/pts/0
 2021/09/11 19:18:03 socat[6074] N PTY is /dev/pts/1
 ```
-标识开启了两个模拟串口:
+标识开启了两个模拟串口，一个用来发送，一个用来接收：
 
 - `/dev/pts/0`
 - `/dev/pts/1`
 
-一个用来发送，一个用来接收。
+## VScode 调试
+把下面的JSON复制到 `.vscode/launch.json` 即可, 可以实现绝大部分断点调试：
+```json
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "RunRulex",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "${workspaceFolder}/main.go",
+            "args": [
+                "run"
+            ]
+        }
+    ]
+}
+```
