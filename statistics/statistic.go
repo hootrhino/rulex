@@ -50,6 +50,12 @@ func IncOutFailed() {
 	statisticsCache["outFailed"] = statisticsCache["outFailed"] + 1
 }
 
-func AllStatistics() *map[string]int64 {
-	return &statisticsCache
+func Reset() {
+	statisticsCache["inSuccess"] = 0
+	statisticsCache["inFailed"] = 0
+	statisticsCache["outFailed"] = 0
+	statisticsCache["outSuccess"] = 0
+}
+func AllStatistics() map[string]int64 {
+	return statisticsCache
 }

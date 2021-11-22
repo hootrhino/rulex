@@ -91,14 +91,35 @@ func Statistics(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 // Get statistics data
 //
 func ResourceCount(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+	allInEnd := e.AllInEnd()
+	allOutEnd := e.AllOutEnd()
+	allRule := e.AllRule()
+	plugins := e.AllPlugins()
+	var c1, c2, c3, c4 int
+	allInEnd.Range(func(key, value interface{}) bool {
+		c1 += 1
+		return true
+	})
+	allOutEnd.Range(func(key, value interface{}) bool {
+		c2 += 1
+		return true
+	})
+	allRule.Range(func(key, value interface{}) bool {
+		c3 += 1
+		return true
+	})
+	plugins.Range(func(key, value interface{}) bool {
+		c4 += 1
+		return true
+	})
 	c.JSON(http.StatusOK, Result{
 		Code: http.StatusOK,
 		Msg:  "Success",
 		Data: map[string]int{
-			"inends":  0,
-			"outends": 0,
-			"rules":   0,
-			"plugins": 0,
+			"inends":  c1,
+			"outends": c2,
+			"rules":   c3,
+			"plugins": c4,
 		},
 	})
 }

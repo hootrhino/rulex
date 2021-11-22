@@ -14,15 +14,27 @@ import (
 // Get all rules
 //
 func Rules(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
-	data := []interface{}{}
-	for _, v := range e.AllRule() {
-		data = append(data, v)
+
+	uuid, _ := c.GetQuery("uuid")
+	if uuid == "" {
+		data := []interface{}{}
+		allRules := e.AllRule()
+		allRules.Range(func(key, value interface{}) bool {
+			data = append(data, value)
+			return true
+		})
+		c.JSON(http.StatusOK, Result{
+			Code: http.StatusOK,
+			Msg:  "Success",
+			Data: data,
+		})
+	} else {
+		c.JSON(http.StatusOK, Result{
+			Code: http.StatusOK,
+			Msg:  "Success",
+			Data: e.GetRule(uuid),
+		})
 	}
-	c.JSON(http.StatusOK, Result{
-		Code: http.StatusOK,
-		Msg:  "Success",
-		Data: data,
-	})
 }
 
 //
@@ -46,7 +58,7 @@ func CreateRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 
 	if len(form.From) > 0 {
 		for _, id := range form.From {
-			if e.GetInEnd(id) == nil {
+			if e.GetInEnd(id).UUID == "" {
 				c.JSON(200, errors.New(`"inend not exists:" `+id))
 				return
 			}

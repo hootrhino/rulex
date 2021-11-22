@@ -72,7 +72,12 @@ func startQueue(xQueue typex.XQueue) {
 						outEnds := qd.E.AllOutEnd()
 						v, ok := outEnds.Load(qd.Out.UUID)
 						if ok {
-							v.(*typex.OutEnd).Target.To(qd.Data)
+							if err := v.(*typex.OutEnd).Target.To(qd.Data); err != nil {
+								statistics.IncOut()
+							} else {
+								statistics.IncOutFailed()
+							}
+
 						}
 					}
 				}
@@ -103,7 +108,10 @@ func (e *RuleEngine) Start() sync.Map {
 func (e *RuleEngine) PushQueue(qd typex.QueueData) error {
 	err := typex.DefaultDataCacheQueue.Push(qd)
 	if err != nil {
-		log.Error("PushQueue error: ", err)
+		log.Error("PushQueue error:", err)
+		statistics.IncInFailed()
+	} else {
+		statistics.IncIn()
 	}
 	return err
 }
@@ -533,18 +541,13 @@ func (e *RuleEngine) Stop() {
 
 // Work
 func (e *RuleEngine) Work(in *typex.InEnd, data string) (bool, error) {
-	statistics.IncIn()
-	err := e.PushQueue(typex.QueueData{
+	e.PushQueue(typex.QueueData{
 		In:   in,
 		Out:  nil,
 		E:    e,
 		Data: data,
 	})
-	if err != nil {
-		return false, err
-	} else {
-		return true, nil
-	}
+	return true, nil
 }
 
 //

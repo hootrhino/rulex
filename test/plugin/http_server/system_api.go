@@ -17,9 +17,11 @@ import (
 //
 func Plugins(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	data := []interface{}{}
-	for _, v := range e.AllPlugins() {
-		data = append(data, v.XPluginMetaInfo())
-	}
+	plugins := e.AllPlugins()
+	plugins.Range(func(key, value interface{}) bool {
+		data = append(data, value.(typex.XPlugin).XPluginMetaInfo())
+		return true
+	})
 	c.JSON(http.StatusOK, Result{
 		Code: http.StatusOK,
 		Msg:  "Success",
@@ -60,11 +62,13 @@ func System(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 //
 func Drivers(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	data := []interface{}{}
-	for _, v := range e.AllInEnd() {
-		if v.Resource.Driver() != nil {
-			data = append(data, v.Resource.Driver().DriverDetail())
+	inEnds := e.AllInEnd()
+	inEnds.Range(func(key, value interface{}) bool {
+		if value.(*typex.InEnd).Resource.Driver() != nil {
+			data = append(data, value.(*typex.InEnd).Resource.Driver().DriverDetail())
 		}
-	}
+		return true
+	})
 	c.JSON(200, Result{
 		Code: 200,
 		Msg:  "Success",
@@ -91,10 +95,10 @@ func ResourceCount(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		Code: http.StatusOK,
 		Msg:  "Success",
 		Data: map[string]int{
-			"inends":  len(e.AllInEnd()),
-			"outends": len(e.AllOutEnd()),
-			"rules":   len(e.AllRule()),
-			"plugins": len(e.AllPlugins()),
+			"inends":  0,
+			"outends": 0,
+			"rules":   0,
+			"plugins": 0,
 		},
 	})
 }

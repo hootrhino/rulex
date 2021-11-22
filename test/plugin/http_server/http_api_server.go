@@ -71,7 +71,7 @@ func (hh *HttpApiServer) Start() error {
 	//
 	//
 	//
-	hh.ginEngine.GET(API_ROOT+"logOut", hh.addRoute(LogOut))
+	hh.ginEngine.POST(API_ROOT+"logout", hh.addRoute(LogOut))
 	//
 	// Get all inends
 	//
