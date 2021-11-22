@@ -164,5 +164,12 @@ Actions = {
 
 
 ## 社区
-- QQ群：475512169
-- 博客：https://wwhai.github.io
+- QQ群：608382561
+- 微信：bignullnull( 加好友后进群，暗号：RULEX )
+
+    <div style="text-align:center">
+    <img src="./README_RES/wx.jpg" width="150px" />
+    </div>
+
+- 博客1：https://wwhai.gitee.io
+- 博客2：https://wwhai.github.io
