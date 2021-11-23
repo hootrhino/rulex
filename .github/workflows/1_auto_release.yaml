@@ -22,10 +22,9 @@ jobs:
         cache: 'npm'
     - run: |
         sudo npm install -g @vue/cli
-        npm install
         git clone https://github.com/wwhai/rulex-dashboard.git
         cd rulex-dashboard
-        npm install --registry=https://registry.npm.taobao.org
+        npm install
         npm run build:prod
         cd ../
         if [ ! -d "./_build/" ]; then
