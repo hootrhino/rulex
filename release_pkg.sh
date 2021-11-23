@@ -102,13 +102,15 @@ cross_compile() {
 fetch_dashboard() {
     git clone https://github.com/wwhai/rulex-dashboard.git
     cd rulex-dashboard
+    npm install --registry=https://registry.npm.taobao.org
     npm run build:prod
     cd ../
-    cp -r ./rulex-dashboard/dist/* ./plugin/httpserver/www
+    cp -r ./rulex-dashboard/dist/* ./plugin/http_server/www
 }
 #
 #
 #
+
 cp -r $(ls | egrep -v '^_build$') ./_build/
 cd ./_build/
 cross_compile
