@@ -3,19 +3,22 @@ set -e
 #
 create_pkg() {
     VERSION=$(cat ./VERSION)
-    zip -r _release/rulex-$1-$VERSION.zip ./rulex-$1 ./VERSION ./conf/
-    rm ./rulex-*
+    echo "Create package: ${rulex-$1-$VERSION}"
+    if [ "$1"=="x64windows" ]; then
+        zip -r _release/rulex-$1-$VERSION.zip ./rulex-$1.exe ./VERSION ./conf/ ./plugin/http_server/www
+        rm -rf ./rulex-*
+        rm -rf ./*.exe
+    else
+        zip -r _release/rulex-$1-$VERSION.zip ./rulex-$1 ./VERSION ./conf/ ./plugin/http_server/www
+        rm -rf ./rulex-*
+    fi
 
 }
+
 #
 make_zip() {
     if [ -n $1 ]; then
-        if [ ! -d "./_release/" ]; then
-            mkdir -p ./_release/
-            create_pkg $1
-        else
-            create_pkg $1
-        fi
+        create_pkg $1
     else
         echo "Should have release target."
         exit 1
@@ -48,6 +51,12 @@ build_x64android() {
 #------------------------------------------
 cross_compile() {
     ARCHS=("x64windows" "x86linux" "x64linux" "arm64linux" "arm32linux" "arm64android" "x64android")
+    if [ ! -d "./_release/" ]; then
+        mkdir -p ./_release/
+    else
+        rm -rf ./_release/
+        mkdir -p ./_release/
+    fi
     for arch in ${ARCHS[@]}; do
         echo "Compile target => ["$arch"]"
         if [[ "${arch}" == "x64windows" ]]; then
@@ -102,7 +111,7 @@ cross_compile() {
 fetch_dashboard() {
     git clone https://github.com/wwhai/rulex-dashboard.git
     cd rulex-dashboard
-    npm install
+    npm install --registry=https://registry.npm.taobao.org
     npm run build:prod
     cd ../
     cp -r ./rulex-dashboard/dist/* ./plugin/http_server/www
@@ -110,12 +119,13 @@ fetch_dashboard() {
 #
 #
 #
-if [ ! -d "./_build/" ]; then
-    mkdir -p ./_build/
-else
-    rm -rf ./_build/
-    mkdir -p ./_build/
-fi
+# if [ ! -d "./_build/" ]; then
+#     mkdir -p ./_build/
+# else
+#     rm -rf ./_build/
+#     mkdir -p ./_build/
+# fi
+
 cp -r $(ls | egrep -v '^_build$') ./_build/
 cd ./_build/
 fetch_dashboard
