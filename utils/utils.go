@@ -145,3 +145,15 @@ func TrimZero(s string) string {
 	}
 	return string(str)
 }
+/*
+*
+* pwd
+*
+*/
+func GetPwd() string {
+	dir, err := os.Getwd()
+	if err != nil {
+		log.Fatal(err)
+	}
+	return dir
+}

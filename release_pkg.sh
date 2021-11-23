@@ -3,13 +3,9 @@
 #
 create_pkg() {
     VERSION=$(cat ./VERSION)
-    if [ "$1"=="x64windows" ]; then
-        zip -r _release/rulex-$1-$VERSION.zip ./rulex-$1.exe ./VERSION ./conf/
-        rm ./rulex-$1.exe
-    else
-        zip -r _release/rulex-$1-$VERSION.zip ./rulex-$1 ./VERSION ./conf/
-        rm ./rulex-$1
-    fi
+    zip -r _release/rulex-$1-$VERSION.zip ./rulex-$1 ./VERSION ./conf/
+    rm ./rulex-*
+
 }
 #
 make_zip() {
@@ -111,4 +107,15 @@ fetch_dashboard() {
 #
 #
 #
+if [ -n $1 ]; then
+    if [ ! -d "./_build/" ]; then
+        mkdir -p ./_build/
+    else
+        rm -rf ./_build/
+        mkdir -p ./_build/
+    fi
+fi
+cd ./_build/
+git clone https://github.com/wwhai/rulex.git ./
+cd rulex
 cross_compile

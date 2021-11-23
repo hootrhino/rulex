@@ -26,7 +26,7 @@ func RunRulex(dbPath string) {
 	engine := NewRuleEngine()
 	engine.Start()
 
-	hh := httpserver.NewHttpApiServer(2580, "plugin/http_server/templates", dbPath, engine)
+	hh := httpserver.NewHttpApiServer(2580, "/plugin/http_server/www/", dbPath, engine)
 	// Load Http api Server
 	engine.LoadPlugin(hh)
 	// Load Mqtt Server

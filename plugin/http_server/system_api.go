@@ -12,6 +12,10 @@ import (
 	"github.com/shirou/gopsutil/disk"
 )
 
+func Index(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+	c.HTML(200, "index.html", nil)
+}
+
 //
 // Get all plugins
 //

@@ -2,7 +2,9 @@ package httpserver
 
 import (
 	"context"
+	"net/http"
 	"rulex/typex"
+	"rulex/utils"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -13,7 +15,8 @@ import (
 	"gorm.io/gorm"
 )
 
-const API_ROOT string = "/api/v1/"
+const API_V1_ROOT string = "/api/v1/"
+const DEFAULT_DB_PATH string = "./rulex.db"
 const DASHBOARD_ROOT string = "/dashboard/v1/"
 
 type HttpApiServer struct {
@@ -33,13 +36,7 @@ func NewHttpApiServer(port int, root string, dbPath string, e typex.RuleX) *Http
 func (hh *HttpApiServer) Init() error {
 	gin.SetMode(gin.ReleaseMode)
 	hh.ginEngine = gin.New()
-	hh.ginEngine.Use(Authorize())
-	hh.ginEngine.Use(Cros())
-	if hh.dbPath == "" {
-		hh.InitDb("./rulex.db")
-	} else {
-		hh.InitDb(hh.dbPath)
-	}
+	configHttpServer(hh)
 	ctx := context.Background()
 	go func(ctx context.Context, port int) {
 		hh.ginEngine.Run(":" + strconv.Itoa(port))
@@ -51,83 +48,84 @@ func (hh *HttpApiServer) Init() error {
 // HttpApiServer Start
 //
 func (hh *HttpApiServer) Start() error {
+	hh.ginEngine.GET("/", hh.addRoute(Index))
 
 	//
 	// Get all plugins
 	//
-	hh.ginEngine.GET(API_ROOT+"plugins", hh.addRoute(Plugins))
+	hh.ginEngine.GET(API_V1_ROOT+"plugins", hh.addRoute(Plugins))
 	//
 	// Get system infomation
 	//
-	hh.ginEngine.GET(API_ROOT+"system", hh.addRoute(System))
+	hh.ginEngine.GET(API_V1_ROOT+"system", hh.addRoute(System))
 	//
 	//
 	//
-	hh.ginEngine.GET(API_ROOT+"resourceCount", hh.addRoute(ResourceCount))
+	hh.ginEngine.GET(API_V1_ROOT+"resourceCount", hh.addRoute(ResourceCount))
 	//
 	//
 	//
-	hh.ginEngine.GET(API_ROOT+"logs", hh.addRoute(Logs))
+	hh.ginEngine.GET(API_V1_ROOT+"logs", hh.addRoute(Logs))
 	//
 	//
 	//
-	hh.ginEngine.POST(API_ROOT+"logout", hh.addRoute(LogOut))
+	hh.ginEngine.POST(API_V1_ROOT+"logout", hh.addRoute(LogOut))
 	//
 	// Get all inends
 	//
-	hh.ginEngine.GET(API_ROOT+"inends", hh.addRoute(InEnds))
+	hh.ginEngine.GET(API_V1_ROOT+"inends", hh.addRoute(InEnds))
 	//
 	//
 	//
-	hh.ginEngine.GET(API_ROOT+"drivers", hh.addRoute(Drivers))
+	hh.ginEngine.GET(API_V1_ROOT+"drivers", hh.addRoute(Drivers))
 	//
 	// Get all outends
 	//
-	hh.ginEngine.GET(API_ROOT+"outends", hh.addRoute(OutEnds))
+	hh.ginEngine.GET(API_V1_ROOT+"outends", hh.addRoute(OutEnds))
 	//
 	// Get all rules
 	//
-	hh.ginEngine.GET(API_ROOT+"rules", hh.addRoute(Rules))
+	hh.ginEngine.GET(API_V1_ROOT+"rules", hh.addRoute(Rules))
 	//
 	// Get statistics data
 	//
-	hh.ginEngine.GET(API_ROOT+"statistics", hh.addRoute(Statistics))
+	hh.ginEngine.GET(API_V1_ROOT+"statistics", hh.addRoute(Statistics))
 	//
 	// Auth
 	//
-	hh.ginEngine.POST(API_ROOT+"users", hh.addRoute(CreateUser))
+	hh.ginEngine.POST(API_V1_ROOT+"users", hh.addRoute(CreateUser))
 	//
 	//
 	//
-	hh.ginEngine.POST(API_ROOT+"login", hh.addRoute(Login))
+	hh.ginEngine.POST(API_V1_ROOT+"login", hh.addRoute(Login))
 	//
 	//
 	//
-	hh.ginEngine.GET(API_ROOT+"info", hh.addRoute(Info))
+	hh.ginEngine.GET(API_V1_ROOT+"info", hh.addRoute(Info))
 	//
 	// Create InEnd
 	//
-	hh.ginEngine.POST(API_ROOT+"inends", hh.addRoute(CreateInend))
+	hh.ginEngine.POST(API_V1_ROOT+"inends", hh.addRoute(CreateInend))
 	//
 	// Create OutEnd
 	//
-	hh.ginEngine.POST(API_ROOT+"outends", hh.addRoute(CreateOutEnd))
+	hh.ginEngine.POST(API_V1_ROOT+"outends", hh.addRoute(CreateOutEnd))
 	//
 	// Create rule
 	//
-	hh.ginEngine.POST(API_ROOT+"rules", hh.addRoute(CreateRule))
+	hh.ginEngine.POST(API_V1_ROOT+"rules", hh.addRoute(CreateRule))
 	//
 	// Delete inend by UUID
 	//
-	hh.ginEngine.DELETE(API_ROOT+"inends", hh.addRoute(DeleteInend))
+	hh.ginEngine.DELETE(API_V1_ROOT+"inends", hh.addRoute(DeleteInend))
 	//
 	// Delete outend by UUID
 	//
-	hh.ginEngine.DELETE(API_ROOT+"outends", hh.addRoute(DeleteOutend))
+	hh.ginEngine.DELETE(API_V1_ROOT+"outends", hh.addRoute(DeleteOutend))
 	//
 	// Delete rule by UUID
 	//
-	hh.ginEngine.DELETE(API_ROOT+"rules", hh.addRoute(DeleteRule))
+	hh.ginEngine.DELETE(API_V1_ROOT+"rules", hh.addRoute(DeleteRule))
 	//
 	log.Info("Http server started on http://127.0.0.1:2580")
 	return nil
@@ -149,5 +147,18 @@ func (hh *HttpApiServer) XPluginMetaInfo() typex.XPluginMetaInfo {
 		Author:   "wwhai",
 		Email:    "cnwwhai@gmail.com",
 		License:  "MIT",
+	}
+}
+func configHttpServer(hh *HttpApiServer) {
+	hh.ginEngine.Use(Authorize())
+	hh.ginEngine.Use(Cros())
+	hh.ginEngine.LoadHTMLFiles(utils.GetPwd() + hh.Root + "index.html")
+	hh.ginEngine.StaticFS("/static", http.Dir(utils.GetPwd()+hh.Root+"static"))
+	hh.ginEngine.StaticFS("/assets", http.Dir(utils.GetPwd()+hh.Root+"static/assets"))
+	hh.ginEngine.StaticFile("/favicon.ico", utils.GetPwd()+hh.Root+"favicon.ico")
+	if hh.dbPath == "" {
+		hh.InitDb(DEFAULT_DB_PATH)
+	} else {
+		hh.InitDb(hh.dbPath)
 	}
 }
