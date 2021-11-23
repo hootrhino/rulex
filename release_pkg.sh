@@ -4,7 +4,7 @@ set -e
 create_pkg() {
     VERSION=$(cat ./VERSION)
     echo "Create package: ${rulex-$1-$VERSION}"
-    if [ "$1"=="x64windows" ]; then
+    if [ "$1" == "x64windows" ]; then
         zip -r _release/rulex-$1-$VERSION.zip ./rulex-$1.exe ./VERSION ./conf/ ./plugin/http_server/www
         rm -rf ./rulex-*
         rm -rf ./*.exe
@@ -119,12 +119,12 @@ fetch_dashboard() {
 #
 #
 #
-# if [ ! -d "./_build/" ]; then
-#     mkdir -p ./_build/
-# else
-#     rm -rf ./_build/
-#     mkdir -p ./_build/
-# fi
+if [ ! -d "./_build/" ]; then
+    mkdir -p ./_build/
+else
+    rm -rf ./_build/
+    mkdir -p ./_build/
+fi
 
 cp -r $(ls | egrep -v '^_build$') ./_build/
 cd ./_build/
