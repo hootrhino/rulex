@@ -6,7 +6,7 @@ on:
 
 jobs:
   build:
-    name: 上传发布包
+    name: 打包发布
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -34,7 +34,7 @@ jobs:
       uses: svenstaro/upload-release-action@v2
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: _release/rulex-*.zip
+        file: _build/_release/rulex-*.zip
         tag: ${{ github.ref }}
         overwrite: true
         file_glob: true
