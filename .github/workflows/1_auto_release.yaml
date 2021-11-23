@@ -8,7 +8,33 @@ jobs:
   build:
     name: 上传发布包
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [ 14.x ]
+ 
     steps:
+
+    - uses: actions/checkout@v2
+    - name: Build html with node-${{ matrix.node-version }}
+      uses: actions/setup-node@v2
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    - run: |
+        sudo npm install -g @vue/cli
+        npm install
+        git clone https://github.com/wwhai/rulex-dashboard.git
+        cd rulex-dashboard
+        npm run build:prod
+        cd ../
+        if [ ! -d "./_build/" ]; then
+            mkdir -p ./_build/
+        else
+            rm -rf ./_build/
+            mkdir -p ./_build/
+        fi
+        cp -r ./rulex-dashboard/dist/* ./plugin/httpserver/www
+
     - uses: actions/checkout@v2
     - name: Set up Go
       uses: actions/setup-go@v2
