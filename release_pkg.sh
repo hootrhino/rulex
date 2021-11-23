@@ -1,5 +1,5 @@
 #! /bin/bash
-set +e
+set -e
 #
 create_pkg() {
     VERSION=$(cat ./VERSION)
@@ -104,7 +104,7 @@ fetch_dashboard() {
     cd rulex-dashboard
     npm run build:prod
     cd ../
-    cp -r ./rulex-dashboard/dist/* _release/rulex/plugin/httpserver/www
+    cp -r ./rulex-dashboard/dist/* ./plugin/httpserver/www
 }
 #
 #
