@@ -16,4 +16,5 @@ go.sum
 *.bin
 *.output
 profile*
-_release
+_release*
+_build*

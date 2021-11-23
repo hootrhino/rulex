@@ -1,5 +1,5 @@
 #! /bin/bash
-
+set +e
 #
 create_pkg() {
     VERSION=$(cat ./VERSION)
@@ -100,22 +100,30 @@ cross_compile() {
 # fetch dashboard
 #
 fetch_dashboard() {
-    URL=""
-    wget URL dashboard.zip
-    unzip dashboard.zip -d _release/rulex/plugin/httpserver/template
+    git clone https://github.com/wwhai/rulex-dashboard.git
+    cd rulex-dashboard
+    npm run build:prod
+    cd ../
+    cp -r ./rulex-dashboard/dist/* _release/rulex/plugin/httpserver/www
 }
 #
 #
 #
-if [ -n $1 ]; then
-    if [ ! -d "./_build/" ]; then
-        mkdir -p ./_build/
-    else
-        rm -rf ./_build/
-        mkdir -p ./_build/
-    fi
+
+if [ ! -d "./_build/" ]; then
+    mkdir -p ./_build/
+else
+    rm -rf ./_build/
+    mkdir -p ./_build/
 fi
+
+#
+cp -r $(ls | egrep -v '^_build$') ./_build/
+#
+#
+#
 cd ./_build/
-git clone https://github.com/wwhai/rulex.git ./
-cd rulex
+# ---------------------
+fetch_dashboard
+# ---------------------
 cross_compile
