@@ -35,35 +35,35 @@ sudo apt install gcc make
 sudo apt install gcc-mingw-w64-x86-64 -y
 # 交叉编译 ARM 使用
 sudo apt install gcc-arm-linux-gnueabi -y
+sudo apt install gcc-aarch64-linux-gnu -y
 ```
 
 ### 启动
 
+- `rulex run`
 ```sh
-./rulex run ./conf/default.data
-2021/09/20 17:09:05 cfg.go:24: [info] Init rulex config 
-2021/09/20 17:09:05 cfg.go:34: [info] Rulex config init success. 
-2021/09/20 17:09:05 utils.go:71: [info] 
- -----------------------------------------------------------     
-~~~/=====\       ██████╗ ██╗   ██╗██╗     ███████╗██╗  ██╗       
-~~~||\\\||--->o  ██╔══██╗██║   ██║██║     ██╔════╝╚██╗██╔╝       
-~~~||///||--->o  ██████╔╝██║   ██║██║     █████╗   ╚███╔╝        
-~~~||///||--->o  ██╔══██╗██║   ██║██║     ██╔══╝   ██╔██╗        
-~~~||\\\||--->o  ██║  ██║╚██████╔╝███████╗███████╗██╔╝ ██╗       
+ -----------------------------------------------------------
+~~~/=====\       ██████╗ ██╗   ██╗██╗     ███████╗██╗  ██╗
+~~~||\\\||--->o  ██╔══██╗██║   ██║██║     ██╔════╝╚██╗██╔╝
+~~~||///||--->o  ██████╔╝██║   ██║██║     █████╗   ╚███╔╝
+~~~||///||--->o  ██╔══██╗██║   ██║██║     ██╔══╝   ██╔██╗
+~~~||\\\||--->o  ██║  ██║╚██████╔╝███████╗███████╗██╔╝ ██╗
 ~~~\=====/       ╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚══════╝╚═╝  ╚═╝
 -----------------------------------------------------------
-2021/09/20 17:09:05 utils.go:74: [info] rulex start successfully
-2021/09/20 17:09:05 http_api_server.go:139: [info] Http server started on http://127.0.0.1:2580
-2021/09/20 17:09:05 grpc_resource.go:92: [info] RulexRpc resource started on [::]:2581
-2021/09/20 17:09:05 coap_resource.go:71: [info] Coap resource started on [udp]:2582
-2021/09/20 17:09:05 http_resource.go:47: [info] HTTP resource started on [0.0.0.0]:2583
-2021/09/20 17:09:05 udp_resource.go:50: [info] UDP resource started on [0.0.0.0]:2584
+2021/11/24 11:03:15 utils.go:101: [info] Rulex start successfully
+2021/11/24 11:03:15 main.go:39: [info] Load config db: rulex.db
+2021/11/24 11:03:15 cfg.go:34: [info] Init rulex config
+2021/11/24 11:03:15 cfg.go:54: [info] Rulex config init successfully
+
 ```
-> `./conf/default.data` 是已经设置好的测试数据,方便大家调试体验，你可以直接运行:`./rulex run`
+
 ## Dashboard
 ```
 浏览器输入：http://127.0.0.1:2580
 ```
+<div style="text-align:center">
+<img src="./README_RES/1.png"/>
+</div>
 
 ## 规则引擎
 ### 规则定义
