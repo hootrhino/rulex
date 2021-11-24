@@ -4,12 +4,10 @@ go 1.16
 
 require (
 	github.com/DrmagicE/gmqtt v0.4.1
-	github.com/StackExchange/wmi v1.2.0 // indirect
 	github.com/adrianmo/go-nmea v1.4.0
 	github.com/cjoudrey/gluaurl v0.0.0-20161028222611-31cbb9bef199
 	github.com/eclipse/paho.mqtt.golang v1.3.5
 	github.com/gin-gonic/gin v1.7.2
-	github.com/go-ole/go-ole v1.2.5 // indirect
 	github.com/go-playground/assert/v2 v2.0.1
 	github.com/go-playground/validator/v10 v10.4.1
 	github.com/goburrow/modbus v0.1.0
@@ -32,8 +30,8 @@ require (
 	github.com/prometheus/client_golang v1.7.1 // indirect
 	github.com/prometheus/procfs v0.6.0 // indirect
 	github.com/shirou/gopsutil v3.21.6+incompatible
+	github.com/shirou/gopsutil/v3 v3.21.10
 	github.com/smartystreets/goconvey v1.6.4 // indirect
-	github.com/tklauser/go-sysconf v0.3.6 // indirect
 	github.com/ugorji/go v1.1.13 // indirect
 	github.com/urfave/cli/v2 v2.3.0
 	github.com/wwhai/gopher-json v0.0.0-20201124131017-552bb3c4c3bf
