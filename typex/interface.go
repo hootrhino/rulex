@@ -20,7 +20,7 @@ type XDataModel struct {
 // RuleX interface
 //
 type RuleX interface {
-	Start() sync.Map
+	Start() *sync.Map
 	//
 	PushQueue(QueueData) error
 	//
@@ -32,10 +32,10 @@ type RuleX interface {
 	GetInEnd(string) *InEnd
 	SaveInEnd(*InEnd)
 	RemoveInEnd(string)
-	AllInEnd() sync.Map
+	AllInEnd() *sync.Map
 	//
 	LoadOutEnd(*OutEnd) error
-	AllOutEnd() sync.Map
+	AllOutEnd() *sync.Map
 	GetOutEnd(string) *OutEnd
 	SaveOutEnd(*OutEnd)
 	RemoveOutEnd(string)
@@ -43,10 +43,10 @@ type RuleX interface {
 	LoadHook(XHook) error
 	//
 	LoadPlugin(XPlugin) error
-	AllPlugins() sync.Map
+	AllPlugins() *sync.Map
 	//
 	LoadRule(*Rule) error
-	AllRule() sync.Map
+	AllRule() *sync.Map
 	GetRule(id string) *Rule
 	RemoveRule(uuid string)
 	//

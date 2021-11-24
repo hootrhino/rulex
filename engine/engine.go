@@ -23,13 +23,13 @@ import (
 // RuleEngine
 //
 type RuleEngine struct {
-	Hooks     sync.Map `json:"-"`
-	Rules     sync.Map `json:"-"`
-	Plugins   sync.Map `json:"plugins"`
-	InEnds    sync.Map `json:"inends"`
-	OutEnds   sync.Map `json:"outends"`
-	Drivers   sync.Map `json:"drivers"`
-	ConfigMap sync.Map `json:"configMap"`
+	Hooks     *sync.Map `json:"-"`
+	Rules     *sync.Map `json:"-"`
+	Plugins   *sync.Map `json:"plugins"`
+	InEnds    *sync.Map `json:"inends"`
+	OutEnds   *sync.Map `json:"outends"`
+	Drivers   *sync.Map `json:"drivers"`
+	ConfigMap *sync.Map `json:"configMap"`
 }
 
 //
@@ -37,13 +37,13 @@ type RuleEngine struct {
 //
 func NewRuleEngine() typex.RuleX {
 	return &RuleEngine{
-		Plugins:   sync.Map{},
-		Hooks:     sync.Map{},
-		Rules:     sync.Map{},
-		InEnds:    sync.Map{},
-		OutEnds:   sync.Map{},
-		Drivers:   sync.Map{},
-		ConfigMap: sync.Map{},
+		Plugins:   &sync.Map{},
+		Hooks:     &sync.Map{},
+		Rules:     &sync.Map{},
+		InEnds:    &sync.Map{},
+		OutEnds:   &sync.Map{},
+		Drivers:   &sync.Map{},
+		ConfigMap: &sync.Map{},
 	}
 }
 
@@ -92,8 +92,8 @@ func startQueue(xQueue typex.XQueue) {
 //
 //
 //
-func (e *RuleEngine) Start() sync.Map {
-	e.ConfigMap = sync.Map{}
+func (e *RuleEngine) Start() *sync.Map {
+	e.ConfigMap = &sync.Map{}
 	log.Info("Init XQueue, max queue size is:", core.GlobalConfig.MaxQueueSize)
 	typex.DefaultDataCacheQueue = &typex.DataCacheQueue{
 		Queue: make(chan typex.QueueData, core.GlobalConfig.MaxQueueSize),
@@ -119,10 +119,10 @@ func (e *RuleEngine) PushQueue(qd typex.QueueData) error {
 //
 //
 //
-func (e *RuleEngine) GetPlugins() sync.Map {
+func (e *RuleEngine) GetPlugins() *sync.Map {
 	return e.Plugins
 }
-func (e *RuleEngine) AllPlugins() sync.Map {
+func (e *RuleEngine) AllPlugins() *sync.Map {
 	return e.Plugins
 }
 
@@ -495,7 +495,7 @@ func (e *RuleEngine) RemoveRule(ruleId string) {
 //
 //
 //
-func (e *RuleEngine) AllRule() sync.Map {
+func (e *RuleEngine) AllRule() *sync.Map {
 	return e.Rules
 }
 
@@ -649,7 +649,7 @@ func (e *RuleEngine) RemoveInEnd(id string) {
 //
 //
 //
-func (e *RuleEngine) AllInEnd() sync.Map {
+func (e *RuleEngine) AllInEnd() *sync.Map {
 	return e.InEnds
 }
 
@@ -688,6 +688,6 @@ func (e *RuleEngine) RemoveOutEnd(uuid string) {
 //
 //
 //
-func (e *RuleEngine) AllOutEnd() sync.Map {
+func (e *RuleEngine) AllOutEnd() *sync.Map {
 	return e.OutEnds
 }
