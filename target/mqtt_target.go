@@ -1,6 +1,7 @@
 package target
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"rulex/typex"
@@ -14,19 +15,33 @@ import (
 
 //
 type mqttConfig struct {
-	Host     string `json:"host" validate:"required"`
-	Port     int    `json:"port" validate:"required"`
-	Topic    string `json:"topic" validate:"required"`
-	ClientId string `json:"clientId" validate:"required"`
-	Username string `json:"username" validate:"required"`
-	Password string `json:"password" validate:"required"`
+	Host         string `json:"host" validate:"required"`
+	Port         int    `json:"port" validate:"required"`
+	S2CTopic     string `json:"S2CTopic" validate:"required"`     // 这个Topic是专门留给服务器下发指令用的
+	ToplogyTopic string `json:"toplogyTopic" validate:"required"` // 定时上报拓扑结构的 Topic
+	DataTopic    string `json:"dataTopic" validate:"required"`    // 上报数据的 Topic
+	StateTopic   string `json:"stateTopic" validate:"required"`   // 定时上报状态的 Topic
+	ClientId     string `json:"clientId" validate:"required"`
+	Username     string `json:"username" validate:"required"`
+	Password     string `json:"password" validate:"required"`
 }
 
 //
 type MqttOutEndTarget struct {
 	typex.XStatus
-	client mqtt.Client
-	Topic  string
+	client    mqtt.Client
+	DataTopic string
+}
+
+//
+// 服务器消息
+//
+type s2cCommand struct {
+	Cmd  string
+	Args []string
+}
+type c2sCommand struct {
+	Result interface{}
 }
 
 func NewMqttTarget(e typex.RuleX) typex.XTarget {
@@ -44,29 +59,47 @@ func (mm *MqttOutEndTarget) Start() error {
 	if err := utils.BindResourceConfig(config, &mainConfig); err != nil {
 		return err
 	}
-	opts := mqtt.NewClientOptions()
-
-	var messageHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
-		mm.RuleEngine.GetOutEnd(mm.PointId).Target.To(string(msg.Payload()))
-	}
 	//
 	var connectHandler mqtt.OnConnectHandler = func(client mqtt.Client) {
 		log.Infof("Mqtt OutEnd Connected Success")
+		client.Subscribe(mainConfig.S2CTopic, 2, func(c mqtt.Client, m mqtt.Message) {
+			// 监听服务端的指令
+			var cmd s2cCommand
+			if err := json.Unmarshal(m.Payload(), &cmd); err != nil {
+				log.Error(err)
+			} else {
+				if cmd.Cmd == "get-state" {
+					token := mm.client.Publish(mainConfig.StateTopic, 0, false, c2sCommand{
+						Result: "running",
+					})
+					if token.Error() != nil {
+						log.Error(token.Error())
+					}
+				} else if cmd.Cmd == "get-toplogy" {
+					token := mm.client.Publish(mainConfig.ToplogyTopic, 0, false, c2sCommand{
+						Result: []string{"node1", "node2"},
+					})
+					if token.Error() != nil {
+						log.Error(token.Error())
+					}
+				} else {
+					log.Error("Unsupported command:" + cmd.Cmd)
+				}
+			}
+		})
 	}
 
 	var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err error) {
 		log.Warnf("Connect lost: %v, try to reconnect\n", err)
-		time.Sleep(5 * time.Second)
 	}
-
+	opts := mqtt.NewClientOptions()
 	opts.AddBroker(fmt.Sprintf("tcp://%s:%v", mainConfig.Host, mainConfig.Port))
 	opts.SetClientID(mainConfig.ClientId)
 	opts.SetUsername(mainConfig.Username)
 	opts.SetPassword(mainConfig.Password)
-	mm.Topic = mainConfig.Topic
+	mm.DataTopic = mainConfig.DataTopic
 	opts.OnConnect = connectHandler
 	opts.OnConnectionLost = connectLostHandler
-	opts.SetDefaultPublishHandler(messageHandler)
 	opts.SetPingTimeout(3 * time.Second)
 	opts.SetAutoReconnect(true)
 	opts.SetMaxReconnectInterval(5 * time.Second)
@@ -134,7 +167,7 @@ func (mm *MqttOutEndTarget) Details() *typex.OutEnd {
 //
 func (mm *MqttOutEndTarget) To(data interface{}) error {
 	if mm.client != nil {
-		return mm.client.Publish(mm.Topic, 2, false, data).Error()
+		return mm.client.Publish(mm.DataTopic, 2, false, data).Error()
 	}
 	return errors.New("mqtt client is nil")
 }
