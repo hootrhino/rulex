@@ -17,9 +17,7 @@ jobs:
     - name: 构建发布包
       run: |
           sudo apt update -y
-          sudo apt install jq cloc protobuf-compiler gcc-mingw-w64-x86-64 gcc-arm-linux-gnueabi -y
-          wget https://releases.linaro.org/components/toolchain/binaries/5.3-2016.02/aarch64-linux-gnu/gcc-linaro-5.3-2016.02-x86_64_aarch64-linux-gnu.tar.xz 
-          tar xvf gcc-linaro-5.3-2016.02-x86_64_aarch64-linux-gnu.tar.xz -C /usr/lib/
+          sudo apt install jq cloc protobuf-compiler gcc-mingw-w64-x86-64 gcc-arm-linux-gnueabi gcc-aarch64-linux-gnu -y
           curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -
           sudo apt-get install -y nodejs
           cloc ./

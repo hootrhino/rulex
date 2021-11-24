@@ -36,13 +36,13 @@ build_x64linux() {
     CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -ldflags "-s -w" -o rulex-$1 main.go
 }
 build_arm64linux() {
-    CGO_ENABLED=1 GOOS=linux GOARCH=arm64 CC=/usr/lib/gcc-linaro-5.3-2016.02-x86_64_aarch64-linux-gnu/bin/aarch64-linux-gnu-gcc go build -ldflags "-s -w" -o rulex-$1 main.go
+    CGO_ENABLED=1 GOOS=linux GOARCH=arm64 CC=aarch64-linux-gnu-gcc go build -ldflags "-s -w" -o rulex-$1 main.go
 }
 build_arm32linux() {
     CGO_ENABLED=1 GOARM=7 GOOS=linux GOARCH=arm CC=arm-linux-gnueabi-gcc go build -ldflags "-s -w" -o rulex-$1 -ldflags "-linkmode external -extldflags -static" main.go
 }
 build_arm64android() {
-    CGO_ENABLED=1 GOOS=linux GOARCH=arm64 CC=/usr/lib/gcc-linaro-5.3-2016.02-x86_64_aarch64-linux-gnu/bin/aarch64-linux-gnu-gcc go build -ldflags "-s -w" -o rulex-$1 main.go
+    CGO_ENABLED=1 GOOS=linux GOARCH=arm64 CC=aarch64-linux-gnu-gcc go build -ldflags "-s -w" -o rulex-$1 main.go
 }
 build_x64android() {
     CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -ldflags "-s -w" -o rulex-$1 main.go
