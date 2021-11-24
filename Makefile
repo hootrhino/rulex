@@ -41,10 +41,6 @@ arm32:
 run:
 	go run -race main.go run
 
-.PHONY: docker
-docker:
-	docker build . -t ${APP}/${APP}:${VERSION} --rm
-
 .PHONY: test
 test:
 	go test rulex/test -v
