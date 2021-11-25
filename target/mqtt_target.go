@@ -64,6 +64,8 @@ func (mm *MqttOutEndTarget) Start() error {
 		log.Infof("Mqtt OutEnd Connected Success")
 		client.Subscribe(mainConfig.S2CTopic, 2, func(c mqtt.Client, m mqtt.Message) {
 			// 监听服务端的指令
+			// TODO 下个版本实现
+			//
 			var cmd s2cCommand
 			if err := json.Unmarshal(m.Payload(), &cmd); err != nil {
 				log.Error(err)
@@ -77,7 +79,15 @@ func (mm *MqttOutEndTarget) Start() error {
 					}
 				} else if cmd.Cmd == "get-toplogy" {
 					token := mm.client.Publish(mainConfig.ToplogyTopic, 0, false, c2sCommand{
-						Result: []string{"node1", "node2"},
+						Result: []string{},
+					})
+					if token.Error() != nil {
+						log.Error(token.Error())
+					}
+
+				} else if cmd.Cmd == "get-log" {
+					token := mm.client.Publish(mainConfig.ToplogyTopic, 0, false, c2sCommand{
+						Result: []string{},
 					})
 					if token.Error() != nil {
 						log.Error(token.Error())
