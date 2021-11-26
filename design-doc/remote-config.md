@@ -43,15 +43,15 @@ Rulex 作为一个公共组件，***不具备为任何私有云平台或者系�
 下面是Topic规范，注意，`.` 并不是 MQTT 协议规范，这里是为了区分业务的一种表示形式，不要被误导。
 
 
-| 功能         | 路径                                  | QoS  | 行为      |
-| ------------ | ------------------------------------- | ---- | --------- |
-| 上报日志     | upstream.gateway.logs/${client-id}    | 0    | publish   |
-| 上报拓扑     | upstream.gateway.toplogy/${client-id} | 0    | publish   |
-| 上报自身状态 | upstream.gateway.state/${client-id}   | 0    | publish   |
-| 接受远程消息 | downstream.gateway.s2c/${client-id}   | 2    | subscribe |
-| 规则引擎数据 | upstream.gateway.publish/${client-id} | 2    | publish   |
-| 设备离线     | upstream.gateway.disconnected         | 2    | publish   |
-| 设备上线     | upstream.gateway.connected            | 2    | publish   |
+| 功能                               | 路径                                  | QoS | 行为      |
+| ---------------------------------- | ------------------------------------- | --- | --------- |
+| 上报日志                           | upstream.gateway.logs/${client-id}    | 0   | publish   |
+| 上报拓扑                           | upstream.gateway.toplogy/${client-id} | 0   | publish   |
+| 上报指令执行结果以及目标节点的状态 | upstream.gateway.state/${client-id}   | 0   | publish   |
+| 接受远程消息                       | downstream.gateway.s2c/${client-id}   | 2   | subscribe |
+| 规则引擎数据                       | upstream.gateway.publish/${client-id} | 2   | publish   |
+| 设备离线                           | upstream.gateway.disconnected         | 2   | publish   |
+| 设备上线                           | upstream.gateway.connected            | 2   | publish   |
 
 ***上面的 topic 不是写死的，只是为了配合 EMQX 的推荐值，如果有个性化需求可以自行调整.***
 
@@ -85,22 +85,21 @@ Rulex 作为一个公共组件，***不具备为任何私有云平台或者系�
   }
   ```
   
-- 上报自身状态
+- 上报指令执行结果以及目标节点的状态
+  该功能主要是为了同步设备的状态，比如给某个开关下发了开指令:
   ```json
-    {
-        "uuid":1,
-        "state":{
-            "alloc":12,
-            "cpuPercent":[
-                0
-            ],
-            "diskInfo":86,
-            "osArch":"windows-amd64",
-            "system":31,
-            "total":14,
-            "version":"0.0.0-4b22a5e74f32bdc"
-        }
-    }
+     {
+       "cmdId": "00001",
+       "cmd" :"open",
+       "sw": [1, 2]
+     }
+  ```
+  此时命令执行完后会有成功或者失败的结果反馈上去，mqtt topic为: `upstream.gateway.state/${client-id}`
+  ```json
+     {
+       "cmdId" :"00001",
+       "state": "success"
+     }
   ```
   
 - 接受远程消息
