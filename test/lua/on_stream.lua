@@ -12,8 +12,13 @@ end
 -- Actions
 Actions = {
     function(data)
-        stdlib:WriteInStream('INEND_e1a3f6df-1048-4582-aeac-9e7c45352db1', data)
-        stdlib:WriteOutStream('OUTEND_e1a3f6df-1048-4582-aeac-9e7c45352db1', data)
+        -- {"type": "OPEN", "sn": "SN0001"}
+        local Type = data["type"]
+        local SN = data["sn"]
+        -- 给底下的设备端发指令
+        stdlib:WriteInStream('9e7c45352db1', data)
+        -- 给远程端回复指令
+        stdlib:WriteOutStream('9e7c45352db1', data)
         return true, data
     end
 }
