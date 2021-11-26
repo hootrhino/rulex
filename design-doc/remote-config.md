@@ -20,16 +20,38 @@ Rulex 作为一个公共组件，***不具备为任何私有云平台或者系�
 - `stateTopic`: 上报状态
 
 ### RULEX 和私有云交互 Topic 规范
+整体架构设计
+```
+                                                   +-----------------+
+                                                   |                 |
+                                                   |   EMQX Cluster  |
+                                                   |                 |
+                                                   +--------^--------+
+                                                            |
+                                                   +--------+--------+
+                                                   |                 |
+                                                   |    Gateway      |
+                                                   |                 |
+                                                   +--^-----------^--+
+                                                      |           |
+                                                      |           |
+                                                   +--+--+     +--+--+
+                                                   |     |     |     |
+                                                   | D1  |     | D2  |
+                                                   +-----+     +-----+
+```
+下面是Topic规范，注意，`.` 并不是 MQTT 协议规范，这里是为了区分业务的一种表示形式，不要被误导。
 
-| 功能         | 路径                             | QoS | 行为    |
-| ------------ | -------------------------------- | --- | ------- |
-| 上报日志     | emqx.stream.gateway.logs         | 0   | publish |
-| 上报拓扑     | emqx.stream.gateway.toplogy      | 0   | publish |
-| 上报自身状态 | emqx.stream.gateway.state        | 0   | publish |
-| 接受远程消息 | emqx.stream.gateway.s2c          | 2   | publish |
-| 规则引擎数据 | emqx.stream.devices.publish      | 2   | publish |
-| 设备离线     | emqx.stream.devices.disconnected | 2   | publish |
-| 设备上线     | emqx.stream.devices.connected    | 2   | publish |
+
+| 功能         | 路径                                       | QoS | 行为      |
+| ------------ | ------------------------------------------ | --- | --------- |
+| 上报日志     | upstream.gateway.logs/${client-id}         | 0   | publish   |
+| 上报拓扑     | upstream.gateway.toplogy/${client-id}      | 0   | publish   |
+| 上报自身状态 | upstream.gateway.state/${client-id}        | 0   | publish   |
+| 接受远程消息 | downstream.gateway.s2c/${client-id}        | 2   | subscribe |
+| 规则引擎数据 | upstream.gateway.publish/${client-id}      | 2   | publish   |
+| 设备离线     | upstream.gateway.disconnected/${client-id} | 2   | publish   |
+| 设备上线     | upstream.gateway.connected/${client-id}    | 2   | publish   |
 
 ***上面的 topic 不是写死的，只是为了配合 EMQX 的推荐值，如果有个性化需求可以自行调整.***
 
