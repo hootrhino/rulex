@@ -1,7 +1,6 @@
 package target
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"rulex/typex"
@@ -15,15 +14,12 @@ import (
 
 //
 type mqttConfig struct {
-	Host         string `json:"host" validate:"required"`
-	Port         int    `json:"port" validate:"required"`
-	S2CTopic     string `json:"S2CTopic" validate:"required"`     // 这个Topic是专门留给服务器下发指令用的
-	ToplogyTopic string `json:"toplogyTopic" validate:"required"` // 定时上报拓扑结构的 Topic
-	DataTopic    string `json:"dataTopic" validate:"required"`    // 上报数据的 Topic
-	StateTopic   string `json:"stateTopic" validate:"required"`   // 定时上报状态的 Topic
-	ClientId     string `json:"clientId" validate:"required"`
-	Username     string `json:"username" validate:"required"`
-	Password     string `json:"password" validate:"required"`
+	Host      string `json:"host" validate:"required"`
+	Port      int    `json:"port" validate:"required"`
+	DataTopic string `json:"dataTopic" validate:"required"` // 上报数据的 Topic
+	ClientId  string `json:"clientId" validate:"required"`
+	Username  string `json:"username" validate:"required"`
+	Password  string `json:"password" validate:"required"`
 }
 
 //
@@ -31,17 +27,6 @@ type MqttOutEndTarget struct {
 	typex.XStatus
 	client    mqtt.Client
 	DataTopic string
-}
-
-//
-// 服务器消息
-//
-type s2cCommand struct {
-	Cmd  string
-	Args []string
-}
-type c2sCommand struct {
-	Result interface{}
 }
 
 func NewMqttTarget(e typex.RuleX) typex.XTarget {
@@ -62,41 +47,6 @@ func (mm *MqttOutEndTarget) Start() error {
 	//
 	var connectHandler mqtt.OnConnectHandler = func(client mqtt.Client) {
 		log.Infof("Mqtt OutEnd Connected Success")
-		client.Subscribe(mainConfig.S2CTopic, 2, func(c mqtt.Client, m mqtt.Message) {
-			// 监听服务端的指令
-			// TODO 下个版本实现
-			//
-			var cmd s2cCommand
-			if err := json.Unmarshal(m.Payload(), &cmd); err != nil {
-				log.Error(err)
-			} else {
-				if cmd.Cmd == "get-state" {
-					token := mm.client.Publish(mainConfig.StateTopic, 0, false, c2sCommand{
-						Result: "running",
-					})
-					if token.Error() != nil {
-						log.Error(token.Error())
-					}
-				} else if cmd.Cmd == "get-toplogy" {
-					token := mm.client.Publish(mainConfig.ToplogyTopic, 0, false, c2sCommand{
-						Result: []string{},
-					})
-					if token.Error() != nil {
-						log.Error(token.Error())
-					}
-
-				} else if cmd.Cmd == "get-log" {
-					token := mm.client.Publish(mainConfig.ToplogyTopic, 0, false, c2sCommand{
-						Result: []string{},
-					})
-					if token.Error() != nil {
-						log.Error(token.Error())
-					}
-				} else {
-					log.Error("Unsupported command:" + cmd.Cmd)
-				}
-			}
-		})
 	}
 
 	var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err error) {

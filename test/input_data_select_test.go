@@ -2,7 +2,7 @@ package test
 
 import (
 	"encoding/json"
-	"rulex/stdlib"
+	"rulex/rulexlib"
 
 	"testing"
 
@@ -19,7 +19,7 @@ func TestJq1(t *testing.T) {
 		map[string]interface{}{"id": 4, "name": "A4"},
 	}
 
-	l1, _ := stdlib.JqSelect(jqExpression, inputData)
+	l1, _ := rulexlib.JqSelect(jqExpression, inputData)
 	json1, _ := json.Marshal(l1)
 	assert.Equal(t, `[{"id":1,"name":"A1"}]`, string(json1))
 	t.Log(string(json1))
@@ -37,16 +37,16 @@ func TestJq2(t *testing.T) {
 		map[string]interface{}{"id": 3, "name": "A3", "temp": 0.03, "hum": 20.34},
 		map[string]interface{}{"id": 4, "name": "A4", "temp": 12345676.4322454, "hum": 44.5566},
 	}
-	l1, _ := stdlib.JqSelect(jqExpression1, inputData)
+	l1, _ := rulexlib.JqSelect(jqExpression1, inputData)
 	json1, _ := json.Marshal(l1)
 	t.Log(string(json1))
-	l2, _ := stdlib.JqSelect(jqExpression2, inputData)
+	l2, _ := rulexlib.JqSelect(jqExpression2, inputData)
 	json2, _ := json.Marshal(l2)
 	t.Log(string(json2))
-	l3, _ := stdlib.JqSelect(jqExpression3, inputData)
+	l3, _ := rulexlib.JqSelect(jqExpression3, inputData)
 	json3, _ := json.Marshal(l3)
 	t.Log(string(json3))
-	l4, _ := stdlib.JqSelect(jqExpression4, inputData)
+	l4, _ := rulexlib.JqSelect(jqExpression4, inputData)
 	json4, _ := json.Marshal(l4)
 	t.Log(string(json4))
 	assert.Equal(t, `[{"hum":20,"id":1,"name":"A1","temp":10}]`, string(json1))
@@ -67,13 +67,13 @@ func TestJq3(t *testing.T) {
 	inputData := []interface{}{
 		map[string]interface{}{"id": 1, "name": "A1", "temp": 10, "hum": 20},
 	}
-	l1, _ := stdlib.JqSelect(jqExpression1, inputData)
+	l1, _ := rulexlib.JqSelect(jqExpression1, inputData)
 	json1, _ := json.Marshal(l1)
 	assert.Equal(t, `[{"hum":20,"id":1,"name":"A1","temp":10}]`, string(json1))
-	l2, _ := stdlib.JqSelect(jqExpression2, inputData)
+	l2, _ := rulexlib.JqSelect(jqExpression2, inputData)
 	json2, _ := json.Marshal(l2)
 	assert.Equal(t, `[]`, string(json2))
-	l3, _ := stdlib.JqSelect(jqExpression3, inputData)
+	l3, _ := rulexlib.JqSelect(jqExpression3, inputData)
 	json3, _ := json.Marshal(l3)
 	assert.Equal(t, `[]`, string(json3))
 

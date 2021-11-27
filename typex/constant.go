@@ -70,14 +70,20 @@ func (i TargetType) String() string {
 	return string(i)
 }
 
+/*
+*
+* 输出资源类型
+*
+ */
 const (
-	MONGO_SINGLE  TargetType = "MONGO_SINGLE"
-	MONGO_CLUSTER TargetType = "MONGO_CLUSTER"
-	REDIS_SINGLE  TargetType = "REDIS_SINGLE"
-	FLINK_SINGLE  TargetType = "FLINK_SINGLE"
-	MQTT_TARGET   TargetType = "MQTT"
-	MYSQL_TARGET  TargetType = "MYSQL"
-	PGSQL_TARGET  TargetType = "PGSQL"
+	MONGO_SINGLE          TargetType = "MONGO_SINGLE"
+	MONGO_CLUSTER         TargetType = "MONGO_CLUSTER"
+	REDIS_SINGLE          TargetType = "REDIS_SINGLE"
+	FLINK_SINGLE          TargetType = "FLINK_SINGLE"
+	MQTT_TARGET           TargetType = "MQTT"
+	MQTT_TELEMETRY_TARGET TargetType = "MQTT_TELEMETRY_TARGET"
+	MYSQL_TARGET          TargetType = "MYSQL"
+	PGSQL_TARGET          TargetType = "PGSQL"
 )
 
 //

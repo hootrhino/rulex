@@ -97,7 +97,7 @@ end
 
 Actions = {
     function(data)
-        print("return => ", stdlib:JqSelect(".[] | select(.hum < 20)", data))
+        print("return => ", rulex:JqSelect(".[] | select(.hum < 20)", data))
         return true, data
     end
 }
@@ -116,11 +116,11 @@ end
 Actions = {
     function(data)
         -- 持久化到 MongoDb:
-        stdlib:DataToMongo("OUTEND_83775a94-9f64-4d37-be17-45dd0c90f56d", data)
+        rulex:DataToMongo("OUTEND_83775a94-9f64-4d37-be17-45dd0c90f56d", data)
         -- 持久化到 Mysql:
-        stdlib:DataToMysql("OUTEND_83775a94-9f64-4d37-be17-45dd0c90f56d", data)
+        rulex:DataToMysql("OUTEND_83775a94-9f64-4d37-be17-45dd0c90f56d", data)
         -- 推送化到 Kafka:
-        stdlib:DataToKafka("OUTEND_83775a94-9f64-4d37-be17-45dd0c90f56d", data)
+        rulex:DataToKafka("OUTEND_83775a94-9f64-4d37-be17-45dd0c90f56d", data)
         return true, data
     end
 }

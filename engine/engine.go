@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"rulex/core"
 	"rulex/resource"
+	"rulex/rulexlib"
 	"rulex/statistics"
-	"rulex/stdlib"
 	"rulex/target"
 	"rulex/typex"
 	"runtime"
@@ -338,6 +338,9 @@ func tryCreateOutEnd(out *typex.OutEnd, e typex.RuleX) error {
 	if out.Type == typex.MQTT_TARGET {
 		return startTarget(target.NewMqttTarget(e), out, e)
 	}
+	if out.Type == typex.MQTT_TELEMETRY_TARGET {
+		return startTarget(target.NewMqttTelemetryTarget(e), out, e)
+	}
 	return errors.New("unsupported target type:" + out.Type.String())
 
 }
@@ -423,17 +426,18 @@ func (e *RuleEngine) LoadRule(r *typex.Rule) error {
 					//
 					// Load Stdlib
 					//--------------------------------------------------------------
-					r.LoadLib(e, stdlib.NewBinaryLib())
-					r.LoadLib(e, stdlib.NewMongoLib())
-					r.LoadLib(e, stdlib.NewHttpLib())
-					r.LoadLib(e, stdlib.NewMqttLib())
-					r.LoadLib(e, stdlib.NewJqLib())
-					r.LoadLib(e, stdlib.NewWriteInStreamLib())
-					r.LoadLib(e, stdlib.NewWriteOutStreamLib())
-					r.LoadLib(e, stdlib.NewByteToBitStringLib())
-					r.LoadLib(e, stdlib.NewGetABitOnByteLib())
-					r.LoadLib(e, stdlib.NewByteToInt64Lib())
-					r.LoadLib(e, stdlib.NewBitStringToBytesLib())
+					r.LoadLib(e, rulexlib.NewBinaryLib())
+					r.LoadLib(e, rulexlib.NewMongoLib())
+					r.LoadLib(e, rulexlib.NewHttpLib())
+					r.LoadLib(e, rulexlib.NewMqttLib())
+					r.LoadLib(e, rulexlib.NewJqLib())
+					r.LoadLib(e, rulexlib.NewLogLib())
+					r.LoadLib(e, rulexlib.NewWriteInStreamLib())
+					r.LoadLib(e, rulexlib.NewWriteOutStreamLib())
+					r.LoadLib(e, rulexlib.NewByteToBitStringLib())
+					r.LoadLib(e, rulexlib.NewGetABitOnByteLib())
+					r.LoadLib(e, rulexlib.NewByteToInt64Lib())
+					r.LoadLib(e, rulexlib.NewBitStringToBytesLib())
 					//--------------------------------------------------------------
 					// Save to rules map
 					//

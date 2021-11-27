@@ -75,24 +75,24 @@ func TestFullyRun(t *testing.T) {
 		`
 		Actions = {
 			function(data)
-			    local V1 = stdlib:JqSelect(".[] | select(.temp > 50000000)", data)
+			    local V1 = rulex:JqSelect(".[] | select(.temp > 50000000)", data)
                 print("[LUA Actions Callback 1 ===> Data is:", data)
-			    print("[LUA Actions Callback 1 ===> .[] | select(.temp >= 50000000)] return => ", stdlib:JqSelect(".[] | select(.temp > 50000000)", data))
+			    print("[LUA Actions Callback 1 ===> .[] | select(.temp >= 50000000)] return => ", rulex:JqSelect(".[] | select(.temp > 50000000)", data))
 				return true, data
 			end,
 			function(data)
-			    local V2 = stdlib:JqSelect(".[] | select(.hum < 20)", data)
-			    print("[LUA Actions Callback 2 ===> .[] | select(.hum < 20)] return => ", stdlib:JqSelect(".[] | select(.hum < 20)", data))
+			    local V2 = rulex:JqSelect(".[] | select(.hum < 20)", data)
+			    print("[LUA Actions Callback 2 ===> .[] | select(.hum < 20)] return => ", rulex:JqSelect(".[] | select(.hum < 20)", data))
 				return true, data
 			end,
 			function(data)
-			    local V3 = stdlib:JqSelect(".[] | select(.co2 > 50)", data)
-			    print("[LUA Actions Callback 3 ===> .[] | select(.co2 > 50] return => ", stdlib:JqSelect(".[] | select(.co2 > 50)", data))
+			    local V3 = rulex:JqSelect(".[] | select(.co2 > 50)", data)
+			    print("[LUA Actions Callback 3 ===> .[] | select(.co2 > 50] return => ", rulex:JqSelect(".[] | select(.co2 > 50)", data))
 				return true, data
 			end,
 			function(data)
-			    local V4 = stdlib:JqSelect(".[] | select(.lex > 50)", data)
-			    print("[LUA Actions Callback 4 ===> .[] | select(.lex > 50)] return => ", stdlib:JqSelect(".[] | select(.lex > 50)", data))
+			    local V4 = rulex:JqSelect(".[] | select(.lex > 50)", data)
+			    print("[LUA Actions Callback 4 ===> .[] | select(.lex > 50)] return => ", rulex:JqSelect(".[] | select(.lex > 50)", data))
 				return true, data
 			end,
 			function(data)
@@ -105,8 +105,8 @@ func TestFullyRun(t *testing.T) {
 				local json = require("json")
 				-- 0110_0001 0110_0001 0110_0010
 				-- <a:5 b:3 c:1 => a:00001100 b:00000001 c:0
-				local V6 = json.encode(stdlib:MatchBinary("<a:5 b:3 c:1", "aab", false))
-				print("[LUA Actions Callback 5, stdlib.MatchBinary] ==>", V6)
+				local V6 = json.encode(rulex:MatchBinary("<a:5 b:3 c:1", "aab", false))
+				print("[LUA Actions Callback 5, rulex.MatchBinary] ==>", V6)
 				return true, data
 			end
 		}`,
@@ -124,7 +124,7 @@ func TestFullyRun(t *testing.T) {
 				local json = require("json")
 				-- 0110_0001 0110_0001 0110_0010
 				-- <a:5 b:3 c:1 => a:00001100 b:00000001 c:0
-				local V6 = json.encode(stdlib:MatchBinary("<a:5 b:3 c:1", "aab", false))
+				local V6 = json.encode(rulex:MatchBinary("<a:5 b:3 c:1", "aab", false))
 				print("[LUA Actions Callback RULE ==================> uuid2] ==>", V6)
 				return true, data
 			end
@@ -143,7 +143,7 @@ func TestFullyRun(t *testing.T) {
 				local json = require("json")
 				-- 0110_0001 0110_0001 0110_0010
 				-- <a:5 b:3 c:1 => a:00001100 b:00000001 c:0
-				local V6 = json.encode(stdlib:MatchBinary("<a:5 b:3 c:1", "aab", false))
+				local V6 = json.encode(rulex:MatchBinary("<a:5 b:3 c:1", "aab", false))
 				print("[LUA Actions Callback RULE ==================> uuid3] ==>", V6)
 				return true, data
 			end

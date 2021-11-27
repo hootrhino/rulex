@@ -95,13 +95,13 @@ func (r *Rule) ExecuteActions(arg lua.LValue) (lua.LValue, error) {
 
 func (r *Rule) LoadLib(rx RuleX, lib XLib) {
 	// log.Info("LoadLib:", lib.Name())
-	stdlib := r.VM.G.Global
+	rulex := r.VM.G.Global
 	//
-	r.VM.SetGlobal("stdlib", stdlib)
+	r.VM.SetGlobal("rulex", rulex)
 	r.VM.PreloadModule("json", luajson.Loader)
 	r.VM.PreloadModule("url", gluaurl.Loader)
 	//
-	mod := r.VM.SetFuncs(stdlib, map[string]lua.LGFunction{
+	mod := r.VM.SetFuncs(rulex, map[string]lua.LGFunction{
 		lib.Name(): lib.LibFun(rx),
 	})
 	r.VM.Push(mod)

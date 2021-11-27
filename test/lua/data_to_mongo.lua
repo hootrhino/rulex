@@ -12,7 +12,7 @@ end
 -- Actions
 Actions = {
     function(data)
-        stdlib:DataToMongo('OUTEND_7ce89673-d3cf-43fe-82c8-0cf4c2be50a8', data)
+        rulex:DataToMongo('OUTEND_7ce89673-d3cf-43fe-82c8-0cf4c2be50a8', data)
         return true, data
     end
 }

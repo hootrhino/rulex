@@ -41,38 +41,38 @@ Actions = {
 ### 库函数使用
 #### 推送MQTT
 ```lua
-stdlib:DataToMqttServer('id', data)
+rulex:DataToMqttServer('id', data)
 ```
 #### 推送Mongo
 ```lua
-stdlib:DataToMongo('id', data)
+rulex:DataToMongo('id', data)
 ```
 #### 推送HTTP
 ```lua
-stdlib:DataToHttpServer('id', data)
+rulex:DataToHttpServer('id', data)
 ```
 #### JSON提取
 ```lua
 Actions = {
 	function(data)
-	    local V1 = stdlib:JqSelect(".[] | select(.temp > 50000000)", data)
+	    local V1 = rulex:JqSelect(".[] | select(.temp > 50000000)", data)
         print("[LUA Actions Callback 1 ===> Data is:", data)
-	    print("[LUA Actions Callback 1 ===> .[] | select(.temp >= 50000000)] return => ", stdlib:JqSelect(".[] | select(.temp > 50000000)", data))
+	    print("[LUA Actions Callback 1 ===> .[] | select(.temp >= 50000000)] return => ", rulex:JqSelect(".[] | select(.temp > 50000000)", data))
 		return true, data
 	end,
 	function(data)
-	    local V2 = stdlib:JqSelect(".[] | select(.hum < 20)", data)
-	    print("[LUA Actions Callback 2 ===> .[] | select(.hum < 20)] return => ", stdlib:JqSelect(".[] | select(.hum < 20)", data))
+	    local V2 = rulex:JqSelect(".[] | select(.hum < 20)", data)
+	    print("[LUA Actions Callback 2 ===> .[] | select(.hum < 20)] return => ", rulex:JqSelect(".[] | select(.hum < 20)", data))
 		return true, data
 	end,
 	function(data)
-	    local V3 = stdlib:JqSelect(".[] | select(.co2 > 50)", data)
-	    print("[LUA Actions Callback 3 ===> .[] | select(.co2 > 50] return => ", stdlib:JqSelect(".[] | select(.co2 > 50)", data))
+	    local V3 = rulex:JqSelect(".[] | select(.co2 > 50)", data)
+	    print("[LUA Actions Callback 3 ===> .[] | select(.co2 > 50] return => ", rulex:JqSelect(".[] | select(.co2 > 50)", data))
 		return true, data
 	end,
 	function(data)
-	    local V4 = stdlib:JqSelect(".[] | select(.lex > 50)", data)
-	    print("[LUA Actions Callback 4 ===> .[] | select(.lex > 50)] return => ", stdlib:JqSelect(".[] | select(.lex > 50)", data))
+	    local V4 = rulex:JqSelect(".[] | select(.lex > 50)", data)
+	    print("[LUA Actions Callback 4 ===> .[] | select(.lex > 50)] return => ", rulex:JqSelect(".[] | select(.lex > 50)", data))
 		return true, data
 	end,
 	function(data)
@@ -119,13 +119,13 @@ Actions =
     --        └───────────────────────────────────────────────┘
     function(data)
         local json = require("json")
-        local tb = stdlib:MatchBinary("<a:16 b:16 c:16 d1:16", data, false)
+        local tb = rulex:MatchBinary("<a:16 b:16 c:16 d1:16", data, false)
         local result = {}
-        result['a'] = stdlib:ByteToInt64(1, stdlib:BitStringToBytes(tb["a"]))
-        result['b'] = stdlib:ByteToInt64(1, stdlib:BitStringToBytes(tb["b"]))
-        result['c'] = stdlib:ByteToInt64(1, stdlib:BitStringToBytes(tb["c"]))
-        result['d1'] = stdlib:ByteToInt64(1, stdlib:BitStringToBytes(tb["d1"]))
-        print("stdlib:MatchBinary: ", json.encode(result))
+        result['a'] = rulex:ByteToInt64(1, rulex:BitStringToBytes(tb["a"]))
+        result['b'] = rulex:ByteToInt64(1, rulex:BitStringToBytes(tb["b"]))
+        result['c'] = rulex:ByteToInt64(1, rulex:BitStringToBytes(tb["c"]))
+        result['d1'] = rulex:ByteToInt64(1, rulex:BitStringToBytes(tb["d1"]))
+        print("rulex:MatchBinary: ", json.encode(result))
         return true, data
     end
 }
@@ -134,17 +134,17 @@ Actions =
 #### 位串转字节
 ```lua
 -- data: 0101010100101001010101010010101010101
-stdlib:BitStringToBytes(data)
+rulex:BitStringToBytes(data)
 ```
 #### 字节转整形
 ```lua
-stdlib:ByteToInt(bytes)
+rulex:ByteToInt(bytes)
 ```
 #### 取一个字节某个位
 ```lua
-stdlib:GetABitOnByte(index)
+rulex:GetABitOnByte(index)
 ```
 #### 字节转位串
 ```lua
-stdlib:ByteToBitString(bytes)
+rulex:ByteToBitString(bytes)
 ```
