@@ -2,6 +2,7 @@ package test
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
@@ -24,10 +25,31 @@ func Test_Open_Switch(t *testing.T) {
 	ctx, cancelFunc := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelFunc()
 	defer redisClient.Close()
+	//
+	//
+	//
 	requestId := "request-id-001"
-	// 当指令下发后马上给redis保存一个指令id，用于等待后期同步
-	t.Log("Send open cmd to rulex")
-	redisClient.Set(ctx, requestId, false, 5*time.Second)
+	sendCmd(ctx, redisClient, requestId)
+	waitResult(ctx, redisClient, requestId)
+	time.Sleep(5 * time.Second)
+
+}
+
+/*
+*
+* 发送指令:当指令下发后马上给redis保存一个指令id，用于等待后期同步
+ */
+func sendCmd(ctx context.Context, redisClient *redis.Client, requestId string) {
+	fmt.Println("Send open cmd to rulex")
+	redisClient.Set(ctx, requestId, 0, 5*time.Second)
+}
+
+/*
+*
+* 等待执行结果
+*
+ */
+func waitResult(ctx context.Context, redisClient *redis.Client, requestId string) {
 	go func(ctx context.Context) {
 		for {
 			select {
@@ -48,8 +70,6 @@ func Test_Open_Switch(t *testing.T) {
 			}
 		}
 	}(ctx)
-
-	time.Sleep(5 * time.Second)
 
 }
 
