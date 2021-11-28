@@ -6,7 +6,7 @@ Rulex 作为一个公共组件，***不具备为任何私有云平台或者系�
         "host": "127.0.0.1",
         "port": 1883,
         "s2cTopic": "rulex-client-1",
-        "toplogyTopic": "rulex-toplogy-1",
+        "topologyTopic": "rulex-topology-1",
         "dataTopic": "rulex-data-1",
         "stateTopic": "rulex-state-1",
         "clientId": "rulex-1",
@@ -15,7 +15,7 @@ Rulex 作为一个公共组件，***不具备为任何私有云平台或者系�
 }
 ```
 - `s2cTopic`: 来自服务器的数据
-- `toplogyTopic`: 拓扑结构上报
+- `topologyTopic`: 拓扑结构上报
 - `dataTopic`: 上报自己规则引擎的数据
 - `stateTopic`: 上报状态
 
@@ -23,20 +23,15 @@ Rulex 作为一个公共组件，***不具备为任何私有云平台或者系�
 整体架构设计
 ```
    +-----------------+
-   |                 |
    |   EMQX Cluster  |
-   |                 |
    +--------^--------+
             |
    +--------+--------+
-   |                 |
    |    Gateway      |
-   |                 |
    +--^-----------^--+
       |           |
       |           |
    +--+--+     +--+--+
-   |     |     |     |
    | D1  |     | D2  |
    +-----+     +-----+
 ```
@@ -46,7 +41,7 @@ Rulex 作为一个公共组件，***不具备为任何私有云平台或者系�
 | 功能                               | 路径                                  | QoS | 行为      |
 | ---------------------------------- | ------------------------------------- | --- | --------- |
 | 上报日志                           | upstream.gateway.logs/${client-id}    | 0   | publish   |
-| 上报拓扑                           | upstream.gateway.toplogy/${client-id} | 0   | publish   |
+| 上报拓扑                           | upstream.gateway.topology/${client-id} | 0   | publish   |
 | 上报指令执行结果以及目标节点的状态 | upstream.gateway.state/${client-id}   | 0   | publish   |
 | 接受远程消息                       | downstream.gateway.s2c/${client-id}   | 2   | subscribe |
 | 规则引擎数据                       | upstream.gateway.publish/${client-id} | 2   | publish   |
@@ -77,7 +72,7 @@ Rulex 作为一个公共组件，***不具备为任何私有云平台或者系�
   ```json
   {
       "uuid":1,
-      "toplogy":[
+      "topology":[
           {"node":"modbus meter1", "state":"running"},
           {"node":"modbus meter2", "state":"running"},
           {"node":"modbus meter3", "state":"running"},
@@ -114,5 +109,5 @@ Rulex 作为一个公共组件，***不具备为任何私有云平台或者系�
   ```
   cmd:
   - `get-state` :通知上报状态
-  - `get-toplogy` :通知上报拓扑
+  - `get-topology` :通知上报拓扑
   - `get-log` :通知上报日志

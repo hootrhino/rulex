@@ -10,10 +10,10 @@ require (
 	github.com/gin-gonic/gin v1.7.2
 	github.com/go-playground/assert/v2 v2.0.1
 	github.com/go-playground/validator/v10 v10.4.1
+	github.com/go-redis/redis/v8 v8.11.4
 	github.com/goburrow/modbus v0.1.0
 	github.com/goburrow/serial v0.1.0
 	github.com/gogo/protobuf v1.3.2 // indirect
-	github.com/google/go-cmp v0.5.6 // indirect
 	github.com/google/uuid v1.2.0
 	github.com/gosnmp/gosnmp v1.33.0
 	github.com/itchyny/gojq v0.12.4
@@ -39,15 +39,14 @@ require (
 	go.mongodb.org/mongo-driver v1.5.4
 	go.uber.org/zap v1.19.1
 	golang.org/x/crypto v0.0.0-20210322153248-0c34fe9e7dc2 // indirect
-	golang.org/x/net v0.0.0-20211118161319-6a13c67c3ce4 // indirect
-	golang.org/x/sys v0.0.0-20211117180635-dee7805ff2e1 // indirect
+	golang.org/x/net v0.0.0-20211123203042-d83791d6bcd9 // indirect
+	golang.org/x/sys v0.0.0-20211124211545-fe61309f8881 // indirect
 	google.golang.org/genproto v0.0.0-20211118181313-81c1377c94b1 // indirect
 	google.golang.org/grpc v1.42.0
 	google.golang.org/protobuf v1.27.1
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
 	gopkg.in/ini.v1 v1.63.0
 	gopkg.in/square/go-jose.v2 v2.5.1
-	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gorm.io/driver/sqlite v1.1.4
 	gorm.io/gorm v1.21.11
 )

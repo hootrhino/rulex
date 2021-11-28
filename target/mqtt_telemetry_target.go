@@ -79,7 +79,7 @@ func (mm *MqttTelemetryTarget) Start() error {
 					if token.Error() != nil {
 						log.Error(token.Error())
 					}
-				} else if cmd.Cmd == "get-toplogy" {
+				} else if cmd.Cmd == "get-topology" {
 					token := mm.client.Publish(mainConfig.ToplogyTopic, 0, false, c2sCommand{
 						Result: []string{},
 					})
