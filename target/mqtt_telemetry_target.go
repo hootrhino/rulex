@@ -34,8 +34,11 @@ type mqttTelemetryConfig struct {
 //
 type MqttTelemetryTarget struct {
 	typex.XStatus
-	client    mqtt.Client
-	DataTopic string
+	client       mqtt.Client
+	S2CTopic     string `json:"S2CTopic" validate:"required"`     // 这个Topic是专门留给服务器下发指令用的
+	ToplogyTopic string `json:"toplogyTopic" validate:"required"` // 定时上报拓扑结构的 Topic
+	DataTopic    string `json:"dataTopic" validate:"required"`    // 上报数据的 Topic
+	StateTopic   string `json:"stateTopic" validate:"required"`   // 定时上报状态的 Topic
 }
 
 //
@@ -109,7 +112,12 @@ func (mm *MqttTelemetryTarget) Start() error {
 	opts.SetClientID(mainConfig.ClientId)
 	opts.SetUsername(mainConfig.Username)
 	opts.SetPassword(mainConfig.Password)
+	//
 	mm.DataTopic = mainConfig.DataTopic
+	mm.S2CTopic = mainConfig.S2CTopic
+	mm.StateTopic = mainConfig.StateTopic
+	mm.ToplogyTopic = mainConfig.ToplogyTopic
+	//
 	opts.OnConnect = connectHandler
 	opts.OnConnectionLost = connectLostHandler
 	opts.SetPingTimeout(3 * time.Second)
@@ -129,7 +137,21 @@ func (mm *MqttTelemetryTarget) Start() error {
 func (mm *MqttTelemetryTarget) DataModels() []typex.XDataModel {
 	return []typex.XDataModel{}
 }
-func (m *MqttTelemetryTarget) OnStreamApproached(data string) error {
+func (mm *MqttTelemetryTarget) OnStreamApproached(data string) error {
+	// TODO 思考下要不要强制JSON格式
+	//
+	// type template struct {
+	// 	Type  string
+	// 	CmdId string
+	// }
+	// var t template
+	// err := json.Unmarshal([]byte(data), &t)
+	// if err != nil {
+	// 	return err
+	// }
+	if mm.client != nil {
+		return mm.client.Publish(mm.StateTopic, 2, false, data).Error()
+	}
 	return nil
 }
 func (mm *MqttTelemetryTarget) Stop() {
