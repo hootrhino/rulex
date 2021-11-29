@@ -9,9 +9,9 @@ import (
 
 func TestOk(t *testing.T) {
 	// Connect to a server
-	connection, err := nats.Connect("10.55.16.242:4222", func(o *nats.Options) error {
+	connection, err := nats.Connect("127.0.0.1:4222", func(o *nats.Options) error {
 		o.User = "nats_client"
-		o.Password = "Pwa43zr2kS"
+		o.Password = "******"
 		return nil
 	})
 	// connection.Subscribe("downstream.services.publish", func(m *nats.Msg) {
