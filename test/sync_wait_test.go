@@ -64,6 +64,7 @@ func waitResult(ctx context.Context, redisClient *redis.Client, requestId string
 					if s.Err() != nil && s.Val() != "" {
 						if ok, _ := s.Bool(); ok {
 							finishCmd(ctx, redisClient, requestId)
+							return
 						}
 					}
 				}
