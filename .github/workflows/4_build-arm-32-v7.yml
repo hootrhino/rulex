@@ -10,8 +10,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: Arm32-V7 构建测试
+    - uses: actions/checkout@v2
+    - name: Go build
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.16
         run: |
           sudo apt update -y
           sudo apt install jq protobuf-compiler gcc-arm-linux-gnueabi -y
