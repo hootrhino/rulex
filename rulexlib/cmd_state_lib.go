@@ -1,6 +1,7 @@
 package rulexlib
 
 import (
+	"encoding/json"
 	"rulex/typex"
 
 	"github.com/ngaut/log"
@@ -25,8 +26,11 @@ func (l *CmdSuccessLib) LibFun(rx typex.RuleX) func(*lua.LState) int {
 	return func(l *lua.LState) int {
 		cmdId := l.ToString(2)
 		stateTargetId := l.ToString(3)
-		// TODO 明天搞
-		log.Info("[CmdSuccessLib ::: finishCmd, will write to emqx for sync]" + cmdId + " ==> " + stateTargetId)
+		bytes, _ := json.Marshal(map[string]interface{}{
+			"type":  "finishCmd",
+			"cmdId": cmdId,
+		})
+		write(rx, stateTargetId, string(bytes))
 		return 0
 	}
 }
@@ -49,8 +53,19 @@ func (l *CmdFailedLib) LibFun(rx typex.RuleX) func(*lua.LState) int {
 	return func(l *lua.LState) int {
 		cmdId := l.ToString(2)
 		stateTargetId := l.ToString(3)
-		// TODO 明天搞
-		log.Info("[CmdSuccessLib ::: finishCmd, will write to emqx for sync]" + cmdId + " ==> " + stateTargetId)
+		bytes, _ := json.Marshal(map[string]interface{}{
+			"type":  "failedCmd",
+			"cmdId": cmdId,
+		})
+		write(rx, stateTargetId, string(bytes))
 		return 0
+	}
+}
+func write(e typex.RuleX, uuid string, incoming string) {
+	outEnd, exists := e.AllOutEnd().Load(uuid)
+	if exists {
+		(outEnd.(*typex.OutEnd)).Target.OnStreamApproached(incoming)
+	} else {
+		log.Error("OutEnd: " + uuid + " not exists")
 	}
 }

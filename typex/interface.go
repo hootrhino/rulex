@@ -73,6 +73,9 @@ type XResource interface {
 	Reload()
 	Pause()
 	Status() ResourceState
+	//--------------------------------------------------------
+	// OnStreamApproached: 不经过规则引擎处理的直达资源端数据接口
+	//--------------------------------------------------------
 	OnStreamApproached(data string) error
 	Driver() XExternalDriver
 	Stop()
@@ -90,7 +93,13 @@ type XTarget interface {
 	Reload()
 	Pause()
 	Status() ResourceState
+	//--------------------------------------------------------
+	// To: 数据出口
+	//--------------------------------------------------------
 	To(data interface{}) error
+	//--------------------------------------------------------
+	// OnStreamApproached: 不经过规则引擎处理的直达出口端数据接口
+	//--------------------------------------------------------
 	OnStreamApproached(data string) error
 	Stop()
 }

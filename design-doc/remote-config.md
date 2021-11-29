@@ -68,6 +68,7 @@ Rulex 作为一个公共组件，***不具备为任何私有云平台或者系�
       ]
   }
   ```
+  
 - 上报拓扑
   ```json
   {
@@ -92,7 +93,7 @@ Rulex 作为一个公共组件，***不具备为任何私有云平台或者系�
   此时命令执行完后会有成功或者失败的结果反馈上去, mqtt topic为: `upstream.gateway.state/${client-id}`, 服务端订阅这个 `Topic` 后，可根据 `type` 字段判断类型:
   ```lua
       -- 执行成功
-      rulex:finishCmd(CmdId)
+      rulex:finishCmd(CmdId, "OutId")
   ```
   ```json
      {
@@ -103,7 +104,7 @@ Rulex 作为一个公共组件，***不具备为任何私有云平台或者系�
   
   ```lua
       -- 执行失败
-      rulex:failedCmd(CmdId)
+    rulex:failedCmd(CmdId, "OutId")
   ```
   ```json
      {
@@ -127,16 +128,31 @@ Rulex 作为一个公共组件，***不具备为任何私有云平台或者系�
   - `get-state` :通知上报状态
   - `get-topology` :通知上报拓扑
   - `get-log` :通知上报日志
+  
+## 状态同步机制
+
+![sync-state](./sync-state.png)
+
 
 ## 开灯Demo
 下面以一个Demo来演示：
 ### LUA 回调
 ```lua
+---@diagnostic disable: undefined-global
+-- Success
+function Success()
+    rulex:log("success")
+end
+-- Failed
+function Failed(error)
+    rulex:log(error)
+end
+
 ---
 --- 这里展示一个远程发送指令后响应的Demo
 --- 假设远程指令是打开开关，然后同步状态到云端,
 --- 指令体：{
----            "cmdId" : "hu008987y",
+---            "cmdId" : "hu008987yp7yujjm",
 ---            "type" : "OPEN",
 ---            "sn": [
 ---                   "SN0001",
@@ -164,15 +180,16 @@ Actions = {
         if Type == "OFF" then
             local ok = rulex:WriteOutStream('#ID', json.encode({0x01, SN}))
             if ok then
-                rulex:finishCmd(CmdId)
+                rulex:finishCmd(CmdId, "OutId")
             else
                 -- 其实没必要显式调用失败，因为服务端超时后就自己直接失败了
-                rulex:failedCmd(CmdId)
+                rulex:failedCmd(CmdId, "OutId")
             end
         end
         return true, data
     end
 }
+
 
 ```
 

@@ -2,13 +2,14 @@ package target
 
 /*
 *
-* 用来遥测上报数据
+* 这个是一个比较特殊的资源出口, 专门用来遥测上报数据, 实现和任意 Mqtt Broker的交互接口
 *
  */
 import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"rulex/core"
 	"rulex/typex"
 	"rulex/utils"
 	"time"
@@ -46,9 +47,10 @@ type MqttTelemetryTarget struct {
 //
 type s2cCommand struct {
 	Cmd  string
-	Args []string
+	Args []interface{}
 }
 type c2sCommand struct {
+	Type   string
 	Result interface{}
 }
 
@@ -75,8 +77,10 @@ func (mm *MqttTelemetryTarget) Start() error {
 			if err := json.Unmarshal(m.Payload(), &cmd); err != nil {
 				log.Error(err)
 			} else {
+				// 内置的几个简单指令，后期会扩展
 				if cmd.Cmd == "get-state" {
 					token := mm.client.Publish(mainConfig.StateTopic, 0, false, c2sCommand{
+						Type:   cmd.Cmd,
 						Result: "running",
 					})
 					if token.Error() != nil {
@@ -84,6 +88,7 @@ func (mm *MqttTelemetryTarget) Start() error {
 					}
 				} else if cmd.Cmd == "get-topology" {
 					token := mm.client.Publish(mainConfig.ToplogyTopic, 0, false, c2sCommand{
+						Type:   cmd.Cmd,
 						Result: []string{},
 					})
 					if token.Error() != nil {
@@ -91,8 +96,21 @@ func (mm *MqttTelemetryTarget) Start() error {
 					}
 
 				} else if cmd.Cmd == "get-log" {
+					//
+					//  {"cmd" : "get-log", args: [1, 100]}
+					//
+					var offset int
+					var size int
+					if len(cmd.Args) == 2 {
+						offset = cmd.Args[0].(int)
+						size = cmd.Args[1].(int)
+					} else {
+						offset = 0
+						size = 20
+					}
 					token := mm.client.Publish(mainConfig.ToplogyTopic, 0, false, c2sCommand{
-						Result: []string{},
+						Type:   cmd.Cmd,
+						Result: core.LogSlot[offset:size],
 					})
 					if token.Error() != nil {
 						log.Error(token.Error())
@@ -138,17 +156,9 @@ func (mm *MqttTelemetryTarget) DataModels() []typex.XDataModel {
 	return []typex.XDataModel{}
 }
 func (mm *MqttTelemetryTarget) OnStreamApproached(data string) error {
-	// TODO 思考下要不要强制JSON格式
-	//
-	// type template struct {
-	// 	Type  string
-	// 	CmdId string
-	// }
-	// var t template
-	// err := json.Unmarshal([]byte(data), &t)
-	// if err != nil {
-	// 	return err
-	// }
+	//-----------------------------------------------------------------------------------
+	// 对于遥测组件来说，所有进来的 [非规则引擎数据] 数据全发到 State topic，传到远程处理.
+	//-----------------------------------------------------------------------------------
 	if mm.client != nil {
 		return mm.client.Publish(mm.StateTopic, 2, false, data).Error()
 	}
