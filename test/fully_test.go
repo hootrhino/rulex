@@ -6,7 +6,6 @@ import (
 	"os/signal"
 	"rulex/core"
 	"rulex/engine"
-	"rulex/plugin/demo_plugin"
 	httpserver "rulex/plugin/http_server"
 	"rulex/rulexrpc"
 	"rulex/typex"
@@ -31,37 +30,13 @@ func TestFullyRun(t *testing.T) {
 	if err := engine.LoadPlugin(hh); err != nil {
 		log.Fatal("Rule load failed:", err)
 	}
-	// Load a demo plugin
-	if err := engine.LoadPlugin(demo_plugin.NewDemoPlugin()); err != nil {
-		log.Error("Rule load failed:", err)
-	}
 	// Grpc Inend
 	grpcInend := typex.NewInEnd("GRPC", "Rulex Grpc InEnd", "Rulex Grpc InEnd", map[string]interface{}{
-		"port": "2581",
+		"port": 2581,
 	})
+
 	if err := engine.LoadInEnd(grpcInend); err != nil {
-		log.Error("Rule load failed:", err)
-	}
-	// CoAP Inend
-	coapInend := typex.NewInEnd("COAP", "Rulex COAP InEnd", "Rulex COAP InEnd", map[string]interface{}{
-		"port": 2582,
-	})
-	if err := engine.LoadInEnd(coapInend); err != nil {
-		log.Error("Rule load failed:", err)
-	}
-	// Http Inend
-	httpInend := typex.NewInEnd("HTTP", "Rulex HTTP InEnd", "Rulex HTTP InEnd", map[string]interface{}{
-		"port": 2583,
-	})
-	if err := engine.LoadInEnd(httpInend); err != nil {
-		log.Error("Rule load failed:", err)
-	}
-	// Udp Inend
-	udpInend := typex.NewInEnd("UDP", "Rulex UDP InEnd", "Rulex UDP InEnd", map[string]interface{}{
-		"port": 2584,
-	})
-	if err := engine.LoadInEnd(udpInend); err != nil {
-		log.Error("Rule load failed:", err)
+		log.Error("grpcInend load failed:", err)
 	}
 	//
 	// Load Rule
@@ -182,10 +157,6 @@ func TestFullyRun(t *testing.T) {
 	}
 
 	time.Sleep(1 * time.Second)
-	log.Info("Test Http Resource Api===> " + HttpPost(map[string]interface{}{
-		"hello": "world",
-	}, "http://127.0.0.1:2583/in"))
-
 	log.Info("Test Http system Api===> " + HttpGet("http://127.0.0.1:2580/api/v1/system"))
 	log.Info("Test Http inends Api===> " + HttpGet("http://127.0.0.1:2580/api/v1/inends"))
 	log.Info("Test Http outends Api===> " + HttpGet("http://127.0.0.1:2580/api/v1/outends"))

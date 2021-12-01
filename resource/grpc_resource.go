@@ -6,31 +6,25 @@ import (
 	"net"
 	"rulex/rulexrpc"
 	"rulex/typex"
+	"rulex/utils"
 
 	"github.com/ngaut/log"
 	"google.golang.org/grpc"
 )
 
 const (
-	DEFAULT_PORT      = ":2583"
 	DEFAULT_TRANSPORT = "tcp"
 )
+
+//
+type grpcConfig struct {
+	Port       uint16             `json:"port" validate:"required"`
+	DataModels []typex.XDataModel `json:"dataModels"`
+}
 
 type RulexRpcServer struct {
 	grpcInEndResource *GrpcInEndResource
 	rulexrpc.UnimplementedRulexRpcServer
-}
-
-//
-func (r *RulexRpcServer) Work(ctx context.Context, in *rulexrpc.Data) (*rulexrpc.Response, error) {
-	r.grpcInEndResource.RuleEngine.Work(
-		r.grpcInEndResource.RuleEngine.GetInEnd(r.grpcInEndResource.PointId),
-		in.Value,
-	)
-	return &rulexrpc.Response{
-		Code:    0,
-		Message: "OK",
-	}, nil
 }
 
 //
@@ -44,37 +38,22 @@ type GrpcInEndResource struct {
 
 //
 func NewGrpcInEndResource(inEndId string, e typex.RuleX) *GrpcInEndResource {
-	h := GrpcInEndResource{}
-	h.PointId = inEndId
-	h.RuleEngine = e
-	return &h
+	g := GrpcInEndResource{}
+	g.PointId = inEndId
+	g.RuleEngine = e
+	return &g
 }
 
 //
 func (g *GrpcInEndResource) Start() error {
-	config := g.RuleEngine.GetInEnd(g.PointId).Config
-	var port = ""
-	switch (config)["port"].(type) {
-	case string:
-		port = ":" + (config)["port"].(string)
-	case int:
-		port = fmt.Sprintf(":%v", (config)["port"].(int))
-	case int64:
-		port = fmt.Sprintf(":%v", (config)["port"].(int))
-	case float64:
-		port = fmt.Sprintf(":%v", (config)["port"].(int))
+	inEnd := g.RuleEngine.GetInEnd(g.PointId)
+	config := inEnd.Config
+	var mainConfig grpcConfig
+	if err := utils.BindResourceConfig(config, &mainConfig); err != nil {
+		return err
 	}
-	// transport
-	// TCP SSL HTTP HTTPS
-	// transPort := (*config)["port"].(string)
-	var err error
-	var listener net.Listener
-	if port == "" {
-		listener, err = net.Listen(DEFAULT_TRANSPORT, DEFAULT_PORT)
 
-	} else {
-		listener, err = net.Listen(DEFAULT_TRANSPORT, port)
-	}
+	listener, err := net.Listen(DEFAULT_TRANSPORT, fmt.Sprintf(":%d", mainConfig.Port))
 	if err != nil {
 		return err
 	}
@@ -133,4 +112,16 @@ func (m *GrpcInEndResource) OnStreamApproached(data string) error {
 }
 func (*GrpcInEndResource) Driver() typex.XExternalDriver {
 	return nil
+}
+
+//
+func (r *RulexRpcServer) Work(ctx context.Context, in *rulexrpc.Data) (*rulexrpc.Response, error) {
+	r.grpcInEndResource.RuleEngine.Work(
+		r.grpcInEndResource.RuleEngine.GetInEnd(r.grpcInEndResource.PointId),
+		in.Value,
+	)
+	return &rulexrpc.Response{
+		Code:    0,
+		Message: "OK",
+	}, nil
 }
