@@ -188,11 +188,6 @@ func startResources(resource typex.XResource, in *typex.InEnd, e *RuleEngine) er
 	//
 	// 先注册，如果出问题了直接删除就行
 	//
-	e.SaveInEnd(in)
-	if !resource.Test(in.UUID) {
-		e.RemoveInEnd(in.UUID)
-		return errors.New("resource test error")
-	}
 	// 首先把资源ID给注册进去, 作为资源的全局索引
 	if err := resource.Register(in.UUID); err != nil {
 		log.Error(err)

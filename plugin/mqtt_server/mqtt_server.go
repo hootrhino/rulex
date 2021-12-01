@@ -22,7 +22,7 @@ func (s *MqttServer) Init() error {
 
 func (s *MqttServer) Start() error {
 	server := mqttServer.New()
-	tcpPort := listeners.NewTCP("tcp", ":1883")
+	tcpPort := listeners.NewTCP("tcp", ":2883")
 
 	if err := server.AddListener(tcpPort, nil); err != nil {
 		return err
@@ -31,9 +31,9 @@ func (s *MqttServer) Start() error {
 	if err := server.Serve(); err != nil {
 		return err
 	}
-	
+
 	s.mqttServer = server
-	log.Info("MqttServer start at [0.0.0.0:1883] successfully")
+	log.Info("MqttServer start at [0.0.0.0:2883] successfully")
 	return nil
 }
 
