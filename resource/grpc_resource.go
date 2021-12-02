@@ -37,7 +37,7 @@ type GrpcInEndResource struct {
 }
 
 //
-func NewGrpcInEndResource(inEndId string, e typex.RuleX) *GrpcInEndResource {
+func NewGrpcInEndResource(inEndId string, e typex.RuleX) typex.XResource {
 	g := GrpcInEndResource{}
 	g.PointId = inEndId
 	g.RuleEngine = e
@@ -78,7 +78,9 @@ func (g *GrpcInEndResource) DataModels() []typex.XDataModel {
 
 //
 func (g *GrpcInEndResource) Stop() {
-	g.rpcServer.Stop()
+	if g.rpcServer != nil {
+		g.rpcServer.Stop()
+	}
 
 }
 func (g *GrpcInEndResource) Reload() {

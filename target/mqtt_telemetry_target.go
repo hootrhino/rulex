@@ -25,7 +25,8 @@ type mqttTelemetryConfig struct {
 	Port         int    `json:"port" validate:"required"`
 	S2CTopic     string `json:"S2CTopic" validate:"required"`     // 这个Topic是专门留给服务器下发指令用的
 	ToplogyTopic string `json:"toplogyTopic" validate:"required"` // 定时上报拓扑结构的 Topic
-	DataTopic    string `json:"dataTopic" validate:"required"`    // 上报数据的 Topic
+	LogTopic     string `json:"logTopic" validate:"required"`     // 定时上报拓扑结构的 Topic
+	DataTopic    string `json:"dataTopic" validate:"required"`    // 自定义上报数据的 Topic
 	StateTopic   string `json:"stateTopic" validate:"required"`   // 定时上报状态的 Topic
 	ClientId     string `json:"clientId" validate:"required"`
 	Username     string `json:"username" validate:"required"`
@@ -46,8 +47,8 @@ type MqttTelemetryTarget struct {
 // 服务器消息
 //
 type s2cCommand struct {
-	Cmd  string
-	Args []interface{}
+	Cmd  string        `json:"cmd" validate:"required"`
+	Args []interface{} `json:"args" validate:"required"`
 }
 type c2sCommand struct {
 	Type   string
@@ -99,19 +100,21 @@ func (mm *MqttTelemetryTarget) Start() error {
 					//
 					//  {"cmd" : "get-log", args: [1, 100]}
 					//
-					var offset int
-					var size int
+					var offset float64
+					var size float64
 					if len(cmd.Args) == 2 {
-						offset = cmd.Args[0].(int)
-						size = cmd.Args[1].(int)
+						offset = cmd.Args[0].(float64)
+						size = cmd.Args[1].(float64)
 					} else {
 						offset = 0
 						size = 20
 					}
-					token := mm.client.Publish(mainConfig.ToplogyTopic, 0, false, c2sCommand{
+					c := c2sCommand{
 						Type:   cmd.Cmd,
-						Result: core.LogSlot[offset:size],
-					})
+						Result: core.LogSlot[int(offset):int(size)],
+					}
+					bytes, _ := json.Marshal(c)
+					token := mm.client.Publish(mainConfig.LogTopic, 0, false, string(bytes))
 					if token.Error() != nil {
 						log.Error(token.Error())
 					}
