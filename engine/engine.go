@@ -537,8 +537,6 @@ func (e *RuleEngine) Stop() {
 	// 回收资源
 	runtime.Gosched()
 	runtime.GC()
-	// 关闭日志器
-	core.GLOBAL_LOGGER.Close()
 	log.Info("Stop Rulex successfully")
 }
 

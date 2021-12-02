@@ -34,14 +34,18 @@ func (lw *LogWriter) Write(b []byte) (n int, err error) {
 	}
 	return lw.file.Write(b)
 }
-func (lw *LogWriter) Close() (err string) {
-	return lw.file.Close().Error()
+func (lw *LogWriter) Close() error {
+	if lw.file != nil {
+		return lw.file.Close()
+	} else {
+		return nil
+	}
+
 }
 
 func StartLogWatcher() {
-	log.SetOutput(GLOBAL_LOGGER)
-	log.SetRotateByDay()
 	GLOBAL_LOGGER = NewLogWriter(GlobalConfig.LogPath)
+	log.SetRotateByDay()
 	log.SetOutput(GLOBAL_LOGGER)
 
 }
