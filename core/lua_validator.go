@@ -2,7 +2,6 @@ package core
 
 import (
 	"errors"
-	"reflect"
 	"rulex/typex"
 
 	lua "github.com/yuin/gopher-lua"
@@ -37,7 +36,7 @@ func VerifyCallback(r *typex.Rule) error {
 			//
 			// golang function in lua is '*lua.LFunction' type
 			//
-			if !(reflect.TypeOf(f).String() == "*lua.LFunction") {
+			if !(f.Type() == lua.LTFunction) {
 				valid = false
 			}
 		})

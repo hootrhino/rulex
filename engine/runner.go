@@ -14,21 +14,21 @@ import (
 )
 
 //
-//
+// 启动 Rulex
 //
 func RunRulex(dbPath string) {
 	core.InitGlobalConfig()
+	engine := NewRuleEngine()
 	core.StartLogWatcher()
 	core.SetLogLevel()
 	core.SetPerformance()
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, syscall.SIGINT, syscall.SIGABRT)
-	engine := NewRuleEngine()
 	engine.Start()
 
-	hh := httpserver.NewHttpApiServer(2580, "/plugin/http_server/www/", dbPath, engine)
+	httpServer := httpserver.NewHttpApiServer(2580, "/plugin/http_server/www/", dbPath, engine)
 	// Load Http api Server
-	engine.LoadPlugin(hh)
+	engine.LoadPlugin(httpServer)
 	// Load Mqtt Server
 
 	if err := engine.LoadPlugin(mqttserver.NewMqttServer()); err != nil {
@@ -38,7 +38,7 @@ func RunRulex(dbPath string) {
 	//
 	// Load inend from sqlite
 	//
-	for _, minEnd := range hh.AllMInEnd() {
+	for _, minEnd := range httpServer.AllMInEnd() {
 		config := map[string]interface{}{}
 		if err := json.Unmarshal([]byte(minEnd.Config), &config); err != nil {
 			log.Error(err)
@@ -54,7 +54,7 @@ func RunRulex(dbPath string) {
 	//
 	// Load rule from sqlite
 	//
-	for _, mRule := range hh.AllMRules() {
+	for _, mRule := range httpServer.AllMRules() {
 		rule := typex.NewRule(engine,
 			mRule.UUID,
 			mRule.Name,
@@ -70,7 +70,7 @@ func RunRulex(dbPath string) {
 	//
 	// Load out end from sqlite
 	//
-	for _, mOutEnd := range hh.AllMOutEnd() {
+	for _, mOutEnd := range httpServer.AllMOutEnd() {
 		config := map[string]interface{}{}
 		if err := json.Unmarshal([]byte(mOutEnd.Config), &config); err != nil {
 			log.Error(err)

@@ -1,7 +1,6 @@
 package core
 
 import (
-	"io"
 	"os"
 
 	"github.com/ngaut/log"
@@ -11,15 +10,18 @@ import (
 // 默认日志槽大小: 1000条
 //
 const max_LOG_COUNT int = 1000
+
 var LogSlot []string = make([]string, max_LOG_COUNT)
+var GLOBAL_LOGGER *LogWriter
+
 type LogWriter struct {
 	file *os.File
 }
 
-func NewLogWriter(filepath string) io.Writer {
-	logFile, err2 := os.OpenFile(GlobalConfig.LogPath, os.O_WRONLY|os.O_CREATE, 0777)
-	if err2 != nil {
-		log.Fatalf("Fail to read log file: %v", err2)
+func NewLogWriter(filepath string) *LogWriter {
+	logFile, err := os.OpenFile(GlobalConfig.LogPath, os.O_WRONLY|os.O_CREATE, 0777)
+	if err != nil {
+		log.Fatalf("Fail to read log file: %v", err)
 		os.Exit(1)
 	}
 	return &LogWriter{file: logFile}
@@ -32,11 +34,14 @@ func (lw *LogWriter) Write(b []byte) (n int, err error) {
 	}
 	return lw.file.Write(b)
 }
-func (lw *LogWriter) Close(p []byte) (err string) {
+func (lw *LogWriter) Close() (err string) {
 	return lw.file.Close().Error()
 }
 
 func StartLogWatcher() {
-	log.SetOutput(NewLogWriter(GlobalConfig.LogPath))
+	log.SetOutput(GLOBAL_LOGGER)
 	log.SetRotateByDay()
+	GLOBAL_LOGGER = NewLogWriter(GlobalConfig.LogPath)
+	log.SetOutput(GLOBAL_LOGGER)
+
 }

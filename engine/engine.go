@@ -475,8 +475,7 @@ func (e *RuleEngine) SaveRule(r *typex.Rule) {
 //
 func (e *RuleEngine) RemoveRule(ruleId string) {
 	if rule := e.GetRule(ruleId); rule != nil {
-
-		// 清空 InEnd 的 bind
+		// 清空 InEnd 的 bind 资源
 		inEnds := e.AllInEnd()
 		inEnds.Range(func(key, value interface{}) bool {
 			inEnd := value.(*typex.InEnd)
@@ -535,12 +534,17 @@ func (e *RuleEngine) Stop() {
 	})
 
 	context.Background().Done()
+	// 回收资源
 	runtime.Gosched()
 	runtime.GC()
+	// 关闭日志器
+	core.GLOBAL_LOGGER.Close()
 	log.Info("Stop Rulex successfully")
 }
 
-// Work
+//
+// 核心功能: Work
+//
 func (e *RuleEngine) Work(in *typex.InEnd, data string) (bool, error) {
 	e.PushQueue(typex.QueueData{
 		In:   in,
