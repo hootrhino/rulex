@@ -25,10 +25,10 @@ Actions = {
         if Cmd == "on" then
             local ok = rulex:WriteOutStream('#ID', json.encode({0x01, SW}))
             if ok then
-                rulex:finishCmd(CmdId)
+                rulex:finishCmd(CmdId, "OutId")
             else
                 -- 其实没必要显式调用失败，因为服务端超时后就自己直接失败了
-                rulex:failedCmd(CmdId)
+                rulex:failedCmd(CmdId, "OutId")
             end
         end
         --- 关
