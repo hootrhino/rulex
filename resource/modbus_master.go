@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 
+	"rulex/driver"
 	"rulex/typex"
 	"rulex/utils"
 	"time"
@@ -97,8 +98,9 @@ type TcpConfig struct {
 
 type ModbusMasterResource struct {
 	typex.XStatus
-	client modbus.Client
-	cxt    context.Context
+	client    modbus.Client
+	cxt       context.Context
+	rtuDriver typex.XExternalDriver
 }
 
 func NewModbusMasterResource(id string, e typex.RuleX) typex.XResource {
@@ -146,6 +148,7 @@ func (m *ModbusMasterResource) Start() error {
 			return err
 		}
 		m.client = modbus.NewClient(handler)
+		m.rtuDriver = driver.NewModBusRtuDriver(m.Details(), m.RuleEngine, m.client)
 	} else {
 		return errors.New("no supported mode:" + mainConfig.Mode)
 	}
@@ -249,8 +252,12 @@ func (m *ModbusMasterResource) Stop() {
 	m.cxt.Done()
 }
 
+/*
+*
+* 对于 modbus 资源来说，任何直接写入的数据都被认为是给寄存器写值
+*
+ */
 func (m *ModbusMasterResource) OnStreamApproached(data string) error {
-	log.Debug("OnStreamApproached:", data)
 	var p ModBUSWriteParams
 	var errs error = nil
 	if errs := utils.TransformConfig([]byte(data), p); errs != nil {
@@ -274,6 +281,16 @@ func (m *ModbusMasterResource) OnStreamApproached(data string) error {
 	}
 	return errs
 }
-func (*ModbusMasterResource) Driver() typex.XExternalDriver {
-	return nil
+
+/*
+*
+* 只有RTU模式才带驱动
+*
+ */
+func (m *ModbusMasterResource) Driver() typex.XExternalDriver {
+	if m.client != nil {
+		return m.rtuDriver
+	} else {
+		return nil
+	}
 }

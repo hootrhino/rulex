@@ -28,7 +28,6 @@ type UartDriver struct {
 	ctx        context.Context
 	In         *typex.InEnd
 	RuleEngine typex.RuleX
-	Separator  uint8
 }
 
 //
@@ -37,8 +36,7 @@ type UartDriver struct {
 func NewUartDriver(
 	serialPort serial.Port,
 	in *typex.InEnd,
-	e typex.RuleX,
-	separator uint8) typex.XExternalDriver {
+	e typex.RuleX) typex.XExternalDriver {
 	return &UartDriver{
 		In:         in,
 		RuleEngine: e,

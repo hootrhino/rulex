@@ -15,13 +15,12 @@ type UartModuleResource struct {
 	loraDriver typex.XExternalDriver
 }
 type UartConfig struct {
-	Address   string `json:"address" validate:"required"`
-	BaudRate  int    `json:"baudRate" validate:"required"`
-	DataBits  int    `json:"dataBits" validate:"required"`
-	StopBits  int    `json:"stopBits" validate:"required"`
-	Parity    string `json:"parity" validate:"required"`
-	Separator string `json:"separator" validate:"required"`
-	Timeout   *int64 `json:"timeout" validate:"required"`
+	Address  string `json:"address" validate:"required"`
+	BaudRate int    `json:"baudRate" validate:"required"`
+	DataBits int    `json:"dataBits" validate:"required"`
+	StopBits int    `json:"stopBits" validate:"required"`
+	Parity   string `json:"parity" validate:"required"`
+	Timeout  *int64 `json:"timeout" validate:"required"`
 }
 
 func NewUartModuleResource(inEndId string, e typex.RuleX) typex.XResource {
@@ -70,8 +69,7 @@ func (u *UartModuleResource) Start() error {
 		u.loraDriver = driver.NewUartDriver(
 			serialPort,
 			u.Details(),
-			u.RuleEngine,
-			mainConfig.Separator[0])
+			u.RuleEngine)
 		return nil
 	}
 }
