@@ -16,6 +16,7 @@ import (
 //
 //go:generate ./gen_version.sh
 //go:generate ./gen_proto.sh
+//go:generate ./gen_banner.sh
 //
 func main() {
 
