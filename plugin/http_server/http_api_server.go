@@ -15,7 +15,7 @@ import (
 	"gorm.io/gorm"
 )
 
-const API_V1_ROOT string = "/api/v1/"
+const _API_V1_ROOT string = "/api/v1/"
 const DEFAULT_DB_PATH string = "./rulex.db"
 const DASHBOARD_ROOT string = "/dashboard/v1/"
 
@@ -53,79 +53,85 @@ func (hh *HttpApiServer) Start() error {
 	//
 	// Get all plugins
 	//
-	hh.ginEngine.GET(API_V1_ROOT+"plugins", hh.addRoute(Plugins))
+	hh.ginEngine.GET(_API_V1_ROOT+"plugins", hh.addRoute(Plugins))
 	//
 	// Get system infomation
 	//
-	hh.ginEngine.GET(API_V1_ROOT+"system", hh.addRoute(System))
+	hh.ginEngine.GET(_API_V1_ROOT+"system", hh.addRoute(System))
 	//
 	//
 	//
-	hh.ginEngine.GET(API_V1_ROOT+"resourceCount", hh.addRoute(ResourceCount))
+	hh.ginEngine.GET(_API_V1_ROOT+"resourceCount", hh.addRoute(ResourceCount))
 	//
 	//
 	//
-	hh.ginEngine.GET(API_V1_ROOT+"logs", hh.addRoute(Logs))
+	hh.ginEngine.GET(_API_V1_ROOT+"logs", hh.addRoute(Logs))
 	//
 	//
 	//
-	hh.ginEngine.POST(API_V1_ROOT+"logout", hh.addRoute(LogOut))
+	hh.ginEngine.POST(_API_V1_ROOT+"logout", hh.addRoute(LogOut))
 	//
 	// Get all inends
 	//
-	hh.ginEngine.GET(API_V1_ROOT+"inends", hh.addRoute(InEnds))
+	hh.ginEngine.GET(_API_V1_ROOT+"inends", hh.addRoute(InEnds))
 	//
 	//
 	//
-	hh.ginEngine.GET(API_V1_ROOT+"drivers", hh.addRoute(Drivers))
+	hh.ginEngine.GET(_API_V1_ROOT+"drivers", hh.addRoute(Drivers))
 	//
 	// Get all outends
 	//
-	hh.ginEngine.GET(API_V1_ROOT+"outends", hh.addRoute(OutEnds))
+	hh.ginEngine.GET(_API_V1_ROOT+"outends", hh.addRoute(OutEnds))
 	//
 	// Get all rules
 	//
-	hh.ginEngine.GET(API_V1_ROOT+"rules", hh.addRoute(Rules))
+	hh.ginEngine.GET(_API_V1_ROOT+"rules", hh.addRoute(Rules))
 	//
 	// Get statistics data
 	//
-	hh.ginEngine.GET(API_V1_ROOT+"statistics", hh.addRoute(Statistics))
+	hh.ginEngine.GET(_API_V1_ROOT+"statistics", hh.addRoute(Statistics))
 	//
 	// Auth
 	//
-	hh.ginEngine.POST(API_V1_ROOT+"users", hh.addRoute(CreateUser))
+	hh.ginEngine.POST(_API_V1_ROOT+"users", hh.addRoute(CreateUser))
 	//
 	//
 	//
-	hh.ginEngine.POST(API_V1_ROOT+"login", hh.addRoute(Login))
+	hh.ginEngine.POST(_API_V1_ROOT+"login", hh.addRoute(Login))
 	//
 	//
 	//
-	hh.ginEngine.GET(API_V1_ROOT+"info", hh.addRoute(Info))
+	hh.ginEngine.GET(_API_V1_ROOT+"info", hh.addRoute(Info))
 	//
 	// Create InEnd
 	//
-	hh.ginEngine.POST(API_V1_ROOT+"inends", hh.addRoute(CreateInend))
+	hh.ginEngine.POST(_API_V1_ROOT+"inends", hh.addRoute(CreateInend))
 	//
 	// Create OutEnd
 	//
-	hh.ginEngine.POST(API_V1_ROOT+"outends", hh.addRoute(CreateOutEnd))
+	hh.ginEngine.POST(_API_V1_ROOT+"outends", hh.addRoute(CreateOutEnd))
 	//
 	// Create rule
 	//
-	hh.ginEngine.POST(API_V1_ROOT+"rules", hh.addRoute(CreateRule))
+	hh.ginEngine.POST(_API_V1_ROOT+"rules", hh.addRoute(CreateRule))
 	//
 	// Delete inend by UUID
 	//
-	hh.ginEngine.DELETE(API_V1_ROOT+"inends", hh.addRoute(DeleteInend))
+	hh.ginEngine.DELETE(_API_V1_ROOT+"inends", hh.addRoute(DeleteInend))
 	//
 	// Delete outend by UUID
 	//
-	hh.ginEngine.DELETE(API_V1_ROOT+"outends", hh.addRoute(DeleteOutend))
+	hh.ginEngine.DELETE(_API_V1_ROOT+"outends", hh.addRoute(DeleteOutend))
 	//
 	// Delete rule by UUID
 	//
-	hh.ginEngine.DELETE(API_V1_ROOT+"rules", hh.addRoute(DeleteRule))
+	hh.ginEngine.DELETE(_API_V1_ROOT+"rules", hh.addRoute(DeleteRule))
+	//
+	// 验证 lua 语法
+	//
+	hh.ginEngine.POST(_API_V1_ROOT+"validateRule", hh.addRoute(ValidateLuaSyntax))
+	//
+	//
 	//
 	log.Info("Http server started on http://127.0.0.1:2580")
 	return nil

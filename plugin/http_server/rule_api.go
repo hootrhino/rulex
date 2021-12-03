@@ -130,3 +130,37 @@ func DeleteRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	}
 
 }
+
+/*
+*
+* 验证lua语法
+*
+ */
+func ValidateLuaSyntax(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+	type Form struct {
+		From    []string `json:"from" binding:"required"`
+		Actions string   `json:"actions" binding:"required"`
+		Success string   `json:"success" binding:"required"`
+		Failed  string   `json:"failed" binding:"required"`
+	}
+	form := Form{}
+	if err := c.ShouldBindJSON(&form); err != nil {
+		c.JSON(200, Error400(err))
+		return
+	}
+	tmpRule := typex.NewRule(
+		nil, // 不需要该字段
+		"",  // 不需要该字段
+		"",  // 不需要该字段
+		"",  // 不需要该字段
+		form.From,
+		form.Success,
+		form.Actions,
+		form.Failed)
+	if err := core.VerifyCallback(tmpRule); err != nil {
+		c.JSON(200, Error400(err))
+	} else {
+		c.JSON(200, Ok())
+	}
+
+}
