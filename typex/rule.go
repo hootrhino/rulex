@@ -97,7 +97,7 @@ func (r *Rule) LoadLib(rx RuleX, lib XLib) {
 	// log.Info("LoadLib:", lib.Name())
 	rulex := r.VM.G.Global
 	//
-	r.VM.SetGlobal("rulex", rulex)
+	r.VM.SetGlobal("rulexlib", rulex)
 	r.VM.PreloadModule("json", luajson.Loader)
 	r.VM.PreloadModule("url", gluaurl.Loader)
 	//
