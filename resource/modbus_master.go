@@ -2,6 +2,7 @@ package resource
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 
@@ -57,9 +58,15 @@ type ModBUSWriteParams struct {
 }
 
 type RegisterParam struct {
-	Function int    `json:"function" validate:"required"`               // Current version only support read
-	Address  uint16 `json:"address" validate:"required,gte=0,lte=255"`  // Address
-	Quantity uint16 `json:"quantity" validate:"required,gte=0,lte=255"` // Quantity
+	Function int    `json:"function" validate:"required"` // Function
+	Address  uint16 `json:"address" validate:"required"`  // Address
+	Quantity uint16 `json:"quantity" validate:"required"` // Quantity
+}
+type registerData struct {
+	Function int    `json:"function" validate:"required"` // Function
+	Address  uint16 `json:"address" validate:"required"`  // Address
+	Quantity uint16 `json:"quantity" validate:"required"` // Quantity
+	Value    string `json:"value" validate:"required"`    // Quantity
 }
 
 //
@@ -184,11 +191,18 @@ func (m *ModbusMasterResource) Start() error {
 						if err != nil {
 							log.Error("NewModbusMasterResource ReadData error: ", err)
 						} else {
+							rdata := registerData{
+								Function: rp.Function,
+								Address:  rp.Address,
+								Quantity: rp.Quantity,
+								Value:    string(results),
+							}
+							bytes, _ := json.Marshal(rdata)
 							if err0 := m.RuleEngine.PushQueue(typex.QueueData{
 								In:   m.Details(),
 								Out:  nil,
 								E:    m.RuleEngine,
-								Data: string(results),
+								Data: string(bytes),
 							}); err0 != nil {
 								log.Error("NewModbusMasterResource PushQueue error: ", err0)
 							}
