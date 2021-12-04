@@ -64,9 +64,8 @@ func validate(values []lua.LValue, f func() (lua.LValue, error)) (lua.LValue, er
 
 //
 //
+// 执行lua函数的接口, 后期可以用这个接口来实现运行 lua 微服务
 //
-
-// Execute Lua function
 func Execute(vm *lua.LState, k string, args ...lua.LValue) (interface{}, error) {
 	callable := vm.GetGlobal(k)
 	if callable.Type() == lua.LTFunction {
