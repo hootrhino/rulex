@@ -556,15 +556,15 @@ func (e *RuleEngine) Work(in *typex.InEnd, data string) (bool, error) {
 //
 // 执行lua脚本
 //
-func (e *RuleEngine) RunLuaCallbacks(in *typex.InEnd, data string) {
+func (e *RuleEngine) RunLuaCallbacks(in *typex.InEnd, callback string) {
 	for _, rule := range in.Binds {
 		if rule.Status == typex.RULE_RUNNING {
-			_, err := rule.ExecuteActions(lua.LString(data))
+			_, err := core.ExecuteActions(&rule, lua.LString(callback))
 			if err != nil {
 				log.Error("RunLuaCallbacks error:", err)
-				rule.ExecuteFailed(lua.LString(err.Error()))
+				core.ExecuteFailed(rule.VM, lua.LString(err.Error()))
 			} else {
-				rule.ExecuteSuccess()
+				core.ExecuteSuccess(rule.VM)
 			}
 		}
 	}

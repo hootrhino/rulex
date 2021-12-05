@@ -2,6 +2,7 @@ package httpserver
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"rulex/core"
 	"rulex/typex"
@@ -163,4 +164,58 @@ func ValidateLuaSyntax(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		c.JSON(200, Ok())
 	}
 
+}
+
+/*
+*
+* 测试脚本执行效果
+*
+ */
+func TestLuaCallback(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+	uuid, _ := c.GetQuery("uuid") // InEnd
+	data, _ := c.GetQuery("data") // Data
+	_, err0 := hh.GetMRule(uuid)
+	if err0 != nil {
+		c.JSON(200, Error400(err0))
+		return
+	}
+	value, ok := e.AllInEnd().Load(uuid)
+	if !ok {
+		c.JSON(200, Error400((fmt.Errorf("'InEnd' not exists: %v", uuid))))
+		return
+	}
+	e.PushQueue(typex.QueueData{
+		In:   (value).(*typex.InEnd),
+		Out:  nil,
+		E:    e,
+		Data: data,
+	})
+	c.JSON(200, Ok())
+}
+
+/*
+*
+* 测试 OutEnd 的结果
+*
+ */
+func TestOutEndCallback(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+	uuid, _ := c.GetQuery("uuid") // OutEnd
+	data, _ := c.GetQuery("data") // Data
+	_, err0 := hh.GetMRule(uuid)
+	if err0 != nil {
+		c.JSON(200, Error400(err0))
+		return
+	}
+	value, ok := e.AllOutEnd().Load(uuid)
+	if !ok {
+		c.JSON(200, Error400((fmt.Errorf("'OutEnd' not exists: %v", uuid))))
+		return
+	}
+	e.PushQueue(typex.QueueData{
+		In:   nil,
+		Out:  (value).(*typex.OutEnd),
+		E:    e,
+		Data: data,
+	})
+	c.JSON(200, Ok())
 }

@@ -2,10 +2,39 @@ package core
 
 import (
 	"errors"
+	"reflect"
 	"rulex/typex"
 
 	lua "github.com/yuin/gopher-lua"
 )
+
+// LUA Callback : Success
+func ExecuteSuccess(vm *lua.LState) (interface{}, error) {
+	return typex.Execute(vm, "Success")
+}
+
+// LUA Callback : Failed
+
+func ExecuteFailed(vm *lua.LState, arg lua.LValue) (interface{}, error) {
+	return typex.Execute(vm, "Failed", arg)
+}
+
+//
+func ExecuteActions(rule *typex.Rule, arg lua.LValue) (lua.LValue, error) {
+	table := rule.VM.GetGlobal("Actions")
+	if table != nil && table.Type() == lua.LTTable {
+		funcs := make(map[string]*lua.LFunction)
+		table.(*lua.LTable).ForEach(func(idx, f lua.LValue) {
+			t := reflect.TypeOf(f).Elem().Name()
+			if t == "LFunction" {
+				funcs[idx.String()] = f.(*lua.LFunction)
+			}
+		})
+		return typex.RunPipline(rule.VM, funcs, arg)
+	} else {
+		return nil, errors.New("'Actions' not a lua table or not exist")
+	}
+}
 
 // VerifyCallback Verify Lua Syntax
 func VerifyCallback(r *typex.Rule) error {

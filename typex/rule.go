@@ -1,9 +1,6 @@
 package typex
 
 import (
-	"errors"
-	"reflect"
-
 	"github.com/cjoudrey/gluaurl"
 	luajson "github.com/wwhai/gopher-json"
 
@@ -62,34 +59,6 @@ func NewRule(e RuleX,
 		Success:     success,
 		Failed:      failed,
 		VM:          vm,
-	}
-}
-
-// LUA Callback : Success
-func (r *Rule) ExecuteSuccess() (interface{}, error) {
-	return Execute(r.VM, "Success")
-}
-
-// LUA Callback : Failed
-
-func (r *Rule) ExecuteFailed(arg lua.LValue) (interface{}, error) {
-	return Execute(r.VM, "Failed", arg)
-}
-
-//
-func (r *Rule) ExecuteActions(arg lua.LValue) (lua.LValue, error) {
-	table := r.VM.GetGlobal("Actions")
-	if table != nil && table.Type() == lua.LTTable {
-		funcs := make(map[string]*lua.LFunction)
-		table.(*lua.LTable).ForEach(func(idx, f lua.LValue) {
-			t := reflect.TypeOf(f).Elem().Name()
-			if t == "LFunction" {
-				funcs[idx.String()] = f.(*lua.LFunction)
-			}
-		})
-		return RunPipline(r.VM, funcs, arg)
-	} else {
-		return nil, errors.New("'Actions' not a lua table or not exist")
 	}
 }
 
