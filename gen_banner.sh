@@ -12,6 +12,7 @@ cat >./conf/banner.txt <<EOF
 |                                            ------            |
 |                                         ------               |
 |* Version: ${VERSION}-${HASH:0:15}                             |
+|* Build at: "$(echo $(date "+%Y-%m-%d %H:%M:%S"))"                             |
 |* Document: https://wwhai.github.io/rulex_doc_html/index.html |
 |                                                              |
  --------------------------------------------------------------
