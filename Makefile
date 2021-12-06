@@ -7,15 +7,10 @@ all:
 .PHONY: build
 build:
 	go mod tidy
-	chmod 755 ./gen_version.sh
-	chmod +x ./gen_version.sh
-	chmod 755 ./gen_proto.sh
-	chmod +x ./gen_proto.sh
-	chmod 755 ./gen_banner.sh
-	chmod +x ./gen_banner.sh
-	sed -i "s/\r//" ./gen_proto.sh
-	sed -i "s/\r//" ./gen_version.sh
-	sed -i "s/\r//" ./gen_banner.sh
+	chmod +x gen_version.sh
+	chmod +x gen_proto.sh
+	chmod +x gen_banner.sh
+	chmod +x gen_banner.sh
 	go generate
 	CGO_ENABLED=1 GOOS=linux
 	go build -v -ldflags "-s -w" -o ${APP} main.go
@@ -55,7 +50,7 @@ cover:
 .PHONY: clean
 clean:
 	go clean
-	rm ./_release -rf
+	rm _release -rf
 	rm *.db
 
 .PHONY: clean-grpc
