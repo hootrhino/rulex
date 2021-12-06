@@ -18,3 +18,5 @@ go.sum
 profile*
 _release*
 _build*
+lua-log*
+*.txt

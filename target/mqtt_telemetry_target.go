@@ -111,7 +111,7 @@ func (mm *MqttTelemetryTarget) Start() error {
 					}
 					c := c2sCommand{
 						Type:   cmd.Cmd,
-						Result: core.LogSlot[int(offset):int(size)],
+						Result: core.GLOBAL_LOGGER.Slot()[int(offset):int(size)],
 					}
 					bytes, _ := json.Marshal(c)
 					token := mm.client.Publish(mainConfig.LogTopic, 0, false, string(bytes))

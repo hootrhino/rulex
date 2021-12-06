@@ -7,6 +7,7 @@ import (
 	"rulex/core"
 	httpserver "rulex/plugin/http_server"
 	mqttserver "rulex/plugin/mqtt_server"
+	"rulex/rulexlib"
 	"rulex/typex"
 	"syscall"
 
@@ -20,6 +21,7 @@ func RunRulex(dbPath string) {
 	core.InitGlobalConfig()
 	engine := NewRuleEngine()
 	core.StartLogWatcher()
+	rulexlib.StartLuaLogger()
 	core.SetLogLevel()
 	core.SetPerformance()
 	c := make(chan os.Signal, 1)
@@ -85,7 +87,10 @@ func RunRulex(dbPath string) {
 	signal := <-c
 	log.Warn("Received stop signal:", signal)
 	engine.Stop()
+	//
 	// 关闭日志器
+	//
 	core.GLOBAL_LOGGER.Close()
+	rulexlib.LUALOGGER.Close()
 	os.Exit(0)
 }

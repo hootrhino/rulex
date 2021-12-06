@@ -93,7 +93,7 @@ func Logs(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		Content string `json:"content" binding:"required"`
 	}
 	logs := []Data{}
-	for i, s := range core.LogSlot {
+	for i, s := range core.GLOBAL_LOGGER.Slot() {
 		if s != "" {
 			logs = append(logs, Data{i, s})
 		}

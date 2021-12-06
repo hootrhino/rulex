@@ -82,6 +82,7 @@ func TestFullyRun(t *testing.T) {
 				-- <a:5 b:3 c:1 => a:00001100 b:00000001 c:0
 				local V6 = json.encode(rulexlib:MatchBinary("<a:5 b:3 c:1", "aab", false))
 				print("[LUA Actions Callback 5, rulex.MatchBinary] ==>", V6)
+				rulexlib:log("[LUA Actions Callback 5, rulex.MatchBinary] ==>", V6)
 				return true, data
 			end
 		}`,

@@ -23,6 +23,7 @@ type RulexConfig struct {
 	EnablePProf             bool
 	LogLevel                string
 	LogPath                 string
+	LuaLogPath              string
 }
 
 var GlobalConfig RulexConfig
@@ -46,6 +47,7 @@ func InitGlobalConfig() {
 	GlobalConfig.EnablePProf = cfg.Section("app").Key("enable_pprof").MustBool(false)
 	GlobalConfig.LogLevel = cfg.Section("app").Key("log_level").MustString("info")
 	GlobalConfig.LogPath = cfg.Section("app").Key("log_path").MustString("./rulex-log.txt")
+	GlobalConfig.LuaLogPath = cfg.Section("app").Key("lua_log_path").MustString("./rulex-lua-log.txt")
 	//---------------------------------------
 	GlobalConfig.Path = cfg.Section("cloud").Key("path").MustString("")
 	GlobalConfig.Token = cfg.Section("cloud").Key("token").MustString("")
