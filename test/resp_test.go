@@ -8,7 +8,7 @@ import (
 )
 
 func Test_set(t *testing.T) {
-	conn, err := net.Dial("tcp", "10.55.16.242:6379")
+	conn, err := net.Dial("tcp", "127.0.0.1:6379")
 	if err != nil {
 		fmt.Println("Error connecting:", err)
 		os.Exit(1)
