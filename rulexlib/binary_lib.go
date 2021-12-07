@@ -358,6 +358,22 @@ func ReverseBitOrder(b byte) byte {
 
 /*
 *
+* 逆转位[4]字节
+*
+ */
+func ReverseBits(b byte) byte {
+	result := byte(0)
+	intSize := 31
+	for b != 0 {
+		result += (b & 1) << intSize
+		b = b >> 1
+		intSize -= 1
+	}
+	return result
+}
+
+/*
+*
 * 逆转字节顺序
 *
  */
