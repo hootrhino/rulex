@@ -40,10 +40,10 @@ require (
 	github.com/yuin/gopher-lua v0.0.0-20210529063254-f4c35e4016d9
 	go.mongodb.org/mongo-driver v1.5.4
 	go.uber.org/zap v1.19.1
-	golang.org/x/net v0.0.0-20211205041911-012df41ee64c // indirect
+	golang.org/x/net v0.0.0-20211208012354-db4efeb81f4b // indirect
 	golang.org/x/sys v0.0.0-20211205182925-97ca703d548d // indirect
 	golang.org/x/time v0.0.0-20200630173020-3af7569d3a1e // indirect
-	google.golang.org/genproto v0.0.0-20211203200212-54befc351ae9 // indirect
+	google.golang.org/genproto v0.0.0-20211207154714-918901c715cf // indirect
 	google.golang.org/grpc v1.42.0
 	google.golang.org/protobuf v1.27.1
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
