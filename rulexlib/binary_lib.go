@@ -9,6 +9,7 @@ import (
 	"rulex/typex"
 	"strconv"
 	"strings"
+	"unicode"
 
 	"github.com/ngaut/log"
 	lua "github.com/yuin/gopher-lua"
@@ -304,37 +305,58 @@ func Match(expr string, data []byte, returnMore bool) []Kl {
 	cursor := 0
 	result := []Kl{}
 	// log.Debug(pattern, expr[1:])
+
 	matched, err := regexp.MatchString(pattern, expr[1:])
 	if matched {
-		bfs := ByteToBitString(data)
-		// <a:12 b:12
-		for _, v := range regexper.FindAllString(expr[1:], -1) {
-			k_l := strings.Split(v, ":")
-			k := k_l[0]
-			if l, err1 := strconv.Atoi(k_l[1]); err1 == nil {
-				if cursor+l <= len(bfs) {
-					binString := bfs[cursor : cursor+l]
-					result = append(result, Kl{
-						K:  k,
-						L:  uint(l),
-						BS: append0Prefix(len(binString)) + binString,
-					})
-				} else {
-					result = append(result, Kl{k, uint(l), ""})
-				}
-				cursor += l
-			}
+		endian := expr[0]
+		// < 小端
+		if Endian(endian) == binary.LittleEndian {
+			bfs := ByteToBitString(data)
+			// <a:12 b:12
+			s := ReverseString(expr[1:])
+			buildResult(returnMore, cursor, bfs, s, &result)
 		}
-		if returnMore {
-			if cursor < len(bfs) {
-				// 是否最后补上剩下的字节
-				result = append(result, Kl{"_", uint(len(bfs) - cursor), append0Prefix(len(bfs[cursor:])) + bfs[cursor:]})
-			}
+		// > 大端
+		if Endian(endian) == binary.BigEndian {
+			bfs := ByteToBitString(data)
+			// <a:12 b:12
+			s := expr[1:]
+			buildResult(returnMore, cursor, bfs, s, &result)
 		}
+
 	} else {
 		log.Error(matched, err)
 	}
 	return result
+}
+
+func append0(cursor int, bfs string, returnMore bool, result *[]Kl) {
+	if returnMore {
+		if cursor < len(bfs) {
+			// 是否最后补上剩下的字节
+			*result = append(*result, Kl{"_", uint(len(bfs) - cursor), append0Prefix(len(bfs[cursor:])) + bfs[cursor:]})
+		}
+	}
+}
+func buildResult(returnMore bool, cursor int, bfs string, s string, result *[]Kl) {
+	for _, v := range regexper.FindAllString(s, -1) {
+		k_l := strings.Split(v, ":")
+		k := k_l[0]
+		if l, err1 := strconv.Atoi(k_l[1]); err1 == nil {
+			if cursor+l <= len(bfs) {
+				binString := bfs[cursor : cursor+l]
+				*result = append(*result, Kl{
+					K:  k,
+					L:  uint(l),
+					BS: append0Prefix(len(binString)) + binString,
+				})
+			} else {
+				*result = append(*result, Kl{k, uint(l), ""})
+			}
+			cursor += l
+		}
+	}
+	append0(cursor, bfs, returnMore, result)
 }
 
 /*
@@ -358,12 +380,12 @@ func ReverseBitOrder(b byte) byte {
 
 /*
 *
-* 逆转位[4]字节
+* 逆转字节位
 *
  */
 func ReverseBits(b byte) byte {
 	result := byte(0)
-	intSize := 31
+	intSize := 7
 	for b != 0 {
 		result += (b & 1) << intSize
 		b = b >> 1
@@ -382,4 +404,49 @@ func ReverseByteOrder(b []byte) []byte {
 		b[i], b[j] = b[j], b[i]
 	}
 	return b
+}
+
+/*
+*
+* 逆转字符串
+*
+ */
+// Reverse reverses the input while respecting UTF8 encoding and combined characters
+func ReverseString(text string) string {
+	textRunes := []rune(text)
+	textRunesLength := len(textRunes)
+	if textRunesLength <= 1 {
+		return text
+	}
+
+	i, j := 0, 0
+	for i < textRunesLength && j < textRunesLength {
+		j = i + 1
+		for j < textRunesLength && isMark(textRunes[j]) {
+			j++
+		}
+
+		if isMark(textRunes[j-1]) {
+			// Reverses Combined Characters
+			reverse(textRunes[i:j], j-i)
+		}
+
+		i = j
+	}
+
+	// Reverses the entire array
+	reverse(textRunes, textRunesLength)
+
+	return string(textRunes)
+}
+
+func reverse(runes []rune, length int) {
+	for i, j := 0, length-1; i < length/2; i, j = i+1, j-1 {
+		runes[i], runes[j] = runes[j], runes[i]
+	}
+}
+
+// isMark determines whether the rune is a marker
+func isMark(r rune) bool {
+	return unicode.Is(unicode.Mn, r) || unicode.Is(unicode.Me, r) || unicode.Is(unicode.Mc, r)
 }

@@ -35,9 +35,32 @@ func TestBinaryMatch(t *testing.T) {
 	t.Log("Len:", len)
 	t.Log(kls)
 }
-func TestBinaryMatch1(t *testing.T) {
-	//aab: 97 97 98
-	kls := rulexlib.Match("<a:5 b:3 c:1", []byte("aab"), true)
+
+/*
+*
+* 大端模式
+*
+ */
+func TestBinaryMatch_big(t *testing.T) {
+	//aab: 01100001 01100001 01100010
+	kls := rulexlib.Match(">a:8 b:8 c:8", []byte("aab"), true)
+	var len uint = 0
+	for _, v := range kls {
+		len += v.L
+		t.Log("字段:", v.K, " 二进制串:", v.BS)
+	}
+	t.Log("Len:", len)
+	t.Log(kls)
+}
+
+/*
+*
+* 小端模式
+*
+ */
+func TestBinaryMatch_little(t *testing.T) {
+	//baa:  01100010 01100001 01100001
+	kls := rulexlib.Match("<a:8 b:8 c:8", []byte("aab"), true)
 	var len uint = 0
 	for _, v := range kls {
 		len += v.L
