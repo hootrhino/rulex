@@ -64,15 +64,17 @@ type RuleX interface {
 // XResource: 终端资源，比如实际上的 MQTT 客户端
 //
 type XResource interface {
-	Details() *InEnd
-	Test(inEndId string) bool      //0
-	Register(inEndId string) error //1
-	Start() error                  //2
+	// 测试资源状态
+	Test(outEndId string) bool //0
+	// 先注册资源ID到入口
+	Register(outEndId string) error
+	Start() error
 	Enabled() bool
 	DataModels() []XDataModel
 	Reload()
 	Pause()
 	Status() ResourceState
+	Details() *InEnd
 	//--------------------------------------------------------
 	// OnStreamApproached: 不经过规则引擎处理的直达资源端数据接口
 	//--------------------------------------------------------
@@ -85,14 +87,16 @@ type XResource interface {
 // Stream from resource and to target
 //
 type XTarget interface {
-	Details() *OutEnd
-	Test(outEndId string) bool      //0
-	Register(outEndId string) error //1
-	Start() error                   //2
+	// 测试资源状态
+	Test(outEndId string) bool //0
+	// 先注册资源ID到出口
+	Register(outEndId string) error
+	Start() error
 	Enabled() bool
 	Reload()
 	Pause()
 	Status() ResourceState
+	Details() *OutEnd
 	//--------------------------------------------------------
 	// To: 数据出口
 	//--------------------------------------------------------
