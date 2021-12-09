@@ -313,15 +313,14 @@ func Match(expr string, data []byte, returnMore bool) []Kl {
 		if Endian(endian) == binary.LittleEndian {
 			bfs := ByteToBitString(data)
 			// <a:12 b:12
-			s := ReverseString(expr[1:])
-			buildResult(returnMore, cursor, bfs, s, &result)
+			reverseBfs := ReverseString(bfs)
+			buildResult(returnMore, cursor, reverseBfs, expr[1:], &result)
 		}
 		// > 大端
 		if Endian(endian) == binary.BigEndian {
 			bfs := ByteToBitString(data)
 			// <a:12 b:12
-			s := expr[1:]
-			buildResult(returnMore, cursor, bfs, s, &result)
+			buildResult(returnMore, cursor, bfs, expr[1:], &result)
 		}
 
 	} else {
@@ -338,8 +337,8 @@ func append0(cursor int, bfs string, returnMore bool, result *[]Kl) {
 		}
 	}
 }
-func buildResult(returnMore bool, cursor int, bfs string, s string, result *[]Kl) {
-	for _, v := range regexper.FindAllString(s, -1) {
+func buildResult(returnMore bool, cursor int, bfs string, expression string, result *[]Kl) {
+	for _, v := range regexper.FindAllString(expression, -1) {
 		k_l := strings.Split(v, ":")
 		k := k_l[0]
 		if l, err1 := strconv.Atoi(k_l[1]); err1 == nil {
@@ -364,32 +363,10 @@ func buildResult(returnMore bool, cursor int, bfs string, s string, result *[]Kl
 * 逆转位顺序
 *
  */
-func ReverseBitOrder(b byte) byte {
-	// get bit
-	mask := byte(0x01)
-	bytes := [8]byte{}
-	for i := 0; i < 8; i++ {
-		bytes[i] = b & (mask << (7 - i)) >> (7 - i)
-	}
-	return ((bytes[0] << 0) | (bytes[1] << 1) |
-		(bytes[2] << 2) | (bytes[3] << 3) |
-		(bytes[4] << 4) | (bytes[5] << 5) |
-		(bytes[6] << 6) | (bytes[7] << 7))
-
-}
-
-/*
-*
-* 逆转字节位
-*
- */
 func ReverseBits(b byte) byte {
 	result := byte(0)
-	intSize := 7
-	for b != 0 {
-		result += (b & 1) << intSize
-		b = b >> 1
-		intSize -= 1
+	for i := 7; i >= 0; i-- {
+		result |= ((b << i) >> 7) << i
 	}
 	return result
 }

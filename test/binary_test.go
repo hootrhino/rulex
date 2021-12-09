@@ -60,7 +60,7 @@ func TestBinaryMatch_big(t *testing.T) {
  */
 func TestBinaryMatch_little(t *testing.T) {
 	//baa:  01100010 01100001 01100001
-	kls := rulexlib.Match("<a:8 b:8 c:8", []byte("aab"), true)
+	kls := rulexlib.Match("<k1:8 k2:8 k3:8", []byte("aab"), true)
 	var len uint = 0
 	for _, v := range kls {
 		len += v.L
