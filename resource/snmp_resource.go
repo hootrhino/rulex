@@ -273,6 +273,6 @@ func (s *SNMPResource) OnStreamApproached(data string) error {
 func (s *SNMPResource) Stop() {
 
 }
-func (*SNMPConfig) Configs() []typex.XConfig {
+func (*SNMPResource) Configs() []typex.XConfig {
 	return []typex.XConfig{}
 }

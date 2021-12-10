@@ -115,6 +115,9 @@ func (m *GrpcInEndResource) OnStreamApproached(data string) error {
 func (*GrpcInEndResource) Driver() typex.XExternalDriver {
 	return nil
 }
+func (*GrpcInEndResource) Configs() []typex.XConfig {
+	return []typex.XConfig{}
+}
 
 //
 func (r *RulexRpcServer) Work(ctx context.Context, in *rulexrpc.Data) (*rulexrpc.Response, error) {
@@ -126,7 +129,4 @@ func (r *RulexRpcServer) Work(ctx context.Context, in *rulexrpc.Data) (*rulexrpc
 		Code:    0,
 		Message: "OK",
 	}, nil
-}
-func (*RulexRpcServer) Configs() []typex.XConfig {
-	return []typex.XConfig{}
 }
