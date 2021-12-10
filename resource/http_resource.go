@@ -31,6 +31,9 @@ func NewHttpInEndResource(inEndId string, e typex.RuleX) typex.XResource {
 	h.RuleEngine = e
 	return &h
 }
+func (*HttpInEndResource) Configs() []typex.XConfig {
+	return []typex.XConfig{}
+}
 
 //
 func (hh *HttpInEndResource) Start() error {

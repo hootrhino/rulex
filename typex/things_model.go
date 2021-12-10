@@ -20,10 +20,9 @@ const (
 // 驱动的数据模型
 //
 type XDataModel struct {
-	Type      ModelType
-	Name      string
-	MaxLength int
-	MinLength int
+	Name      string      `json:"name"`
+	ValueType ModelType   `json:"valueType"` // 值类型
+	Value     interface{} `json:"value"`     // 具体的值
 }
 
 //

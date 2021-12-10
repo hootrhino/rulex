@@ -30,6 +30,9 @@ func NewUartModuleResource(inEndId string, e typex.RuleX) typex.XResource {
 	//
 	return &s
 }
+func (*UartModuleResource) Configs() []typex.XConfig {
+	return []typex.XConfig{}
+}
 
 func (mm *UartModuleResource) DataModels() []typex.XDataModel {
 	return []typex.XDataModel{}

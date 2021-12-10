@@ -23,7 +23,7 @@ type ModBusConfig struct {
 	Frequency      int64           `json:"frequency" validate:"required,gte=1,lte=10000"`
 	RtuConfig      RtuConfig       `json:"rtuConfig" validate:"required"`
 	TcpConfig      TcpConfig       `json:"tcpConfig" validate:"required"`
-	RegisterParams []RegisterParam `json:"registerParams" validate:"required"`
+	RegisterParams []registerParam `json:"registerParams" validate:"required"`
 }
 
 const (
@@ -50,7 +50,7 @@ const (
 	WRITE_MULTIPLE_HOLDING_REGISTERS = 16
 )
 
-type ModBUSWriteParams struct {
+type modBUSWriteParams struct {
 	Function int    `json:"function" validate:"required"`
 	Address  uint16 `json:"address" validate:"required"`
 	Quantity uint16 `json:"quantity" validate:"required"`
@@ -58,7 +58,7 @@ type ModBUSWriteParams struct {
 	Values   []byte `json:"values" validate:"required"`
 }
 
-type RegisterParam struct {
+type registerParam struct {
 	Function int    `json:"function" validate:"required"` // Function
 	Address  uint16 `json:"address" validate:"required"`  // Address
 	Quantity uint16 `json:"quantity" validate:"required"` // Quantity
@@ -108,6 +108,9 @@ func NewModbusMasterResource(id string, e typex.RuleX) typex.XResource {
 	m.RuleEngine = e
 	m.cxt = context.Background()
 	return &m
+}
+func (*ModbusMasterResource) Configs() []typex.XConfig {
+	return []typex.XConfig{}
 }
 
 func (m *ModbusMasterResource) Register(inEndId string) error {
@@ -160,7 +163,7 @@ func (m *ModbusMasterResource) Start() error {
 	for _, rCfg := range mainConfig.RegisterParams {
 		log.Info("Start read register:", rCfg.Address)
 
-		go func(ctx context.Context, rp RegisterParam) {
+		go func(ctx context.Context, rp registerParam) {
 			defer ticker.Stop()
 			// Modbus data is most often read and written as "registers" which are [16-bit] pieces of data. Most often,
 			// the register is either a signed or unsigned 16-bit integer. If a 32-bit integer or floating point is required,
@@ -194,13 +197,13 @@ func (m *ModbusMasterResource) Start() error {
 						if err != nil {
 							log.Error("NewModbusMasterResource ReadData error: ", err)
 						} else {
-							rdata := registerData{
+							data := registerData{
 								Function: rp.Function,
 								Address:  rp.Address,
 								Quantity: rp.Quantity,
 								Value:    string(results),
 							}
-							bytes, _ := json.Marshal(rdata)
+							bytes, _ := json.Marshal(data)
 							if err0 := m.RuleEngine.PushQueue(typex.QueueData{
 								In:   m.Details(),
 								Out:  nil,
@@ -258,7 +261,7 @@ func (m *ModbusMasterResource) Stop() {
 *
  */
 func (m *ModbusMasterResource) OnStreamApproached(data string) error {
-	var p ModBUSWriteParams
+	var p modBUSWriteParams
 	var errs error = nil
 	if errs := utils.TransformConfig([]byte(data), p); errs != nil {
 		log.Error(errs)

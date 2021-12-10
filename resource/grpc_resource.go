@@ -127,3 +127,6 @@ func (r *RulexRpcServer) Work(ctx context.Context, in *rulexrpc.Data) (*rulexrpc
 		Message: "OK",
 	}, nil
 }
+func (*RulexRpcServer) Configs() []typex.XConfig {
+	return []typex.XConfig{}
+}

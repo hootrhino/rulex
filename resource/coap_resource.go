@@ -108,3 +108,7 @@ func (cc *CoAPInEndResource) Details() *typex.InEnd {
 func (cc *CoAPInEndResource) Driver() typex.XExternalDriver {
 	return nil
 }
+
+func (*CoAPInEndResource) Configs() []typex.XConfig {
+	return []typex.XConfig{}
+}

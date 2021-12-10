@@ -6,7 +6,6 @@ import (
 	lua "github.com/yuin/gopher-lua"
 )
 
-
 //
 // RuleX interface
 //
@@ -63,6 +62,7 @@ type XResource interface {
 	Enabled() bool
 	// 数据模型，用来描述该资源支持的数据
 	DataModels() []XDataModel
+	Configs() []XConfig
 	Reload()
 	Pause()
 	Status() ResourceState

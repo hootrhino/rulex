@@ -126,3 +126,6 @@ func (mm *MqttInEndResource) Details() *typex.InEnd {
 func (*MqttInEndResource) Driver() typex.XExternalDriver {
 	return nil
 }
+func (*MqttInEndResource) Configs() []typex.XConfig {
+	return []typex.XConfig{}
+}

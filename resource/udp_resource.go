@@ -97,3 +97,6 @@ func (u *UdpResource) Stop() {
 func (*UdpResource) Driver() typex.XExternalDriver {
 	return nil
 }
+func (*UdpResource) Configs() []typex.XConfig {
+	return []typex.XConfig{}
+}
