@@ -346,7 +346,7 @@ func tryCreateOutEnd(out *typex.OutEnd, e typex.RuleX) error {
 // Start output target
 //
 // Target life cycle:
-// Register -> Start -> Test
+//     Register -> Start -> running/restart cycle
 //
 func startTarget(target typex.XTarget, out *typex.OutEnd, e typex.RuleX) error {
 	//
