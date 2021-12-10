@@ -6,15 +6,6 @@ import (
 	lua "github.com/yuin/gopher-lua"
 )
 
-//
-// 驱动的数据模型
-//
-type XDataModel struct {
-	Type      ModelType
-	Name      string
-	MaxLength int
-	MinLength int
-}
 
 //
 // RuleX interface
@@ -70,6 +61,7 @@ type XResource interface {
 	Register(outEndId string) error
 	Start() error
 	Enabled() bool
+	// 数据模型，用来描述该资源支持的数据
 	DataModels() []XDataModel
 	Reload()
 	Pause()

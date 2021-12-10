@@ -10,22 +10,6 @@ const (
 )
 
 //
-// Rule type is for property store,
-// XResource implements struct type is actually worker
-//
-type ModelType int
-
-// 'T' means Type
-const (
-	T_NUMBER  ModelType = 1
-	T_STRING  ModelType = 2
-	T_BOOLEAN ModelType = 3
-	T_JSON    ModelType = 4
-	T_BIN     ModelType = 5
-	T_RAW     ModelType = 6
-)
-
-//
 // Abstract driver interface
 //
 type DriverState int
@@ -86,16 +70,3 @@ const (
 	PGSQL_TARGET          TargetType = "PGSQL"
 )
 
-//
-//
-// 创建资源的时候需要一个通用配置类, XConfig 可认为是接收参数的Form
-// from v0.0.2
-//
-//
-type XConfig struct {
-	Name        string
-	Type        string
-	Config      map[string]interface{}
-	DataModels  map[string]XDataModel
-	Description string
-}
