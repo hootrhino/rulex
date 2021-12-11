@@ -8,17 +8,31 @@ type ModelType int
 
 // 'T' means Type
 const (
-	T_NUMBER  ModelType = 1
-	T_STRING  ModelType = 2
-	T_BOOLEAN ModelType = 3
-	T_JSON    ModelType = 4
-	T_BIN     ModelType = 5
-	T_RAW     ModelType = 6
+	T_INT32  ModelType = iota // int32
+	T_FLOAT                   // float
+	T_DOUBLE                  // double
+	T_TEXT                    // pure text
+	T_BOOL                    // boolean
+	T_JSON                    // json
+	T_BIN                     // byte
 )
 
-//
-// 驱动的数据模型
-//
+/*
+* 数据模型, 例如某个Modbus电表可以支持读取电流/C 和电压/V参数:
+*[
+*    {
+*        "name":"current",
+*        "valueType":"float",
+*        "value":5
+*    },
+*    {
+*        "name":"volgate",
+*        "valueType":"float",
+*        "value":220
+*    }
+*]
+*
+ */
 type XDataModel struct {
 	Name      string      `json:"name"`
 	ValueType ModelType   `json:"valueType"` // 值类型
@@ -35,11 +49,11 @@ type XDataModel struct {
 type ConfigType string
 
 const (
-	T_INPUT    ModelType = 1 //HTML input tag
-	T_SELECT   ModelType = 2 //HTML select tag
-	T_RADIO    ModelType = 3 //HTML radio tag
-	T_SWITCH   ModelType = 4 //HTML switch tag
-	T_CHECKBOX ModelType = 5 //HTML checkbox tag
+	T_INPUT    ModelType = iota //HTML input tag
+	T_SELECT                    //HTML select tag
+	T_RADIO                     //HTML radio tag
+	T_SWITCH                    //HTML switch tag
+	T_CHECKBOX                  //HTML checkbox tag
 )
 
 type XConfig struct {

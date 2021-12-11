@@ -94,3 +94,19 @@ func DeleteInend(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	}
 
 }
+
+/*
+*
+* GetInEndConfig
+*
+ */
+func GetInEndConfig(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+	uuid, _ := c.GetQuery("uuid")
+	inend, ok := e.AllInEnd().Load(uuid)
+	if ok {
+		c.JSON(200, (inend.(*typex.InEnd)).Resource.Configs())
+	} else {
+		c.JSON(400, []interface{}{})
+	}
+
+}
