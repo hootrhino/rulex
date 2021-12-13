@@ -74,6 +74,7 @@ func CreateUser(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 
 //
 // Login
+// TODO: 下个版本实现用户基础管理
 //
 func Login(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	c.JSON(http.StatusOK, Result{
@@ -87,6 +88,11 @@ func Login(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	})
 }
 
+/*
+*
+* 日志管理
+*
+ */
 func Logs(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	type Data struct {
 		Id      int    `json:"id" binding:"required"`
@@ -109,6 +115,11 @@ func LogOut(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	c.JSON(http.StatusOK, Ok())
 }
 
+/*
+*
+* TODO：用户信息，当前版本写死 下个版本实现数据库查找
+*
+ */
 func Info(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	c.JSON(http.StatusOK, Result{
 		Code: http.StatusOK,
