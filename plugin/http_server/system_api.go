@@ -16,6 +16,16 @@ func Index(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	c.HTML(200, "index.html", nil)
 }
 
+/*
+*
+* 健康检查接口，一般用来监视是否工作
+*
+ */
+func Ping(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+	c.Writer.Write([]byte("PONG"))
+	c.Writer.Flush()
+}
+
 //
 // Get all plugins
 //

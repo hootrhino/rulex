@@ -59,6 +59,10 @@ func (hh *HttpApiServer) Start() error {
 	//
 	hh.ginEngine.GET(_API_V1_ROOT+"system", hh.addRoute(System))
 	//
+	// Ping -> Pong
+	//
+	hh.ginEngine.GET(_API_V1_ROOT+"ping", hh.addRoute(Ping))
+	//
 	//
 	//
 	hh.ginEngine.GET(_API_V1_ROOT+"resourceCount", hh.addRoute(ResourceCount))
