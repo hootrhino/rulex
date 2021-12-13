@@ -81,8 +81,8 @@ func (s *HttpApiServer) GetMInEndWithUUID(uuid string) (*MInEnd, error) {
 	}
 }
 
-func (s *HttpApiServer) InsertMInEnd(i *MInEnd) {
-	s.sqliteDb.Table("m_in_ends").Create(i)
+func (s *HttpApiServer) InsertMInEnd(i *MInEnd) error {
+	return s.sqliteDb.Table("m_in_ends").Create(i).Error
 }
 
 func (s *HttpApiServer) DeleteMInEnd(uuid string) error {

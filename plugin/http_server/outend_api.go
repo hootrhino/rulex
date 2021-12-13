@@ -57,10 +57,11 @@ func DeleteOutend(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 }
 
 //
-// Create OutEnd
+// Create or Update OutEnd
 //
 func CreateOutEnd(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	type Form struct {
+		UUID        string                 `json:"uuid"` // 如果空串就是新建，非空就是更新
 		Type        string                 `json:"type" binding:"required"`
 		Name        string                 `json:"name" binding:"required"`
 		Description string                 `json:"description"`
@@ -77,19 +78,42 @@ func CreateOutEnd(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		c.JSON(200, Error400(err1))
 		return
 	}
-	uuid := utils.OutUuid()
-	if err := hh.InsertMOutEnd(&MOutEnd{
-		UUID:        uuid,
-		Type:        form.Type,
-		Name:        form.Name,
-		Description: form.Description,
-		Config:      string(configJson),
-	}); err != nil {
-		c.JSON(200, Error400(err))
-		return
+	var uuid *string = new(string)
+
+	if form.UUID == "" {
+		newUUID := utils.OutUuid()
+		if err := hh.InsertMOutEnd(&MOutEnd{
+			UUID:        newUUID,
+			Type:        form.Type,
+			Name:        form.Name,
+			Description: form.Description,
+			Config:      string(configJson),
+		}); err != nil {
+			c.JSON(200, Error400(err))
+			return
+		} else {
+			uuid = &newUUID
+		}
+	} else {
+		outend := e.GetOutEnd(form.UUID)
+		if outend != nil {
+			outend.SetState(typex.DOWN)
+			hh.DeleteMOutEnd(outend.UUID)
+			if err := hh.InsertMOutEnd(&MOutEnd{
+				UUID:        form.UUID,
+				Type:        form.Type,
+				Name:        form.Name,
+				Description: form.Description,
+				Config:      string(configJson),
+			}); err != nil {
+				c.JSON(200, Error400(err))
+				return
+			}
+			uuid = &form.UUID
+		}
 	}
 
-	if err := hh.LoadNewestOutEnd(uuid); err != nil {
+	if err := hh.LoadNewestOutEnd(*uuid); err != nil {
 		c.JSON(200, Error400(err))
 		return
 	} else {

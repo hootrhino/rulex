@@ -37,10 +37,11 @@ func InEnds(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 }
 
 //
-// Create InEnd
+// Create or Update InEnd
 //
 func CreateInend(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	type Form struct {
+		UUID        string                 `json:"uuid"` // 如果空串就是新建，非空就是更新
 		Type        string                 `json:"type" binding:"required"`
 		Name        string                 `json:"name" binding:"required"`
 		Description string                 `json:"description"`
@@ -57,20 +58,46 @@ func CreateInend(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		c.JSON(200, Error400(err1))
 		return
 	}
-	uuid := utils.MakeUUID("INEND")
-	hh.InsertMInEnd(&MInEnd{
-		UUID:        uuid,
-		Type:        form.Type,
-		Name:        form.Name,
-		Description: form.Description,
-		Config:      string(configJson),
-	})
-	if err := hh.LoadNewestInEnd(uuid); err != nil {
+	var uuid *string = new(string)
+	if form.UUID == "" {
+		newUUID := utils.InUuid()
+		if err := hh.InsertMInEnd(&MInEnd{
+			UUID:        newUUID,
+			Type:        form.Type,
+			Name:        form.Name,
+			Description: form.Description,
+			Config:      string(configJson),
+		}); err != nil {
+			c.JSON(200, Error400(err))
+			return
+		} else {
+			uuid = &newUUID
+		}
+	} else {
+		inend := e.GetInEnd(form.UUID)
+		if inend != nil {
+			inend.SetState(typex.DOWN)
+			hh.DeleteMInEnd(inend.UUID)
+			if err := hh.InsertMInEnd(&MInEnd{
+				UUID:        form.UUID,
+				Type:        form.Type,
+				Name:        form.Name,
+				Description: form.Description,
+				Config:      string(configJson),
+			}); err != nil {
+				c.JSON(200, Error400(err))
+				return
+			}
+			uuid = &form.UUID
+		}
+	}
+
+	if err := hh.LoadNewestInEnd(*uuid); err != nil {
 		log.Error(err)
 		c.JSON(200, Error400(err))
 		return
 	} else {
-		c.JSON(http.StatusOK, Ok())
+		c.JSON(200, Ok())
 		return
 	}
 

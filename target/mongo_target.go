@@ -10,7 +10,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
 type mongoConfig struct {
@@ -50,10 +49,9 @@ func (m *MongoTarget) Start() error {
 	if err0 != nil {
 		return err0
 	}
-	readPref := &readpref.ReadPref{}
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
-	if err1 := client.Ping(ctx, readPref); err1 != nil {
+	if err1 := client.Ping(ctx, nil); err1 != nil {
 		return err1
 	}
 	m.collection = client.Database(mainConfig.Database).Collection(mainConfig.Collection)
@@ -66,10 +64,10 @@ func (m *MongoTarget) Start() error {
 
 func (m *MongoTarget) Test(outEndId string) bool {
 	if m.client != nil {
-		readPref := &readpref.ReadPref{}
+
 		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 		defer cancel()
-		if err1 := m.client.Ping(ctx, readPref); err1 != nil {
+		if err1 := m.client.Ping(ctx, nil); err1 != nil {
 			return false
 		} else {
 			return true

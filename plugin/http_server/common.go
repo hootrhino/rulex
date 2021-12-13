@@ -1,6 +1,7 @@
 package httpserver
 
 import (
+	"errors"
 	"net/http"
 	"rulex/typex"
 
@@ -92,6 +93,9 @@ func (h *HttpApiServer) addRoute(f func(*gin.Context, *HttpApiServer, typex.Rule
 //
 func (hh *HttpApiServer) LoadNewestInEnd(uuid string) error {
 	mInEnd, _ := hh.GetMInEndWithUUID(uuid)
+	if mInEnd == nil {
+		return errors.New("Inend not exists:" + uuid)
+	}
 	config := map[string]interface{}{}
 	if err1 := json.Unmarshal([]byte(mInEnd.Config), &config); err1 != nil {
 		log.Error(err1)
