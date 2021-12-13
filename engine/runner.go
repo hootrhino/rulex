@@ -91,6 +91,6 @@ func RunRulex(dbPath string) {
 	// 关闭日志器
 	//
 	core.GLOBAL_LOGGER.Close()
-	rulexlib.LUALOGGER.Close()
+	rulexlib.LUA_LOGGER.Close()
 	os.Exit(0)
 }
