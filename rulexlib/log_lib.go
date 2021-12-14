@@ -8,7 +8,7 @@ import (
 	lua "github.com/yuin/gopher-lua"
 )
 
-var LUALOGGER *typex.LogWriter
+var LUA_LOGGER *typex.LogWriter
 
 func NewLuaLogger(filepath string, maxSlotCount int) *typex.LogWriter {
 	return typex.NewLogWriter(filepath, maxSlotCount)
@@ -27,7 +27,7 @@ func (l *LogLib) Name() string {
 func (l *LogLib) LibFun(rx typex.RuleX) func(*lua.LState) int {
 	return func(l *lua.LState) int {
 		content := l.ToString(2)
-		LUALOGGER.Write([]byte("[CALLBACK]" + content + "\n"))
+		LUA_LOGGER.Write([]byte("[CALLBACK]" + content + "\n"))
 		return 0
 	}
 }
@@ -38,5 +38,5 @@ func (l *LogLib) LibFun(rx typex.RuleX) func(*lua.LState) int {
 *
  */
 func StartLuaLogger() {
-	LUALOGGER = NewLuaLogger("./"+time.Now().Format("2006-01-02_15-04-05")+core.GlobalConfig.LuaLogPath, 1000)
+	LUA_LOGGER = NewLuaLogger("./"+time.Now().Format("2006-01-02_15-04-05")+core.GlobalConfig.LuaLogPath, 1000)
 }
