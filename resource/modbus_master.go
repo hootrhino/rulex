@@ -204,14 +204,7 @@ func (m *ModbusMasterResource) Start() error {
 								Value:    string(results),
 							}
 							bytes, _ := json.Marshal(data)
-							if err0 := m.RuleEngine.PushQueue(typex.QueueData{
-								In:   m.Details(),
-								Out:  nil,
-								E:    m.RuleEngine,
-								Data: string(bytes),
-							}); err0 != nil {
-								log.Error("NewModbusMasterResource PushQueue error: ", err0)
-							}
+							m.RuleEngine.Work(m.RuleEngine.GetInEnd(m.PointId), string(bytes))
 						}
 					}
 				}

@@ -44,6 +44,7 @@ func (mm *MqttInEndResource) Start() error {
 
 	var messageHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
 		mm.RuleEngine.Work(mm.RuleEngine.GetInEnd(mm.PointId), string(msg.Payload()))
+		
 	}
 	//
 	var connectHandler mqtt.OnConnectHandler = func(client mqtt.Client) {

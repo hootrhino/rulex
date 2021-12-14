@@ -169,6 +169,9 @@ func (e *RuleEngine) LoadInEnd(in *typex.InEnd) error {
 	if in.Type == typex.SNMP_SERVER {
 		return startResources(resource.NewSNMPInEndResource(in.UUID, e), in, e)
 	}
+	if in.Type == typex.NATS_SERVER {
+		return startResources(resource.NewNatsResource(e), in, e)
+	}
 	return fmt.Errorf("unsupported InEnd type:%s", in.Type)
 }
 
@@ -337,6 +340,9 @@ func tryCreateOutEnd(out *typex.OutEnd, e typex.RuleX) error {
 	}
 	if out.Type == typex.MQTT_TELEMETRY_TARGET {
 		return startTarget(target.NewMqttTelemetryTarget(e), out, e)
+	}
+	if out.Type == typex.NATS_TARGET {
+		return startTarget(target.NewNatsTarget(e), out, e)
 	}
 	return errors.New("unsupported target type:" + out.Type.String())
 
@@ -544,12 +550,14 @@ func (e *RuleEngine) Stop() {
 // 核心功能: Work
 //
 func (e *RuleEngine) Work(in *typex.InEnd, data string) (bool, error) {
-	e.PushQueue(typex.QueueData{
+	if err := e.PushQueue(typex.QueueData{
 		In:   in,
 		Out:  nil,
 		E:    e,
 		Data: data,
-	})
+	}); err != nil {
+		return false, err
+	}
 	return true, nil
 }
 

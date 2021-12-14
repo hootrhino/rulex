@@ -43,6 +43,10 @@ const (
 	// From snmp server provider
 	//
 	SNMP_SERVER InEndType = "SNMP_SERVER"
+	//
+	// NATS.IO SERVER
+	//
+	NATS_SERVER InEndType = "NATS_SERVER"
 )
 
 //
@@ -68,5 +72,5 @@ const (
 	MQTT_TELEMETRY_TARGET TargetType = "MQTT_TELEMETRY_TARGET"
 	MYSQL_TARGET          TargetType = "MYSQL"
 	PGSQL_TARGET          TargetType = "PGSQL"
+	NATS_TARGET           TargetType = "NATS"
 )
-
