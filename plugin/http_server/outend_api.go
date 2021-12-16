@@ -61,7 +61,7 @@ func DeleteOutend(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 //
 func CreateOutEnd(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	type Form struct {
-		UUID        string                 `json:"uuid"` // 如果空串就是新建，非空就是更新
+		UUID        string                 `json:"uuid"` // 如果空串就是新建, 非空就是更新
 		Type        string                 `json:"type" binding:"required"`
 		Name        string                 `json:"name" binding:"required"`
 		Description string                 `json:"description"`

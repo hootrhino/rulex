@@ -10,7 +10,7 @@ end
 
 ---
 --- 这里展示一个远程发送到经过ESP8266控制的多路继电器后响应的 Demo：
---- 假设远程指令是打开开关，然后同步状态到云端, 指令体：
+--- 假设远程指令是打开开关, 然后同步状态到云端, 指令体：
 ---     {"cmdId": "00001", "cmd" :"open","sw": [1, 2] }
 ---     [1, 2]表示打开 1 2 两个开关
 ---
@@ -27,7 +27,7 @@ Actions = {
             if ok then
                 rulex:finishCmd(CmdId, "OutId")
             else
-                -- 其实没必要显式调用失败，因为服务端超时后就自己直接失败了
+                -- 其实没必要显式调用失败, 因为服务端超时后就自己直接失败了
                 rulex:failedCmd(CmdId, "OutId")
             end
         end
@@ -37,7 +37,7 @@ Actions = {
             if ok then
                 rulex:finishCmd(CmdId, "OutId")
             else
-                -- 其实没必要显式调用失败，因为服务端超时后就自己直接失败了
+                -- 其实没必要显式调用失败, 因为服务端超时后就自己直接失败了
                 rulex:failedCmd(CmdId, "OutId")
             end
         end

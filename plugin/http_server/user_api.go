@@ -117,7 +117,7 @@ func LogOut(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 
 /*
 *
-* TODO：用户信息，当前版本写死 下个版本实现数据库查找
+* TODO：用户信息, 当前版本写死 下个版本实现数据库查找
 *
  */
 func Info(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {

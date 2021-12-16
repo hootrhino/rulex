@@ -18,7 +18,7 @@ func Index(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 
 /*
 *
-* 健康检查接口，一般用来监视是否工作
+* 健康检查接口, 一般用来监视是否工作
 *
  */
 func Ping(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {

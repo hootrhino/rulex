@@ -8,7 +8,7 @@ import (
 
 /*
 *
-* 数据写入资源外挂的驱动，比如数据可能是串口输入进来的
+* 数据写入资源外挂的驱动, 比如数据可能是串口输入进来的
 *
  */
 type WriteInStreamLib struct {
@@ -36,7 +36,7 @@ func (l *WriteInStreamLib) LibFun(rx typex.RuleX) func(*lua.LState) int {
 
 /*
 *
-* 数据输出到出口的外挂驱动，比如控制某个硬件
+* 数据输出到出口的外挂驱动, 比如控制某个硬件
 *
  */
 type WriteOutStreamLib struct {

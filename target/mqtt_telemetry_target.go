@@ -78,7 +78,7 @@ func (mm *MqttTelemetryTarget) Start() error {
 			if err := json.Unmarshal(m.Payload(), &cmd); err != nil {
 				log.Error(err)
 			} else {
-				// 内置的几个简单指令，后期会扩展
+				// 内置的几个简单指令, 后期会扩展
 				if cmd.Cmd == "get-state" {
 					token := mm.client.Publish(mainConfig.StateTopic, 0, false, c2sCommand{
 						Type:   cmd.Cmd,
@@ -160,7 +160,7 @@ func (mm *MqttTelemetryTarget) DataModels() []typex.XDataModel {
 }
 func (mm *MqttTelemetryTarget) OnStreamApproached(data string) error {
 	//-----------------------------------------------------------------------------------
-	// 对于遥测组件来说，所有进来的 [非规则引擎数据] 数据全发到 State topic，传到远程处理.
+	// 对于遥测组件来说, 所有进来的 [非规则引擎数据] 数据全发到 State topic, 传到远程处理.
 	//-----------------------------------------------------------------------------------
 	if mm.client != nil {
 		return mm.client.Publish(mm.StateTopic, 2, false, data).Error()

@@ -250,7 +250,7 @@ func (m *ModbusMasterResource) Stop() {
 
 /*
 *
-* 对于 modbus 资源来说，任何直接写入的数据都被认为是给寄存器写值
+* 对于 modbus 资源来说, 任何直接写入的数据都被认为是给寄存器写值
 *
  */
 func (m *ModbusMasterResource) OnStreamApproached(data string) error {

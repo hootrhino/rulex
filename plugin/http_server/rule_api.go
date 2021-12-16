@@ -43,7 +43,7 @@ func Rules(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 //
 func CreateRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	type Form struct {
-		UUID string `json:"uuid"` // 如果空串就是新建，非空就是更新
+		UUID        string   `json:"uuid"` // 如果空串就是新建，非空就是更新
 		From        []string `json:"from" binding:"required"`
 		Name        string   `json:"name" binding:"required"`
 		Description string   `json:"description"`
@@ -65,12 +65,12 @@ func CreateRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 				return
 			}
 		}
-
+		// tmpRule 是一个一次性的临时rule，用来验证规则，这么做主要是为了防止真实Lua Vm 被污染
 		tmpRule := typex.NewRule(nil,
-			"",
-			form.Name,
-			form.Description,
-			nil,
+			"tmpRule",
+			"tmpRule",
+			"tmpRule",
+			[]string{},
 			form.Success,
 			form.Actions,
 			form.Failed)
@@ -78,37 +78,47 @@ func CreateRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		if err := core.VerifyCallback(tmpRule); err != nil {
 			c.JSON(200, Error400(err))
 			return
-		} else {
-			mRule := &MRule{
-				UUID:        utils.MakeUUID("RULE"),
-				Name:        form.Name,
-				Description: form.Description,
-				From:        form.From,
-				Success:     form.Success,
-				Failed:      form.Failed,
-				Actions:     form.Actions,
-			}
-			if err := hh.InsertMRule(mRule); err != nil {
-				c.JSON(200, gin.H{"msg": err.Error()})
+		}
+		// 如果是更新操作, 先删除规则
+		if form.UUID != "" {
+			if err1 := hh.DeleteMRule(form.UUID); err1 != nil {
+				c.JSON(200, Error400(err1))
 				return
-			}
-			rule := typex.NewRule(hh.ruleEngine,
-				mRule.UUID,
-				mRule.Name,
-				mRule.Description,
-				mRule.From,
-				mRule.Success,
-				mRule.Actions,
-				mRule.Failed)
-			if err := e.LoadRule(rule); err != nil {
-				c.JSON(200, Error400(err))
 			} else {
-				c.JSON(200, Ok())
+				e.RemoveRule(form.UUID)
 			}
+		}
+		//
+		mRule := &MRule{
+			UUID:        utils.MakeUUID("RULE"),
+			Name:        form.Name,
+			Description: form.Description,
+			From:        form.From,
+			Success:     form.Success,
+			Failed:      form.Failed,
+			Actions:     form.Actions,
+		}
+		if err := hh.InsertMRule(mRule); err != nil {
+			c.JSON(200, Error400(err))
 			return
 		}
+		rule := typex.NewRule(hh.ruleEngine,
+			mRule.UUID,
+			mRule.Name,
+			mRule.Description,
+			mRule.From,
+			mRule.Success,
+			mRule.Actions,
+			mRule.Failed)
+		if err := e.LoadRule(rule); err != nil {
+			c.JSON(200, Error400(err))
+		} else {
+			c.JSON(200, Ok())
+		}
+		return
+
 	} else {
-		c.JSON(200, Error400(errors.New("from can't empty")))
+		c.JSON(200, Error400(errors.New("'From' must contain least one UUID")))
 		return
 	}
 

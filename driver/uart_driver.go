@@ -66,7 +66,7 @@ func (a *UartDriver) Work() error {
 		for a.state == typex.RUNNING {
 			<-ticker.C
 			if _, err0 := a.serialPort.Read(data); err0 != nil {
-				// 有的串口因为CPU频率原因 超时属于正常情况，所以不计为错误
+				// 有的串口因为CPU频率原因 超时属于正常情况, 所以不计为错误
 				if !strings.Contains(err0.Error(), "timeout") {
 					log.Error("error:", err0)
 					a.Stop()

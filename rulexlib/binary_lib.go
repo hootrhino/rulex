@@ -99,7 +99,7 @@ func NewByteToBitStringLib() typex.XLib {
 //------------------------------------------------------------------------------------
 
 //
-// 从一个字节里面提取某 1 个位的值，只有 0 1 两个值
+// 从一个字节里面提取某 1 个位的值, 只有 0 1 两个值
 //
 
 func GetABitOnByte(b byte, position uint8) (v uint8, errs error) {
@@ -138,8 +138,8 @@ func (k Kl) String() string {
 }
 
 //
-// Big-Endian:  高位字节放在内存的低地址端，低位字节放在内存的高地址端。
-// Little-Endian: 低位字节放在内存的低地址段，高位字节放在内存的高地址端
+// Big-Endian:  高位字节放在内存的低地址端, 低位字节放在内存的高地址端。
+// Little-Endian: 低位字节放在内存的低地址段, 高位字节放在内存的高地址端
 //
 type ByteToInt64Lib struct {
 }

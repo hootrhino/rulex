@@ -1,11 +1,17 @@
 package mqttserver
 
 import (
+	"fmt"
 	"rulex/typex"
 
 	mqttServer "github.com/mochi-co/mqtt/server"
 	"github.com/mochi-co/mqtt/server/listeners"
 	"github.com/ngaut/log"
+)
+
+const (
+	defaultPort      int    = 2883
+	defaultTransport string = "tcp"
 )
 
 type MqttServer struct {
@@ -22,7 +28,7 @@ func (s *MqttServer) Init() error {
 
 func (s *MqttServer) Start() error {
 	server := mqttServer.New()
-	tcpPort := listeners.NewTCP("tcp", ":2883")
+	tcpPort := listeners.NewTCP(defaultTransport, fmt.Sprintf(":%v", defaultPort))
 
 	if err := server.AddListener(tcpPort, nil); err != nil {
 		return err

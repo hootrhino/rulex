@@ -189,7 +189,7 @@ func (e *RuleEngine) LoadInEnd(in *typex.InEnd) error {
 */
 func startResources(resource typex.XResource, in *typex.InEnd, e *RuleEngine) error {
 	//
-	// 先注册，如果出问题了直接删除就行
+	// 先注册, 如果出问题了直接删除就行
 	//
 	// 首先把资源ID给注册进去, 作为资源的全局索引
 	e.SaveInEnd(in)
@@ -215,13 +215,13 @@ func startResources(resource typex.XResource, in *typex.InEnd, e *RuleEngine) er
 			<-ticker.C
 			{
 				//
-				// 通过HTTP删除资源的时候，会把数据清了，只要检测到资源没了，这里也退出
+				// 通过HTTP删除资源的时候, 会把数据清了, 只要检测到资源没了, 这里也退出
 				//
 				if resource.Details() == nil {
 					return
 				}
 				//------------------------------------
-				// 驱动挂了资源也挂了，因此检查驱动状态在先
+				// 驱动挂了资源也挂了, 因此检查驱动状态在先
 				//------------------------------------
 				tryIfRestartResource(resource, e, in.UUID)
 				// checkDriverState(resource, e, in.UUID)
@@ -356,7 +356,7 @@ func tryCreateOutEnd(out *typex.OutEnd, e typex.RuleX) error {
 //
 func startTarget(target typex.XTarget, out *typex.OutEnd, e typex.RuleX) error {
 	//
-	// 先注册，如果出问题了直接删除就行
+	// 先注册, 如果出问题了直接删除就行
 	//
 	e.SaveOutEnd(out)
 	// 首先把资源ID给注册进去, 作为资源的全局索引
@@ -397,7 +397,7 @@ func startTarget(target typex.XTarget, out *typex.OutEnd, e typex.RuleX) error {
 }
 
 //
-// 监测状态，如果挂了重启
+// 监测状态, 如果挂了重启
 //
 func tryIfRestartTarget(target typex.XTarget, e typex.RuleX, id string) {
 	if target.Status() == typex.DOWN {

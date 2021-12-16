@@ -71,7 +71,7 @@ func TestBinaryMatch_little(t *testing.T) {
 }
 func TestByteToBitFormatString(t *testing.T) {
 	//
-	// 假设Modbus的线圈有8个，状态如下：
+	// 假设Modbus的线圈有8个, 状态如下：
 	// 0 1 1 0 0 0 0 1
 	// 原始数据是1个字节
 	originData := []byte{0b_0110_0001, 0b_0110_0001}
@@ -79,7 +79,7 @@ func TestByteToBitFormatString(t *testing.T) {
 	// 到了网关后被转成字符串
 	formatData := string(originData)
 	t.Log("formatData:", formatData)
-	// 二进制语法匹配的时候，再次把字符串转成字节
+	// 二进制语法匹配的时候, 再次把字符串转成字节
 	t.Logf("formatData -> originData:%08b\n", []byte(formatData))
 
 }

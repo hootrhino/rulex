@@ -1,8 +1,8 @@
 # RuleX
 
-RuleX 是一个轻量级网关，支持多种数据接入以及数据流筛选，可以理解为一个数据路由器。
+RuleX 是一个轻量级网关, 支持多种数据接入以及数据流筛选, 可以理解为一个数据路由器。
 
-> 当前处于极其不稳定阶段，每天都会有大批量更新, 请勿尝试用于生产.
+> 当前处于极其不稳定阶段, 每天都会有大批量更新, 请勿尝试用于生产.
 
 ## 快速开始
 ### 构建
@@ -23,10 +23,10 @@ make # on windows: make windows
 | MacOS   | X86-64 | 通过     |
 | 其他    | 未知   | 未知     |
 
-> 注意:` Arm32位`下编译比较麻烦，推荐使用`Ubuntu18-04`安装交叉编译工具进行编译, 具体步骤请参考 `.github\workflows\4_build-arm-32-v7.yml` 里面的脚本。
+> 注意:` Arm32位`下编译比较麻烦, 推荐使用`Ubuntu18-04`安装交叉编译工具进行编译, 具体步骤请参考 `.github\workflows\4_build-arm-32-v7.yml` 里面的脚本。
 
 ## 交叉编译
-交叉编译一般在你需要多平台分发的时候才用，平时直接本地编译即可。为什么要交叉编译？主要是我们引入了一个 `Sqlite` 的库，这个库底层是 `C` 实现的，所以需要有环境。首先安装工具链，下面以 `Ubuntu-1804` 版本为例：
+交叉编译一般在你需要多平台分发的时候才用, 平时直接本地编译即可。为什么要交叉编译？主要是我们引入了一个 `Sqlite` 的库, 这个库底层是 `C` 实现的, 所以需要有环境。首先安装工具链, 下面以 `Ubuntu-1804` 版本为例：
 
 ```sh
 # 本地编译使用
@@ -50,10 +50,10 @@ sudo apt install gcc-aarch64-linux-gnu -y
 ~~~||\\\||--->o  ██║  ██║╚██████╔╝███████╗███████╗██╔╝ ██╗
 ~~~\=====/       ╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚══════╝╚═╝  ╚═╝
 -----------------------------------------------------------
-2021/11/24 11:03:15 utils.go:101: [info] Rulex start successfully
+2021/11/24 11:03:15 utils.go:101: [info] RULEX start successfully
 2021/11/24 11:03:15 main.go:39: [info] Load config db: rulex.db
 2021/11/24 11:03:15 cfg.go:34: [info] Init rulex config
-2021/11/24 11:03:15 cfg.go:54: [info] Rulex config init successfully
+2021/11/24 11:03:15 cfg.go:54: [info] RULEX config init successfully
 
 ```
 
@@ -156,7 +156,7 @@ Actions = {
 ### 详细功能表
 ![res](README_RES/V001.png)
 
-> 预计于: 2022年1月1日发布第一个正式版，敬请期待。
+> 预计于: 2022年1月1日发布第一个正式版, 敬请期待。
 
 ## 详细文档
 
@@ -165,7 +165,7 @@ Actions = {
 
 ## 社区
 - QQ群：608382561
-- 微信：bignullnull( 加好友后进群，暗号：RULEX )
+- 微信：bignullnull( 加好友后进群, 暗号：RULEX )
 
     <div style="text-align:center">
     <img src="./README_RES/wx.jpg" width="150px" />
