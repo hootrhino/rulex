@@ -155,6 +155,11 @@ func (mm *MqttTelemetryTarget) Start() error {
 
 }
 
+/*
+*
+* 物模型接口定义
+*
+ */
 func (mm *MqttTelemetryTarget) DataModels() []typex.XDataModel {
 	return []typex.XDataModel{}
 }
