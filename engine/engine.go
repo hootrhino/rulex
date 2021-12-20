@@ -315,8 +315,8 @@ func startResource(resource typex.XResource, e *RuleEngine, id string) error {
 				log.Error("Driver work error:", err)
 				return errors.New("Driver work error:" + err.Error())
 			}
+			log.Infof("Driver start successfully: [%v]", resource.Driver().DriverDetail().Name)
 		}
-		log.Infof("Driver start successfully: [%v]", resource.Driver().DriverDetail().Name)
 		return nil
 	}
 
