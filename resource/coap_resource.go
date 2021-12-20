@@ -112,3 +112,10 @@ func (cc *CoAPInEndResource) Driver() typex.XExternalDriver {
 func (*CoAPInEndResource) Configs() []typex.XConfig {
 	return []typex.XConfig{}
 }
+
+//
+// 拓扑
+//
+func (*CoAPInEndResource) Topology() []typex.TopologyPoint {
+	return []typex.TopologyPoint{}
+}

@@ -121,12 +121,27 @@ func (*GrpcInEndResource) Configs() []typex.XConfig {
 
 //
 func (r *RulexRpcServer) Work(ctx context.Context, in *rulexrpc.Data) (*rulexrpc.Response, error) {
-	r.grpcInEndResource.RuleEngine.Work(
+	ok, err := r.grpcInEndResource.RuleEngine.Work(
 		r.grpcInEndResource.RuleEngine.GetInEnd(r.grpcInEndResource.PointId),
 		in.Value,
 	)
-	return &rulexrpc.Response{
-		Code:    0,
-		Message: "OK",
-	}, nil
+	if ok {
+		return &rulexrpc.Response{
+			Code:    0,
+			Message: "OK",
+		}, nil
+	} else {
+		return &rulexrpc.Response{
+			Code:    1,
+			Message: err.Error(),
+		}, err
+	}
+
+}
+
+//
+// 拓扑
+//
+func (*GrpcInEndResource) Topology() []typex.TopologyPoint {
+	return []typex.TopologyPoint{}
 }

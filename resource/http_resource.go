@@ -108,3 +108,10 @@ func (m *HttpInEndResource) OnStreamApproached(data string) error {
 func (*HttpInEndResource) Driver() typex.XExternalDriver {
 	return nil
 }
+
+//
+// 拓扑
+//
+func (*HttpInEndResource) Topology() []typex.TopologyPoint {
+	return []typex.TopologyPoint{}
+}

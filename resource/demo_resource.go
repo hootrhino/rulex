@@ -52,3 +52,10 @@ func (d *DemoResource) Stop() {
 func (*DemoResource) Configs() []typex.XConfig {
 	return []typex.XConfig{}
 }
+
+//
+// 拓扑
+//
+func (*DemoResource) Topology() []typex.TopologyPoint {
+	return []typex.TopologyPoint{}
+}

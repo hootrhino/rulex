@@ -132,3 +132,10 @@ func (nt *natsResource) DataModels() []typex.XDataModel {
 func (nt *natsResource) Driver() typex.XExternalDriver {
 	return nil
 }
+
+//
+// 拓扑
+//
+func (*natsResource) Topology() []typex.TopologyPoint {
+	return []typex.TopologyPoint{}
+}

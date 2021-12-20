@@ -100,3 +100,10 @@ func (*UdpResource) Driver() typex.XExternalDriver {
 func (*UdpResource) Configs() []typex.XConfig {
 	return []typex.XConfig{}
 }
+
+//
+// 拓扑
+//
+func (*UdpResource) Topology() []typex.TopologyPoint {
+	return []typex.TopologyPoint{}
+}

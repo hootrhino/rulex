@@ -106,10 +106,26 @@ type RuleX interface {
 	// 获取版本
 	//
 	Version() Version
+
 	//
 	// 停止规则引擎
 	//
 	Stop()
+}
+
+//
+// 拓扑接入点，比如 modbus 检测点等
+// UUID: gyh9uo7uh7o67uijh
+// Name: ModbusMeter001
+// Alive: true
+// Tag: modbus
+//
+type TopologyPoint struct {
+	UUID   string `json:"uuid"`
+	Parent string `json:"parent"`
+	Name   string `json:"name"`
+	Alive  bool   `json:"alive"`
+	Tag    string `json:"tag"`
 }
 
 //
@@ -165,6 +181,10 @@ type XResource interface {
 	// 驱动接口, 通常用来和硬件交互
 	//
 	Driver() XExternalDriver
+	//
+	//
+	//
+	Topology() []TopologyPoint
 	//
 	// 停止资源, 用来释放资源
 	//

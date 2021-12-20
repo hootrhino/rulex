@@ -44,7 +44,7 @@ func (mm *MqttInEndResource) Start() error {
 
 	var messageHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
 		mm.RuleEngine.Work(mm.RuleEngine.GetInEnd(mm.PointId), string(msg.Payload()))
-		
+
 	}
 	//
 	var connectHandler mqtt.OnConnectHandler = func(client mqtt.Client) {
@@ -129,4 +129,11 @@ func (*MqttInEndResource) Driver() typex.XExternalDriver {
 }
 func (*MqttInEndResource) Configs() []typex.XConfig {
 	return []typex.XConfig{}
+}
+
+//
+// 拓扑
+//
+func (*MqttInEndResource) Topology() []typex.TopologyPoint {
+	return []typex.TopologyPoint{}
 }

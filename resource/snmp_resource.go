@@ -276,3 +276,10 @@ func (s *SNMPResource) Stop() {
 func (*SNMPResource) Configs() []typex.XConfig {
 	return []typex.XConfig{}
 }
+
+//
+// 拓扑
+//
+func (*SNMPResource) Topology() []typex.TopologyPoint {
+	return []typex.TopologyPoint{}
+}

@@ -113,3 +113,10 @@ func (u *UartModuleResource) Stop() {
 func (u *UartModuleResource) Driver() typex.XExternalDriver {
 	return u.loraDriver
 }
+
+//
+// 拓扑
+//
+func (*UartModuleResource) Topology() []typex.TopologyPoint {
+	return []typex.TopologyPoint{}
+}

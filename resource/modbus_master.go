@@ -290,3 +290,10 @@ func (m *ModbusMasterResource) Driver() typex.XExternalDriver {
 		return nil
 	}
 }
+
+//
+// 拓扑
+//
+func (*ModbusMasterResource) Topology() []typex.TopologyPoint {
+	return []typex.TopologyPoint{}
+}
