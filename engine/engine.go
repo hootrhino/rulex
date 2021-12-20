@@ -282,6 +282,10 @@ func tryIfRestartResource(resource typex.XResource, e *RuleEngine, id string) {
 //
 //
 func startResource(resource typex.XResource, e *RuleEngine, id string) error {
+	//----------------------------------
+	// 检查资源 如果是启动的，先给停了
+	//----------------------------------
+
 	if err := resource.Start(); err != nil {
 		log.Error("Resource start error:", err)
 		if resource.Status() == typex.UP {
@@ -295,7 +299,7 @@ func startResource(resource typex.XResource, e *RuleEngine, id string) error {
 		return err
 	} else {
 		//----------------------------------
-		// 驱动也要停了
+		// 驱动也要停了, 然后重启
 		//----------------------------------
 		if resource.Driver() != nil {
 			if resource.Driver().State() == typex.RUNNING {
@@ -305,17 +309,14 @@ func startResource(resource typex.XResource, e *RuleEngine, id string) error {
 			if err := resource.Driver().Init(); err != nil {
 				log.Error("Driver initial error:", err)
 				return errors.New("Driver initial error:" + err.Error())
-			} else {
-				log.Infof("Try to start driver: [%v]", resource.Driver().DriverDetail().Name)
-				if err := resource.Driver().Work(); err != nil {
-					log.Error("Driver work error:", err)
-					return errors.New("Driver work error:" + err.Error())
-				} else {
-					log.Infof("Driver start successfully: [%v]", resource.Driver().DriverDetail().Name)
-					return nil
-				}
+			}
+			log.Infof("Try to start driver: [%v]", resource.Driver().DriverDetail().Name)
+			if err := resource.Driver().Work(); err != nil {
+				log.Error("Driver work error:", err)
+				return errors.New("Driver work error:" + err.Error())
 			}
 		}
+		log.Infof("Driver start successfully: [%v]", resource.Driver().DriverDetail().Name)
 		return nil
 	}
 
