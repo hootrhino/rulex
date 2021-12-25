@@ -162,7 +162,7 @@ func (m *ModbusMasterResource) Start() error {
 	ticker := time.NewTicker(time.Duration(mainConfig.Frequency) * time.Second)
 	for _, rCfg := range mainConfig.RegisterParams {
 		log.Info("Start read register:", rCfg.Address)
-
+		// 每个寄存器配一个协程读数据
 		go func(ctx context.Context, rp registerParam) {
 			defer ticker.Stop()
 			// Modbus data is most often read and written as "registers" which are [16-bit] pieces of data. Most often,
