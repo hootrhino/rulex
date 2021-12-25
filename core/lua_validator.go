@@ -2,35 +2,52 @@ package core
 
 import (
 	"errors"
-	"reflect"
 	"rulex/typex"
 
 	lua "github.com/yuin/gopher-lua"
 )
 
+const (
+	SUCCESS_KEY string = "Success"
+	FAILED_KEY  string = "Failed"
+	ACTIONS_KEY string = "Actions"
+)
+
 // LUA Callback : Success
 func ExecuteSuccess(vm *lua.LState) (interface{}, error) {
-	return typex.Execute(vm, "Success")
+	return typex.Execute(vm, SUCCESS_KEY)
 }
 
 // LUA Callback : Failed
 
 func ExecuteFailed(vm *lua.LState, arg lua.LValue) (interface{}, error) {
-	return typex.Execute(vm, "Failed", arg)
+	return typex.Execute(vm, FAILED_KEY, arg)
 }
 
 //
+// 执行 Actions 里面的回调函数
+//
 func ExecuteActions(rule *typex.Rule, arg lua.LValue) (lua.LValue, error) {
-	table := rule.VM.GetGlobal("Actions")
-	if table != nil && table.Type() == lua.LTTable {
-		funcs := make(map[string]*lua.LFunction)
-		table.(*lua.LTable).ForEach(func(idx, f lua.LValue) {
-			t := reflect.TypeOf(f).Elem().Name()
-			if t == "LFunction" {
+	// 原始 lua 数据结构
+	luaOriginTable := rule.VM.GetGlobal(ACTIONS_KEY)
+	if luaOriginTable != nil && luaOriginTable.Type() == lua.LTTable {
+		// 断言成包含回调的 table
+		funcsTable := luaOriginTable.(*lua.LTable)
+		funcs := make(map[string]*lua.LFunction, funcsTable.Len())
+		var err error = nil
+		funcsTable.ForEach(func(idx, f lua.LValue) {
+			if f.Type() == lua.LTFunction {
 				funcs[idx.String()] = f.(*lua.LFunction)
+			} else {
+				err = errors.New(f.String() + " not a lua function")
+				return
 			}
 		})
+		if err != nil {
+			return nil, err
+		}
 		return typex.RunPipline(rule.VM, funcs, arg)
+
 	} else {
 		return nil, errors.New("'Actions' not a lua table or not exist")
 	}
