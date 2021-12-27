@@ -1,8 +1,10 @@
 package typex
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"rulex/statistics"
 
 	"github.com/ngaut/log"
 )
@@ -78,4 +80,49 @@ func (q *DataCacheQueue) Push(d QueueData) error {
  */
 func (q *DataCacheQueue) GetQueue() chan QueueData {
 	return q.Queue
+}
+
+//
+//
+//
+func StartQueue(maxQueueSize int) {
+	DefaultDataCacheQueue = &DataCacheQueue{
+		Queue: make(chan QueueData, maxQueueSize),
+	}
+	go func(ctx context.Context, xQueue XQueue) {
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case qd := <-xQueue.GetQueue():
+				{
+					//
+					// 消息队列有2种用法:
+					// 1 进来的数据缓存
+					// 2 出去的消息缓存
+					// 只需要判断 in 或者 out 是不是 nil即可
+					//
+					if qd.In != nil {
+						qd.E.RunLuaCallbacks(qd.In, qd.Data)
+						qd.E.RunHooks(qd.Data)
+					}
+					if qd.Out != nil {
+						outEnds := qd.E.AllOutEnd()
+						v, ok := outEnds.Load(qd.Out.UUID)
+						if ok {
+							if err := v.(OutEnd).Target.To(qd.Data); err != nil {
+								statistics.IncOut()
+							} else {
+								statistics.IncOutFailed()
+							}
+
+						}
+					}
+				}
+			default:
+				{
+				}
+			}
+		}
+	}(context.Background(), DefaultDataCacheQueue)
 }

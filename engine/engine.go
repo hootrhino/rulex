@@ -50,55 +50,10 @@ func NewRuleEngine() typex.RuleX {
 //
 //
 //
-func startQueue(xQueue typex.XQueue) {
-	go func(ctx context.Context, xQueue typex.XQueue) {
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case qd := <-xQueue.GetQueue():
-				{
-					//
-					// 消息队列有2种用法:
-					// 1 进来的数据缓存
-					// 2 出去的消息缓存
-					// 只需要判断 in 或者 out 是不是 nil即可
-					//
-					if qd.In != nil {
-						qd.E.RunLuaCallbacks(qd.In, qd.Data)
-						qd.E.RunHooks(qd.Data)
-					}
-					if qd.Out != nil {
-						outEnds := qd.E.AllOutEnd()
-						v, ok := outEnds.Load(qd.Out.UUID)
-						if ok {
-							if err := v.(*typex.OutEnd).Target.To(qd.Data); err != nil {
-								statistics.IncOut()
-							} else {
-								statistics.IncOutFailed()
-							}
-
-						}
-					}
-				}
-			default:
-				{
-				}
-			}
-		}
-	}(context.Background(), xQueue)
-}
-
-//
-//
-//
 func (e *RuleEngine) Start() *sync.Map {
 	e.ConfigMap = &sync.Map{}
 	log.Info("Init XQueue, max queue size is:", core.GlobalConfig.MaxQueueSize)
-	typex.DefaultDataCacheQueue = &typex.DataCacheQueue{
-		Queue: make(chan typex.QueueData, core.GlobalConfig.MaxQueueSize),
-	}
-	startQueue(typex.DefaultDataCacheQueue)
+	typex.StartQueue(core.GlobalConfig.MaxQueueSize)
 	return e.ConfigMap
 }
 
