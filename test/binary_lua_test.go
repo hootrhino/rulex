@@ -67,7 +67,7 @@ func Test_Binary_LUA_Parse(t *testing.T) {
 	if err := engine.LoadRule(rule); err != nil {
 		log.Error(err)
 	}
-	conn, err := grpc.Dial("127.0.0.1:2581", grpc.WithInsecure())
+	conn, err := grpc.Dial("127.0.0.1:2581")
 	if err != nil {
 		log.Error("grpc.Dial err: %v", err)
 	}
