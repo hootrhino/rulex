@@ -1,4 +1,8 @@
-# RuleX
+# RULEX
+
+<div style="text-align:center">
+<img src="./README_RES/structure.png"/>
+</div>
 
 RULEX 是一个被计划用于边缘端的轻量级规则引擎开发框架, 支持多种数据接入以及自定义数据流筛选，可以快速实现边缘端设备的数据处理功能。很适合在网关场景中使用。
 
@@ -9,7 +13,7 @@ git clone https://github.com/wwhai/rulex.git
 cd rulex
 make # on windows: make windows
 ```
-> ProtoFile需要在Linux下编译, 需要安装: `sudo apt install protobuf-compiler -y`
+> ProtoFile 要在Linux下编译, 需要安装: `sudo apt install protobuf-compiler -y`
 ## 支持的平台
 
 | 平台    | 架构   | 编译测试 |
@@ -21,38 +25,14 @@ make # on windows: make windows
 | MacOS   | X86-64 | 通过     |
 | 其他    | 未知   | 未知     |
 
-> 注意:` Arm32位`下编译比较麻烦, 推荐使用`Ubuntu18-04`安装交叉编译工具进行编译, 具体步骤请参考 `.github\workflows\4_build-arm-32-v7.yml` 里面的脚本。
+## 跨平台编译
 
-## 交叉编译
-交叉编译一般在你需要多平台分发的时候才用, 平时直接本地编译即可。为什么要交叉编译？主要是我们引入了一个 `Sqlite` 的库, 这个库底层是 `C` 实现的, 所以需要有环境。首先安装工具链, 下面以 `Ubuntu-1804` 版本为例：
-
-```sh
-# 本地编译使用
-sudo apt install gcc make
-# 交叉编译 Windows 使用
-sudo apt install gcc-mingw-w64-x86-64 -y
-# 交叉编译 ARM 使用
-sudo apt install gcc-arm-linux-gnueabi -y
-sudo apt install gcc-aarch64-linux-gnu -y
-```
+注意:` Arm32位`下编译比较麻烦, 推荐使用`Ubuntu18-04`安装交叉编译工具进行编译, 具体步骤请参考 `.github\workflows\4_build-arm-32-v7.yml` 里面的脚本。
 
 ### 启动
 
-- `rulex run`
 ```sh
- -----------------------------------------------------------
-~~~/=====\       ██████╗ ██╗   ██╗██╗     ███████╗██╗  ██╗
-~~~||\\\||--->o  ██╔══██╗██║   ██║██║     ██╔════╝╚██╗██╔╝
-~~~||///||--->o  ██████╔╝██║   ██║██║     █████╗   ╚███╔╝
-~~~||///||--->o  ██╔══██╗██║   ██║██║     ██╔══╝   ██╔██╗
-~~~||\\\||--->o  ██║  ██║╚██████╔╝███████╗███████╗██╔╝ ██╗
-~~~\=====/       ╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚══════╝╚═╝  ╚═╝
------------------------------------------------------------
-2021/11/24 11:03:15 utils.go:101: [info] RULEX start successfully
-2021/11/24 11:03:15 main.go:39: [info] Load config db: rulex.db
-2021/11/24 11:03:15 cfg.go:34: [info] Init rulex config
-2021/11/24 11:03:15 cfg.go:54: [info] RULEX config init successfully
-
+rulex run
 ```
 
 ## Dashboard
@@ -61,6 +41,18 @@ sudo apt install gcc-aarch64-linux-gnu -y
 ```
 <div style="text-align:center">
 <img src="./README_RES/1.png"/>
+</div>
+<div style="text-align:center">
+<img src="./README_RES/2.png"/>
+</div>
+<div style="text-align:center">
+<img src="./README_RES/3.png"/>
+</div>
+<div style="text-align:center">
+<img src="./README_RES/4.png"/>
+</div>
+<div style="text-align:center">
+<img src="./README_RES/5.png"/>
 </div>
 
 ## 规则引擎
@@ -144,17 +136,6 @@ Actions = {
     end
 }
 ```
-
-## 未来计划
-
-- 完整支持常见的物联网协议接入
-- 完整支持常见数据的输出
-- 提供压测数据以及构建发布包
-
-### 详细功能表
-![res](README_RES/V001.png)
-
-> 预计于: 2022年1月1日发布第一个正式版, 敬请期待。
 
 ## 详细文档
 
