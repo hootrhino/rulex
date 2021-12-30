@@ -520,10 +520,10 @@ func (e *RuleEngine) Work(in *typex.InEnd, data string) (bool, error) {
 //
 // 执行lua脚本
 //
-func (e *RuleEngine) RunLuaCallbacks(in *typex.InEnd, callback string) {
+func (e *RuleEngine) RunLuaCallbacks(in *typex.InEnd, callbackArgs string) {
 	for _, rule := range in.Binds {
 		if rule.Status == typex.RULE_RUNNING {
-			_, err := core.ExecuteActions(&rule, lua.LString(callback))
+			_, err := core.ExecuteActions(&rule, lua.LString(callbackArgs))
 			if err != nil {
 				log.Error("RunLuaCallbacks error:", err)
 				core.ExecuteFailed(rule.VM, lua.LString(err.Error()))
