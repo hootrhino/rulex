@@ -19,7 +19,6 @@ require (
 	github.com/gosnmp/gosnmp v1.33.0
 	github.com/itchyny/gojq v0.12.4
 	github.com/kr/text v0.2.0 // indirect
-	github.com/logrusorgru/aurora v2.0.3+incompatible
 	github.com/makiuchi-d/gozxing v0.1.1
 	github.com/mattn/go-sqlite3 v1.14.7
 	github.com/matttproud/golang_protobuf_extensions v1.0.2-0.20181231171920-c182affec369 // indirect
