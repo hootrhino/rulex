@@ -148,7 +148,7 @@ func (hh *HttpApiServer) Stop() error {
 func (hh *HttpApiServer) Db() *gorm.DB {
 	return hh.sqliteDb
 }
-func (hh *HttpApiServer) XPluginMetaInfo() typex.XPluginMetaInfo {
+func (hh *HttpApiServer) PluginMetaInfo() typex.XPluginMetaInfo {
 	return typex.XPluginMetaInfo{
 		Name:     "Http Api Server",
 		Version:  "0.0.1",

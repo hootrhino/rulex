@@ -52,7 +52,7 @@ func (s *MqttServer) Stop() error {
 
 }
 
-func (s *MqttServer) XPluginMetaInfo() typex.XPluginMetaInfo {
+func (s *MqttServer) PluginMetaInfo() typex.XPluginMetaInfo {
 	return typex.XPluginMetaInfo{
 		Name:     "Light Weight MqttServer",
 		Version:  "0.0.1",

@@ -1,0 +1,86 @@
+// syntax = "proto3";
+
+// option go_package = "./;xproto";
+// option java_multiple_files = false;
+// option java_package = "xresource";
+// option java_outer_classname = "XResourceService";
+
+// package xresource;
+// //
+// //
+// //
+// message Request {
+
+// }
+// //
+// //
+// //
+// message DataRequest {
+//     string data = 1;
+// }
+// //
+// //
+// //
+// message TestRequest {
+//     string inEndId = 1;
+// }
+// //
+// //
+// //
+// message ResourceState {
+//     int32 type = 1;
+// }
+// //
+// //
+// //
+// message Enable {
+//     bool value = 1;
+// }
+// //
+// //
+// //
+// message RegisterRequest {
+//     string inEndId = 1;
+// }
+// //
+// //
+// //
+// message Response {
+//     int32 code = 1;
+//     string msg = 2;
+// }
+// //
+// //
+// //
+// message TopologyPoint {
+//     string  uuid=1;
+//     string  parent=2;
+//     string  name=3;
+//     bool    alive=4;
+//     string  tag=5;
+// }
+// message XDataModel {
+// 	string name=1;
+// 	string valueType=2;
+// 	string value=3;
+// }
+
+// //
+// //
+// //
+// service XResource {
+// 	rpc Test(TestRequest) returns (Response){};
+// 	rpc Register(RegisterRequest) returns (Response){};
+// 	rpc Start(Request) returns (Response){};
+// 	rpc Enabled(Request) returns (Enable){};
+// 	rpc DataModels(Request) returns (XDataModel){};
+// 	rpc Configs(Request) returns (Response){};
+// 	rpc Reload(Request) returns (Response){};
+// 	rpc Pause(Request) returns (Response){};
+// 	rpc Status(Request) returns (ResourceState){};
+// 	rpc Details(Request) returns (Response){};
+// 	rpc OnStreamApproached(DataRequest) returns (Response){};
+// 	rpc Driver(Request) returns (Response){};
+// 	rpc Topology(Request) returns (TopologyPoint){};
+// 	rpc Stop(Request) returns (Response){};
+// }

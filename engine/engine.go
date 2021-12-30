@@ -490,7 +490,7 @@ func (e *RuleEngine) Stop() {
 
 	e.Plugins.Range(func(key, value interface{}) bool {
 		plugin := value.(typex.XPlugin)
-		log.Info("Stop plugin:", plugin.XPluginMetaInfo().Name)
+		log.Info("Stop plugin:", plugin.PluginMetaInfo().Name)
 		plugin.Stop()
 		return true
 	})
@@ -540,17 +540,17 @@ func (e *RuleEngine) LoadPlugin(p typex.XPlugin) error {
 		return err
 	}
 
-	_, ok := e.Plugins.Load(p.XPluginMetaInfo().Name)
+	_, ok := e.Plugins.Load(p.PluginMetaInfo().Name)
 	if ok {
-		return errors.New("plugin already installed:" + p.XPluginMetaInfo().Name)
+		return errors.New("plugin already installed:" + p.PluginMetaInfo().Name)
 	}
 
 	if err := p.Start(); err != nil {
 		return err
 	}
 
-	e.Plugins.Store(p.XPluginMetaInfo().Name, p)
-	log.Infof("Plugin start successfully:[%v]", p.XPluginMetaInfo().Name)
+	e.Plugins.Store(p.PluginMetaInfo().Name, p)
+	log.Infof("Plugin start successfully:[%v]", p.PluginMetaInfo().Name)
 	return nil
 
 }

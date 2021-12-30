@@ -18,5 +18,5 @@ type XPlugin interface {
 	Init() error
 	Start() error
 	Stop() error
-	XPluginMetaInfo() XPluginMetaInfo
+	PluginMetaInfo() XPluginMetaInfo
 }

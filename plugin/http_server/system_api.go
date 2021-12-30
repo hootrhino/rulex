@@ -33,7 +33,7 @@ func Plugins(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	data := []interface{}{}
 	plugins := e.AllPlugins()
 	plugins.Range(func(key, value interface{}) bool {
-		data = append(data, value.(typex.XPlugin).XPluginMetaInfo())
+		data = append(data, value.(typex.XPlugin).PluginMetaInfo())
 		return true
 	})
 	c.JSON(http.StatusOK, Result{

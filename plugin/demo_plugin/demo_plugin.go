@@ -22,8 +22,7 @@ func (dm *DemoPlugin) Stop() error {
 	return nil
 }
 
-
-func (hh *DemoPlugin) XPluginMetaInfo() typex.XPluginMetaInfo {
+func (hh *DemoPlugin) PluginMetaInfo() typex.XPluginMetaInfo {
 	return typex.XPluginMetaInfo{
 		Name:     "DemoPlugin",
 		Version:  "0.0.1",
