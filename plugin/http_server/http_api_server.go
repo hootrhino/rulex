@@ -110,6 +110,7 @@ func (hh *HttpApiServer) Start() error {
 	// Create InEnd
 	//
 	hh.ginEngine.POST(_API_V1_ROOT+"inends", hh.addRoute(CreateInend))
+	hh.ginEngine.GET(_API_V1_ROOT+"inends/config", hh.addRoute(GetInEndConfig))
 	//
 	// Create OutEnd
 	//
