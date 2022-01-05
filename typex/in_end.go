@@ -1,8 +1,6 @@
 package typex
 
-import (
-	"rulex/utils"
-)
+import "rulex/utils"
 
 //
 type InEnd struct {

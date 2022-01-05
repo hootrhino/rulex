@@ -57,11 +57,8 @@ const (
 )
 
 type XConfig struct {
-	UiType    string      `json:"uiType"`    // UI上显示的组件
-	Field     string      `json:"field"`     // 字段名
-	Title     string      `json:"title"`     // 标题
-	Info      string      `json:"info"`      // 提示信息
-	Hidden    bool        `json:"hidden"`    // 是否隐藏
-	ValueType string      `json:"valueType"` // 值类型
-	Value     interface{} `json:"value"`     // 具体的值
+	Field     string `json:"field"`     // 字段名
+	FieldType string `json:"fieldType"` // 字段类型
+	Title     string `json:"title"`     // 标题
+	Info      string `json:"info"`      // 提示信息
 }

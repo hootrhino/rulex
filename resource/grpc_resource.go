@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"rulex/core"
 	"rulex/rulexrpc"
 	"rulex/typex"
 	"rulex/utils"
@@ -18,8 +19,8 @@ const (
 
 //
 type grpcConfig struct {
-	Port       uint16             `json:"port" validate:"required"`
-	DataModels []typex.XDataModel `json:"dataModels"`
+	Port       uint16             `json:"port" validate:"required" title:"端口" info:""`
+	DataModels []typex.XDataModel `json:"dataModels" title:"数据模型" info:""`
 }
 
 type RulexRpcServer struct {
@@ -116,7 +117,13 @@ func (*GrpcInEndResource) Driver() typex.XExternalDriver {
 	return nil
 }
 func (*GrpcInEndResource) Configs() []typex.XConfig {
-	return []typex.XConfig{}
+	config, err := core.RenderConfig(grpcConfig{})
+	if err != nil {
+		log.Error(err)
+		return []typex.XConfig{}
+	} else {
+		return config
+	}
 }
 
 //

@@ -2,6 +2,7 @@ package resource
 
 import (
 	"fmt"
+	"rulex/core"
 	"rulex/typex"
 	"rulex/utils"
 	"time"
@@ -13,12 +14,12 @@ import (
 
 //
 type mqttConfig struct {
-	Host     string `json:"host" validate:"required"`
-	Port     int    `json:"port" validate:"required"`
-	Topic    string `json:"topic" validate:"required"`
-	ClientId string `json:"clientId" validate:"required"`
-	Username string `json:"username" validate:"required"`
-	Password string `json:"password" validate:"required"`
+	Host     string `json:"host" validate:"required" title:"服务地址" info:""`
+	Port     int    `json:"port" validate:"required" title:"服务端口" info:""`
+	Topic    string `json:"topic" validate:"required" title:"消息来源" info:""`
+	ClientId string `json:"clientId" validate:"required" title:"客户端ID" info:""`
+	Username string `json:"username" validate:"required" title:"连接账户" info:""`
+	Password string `json:"password" validate:"required" title:"连接密码" info:""`
 }
 
 //
@@ -128,7 +129,13 @@ func (*MqttInEndResource) Driver() typex.XExternalDriver {
 	return nil
 }
 func (*MqttInEndResource) Configs() []typex.XConfig {
-	return []typex.XConfig{}
+	config, err := core.RenderConfig(mqttConfig{})
+	if err != nil {
+		log.Error(err)
+		return []typex.XConfig{}
+	} else {
+		return config
+	}
 }
 
 //

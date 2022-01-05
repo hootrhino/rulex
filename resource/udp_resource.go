@@ -3,7 +3,9 @@ package resource
 import (
 	"context"
 	"net"
+	"rulex/core"
 	"rulex/typex"
+	"rulex/utils"
 
 	"github.com/ngaut/log"
 )
@@ -12,6 +14,11 @@ type UdpResource struct {
 	typex.XStatus
 	uDPConn  *net.UDPConn
 	CanWrite bool
+}
+type udpConfig struct {
+	Host          string `json:"host" validate:"required" title:"服务地址" info:""`
+	Port          int    `json:"port" validate:"required" title:"服务端口" info:""`
+	MaxDataLength int    `json:"maxDataLength" validate:"required" title:"最大数据包" info:""`
 }
 
 func NewUdpInEndResource(inEndId string, e typex.RuleX) *UdpResource {
@@ -22,7 +29,12 @@ func NewUdpInEndResource(inEndId string, e typex.RuleX) *UdpResource {
 	return &u
 }
 func (u *UdpResource) Start() error {
-	addr := &net.UDPAddr{IP: net.ParseIP("127.0.0.1"), Port: 2584}
+	config := u.RuleEngine.GetInEnd(u.PointId).Config
+	var mainConfig udpConfig
+	if err := utils.BindResourceConfig(config, &mainConfig); err != nil {
+		return err
+	}
+	addr := &net.UDPAddr{IP: net.ParseIP(mainConfig.Host), Port: mainConfig.Port}
 	var err error
 	if u.uDPConn, err = net.ListenUDP("udp", addr); err != nil {
 		log.Error(err)
@@ -30,7 +42,7 @@ func (u *UdpResource) Start() error {
 	}
 	u.CanWrite = true
 	go func(c context.Context, u1 *UdpResource) {
-		data := make([]byte, 1024)
+		data := make([]byte, mainConfig.MaxDataLength)
 		for u1.CanWrite {
 			n, remoteAddr, err := u1.uDPConn.ReadFromUDP(data)
 			if err != nil {
@@ -98,7 +110,13 @@ func (*UdpResource) Driver() typex.XExternalDriver {
 	return nil
 }
 func (*UdpResource) Configs() []typex.XConfig {
-	return []typex.XConfig{}
+	config, err := core.RenderConfig(udpConfig{})
+	if err != nil {
+		log.Error(err)
+		return []typex.XConfig{}
+	} else {
+		return config
+	}
 }
 
 //

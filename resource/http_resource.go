@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"rulex/core"
 	"rulex/typex"
 	"rulex/utils"
 
@@ -13,8 +14,8 @@ import (
 
 //
 type HttpConfig struct {
-	Port       uint16             `json:"port" validate:"required"`
-	DataModels []typex.XDataModel `json:"dataModels"`
+	Port       uint16             `json:"port" validate:"required" title:"端口" info:""`
+	DataModels []typex.XDataModel `json:"dataModels" title:"数据模型" info:""`
 }
 
 //
@@ -32,7 +33,13 @@ func NewHttpInEndResource(inEndId string, e typex.RuleX) typex.XResource {
 	return &h
 }
 func (*HttpInEndResource) Configs() []typex.XConfig {
-	return []typex.XConfig{}
+	config, err := core.RenderConfig(HttpConfig{})
+	if err != nil {
+		log.Error(err)
+		return []typex.XConfig{}
+	} else {
+		return config
+	}
 }
 
 //

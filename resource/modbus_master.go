@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 
+	"rulex/core"
 	"rulex/driver"
 	"rulex/typex"
 	"rulex/utils"
@@ -17,13 +18,13 @@ import (
 )
 
 type ModBusConfig struct {
-	Mode           string          `json:"mode"`
-	Timeout        int             `json:"timeout" validate:"required,gte=1,lte=60"`
-	SlaverId       byte            `json:"slaverId" validate:"required,gte=1,lte=255"`
-	Frequency      int64           `json:"frequency" validate:"required,gte=1,lte=10000"`
-	RtuConfig      RtuConfig       `json:"rtuConfig" validate:"required"`
-	TcpConfig      TcpConfig       `json:"tcpConfig" validate:"required"`
-	RegisterParams []registerParam `json:"registerParams" validate:"required"`
+	Mode           string          `json:"mode" title:"工作模式" info:"可以在 RTU/TCP 两个模式之间切换"`
+	Timeout        int             `json:"timeout" validate:"required" title:"连接超时" info:""`
+	SlaverId       byte            `json:"slaverId" validate:"required" title:"TCP端口" info:""`
+	Frequency      int64           `json:"frequency" validate:"required" title:"采集频率" info:""`
+	RtuConfig      RtuConfig       `json:"rtuConfig" validate:"required" title:"RTU模式配置" info:""`
+	TcpConfig      TcpConfig       `json:"tcpConfig" validate:"required" title:"TCP模式配置" info:""`
+	RegisterParams []registerParam `json:"registerParams" validate:"required" title:"寄存器配置" info:""`
 }
 
 const (
@@ -51,18 +52,29 @@ const (
 )
 
 type modBUSWriteParams struct {
-	Function int    `json:"function" validate:"required"`
-	Address  uint16 `json:"address" validate:"required"`
-	Quantity uint16 `json:"quantity" validate:"required"`
-	Value    []byte `json:"value" validate:"required"`
-	Values   []byte `json:"values" validate:"required"`
+	Function int    `json:"function" validate:"required" title:"Modbus功能代码" info:""`
+	Address  uint16 `json:"address" validate:"required" title:"寄存器地址" info:""`
+	Quantity uint16 `json:"quantity" validate:"required" title:"写入数量" info:""`
+	Value    []byte `json:"value" validate:"required" title:"写入的值" info:""`
+	Values   []byte `json:"values" validate:"required" title:"写入的值" info:""`
 }
 
+/*
+*
+* 配置进来准备采集的寄存器参数
+*
+ */
 type registerParam struct {
 	Function int    `json:"function" validate:"required"` // Function
 	Address  uint16 `json:"address" validate:"required"`  // Address
 	Quantity uint16 `json:"quantity" validate:"required"` // Quantity
 }
+
+/*
+*
+* 采集到的数据
+*
+ */
 type registerData struct {
 	Function int    `json:"function" validate:"required"` // Function
 	Address  uint16 `json:"address" validate:"required"`  // Address
@@ -80,16 +92,16 @@ type registerData struct {
 // Timeout = 5 * time.Second
 //
 type RtuConfig struct {
-	Uart     string `json:"uart" validate:"required"`
-	BaudRate int    `json:"baudRate" validate:"required"`
+	Uart     string `json:"uart" validate:"required" title:"串口路径" info:"本地系统的串口路径"`
+	BaudRate int    `json:"baudRate" validate:"required" title:"波特率" info:"串口通信波特率"`
 }
 
 //
 //
 //
 type TcpConfig struct {
-	Ip   string `json:"ip" validate:"required"`
-	Port int    `json:"port" validate:"required,gte=1,lte=65535"`
+	Ip   string `json:"ip" validate:"required" title:"IP地址" info:""`
+	Port int    `json:"port" validate:"required" title:"端口" info:""`
 }
 
 //
@@ -110,7 +122,13 @@ func NewModbusMasterResource(id string, e typex.RuleX) typex.XResource {
 	return &m
 }
 func (*ModbusMasterResource) Configs() []typex.XConfig {
-	return []typex.XConfig{}
+	config, err := core.RenderConfig(ModBusConfig{})
+	if err != nil {
+		log.Error(err)
+		return []typex.XConfig{}
+	} else {
+		return config
+	}
 }
 
 func (m *ModbusMasterResource) Register(inEndId string) error {

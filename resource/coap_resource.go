@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"rulex/core"
 	"rulex/typex"
 	"rulex/utils"
 
@@ -16,8 +17,8 @@ import (
 
 //
 type CoAPConfig struct {
-	Port       uint16             `json:"port" validate:"required"`
-	DataModels []typex.XDataModel `json:"dataModels"`
+	Port       uint16             `json:"port" validate:"required" title:"端口" info:""`
+	DataModels []typex.XDataModel `json:"dataModels" title:"数据模型" info:""`
 }
 
 //
@@ -110,7 +111,13 @@ func (cc *CoAPInEndResource) Driver() typex.XExternalDriver {
 }
 
 func (*CoAPInEndResource) Configs() []typex.XConfig {
-	return []typex.XConfig{}
+	config, err := core.RenderConfig(CoAPConfig{})
+	if err != nil {
+		log.Error(err)
+		return []typex.XConfig{}
+	} else {
+		return config
+	}
 }
 
 //

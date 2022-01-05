@@ -2,6 +2,7 @@ package resource
 
 import (
 	"fmt"
+	"rulex/core"
 	"rulex/typex"
 	"rulex/utils"
 
@@ -10,11 +11,11 @@ import (
 )
 
 type natsConfig struct {
-	User     string `json:"user" validate:"required"`
-	Password string `json:"password" validate:"required"`
-	Host     string `json:"host" validate:"required"`
-	Port     int32  `json:"port" validate:"required"`
-	Topic    string `json:"topic" validate:"required"`
+	User     string `json:"user" validate:"required" title:"连接账户" info:""`
+	Password string `json:"password" validate:"required" title:"连接密码" info:""`
+	Host     string `json:"host" validate:"required" title:"服务地址" info:""`
+	Port     int32  `json:"port" validate:"required" title:"服务端口" info:""`
+	Topic    string `json:"topic" validate:"required" title:"消息来源" info:""`
 }
 type natsResource struct {
 	typex.XStatus
@@ -123,7 +124,13 @@ func (nt *natsResource) Stop() {
 	}
 }
 func (nt *natsResource) Configs() []typex.XConfig {
-	return []typex.XConfig{}
+	config, err := core.RenderConfig(natsConfig{})
+	if err != nil {
+		log.Error(err)
+		return []typex.XConfig{}
+	} else {
+		return config
+	}
 }
 
 func (nt *natsResource) DataModels() []typex.XDataModel {

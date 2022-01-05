@@ -1,8 +1,11 @@
 package core
 
 import (
+	"errors"
 	"net/http"
 	"os"
+	"reflect"
+	"rulex/typex"
 	"runtime"
 
 	"github.com/ngaut/log"
@@ -82,6 +85,42 @@ func SetLogLevel() {
 	}
 
 }
+
+/*
+*
+* 渲染UI界面
+*
+ */
+func RenderConfig(i interface{}) ([]typex.XConfig, error) {
+	var err error
+	typee := reflect.TypeOf(i)
+	data := make([]typex.XConfig, 0)
+	for i := 0; i < typee.NumField(); i++ {
+		xcfg := typex.XConfig{}
+		field := typee.Field(i)
+		tag := field.Tag
+		title := tag.Get("title")
+		if title == "" {
+			err = errors.New("'title' tag can't empty")
+			goto END
+		}
+		info := tag.Get("info")
+		json := tag.Get("json")
+		if json == "" {
+			err = errors.New("'json' tag can't empty")
+			goto END
+		}
+		fieldType := typee.Field(i).Type.String()
+		xcfg.Field = json
+		xcfg.FieldType = fieldType
+		xcfg.Info = info
+		xcfg.Title = title
+		data = append(data, xcfg)
+	}
+END:
+	return data, err
+}
+
 func SetPerformance() {
 	log.Info("Go max process is:", GlobalConfig.GomaxProcs)
 	runtime.GOMAXPROCS(GlobalConfig.GomaxProcs)

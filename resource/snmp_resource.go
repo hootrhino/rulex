@@ -12,6 +12,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"rulex/core"
 	"rulex/typex"
 	"rulex/utils"
 	"strings"
@@ -130,20 +131,20 @@ func (s *SNMPResource) HardwareNetInterfaceMac(i int) []string {
 
 //----------------------------------------------------------------------------------
 type target struct {
-	Target     string             `json:"target" validate:"required"`
-	Port       uint16             `json:"port" validate:"required"`
-	Transport  string             `json:"transport" validate:"required"`
-	Community  string             `json:"community" validate:"required"`
-	Version    uint8              `json:"version" validate:"required"`
-	DataModels []typex.XDataModel `json:"dataModels" validate:"required"`
+	Target     string             `json:"target" validate:"required" title:"目标IP" info:""`
+	Port       uint16             `json:"port" validate:"required" title:"目标端口" info:""`
+	Transport  string             `json:"transport" validate:"required" title:"传输形式" info:""`
+	Community  string             `json:"community" validate:"required" title:"社区名称" info:""`
+	Version    uint8              `json:"version" validate:"required" title:"SNMP版本" info:""`
+	DataModels []typex.XDataModel `json:"dataModels" validate:"required" title:"数据模型" info:""`
 }
 
 // SNMPConfig
 // GoSNMP represents GoSNMP library state.
 type SNMPConfig struct {
-	Frequency int64    `json:"frequency" validate:"required,gte=1,lte=10000"`
-	Timeout   int64    `json:"timeout" validate:"required,gte=1,lte=10000"`
-	Targets   []target `json:"targets" validate:"required"`
+	Frequency int64    `json:"frequency" validate:"required" title:"采集频率" info:""`
+	Timeout   int64    `json:"timeout" validate:"required" title:"超时时间" info:""`
+	Targets   []target `json:"targets" validate:"required" title:"采集目标" info:""`
 }
 
 //--------------------------------------------------------------------------------
@@ -274,7 +275,13 @@ func (s *SNMPResource) Stop() {
 
 }
 func (*SNMPResource) Configs() []typex.XConfig {
-	return []typex.XConfig{}
+	config, err := core.RenderConfig(SNMPConfig{})
+	if err != nil {
+		log.Error(err)
+		return []typex.XConfig{}
+	} else {
+		return config
+	}
 }
 
 //

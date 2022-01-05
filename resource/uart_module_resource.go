@@ -1,6 +1,7 @@
 package resource
 
 import (
+	"rulex/core"
 	"rulex/driver"
 	"rulex/typex"
 	"rulex/utils"
@@ -15,12 +16,12 @@ type UartModuleResource struct {
 	loraDriver typex.XExternalDriver
 }
 type UartConfig struct {
-	Address  string `json:"address" validate:"required"`
-	BaudRate int    `json:"baudRate" validate:"required"`
-	DataBits int    `json:"dataBits" validate:"required"`
-	StopBits int    `json:"stopBits" validate:"required"`
-	Parity   string `json:"parity" validate:"required"`
-	Timeout  *int64 `json:"timeout" validate:"required"`
+	Address  string `json:"address" validate:"required" title:"采集地址" info:""`
+	BaudRate int    `json:"baudRate" validate:"required" title:"波特率" info:""`
+	DataBits int    `json:"dataBits" validate:"required" title:"数据位" info:""`
+	StopBits int    `json:"stopBits" validate:"required" title:"停止位" info:""`
+	Parity   string `json:"parity" validate:"required" title:"分割大小" info:""`
+	Timeout  *int64 `json:"timeout" validate:"required" title:"超时时间" info:""`
 }
 
 func NewUartModuleResource(inEndId string, e typex.RuleX) typex.XResource {
@@ -31,7 +32,13 @@ func NewUartModuleResource(inEndId string, e typex.RuleX) typex.XResource {
 	return &s
 }
 func (*UartModuleResource) Configs() []typex.XConfig {
-	return []typex.XConfig{}
+	config, err := core.RenderConfig(UartConfig{})
+	if err != nil {
+		log.Error(err)
+		return []typex.XConfig{}
+	} else {
+		return config
+	}
 }
 
 func (mm *UartModuleResource) DataModels() []typex.XDataModel {
