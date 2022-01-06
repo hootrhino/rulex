@@ -57,8 +57,10 @@ const (
 )
 
 type XConfig struct {
-	Field     string `json:"field"`     // 字段名
-	FieldType string `json:"fieldType"` // 字段类型
-	Title     string `json:"title"`     // 标题
-	Info      string `json:"info"`      // 提示信息
+	Field     string      `json:"field"`     // 字段名
+	Multiple  bool        `json:"multiple"`  // 是否是多个
+	FieldType string      `json:"fieldType"` // 字段类型
+	Title     string      `json:"title"`     // 标题
+	Info      string      `json:"info"`      // 提示信息
+	Enum      interface{} `json:"enum"`      // 枚举，一般用来实现Select
 }
