@@ -13,7 +13,7 @@ import (
 * 这里是一些前端渲染支持
 *
  */
-type selctView struct {
+type selectView struct {
 	Name string
 	Key  string
 }
@@ -23,8 +23,8 @@ type selctView struct {
 * 渲染 select 组件
 *
  */
-func RenderSelect(s string) ([]selctView, error) {
-	selctors := []selctView{}
+func RenderSelect(s string) ([]selectView, error) {
+	selectors := []selectView{}
 	var err error
 	splits := strings.Split(s, "|")
 	if len(splits)%2 != 0 {
@@ -37,10 +37,10 @@ func RenderSelect(s string) ([]selctView, error) {
 			err = fmt.Errorf("syntax error:%v", kv)
 			goto END
 		}
-		selctors = append(selctors, selctView{Key: kv[0], Name: kv[1]})
+		selectors = append(selectors, selectView{Key: kv[0], Name: kv[1]})
 	}
 END:
-	return selctors, err
+	return selectors, err
 }
 
 /*
