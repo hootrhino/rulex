@@ -1,7 +1,7 @@
 *.log
 *_bin
 .vscode/
-rulex*
+rulex
 rulex-*
 .DS_Store
 *.out
