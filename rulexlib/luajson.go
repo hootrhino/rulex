@@ -3,9 +3,48 @@ package rulexlib
 import (
 	"encoding/json"
 	"errors"
+	"rulex/typex"
 
 	"github.com/yuin/gopher-lua"
 )
+
+/*
+*
+* JsonEncodeLib,Encode converts Lua values to JSON.
+*
+ */
+type JsonEncodeLib struct {
+}
+
+func NewJsonEncodeLib() typex.XLib {
+	return &JsonEncodeLib{}
+}
+
+func (l *JsonEncodeLib) Name() string {
+	return "JsonEncode"
+}
+func (l *JsonEncodeLib) LibFun(rx typex.RuleX) func(*lua.LState) int {
+	return apiEncode
+}
+
+/*
+*
+* JsonDecodeLib, Decode converts the JSON encoded data to Lua values.
+*
+ */
+type JsonDecodeLib struct {
+}
+
+func NewJsonDecodeLib() typex.XLib {
+	return &JsonDecodeLib{}
+}
+
+func (l *JsonDecodeLib) Name() string {
+	return "JsonDecode"
+}
+func (l *JsonDecodeLib) LibFun(rx typex.RuleX) func(*lua.LState) int {
+	return apiDecode
+}
 
 // Preload adds json to the given Lua state's package.preload table. After it
 // has been preloaded, it can be loaded using require:
@@ -29,7 +68,7 @@ var api = map[string]lua.LGFunction{
 }
 
 func apiDecode(L *lua.LState) int {
-	str := L.CheckString(1)
+	str := L.CheckString(2)
 
 	value, err := Decode(L, []byte(str))
 	if err != nil {
@@ -42,7 +81,7 @@ func apiDecode(L *lua.LState) int {
 }
 
 func apiEncode(L *lua.LState) int {
-	value := L.CheckAny(1)
+	value := L.CheckAny(2)
 
 	data, err := Encode(value)
 	if err != nil {

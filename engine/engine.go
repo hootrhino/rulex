@@ -385,18 +385,32 @@ func (e *RuleEngine) LoadRule(r *typex.Rule) error {
 					//
 					// Load Stdlib
 					//--------------------------------------------------------------
+					// 消息转发
 					r.LoadLib(e, rulexlib.NewBinaryLib())
 					r.LoadLib(e, rulexlib.NewMongoLib())
 					r.LoadLib(e, rulexlib.NewHttpLib())
 					r.LoadLib(e, rulexlib.NewMqttLib())
+					// JQ
 					r.LoadLib(e, rulexlib.NewJqLib())
+					// 日志
 					r.LoadLib(e, rulexlib.NewLogLib())
+					// 直达数据
 					r.LoadLib(e, rulexlib.NewWriteInStreamLib())
 					r.LoadLib(e, rulexlib.NewWriteOutStreamLib())
+					// 二进制操作
 					r.LoadLib(e, rulexlib.NewByteToBitStringLib())
 					r.LoadLib(e, rulexlib.NewGetABitOnByteLib())
 					r.LoadLib(e, rulexlib.NewByteToInt64Lib())
 					r.LoadLib(e, rulexlib.NewBitStringToBytesLib())
+					// JSON编解码
+					r.LoadLib(e, rulexlib.NewJsonEncodeLib())
+					r.LoadLib(e, rulexlib.NewJsonDecodeLib())
+					// URL处理
+					r.LoadLib(e, rulexlib.NewUrlBuildLib())
+					r.LoadLib(e, rulexlib.NewUrlBuildQSLib())
+					r.LoadLib(e, rulexlib.NewUrlParseLib())
+					r.LoadLib(e, rulexlib.NewUrlRsolveLib())
+
 					//--------------------------------------------------------------
 					// Save to rules map
 					//

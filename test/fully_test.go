@@ -114,6 +114,21 @@ func TestFullyRun(t *testing.T) {
 			end
 		}`,
 		`function Failed(error) print("[LUA Failed Callback]", error) end`)
+	rule4 := typex.NewRule(engine,
+		"uuid4",
+		"rule4",
+		"rule4",
+		[]string{grpcInend.UUID},
+		`function Success() print("[rulexlib:JsonDecode(data) Success Callback]=> OK") end`,
+		`
+		Actions = {
+			function(data)
+			    local t1 = rulexlib:JsonDecode(data)
+			    print("[rulexlib:JsonDecode(data)] ==>", rulexlib:JsonEncode(t1))
+				return true, data
+			end
+		}`,
+		`function Failed(error) print("[rulexlib:JsonDecode(data) Failed Callback]", error) end`)
 	if err := engine.LoadRule(rule1); err != nil {
 		log.Error(err)
 	}
@@ -123,6 +138,9 @@ func TestFullyRun(t *testing.T) {
 	if err := engine.LoadRule(rule3); err != nil {
 		log.Error(err)
 	}
+	if err := engine.LoadRule(rule4); err != nil {
+		log.Error(err)
+	}
 	conn, err := grpc.Dial("127.0.0.1:2581", grpc.WithInsecure())
 	if err != nil {
 		log.Error("grpc.Dial err: %v", err)
@@ -130,7 +148,7 @@ func TestFullyRun(t *testing.T) {
 	defer conn.Close()
 	client := rulexrpc.NewRulexRpcClient(conn)
 	for i := 0; i < 30; i++ {
-		log.Infof("Rulex Rpc Call ==========================>>: %v", i)
+		log.Infof("Test count ==========================>>: %v", i)
 		resp, err := client.Work(context.Background(), &rulexrpc.Data{
 			Value: `
 					[
