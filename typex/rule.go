@@ -1,9 +1,7 @@
 package typex
 
 import (
-	"github.com/cjoudrey/gluaurl"
 	luajson "github.com/wwhai/gopher-json"
-
 	lua "github.com/yuin/gopher-lua"
 )
 
@@ -68,18 +66,33 @@ func NewRule(e RuleX,
 func (r *Rule) SetVM(o lua.Options) {
 	r.VM.Options = o
 }
+
+/*
+*
+* AddLib: 根据 KV形式加载库
+*
+ */
+func (r *Rule) AddLib(rx RuleX, funcName string, f func(*lua.LState) int) {
+	loadLib(r.VM, funcName, f)
+}
+
+/*
+*
+* LoadLib: 根据 XLib 接口加载
+*
+ */
 func (r *Rule) LoadLib(rx RuleX, lib XLib) {
-	// log.Info("LoadLib:", lib.Name())
-	rulex := r.VM.G.Global
+	loadLib(r.VM, lib.Name(), lib.LibFun(rx))
+}
+func loadLib(VM *lua.LState, funcName string, f func(*lua.LState) int) {
+	rulex := VM.G.Global
 	//
 	// rulexlib: 标准库命名空间
 	//
-	r.VM.SetGlobal("rulexlib", rulex)
-	r.VM.PreloadModule("json", luajson.Loader)
-	r.VM.PreloadModule("url", gluaurl.Loader)
-	//
-	mod := r.VM.SetFuncs(rulex, map[string]lua.LGFunction{
-		lib.Name(): lib.LibFun(rx),
+	VM.SetGlobal("rulexlib", rulex)
+	VM.PreloadModule("json", luajson.Loader) // TODO : Removed at 0.2.0, use rulexlib:EncodeJson replace
+	mod := VM.SetFuncs(rulex, map[string]lua.LGFunction{
+		funcName: f,
 	})
-	r.VM.Push(mod)
+	VM.Push(mod)
 }
