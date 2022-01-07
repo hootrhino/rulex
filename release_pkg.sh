@@ -5,11 +5,21 @@ create_pkg() {
     VERSION=$(cat ./VERSION)
     echo "Create package: ${rulex-$1-$VERSION}"
     if [ "$1" == "x64windows" ]; then
-        zip -r _release/rulex-$1-$VERSION.zip ./rulex-$1.exe ./VERSION ./conf/ ./plugin/http_server/www
+        zip -r _release/rulex-$1-$VERSION.zip \
+            ./rulex-$1.exe \
+            ./VERSION \
+            ./conf/ \
+            ./plugin/http_server/www
         rm -rf ./rulex-*
         rm -rf ./*.exe
     else
-        zip -r _release/rulex-$1-$VERSION.zip ./rulex-$1 ./VERSION ./conf/ ./plugin/http_server/www
+        zip -r _release/rulex-$1-$VERSION.zip \
+            ./rulex-$1 \
+            ./start.sh \
+            ./stop.sh \
+            ./VERSION \
+            ./conf/ \
+            ./plugin/http_server/www
         rm -rf ./rulex-*
     fi
 
@@ -27,25 +37,33 @@ make_zip() {
 }
 
 build_x64windows() {
-    CGO_ENABLED=1 GOOS=windows GOARCH=amd64 CC=x86_64-w64-mingw32-gcc go build -ldflags "-s -w" -o rulex-$1.exe main.go
+    CGO_ENABLED=1 GOOS=windows GOARCH=amd64 CC=x86_64-w64-mingw32-gcc \
+        go build -ldflags "-s -w" -o rulex-$1.exe main.go
 }
 build_x86linux() {
-    CGO_ENABLED=1 GOOS=linux GO386=softfloat go build -ldflags "-s -w" -o rulex-$1 main.go
+    CGO_ENABLED=1 GOOS=linux GO386=softfloat \
+        go build -ldflags "-s -w" -o rulex-$1 main.go
 }
 build_x64linux() {
-    CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -ldflags "-s -w" -o rulex-$1 main.go
+    CGO_ENABLED=1 GOOS=linux GOARCH=amd64 \
+        go build -ldflags "-s -w" -o rulex-$1 main.go
 }
+
 build_arm64linux() {
-    CGO_ENABLED=1 GOOS=linux GOARCH=arm64 CC=aarch64-linux-gnu-gcc go build -ldflags "-s -w" -o rulex-$1 main.go
+    CGO_ENABLED=1 GOOS=linux GOARCH=arm64 CC=aarch64-linux-gnu-gcc \
+        go build -ldflags "-s -w" -o rulex-$1 main.go
 }
 build_arm32linux() {
-    CGO_ENABLED=1 GOARM=7 GOOS=linux GOARCH=arm CC=arm-linux-gnueabi-gcc go build -ldflags "-s -w" -o rulex-$1 -ldflags "-linkmode external -extldflags -static" main.go
+    CGO_ENABLED=1 GOARM=7 GOOS=linux GOARCH=arm CC=arm-linux-gnueabi-gcc \
+        go build -ldflags "-s -w" -o rulex-$1 -ldflags "-linkmode external -extldflags -static" main.go
 }
 build_arm64android() {
-    CGO_ENABLED=1 GOOS=linux GOARCH=arm64 CC=aarch64-linux-gnu-gcc go build -ldflags "-s -w" -o rulex-$1 main.go
+    CGO_ENABLED=1 GOOS=linux GOARCH=arm64 CC=aarch64-linux-gnu-gcc \
+        go build -ldflags "-s -w" -o rulex-$1 main.go
 }
 build_x64android() {
-    CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -ldflags "-s -w" -o rulex-$1 main.go
+    CGO_ENABLED=1 GOOS=linux GOARCH=amd64 \
+        go build -ldflags "-s -w" -o rulex-$1 main.go
 }
 
 #------------------------------------------
