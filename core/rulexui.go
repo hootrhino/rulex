@@ -17,14 +17,6 @@ type selctView struct {
 	Name string
 	Key  string
 }
-type stringView struct {
-	Name string
-	Key  string
-}
-type numberView struct {
-	Name string
-	Key  string
-}
 
 /*
 *
@@ -76,9 +68,9 @@ func RenderConfig(i interface{}) ([]typex.XConfig, error) {
 			goto END
 		}
 		// 枚举常量
-		enum := tag.Get("enum")
-		if enum != "" {
-			data, err1 := RenderSelect(enum)
+		selectView := tag.Get("enum")
+		if selectView != "" {
+			data, err1 := RenderSelect(selectView)
 			if err1 != nil {
 				err = err1
 				goto END

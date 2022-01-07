@@ -2,14 +2,13 @@ package test
 
 import (
 	"context"
-	"os"
-	"os/signal"
+
 	"rulex/core"
 	"rulex/engine"
 	httpserver "rulex/plugin/http_server"
 	"rulex/rulexrpc"
 	"rulex/typex"
-	"syscall"
+
 	"testing"
 	"time"
 
@@ -19,8 +18,6 @@ import (
 
 func TestFullyRun(t *testing.T) {
 	core.InitGlobalConfig()
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, syscall.SIGINT, syscall.SIGABRT)
 	engine := engine.NewRuleEngine()
 	engine.Start()
 
@@ -81,8 +78,8 @@ func TestFullyRun(t *testing.T) {
 				-- 0110_0001 0110_0001 0110_0010
 				-- <a:5 b:3 c:1 => a:00001100 b:00000001 c:0
 				local V6 = json.encode(rulexlib:MatchBinary("<a:5 b:3 c:1", "aab", false))
-				print("[LUA Actions Callback 5, rulex.MatchBinary] ==>", V6)
-				print("[LUA Actions Callback 5, rulex.MatchBinary] ==>", V6)
+				print("[LUA Actions Callback 6, rulex.MatchBinary] ==>", V6)
+				print("[LUA Actions Callback 6, rulex.MatchBinary] ==>", V6)
 				return true, data
 			end
 		}`,

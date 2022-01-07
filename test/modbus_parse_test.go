@@ -53,11 +53,12 @@ func Test_Modbus_LUA_Parse(t *testing.T) {
 		`
 		Actions = {
 			function(data)
-			local s = '{ "function":3, "address":0, "quantity":10,"value":"\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000"}'
+			    print(data)
 				local json = require("json")
-				local V6 = json.decode(s)
-				local V7 = json.encode(rulexlib:MatchBinary("<a:16 b:8 c:8", V6['value'], false))
-				print("[LUA Actions Callback 5, rulex.MatchBinary] ==>", V7)
+				local V6 = json.decode(data)
+				local V7 = json.encode(rulexlib:MatchBinary(">a:16 b:8 c:8", data, false))
+				-- {"a":"0000000000000001","b":"00000000","c":"00000001"}
+				print("[LUA Actions Callback, rulex.MatchBinary] ==>", V7)
 				return true, data
 			end
 		}`,
@@ -73,9 +74,8 @@ func Test_Modbus_LUA_Parse(t *testing.T) {
 	client := rulexrpc.NewRulexRpcClient(conn)
 
 	resp, err := client.Work(context.Background(), &rulexrpc.Data{
-		Value: string([]byte{
-			1, 2, 3, 4, 5, 6, 7, 8, 9,
-			10, 11, 12, 13, 14, 15, 16}),
+		// lua 输出 {"a":"0000000000000001","b":"00000000","c":"00000001"}
+		Value: string([]byte{0, 1, 0, 1}),
 	})
 	if err != nil {
 		log.Error("grpc.Dial err: %v", err)
