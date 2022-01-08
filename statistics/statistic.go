@@ -2,60 +2,62 @@ package statistics
 
 import "sync"
 
-var statisticsCache map[string]int64
+type statistics struct {
+	InSuccess  int64 `json:"inSuccess"`
+	OutSuccess int64 `json:"outSuccess"`
+	InFailed   int64 `json:"inFailed"`
+	OutFailed  int64 `json:"outFailed"`
+}
+
+var statisticsCache statistics
 
 var lock sync.Mutex
 
 func init() {
-	statisticsCache = map[string]int64{
-		"inSuccess":  0,
-		"outSuccess": 0,
-		"inFailed":   0,
-		"outFailed":  0,
-	}
+	statisticsCache = statistics{}
 }
 func IncIn() {
 
-	statisticsCache["inSuccess"] = statisticsCache["inSuccess"] + 1
+	statisticsCache.InSuccess = statisticsCache.InSuccess + 1
 }
 func DecIn() {
 	lock.Lock()
 	defer lock.Unlock()
-	if statisticsCache["inSuccess"]-1 > 0 {
-		statisticsCache["inSuccess"] = statisticsCache["inSuccess"] - 1
+	if statisticsCache.InSuccess-1 > 0 {
+		statisticsCache.InSuccess = statisticsCache.InSuccess - 1
 	}
 }
 func IncOut() {
 	lock.Lock()
 	defer lock.Unlock()
-	statisticsCache["outSuccess"] = statisticsCache["outSuccess"] + 1
+	statisticsCache.OutSuccess = statisticsCache.OutSuccess + 1
 }
 func DecOut() {
 	lock.Lock()
 	defer lock.Unlock()
 
-	if statisticsCache["outSuccess"]-1 > 0 {
-		statisticsCache["outSuccess"] = statisticsCache["outSuccess"] - 1
+	if statisticsCache.OutSuccess-1 > 0 {
+		statisticsCache.OutSuccess = statisticsCache.OutSuccess - 1
 	}
 }
 func IncInFailed() {
 	lock.Lock()
 	defer lock.Unlock()
-	statisticsCache["inFailed"] = statisticsCache["inFailed"] + 1
+	statisticsCache.InFailed = statisticsCache.InFailed + 1
 }
 
 func IncOutFailed() {
 	lock.Lock()
 	defer lock.Unlock()
-	statisticsCache["outFailed"] = statisticsCache["outFailed"] + 1
+	statisticsCache.OutFailed = statisticsCache.OutFailed + 1
 }
 
 func Reset() {
-	statisticsCache["inSuccess"] = 0
-	statisticsCache["inFailed"] = 0
-	statisticsCache["outFailed"] = 0
-	statisticsCache["outSuccess"] = 0
+	statisticsCache.InSuccess = 0
+	statisticsCache.InFailed = 0
+	statisticsCache.OutFailed = 0
+	statisticsCache.OutSuccess = 0
 }
-func AllStatistics() map[string]int64 {
+func AllStatistics() statistics {
 	return statisticsCache
 }
