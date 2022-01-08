@@ -65,14 +65,14 @@ func VerifyCallback(r *typex.Rule) error {
 	if err := vm.DoString(r.Success); err != nil {
 		return err
 	}
-	if vm.GetGlobal("Success").Type() != lua.LTFunction {
+	if vm.GetGlobal(SUCCESS_KEY).Type() != lua.LTFunction {
 		return errors.New("'Success' callback function missed")
 	}
 
 	if err := vm.DoString(r.Failed); err != nil {
 		return err
 	}
-	if vm.GetGlobal("Failed").Type() != lua.LTFunction {
+	if vm.GetGlobal(FAILED_KEY).Type() != lua.LTFunction {
 		return errors.New("'Failed' callback function missed")
 	}
 	if err := vm.DoString(r.Actions); err != nil {
@@ -81,7 +81,7 @@ func VerifyCallback(r *typex.Rule) error {
 	//
 	// validate lua syntax
 	//
-	actionsTable := vm.GetGlobal("Actions")
+	actionsTable := vm.GetGlobal(ACTIONS_KEY)
 	if actionsTable != nil && actionsTable.Type() == lua.LTTable {
 		valid := true
 		actionsTable.(*lua.LTable).ForEach(func(idx, f lua.LValue) {
