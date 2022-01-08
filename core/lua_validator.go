@@ -4,6 +4,7 @@ import (
 	"errors"
 	"rulex/typex"
 
+	"github.com/ngaut/log"
 	lua "github.com/yuin/gopher-lua"
 )
 
@@ -46,7 +47,12 @@ func ExecuteActions(rule *typex.Rule, arg lua.LValue) (lua.LValue, error) {
 		if err != nil {
 			return nil, err
 		}
-		return typex.RunPipline(rule.VM, funcs, arg)
+		if rule.Status != typex.RULE_STOP {
+			return typex.RunPipline(rule.VM, funcs, arg)
+		}
+		// if stopped, log warning information
+		log.Warn("Rule has stopped:" + rule.UUID)
+		return lua.LNil, nil
 
 	} else {
 		return nil, errors.New("'Actions' not a lua table or not exist")
