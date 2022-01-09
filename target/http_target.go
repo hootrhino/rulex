@@ -1,29 +1,49 @@
 package target
 
 import (
+	"net/http"
 	"rulex/typex"
 	"rulex/utils"
 
 	"github.com/ngaut/log"
 )
 
+type httpConfig struct {
+	Url     string            `json:"url"`
+	Headers map[string]string `json:"headers"`
+}
 type HTTPTarget struct {
 	typex.XStatus
-	url string
+	url     string
+	headers map[string]string
+	client  http.Client
 }
 
-func (ht *HTTPTarget) Register(outEndId string) {
+func NewHTTPTarget(e typex.RuleX) typex.XTarget {
+	ht := new(HTTPTarget)
+	ht.RuleEngine = e
+	return ht
+}
+func (ht *HTTPTarget) Register(outEndId string) error {
 	ht.PointId = outEndId
-	config := ht.RuleEngine.GetOutEnd(ht.PointId).Config
-	ht.url = (config)["url"].(string)
+	return nil
 
 }
-func (ht *HTTPTarget) Start() {
-	ht.Enable = true
+func (ht *HTTPTarget) Start() error {
+	config := ht.RuleEngine.GetOutEnd(ht.PointId).Config
+	var mainConfig httpConfig
+	if err := utils.BindResourceConfig(config, &mainConfig); err != nil {
+		return err
+	}
+	ht.url = mainConfig.Url
+	ht.headers = mainConfig.Headers
+	ht.client = http.Client{}
 	log.Info("HTTPTarget started")
-}
-func (m *HTTPTarget) OnStreamApproached(data string) error {
 	return nil
+}
+func (ht *HTTPTarget) OnStreamApproached(data string) error {
+	_, err := utils.Post(ht.client, data, ht.url, ht.headers)
+	return err
 }
 func (ht *HTTPTarget) Test(outEndId string) bool {
 	return true
@@ -42,11 +62,13 @@ func (ht *HTTPTarget) Status() typex.ResourceState {
 
 }
 func (ht *HTTPTarget) To(data interface{}) error {
-	_, err := utils.Post(data, ht.url)
+	_, err := utils.Post(ht.client, data, ht.url, ht.headers)
 	return err
 }
 
 //
 func (ht *HTTPTarget) Stop() {
-
+}
+func (ht *HTTPTarget) Details() *typex.OutEnd {
+	return ht.RuleEngine.GetOutEnd(ht.PointId)
 }

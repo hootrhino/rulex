@@ -208,14 +208,10 @@ func (s *SNMPResource) Start() error {
 					if err != nil {
 						log.Error("SNMPResource json Marshal error: ", err)
 					} else {
-						if err0 := sr.RuleEngine.PushQueue(typex.QueueData{
-							In:   sr.Details(),
-							Out:  nil,
-							E:    sr.RuleEngine,
-							Data: string(dataBytes),
-						}); err0 != nil {
+						if _, err0 := sr.RuleEngine.Work(sr.Details(), string(dataBytes)); err0 != nil {
 							log.Error("SNMPResource PushQueue error: ", err0)
 						}
+
 					}
 				default:
 					{

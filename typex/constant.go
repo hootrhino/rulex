@@ -73,4 +73,5 @@ const (
 	MYSQL_TARGET          TargetType = "MYSQL"
 	PGSQL_TARGET          TargetType = "PGSQL"
 	NATS_TARGET           TargetType = "NATS"
+	HTTP_TARGET           TargetType = "HTTP"
 )

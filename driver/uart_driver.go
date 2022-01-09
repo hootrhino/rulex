@@ -78,12 +78,7 @@ func (a *UartDriver) Work() error {
 			// # 分隔符
 			if data[0] == '#' {
 				// log.Info("bytes => ", string(buffer[:acc]), buffer[:acc], acc)
-				a.RuleEngine.PushQueue(typex.QueueData{
-					In:   a.In,
-					Out:  nil,
-					E:    a.RuleEngine,
-					Data: string(buffer[1:acc]),
-				})
+				a.RuleEngine.Work(a.In, string(buffer[1:acc]))
 				// 重新初始化缓冲区
 				for i := 0; i < acc-1; i++ {
 					buffer[i] = 0

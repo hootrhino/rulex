@@ -70,6 +70,38 @@ func (e *RuleEngine) PushQueue(qd typex.QueueData) error {
 	}
 	return err
 }
+func (e *RuleEngine) PushInQueue(in *typex.InEnd, data string) error {
+	qd := typex.QueueData{
+		E:    e,
+		In:   in,
+		Out:  nil,
+		Data: data,
+	}
+	err := typex.DefaultDataCacheQueue.Push(qd)
+	if err != nil {
+		log.Error("PushInQueue error:", err)
+		statistics.IncInFailed()
+	} else {
+		statistics.IncIn()
+	}
+	return err
+}
+func (e *RuleEngine) PushOutQueue(out *typex.OutEnd, data string) error {
+	qd := typex.QueueData{
+		E:    e,
+		In:   nil,
+		Out:  out,
+		Data: data,
+	}
+	err := typex.DefaultDataCacheQueue.Push(qd)
+	if err != nil {
+		log.Error("PushOutQueue error:", err)
+		statistics.IncInFailed()
+	} else {
+		statistics.IncIn()
+	}
+	return err
+}
 
 //
 //
@@ -300,6 +332,9 @@ func tryCreateOutEnd(out *typex.OutEnd, e typex.RuleX) error {
 	if out.Type == typex.NATS_TARGET {
 		return startTarget(target.NewNatsTarget(e), out, e)
 	}
+	if out.Type == typex.HTTP_TARGET {
+		return startTarget(target.NewHTTPTarget(e), out, e)
+	}
 	return errors.New("unsupported target type:" + out.Type.String())
 
 }
@@ -520,12 +555,7 @@ func (e *RuleEngine) Stop() {
 // 核心功能: Work
 //
 func (e *RuleEngine) Work(in *typex.InEnd, data string) (bool, error) {
-	if err := e.PushQueue(typex.QueueData{
-		In:   in,
-		Out:  nil,
-		E:    e,
-		Data: data,
-	}); err != nil {
+	if err := e.PushInQueue(in, data); err != nil {
 		return false, err
 	}
 	return true, nil

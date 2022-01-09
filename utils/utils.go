@@ -1,12 +1,12 @@
 package utils
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strings"
 
 	"unicode"
 
@@ -48,25 +48,38 @@ func MakeUUID(prefix string) string {
 //
 //
 
-func Post(data interface{}, api string) (string, error) {
+func Post(client http.Client, data interface{}, api string, headers map[string]string) (string, error) {
+
 	bites, errs1 := json.Marshal(data)
 	if errs1 != nil {
 		log.Error(errs1)
 		return "", errs1
 	}
-	r, errs2 := http.Post(api, "application/json",
-		bytes.NewBuffer(bites))
-	if errs2 != nil {
-		log.Error(errs2)
-		return "", errs2
+	body := strings.NewReader(string(bites))
+	request, _ := http.NewRequest("POST", api, body)
+	request.Header.Set("Content-Type", "application/json")
+	if headers != nil {
+		for k, v := range headers {
+			request.Header.Set(k, v)
+		}
 	}
-	defer r.Body.Close()
-	body, errs3 := ioutil.ReadAll(r.Body)
-	if errs3 != nil {
-		log.Error(errs3)
-		return "", errs3
+
+	response, err2 := client.Do(request)
+	if err2 != nil {
+		return "", err2
 	}
-	return string(body), nil
+	if response.StatusCode == 200 {
+		return "", fmt.Errorf("StatusCode:%v", response.StatusCode)
+	}
+	var r []byte
+	response.Body.Read(r)
+	_, err3 := ioutil.ReadAll(response.Body)
+	if err3 != nil {
+		if err2 != nil {
+			return "", err3
+		}
+	}
+	return string(r), nil
 }
 
 //

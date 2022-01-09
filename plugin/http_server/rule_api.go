@@ -195,12 +195,10 @@ func TestLuaCallback(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		c.JSON(200, Error400((fmt.Errorf("'InEnd' not exists: %v", uuid))))
 		return
 	}
-	e.PushQueue(typex.QueueData{
-		In:   (value).(*typex.InEnd),
-		Out:  nil,
-		E:    e,
-		Data: data,
-	})
+	_, err1 := e.Work((value).(*typex.InEnd), data)
+	if err1 != nil {
+		c.JSON(200, Error400(err1))
+	}
 	c.JSON(200, Ok())
 }
 
@@ -222,11 +220,6 @@ func TestOutEndCallback(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		c.JSON(200, Error400((fmt.Errorf("'OutEnd' not exists: %v", uuid))))
 		return
 	}
-	e.PushQueue(typex.QueueData{
-		In:   nil,
-		Out:  (value).(*typex.OutEnd),
-		E:    e,
-		Data: data,
-	})
+	e.PushOutQueue((value).(*typex.OutEnd), data)
 	c.JSON(200, Ok())
 }
