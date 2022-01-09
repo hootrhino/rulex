@@ -65,6 +65,7 @@ type modBUSWriteParams struct {
 *
  */
 type registerParam struct {
+	Tag      int    `json:"tag" validate:"required"`      // Function
 	Function int    `json:"function" validate:"required"` // Function
 	Address  uint16 `json:"address" validate:"required"`  // Address
 	Quantity uint16 `json:"quantity" validate:"required"` // Quantity
@@ -76,6 +77,7 @@ type registerParam struct {
 *
  */
 type registerData struct {
+	Tag      int    `json:"tag" validate:"required"`      // Function
 	Function int    `json:"function" validate:"required"` // Function
 	Address  uint16 `json:"address" validate:"required"`  // Address
 	Quantity uint16 `json:"quantity" validate:"required"` // Quantity
@@ -178,6 +180,9 @@ func (m *ModbusMasterResource) Start() error {
 	//---------------------------------------------------------------------------------
 
 	ticker := time.NewTicker(time.Duration(mainConfig.Frequency) * time.Second)
+	//
+	// 前端传过来个寄存器和地址的配置列表，然后给每个寄存器分配一个协程去读
+	//
 	for _, rCfg := range mainConfig.RegisterParams {
 		log.Info("Start read register:", rCfg.Address)
 		// 每个寄存器配一个协程读数据
@@ -216,6 +221,7 @@ func (m *ModbusMasterResource) Start() error {
 							log.Error("NewModbusMasterResource ReadData error: ", err)
 						} else {
 							data := registerData{
+								Tag:      rp.Tag,
 								Function: rp.Function,
 								Address:  rp.Address,
 								Quantity: rp.Quantity,
