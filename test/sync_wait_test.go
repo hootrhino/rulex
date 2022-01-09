@@ -76,7 +76,7 @@ func waitResult(ctx context.Context, redisClient *redis.Client, requestId string
 
 /*
 *
-*监听rulex的反馈, 如果  rulex:finishCmd(CmdId) 调用了 这里就把redis的值更新
+*监听rulex的反馈, 如果  rulexlib:finishCmd(CmdId) 调用了 这里就把redis的值更新
 *
  */
 func finishCmd(ctx context.Context, redisClient *redis.Client, requestId string) {

@@ -58,7 +58,7 @@ func Test_Binary_LUA_Parse(t *testing.T) {
 			--        └───────────────────────────────────────────────┘
 			function(data)
 				local json = require("json")
-				local V6 = json.encode(rulex:MatchBinary("<a:8 b:8 c:8 d:8", data, false))
+				local V6 = json.encode(rulexlib:MatchBinary("<a:8 b:8 c:8 d:8", data, false))
 				print("[LUA Actions Callback 5, rulex.MatchBinary] ==>", V6)
 				return true, data
 			end

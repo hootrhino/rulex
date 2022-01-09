@@ -1,11 +1,11 @@
 ---@diagnostic disable: undefined-global
 -- Success
 function Success()
-    rulex:log("success")
+    rulexlib:log("success")
 end
 -- Failed
 function Failed(error)
-    rulex:log(error)
+    rulexlib:log(error)
 end
 
 ---
@@ -23,22 +23,22 @@ Actions = {
         local SW = Tb["sw"]
         --- 开
         if Cmd == "on" then
-            local ok = rulex:WriteOutStream('#ID', json.encode({0x01, SW}))
+            local ok = rulexlib:WriteOutStream('#ID', json.encode({0x01, SW}))
             if ok then
-                rulex:finishCmd(CmdId, "OutId")
+                rulexlib:finishCmd(CmdId, "OutId")
             else
                 -- 其实没必要显式调用失败, 因为服务端超时后就自己直接失败了
-                rulex:failedCmd(CmdId, "OutId")
+                rulexlib:failedCmd(CmdId, "OutId")
             end
         end
         --- 关
         if Cmd == "off" then
-            local ok = rulex:WriteOutStream('#ID', json.encode({0x00, SW}))
+            local ok = rulexlib:WriteOutStream('#ID', json.encode({0x00, SW}))
             if ok then
-                rulex:finishCmd(CmdId, "OutId")
+                rulexlib:finishCmd(CmdId, "OutId")
             else
                 -- 其实没必要显式调用失败, 因为服务端超时后就自己直接失败了
-                rulex:failedCmd(CmdId, "OutId")
+                rulexlib:failedCmd(CmdId, "OutId")
             end
         end
         return true, data

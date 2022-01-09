@@ -298,7 +298,7 @@ func append0Prefix(n int) string {
 }
 
 //--------------------------------------------------------------
-// rulex:Match
+// rulexlib:Match
 //--------------------------------------------------------------
 
 func Match(expr string, data []byte, returnMore bool) []Kl {
