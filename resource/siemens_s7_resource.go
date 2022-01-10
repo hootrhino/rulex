@@ -1,18 +1,34 @@
 package resource
 
 import (
+	"context"
+	"encoding/json"
 	"rulex/typex"
 	"rulex/utils"
+	"time"
 
+	"github.com/ngaut/log"
 	"github.com/robinson/gos7"
 )
 
+type db struct {
+	Tag     string `json:"tag"`     // 数据tag
+	Address int    `json:"address"` // 地址
+	Start   int    `json:"start"`   // 起始地址
+	Size    int    `json:"size"`    // 数据长度
+}
+type dbValue struct {
+	db
+	Value string `json:"value"`
+}
 type siemensS7config struct {
-	Host        string `json:"host"`
-	Rack        int    `json:"rack"`
-	Slot        int    `json:"slot"`
-	Timeout     int    `json:"timeout"`
-	IdleTimeout int    `json:"idleTimeout"`
+	Host        string `json:"host" validate:"required" title:"IP地址" info:""`          // 127.0.0.1
+	Rack        int    `json:"rack" validate:"required" title:"架号" info:""`            //0
+	Slot        int    `json:"slot" validate:"required" title:"槽号" info:""`            //1
+	Timeout     int    `json:"timeout" validate:"required" title:"连接超时时间" info:""`     //5s
+	IdleTimeout int    `json:"idleTimeout" validate:"required" title:"心跳超时时间" info:""` //5s
+	Frequency   int64  `json:"frequency" validate:"required" title:"采集频率" info:""`     //5s
+	Dbs         []db   `json:"dbs" validate:"required" title:"采集配置" info:""`
 }
 type siemensS7Resource struct {
 	typex.XStatus
@@ -53,8 +69,46 @@ func (s7 *siemensS7Resource) Start() error {
 	if err := handler.Connect(); err != nil {
 		return err
 	}
+	handler.Timeout = time.Duration(mainConfig.Timeout) * time.Second
+	handler.IdleTimeout = time.Duration(mainConfig.IdleTimeout) * time.Second
 	client := gos7.NewClient(handler)
 	s7.client = client
+	ticker := time.NewTicker(time.Duration(mainConfig.Frequency) * time.Second)
+	for _, d := range mainConfig.Dbs {
+		log.Info("Start read: Tag:%v Address:%v Start:%v Size:%v", d.Tag, d.Address, d.Start, d.Size)
+		go func(ctx context.Context, client gos7.Client, d db) {
+
+			dataBuffer := make([]byte, 1024)
+			for {
+
+				<-ticker.C
+				select {
+				case <-ctx.Done():
+					{
+						return
+					}
+				default:
+					{
+						err := client.AGReadDB(d.Address, d.Start, d.Size, dataBuffer)
+						if err != nil {
+							log.Error(err)
+						} else {
+							log.Info("client.AGReadDB dataBuffer:", dataBuffer)
+							dbv := dbValue{Value: string(dataBuffer)}
+							dbv.Address = d.Address
+							dbv.Start = d.Start
+							dbv.Size = d.Size
+							bytes, _ := json.Marshal(dbv)
+							s7.RuleEngine.Work(s7.RuleEngine.GetInEnd(s7.PointId), string(bytes))
+						}
+					}
+				}
+
+			}
+
+		}(context.Background(), client, d)
+	}
+
 	return nil
 }
 
