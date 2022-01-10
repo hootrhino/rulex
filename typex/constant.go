@@ -47,6 +47,10 @@ const (
 	// NATS.IO SERVER
 	//
 	NATS_SERVER InEndType = "NATS_SERVER"
+	//
+	// 西门子S7客户端
+	//
+	SIEMENS_S7 InEndType = "SIEMENS_S7"
 )
 
 //

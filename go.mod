@@ -30,9 +30,11 @@ require (
 	github.com/plgd-dev/go-coap/v2 v2.4.0
 	github.com/prometheus/client_golang v1.7.1 // indirect
 	github.com/prometheus/procfs v0.6.0 // indirect
+	github.com/robinson/gos7 v0.0.0-20211020181838-a2b780484319
 	github.com/shirou/gopsutil v3.21.6+incompatible
 	github.com/shirou/gopsutil/v3 v3.21.10
 	github.com/smartystreets/goconvey v1.6.4 // indirect
+	github.com/tarm/serial v0.0.0-20180830185346-98f6abe2eb07 // indirect
 	github.com/ugorji/go v1.1.13 // indirect
 	github.com/urfave/cli/v2 v2.3.0
 	github.com/wwhai/gopher-json v0.0.0-20201124131017-552bb3c4c3bf

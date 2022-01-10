@@ -16,12 +16,12 @@ type XResource interface {
 	//
 	// 测试资源是否可用
 	//
-	Test(intEndId string) bool
+	Test(inEndId string) bool
 
 	//
 	// 注册InEndID到资源
 	//
-	Register(intEndId string) error
+	Register(inEndId string) error
 	//
 	// 启动资源
 	//

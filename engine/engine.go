@@ -169,6 +169,9 @@ func (e *RuleEngine) LoadInEnd(in *typex.InEnd) error {
 	if in.Type == typex.NATS_SERVER {
 		return startResources(resource.NewNatsResource(e), in, e)
 	}
+	if in.Type == typex.SIEMENS_S7 {
+		return startResources(resource.NewSiemensS7Resource(e), in, e)
+	}
 	return fmt.Errorf("unsupported InEnd type:%s", in.Type)
 }
 
