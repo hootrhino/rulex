@@ -18,6 +18,9 @@ import (
 	lua "github.com/yuin/gopher-lua"
 )
 
+var TM typex.TargetRegistry
+var RM typex.ResourceRegistry
+
 //
 //
 // RuleEngine
@@ -54,6 +57,8 @@ func (e *RuleEngine) Start() *sync.Map {
 	e.ConfigMap = &sync.Map{}
 	log.Info("Init XQueue, max queue size is:", core.GlobalConfig.MaxQueueSize)
 	typex.StartQueue(core.GlobalConfig.MaxQueueSize)
+	TM = core.NewTargetTypeManager()
+	RM = core.NewResourceTypeManager()
 	return e.ConfigMap
 }
 
@@ -131,6 +136,11 @@ func (e *RuleEngine) GetConfig(k string) interface{} {
 	}
 }
 
+/*
+*
+* TODO: 0.3.0重构此处，换成 ResourceRegistry 形式
+*
+ */
 func (e *RuleEngine) LoadInEnd(in *typex.InEnd) error {
 	if in.Type == typex.MQTT {
 		return startResources(resource.NewMqttInEndResource(in.UUID, e), in, e)
