@@ -104,6 +104,9 @@ func (s7 *siemensS7Resource) Start() error {
 
 					}
 				}
+				if s7.client == nil {
+					return
+				}
 				err := s7.client.AGReadDB(d.Address, d.Start, d.Size, dataBuffer)
 				if err != nil {
 					log.Error(err)

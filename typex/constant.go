@@ -51,6 +51,10 @@ const (
 	// 西门子S7客户端
 	//
 	SIEMENS_S7 InEndType = "SIEMENS_S7"
+	//
+	// RULEX UDP 自定义简单协议
+	//
+	RULEX_UDP InEndType = "RULEX_UDP"
 )
 
 //

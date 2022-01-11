@@ -12,8 +12,7 @@ import (
 
 type UdpResource struct {
 	typex.XStatus
-	uDPConn  *net.UDPConn
-	CanWrite bool
+	uDPConn *net.UDPConn
 }
 type udpConfig struct {
 	Host          string `json:"host" validate:"required" title:"服务地址" info:""`
@@ -21,10 +20,8 @@ type udpConfig struct {
 	MaxDataLength int    `json:"maxDataLength" validate:"required" title:"最大数据包" info:""`
 }
 
-func NewUdpInEndResource(inEndId string, e typex.RuleX) *UdpResource {
-	u := UdpResource{
-		CanWrite: false,
-	}
+func NewUdpInEndResource(e typex.RuleX) *UdpResource {
+	u := UdpResource{}
 	u.RuleEngine = e
 	return &u
 }
@@ -40,21 +37,19 @@ func (u *UdpResource) Start() error {
 		log.Error(err)
 		return err
 	}
-	u.CanWrite = true
 	go func(c context.Context, u1 *UdpResource) {
 		data := make([]byte, mainConfig.MaxDataLength)
-		for u1.CanWrite {
+		for {
 			n, remoteAddr, err := u1.uDPConn.ReadFromUDP(data)
 			if err != nil {
-				if u1.CanWrite {
-					log.Error(err.Error())
-				}
+				log.Error(err.Error())
 			} else {
-				// fmt.Printf("Receive udp data:<%s> %s\n", remoteAddr, data[:n])
+				log.Infof("Receive udp data:<%s> %s\n", remoteAddr, data[:n])
 				work, err := u.RuleEngine.Work(u.RuleEngine.GetInEnd(u.PointId), string(data[:n]))
 				if !work {
 					log.Error(err)
 				}
+				// return ok
 				_, err = u1.uDPConn.WriteToUDP([]byte("ok"), remoteAddr)
 				if err != nil {
 					log.Error(err)
@@ -62,11 +57,15 @@ func (u *UdpResource) Start() error {
 			}
 		}
 	}(context.Background(), u)
-	log.Info("UDP resource started on [0.0.0.0]:2584")
+	log.Infof("UDP resource started on [%v]:%v", mainConfig.Host, mainConfig.Port)
 	return nil
 
 }
 func (u *UdpResource) OnStreamApproached(data string) error {
+	work, err := u.RuleEngine.Work(u.RuleEngine.GetInEnd(u.PointId), data)
+	if !work {
+		return err
+	}
 	return nil
 }
 func (u *UdpResource) Details() *typex.InEnd {
@@ -101,7 +100,6 @@ func (u *UdpResource) Status() typex.ResourceState {
 }
 
 func (u *UdpResource) Stop() {
-	u.CanWrite = false
 	if u.uDPConn != nil {
 		u.uDPConn.Close()
 	}

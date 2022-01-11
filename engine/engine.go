@@ -157,9 +157,6 @@ func (e *RuleEngine) LoadInEnd(in *typex.InEnd) error {
 	if in.Type == typex.UART_MODULE {
 		return startResources(resource.NewUartModuleResource(in.UUID, e), in, e)
 	}
-	if in.Type == typex.UDP {
-		return startResources(resource.NewUdpInEndResource(in.UUID, e), in, e)
-	}
 	if in.Type == typex.MODBUS_TCP_MASTER {
 		return startResources(resource.NewModbusMasterResource(in.UUID, e), in, e)
 	}
@@ -171,6 +168,9 @@ func (e *RuleEngine) LoadInEnd(in *typex.InEnd) error {
 	}
 	if in.Type == typex.SIEMENS_S7 {
 		return startResources(resource.NewSiemensS7Resource(e), in, e)
+	}
+	if in.Type == typex.RULEX_UDP {
+		return startResources(resource.NewUdpInEndResource(e), in, e)
 	}
 	return fmt.Errorf("unsupported InEnd type:%s", in.Type)
 }
