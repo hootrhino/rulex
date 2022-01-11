@@ -1,6 +1,7 @@
 package test
 
 import (
+	"encoding/json"
 	"testing"
 	"time"
 
@@ -43,5 +44,41 @@ func client(t *testing.T) {
 		t.Error(err)
 	}
 	t.Log("client.AGReadDB =>", buf2)
+
+}
+func Test_gen_config(t *testing.T) {
+	type db struct {
+		Tag     string `json:"tag"`     // 数据tag
+		Address int    `json:"address"` // 地址
+		Start   int    `json:"start"`   // 起始地址
+		Size    int    `json:"size"`    // 数据长度
+	}
+	type siemensS7config struct {
+		Host        string `json:"host" validate:"required" title:"IP地址" info:""`          // 127.0.0.1
+		Rack        int    `json:"rack" validate:"required" title:"架号" info:""`            // 0
+		Slot        int    `json:"slot" validate:"required" title:"槽号" info:""`            // 1
+		Timeout     int    `json:"timeout" validate:"required" title:"连接超时时间" info:""`     // 5s
+		IdleTimeout int    `json:"idleTimeout" validate:"required" title:"心跳超时时间" info:""` // 5s
+		Frequency   int64  `json:"frequency" validate:"required" title:"采集频率" info:""`     // 5s
+		Dbs         []db   `json:"dbs" validate:"required" title:"采集配置" info:""`           // Db
+	}
+	c := siemensS7config{
+		Host:        "",
+		Rack:        0,
+		Slot:        1,
+		Timeout:     5,
+		IdleTimeout: 5,
+		Frequency:   5,
+		Dbs: []db{
+			{
+				Tag:     "Votage",
+				Address: 0,
+				Start:   1,
+				Size:    1,
+			},
+		},
+	}
+	b, _ := json.MarshalIndent(c, "", "")
+	t.Log(string(b))
 
 }
