@@ -44,7 +44,7 @@ func (u *UdpResource) Start() error {
 			if err != nil {
 				log.Error(err.Error())
 			} else {
-				log.Infof("Receive udp data:<%s> %s\n", remoteAddr, data[:n])
+				// log.Infof("Receive udp data:<%s> %s\n", remoteAddr, data[:n])
 				work, err := u.RuleEngine.Work(u.RuleEngine.GetInEnd(u.PointId), string(data[:n]))
 				if !work {
 					log.Error(err)
