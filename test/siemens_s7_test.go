@@ -47,6 +47,11 @@ func client(t *testing.T) {
 
 }
 func Test_gen_config(t *testing.T) {
+	type stateAddress struct {
+		Address int `json:"address"` // 地址
+		Start   int `json:"start"`   // 起始地址
+		Size    int `json:"size"`    // 数据长度
+	}
 	type db struct {
 		Tag     string `json:"tag"`     // 数据tag
 		Address int    `json:"address"` // 地址
@@ -54,13 +59,14 @@ func Test_gen_config(t *testing.T) {
 		Size    int    `json:"size"`    // 数据长度
 	}
 	type siemensS7config struct {
-		Host        string `json:"host" validate:"required" title:"IP地址" info:""`          // 127.0.0.1
-		Rack        int    `json:"rack" validate:"required" title:"架号" info:""`            // 0
-		Slot        int    `json:"slot" validate:"required" title:"槽号" info:""`            // 1
-		Timeout     int    `json:"timeout" validate:"required" title:"连接超时时间" info:""`     // 5s
-		IdleTimeout int    `json:"idleTimeout" validate:"required" title:"心跳超时时间" info:""` // 5s
-		Frequency   int64  `json:"frequency" validate:"required" title:"采集频率" info:""`     // 5s
-		Dbs         []db   `json:"dbs" validate:"required" title:"采集配置" info:""`           // Db
+		Host         string       `json:"host" validate:"required" title:"IP地址" info:""`          // 127.0.0.1
+		Rack         int          `json:"rack" validate:"required" title:"架号" info:""`            // 0
+		Slot         int          `json:"slot" validate:"required" title:"槽号" info:""`            // 1
+		Timeout      int          `json:"timeout" validate:"required" title:"连接超时时间" info:""`     // 5s
+		IdleTimeout  int          `json:"idleTimeout" validate:"required" title:"心跳超时时间" info:""` // 5s
+		Frequency    int64        `json:"frequency" validate:"required" title:"采集频率" info:""`     // 5s
+		StateAddress stateAddress `json:"stateAddress" validate:"required" title:"状态地址" info:""`  // 5s
+		Dbs []db `json:"dbs" validate:"required" title:"采集配置" info:""` // Db
 	}
 	c := siemensS7config{
 		Host:        "",
@@ -78,7 +84,7 @@ func Test_gen_config(t *testing.T) {
 			},
 		},
 	}
-	b, _ := json.MarshalIndent(c, "", "")
+	b, _ := json.MarshalIndent(c, "", " ")
 	t.Log(string(b))
 
 }
