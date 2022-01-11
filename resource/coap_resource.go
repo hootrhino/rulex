@@ -9,14 +9,14 @@ import (
 	"rulex/utils"
 
 	"github.com/ngaut/log"
-	coap "github.com/plgd-dev/go-coap/v2"
+	"github.com/plgd-dev/go-coap/v2"
 	"github.com/plgd-dev/go-coap/v2/message"
 	"github.com/plgd-dev/go-coap/v2/message/codes"
 	"github.com/plgd-dev/go-coap/v2/mux"
 )
 
 //
-type CoAPConfig struct {
+type coAPConfig struct {
 	Port       uint16             `json:"port" validate:"required" title:"端口" info:""`
 	DataModels []typex.XDataModel `json:"dataModels" title:"数据模型" info:""`
 }
@@ -38,7 +38,7 @@ func NewCoAPInEndResource(inEndId string, e typex.RuleX) *CoAPInEndResource {
 
 func (cc *CoAPInEndResource) Start() error {
 	config := cc.RuleEngine.GetInEnd(cc.PointId).Config
-	var mainConfig CoAPConfig
+	var mainConfig coAPConfig
 	if err := utils.BindResourceConfig(config, &mainConfig); err != nil {
 		return err
 	}
@@ -46,12 +46,15 @@ func (cc *CoAPInEndResource) Start() error {
 	cc.dataModels = mainConfig.DataModels
 	cc.router.Use(func(next mux.Handler) mux.Handler {
 		return mux.HandlerFunc(func(w mux.ResponseWriter, r *mux.Message) {
-			log.Debugf("Client Address %v, %v\n", w.Client().RemoteAddr(), r.String())
+			// log.Debugf("Client Address %v, %v\n", w.Client().RemoteAddr(), r.String())
 			next.ServeCOAP(w, r)
 		})
 	})
+	//
+	// /in
+	//
 	cc.router.Handle("/in", mux.HandlerFunc(func(w mux.ResponseWriter, msg *mux.Message) {
-		log.Debugf("Received Coap Data: %#v", msg)
+		// log.Debugf("Received Coap Data: %#v", msg)
 		cc.RuleEngine.Work(cc.RuleEngine.GetInEnd(cc.PointId), msg.String())
 		err := w.SetResponse(codes.Content, message.TextPlain, bytes.NewReader([]byte("ok")))
 		if err != nil {
@@ -61,12 +64,10 @@ func (cc *CoAPInEndResource) Start() error {
 	go func(ctx context.Context) {
 		err := coap.ListenAndServe("udp", port, cc.router)
 		if err != nil {
-			return
-		} else {
+			log.Error(err)
 			return
 		}
 	}(context.Background())
-	cc.Enable = true
 	log.Info("Coap resource started on [udp]" + port)
 	return nil
 }
@@ -111,7 +112,7 @@ func (cc *CoAPInEndResource) Driver() typex.XExternalDriver {
 }
 
 func (*CoAPInEndResource) Configs() []typex.XConfig {
-	config, err := core.RenderConfig(CoAPConfig{})
+	config, err := core.RenderConfig(coAPConfig{})
 	if err != nil {
 		log.Error(err)
 		return []typex.XConfig{}
