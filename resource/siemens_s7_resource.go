@@ -109,7 +109,8 @@ func (s7 *siemensS7Resource) Start() error {
 					log.Error(err)
 				} else {
 					// log.Info("client.AGReadDB dataBuffer:", dataBuffer)
-					dbv := dbValue{Value: string(dataBuffer)}
+					dbv := dbValue{Value: string(dataBuffer[:d.Size])}
+					dbv.Tag = d.Tag
 					dbv.Address = d.Address
 					dbv.Start = d.Start
 					dbv.Size = d.Size
