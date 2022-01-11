@@ -20,10 +20,9 @@ func (s *HttpApiServer) InitDb(dbPath string) {
 		os.Exit(1)
 	}
 	s.sqliteDb.AutoMigrate(&MInEnd{})
-	s.sqliteDb.AutoMigrate(&MRule{})
 	s.sqliteDb.AutoMigrate(&MOutEnd{})
+	s.sqliteDb.AutoMigrate(&MRule{})
 	s.sqliteDb.AutoMigrate(&MUser{})
-	s.sqliteDb.AutoMigrate(&MLock{})
 }
 
 //-----------------------------------------------------------------------------------

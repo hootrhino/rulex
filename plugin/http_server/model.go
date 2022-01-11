@@ -60,8 +60,3 @@ type MUser struct {
 	Password    string `gorm:"not null"`
 	Description string
 }
-
-type MLock struct {
-	Name     string `gorm:"not null"`
-	InitLock int    `gorm:"not null"`
-}

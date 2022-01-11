@@ -51,6 +51,6 @@ cover:
 clean:
 	go clean
 	rm _release -rf
-	rm *.db
+	rm *.db *log.txt
 
 .PHONY: clean-grpc
