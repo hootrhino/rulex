@@ -16,6 +16,7 @@ import (
 
 	"github.com/goburrow/modbus"
 )
+import "github.com/mitchellh/mapstructure"
 
 type ModBusConfig struct {
 	Mode           string          `json:"mode" title:"工作模式" info:"可以在 RTU/TCP 两个模式之间切换"`
@@ -51,11 +52,47 @@ const (
 	WRITE_MULTIPLE_HOLDING_REGISTERS = 16
 )
 
-type modBUSWriteParams struct {
-	Function int    `json:"function" validate:"required" title:"Modbus功能代码" info:""`
+/*
+*
+* coilParams 1
+*
+ */
+type coilsW struct {
 	Address  uint16 `json:"address" validate:"required" title:"寄存器地址" info:""`
 	Quantity uint16 `json:"quantity" validate:"required" title:"写入数量" info:""`
-	Value    []byte `json:"value" validate:"required" title:"写入的值" info:""`
+	Values   []byte `json:"values" validate:"required" title:"写入的值" info:""`
+}
+
+/*
+*
+* 2
+*
+ */
+type coilW struct {
+	Address  uint16 `json:"address" validate:"required" title:"寄存器地址" info:""`
+	Quantity uint16 `json:"quantity" validate:"required" title:"写入数量" info:""`
+	Value    uint16 `json:"value" validate:"required" title:"写入的值" info:""`
+}
+
+/*
+*
+* registerParams 3
+*
+ */
+type registerW struct {
+	Address  uint16 `json:"address" validate:"required" title:"寄存器地址" info:""`
+	Quantity uint16 `json:"quantity" validate:"required" title:"写入数量" info:""`
+	Value    uint16 `json:"value" validate:"required" title:"写入的值" info:""`
+}
+
+/*
+*
+* 4
+*
+ */
+type registersW struct {
+	Address  uint16 `json:"address" validate:"required" title:"寄存器地址" info:""`
+	Quantity uint16 `json:"quantity" validate:"required" title:"写入数量" info:""`
 	Values   []byte `json:"values" validate:"required" title:"写入的值" info:""`
 }
 
@@ -277,29 +314,78 @@ func (m *ModbusMasterResource) Stop() {
 * 对于 modbus 资源来说, 任何直接写入的数据都被认为是给寄存器写值
 *
  */
+type dataM struct {
+	Type   int                    `json:"type" validate:"required"`
+	Params map[string]interface{} `json:"params" validate:"required"`
+}
+
+/*
+*
+* 写入值
+*
+ */
 func (m *ModbusMasterResource) OnStreamApproached(data string) error {
-	var p modBUSWriteParams
-	var errs error = nil
-	if errs := utils.TransformConfig([]byte(data), p); errs != nil {
-		log.Error(errs)
-		return errs
+	var dm dataM
+	if err := json.Unmarshal([]byte(data), &dm); err != nil {
+		log.Error(err)
+		return err
 	}
-	if p.Function == WRITE_SINGLE_COIL {
-		_, errs = m.client.WriteSingleCoil(1, 1)
+	/*
+	*
+	* 线圈
+	*
+	 */
+	if dm.Type == WRITE_SINGLE_COIL {
+		var c coilW
+		if errs := mapstructure.Decode(dm.Params, &c); errs != nil {
+			log.Error(errs)
+			return errs
+		}
+		if _, errs := m.client.WriteSingleCoil(c.Address, c.Value); errs != nil {
+			log.Error(errs)
+			return errs
+		}
 	}
-	if p.Function == WRITE_SINGLE_HOLDING_REGISTER {
-		_, errs = m.client.WriteSingleRegister(1, 1)
+	if dm.Type == WRITE_MULTIPLE_COILS {
+		var cs coilsW
+		if errs := mapstructure.Decode(dm.Params, &cs); errs != nil {
+			log.Error(errs)
+			return errs
+		}
+		if _, errs := m.client.WriteMultipleCoils(cs.Address, cs.Quantity, cs.Values); errs != nil {
+			log.Error(errs)
+			return errs
+		}
 	}
-	if p.Function == WRITE_MULTIPLE_COILS {
-		_, errs = m.client.WriteMultipleCoils(p.Address, p.Quantity, p.Value)
+	/*
+	*
+	* 寄存器
+	*
+	 */
+	if dm.Type == WRITE_SINGLE_HOLDING_REGISTER {
+		var r registerW
+		if errs := mapstructure.Decode(dm.Params, r); errs != nil {
+			log.Error(errs)
+			return errs
+		}
+		if _, errs := m.client.WriteSingleRegister(r.Address, r.Value); errs != nil {
+			log.Error(errs)
+			return errs
+		}
 	}
-	if p.Function == WRITE_MULTIPLE_HOLDING_REGISTERS {
-		_, errs = m.client.WriteMultipleRegisters(p.Address, p.Quantity, p.Values)
+
+	if dm.Type == WRITE_MULTIPLE_HOLDING_REGISTERS {
+		var rs registersW
+		if errs := mapstructure.Decode(dm.Params, rs); errs != nil {
+			log.Error(errs)
+			return errs
+		}
+		if _, errs := m.client.WriteMultipleRegisters(rs.Address, rs.Quantity, rs.Values); errs != nil {
+			log.Error(errs)
+			return errs
+		}
 	}
-	if errs != nil {
-		log.Error(errs)
-	}
-	return errs
+	return nil
 }
 
 /*

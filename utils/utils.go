@@ -116,7 +116,7 @@ func ShowBanner() {
 }
 
 //
-// JSON String to a struct
+// JSON String to a struct, (can't validate map!!!)
 //
 func TransformConfig(s1 []byte, s2 interface{}) error {
 	if err := json.Unmarshal(s1, &s2); err != nil {

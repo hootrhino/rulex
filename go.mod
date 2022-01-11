@@ -20,6 +20,7 @@ require (
 	github.com/itchyny/gojq v0.12.6
 	github.com/makiuchi-d/gozxing v0.1.1
 	github.com/mattn/go-sqlite3 v1.14.10
+	github.com/mitchellh/mapstructure v1.4.3
 	github.com/mochi-co/mqtt v1.0.2
 	github.com/nats-io/nats-server/v2 v2.6.6 // indirect
 	github.com/nats-io/nats.go v1.13.1-0.20211122170419-d7c1d78a50fc
