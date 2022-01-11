@@ -4,6 +4,8 @@ github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03
 github.com/DataDog/zstd v1.4.1/go.mod h1:1jcaCB/ufaK+sKp1NBhlGmpz41jOoPQ35bpF36t7BBo=
 github.com/DrmagicE/gmqtt v0.4.1 h1:MjNkOlYU1qJ5a6SfhWHIwIITymKp8TCDET+q54/riv0=
 github.com/DrmagicE/gmqtt v0.4.1/go.mod h1:m1nFZynnmKlM8JUH27y8NOj8Fi+SGSajHuc11YM8G4g=
+github.com/Kowiste/ProfinetServer v0.0.0-20200929093941-9c422ae1f008 h1:61oQ1jLOU2K00wKzMu4OmT5vHQyB8yI4m2JZy/gonGU=
+github.com/Kowiste/ProfinetServer v0.0.0-20200929093941-9c422ae1f008/go.mod h1:ZoTCmOIdEiUhWdG0j9OkdwJrqjtAabzcNLlbr0r8hMo=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
 github.com/Sereal/Sereal v0.0.0-20190618215532-0b8ac451a863/go.mod h1:D0JMgToj/WdxCgd30Kc1UcA9E+WdZoJqeVOuYW7iTBM=
 github.com/StackExchange/wmi v1.2.1 h1:VIkavFPXSjcnS+O8yTq7NI32k0R5Aj+v39y29VYDOSA=

@@ -4,6 +4,7 @@ go 1.16
 
 require (
 	github.com/DrmagicE/gmqtt v0.4.1
+	github.com/Kowiste/ProfinetServer v0.0.0-20200929093941-9c422ae1f008
 	github.com/adrianmo/go-nmea v1.4.0
 	github.com/cjoudrey/gluaurl v0.0.0-20161028222611-31cbb9bef199
 	github.com/eclipse/paho.mqtt.golang v1.3.5

@@ -23,12 +23,12 @@ type dbValue struct {
 }
 type siemensS7config struct {
 	Host        string `json:"host" validate:"required" title:"IP地址" info:""`          // 127.0.0.1
-	Rack        int    `json:"rack" validate:"required" title:"架号" info:""`            //0
-	Slot        int    `json:"slot" validate:"required" title:"槽号" info:""`            //1
-	Timeout     int    `json:"timeout" validate:"required" title:"连接超时时间" info:""`     //5s
-	IdleTimeout int    `json:"idleTimeout" validate:"required" title:"心跳超时时间" info:""` //5s
-	Frequency   int64  `json:"frequency" validate:"required" title:"采集频率" info:""`     //5s
-	Dbs         []db   `json:"dbs" validate:"required" title:"采集配置" info:""`
+	Rack        int    `json:"rack" validate:"required" title:"架号" info:""`            // 0
+	Slot        int    `json:"slot" validate:"required" title:"槽号" info:""`            // 1
+	Timeout     int    `json:"timeout" validate:"required" title:"连接超时时间" info:""`     // 5s
+	IdleTimeout int    `json:"idleTimeout" validate:"required" title:"心跳超时时间" info:""` // 5s
+	Frequency   int64  `json:"frequency" validate:"required" title:"采集频率" info:""`     // 5s
+	Dbs         []db   `json:"dbs" validate:"required" title:"采集配置" info:""`           // Db
 }
 type siemensS7Resource struct {
 	typex.XStatus
