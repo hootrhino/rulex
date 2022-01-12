@@ -36,3 +36,5 @@ print(string.byte("Lua", -2))
 
 print(string.unpack(">B", "012", 1))
 print(string.unpack("B", str))
+
+print(string.byte(0xff00))
