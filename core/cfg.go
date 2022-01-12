@@ -13,17 +13,13 @@ import (
 // Global config
 //
 type RulexConfig struct {
-	Name                    string
-	Path                    string
-	Token                   string
-	Secret                  string
-	MaxQueueSize            int
-	ResourceRestartInterval int
-	GomaxProcs              int
-	EnablePProf             bool
-	LogLevel                string
-	LogPath                 string
-	LuaLogPath              string
+	MaxQueueSize            int    `json:"maxQueueSize"`
+	ResourceRestartInterval int    `json:"resourceRestartInterval"`
+	GomaxProcs              int    `json:"gomaxProcs"`
+	EnablePProf             bool   `json:"enablePProf"`
+	LogLevel                string `json:"logLevel"`
+	LogPath                 string `json:"logPath"`
+	LuaLogPath              string `json:"luaLogPath"`
 }
 
 var GlobalConfig RulexConfig
@@ -40,7 +36,6 @@ func InitGlobalConfig() {
 	}
 
 	//---------------------------------------
-	GlobalConfig.Name = cfg.Section("app").Key("name").MustString("rulex")
 	GlobalConfig.MaxQueueSize = cfg.Section("app").Key("max_queue_size").MustInt(5000)
 	GlobalConfig.ResourceRestartInterval = cfg.Section("app").Key("resource_restart_interval").MustInt(204800)
 	GlobalConfig.GomaxProcs = cfg.Section("app").Key("gomax_procs").MustInt(2)
@@ -48,10 +43,6 @@ func InitGlobalConfig() {
 	GlobalConfig.LogLevel = cfg.Section("app").Key("log_level").MustString("info")
 	GlobalConfig.LogPath = cfg.Section("app").Key("log_path").MustString("./rulex-log.txt")
 	GlobalConfig.LuaLogPath = cfg.Section("app").Key("lua_log_path").MustString("./rulex-lua-log.txt")
-	//---------------------------------------
-	GlobalConfig.Path = cfg.Section("cloud").Key("path").MustString("")
-	GlobalConfig.Token = cfg.Section("cloud").Key("token").MustString("")
-	GlobalConfig.Secret = cfg.Section("cloud").Key("secret").MustString("")
 
 	log.Info("Rulex config init successfully")
 

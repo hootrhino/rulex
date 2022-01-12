@@ -109,6 +109,10 @@ type RuleX interface {
 	// 停止规则引擎
 	//
 	Stop()
+	//
+	// Snapshot Dump
+	//
+	SnapshotDump() string
 }
 
 //

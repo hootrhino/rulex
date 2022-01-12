@@ -2,6 +2,7 @@ package engine
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"rulex/core"
@@ -15,6 +16,7 @@ import (
 	"time"
 
 	"github.com/ngaut/log"
+	"github.com/shirou/gopsutil/disk"
 	lua "github.com/yuin/gopher-lua"
 )
 
@@ -26,8 +28,8 @@ var RM typex.ResourceRegistry
 // RuleEngine
 //
 type RuleEngine struct {
-	Hooks     *sync.Map `json:"-"`
-	Rules     *sync.Map `json:"-"`
+	Hooks     *sync.Map `json:"hooks"`
+	Rules     *sync.Map `json:"rules"`
 	Plugins   *sync.Map `json:"plugins"`
 	InEnds    *sync.Map `json:"inends"`
 	OutEnds   *sync.Map `json:"outends"`
@@ -715,3 +717,82 @@ func (e *RuleEngine) RemoveOutEnd(uuid string) {
 func (e *RuleEngine) AllOutEnd() *sync.Map {
 	return e.OutEnds
 }
+
+//-----------------------------------------------------------------
+// 获取运行时快照
+//-----------------------------------------------------------------
+func (e *RuleEngine) SnapshotDump() string {
+	inends := []interface{}{}
+	rules := []interface{}{}
+	plugins := []interface{}{}
+	outends := []interface{}{}
+	e.AllInEnd().Range(func(key, value interface{}) bool {
+		inends = append(inends, value)
+		return true
+	})
+	e.AllRule().Range(func(key, value interface{}) bool {
+		rules = append(rules, value)
+		return true
+	})
+	e.AllPlugins().Range(func(key, value interface{}) bool {
+		plugins = append(plugins, (value.(typex.XPlugin)).PluginMetaInfo())
+		return true
+	})
+	e.AllOutEnd().Range(func(key, value interface{}) bool {
+		outends = append(outends, value)
+		return true
+	})
+	parts, _ := disk.Partitions(true)
+	diskInfo, _ := disk.Usage(parts[0].Mountpoint)
+	// For info on each, see: https://golang.org/pkg/runtime/#MemStats
+	var m runtime.MemStats
+	runtime.ReadMemStats(&m)
+
+	system := map[string]interface{}{
+		"version":  e.Version().Version,
+		"diskInfo": int(diskInfo.UsedPercent),
+		"system":   bToMb(m.Sys),
+		"alloc":    bToMb(m.Alloc),
+		"total":    bToMb(m.TotalAlloc),
+		"osArch":   runtime.GOOS + "-" + runtime.GOARCH,
+	}
+	data := map[string]interface{}{
+		"rules":      rules,
+		"plugins":    plugins,
+		"inends":     inends,
+		"outends":    outends,
+		"statistics": statistics.AllStatistics(),
+		"system":     system,
+		"config":     core.GlobalConfig,
+	}
+	b, err := json.Marshal(data)
+	if err != nil {
+		log.Error(err)
+	}
+	return string(b)
+}
+func bToMb(b uint64) uint64 {
+	return b / 1024 / 1024
+}
+
+/*
+*
+* Windows 和Linux下不一样
+*
+ */
+// func ip() {
+// 	//------------------------------------------------------------
+// 	// win: ipconfig | findstr /R /C:"IP.*"
+// 	//------------------------------------------------------------
+// 	// ???? IPv6 ?? : fe80::c531:f974:4e68:50e%4
+// 	// IPv4 ?? . .  : 10.55.23.149
+// 	// ???? IPv6 ?? : fe80::909f:679a:9a11:2a08%19
+// 	// IPv4 ?? . .  : 172.17.66.129
+// 	//------------------------------------------------------------
+// 	// ubuntu: hostname -I
+// 	//------------------------------------------------------------
+// 	// 172.17.66.129 10.55.23.149
+// 	// if runtime.GOOS == "windows" {
+
+// 	// }
+// }
