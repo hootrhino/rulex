@@ -23,8 +23,7 @@ type ModBusConfig struct {
 	Timeout        int             `json:"timeout" validate:"required" title:"连接超时" info:""`
 	SlaverId       byte            `json:"slaverId" validate:"required" title:"TCP端口" info:""`
 	Frequency      int64           `json:"frequency" validate:"required" title:"采集频率" info:""`
-	RtuConfig      RtuConfig       `json:"rtuConfig" validate:"required" title:"RTU模式配置" info:""`
-	TcpConfig      TcpConfig       `json:"tcpConfig" validate:"required" title:"TCP模式配置" info:""`
+	Config         interface{}     `json:"config" validate:"required" title:"工作模式配置" info:""`
 	RegisterParams []registerParam `json:"registerParams" validate:"required" title:"寄存器配置" info:""`
 }
 
@@ -101,8 +100,9 @@ type registersW struct {
 * 配置进来准备采集的寄存器参数
 *
  */
+
 type registerParam struct {
-	Tag      int    `json:"tag" validate:"required"`      // Function
+	Tag      string `json:"tag" validate:"required"`      // Function
 	Function int    `json:"function" validate:"required"` // Function
 	Address  uint16 `json:"address" validate:"required"`  // Address
 	Quantity uint16 `json:"quantity" validate:"required"` // Quantity
@@ -114,7 +114,7 @@ type registerParam struct {
 *
  */
 type registerData struct {
-	Tag      int    `json:"tag" validate:"required"`      // Function
+	Tag      string `json:"tag" validate:"required"`      // Function
 	Function int    `json:"function" validate:"required"` // Function
 	Address  uint16 `json:"address" validate:"required"`  // Address
 	Quantity uint16 `json:"quantity" validate:"required"` // Quantity
@@ -133,6 +133,9 @@ type registerData struct {
 type RtuConfig struct {
 	Uart     string `json:"uart" validate:"required" title:"串口路径" info:"本地系统的串口路径"`
 	BaudRate int    `json:"baudRate" validate:"required" title:"波特率" info:"串口通信波特率"`
+	DataBits int    `json:"dataBits" validate:"required" title:"数据位" info:"串口通信数据位"`
+	Parity   string `json:"parity" validate:"required" title:"分割位" info:"串口通信分割位"`
+	StopBits int    `json:"stopBits" validate:"required" title:"停止位" info:"串口通信停止位"`
 }
 
 //
@@ -184,8 +187,13 @@ func (m *ModbusMasterResource) Start() error {
 	}
 
 	if mainConfig.Mode == "TCP" {
+		var tcpConfig TcpConfig
+		if errs := mapstructure.Decode(mainConfig.Config, &tcpConfig); errs != nil {
+			log.Error(errs)
+			return errs
+		}
 		handler := modbus.NewTCPClientHandler(
-			fmt.Sprintf("%s:%v", mainConfig.TcpConfig.Ip, mainConfig.TcpConfig.Port),
+			fmt.Sprintf("%s:%v", tcpConfig.Ip, tcpConfig.Port),
 		)
 		handler.Timeout = time.Duration(mainConfig.Frequency) * time.Second
 		handler.SlaveId = mainConfig.SlaverId
@@ -194,12 +202,19 @@ func (m *ModbusMasterResource) Start() error {
 		}
 		m.client = modbus.NewClient(handler)
 	} else if mainConfig.Mode == "RTU" {
-		handler := modbus.NewRTUClientHandler(mainConfig.RtuConfig.Uart)
-		handler.BaudRate = mainConfig.RtuConfig.BaudRate
-		// Use default uart config
-		handler.DataBits = 8
-		handler.Parity = "N"
-		handler.StopBits = 1
+		var rtuConfig RtuConfig
+		if errs := mapstructure.Decode(mainConfig.Config, &rtuConfig); errs != nil {
+			log.Error(errs)
+			return errs
+		}
+		handler := modbus.NewRTUClientHandler(rtuConfig.Uart)
+		handler.BaudRate = rtuConfig.BaudRate
+		//
+		// rtuConfig
+		//
+		handler.DataBits = rtuConfig.DataBits
+		handler.Parity = rtuConfig.Parity
+		handler.StopBits = rtuConfig.StopBits
 		//---------
 		handler.SlaveId = mainConfig.SlaverId
 		handler.Timeout = time.Duration(mainConfig.Frequency) * time.Second
