@@ -17,14 +17,10 @@ func Test_RenderConfig(t *testing.T) {
 		File string  `json:"file" validate:"required" title:"File" info:"File" file:"uploadfile"`
 	}
 
-	xcfg, err := core.RenderConfig(__config{})
+	xcfgs, err := core.RenderConfig(__config{})
 	if err != nil {
 		t.Fatal(err)
 	} else {
-		xcfgs := []interface{}{}
-		for _, v := range xcfg {
-			xcfgs = append(xcfgs, v.View)
-		}
 		b, _ := json.MarshalIndent(xcfgs, "", " ")
 		t.Log(string(b))
 	}

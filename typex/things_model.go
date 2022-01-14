@@ -48,6 +48,7 @@ type XDataModel struct {
 //
 
 type XConfig struct {
-	Type string      `json:"type"` // 字段类型
-	View interface{} `json:"view"` // 枚举，一般用来实现Select
+	Type    string        `json:"type"`    // 类型
+	HelpTip string        `json:"helpTip"` // 关于这个配置的简介和帮助信息
+	Views   []interface{} `json:"view"`    // 枚举，一般用来实现Select
 }

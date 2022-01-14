@@ -15,8 +15,8 @@ import (
 	"github.com/ngaut/log"
 
 	"github.com/goburrow/modbus"
+	"github.com/mitchellh/mapstructure"
 )
-import "github.com/mitchellh/mapstructure"
 
 type ModBusConfig struct {
 	Mode           string          `json:"mode" title:"工作模式" info:"可以在 RTU/TCP 两个模式之间切换"`
@@ -163,11 +163,11 @@ func NewModbusMasterResource(id string, e typex.RuleX) typex.XResource {
 	m.cxt = context.Background()
 	return &m
 }
-func (*ModbusMasterResource) Configs() []typex.XConfig {
+func (*ModbusMasterResource) Configs() typex.XConfig {
 	config, err := core.RenderConfig(ModBusConfig{})
 	if err != nil {
 		log.Error(err)
-		return []typex.XConfig{}
+		return typex.XConfig{}
 	} else {
 		return config
 	}

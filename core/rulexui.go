@@ -20,11 +20,11 @@ const EMPTY_STRING string = ""
 type viewType string
 
 const (
-	NUMBER viewType = "el-number"
-	TEXT   viewType = "el-text"
-	INLINE viewType = "el-inline"
-	SELECT viewType = "el-select"
-	FILE   viewType = "el-upload"
+	_NUMBER viewType = "el-number"
+	_TEXT   viewType = "el-text"
+	_INLINE viewType = "el-inline"
+	_SELECT viewType = "el-select"
+	_FILE   viewType = "el-upload"
 )
 
 type view struct {
@@ -44,7 +44,7 @@ type numberInputView struct {
 
 func NewNumberInputView() numberInputView {
 	v := numberInputView{}
-	v.Type = NUMBER
+	v.Type = _NUMBER
 	return v
 
 }
@@ -57,7 +57,7 @@ func NewTextInputView() textInputView {
 	v := textInputView{}
 	v.Hidden = false
 	v.Required = true
-	v.Type = TEXT
+	v.Type = _TEXT
 	return v
 
 }
@@ -72,12 +72,12 @@ type fileView struct {
 
 func NewFileView() fileView {
 	v := fileView{}
-	v.Type = FILE
+	v.Type = _FILE
 	return v
 }
 func NewInlineView() inLineView {
 	v := inLineView{}
-	v.Type = INLINE
+	v.Type = _INLINE
 	return v
 }
 
@@ -92,7 +92,7 @@ type selectOption struct {
 
 func NewSelectView() selectView {
 	v := selectView{}
-	v.Type = SELECT
+	v.Type = _SELECT
 	return v
 
 }
@@ -129,10 +129,10 @@ END:
 *
  */
 
-func RenderConfig(i interface{}) ([]typex.XConfig, error) {
+func RenderConfig(i interface{}) (typex.XConfig, error) {
 	var err error
 	typee := reflect.TypeOf(i)
-	data := make([]typex.XConfig, 0)
+	views := make([]interface{}, 0)
 	for i := 0; i < typee.NumField(); i++ {
 		filedName := typee.Field(i).Name
 		filedType := typee.Field(i).Type.String()
@@ -156,7 +156,7 @@ func RenderConfig(i interface{}) ([]typex.XConfig, error) {
 			(filedType == "int64") ||
 			(filedType == "int32") ||
 			(filedType == "float32") {
-			xcfg.Type = string(NUMBER)
+			xcfg.Type = string(_NUMBER)
 			nv := NewNumberInputView()
 			//
 			nv.Order = i
@@ -170,12 +170,11 @@ func RenderConfig(i interface{}) ([]typex.XConfig, error) {
 			if Hidden == "true" {
 				nv.Hidden = true
 			}
-
-			xcfg.View = nv
+			views = append(views, nv)
 		}
 		// 数字输入
 		if filedType == "string" || filedType == "*string" {
-			xcfg.Type = string(TEXT)
+			xcfg.Type = string(_TEXT)
 			tv := NewTextInputView()
 			//
 			tv.Order = i
@@ -190,14 +189,14 @@ func RenderConfig(i interface{}) ([]typex.XConfig, error) {
 				tv.Hidden = true
 			}
 
-			xcfg.View = tv
+			views = append(views, tv)
 		}
 		// 动态数组
 		if (filedType == "[]string") ||
 			(filedType == "[]int") ||
 			(filedType == "[]int32") ||
 			(filedType == "[]int64") {
-			xcfg.Type = string(INLINE)
+			xcfg.Type = string(_INLINE)
 			iv := NewInlineView()
 			//
 			iv.Order = i
@@ -212,13 +211,13 @@ func RenderConfig(i interface{}) ([]typex.XConfig, error) {
 				iv.Hidden = true
 			}
 
-			xcfg.View = iv
+			views = append(views, iv)
 		}
 
 		optionsTag := tag.Get("options")
 		// 下拉框输入
 		if optionsTag != EMPTY_STRING {
-			xcfg.Type = string(SELECT)
+			xcfg.Type = string(_SELECT)
 			sv := NewSelectView()
 			//
 			sv.Order = i
@@ -232,35 +231,34 @@ func RenderConfig(i interface{}) ([]typex.XConfig, error) {
 			if Hidden == "true" {
 				sv.Hidden = true
 			}
-			selectOptions, err := renderSelect(optionsTag)
-			if err != nil {
+			selectOptions, err1 := renderSelect(optionsTag)
+			if err1 != nil {
+				err = err1
 				goto END
 			}
 			sv.SelectOptions = selectOptions
-			xcfg.View = sv
+			views = append(views, sv)
 		}
 		// 文件框
 		fileTag := tag.Get("file") // file:"uploadfile"
 		if fileTag != EMPTY_STRING {
-			xcfg.Type = string(FILE)
-			sv := NewFileView()
+			xcfg.Type = string(_FILE)
+			fv := NewFileView()
 			//
-			sv.Order = i
-			sv.Name = fileTag
-			sv.Label = Label
-			sv.Info = Info
-			sv.Placeholder = Placeholder
+			fv.Order = i
+			fv.Name = fileTag
+			fv.Label = Label
+			fv.Info = Info
+			fv.Placeholder = Placeholder
 			if Required == "false" {
-				sv.Required = false
+				fv.Required = false
 			}
 			if Hidden == "true" {
-				sv.Hidden = true
+				fv.Hidden = true
 			}
-			xcfg.View = sv
+			views = append(views, fv)
 		}
-		data = append(data, xcfg)
-
 	}
 END:
-	return data, err
+	return typex.XConfig{Type: "", Views: views, HelpTip: ""}, err
 }

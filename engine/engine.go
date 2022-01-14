@@ -159,7 +159,7 @@ func (e *RuleEngine) LoadInEnd(in *typex.InEnd) error {
 	if in.Type == typex.UART_MODULE {
 		return startResources(resource.NewUartModuleResource(in.UUID, e), in, e)
 	}
-	if in.Type == typex.MODBUS_TCP_MASTER {
+	if in.Type == typex.MODBUS_MASTER {
 		return startResources(resource.NewModbusMasterResource(in.UUID, e), in, e)
 	}
 	if in.Type == typex.SNMP_SERVER {

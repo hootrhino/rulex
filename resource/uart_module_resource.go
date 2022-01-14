@@ -31,11 +31,11 @@ func NewUartModuleResource(inEndId string, e typex.RuleX) typex.XResource {
 	//
 	return &s
 }
-func (*UartModuleResource) Configs() []typex.XConfig {
+func (*UartModuleResource) Configs() typex.XConfig {
 	config, err := core.RenderConfig(UartConfig{})
 	if err != nil {
 		log.Error(err)
-		return []typex.XConfig{}
+		return typex.XConfig{}
 	} else {
 		return config
 	}

@@ -107,11 +107,11 @@ func (u *UdpResource) Stop() {
 func (*UdpResource) Driver() typex.XExternalDriver {
 	return nil
 }
-func (*UdpResource) Configs() []typex.XConfig {
+func (*UdpResource) Configs() typex.XConfig {
 	config, err := core.RenderConfig(udpConfig{})
 	if err != nil {
 		log.Error(err)
-		return []typex.XConfig{}
+		return typex.XConfig{}
 	} else {
 		return config
 	}

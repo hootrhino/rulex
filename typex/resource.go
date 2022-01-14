@@ -37,7 +37,7 @@ type XResource interface {
 	//
 	// 获取前端表单定义
 	//
-	Configs() []XConfig
+	Configs() XConfig
 	//
 	// 重载: 比如可以在重启的时候把某些数据保存起来
 	//

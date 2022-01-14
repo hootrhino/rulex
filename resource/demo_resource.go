@@ -49,8 +49,8 @@ func (d *DemoResource) Status() typex.ResourceState {
 
 func (d *DemoResource) Stop() {
 }
-func (*DemoResource) Configs() []typex.XConfig {
-	return []typex.XConfig{}
+func (*DemoResource) Configs() typex.XConfig {
+	return typex.XConfig{}
 }
 
 //

@@ -128,11 +128,11 @@ func (mm *MqttInEndResource) Details() *typex.InEnd {
 func (*MqttInEndResource) Driver() typex.XExternalDriver {
 	return nil
 }
-func (*MqttInEndResource) Configs() []typex.XConfig {
+func (*MqttInEndResource) Configs() typex.XConfig {
 	config, err := core.RenderConfig(mqttConfig{})
 	if err != nil {
 		log.Error(err)
-		return []typex.XConfig{}
+		return typex.XConfig{}
 	} else {
 		return config
 	}

@@ -145,8 +145,8 @@ func (s7 *siemensS7Resource) DataModels() []typex.XDataModel {
 //
 // 获取前端表单定义
 //
-func (s7 *siemensS7Resource) Configs() []typex.XConfig {
-	return []typex.XConfig{}
+func (s7 *siemensS7Resource) Configs() typex.XConfig {
+	return typex.XConfig{}
 }
 
 //

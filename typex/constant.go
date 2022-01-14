@@ -29,16 +29,20 @@ func (i InEndType) String() string {
 }
 
 const (
-	MQTT              InEndType = "MQTT"
-	HTTP              InEndType = "HTTP"
-	UDP               InEndType = "UDP"
-	COAP              InEndType = "COAP"
-	GRPC              InEndType = "GRPC"
-	UART_MODULE       InEndType = "UART_MODULE"
-	MODBUS_TCP_MASTER InEndType = "MODBUS_TCP_MASTER"
-	MODBUS_RTU_MASTER InEndType = "MODBUS_RTU_MASTER"
-	MODBUS_TCP_SLAVER InEndType = "MODBUS_TCP_SLAVER"
-	MODBUS_RTU_SLAVER InEndType = "MODBUS_RTU_SLAVER"
+	MQTT        InEndType = "MQTT"
+	HTTP        InEndType = "HTTP"
+	UDP         InEndType = "UDP"
+	COAP        InEndType = "COAP"
+	GRPC        InEndType = "GRPC"
+	UART_MODULE InEndType = "UART_MODULE"
+	//
+	// MODBUS_MASTER
+	//
+	MODBUS_MASTER InEndType = "MODBUS_MASTER"
+	//
+	// MODBUS_SLAVER
+	//
+	MODBUS_SLAVER InEndType = "MODBUS_SLAVER"
 	//
 	// From snmp server provider
 	//

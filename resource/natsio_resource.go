@@ -123,11 +123,11 @@ func (nt *natsResource) Stop() {
 		}
 	}
 }
-func (nt *natsResource) Configs() []typex.XConfig {
+func (nt *natsResource) Configs() typex.XConfig {
 	config, err := core.RenderConfig(natsConfig{})
 	if err != nil {
 		log.Error(err)
-		return []typex.XConfig{}
+		return typex.XConfig{}
 	} else {
 		return config
 	}
