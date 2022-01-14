@@ -124,7 +124,7 @@ func (nt *natsResource) Stop() {
 	}
 }
 func (nt *natsResource) Configs() typex.XConfig {
-	config, err := core.RenderConfig(natsConfig{})
+	config, err := core.RenderConfig("NATS_SERVER", "", natsConfig{})
 	if err != nil {
 		log.Error(err)
 		return typex.XConfig{}

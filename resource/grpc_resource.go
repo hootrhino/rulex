@@ -117,7 +117,7 @@ func (*GrpcInEndResource) Driver() typex.XExternalDriver {
 	return nil
 }
 func (*GrpcInEndResource) Configs() typex.XConfig {
-	config, err := core.RenderConfig(grpcConfig{})
+	config, err := core.RenderConfig("GRPC", "", grpcConfig{})
 	if err != nil {
 		log.Error(err)
 		return typex.XConfig{}

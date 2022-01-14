@@ -32,7 +32,7 @@ func NewUartModuleResource(inEndId string, e typex.RuleX) typex.XResource {
 	return &s
 }
 func (*UartModuleResource) Configs() typex.XConfig {
-	config, err := core.RenderConfig(UartConfig{})
+	config, err := core.RenderConfig("UART_MODULE", "", UartConfig{})
 	if err != nil {
 		log.Error(err)
 		return typex.XConfig{}

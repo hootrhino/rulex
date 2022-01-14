@@ -271,7 +271,7 @@ func (s *SNMPResource) Stop() {
 
 }
 func (*SNMPResource) Configs() typex.XConfig {
-	config, err := core.RenderConfig(SNMPConfig{})
+	config, err := core.RenderConfig("SNMP_SERVER", "", SNMPConfig{})
 	if err != nil {
 		log.Error(err)
 		return typex.XConfig{}

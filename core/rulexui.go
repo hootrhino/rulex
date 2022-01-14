@@ -129,10 +129,10 @@ END:
 *
  */
 
-func RenderConfig(i interface{}) (typex.XConfig, error) {
+func RenderConfig(Type string, helpTip string, config interface{}) (typex.XConfig, error) {
 	var err error
-	typee := reflect.TypeOf(i)
-	views := make([]interface{}, 0)
+	typee := reflect.TypeOf(config)
+	views := make([]interface{}, typee.NumField())
 	for i := 0; i < typee.NumField(); i++ {
 		filedName := typee.Field(i).Name
 		filedType := typee.Field(i).Type.String()
@@ -260,5 +260,5 @@ func RenderConfig(i interface{}) (typex.XConfig, error) {
 		}
 	}
 END:
-	return typex.XConfig{Type: "", Views: views, HelpTip: ""}, err
+	return typex.XConfig{Type: Type, Views: views, HelpTip: helpTip}, err
 }
