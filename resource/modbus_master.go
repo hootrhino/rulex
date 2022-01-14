@@ -19,11 +19,11 @@ import (
 )
 
 type ModBusConfig struct {
-	Mode           string          `json:"mode" title:"工作模式" info:"可以在 RTU/TCP 两个模式之间切换"`
+	Mode           string          `json:"mode" title:"工作模式" info:"RTU/TCP"`
 	Timeout        int             `json:"timeout" validate:"required" title:"连接超时" info:""`
 	SlaverId       byte            `json:"slaverId" validate:"required" title:"TCP端口" info:""`
 	Frequency      int64           `json:"frequency" validate:"required" title:"采集频率" info:""`
-	Config         interface{}     `json:"config" validate:"required" title:"工作模式配置" info:""`
+	Config         interface{}     `json:"config" validate:"required" title:"工作模式" info:""`
 	RegisterParams []registerParam `json:"registerParams" validate:"required" title:"寄存器配置" info:""`
 }
 
