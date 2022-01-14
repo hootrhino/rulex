@@ -132,7 +132,7 @@ END:
 func RenderConfig(Type string, helpTip string, config interface{}) (typex.XConfig, error) {
 	var err error
 	typee := reflect.TypeOf(config)
-	views := make([]interface{}, typee.NumField())
+	views := make([]interface{}, 1)
 	for i := 0; i < typee.NumField(); i++ {
 		filedName := typee.Field(i).Name
 		filedType := typee.Field(i).Type.String()
@@ -151,7 +151,7 @@ func RenderConfig(Type string, helpTip string, config interface{}) (typex.XConfi
 		Placeholder := tag.Get("placeholder")
 		//
 		xcfg := typex.XConfig{}
-		// 文本输入
+		// 数字输入
 		if (filedType == "int") ||
 			(filedType == "int64") ||
 			(filedType == "int32") ||
@@ -172,24 +172,45 @@ func RenderConfig(Type string, helpTip string, config interface{}) (typex.XConfi
 			}
 			views = append(views, nv)
 		}
-		// 数字输入
+		// 文本输入
 		if filedType == "string" || filedType == "*string" {
-			xcfg.Type = string(_TEXT)
-			tv := NewTextInputView()
-			//
-			tv.Order = i
-			tv.Name = filedName
-			tv.Label = Label
-			tv.Info = Info
-			tv.Placeholder = Placeholder
-			if Required == "false" {
-				tv.Required = false
-			}
-			if Hidden == "true" {
-				tv.Hidden = true
-			}
 
-			views = append(views, tv)
+			// 文件框
+			fileTag := tag.Get("file") // file:"uploadfile"
+			if fileTag != EMPTY_STRING {
+				xcfg.Type = string(_FILE)
+				fv := NewFileView()
+				//
+				fv.Order = i
+				fv.Name = fileTag
+				fv.Label = Label
+				fv.Info = Info
+				fv.Placeholder = Placeholder
+				if Required == "false" {
+					fv.Required = false
+				}
+				if Hidden == "true" {
+					fv.Hidden = true
+				}
+				views = append(views, fv)
+			} else {
+				xcfg.Type = string(_TEXT)
+				tv := NewTextInputView()
+				//
+				tv.Order = i
+				tv.Name = filedName
+				tv.Label = Label
+				tv.Info = Info
+				tv.Placeholder = Placeholder
+				if Required == "false" {
+					tv.Required = false
+				}
+				if Hidden == "true" {
+					tv.Hidden = true
+				}
+
+				views = append(views, tv)
+			}
 		}
 		// 动态数组
 		if (filedType == "[]string") ||
@@ -239,25 +260,7 @@ func RenderConfig(Type string, helpTip string, config interface{}) (typex.XConfi
 			sv.SelectOptions = selectOptions
 			views = append(views, sv)
 		}
-		// 文件框
-		fileTag := tag.Get("file") // file:"uploadfile"
-		if fileTag != EMPTY_STRING {
-			xcfg.Type = string(_FILE)
-			fv := NewFileView()
-			//
-			fv.Order = i
-			fv.Name = fileTag
-			fv.Label = Label
-			fv.Info = Info
-			fv.Placeholder = Placeholder
-			if Required == "false" {
-				fv.Required = false
-			}
-			if Hidden == "true" {
-				fv.Hidden = true
-			}
-			views = append(views, fv)
-		}
+
 	}
 END:
 	return typex.XConfig{Type: Type, Views: views, HelpTip: helpTip}, err
