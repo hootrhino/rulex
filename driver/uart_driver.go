@@ -1,7 +1,11 @@
 package driver
 
+//
+// `#`` 分隔符: 注意该驱动的消息内容不要包含 `#`, 因为已经将其作为数据结尾提交符号
+//
 import (
 	"context"
+	"errors"
 	"rulex/typex"
 	"strings"
 	"time"
@@ -11,7 +15,7 @@ import (
 )
 
 // 数据缓冲区,单位: 字节
-const max_BUFFER_SIZE = 1024 * 2 // 4KB
+const max_BUFFER_SIZE = 1024 * 4 // 4KB
 
 var buffer = [max_BUFFER_SIZE]byte{}
 
@@ -75,7 +79,9 @@ func (a *UartDriver) Work() error {
 					continue
 				}
 			}
-			// # 分隔符
+			//
+			// # 分隔符: 注意该驱动的消息内容不要包含 #, 因为已经将其作为数据结尾提交符号
+			//
 			if data[0] == '#' {
 				// log.Info("bytes => ", string(buffer[:acc]), buffer[:acc], acc)
 				a.RuleEngine.Work(a.In, string(buffer[1:acc]))
@@ -86,7 +92,7 @@ func (a *UartDriver) Work() error {
 				data[0] = 0
 				acc = 0
 			}
-
+			// 此处是为了过滤空行以及制表符
 			if (data[0] != 0) && (data[0] != '\r') && (data[0] != '\n') {
 				if acc <= max_BUFFER_SIZE {
 					buffer[acc] = data[0]
@@ -111,7 +117,12 @@ func (a *UartDriver) Stop() error {
 }
 
 func (a *UartDriver) Test() error {
-	return nil
+	if a.serialPort == nil {
+		return errors.New("serialPort is nil")
+	}
+	_, err := a.serialPort.Write([]byte("\r\n"))
+	return err
+
 }
 
 //
