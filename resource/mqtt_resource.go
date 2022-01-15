@@ -23,19 +23,19 @@ type mqttConfig struct {
 }
 
 //
-type MqttInEndResource struct {
+type mqttInEndResource struct {
 	typex.XStatus
 	client mqtt.Client
 }
 
 func NewMqttInEndResource(inEndId string, e typex.RuleX) typex.XResource {
-	m := new(MqttInEndResource)
+	m := new(mqttInEndResource)
 	m.PointId = inEndId
 	m.RuleEngine = e
 	return m
 }
 
-func (mm *MqttInEndResource) Start() error {
+func (mm *mqttInEndResource) Start() error {
 	config := mm.RuleEngine.GetInEnd(mm.PointId).Config
 	var mainConfig mqttConfig
 
@@ -78,23 +78,23 @@ func (mm *MqttInEndResource) Start() error {
 
 }
 
-func (mm *MqttInEndResource) DataModels() []typex.XDataModel {
+func (mm *mqttInEndResource) DataModels() []typex.XDataModel {
 	return []typex.XDataModel{}
 }
-func (m *MqttInEndResource) OnStreamApproached(data string) error {
+func (m *mqttInEndResource) OnStreamApproached(data string) error {
 	return nil
 }
-func (mm *MqttInEndResource) Stop() {
+func (mm *mqttInEndResource) Stop() {
 	mm.client.Disconnect(0)
 	mm = nil
 }
-func (mm *MqttInEndResource) Reload() {
+func (mm *mqttInEndResource) Reload() {
 
 }
-func (mm *MqttInEndResource) Pause() {
+func (mm *mqttInEndResource) Pause() {
 
 }
-func (mm *MqttInEndResource) Status() typex.ResourceState {
+func (mm *mqttInEndResource) Status() typex.ResourceState {
 	if mm.client != nil {
 		if mm.client.IsConnected() {
 			return typex.UP
@@ -107,28 +107,28 @@ func (mm *MqttInEndResource) Status() typex.ResourceState {
 
 }
 
-func (mm *MqttInEndResource) Register(inEndId string) error {
+func (mm *mqttInEndResource) Register(inEndId string) error {
 	mm.PointId = inEndId
 	return nil
 }
 
-func (mm *MqttInEndResource) Test(inEndId string) bool {
+func (mm *mqttInEndResource) Test(inEndId string) bool {
 	if mm.client != nil {
 		return mm.client.IsConnected()
 	}
 	return false
 }
 
-func (mm *MqttInEndResource) Enabled() bool {
+func (mm *mqttInEndResource) Enabled() bool {
 	return mm.Enable
 }
-func (mm *MqttInEndResource) Details() *typex.InEnd {
+func (mm *mqttInEndResource) Details() *typex.InEnd {
 	return mm.RuleEngine.GetInEnd(mm.PointId)
 }
-func (*MqttInEndResource) Driver() typex.XExternalDriver {
+func (*mqttInEndResource) Driver() typex.XExternalDriver {
 	return nil
 }
-func (*MqttInEndResource) Configs() typex.XConfig {
+func (*mqttInEndResource) Configs() typex.XConfig {
 	config, err := core.RenderConfig("MQTT", "", mqttConfig{})
 	if err != nil {
 		log.Error(err)
@@ -141,6 +141,6 @@ func (*MqttInEndResource) Configs() typex.XConfig {
 //
 // 拓扑
 //
-func (*MqttInEndResource) Topology() []typex.TopologyPoint {
+func (*mqttInEndResource) Topology() []typex.TopologyPoint {
 	return []typex.TopologyPoint{}
 }

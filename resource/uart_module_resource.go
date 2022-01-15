@@ -11,11 +11,11 @@ import (
 	"github.com/ngaut/log"
 )
 
-type UartModuleResource struct {
+type uartModuleResource struct {
 	typex.XStatus
 	loraDriver typex.XExternalDriver
 }
-type UartConfig struct {
+type uartConfig struct {
 	Address  string `json:"address" validate:"required" title:"采集地址" info:""`
 	BaudRate int    `json:"baudRate" validate:"required" title:"波特率" info:""`
 	DataBits int    `json:"dataBits" validate:"required" title:"数据位" info:""`
@@ -25,14 +25,14 @@ type UartConfig struct {
 }
 
 func NewUartModuleResource(inEndId string, e typex.RuleX) typex.XResource {
-	s := UartModuleResource{}
+	s := uartModuleResource{}
 	s.PointId = inEndId
 	s.RuleEngine = e
 	//
 	return &s
 }
-func (*UartModuleResource) Configs() typex.XConfig {
-	config, err := core.RenderConfig("UART_MODULE", "", UartConfig{})
+func (*uartModuleResource) Configs() typex.XConfig {
+	config, err := core.RenderConfig("UART_MODULE", "", uartConfig{})
 	if err != nil {
 		log.Error(err)
 		return typex.XConfig{}
@@ -41,25 +41,25 @@ func (*UartModuleResource) Configs() typex.XConfig {
 	}
 }
 
-func (mm *UartModuleResource) DataModels() []typex.XDataModel {
+func (mm *uartModuleResource) DataModels() []typex.XDataModel {
 	return []typex.XDataModel{}
 }
 
-func (u *UartModuleResource) Test(inEndId string) bool {
+func (u *uartModuleResource) Test(inEndId string) bool {
 	return true
 }
-func (m *UartModuleResource) OnStreamApproached(data string) error {
+func (m *uartModuleResource) OnStreamApproached(data string) error {
 	m.loraDriver.Write([]byte(data))
 	return nil
 }
-func (u *UartModuleResource) Register(inEndId string) error {
+func (u *uartModuleResource) Register(inEndId string) error {
 	u.PointId = inEndId
 	return nil
 }
 
-func (u *UartModuleResource) Start() error {
+func (u *uartModuleResource) Start() error {
 	config := u.RuleEngine.GetInEnd(u.PointId).Config
-	mainConfig := UartConfig{}
+	mainConfig := uartConfig{}
 	if err := utils.BindResourceConfig(config, &mainConfig); err != nil {
 		return err
 	}
@@ -72,7 +72,7 @@ func (u *UartModuleResource) Start() error {
 		Timeout:  time.Duration(*mainConfig.Timeout) * time.Second,
 	})
 	if err != nil {
-		log.Error("UartModuleResource start failed:", err)
+		log.Error("uartModuleResource start failed:", err)
 		return err
 	} else {
 		log.Infof("Uart port open successfully: [%v]", mainConfig.Address)
@@ -84,21 +84,21 @@ func (u *UartModuleResource) Start() error {
 	}
 }
 
-func (u *UartModuleResource) Enabled() bool {
+func (u *uartModuleResource) Enabled() bool {
 	return true
 }
 
-func (u *UartModuleResource) Reload() {
+func (u *uartModuleResource) Reload() {
 }
 
-func (u *UartModuleResource) Pause() {
+func (u *uartModuleResource) Pause() {
 
 }
-func (u *UartModuleResource) Details() *typex.InEnd {
+func (u *uartModuleResource) Details() *typex.InEnd {
 	return u.RuleEngine.GetInEnd(u.PointId)
 }
 
-func (u *UartModuleResource) Status() typex.ResourceState {
+func (u *uartModuleResource) Status() typex.ResourceState {
 	if u.loraDriver != nil {
 		if err := u.loraDriver.Test(); err != nil {
 			log.Error(err)
@@ -110,20 +110,20 @@ func (u *UartModuleResource) Status() typex.ResourceState {
 	return typex.DOWN
 }
 
-func (u *UartModuleResource) Stop() {
+func (u *uartModuleResource) Stop() {
 	if u.loraDriver != nil {
 		u.loraDriver.Stop()
 		u.loraDriver = nil
 	}
 
 }
-func (u *UartModuleResource) Driver() typex.XExternalDriver {
+func (u *uartModuleResource) Driver() typex.XExternalDriver {
 	return u.loraDriver
 }
 
 //
 // 拓扑
 //
-func (*UartModuleResource) Topology() []typex.TopologyPoint {
+func (*uartModuleResource) Topology() []typex.TopologyPoint {
 	return []typex.TopologyPoint{}
 }

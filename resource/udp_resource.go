@@ -10,7 +10,7 @@ import (
 	"github.com/ngaut/log"
 )
 
-type UdpResource struct {
+type udpResource struct {
 	typex.XStatus
 	uDPConn *net.UDPConn
 }
@@ -20,12 +20,12 @@ type udpConfig struct {
 	MaxDataLength int    `json:"maxDataLength" validate:"required" title:"最大数据包" info:""`
 }
 
-func NewUdpInEndResource(e typex.RuleX) *UdpResource {
-	u := UdpResource{}
+func NewUdpInEndResource(e typex.RuleX) *udpResource {
+	u := udpResource{}
 	u.RuleEngine = e
 	return &u
 }
-func (u *UdpResource) Start() error {
+func (u *udpResource) Start() error {
 	config := u.RuleEngine.GetInEnd(u.PointId).Config
 	var mainConfig udpConfig
 	if err := utils.BindResourceConfig(config, &mainConfig); err != nil {
@@ -37,7 +37,7 @@ func (u *UdpResource) Start() error {
 		log.Error(err)
 		return err
 	}
-	go func(c context.Context, u1 *UdpResource) {
+	go func(c context.Context, u1 *udpResource) {
 		data := make([]byte, mainConfig.MaxDataLength)
 		for {
 			n, remoteAddr, err := u1.uDPConn.ReadFromUDP(data)
@@ -61,53 +61,53 @@ func (u *UdpResource) Start() error {
 	return nil
 
 }
-func (u *UdpResource) OnStreamApproached(data string) error {
+func (u *udpResource) OnStreamApproached(data string) error {
 	work, err := u.RuleEngine.Work(u.RuleEngine.GetInEnd(u.PointId), data)
 	if !work {
 		return err
 	}
 	return nil
 }
-func (u *UdpResource) Details() *typex.InEnd {
+func (u *udpResource) Details() *typex.InEnd {
 	return u.RuleEngine.GetInEnd(u.PointId)
 }
 
-func (u *UdpResource) Test(inEndId string) bool {
+func (u *udpResource) Test(inEndId string) bool {
 	return true
 }
 
-func (u *UdpResource) Register(inEndId string) error {
+func (u *udpResource) Register(inEndId string) error {
 	u.PointId = inEndId
 	return nil
 }
 
-func (u *UdpResource) Enabled() bool {
+func (u *udpResource) Enabled() bool {
 	return true
 }
 
-func (u *UdpResource) DataModels() []typex.XDataModel {
+func (u *udpResource) DataModels() []typex.XDataModel {
 	return []typex.XDataModel{}
 }
 
-func (u *UdpResource) Reload() {
+func (u *udpResource) Reload() {
 }
 
-func (u *UdpResource) Pause() {
+func (u *udpResource) Pause() {
 }
 
-func (u *UdpResource) Status() typex.ResourceState {
+func (u *udpResource) Status() typex.ResourceState {
 	return typex.UP
 }
 
-func (u *UdpResource) Stop() {
+func (u *udpResource) Stop() {
 	if u.uDPConn != nil {
 		u.uDPConn.Close()
 	}
 }
-func (*UdpResource) Driver() typex.XExternalDriver {
+func (*udpResource) Driver() typex.XExternalDriver {
 	return nil
 }
-func (*UdpResource) Configs() typex.XConfig {
+func (*udpResource) Configs() typex.XConfig {
 	config, err := core.RenderConfig("RULEX_UDP", "", udpConfig{})
 	if err != nil {
 		log.Error(err)
@@ -120,6 +120,6 @@ func (*UdpResource) Configs() typex.XConfig {
 //
 // 拓扑
 //
-func (*UdpResource) Topology() []typex.TopologyPoint {
+func (*udpResource) Topology() []typex.TopologyPoint {
 	return []typex.TopologyPoint{}
 }

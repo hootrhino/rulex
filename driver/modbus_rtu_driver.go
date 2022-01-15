@@ -6,7 +6,7 @@ import (
 	"github.com/goburrow/modbus"
 )
 
-type ModBusRtuDriver struct {
+type modBusRtuDriver struct {
 	state      typex.DriverState
 	client     modbus.Client
 	In         *typex.InEnd
@@ -17,43 +17,43 @@ func NewModBusRtuDriver(
 	in *typex.InEnd,
 	e typex.RuleX,
 	client modbus.Client) typex.XExternalDriver {
-	return &ModBusRtuDriver{
+	return &modBusRtuDriver{
 		In:         in,
 		RuleEngine: e,
 		client:     client,
 	}
 
 }
-func (d *ModBusRtuDriver) Test() error {
+func (d *modBusRtuDriver) Test() error {
 	return nil
 }
 
-func (d *ModBusRtuDriver) Init() error {
+func (d *modBusRtuDriver) Init() error {
 	return nil
 }
 
-func (d *ModBusRtuDriver) Work() error {
+func (d *modBusRtuDriver) Work() error {
 	return nil
 }
 
-func (d *ModBusRtuDriver) State() typex.DriverState {
+func (d *modBusRtuDriver) State() typex.DriverState {
 	return d.state
 }
 
-func (d *ModBusRtuDriver) SetState(s typex.DriverState) {
+func (d *modBusRtuDriver) SetState(s typex.DriverState) {
 	d.state = s
 }
 
-func (d *ModBusRtuDriver) Read(_ []byte) (int, error) {
+func (d *modBusRtuDriver) Read(_ []byte) (int, error) {
 	return 0, nil
 
 }
 
-func (d *ModBusRtuDriver) Write(_ []byte) (int, error) {
+func (d *modBusRtuDriver) Write(_ []byte) (int, error) {
 	return 0, nil
 }
 
-func (d *ModBusRtuDriver) DriverDetail() *typex.DriverDetail {
+func (d *modBusRtuDriver) DriverDetail() *typex.DriverDetail {
 	return &typex.DriverDetail{
 		Name:        "ModBus RTU Driver",
 		Type:        "UART",
@@ -61,6 +61,6 @@ func (d *ModBusRtuDriver) DriverDetail() *typex.DriverDetail {
 	}
 }
 
-func (d *ModBusRtuDriver) Stop() error {
+func (d *modBusRtuDriver) Stop() error {
 	return nil
 }
