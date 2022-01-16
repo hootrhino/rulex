@@ -2,7 +2,6 @@ package test
 
 import (
 	"context"
-	"encoding/json"
 	"os"
 	"os/signal"
 	"rulex/core"
@@ -85,61 +84,4 @@ func Test_Modbus_LUA_Parse(t *testing.T) {
 
 	time.Sleep(1 * time.Second)
 	engine.Stop()
-}
-func Test_write(t *testing.T) {
-
-	/*
-	 *
-	 * coilParams 1
-	 *
-	 */
-	type coils struct {
-		Address  uint16 `json:"address" validate:"required" title:"寄存器地址" info:""`
-		Quantity uint16 `json:"quantity" validate:"required" title:"写入数量" info:""`
-		Values   []byte `json:"values" validate:"required" title:"写入的值" info:""`
-	}
-
-	/*
-	 *
-	 * 2
-	 *
-	 */
-	type coil struct {
-		Address  uint16 `json:"address" validate:"required" title:"寄存器地址" info:""`
-		Quantity uint16 `json:"quantity" validate:"required" title:"写入数量" info:""`
-		Value    uint16 `json:"value" validate:"required" title:"写入的值" info:""`
-	}
-
-	/*
-	 *
-	 * registerParams 3
-	 *
-	 */
-	type register struct {
-		Address  uint16 `json:"address" validate:"required" title:"寄存器地址" info:""`
-		Quantity uint16 `json:"quantity" validate:"required" title:"写入数量" info:""`
-		Value    uint16 `json:"value" validate:"required" title:"写入的值" info:""`
-	}
-
-	/*
-	 *
-	 * 4
-	 *
-	 */
-	type registers struct {
-		Address  uint16 `json:"address" validate:"required" title:"寄存器地址" info:""`
-		Quantity uint16 `json:"quantity" validate:"required" title:"写入数量" info:""`
-		Values   []byte `json:"values" validate:"required" title:"写入的值" info:""`
-	}
-
-	type dataM struct {
-		Type   int         `json:"type" validate:"required"`
-		Params interface{} `json:"params" validate:"required"`
-	}
-	d := dataM{Type: 1, Params: []registers{{
-		Address: 1, Quantity: 1, Values: []byte{1},
-	}},
-	}
-	b, _ := json.MarshalIndent(d, "", " ")
-	t.Log(string(b))
 }
