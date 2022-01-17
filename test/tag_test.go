@@ -3,6 +3,7 @@ package test
 import (
 	"encoding/json"
 	"rulex/core"
+	"rulex/typex"
 	"testing"
 )
 
@@ -17,7 +18,7 @@ func Test_RenderConfig(t *testing.T) {
 		File string  `json:"file" validate:"required" title:"File" info:"File" file:"uploadfile"`
 	}
 
-	xcfgs, err := core.RenderConfig("MQTT", "MQTT", __config{})
+	xcfgs, err := core.RenderInConfig(typex.MQTT, "MQTT", __config{})
 	if err != nil {
 		t.Fatal(err)
 	} else {

@@ -31,7 +31,6 @@ func (i InEndType) String() string {
 const (
 	MQTT        InEndType = "MQTT"
 	HTTP        InEndType = "HTTP"
-	UDP         InEndType = "UDP"
 	COAP        InEndType = "COAP"
 	GRPC        InEndType = "GRPC"
 	UART_MODULE InEndType = "UART_MODULE"
@@ -86,4 +85,8 @@ const (
 	PGSQL_TARGET          TargetType = "PGSQL"
 	NATS_TARGET           TargetType = "NATS"
 	HTTP_TARGET           TargetType = "HTTP"
+	//
+	// TDENGINE
+	//
+	TDENGINE_TARGET TargetType = "TDENGINE"
 )

@@ -129,7 +129,14 @@ END:
 *
  */
 
-func RenderConfig(Type string, helpTip string, config interface{}) (typex.XConfig, error) {
+func RenderInConfig(Type typex.InEndType, helpTip string, config interface{}) (typex.XConfig, error) {
+	return renderConfig(Type.String(), helpTip, config)
+}
+func RenderOutConfig(Type typex.TargetType, helpTip string, config interface{}) (typex.XConfig, error) {
+	return renderConfig(Type.String(), helpTip, config)
+
+}
+func renderConfig(Type string, helpTip string, config interface{}) (typex.XConfig, error) {
 	var err error
 	typee := reflect.TypeOf(config)
 	views := make([]interface{}, 1)

@@ -350,6 +350,9 @@ func tryCreateOutEnd(out *typex.OutEnd, e typex.RuleX) error {
 	if out.Type == typex.HTTP_TARGET {
 		return startTarget(target.NewHTTPTarget(e), out, e)
 	}
+	if out.Type == typex.TDENGINE_TARGET {
+		return startTarget(target.NewTdEngineTarget(e), out, e)
+	}
 	return errors.New("unsupported target type:" + out.Type.String())
 
 }

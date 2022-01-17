@@ -108,7 +108,7 @@ func (*udpResource) Driver() typex.XExternalDriver {
 	return nil
 }
 func (*udpResource) Configs() typex.XConfig {
-	config, err := core.RenderConfig("RULEX_UDP", "", udpConfig{})
+	config, err := core.RenderInConfig(typex.RULEX_UDP, "RULEX_UDP", udpConfig{})
 	if err != nil {
 		log.Error(err)
 		return typex.XConfig{}
