@@ -2,6 +2,7 @@ package core
 
 import (
 	"fmt"
+	"github.com/iancoleman/strcase"
 	"reflect"
 	"rulex/typex"
 	"strings"
@@ -139,19 +140,20 @@ func RenderOutConfig(Type typex.TargetType, helpTip string, config interface{}) 
 func renderConfig(Type string, helpTip string, config interface{}) (typex.XConfig, error) {
 	var err error
 	typee := reflect.TypeOf(config)
-	views := make([]interface{}, 1)
+	views := make([]interface{}, 0)
 	for i := 0; i < typee.NumField(); i++ {
-		filedName := typee.Field(i).Name
+
+		filedName := strcase.ToLowerCamel(typee.Field(i).Name)
 		filedType := typee.Field(i).Type.String()
 		tag := typee.Field(i).Tag
 		//
 		Info := tag.Get("info")
 		if Info == EMPTY_STRING {
-			Info = "暂无内容" // 当看到这个文本的时候就需要去增加这个Tag字段了
+			Info = "***" // 当看到这个文本的时候就需要去增加这个Tag字段了
 		}
 		Label := tag.Get("label")
 		if Label == EMPTY_STRING {
-			Label = "暂无内容" // 当看到这个文本的时候就需要去增加这个Tag字段了
+			Label = "***" // 当看到这个文本的时候就需要去增加这个Tag字段了
 		}
 		Required := tag.Get("required")
 		Hidden := tag.Get("hidden")

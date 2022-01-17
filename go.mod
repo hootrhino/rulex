@@ -17,6 +17,7 @@ require (
 	github.com/goburrow/serial v0.1.0
 	github.com/google/uuid v1.3.0
 	github.com/gosnmp/gosnmp v1.34.0
+	github.com/iancoleman/strcase v0.2.0
 	github.com/itchyny/gojq v0.12.6
 	github.com/makiuchi-d/gozxing v0.1.1
 	github.com/mattn/go-sqlite3 v1.14.10
