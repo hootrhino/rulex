@@ -139,9 +139,9 @@ type target struct {
 	DataModels []typex.XDataModel `json:"dataModels" validate:"required" title:"数据模型" info:""`
 }
 
-// SNMPConfig
+// snmpConfig
 // GoSNMP represents GoSNMP library state.
-type SNMPConfig struct {
+type snmpConfig struct {
 	Frequency int64    `json:"frequency" validate:"required" title:"采集频率" info:""`
 	Timeout   int64    `json:"timeout" validate:"required" title:"超时时间" info:""`
 	Targets   []target `json:"targets" validate:"required" title:"采集目标" info:""`
@@ -180,7 +180,7 @@ func (s *snmpResource) Register(inEndId string) error {
 
 func (s *snmpResource) Start() error {
 	config := s.RuleEngine.GetInEnd(s.PointId).Config
-	mainConfig := SNMPConfig{}
+	mainConfig := snmpConfig{}
 	if err := utils.BindResourceConfig(config, &mainConfig); err != nil {
 		return err
 	}
@@ -271,7 +271,7 @@ func (s *snmpResource) Stop() {
 
 }
 func (*snmpResource) Configs() *typex.XConfig {
-	return core.GenInConfig(typex.SNMP_SERVER, "SNMP_SERVER", SNMPConfig{})
+	return core.GenInConfig(typex.SNMP_SERVER, "SNMP_SERVER", snmpConfig{})
 }
 
 //

@@ -2,8 +2,9 @@ package httpserver
 
 import (
 	"net/http"
-	"rulex/core"
+	"rulex/resource"
 	"rulex/statistics"
+	"rulex/target"
 	"rulex/typex"
 	"runtime"
 	"time"
@@ -150,13 +151,13 @@ func RType(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		c.JSON(http.StatusOK, Result{
 			Code: http.StatusOK,
 			Msg:  "Success",
-			Data: core.RM.All(),
+			Data: resource.RM.All(),
 		})
 	} else {
 		c.JSON(http.StatusOK, Result{
 			Code: http.StatusOK,
 			Msg:  "Success",
-			Data: core.RM.Find(typex.InEndType(Type)),
+			Data: resource.RM.Find(typex.InEndType(Type)),
 		})
 	}
 
@@ -173,13 +174,13 @@ func TType(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		c.JSON(http.StatusOK, Result{
 			Code: http.StatusOK,
 			Msg:  "Success",
-			Data: core.TM.All(),
+			Data: target.TM.All(),
 		})
 	} else {
 		c.JSON(http.StatusOK, Result{
 			Code: http.StatusOK,
 			Msg:  "Success",
-			Data: core.TM.Find(typex.TargetType(Type)),
+			Data: target.TM.Find(typex.TargetType(Type)),
 		})
 	}
 

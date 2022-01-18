@@ -20,7 +20,6 @@ import (
 	lua "github.com/yuin/gopher-lua"
 )
 
-
 //
 //
 // RuleEngine
@@ -57,6 +56,8 @@ func (e *RuleEngine) Start() *sync.Map {
 	e.ConfigMap = &sync.Map{}
 	log.Info("Init XQueue, max queue size is:", core.GlobalConfig.MaxQueueSize)
 	typex.StartQueue(core.GlobalConfig.MaxQueueSize)
+	resource.LoadRt()
+	target.LoadTt()
 	return e.ConfigMap
 }
 
@@ -457,7 +458,7 @@ func (e *RuleEngine) LoadRule(r *typex.Rule) error {
 					r.LoadLib(e, rulexlib.NewUrlBuildLib())
 					r.LoadLib(e, rulexlib.NewUrlBuildQSLib())
 					r.LoadLib(e, rulexlib.NewUrlParseLib())
-					r.LoadLib(e, rulexlib.NewUrlRsolveLib())
+					r.LoadLib(e, rulexlib.NewUrlResolveLib())
 					//数据持久化
 					r.LoadLib(e, rulexlib.NewTdEngineLib())
 					r.LoadLib(e, rulexlib.NewMongoLib())
@@ -775,25 +776,3 @@ func (e *RuleEngine) SnapshotDump() string {
 func bToMb(b uint64) uint64 {
 	return b / 1024 / 1024
 }
-
-/*
-*
-* Windows 和Linux下不一样
-*
- */
-// func ip() {
-// 	//------------------------------------------------------------
-// 	// win: ipconfig | findstr /R /C:"IP.*"
-// 	//------------------------------------------------------------
-// 	// ???? IPv6 ?? : fe80::c531:f974:4e68:50e%4
-// 	// IPv4 ?? . .  : 10.55.23.149
-// 	// ???? IPv6 ?? : fe80::909f:679a:9a11:2a08%19
-// 	// IPv4 ?? . .  : 172.17.66.129
-// 	//------------------------------------------------------------
-// 	// ubuntu: hostname -I
-// 	//------------------------------------------------------------
-// 	// 172.17.66.129 10.55.23.149
-// 	// if runtime.GOOS == "windows" {
-
-// 	// }
-// }

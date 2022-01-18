@@ -1,14 +1,14 @@
 package rulexlib
 
-import "github.com/yuin/gopher-lua"
-import "net/url"
-import "strings"
-import "fmt"
-import "sort"
-import "regexp"
-
 import (
+	"fmt"
+	"net/url"
+	"regexp"
 	"rulex/typex"
+	"sort"
+	"strings"
+
+	lua "github.com/yuin/gopher-lua"
 )
 
 var rBracket *regexp.Regexp
@@ -79,18 +79,18 @@ func (l *UrlBuildQSLib) LibFun(rx typex.RuleX) func(*lua.LState) int {
 *
  */
 
-type UrlRsolveLib struct {
+type UrlResolveLib struct {
 }
 
-func NewUrlRsolveLib() typex.XLib {
-	return &UrlRsolveLib{}
+func NewUrlResolveLib() typex.XLib {
+	return &UrlResolveLib{}
 
 }
 
-func (l *UrlRsolveLib) Name() string {
-	return "UrlRsolve"
+func (l *UrlResolveLib) Name() string {
+	return "UrlResolve"
 }
-func (l *UrlRsolveLib) LibFun(rx typex.RuleX) func(*lua.LState) int {
+func (l *UrlResolveLib) LibFun(rx typex.RuleX) func(*lua.LState) int {
 	return resolve
 }
 
