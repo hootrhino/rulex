@@ -3,6 +3,7 @@ package target
 import (
 	"errors"
 	"fmt"
+	"rulex/core"
 	"rulex/typex"
 	"rulex/utils"
 	"time"
@@ -23,21 +24,21 @@ type mqttConfig struct {
 }
 
 //
-type MqttOutEndTarget struct {
+type mqttOutEndTarget struct {
 	typex.XStatus
 	client    mqtt.Client
 	DataTopic string
 }
 
 func NewMqttTarget(e typex.RuleX) typex.XTarget {
-	m := new(MqttOutEndTarget)
+	m := new(mqttOutEndTarget)
 	m.RuleEngine = e
 	return m
 }
-func (*MqttOutEndTarget) Driver() typex.XExternalDriver {
+func (*mqttOutEndTarget) Driver() typex.XExternalDriver {
 	return nil
 }
-func (mm *MqttOutEndTarget) Start() error {
+func (mm *mqttOutEndTarget) Start() error {
 	outEnd := mm.RuleEngine.GetOutEnd(mm.PointId)
 	config := outEnd.Config
 	var mainConfig mqttConfig
@@ -74,23 +75,23 @@ func (mm *MqttOutEndTarget) Start() error {
 
 }
 
-func (mm *MqttOutEndTarget) DataModels() []typex.XDataModel {
+func (mm *mqttOutEndTarget) DataModels() []typex.XDataModel {
 	return []typex.XDataModel{}
 }
-func (m *MqttOutEndTarget) OnStreamApproached(data string) error {
+func (m *mqttOutEndTarget) OnStreamApproached(data string) error {
 	return nil
 }
-func (mm *MqttOutEndTarget) Stop() {
+func (mm *mqttOutEndTarget) Stop() {
 	mm.client.Disconnect(0)
 
 }
-func (mm *MqttOutEndTarget) Reload() {
+func (mm *mqttOutEndTarget) Reload() {
 
 }
-func (mm *MqttOutEndTarget) Pause() {
+func (mm *mqttOutEndTarget) Pause() {
 
 }
-func (mm *MqttOutEndTarget) Status() typex.ResourceState {
+func (mm *mqttOutEndTarget) Status() typex.ResourceState {
 	if mm.client != nil {
 		if mm.client.IsConnectionOpen() {
 			return typex.UP
@@ -103,31 +104,40 @@ func (mm *MqttOutEndTarget) Status() typex.ResourceState {
 
 }
 
-func (mm *MqttOutEndTarget) Register(outEndId string) error {
+func (mm *mqttOutEndTarget) Register(outEndId string) error {
 	mm.PointId = outEndId
 	return nil
 }
 
-func (mm *MqttOutEndTarget) Test(outEndId string) bool {
+func (mm *mqttOutEndTarget) Test(outEndId string) bool {
 	if mm.client != nil {
 		return mm.client.IsConnected()
 	}
 	return false
 }
 
-func (mm *MqttOutEndTarget) Enabled() bool {
+func (mm *mqttOutEndTarget) Enabled() bool {
 	return mm.Enable
 }
-func (mm *MqttOutEndTarget) Details() *typex.OutEnd {
+func (mm *mqttOutEndTarget) Details() *typex.OutEnd {
 	return mm.RuleEngine.GetOutEnd(mm.PointId)
 }
 
 //
 //
 //
-func (mm *MqttOutEndTarget) To(data interface{}) error {
+func (mm *mqttOutEndTarget) To(data interface{}) error {
 	if mm.client != nil {
 		return mm.client.Publish(mm.DataTopic, 2, false, data).Error()
 	}
 	return errors.New("mqtt client is nil")
+}
+
+/*
+*
+* 配置
+*
+ */
+func (*mqttOutEndTarget) Configs() *typex.XConfig {
+	return core.GenOutConfig(typex.MQTT_TARGET, "MQTT_TARGET", httpConfig{})
 }

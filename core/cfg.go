@@ -3,11 +3,15 @@ package core
 import (
 	"net/http"
 	"os"
+	"rulex/typex"
 	"runtime"
 
 	"github.com/ngaut/log"
 	"gopkg.in/ini.v1"
 )
+
+var TM typex.TargetRegistry
+var RM typex.ResourceRegistry
 
 //
 // Global config
@@ -34,7 +38,8 @@ func InitGlobalConfig() {
 		log.Fatalf("Fail to read config file: %v", err)
 		os.Exit(1)
 	}
-
+	TM = NewTargetTypeManager()
+	RM = NewResourceTypeManager()
 	//---------------------------------------
 	GlobalConfig.MaxQueueSize = cfg.Section("app").Key("max_queue_size").MustInt(5000)
 	GlobalConfig.ResourceRestartInterval = cfg.Section("app").Key("resource_restart_interval").MustInt(204800)

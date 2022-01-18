@@ -2,10 +2,12 @@ package core
 
 import (
 	"fmt"
-	"github.com/iancoleman/strcase"
 	"reflect"
 	"rulex/typex"
 	"strings"
+
+	"github.com/iancoleman/strcase"
+	"github.com/ngaut/log"
 )
 
 //
@@ -130,14 +132,32 @@ END:
 *
  */
 
-func RenderInConfig(Type typex.InEndType, helpTip string, config interface{}) (typex.XConfig, error) {
+func GenInConfig(Type typex.InEndType, helpTip string, config interface{}) *typex.XConfig {
+	c, err := renderConfig(Type.String(), helpTip, config)
+	if err != nil {
+		log.Error(err)
+		return nil
+	}
+	return c
+}
+func GenOutConfig(Type typex.TargetType, helpTip string, config interface{}) *typex.XConfig {
+	c, err := renderConfig(Type.String(), helpTip, config)
+	if err != nil {
+		log.Error(err)
+		return nil
+	}
+	return c
+
+}
+func RenderInConfig(Type typex.InEndType, helpTip string, config interface{}) (*typex.XConfig, error) {
 	return renderConfig(Type.String(), helpTip, config)
 }
-func RenderOutConfig(Type typex.TargetType, helpTip string, config interface{}) (typex.XConfig, error) {
+func RenderOutConfig(Type typex.TargetType, helpTip string, config interface{}) (*typex.XConfig, error) {
 	return renderConfig(Type.String(), helpTip, config)
 
 }
-func renderConfig(Type string, helpTip string, config interface{}) (typex.XConfig, error) {
+
+func renderConfig(Type string, helpTip string, config interface{}) (*typex.XConfig, error) {
 	var err error
 	typee := reflect.TypeOf(config)
 	views := make([]interface{}, 0)
@@ -272,5 +292,5 @@ func renderConfig(Type string, helpTip string, config interface{}) (typex.XConfi
 
 	}
 END:
-	return typex.XConfig{Type: Type, Views: views, HelpTip: helpTip}, err
+	return &typex.XConfig{Type: Type, Views: views, HelpTip: helpTip}, err
 }

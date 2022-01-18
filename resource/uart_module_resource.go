@@ -31,14 +31,8 @@ func NewUartModuleResource(inEndId string, e typex.RuleX) typex.XResource {
 	//
 	return &s
 }
-func (*uartModuleResource) Configs() typex.XConfig {
-	config, err := core.RenderInConfig(typex.UART_MODULE, "UART_MODULE", uartConfig{})
-	if err != nil {
-		log.Error(err)
-		return typex.XConfig{}
-	} else {
-		return config
-	}
+func (*uartModuleResource) Configs() *typex.XConfig {
+	return core.GenInConfig(typex.UART_MODULE, "UART_MODULE", uartConfig{})
 }
 
 func (mm *uartModuleResource) DataModels() []typex.XDataModel {

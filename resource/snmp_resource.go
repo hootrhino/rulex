@@ -270,14 +270,8 @@ func (s *snmpResource) OnStreamApproached(data string) error {
 func (s *snmpResource) Stop() {
 
 }
-func (*snmpResource) Configs() typex.XConfig {
-	config, err := core.RenderInConfig(typex.SNMP_SERVER, "SNMP_SERVER", SNMPConfig{})
-	if err != nil {
-		log.Error(err)
-		return typex.XConfig{}
-	} else {
-		return config
-	}
+func (*snmpResource) Configs() *typex.XConfig {
+	return core.GenInConfig(typex.SNMP_SERVER, "SNMP_SERVER", SNMPConfig{})
 }
 
 //

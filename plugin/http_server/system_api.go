@@ -2,6 +2,7 @@ package httpserver
 
 import (
 	"net/http"
+	"rulex/core"
 	"rulex/statistics"
 	"rulex/typex"
 	"runtime"
@@ -136,4 +137,50 @@ func ResourceCount(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 			"plugins": c4,
 		},
 	})
+}
+
+/*
+*
+* 输入类型配置
+*
+ */
+func RType(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+	Type, _ := c.GetQuery("type")
+	if Type == "" {
+		c.JSON(http.StatusOK, Result{
+			Code: http.StatusOK,
+			Msg:  "Success",
+			Data: core.RM.All(),
+		})
+	} else {
+		c.JSON(http.StatusOK, Result{
+			Code: http.StatusOK,
+			Msg:  "Success",
+			Data: core.RM.Find(typex.InEndType(Type)),
+		})
+	}
+
+}
+
+/*
+*
+* 输出类型配置
+*
+ */
+func TType(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+	Type, _ := c.GetQuery("type")
+	if Type == "" {
+		c.JSON(http.StatusOK, Result{
+			Code: http.StatusOK,
+			Msg:  "Success",
+			Data: core.TM.All(),
+		})
+	} else {
+		c.JSON(http.StatusOK, Result{
+			Code: http.StatusOK,
+			Msg:  "Success",
+			Data: core.TM.Find(typex.TargetType(Type)),
+		})
+	}
+
 }

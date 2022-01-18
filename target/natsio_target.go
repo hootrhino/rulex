@@ -3,6 +3,7 @@ package target
 import (
 	"errors"
 	"fmt"
+	"rulex/core"
 	"rulex/typex"
 	"rulex/utils"
 
@@ -122,4 +123,13 @@ func (nt *natsTarget) Stop() {
 			nt.natsConnector = nil
 		}
 	}
+}
+
+/*
+*
+* 配置
+*
+ */
+func (*natsTarget) Configs() *typex.XConfig {
+	return core.GenOutConfig(typex.NATS_TARGET, "NATS_TARGET", httpConfig{})
 }

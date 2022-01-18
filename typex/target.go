@@ -38,6 +38,10 @@ type XTarget interface {
 	//
 	Details() *OutEnd
 	//
+	//
+	//
+	Configs() *XConfig
+	//
 	// 数据出口
 	//
 	To(data interface{}) error

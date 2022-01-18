@@ -223,3 +223,12 @@ func (mm *MqttTelemetryTarget) To(data interface{}) error {
 	}
 	return errors.New("mqtt client is nil")
 }
+
+/*
+*
+* 配置
+*
+ */
+func (*MqttTelemetryTarget) Configs() *typex.XConfig {
+	return core.GenOutConfig(typex.MQTT_TELEMETRY_TARGET, "MQTT_TELEMETRY_TARGET", httpConfig{})
+}

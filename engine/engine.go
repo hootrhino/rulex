@@ -20,8 +20,6 @@ import (
 	lua "github.com/yuin/gopher-lua"
 )
 
-var TM typex.TargetRegistry
-var RM typex.ResourceRegistry
 
 //
 //
@@ -59,8 +57,6 @@ func (e *RuleEngine) Start() *sync.Map {
 	e.ConfigMap = &sync.Map{}
 	log.Info("Init XQueue, max queue size is:", core.GlobalConfig.MaxQueueSize)
 	typex.StartQueue(core.GlobalConfig.MaxQueueSize)
-	TM = core.NewTargetTypeManager()
-	RM = core.NewResourceTypeManager()
 	return e.ConfigMap
 }
 

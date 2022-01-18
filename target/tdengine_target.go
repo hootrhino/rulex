@@ -121,19 +121,6 @@ func (td *tdEngineTarget) DataModels() []typex.XDataModel {
 }
 
 //
-// 获取前端表单定义
-//
-func (td *tdEngineTarget) Configs() typex.XConfig {
-	config, err := core.RenderInConfig(typex.InEndType(typex.TDENGINE_TARGET), "", tdEngineConfig{})
-	if err != nil {
-		log.Error(err)
-		return typex.XConfig{}
-	} else {
-		return config
-	}
-}
-
-//
 // 重载: 比如可以在重启的时候把某些数据保存起来
 //
 func (td *tdEngineTarget) Reload() {
@@ -257,4 +244,13 @@ func (td *tdEngineTarget) To(data interface{}) error {
 		}
 	}
 	return nil
+}
+
+/*
+*
+* 配置
+*
+ */
+func (*tdEngineTarget) Configs() *typex.XConfig {
+	return core.GenOutConfig(typex.TDENGINE_TARGET, "TDENGINE_TARGET", httpConfig{})
 }

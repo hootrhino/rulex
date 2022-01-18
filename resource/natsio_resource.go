@@ -123,14 +123,8 @@ func (nt *natsResource) Stop() {
 		}
 	}
 }
-func (nt *natsResource) Configs() typex.XConfig {
-	config, err := core.RenderInConfig(typex.NATS_SERVER, "NATS_SERVER", natsConfig{})
-	if err != nil {
-		log.Error(err)
-		return typex.XConfig{}
-	} else {
-		return config
-	}
+func (nt *natsResource) Configs() *typex.XConfig {
+	return core.GenInConfig(typex.NATS_SERVER, "NATS_SERVER", natsConfig{})
 }
 
 func (nt *natsResource) DataModels() []typex.XDataModel {

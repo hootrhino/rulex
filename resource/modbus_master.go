@@ -163,14 +163,8 @@ func NewModbusMasterResource(id string, e typex.RuleX) typex.XResource {
 	m.cxt = context.Background()
 	return &m
 }
-func (*modbusMasterResource) Configs() typex.XConfig {
-	config, err := core.RenderInConfig(typex.MODBUS_MASTER, "MODBUS_MASTER", modBusConfig{})
-	if err != nil {
-		log.Error(err)
-		return typex.XConfig{}
-	} else {
-		return config
-	}
+func (*modbusMasterResource) Configs() *typex.XConfig {
+	return core.GenInConfig(typex.MODBUS_MASTER, "MODBUS_MASTER", modBusConfig{})
 }
 
 func (m *modbusMasterResource) Register(inEndId string) error {

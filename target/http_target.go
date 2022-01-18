@@ -2,6 +2,7 @@ package target
 
 import (
 	"net/http"
+	"rulex/core"
 	"rulex/typex"
 	"rulex/utils"
 
@@ -71,4 +72,13 @@ func (ht *HTTPTarget) Stop() {
 }
 func (ht *HTTPTarget) Details() *typex.OutEnd {
 	return ht.RuleEngine.GetOutEnd(ht.PointId)
+}
+
+/*
+*
+* 配置
+*
+ */
+func (*HTTPTarget) Configs() *typex.XConfig {
+	return core.GenOutConfig(typex.HTTP_TARGET, "HTTP_TARGET", httpConfig{})
 }

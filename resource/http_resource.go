@@ -32,14 +32,8 @@ func NewHttpInEndResource(inEndId string, e typex.RuleX) typex.XResource {
 	h.RuleEngine = e
 	return &h
 }
-func (*httpInEndResource) Configs() typex.XConfig {
-	config, err := core.RenderInConfig(typex.HTTP, "HTTP", httpConfig{})
-	if err != nil {
-		log.Error(err)
-		return typex.XConfig{}
-	} else {
-		return config
-	}
+func (*httpInEndResource) Configs() *typex.XConfig {
+	return core.GenInConfig(typex.HTTP, "HTTP", httpConfig{})
 }
 
 //

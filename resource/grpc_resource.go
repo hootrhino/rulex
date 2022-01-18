@@ -116,14 +116,8 @@ func (m *grpcInEndResource) OnStreamApproached(data string) error {
 func (*grpcInEndResource) Driver() typex.XExternalDriver {
 	return nil
 }
-func (*grpcInEndResource) Configs() typex.XConfig {
-	config, err := core.RenderInConfig(typex.GRPC, "GRPC", grpcConfig{})
-	if err != nil {
-		log.Error(err)
-		return typex.XConfig{}
-	} else {
-		return config
-	}
+func (*grpcInEndResource) Configs() *typex.XConfig {
+	return core.GenInConfig(typex.GRPC, "GRPC", grpcConfig{})
 }
 
 //

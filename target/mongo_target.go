@@ -2,6 +2,7 @@ package target
 
 import (
 	"context"
+	"rulex/core"
 	"rulex/typex"
 	"rulex/utils"
 	"time"
@@ -115,4 +116,13 @@ func (m *MongoTarget) To(data interface{}) error {
 }
 func (m *MongoTarget) Details() *typex.OutEnd {
 	return m.RuleEngine.GetOutEnd(m.PointId)
+}
+
+/*
+*
+* 配置
+*
+ */
+func (*MongoTarget) Configs() *typex.XConfig {
+	return core.GenOutConfig(typex.MONGO_SINGLE, "MONGO_SINGLE", httpConfig{})
 }

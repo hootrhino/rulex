@@ -136,8 +136,10 @@ func (hh *HttpApiServer) Start() error {
 	//
 	hh.ginEngine.POST(_API_V1_ROOT+"validateRule", hh.addRoute(ValidateLuaSyntax))
 	//
+	// 获取配置表
 	//
-	//
+	hh.ginEngine.GET(_API_V1_ROOT+"rType", hh.addRoute(RType))
+	hh.ginEngine.GET(_API_V1_ROOT+"tType", hh.addRoute(TType))
 	log.Info("Http server started on http://127.0.0.1:2580")
 	return nil
 }
