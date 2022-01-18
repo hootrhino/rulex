@@ -439,8 +439,6 @@ func (e *RuleEngine) LoadRule(r *typex.Rule) error {
 					// Load Stdlib
 					//--------------------------------------------------------------
 					// 消息转发
-					r.LoadLib(e, rulexlib.NewBinaryLib())
-					r.LoadLib(e, rulexlib.NewMongoLib())
 					r.LoadLib(e, rulexlib.NewHttpLib())
 					r.LoadLib(e, rulexlib.NewMqttLib())
 					// JQ
@@ -451,6 +449,7 @@ func (e *RuleEngine) LoadRule(r *typex.Rule) error {
 					r.LoadLib(e, rulexlib.NewWriteInStreamLib())
 					r.LoadLib(e, rulexlib.NewWriteOutStreamLib())
 					// 二进制操作
+					r.LoadLib(e, rulexlib.NewMatchBinaryLib())
 					r.LoadLib(e, rulexlib.NewByteToBitStringLib())
 					r.LoadLib(e, rulexlib.NewGetABitOnByteLib())
 					r.LoadLib(e, rulexlib.NewByteToInt64Lib())
@@ -463,6 +462,9 @@ func (e *RuleEngine) LoadRule(r *typex.Rule) error {
 					r.LoadLib(e, rulexlib.NewUrlBuildQSLib())
 					r.LoadLib(e, rulexlib.NewUrlParseLib())
 					r.LoadLib(e, rulexlib.NewUrlRsolveLib())
+					//数据持久化
+					r.LoadLib(e, rulexlib.NewTdEngineLib())
+					r.LoadLib(e, rulexlib.NewMongoLib())
 
 					//--------------------------------------------------------------
 					// Save to rules map

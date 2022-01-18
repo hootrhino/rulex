@@ -30,7 +30,7 @@ func (o *OutEnd) SetState(s ResourceState) {
 //
 //
 //
-func NewOutEnd(t string,
+func NewOutEnd(t TargetType,
 	n string,
 	d string,
 	c map[string]interface{}) *OutEnd {

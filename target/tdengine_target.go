@@ -240,11 +240,21 @@ func execQuery(client http.Client, username string, password string, sql string,
 
 /*
 *
-* 数据到达后写入Tdengine
+* 数据到达后写入Tdengine, 这里对数据有严格约束，必须是以,分割的字符串
+* 比如: 10.22,220.12,123,......
 *
  */
 func (td *tdEngineTarget) To(data interface{}) error {
-	log.Debug(data)
+	switch s := data.(type) {
+	case string:
+		{
+			ss := strings.Split(s, ",")
+			insertSql := td.InsertSql
+			for _, v := range ss {
+				insertSql = strings.Replace(insertSql, "%v", strings.TrimSpace(v), 1)
+			}
+			return execQuery(td.client, td.Username, td.Password, insertSql, td.Url)
+		}
+	}
 	return nil
-
 }

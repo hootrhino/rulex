@@ -25,7 +25,7 @@ type BinaryLib struct {
 	regexper *regexp.Regexp
 }
 
-func NewBinaryLib() typex.XLib {
+func NewMatchBinaryLib() typex.XLib {
 	return &BinaryLib{
 		regexper: regexp.MustCompile(pattern),
 	}
