@@ -21,10 +21,10 @@ const EMPTY_STRING string = ""
 type viewType string
 
 const (
-	_NUMBER viewType = "el-number"
-	_TEXT   viewType = "el-text"
-	_INLINE viewType = "el-inline"
-	_SELECT viewType = "el-select"
+	_NUMBER viewType = "el-input-number"
+	_TEXT   viewType = "el-input-text"
+	_INLINE viewType = "el-input-inline"
+	_SELECT viewType = "el-input-select"
 	_FILE   viewType = "el-upload"
 )
 
