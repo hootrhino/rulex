@@ -58,28 +58,23 @@ func Post(client http.Client, data interface{}, api string, headers map[string]s
 	body := strings.NewReader(string(bites))
 	request, _ := http.NewRequest("POST", api, body)
 	request.Header.Set("Content-Type", "application/json")
-	if headers != nil {
-		for k, v := range headers {
-			request.Header.Set(k, v)
-		}
+	for k, v := range headers {
+		request.Header.Set(k, v)
 	}
-
 	response, err2 := client.Do(request)
 	if err2 != nil {
 		return "", err2
 	}
-	if response.StatusCode == 200 {
+	if response.StatusCode != 200 {
 		return "", fmt.Errorf("StatusCode:%v", response.StatusCode)
 	}
 	var r []byte
 	response.Body.Read(r)
-	_, err3 := ioutil.ReadAll(response.Body)
+	bytes, err3 := ioutil.ReadAll(response.Body)
 	if err3 != nil {
-		if err2 != nil {
-			return "", err3
-		}
+		return "", err3
 	}
-	return string(r), nil
+	return string(bytes), nil
 }
 
 //

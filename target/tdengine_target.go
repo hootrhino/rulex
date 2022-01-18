@@ -29,7 +29,8 @@ type tdEngineConfig struct {
 	Username       string `json:"username" validate:"required"`
 	Password       string `json:"password" validate:"required"`
 	DbName         string `json:"dbName" validate:"required"`
-	CerateTableSql string `json:"cerateTableSql" validate:"required"`
+	CreateDbSql    string `json:"createDbSql" validate:"required"`
+	CreateTableSql string `json:"createTableSql" validate:"required"`
 	InsertSql      string `json:"insertSql" validate:"required"`
 }
 type tdEngineTarget struct {
@@ -40,7 +41,8 @@ type tdEngineTarget struct {
 	Username       string
 	Password       string
 	DbName         string
-	CerateTableSql string
+	CreateDbSql    string
+	CreateTableSql string
 	InsertSql      string
 	Url            string
 }
@@ -51,9 +53,11 @@ type tdrs struct {
 }
 
 func NewTdEngineTarget(e typex.RuleX) typex.XTarget {
-	return &tdEngineTarget{
+	td := tdEngineTarget{
 		client: http.Client{},
 	}
+	td.RuleEngine = e
+	return &td
 
 }
 
@@ -82,7 +86,7 @@ func (td *tdEngineTarget) Register(inEndId string) error {
 func (td *tdEngineTarget) Start() error {
 	// http://<fqdn>:<port>/rest/sql/[db_name]
 	// curl -u root:taosdata -d 'show databases;' 127.0.0.1:6041/rest/sql
-	config := td.RuleEngine.GetInEnd(td.PointId).Config
+	config := td.RuleEngine.GetOutEnd(td.PointId).Config
 	var mainConfig tdEngineConfig
 	if err := utils.BindResourceConfig(config, &mainConfig); err != nil {
 		return err
@@ -92,11 +96,14 @@ func (td *tdEngineTarget) Start() error {
 	td.Username = mainConfig.Username
 	td.Password = mainConfig.Password
 	td.DbName = mainConfig.DbName
-	td.CerateTableSql = mainConfig.CerateTableSql
+	td.CreateDbSql = mainConfig.CreateDbSql
+	td.CreateTableSql = mainConfig.CreateTableSql
 	td.InsertSql = mainConfig.InsertSql
 	td.Url = fmt.Sprintf("http://%s:%v/rest/sql/%s", td.Fqdn, td.Port, td.DbName)
-	return execQuery(td.client, td.Username, td.Password, td.CerateTableSql, td.Url)
-
+	if err := execQuery(td.client, td.Username, td.Password, td.CreateDbSql, td.Url); err != nil {
+		return err
+	}
+	return execQuery(td.client, td.Username, td.Password, td.CreateTableSql, td.Url)
 }
 
 //
@@ -145,9 +152,9 @@ func (td *tdEngineTarget) Pause() {
 func (td *tdEngineTarget) Status() typex.ResourceState {
 	if err := execQuery(td.client, td.Username, td.Password, "SELECT CLIENT_VERSION();", td.Url); err != nil {
 		log.Error(err)
-		return typex.UP
+		return typex.DOWN
 	}
-	return typex.DOWN
+	return typex.UP
 }
 
 //
@@ -193,23 +200,20 @@ func post(client http.Client,
 	headers map[string]string) (string, error) {
 	body := strings.NewReader(sql)
 	request, _ := http.NewRequest("POST", url, body)
+	request.Header.Add("Content-Type", "text/plain")
 	request.SetBasicAuth(username, password)
 	response, err2 := client.Do(request)
 	if err2 != nil {
 		return "", err2
 	}
-	if response.StatusCode == 200 {
+	if response.StatusCode != 200 {
 		return "", fmt.Errorf("StatusCode:%v", response.StatusCode)
 	}
-	var r []byte
-	response.Body.Read(r)
-	_, err3 := ioutil.ReadAll(response.Body)
+	bytes, err3 := ioutil.ReadAll(response.Body)
 	if err3 != nil {
-		if err2 != nil {
-			return "", err3
-		}
+		return "", err3
 	}
-	return string(r), nil
+	return string(bytes), nil
 }
 
 /*
@@ -233,7 +237,14 @@ func execQuery(client http.Client, username string, password string, sql string,
 	}
 	return nil
 }
+
+/*
+*
+* 数据到达后写入Tdengine
+*
+ */
 func (td *tdEngineTarget) To(data interface{}) error {
+	log.Debug(data)
 	return nil
 
 }
