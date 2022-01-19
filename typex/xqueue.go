@@ -119,9 +119,6 @@ func StartQueue(maxQueueSize int) {
 						}
 					}
 				}
-			default:
-				{
-				}
 			}
 		}
 	}(context.Background(), DefaultDataCacheQueue)

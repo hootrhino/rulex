@@ -62,11 +62,10 @@ func (a *uartDriver) SetState(state typex.DriverState) {
 
 }
 func (a *uartDriver) Work() error {
-
+	ticker := time.NewTicker(time.Duration(time.Microsecond * 400))
 	go func(ctx context.Context) {
 		acc := 0
 		data := make([]byte, 1)
-		ticker := time.NewTicker(time.Duration(time.Microsecond * 400))
 		for a.state == typex.RUNNING {
 			<-ticker.C
 			if _, err0 := a.serialPort.Read(data); err0 != nil {
