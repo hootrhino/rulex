@@ -66,15 +66,19 @@ func Post(client http.Client, data interface{}, api string, headers map[string]s
 		return "", err2
 	}
 	if response.StatusCode != 200 {
-		return "", fmt.Errorf("StatusCode:%v", response.StatusCode)
+		bytes0, err3 := ioutil.ReadAll(response.Body)
+		if err3 != nil {
+			return "", err3
+		}
+		return "", fmt.Errorf("Error:%v", string(bytes0))
 	}
 	var r []byte
 	response.Body.Read(r)
-	bytes, err3 := ioutil.ReadAll(response.Body)
+	bytes1, err3 := ioutil.ReadAll(response.Body)
 	if err3 != nil {
 		return "", err3
 	}
-	return string(bytes), nil
+	return string(bytes1), nil
 }
 
 //

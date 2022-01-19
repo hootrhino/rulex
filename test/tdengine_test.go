@@ -28,14 +28,14 @@ type tdEngineConfig struct {
 
 func Test_gen_td_config(t *testing.T) {
 	td := tdEngineConfig{
-		Fqdn:           "127.0.0.1",
-		Port:           4400,
-		Username:       "root",
-		Password:       "taosdata",
-		DbName:         "test",
-		CreateDbSql:    "CREATE DATABASE IF NOT EXISTS device UPDATE 0;",
-		CreateTableSql: "CREATE TABLE IF NOT EXISTS meter (ts TIMESTAMP, current FLOAT, valtage FLOAT);",
-		InsertSql:      `INSERT INTO meter VALUES (NOW, %v, %v);`,
+		Fqdn:           "127.0.0.1",                                                                      // 服务地址
+		Port:           4400,                                                                             // 服务端口
+		Username:       "root",                                                                           // 用户
+		Password:       "taosdata",                                                                       // 密码
+		DbName:         "test",                                                                           // 数据库名
+		CreateDbSql:    "CREATE DATABASE IF NOT EXISTS device UPDATE 0;",                                 // 建库SQL
+		CreateTableSql: "CREATE TABLE IF NOT EXISTS meter (ts TIMESTAMP, current FLOAT, valtage FLOAT);", // 建表SQL
+		InsertSql:      `INSERT INTO meter VALUES (NOW, %v, %v);`,                                        // 插入SQL
 	}
 	b, _ := json.Marshal(td)
 	t.Log(string(b))

@@ -24,14 +24,14 @@ import (
 // db_name: 可选参数，指定本次所执行的 SQL 语句的默认数据库库名
 // curl -u root:taosdata -d 'show databases;' 106.15.225.172:6041/rest/sql
 type tdEngineConfig struct {
-	Fqdn           string `json:"fqdn" validate:"required"`
-	Port           int    `json:"port" validate:"required"`
-	Username       string `json:"username" validate:"required"`
-	Password       string `json:"password" validate:"required"`
-	DbName         string `json:"dbName" validate:"required"`
-	CreateDbSql    string `json:"createDbSql" validate:"required"`
-	CreateTableSql string `json:"createTableSql" validate:"required"`
-	InsertSql      string `json:"insertSql" validate:"required"`
+	Fqdn           string `json:"fqdn" validate:"required"`           // 服务地址
+	Port           int    `json:"port" validate:"required"`           // 服务端口
+	Username       string `json:"username" validate:"required"`       // 用户
+	Password       string `json:"password" validate:"required"`       // 密码
+	DbName         string `json:"dbName" validate:"required"`         // 数据库名
+	CreateDbSql    string `json:"createDbSql" validate:"required"`    // 建库SQL
+	CreateTableSql string `json:"createTableSql" validate:"required"` // 建表SQL
+	InsertSql      string `json:"insertSql" validate:"required"`      // 插入SQL
 }
 type tdEngineTarget struct {
 	typex.XStatus
@@ -194,13 +194,17 @@ func post(client http.Client,
 		return "", err2
 	}
 	if response.StatusCode != 200 {
-		return "", fmt.Errorf("StatusCode:%v", response.StatusCode)
+		bytes0, err3 := ioutil.ReadAll(response.Body)
+		if err3 != nil {
+			return "", err3
+		}
+		return "", fmt.Errorf("Error:%v", string(bytes0))
 	}
-	bytes, err3 := ioutil.ReadAll(response.Body)
+	bytes1, err3 := ioutil.ReadAll(response.Body)
 	if err3 != nil {
 		return "", err3
 	}
-	return string(bytes), nil
+	return string(bytes1), nil
 }
 
 /*
