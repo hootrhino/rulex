@@ -206,26 +206,36 @@ func startResources(resource typex.XResource, in *typex.InEnd, e *RuleEngine) er
 		e.RemoveInEnd(in.UUID)
 		return err
 	}
+	ticker := time.NewTicker(time.Duration(time.Second * 5))
 	go func(ctx context.Context) {
 		// 5 seconds
-		ticker := time.NewTicker(time.Duration(time.Second * 5))
-		for {
-			//
-			<-ticker.C
+	TICKER:
+		<-ticker.C
+		select {
+		case <-ctx.Done():
 			{
-				//
-				// 通过HTTP删除资源的时候, 会把数据清了, 只要检测到资源没了, 这里也退出
-				//
-				if resource.Details() == nil {
-					return
-				}
-				//------------------------------------
-				// 驱动挂了资源也挂了, 因此检查驱动状态在先
-				//------------------------------------
-				tryIfRestartResource(resource, e, in.UUID)
-				// checkDriverState(resource, e, in.UUID)
-				//------------------------------------
+				return
 			}
+		default:
+			{
+				goto CHECK
+			}
+		}
+	CHECK:
+		{
+			//
+			// 通过HTTP删除资源的时候, 会把数据清了, 只要检测到资源没了, 这里也退出
+			//
+			if resource.Details() == nil {
+				return
+			}
+			//------------------------------------
+			// 驱动挂了资源也挂了, 因此检查驱动状态在先
+			//------------------------------------
+			tryIfRestartResource(resource, e, in.UUID)
+			// checkDriverState(resource, e, in.UUID)
+			//------------------------------------
+			goto TICKER
 		}
 
 	}(context.Background())
@@ -380,21 +390,31 @@ func startTarget(target typex.XTarget, out *typex.OutEnd, e typex.RuleX) error {
 	// Set resources to inend
 	out.Target = target
 	//
+	ticker := time.NewTicker(time.Duration(time.Second * 5))
 	tryIfRestartTarget(target, e, out.UUID)
 	go func(ctx context.Context) {
 
 		// 5 seconds
-		ticker := time.NewTicker(time.Duration(time.Second * 5))
-		for {
-			//
-			<-ticker.C
+		//
+	TICKER:
+		<-ticker.C
+		select {
+		case <-ctx.Done():
 			{
-				if target.Details() == nil {
-					return
-				}
-				tryIfRestartTarget(target, e, out.UUID)
-
+				return
 			}
+		default:
+			{
+				goto CHECK
+			}
+		}
+	CHECK:
+		{
+			if target.Details() == nil {
+				return
+			}
+			tryIfRestartTarget(target, e, out.UUID)
+			goto TICKER
 		}
 
 	}(context.Background())
