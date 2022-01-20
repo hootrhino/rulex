@@ -152,3 +152,6 @@ Actions = {
 
 - 博客1：https://wwhai.gitee.io
 - 博客2：https://wwhai.github.io
+
+## Star
+<img src="https://starchart.cc/wwhai/rulex.svg">
