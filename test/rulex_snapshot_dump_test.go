@@ -16,6 +16,7 @@ import (
 
 	"github.com/ngaut/log"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 /*
@@ -71,7 +72,7 @@ func Test_snapshot_dump(t *testing.T) {
 	if err := e.LoadRule(rule); err != nil {
 		log.Error(err)
 	}
-	conn, err := grpc.Dial("127.0.0.1:2581", grpc.WithInsecure())
+	conn, err := grpc.Dial("127.0.0.1:2581", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Error("grpc.Dial err: %v", err)
 	}

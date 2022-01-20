@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 type tdEngineConfig struct {
@@ -120,7 +121,7 @@ func Test_data_to_tdengine(t *testing.T) {
 	//
 	//
 	//
-	conn, err := grpc.Dial("127.0.0.1:2581", grpc.WithInsecure())
+	conn, err := grpc.Dial("127.0.0.1:2581", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		t.Errorf("grpc.Dial err: %v", err)
 	}
