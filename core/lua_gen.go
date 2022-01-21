@@ -27,9 +27,9 @@ end
 `
 
 type GenLuaConfig struct {
-	Big    bool    `json:"big"`
-	More   bool    `json:"more"`
-	Fields []Field `json:"fields"`
+	Big    bool    `json:"big"`    // 大小端
+	More   bool    `json:"more"`   // 需要剩下的字节？
+	Fields []Field `json:"fields"` // 字段列表
 }
 
 func GenCode(fields []Field, big bool, more bool) string {
