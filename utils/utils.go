@@ -111,7 +111,6 @@ func ShowBanner() {
 			fmt.Println("\n", string(data))
 		}
 	}
-	log.Info("Rulex start successfully")
 }
 
 //

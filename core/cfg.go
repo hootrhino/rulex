@@ -3,31 +3,19 @@ package core
 import (
 	"net/http"
 	"os"
+	"rulex/typex"
 	"runtime"
 
 	"github.com/ngaut/log"
 	"gopkg.in/ini.v1"
 )
 
-//
-// Global config
-//
-type RulexConfig struct {
-	MaxQueueSize            int    `json:"maxQueueSize"`
-	ResourceRestartInterval int    `json:"resourceRestartInterval"`
-	GomaxProcs              int    `json:"gomaxProcs"`
-	EnablePProf             bool   `json:"enablePProf"`
-	LogLevel                string `json:"logLevel"`
-	LogPath                 string `json:"logPath"`
-	LuaLogPath              string `json:"luaLogPath"`
-}
-
-var GlobalConfig RulexConfig
+var GlobalConfig typex.RulexConfig
 
 //
 // Init config
 //
-func InitGlobalConfig() {
+func InitGlobalConfig() typex.RulexConfig {
 	log.Info("Init rulex config")
 	cfg, err := ini.Load("conf/rulex.ini")
 	if err != nil {
@@ -37,15 +25,23 @@ func InitGlobalConfig() {
 
 	//---------------------------------------
 	GlobalConfig.MaxQueueSize = cfg.Section("app").Key("max_queue_size").MustInt(5000)
+	log.Info("| MaxQueueSize is:", GlobalConfig.MaxQueueSize)
 	GlobalConfig.ResourceRestartInterval = cfg.Section("app").Key("resource_restart_interval").MustInt(204800)
+	log.Info("| ResourceRestartInterval is:", GlobalConfig.ResourceRestartInterval)
 	GlobalConfig.GomaxProcs = cfg.Section("app").Key("gomax_procs").MustInt(2)
+	log.Info("| GomaxProcs is:", GlobalConfig.GomaxProcs)
 	GlobalConfig.EnablePProf = cfg.Section("app").Key("enable_pprof").MustBool(false)
+	log.Info("| EnablePProf is:", GlobalConfig.EnablePProf)
 	GlobalConfig.LogLevel = cfg.Section("app").Key("log_level").MustString("info")
+	log.Info("| LogLevel is:", GlobalConfig.LogLevel)
 	GlobalConfig.LogPath = cfg.Section("app").Key("log_path").MustString("./rulex-log.txt")
+	log.Info("| LogPath is:", GlobalConfig.LogPath)
 	GlobalConfig.LuaLogPath = cfg.Section("app").Key("lua_log_path").MustString("./rulex-lua-log.txt")
+	log.Info("| LuaLogPath is:", GlobalConfig.LuaLogPath)
 
 	log.Info("Rulex config init successfully")
 
+	return GlobalConfig
 }
 
 func SetLogLevel() {

@@ -3,13 +3,26 @@ package typex
 import "sync"
 
 //
+// Global config
+//
+type RulexConfig struct {
+	MaxQueueSize            int    `json:"maxQueueSize"`
+	ResourceRestartInterval int    `json:"resourceRestartInterval"`
+	GomaxProcs              int    `json:"gomaxProcs"`
+	EnablePProf             bool   `json:"enablePProf"`
+	LogLevel                string `json:"logLevel"`
+	LogPath                 string `json:"logPath"`
+	LuaLogPath              string `json:"luaLogPath"`
+}
+
+//
 // RuleX interface
 //
 type RuleX interface {
 	//
 	// 启动规则引擎
 	//
-	Start() *sync.Map
+	Start() *RulexConfig
 	//
 	// 消息推到队列
 	//
@@ -23,7 +36,7 @@ type RuleX interface {
 	//
 	// 获取配置
 	//
-	GetConfig(k string) interface{}
+	GetConfig() *RulexConfig
 	//
 	// 加载输入
 	//

@@ -25,40 +25,38 @@ import (
 // RuleEngine
 //
 type RuleEngine struct {
-	Hooks     *sync.Map `json:"hooks"`
-	Rules     *sync.Map `json:"rules"`
-	Plugins   *sync.Map `json:"plugins"`
-	InEnds    *sync.Map `json:"inends"`
-	OutEnds   *sync.Map `json:"outends"`
-	Drivers   *sync.Map `json:"drivers"`
-	ConfigMap *sync.Map `json:"configMap"`
+	Hooks   *sync.Map          `json:"hooks"`
+	Rules   *sync.Map          `json:"rules"`
+	Plugins *sync.Map          `json:"plugins"`
+	InEnds  *sync.Map          `json:"inends"`
+	OutEnds *sync.Map          `json:"outends"`
+	Drivers *sync.Map          `json:"drivers"`
+	Config  *typex.RulexConfig `json:"config"`
 }
 
 //
 //
 //
-func NewRuleEngine() typex.RuleX {
+func NewRuleEngine(config typex.RulexConfig) typex.RuleX {
 	return &RuleEngine{
-		Plugins:   &sync.Map{},
-		Hooks:     &sync.Map{},
-		Rules:     &sync.Map{},
-		InEnds:    &sync.Map{},
-		OutEnds:   &sync.Map{},
-		Drivers:   &sync.Map{},
-		ConfigMap: &sync.Map{},
+		Plugins: &sync.Map{},
+		Hooks:   &sync.Map{},
+		Rules:   &sync.Map{},
+		InEnds:  &sync.Map{},
+		OutEnds: &sync.Map{},
+		Drivers: &sync.Map{},
+		Config:  &config,
 	}
 }
 
 //
 //
 //
-func (e *RuleEngine) Start() *sync.Map {
-	e.ConfigMap = &sync.Map{}
-	log.Info("Init XQueue, max queue size is:", core.GlobalConfig.MaxQueueSize)
+func (e *RuleEngine) Start() *typex.RulexConfig {
 	typex.StartQueue(core.GlobalConfig.MaxQueueSize)
 	resource.LoadRt()
 	target.LoadTt()
-	return e.ConfigMap
+	return e.Config
 }
 
 //
@@ -126,13 +124,8 @@ func (e *RuleEngine) Version() typex.Version {
 
 //
 //
-func (e *RuleEngine) GetConfig(k string) interface{} {
-	v, ok := e.ConfigMap.Load(k)
-	if ok {
-		return v
-	} else {
-		return map[string]interface{}{}
-	}
+func (e *RuleEngine) GetConfig() *typex.RulexConfig {
+	return e.Config
 }
 
 /*
