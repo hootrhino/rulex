@@ -14,7 +14,7 @@ func TestLuaSyntax1(t *testing.T) {
 	core.InitGlobalConfig()
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, syscall.SIGINT, syscall.SIGABRT)
-	engine := engine.NewRuleEngine()
+	engine := engine.NewRuleEngine(core.InitGlobalConfig())
 	engine.Start()
 	// Grpc Inend
 	grpcInend := typex.NewInEnd("GRPC", "Rulex Grpc InEnd", "Rulex Grpc InEnd", map[string]interface{}{
@@ -46,7 +46,7 @@ func TestLuaSyntax2(t *testing.T) {
 	core.InitGlobalConfig()
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, syscall.SIGINT, syscall.SIGABRT)
-	engine := engine.NewRuleEngine()
+	engine := engine.NewRuleEngine(core.InitGlobalConfig())
 	engine.Start()
 	// Grpc Inend
 	grpcInend := typex.NewInEnd("GRPC", "Rulex Grpc InEnd", "Rulex Grpc InEnd", map[string]interface{}{

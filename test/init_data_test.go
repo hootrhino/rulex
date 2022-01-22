@@ -2,6 +2,7 @@ package test
 
 import (
 	"encoding/json"
+	"rulex/core"
 	"rulex/engine"
 	httpserver "rulex/plugin/http_server"
 	"rulex/typex"
@@ -14,7 +15,7 @@ import (
 // 初始化一些测试数据
 //
 func TestInitData(t *testing.T) {
-	engine := engine.NewRuleEngine()
+	engine := engine.NewRuleEngine(core.InitGlobalConfig())
 	hh := httpserver.NewHttpApiServer(3580, "plugin/http_server/templates", "rulex-default-data.db", engine)
 	// HttpApiServer loaded default
 	if err := engine.LoadPlugin(hh); err != nil {
