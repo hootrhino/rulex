@@ -9,7 +9,11 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
-
+/*
+*
+*
+*
+*/
 func (s *HttpApiServer) InitDb(dbPath string) {
 	var err error
 	s.sqliteDb, err = gorm.Open(sqlite.Open(dbPath), &gorm.Config{

@@ -24,13 +24,13 @@ func InEnds(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		})
 		c.JSON(http.StatusOK, Result{
 			Code: http.StatusOK,
-			Msg:  "Success",
+			Msg:  SUCCESS,
 			Data: data,
 		})
 	} else {
 		c.JSON(http.StatusOK, Result{
 			Code: http.StatusOK,
-			Msg:  "Success",
+			Msg:  SUCCESS,
 			Data: e.GetInEnd(uuid),
 		})
 	}

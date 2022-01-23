@@ -35,6 +35,7 @@ require (
 	github.com/urfave/cli/v2 v2.3.0
 	github.com/wwhai/gopher-json v0.0.0-20201124131017-552bb3c4c3bf
 	github.com/yuin/gopher-lua v0.0.0-20210529063254-f4c35e4016d9
+	go.bug.st/serial v1.3.4
 	go.mongodb.org/mongo-driver v1.8.2
 	go.uber.org/zap v1.20.0
 	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97

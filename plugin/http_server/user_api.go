@@ -15,7 +15,7 @@ func Users(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	users := hh.AllMUser()
 	c.JSON(http.StatusOK, Result{
 		Code: http.StatusOK,
-		Msg:  "Success",
+		Msg:  SUCCESS,
 		Data: users,
 	})
 }
@@ -106,7 +106,7 @@ func Logs(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	}
 	c.JSON(http.StatusOK, Result{
 		Code: http.StatusOK,
-		Msg:  "Success",
+		Msg:  SUCCESS,
 		Data: logs,
 	})
 }

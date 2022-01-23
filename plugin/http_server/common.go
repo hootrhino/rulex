@@ -10,6 +10,8 @@ import (
 	"gopkg.in/square/go-jose.v2/json"
 )
 
+const SUCCESS string = "Success"
+
 // Http Return
 type R struct {
 	Code int    `json:"code" binding:"required"`

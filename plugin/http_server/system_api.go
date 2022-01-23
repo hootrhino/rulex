@@ -12,6 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/shirou/gopsutil/cpu"
 	"github.com/shirou/gopsutil/disk"
+	"go.bug.st/serial"
 )
 
 func Index(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
@@ -40,7 +41,7 @@ func Plugins(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	})
 	c.JSON(http.StatusOK, Result{
 		Code: http.StatusOK,
-		Msg:  "Success",
+		Msg:  SUCCESS,
 		Data: data,
 	})
 }
@@ -60,7 +61,7 @@ func System(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	runtime.ReadMemStats(&m)
 	c.JSON(http.StatusOK, Result{
 		Code: http.StatusOK,
-		Msg:  "Success",
+		Msg:  SUCCESS,
 		Data: gin.H{
 			"version":    e.Version().Version,
 			"diskInfo":   int(diskInfo.UsedPercent),
@@ -87,7 +88,7 @@ func Drivers(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	})
 	c.JSON(200, Result{
 		Code: 200,
-		Msg:  "Success",
+		Msg:  SUCCESS,
 		Data: data,
 	})
 }
@@ -98,7 +99,7 @@ func Drivers(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 func Statistics(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	c.JSON(http.StatusOK, Result{
 		Code: http.StatusOK,
-		Msg:  "Success",
+		Msg:  SUCCESS,
 		Data: statistics.AllStatistics(),
 	})
 }
@@ -130,7 +131,7 @@ func ResourceCount(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	})
 	c.JSON(http.StatusOK, Result{
 		Code: http.StatusOK,
-		Msg:  "Success",
+		Msg:  SUCCESS,
 		Data: map[string]int{
 			"inends":  c1,
 			"outends": c2,
@@ -150,13 +151,13 @@ func RType(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	if Type == "" {
 		c.JSON(http.StatusOK, Result{
 			Code: http.StatusOK,
-			Msg:  "Success",
+			Msg:  SUCCESS,
 			Data: resource.RM.All(),
 		})
 	} else {
 		c.JSON(http.StatusOK, Result{
 			Code: http.StatusOK,
-			Msg:  "Success",
+			Msg:  SUCCESS,
 			Data: resource.RM.Find(typex.InEndType(Type)),
 		})
 	}
@@ -173,15 +174,37 @@ func TType(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	if Type == "" {
 		c.JSON(http.StatusOK, Result{
 			Code: http.StatusOK,
-			Msg:  "Success",
+			Msg:  SUCCESS,
 			Data: target.TM.All(),
 		})
 	} else {
 		c.JSON(http.StatusOK, Result{
 			Code: http.StatusOK,
-			Msg:  "Success",
+			Msg:  SUCCESS,
 			Data: target.TM.Find(typex.TargetType(Type)),
 		})
 	}
 
+}
+
+/*
+*
+* 获取本地的串口列表
+*
+ */
+func GetUartList(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+	ports, err := serial.GetPortsList()
+	if err != nil {
+		c.JSON(http.StatusOK, Result{
+			Code: http.StatusBadGateway,
+			Msg:  err.Error(),
+			Data: ports,
+		})
+		return
+	}
+	c.JSON(http.StatusOK, Result{
+		Code: http.StatusOK,
+		Msg:  SUCCESS,
+		Data: ports,
+	})
 }
