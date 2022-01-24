@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"runtime"
 
 	"github.com/ngaut/log"
 	"github.com/urfave/cli/v2"
@@ -53,7 +54,8 @@ func main() {
 					},
 				},
 				Action: func(c *cli.Context) error {
-					fmt.Println("Current Version is: [" + typex.DefaultVersion.Version + "]")
+					version := fmt.Sprintf("[%v-%v-%v]", runtime.GOOS, runtime.GOARCH, typex.DefaultVersion.Version)
+					fmt.Println("|> Current Version is: " + version)
 					return nil
 				},
 			},
