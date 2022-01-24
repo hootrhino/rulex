@@ -36,6 +36,7 @@ type siemensS7config struct {
 	Host         string       `json:"host" validate:"required" title:"IP地址" info:""`          // 127.0.0.1
 	Rack         *int         `json:"rack" validate:"required" title:"架号" info:""`            // 0
 	Slot         *int         `json:"slot" validate:"required" title:"槽号" info:""`            // 1
+	Model        *int         `json:"model" validate:"required" title:"型号" info:""`           // 当前仅仅支持 s7-300
 	Timeout      *int         `json:"timeout" validate:"required" title:"连接超时时间" info:""`     // 5s
 	IdleTimeout  *int         `json:"idleTimeout" validate:"required" title:"心跳超时时间" info:""` // 5s
 	Frequency    *int         `json:"frequency" validate:"required" title:"采集频率" info:""`     // 5s
