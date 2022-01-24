@@ -28,6 +28,7 @@ const (
 	_INLINE viewType = "el-input-inline"
 	_SELECT viewType = "el-input-select"
 	_FILE   viewType = "el-upload"
+	_MAP    viewType = "el-map"
 )
 
 type view struct {
