@@ -6,6 +6,11 @@ import (
 	"github.com/goburrow/modbus"
 )
 
+/*
+*
+* Modbus RTU 驱动直接用了库，所以这个驱动仅仅是为了符合模式，其实没有实际作用，或者留着以后扩展用
+*
+ */
 type modBusRtuDriver struct {
 	state      typex.DriverState
 	client     modbus.Client
