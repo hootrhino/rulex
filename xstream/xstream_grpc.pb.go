@@ -21,7 +21,7 @@ type XStreamClient interface {
 	// 收到来自其他端点的请求
 	OnApproached(ctx context.Context, opts ...grpc.CallOption) (XStream_OnApproachedClient, error)
 	// 给其他端点发送请求
-	SendStream(ctx context.Context, opts ...grpc.CallOption) (XStream_SendStreamClient, error)
+	SendStream(ctx context.Context, in *Request, opts ...grpc.CallOption) (XStream_SendStreamClient, error)
 }
 
 type xStreamClient struct {
@@ -42,8 +42,8 @@ func (c *xStreamClient) OnApproached(ctx context.Context, opts ...grpc.CallOptio
 }
 
 type XStream_OnApproachedClient interface {
-	Send(*Data) error
-	CloseAndRecv() (*Response, error)
+	Send(*Request) error
+	CloseAndRecv() (*Request, error)
 	grpc.ClientStream
 }
 
@@ -51,33 +51,38 @@ type xStreamOnApproachedClient struct {
 	grpc.ClientStream
 }
 
-func (x *xStreamOnApproachedClient) Send(m *Data) error {
+func (x *xStreamOnApproachedClient) Send(m *Request) error {
 	return x.ClientStream.SendMsg(m)
 }
 
-func (x *xStreamOnApproachedClient) CloseAndRecv() (*Response, error) {
+func (x *xStreamOnApproachedClient) CloseAndRecv() (*Request, error) {
 	if err := x.ClientStream.CloseSend(); err != nil {
 		return nil, err
 	}
-	m := new(Response)
+	m := new(Request)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
 	return m, nil
 }
 
-func (c *xStreamClient) SendStream(ctx context.Context, opts ...grpc.CallOption) (XStream_SendStreamClient, error) {
+func (c *xStreamClient) SendStream(ctx context.Context, in *Request, opts ...grpc.CallOption) (XStream_SendStreamClient, error) {
 	stream, err := c.cc.NewStream(ctx, &XStream_ServiceDesc.Streams[1], "/xstream.XStream/SendStream", opts...)
 	if err != nil {
 		return nil, err
 	}
 	x := &xStreamSendStreamClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
 	return x, nil
 }
 
 type XStream_SendStreamClient interface {
-	Send(*Data) error
-	CloseAndRecv() (*Response, error)
+	Recv() (*Response, error)
 	grpc.ClientStream
 }
 
@@ -85,14 +90,7 @@ type xStreamSendStreamClient struct {
 	grpc.ClientStream
 }
 
-func (x *xStreamSendStreamClient) Send(m *Data) error {
-	return x.ClientStream.SendMsg(m)
-}
-
-func (x *xStreamSendStreamClient) CloseAndRecv() (*Response, error) {
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
+func (x *xStreamSendStreamClient) Recv() (*Response, error) {
 	m := new(Response)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
@@ -107,7 +105,7 @@ type XStreamServer interface {
 	// 收到来自其他端点的请求
 	OnApproached(XStream_OnApproachedServer) error
 	// 给其他端点发送请求
-	SendStream(XStream_SendStreamServer) error
+	SendStream(*Request, XStream_SendStreamServer) error
 	mustEmbedUnimplementedXStreamServer()
 }
 
@@ -118,7 +116,7 @@ type UnimplementedXStreamServer struct {
 func (UnimplementedXStreamServer) OnApproached(XStream_OnApproachedServer) error {
 	return status.Errorf(codes.Unimplemented, "method OnApproached not implemented")
 }
-func (UnimplementedXStreamServer) SendStream(XStream_SendStreamServer) error {
+func (UnimplementedXStreamServer) SendStream(*Request, XStream_SendStreamServer) error {
 	return status.Errorf(codes.Unimplemented, "method SendStream not implemented")
 }
 func (UnimplementedXStreamServer) mustEmbedUnimplementedXStreamServer() {}
@@ -139,8 +137,8 @@ func _XStream_OnApproached_Handler(srv interface{}, stream grpc.ServerStream) er
 }
 
 type XStream_OnApproachedServer interface {
-	SendAndClose(*Response) error
-	Recv() (*Data, error)
+	SendAndClose(*Request) error
+	Recv() (*Request, error)
 	grpc.ServerStream
 }
 
@@ -148,12 +146,12 @@ type xStreamOnApproachedServer struct {
 	grpc.ServerStream
 }
 
-func (x *xStreamOnApproachedServer) SendAndClose(m *Response) error {
+func (x *xStreamOnApproachedServer) SendAndClose(m *Request) error {
 	return x.ServerStream.SendMsg(m)
 }
 
-func (x *xStreamOnApproachedServer) Recv() (*Data, error) {
-	m := new(Data)
+func (x *xStreamOnApproachedServer) Recv() (*Request, error) {
+	m := new(Request)
 	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -161,12 +159,15 @@ func (x *xStreamOnApproachedServer) Recv() (*Data, error) {
 }
 
 func _XStream_SendStream_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(XStreamServer).SendStream(&xStreamSendStreamServer{stream})
+	m := new(Request)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(XStreamServer).SendStream(m, &xStreamSendStreamServer{stream})
 }
 
 type XStream_SendStreamServer interface {
-	SendAndClose(*Response) error
-	Recv() (*Data, error)
+	Send(*Response) error
 	grpc.ServerStream
 }
 
@@ -174,16 +175,8 @@ type xStreamSendStreamServer struct {
 	grpc.ServerStream
 }
 
-func (x *xStreamSendStreamServer) SendAndClose(m *Response) error {
+func (x *xStreamSendStreamServer) Send(m *Response) error {
 	return x.ServerStream.SendMsg(m)
-}
-
-func (x *xStreamSendStreamServer) Recv() (*Data, error) {
-	m := new(Data)
-	if err := x.ServerStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
 }
 
 // XStream_ServiceDesc is the grpc.ServiceDesc for XStream service.
@@ -202,7 +195,7 @@ var XStream_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "SendStream",
 			Handler:       _XStream_SendStream_Handler,
-			ClientStreams: true,
+			ServerStreams: true,
 		},
 	},
 	Metadata: "xstream.proto",

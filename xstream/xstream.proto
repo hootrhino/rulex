@@ -8,18 +8,17 @@ package xstream;
 
 service XStream {
   // 收到来自其他端点的请求
-  rpc OnApproached (stream Data) returns (Response) {}
+  rpc OnApproached (stream Request) returns (Request) {}
   // 给其他端点发送请求
-  rpc SendStream (stream Data) returns (Response) {}
+  rpc SendStream (Request) returns (stream Response) {}
 }
 
-message Data {
-  // 参数全部为String
-  string value = 1;
+message Request {
+  bytes value = 1;
 }
 
 message Response {
   int32 code = 1;
   string message = 2;
-  string data=3;
+  string Request = 3;
 }
