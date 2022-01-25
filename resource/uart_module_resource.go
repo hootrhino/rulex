@@ -13,10 +13,10 @@ import (
 
 type uartModuleResource struct {
 	typex.XStatus
-	loraDriver typex.XExternalDriver
+	uartDriver typex.XExternalDriver
 }
 type uartConfig struct {
-	Address  string `json:"address" validate:"required" title:"采集地址" info:""`
+	Address  string `json:"address" validate:"required" title:"串口地址" info:""`
 	BaudRate int    `json:"baudRate" validate:"required" title:"波特率" info:""`
 	DataBits int    `json:"dataBits" validate:"required" title:"数据位" info:""`
 	StopBits int    `json:"stopBits" validate:"required" title:"停止位" info:""`
@@ -43,7 +43,7 @@ func (u *uartModuleResource) Test(inEndId string) bool {
 	return true
 }
 func (m *uartModuleResource) OnStreamApproached(data string) error {
-	m.loraDriver.Write([]byte(data))
+	m.uartDriver.Write([]byte(data))
 	return nil
 }
 func (u *uartModuleResource) Register(inEndId string) error {
@@ -57,25 +57,20 @@ func (u *uartModuleResource) Start() error {
 	if err := utils.BindResourceConfig(config, &mainConfig); err != nil {
 		return err
 	}
-	serialPort, err := serial.Open(&serial.Config{
-		Address:  mainConfig.Address,
-		BaudRate: mainConfig.BaudRate, //115200
-		DataBits: mainConfig.DataBits, //8
-		StopBits: mainConfig.StopBits, //1
+	driver, err := driver.NewUartDriver(serial.Config{
+		Address:  mainConfig.Address,  // 串口名
+		BaudRate: mainConfig.BaudRate, // 115200
+		DataBits: mainConfig.DataBits, // 8
+		StopBits: mainConfig.StopBits, // 1
 		Parity:   mainConfig.Parity,   //'N'
 		Timeout:  time.Duration(*mainConfig.Timeout) * time.Second,
-	})
+	}, u.Details(), u.RuleEngine, nil)
 	if err != nil {
-		log.Error("uartModuleResource start failed:", err)
 		return err
-	} else {
-		log.Infof("Uart port open successfully: [%v]", mainConfig.Address)
-		u.loraDriver = driver.NewUartDriver(
-			serialPort,
-			u.Details(),
-			u.RuleEngine)
-		return nil
 	}
+	u.uartDriver = driver
+	return nil
+
 }
 
 func (u *uartModuleResource) Enabled() bool {
@@ -93,8 +88,8 @@ func (u *uartModuleResource) Details() *typex.InEnd {
 }
 
 func (u *uartModuleResource) Status() typex.ResourceState {
-	if u.loraDriver != nil {
-		if err := u.loraDriver.Test(); err != nil {
+	if u.uartDriver != nil {
+		if err := u.uartDriver.Test(); err != nil {
 			log.Error(err)
 			return typex.DOWN
 		} else {
@@ -105,14 +100,14 @@ func (u *uartModuleResource) Status() typex.ResourceState {
 }
 
 func (u *uartModuleResource) Stop() {
-	if u.loraDriver != nil {
-		u.loraDriver.Stop()
-		u.loraDriver = nil
+	if u.uartDriver != nil {
+		u.uartDriver.Stop()
+		u.uartDriver = nil
 	}
 
 }
 func (u *uartModuleResource) Driver() typex.XExternalDriver {
-	return u.loraDriver
+	return u.uartDriver
 }
 
 //

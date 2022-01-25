@@ -1,7 +1,7 @@
 package driver
 
-//
-// `#`` 分隔符: 注意该驱动的消息内容不要包含 `#`, 因为已经将其作为数据结尾提交符号
+// 这是个通用串口驱动，主要是用来做主动采集和控制用。
+// `#` 分隔符: 注意该驱动的消息内容不要包含 `#`, 因为已经将其作为数据结尾提交符号
 //
 import (
 	"context"
@@ -22,31 +22,35 @@ var buffer = [max_BUFFER_SIZE]byte{}
 //------------------------------------------------------------------------
 // 内部函数
 //------------------------------------------------------------------------
-
-//
-// 正点原子的 Lora 模块封装
-//
 type uartDriver struct {
 	state      typex.DriverState
 	serialPort serial.Port
 	ctx        context.Context
 	In         *typex.InEnd
 	RuleEngine typex.RuleX
+	onRead     func([]byte)
 }
 
 //
 // 初始化一个驱动
 //
 func NewUartDriver(
-	serialPort serial.Port,
+	config serial.Config,
 	in *typex.InEnd,
-	e typex.RuleX) typex.XExternalDriver {
+	e typex.RuleX,
+	onRead func([]byte)) (typex.XExternalDriver, error) {
+	serialPort, err := serial.Open(&config)
+	if err != nil {
+		log.Error("uartModuleResource start failed:", err)
+		return nil, err
+	}
 	return &uartDriver{
 		In:         in,
 		RuleEngine: e,
 		serialPort: serialPort,
 		ctx:        context.Background(),
-	}
+		onRead:     onRead,
+	}, nil
 }
 
 //
@@ -69,6 +73,7 @@ func (a *uartDriver) Work() error {
 		for a.state == typex.RUNNING {
 			<-ticker.C
 			if _, err0 := a.serialPort.Read(data); err0 != nil {
+
 				// 有的串口因为CPU频率原因 超时属于正常情况, 所以不计为错误
 				if !strings.Contains(err0.Error(), "timeout") {
 					log.Error("error:", err0)
@@ -78,9 +83,16 @@ func (a *uartDriver) Work() error {
 					continue
 				}
 			}
-			//
+			//---------------------------------------------------------------------------
+			// 如果配置了自定义回调，则启用, 并且跳过默认协议，否则自动执行 '#' 结束符协议
+			//---------------------------------------------------------------------------
+			if a.onRead != nil {
+				a.onRead(data)
+				continue
+			}
+			//---------------------------------------------------------------------------
 			// # 分隔符: 注意该驱动的消息内容不要包含 #, 因为已经将其作为数据结尾提交符号
-			//
+			//---------------------------------------------------------------------------
 			if data[0] == '#' {
 				// log.Info("bytes => ", string(buffer[:acc]), buffer[:acc], acc)
 				a.RuleEngine.Work(a.In, string(buffer[1:acc]))
@@ -144,6 +156,6 @@ func (a *uartDriver) DriverDetail() *typex.DriverDetail {
 	return &typex.DriverDetail{
 		Name:        "Generic Uart Driver",
 		Type:        "UART",
-		Description: "A Generic Uart Driver",
+		Description: "A General Uart Driver",
 	}
 }
