@@ -16,6 +16,7 @@ require (
 	github.com/goburrow/modbus v0.1.0
 	github.com/goburrow/serial v0.1.0
 	github.com/google/uuid v1.3.0
+	github.com/gopcua/opcua v0.3.0
 	github.com/gosnmp/gosnmp v1.34.0
 	github.com/iancoleman/strcase v0.2.0
 	github.com/itchyny/gojq v0.12.6
