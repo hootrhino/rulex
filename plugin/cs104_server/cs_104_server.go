@@ -1,0 +1,85 @@
+package plugin
+
+import (
+	"rulex/typex"
+	"time"
+
+	"github.com/ngaut/log"
+	"github.com/thinkgos/go-iecp5/asdu"
+	"github.com/thinkgos/go-iecp5/cs104"
+)
+
+/*
+*
+* 配置信息,从ini文件里面读取出来的
+*
+ */
+type cs104ServerConfig struct {
+	Host    string
+	Port    int
+	LogMode bool
+}
+type cs104Server struct {
+	server *cs104.Server
+}
+
+func NewCs104Server() typex.XPlugin {
+	return &cs104Server{}
+}
+func (sf *cs104Server) InterrogationHandler(c asdu.Connect, asduPack *asdu.ASDU, qoi asdu.QualifierOfInterrogation) error {
+	return nil
+}
+func (sf *cs104Server) CounterInterrogationHandler(asdu.Connect, *asdu.ASDU, asdu.QualifierCountCall) error {
+	return nil
+}
+func (sf *cs104Server) ReadHandler(asdu.Connect, *asdu.ASDU, asdu.InfoObjAddr) error {
+	return nil
+}
+func (sf *cs104Server) ClockSyncHandler(asdu.Connect, *asdu.ASDU, time.Time) error {
+	return nil
+}
+func (sf *cs104Server) ResetProcessHandler(asdu.Connect, *asdu.ASDU, asdu.QualifierOfResetProcessCmd) error {
+	return nil
+}
+func (sf *cs104Server) DelayAcquisitionHandler(asdu.Connect, *asdu.ASDU, uint16) error {
+	return nil
+}
+func (sf *cs104Server) ASDUHandler(asdu.Connect, *asdu.ASDU) error {
+	return nil
+}
+
+//---------------------------------------------------------------------------
+//
+//---------------------------------------------------------------------------
+func (cs *cs104Server) Init() error {
+	cs.server = cs104.NewServer(&cs104Server{})
+	return nil
+}
+
+func (cs *cs104Server) Start() error {
+	cs.server.SetOnConnectionHandler(func(c asdu.Connect) {
+		log.Warn("Connected: ", c.Params())
+	})
+	cs.server.SetConnectionLostHandler(func(c asdu.Connect) {
+		log.Warn("Disconnected: ", c.Params())
+	})
+	cs.server.LogMode(true)
+	cs.server.ListenAndServer(":2404")
+	return nil
+}
+
+func (cs *cs104Server) Stop() error {
+	return nil
+}
+
+func (cs *cs104Server) PluginMetaInfo() typex.XPluginMetaInfo {
+	return typex.XPluginMetaInfo{
+		Name:     "IEC104 server Plugin",
+		Version:  "0.0.1",
+		Homepage: "www.ezlinker.cn",
+		HelpLink: "www.ezlinker.cn",
+		Author:   "wwhai",
+		Email:    "cnwwhai@gmail.com",
+		License:  "MIT",
+	}
+}
