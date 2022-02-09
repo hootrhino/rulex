@@ -1,6 +1,7 @@
 package plugin
 
 import (
+	"fmt"
 	"rulex/typex"
 	"time"
 
@@ -20,7 +21,10 @@ type cs104ServerConfig struct {
 	LogMode bool
 }
 type cs104Server struct {
-	server *cs104.Server
+	server  *cs104.Server
+	Host    string
+	Port    int
+	LogMode bool
 }
 
 func NewCs104Server() typex.XPlugin {
@@ -51,7 +55,7 @@ func (sf *cs104Server) ASDUHandler(asdu.Connect, *asdu.ASDU) error {
 //---------------------------------------------------------------------------
 //
 //---------------------------------------------------------------------------
-func (cs *cs104Server) Init() error {
+func (cs *cs104Server) Init(cfg interface{}) error {
 	cs.server = cs104.NewServer(&cs104Server{})
 	return nil
 }
@@ -63,8 +67,8 @@ func (cs *cs104Server) Start() error {
 	cs.server.SetConnectionLostHandler(func(c asdu.Connect) {
 		log.Warn("Disconnected: ", c.Params())
 	})
-	cs.server.LogMode(true)
-	cs.server.ListenAndServer(":2404")
+	cs.server.LogMode(cs.LogMode)
+	cs.server.ListenAndServer(fmt.Sprintf("%s:%d", cs.Host, cs.Port))
 	return nil
 }
 
