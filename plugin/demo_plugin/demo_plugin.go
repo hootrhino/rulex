@@ -11,7 +11,7 @@ func NewDemoPlugin() *DemoPlugin {
 	return &DemoPlugin{}
 }
 
-func (dm *DemoPlugin) Init() error {
+func (dm *DemoPlugin) Init(cfg interface{}) error {
 	return nil
 }
 

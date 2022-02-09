@@ -33,7 +33,7 @@ func NewHttpApiServer(port int, root string, dbPath string, e typex.RuleX) *Http
 }
 
 //
-func (hh *HttpApiServer) Init() error {
+func (hh *HttpApiServer) Init(cfg interface{}) error {
 	gin.SetMode(gin.ReleaseMode)
 	hh.ginEngine = gin.New()
 	configHttpServer(hh)

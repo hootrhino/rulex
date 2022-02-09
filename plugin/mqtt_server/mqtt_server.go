@@ -22,7 +22,7 @@ func NewMqttServer() typex.XPlugin {
 	return &MqttServer{}
 }
 
-func (s *MqttServer) Init() error {
+func (s *MqttServer) Init(cfg interface{}) error {
 	return nil
 }
 
