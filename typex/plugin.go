@@ -15,7 +15,7 @@ type XPluginMetaInfo struct {
 // External Plugin
 //
 type XPlugin interface {
-	Init() error
+	Init(interface{}) error // 参数为外部配置
 	Start() error
 	Stop() error
 	PluginMetaInfo() XPluginMetaInfo
