@@ -135,16 +135,36 @@ fetch_dashboard() {
     cp -r ./rulex-dashboard/dist/* ./plugin/http_server/www
 }
 #
+# gen_changelog
 #
-#
-if [ ! -d "./_build/" ]; then
-    mkdir -p ./_build/
-else
-    rm -rf ./_build/
-    mkdir -p ./_build/
-fi
+gen_changelog() {
+    PreviewVersion=$(git describe --tags --abbrev=0 $(git rev-list --tags --skip=1 --max-count=1))
+    CurrentVersion=$(git describe --tags --abbrev=0)
+    echo "----------------------------------------------------------------"
+    echo "|  Change log between [${PreviewVersion}] <--> [${CurrentVersion}]"
+    echo "----------------------------------------------------------------"
+    ChangeLog=$(git log ${PreviewVersion}..${CurrentVersion} --oneline --decorate --color)
+    printf "${ChangeLog}\n"
 
+}
+#
+#-----------------------------------
+#
+init_env() {
+    if [ ! -d "./_build/" ]; then
+        mkdir -p ./_build/
+    else
+        rm -rf ./_build/
+        mkdir -p ./_build/
+    fi
+
+}
+#
+#-----------------------------------
+#
+init_env
 cp -r $(ls | egrep -v '^_build$') ./_build/
 cd ./_build/
 fetch_dashboard
 cross_compile
+gen_changelog
