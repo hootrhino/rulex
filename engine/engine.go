@@ -573,8 +573,8 @@ func (e *RuleEngine) Stop() {
 		plugin.Stop()
 		return true
 	})
-
-	context.Background().Done()
+	_, cancel := context.WithCancel(context.Background())
+	cancel()
 	// 回收资源
 	runtime.Gosched()
 	runtime.GC()
@@ -609,8 +609,14 @@ func (e *RuleEngine) RunLuaCallbacks(in *typex.InEnd, callbackArgs string) {
 }
 
 //
+// ┌──────┐    ┌──────┐    ┌──────┐
+// │ Init ├───►│ Load ├───►│ Stop │
+// └──────┘    └──────┘    └──────┘
+//
 func (e *RuleEngine) LoadPlugin(p typex.XPlugin) error {
-	if err := p.Init(); err != nil {
+	// TODO get plugin config
+
+	if err := p.Init(nil); err != nil {
 		return err
 	}
 
