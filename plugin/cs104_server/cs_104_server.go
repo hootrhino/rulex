@@ -15,10 +15,10 @@ import (
 * 配置信息,从ini文件里面读取出来的
 *
  */
-type cs104ServerConfig struct {
-	Host    string
-	Port    int
-	LogMode bool
+type _serverConfig struct {
+	Enable bool   `ini:"enable"`
+	Host   string `ini:"host"`
+	Port   int    `ini:"port"`
 }
 type cs104Server struct {
 	server  *cs104.Server

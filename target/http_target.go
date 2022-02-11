@@ -30,7 +30,9 @@ func (ht *HTTPTarget) Register(outEndId string) error {
 	return nil
 
 }
-func (ht *HTTPTarget) Start() error {
+func (ht *HTTPTarget) Start(cctx typex.CCTX) error {
+	ht.Ctx = cctx.Ctx
+	ht.CancelCTX = cctx.CancelCTX
 	config := ht.RuleEngine.GetOutEnd(ht.PointId).Config
 	var mainConfig httpConfig
 	if err := utils.BindSourceConfig(config, &mainConfig); err != nil {
@@ -69,6 +71,7 @@ func (ht *HTTPTarget) To(data interface{}) error {
 
 //
 func (ht *HTTPTarget) Stop() {
+	ht.CancelCTX()
 }
 func (ht *HTTPTarget) Details() *typex.OutEnd {
 	return ht.RuleEngine.GetOutEnd(ht.PointId)

@@ -73,7 +73,10 @@ func (s7 *siemensS7Source) Register(inEndId string) error {
 //
 // 启动资源
 //
-func (s7 *siemensS7Source) Start() error {
+func (s7 *siemensS7Source) Start(cctx typex.CCTX) error {
+	s7.Ctx = cctx.Ctx
+	s7.CancelCTX = cctx.CancelCTX
+
 	config := s7.RuleEngine.GetInEnd(s7.PointId).Config
 	var mainConfig siemensS7config
 	if err := utils.BindSourceConfig(config, &mainConfig); err != nil {
@@ -88,6 +91,9 @@ func (s7 *siemensS7Source) Start() error {
 	s7.stateAddress = mainConfig.StateAddress
 	s7.client = gos7.NewClient(handler)
 	ticker := time.NewTicker(time.Duration(*mainConfig.Frequency) * time.Second)
+	s7.Ctx = cctx.Ctx
+	s7.CancelCTX = cctx.CancelCTX
+
 	for _, d := range mainConfig.Dbs {
 		log.Infof("Start read: Tag:%v Address:%v Start:%v Size:%v", d.Tag, d.Address, d.Start, d.Size)
 		go func(ctx context.Context, d db) {
@@ -124,7 +130,7 @@ func (s7 *siemensS7Source) Start() error {
 				}
 			}
 
-		}(context.Background(), d)
+		}(s7.Ctx, d)
 	}
 
 	return nil
@@ -220,5 +226,5 @@ func (s7 *siemensS7Source) Stop() {
 	if s7.client != nil {
 		s7.client = nil
 	}
-	context.Background().Done()
+	s7.CancelCTX()
 }

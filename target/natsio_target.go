@@ -33,7 +33,9 @@ func NewNatsTarget(e typex.RuleX) typex.XTarget {
 	return nt
 }
 
-func (nt *natsTarget) Start() error {
+func (nt *natsTarget) Start(cctx typex.CCTX) error {
+	nt.Ctx = cctx.Ctx
+	nt.CancelCTX = cctx.CancelCTX
 	outEnd := nt.RuleEngine.GetOutEnd(nt.PointId)
 	config := outEnd.Config
 	var mainConfig natsConfig
@@ -123,6 +125,7 @@ func (nt *natsTarget) Stop() {
 			nt.natsConnector = nil
 		}
 	}
+	nt.CancelCTX()
 }
 
 /*

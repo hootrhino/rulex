@@ -36,7 +36,10 @@ func NewCoAPInEndSource(inEndId string, e typex.RuleX) *coAPInEndSource {
 	return &c
 }
 
-func (cc *coAPInEndSource) Start() error {
+func (cc *coAPInEndSource) Start(cctx typex.CCTX) error {
+	cc.Ctx = cctx.Ctx
+	cc.CancelCTX = cctx.CancelCTX
+
 	config := cc.RuleEngine.GetInEnd(cc.PointId).Config
 	var mainConfig coAPConfig
 	if err := utils.BindSourceConfig(config, &mainConfig); err != nil {
@@ -61,13 +64,14 @@ func (cc *coAPInEndSource) Start() error {
 			log.Errorf("Cannot set response: %v", err)
 		}
 	}))
+
 	go func(ctx context.Context) {
 		err := coap.ListenAndServe("udp", port, cc.router)
 		if err != nil {
 			log.Error(err)
 			return
 		}
-	}(context.Background())
+	}(cc.Ctx)
 	log.Info("Coap source started on [udp]" + port)
 	return nil
 }
@@ -77,6 +81,7 @@ func (m *coAPInEndSource) OnStreamApproached(data string) error {
 
 //
 func (cc *coAPInEndSource) Stop() {
+	cc.CancelCTX()
 }
 
 func (cc *coAPInEndSource) DataModels() []typex.XDataModel {

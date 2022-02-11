@@ -33,7 +33,10 @@ func NewNatsSource(e typex.RuleX) typex.XSource {
 	return nt
 }
 
-func (nt *natsSource) Start() error {
+func (nt *natsSource) Start(cctx typex.CCTX) error {
+	nt.Ctx = cctx.Ctx
+	nt.CancelCTX = cctx.CancelCTX
+
 	config := nt.RuleEngine.GetInEnd(nt.PointId).Config
 	var mainConfig natsConfig
 	if err := utils.BindSourceConfig(config, &mainConfig); err != nil {
@@ -122,6 +125,7 @@ func (nt *natsSource) Stop() {
 			nt.natsConnector = nil
 		}
 	}
+	nt.CancelCTX()
 }
 func (nt *natsSource) Configs() *typex.XConfig {
 	return core.GenInConfig(typex.NATS_SERVER, "NATS_SERVER", natsConfig{})

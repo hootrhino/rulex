@@ -35,6 +35,7 @@ type uartDriver struct {
 // 初始化一个驱动
 //
 func NewUartDriver(
+	ctx context.Context,
 	config serial.Config,
 	in *typex.InEnd,
 	e typex.RuleX,
@@ -48,7 +49,7 @@ func NewUartDriver(
 		In:         in,
 		RuleEngine: e,
 		serialPort: serialPort,
-		ctx:        context.Background(),
+		ctx:        ctx,
 		onRead:     onRead,
 	}, nil
 }

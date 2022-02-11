@@ -152,13 +152,13 @@ func RType(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		c.JSON(http.StatusOK, Result{
 			Code: http.StatusOK,
 			Msg:  SUCCESS,
-			Data: source.RM.All(),
+			Data: source.SM.All(),
 		})
 	} else {
 		c.JSON(http.StatusOK, Result{
 			Code: http.StatusOK,
 			Msg:  SUCCESS,
-			Data: source.RM.Find(typex.InEndType(Type)),
+			Data: source.SM.Find(typex.InEndType(Type)),
 		})
 	}
 

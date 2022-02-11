@@ -1,11 +1,15 @@
 package typex
 
+import "context"
+
 //
 // XStatus for source status
 //
 type XStatus struct {
 	PointId    string // Input: Source; Output: Target
 	Enable     bool
+	Ctx        context.Context
+	CancelCTX  context.CancelFunc
 	RuleEngine RuleX
 }
 
@@ -25,7 +29,7 @@ type XSource interface {
 	//
 	// 启动资源
 	//
-	Start() error
+	Start(CCTX) error
 	//
 	// 资源是否被启用
 	//

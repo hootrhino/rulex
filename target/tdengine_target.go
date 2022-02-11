@@ -83,7 +83,9 @@ func (td *tdEngineTarget) Register(inEndId string) error {
 //
 // 启动资源
 //
-func (td *tdEngineTarget) Start() error {
+func (td *tdEngineTarget) Start(cctx typex.CCTX) error {
+	td.Ctx = cctx.Ctx
+	td.CancelCTX = cctx.CancelCTX
 	// http://<fqdn>:<port>/rest/sql/[db_name]
 	// curl -u root:taosdata -d 'show databases;' 127.0.0.1:6041/rest/sql
 	config := td.RuleEngine.GetOutEnd(td.PointId).Config
@@ -177,6 +179,7 @@ func (td *tdEngineTarget) Topology() []typex.TopologyPoint {
 // 停止资源, 用来释放资源
 //
 func (td *tdEngineTarget) Stop() {
+	td.CancelCTX()
 }
 
 func post(client http.Client,

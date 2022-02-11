@@ -51,20 +51,27 @@ func (u *uartModuleSource) Register(inEndId string) error {
 	return nil
 }
 
-func (u *uartModuleSource) Start() error {
+func (u *uartModuleSource) Start(cctx typex.CCTX) error {
+	u.Ctx = cctx.Ctx
+	u.CancelCTX = cctx.CancelCTX
+
 	config := u.RuleEngine.GetInEnd(u.PointId).Config
 	mainConfig := uartConfig{}
 	if err := utils.BindSourceConfig(config, &mainConfig); err != nil {
 		return err
 	}
-	driver, err := driver.NewUartDriver(serial.Config{
-		Address:  mainConfig.Address,  // 串口名
-		BaudRate: mainConfig.BaudRate, // 115200
-		DataBits: mainConfig.DataBits, // 8
-		StopBits: mainConfig.StopBits, // 1
-		Parity:   mainConfig.Parity,   //'N'
-		Timeout:  time.Duration(*mainConfig.Timeout) * time.Second,
-	}, u.Details(), u.RuleEngine, nil)
+	u.Ctx = cctx.Ctx
+	u.CancelCTX = cctx.CancelCTX
+
+	driver, err := driver.NewUartDriver(u.Ctx,
+		serial.Config{
+			Address:  mainConfig.Address,  // 串口名
+			BaudRate: mainConfig.BaudRate, // 115200
+			DataBits: mainConfig.DataBits, // 8
+			StopBits: mainConfig.StopBits, // 1
+			Parity:   mainConfig.Parity,   //'N'
+			Timeout:  time.Duration(*mainConfig.Timeout) * time.Second,
+		}, u.Details(), u.RuleEngine, nil)
 	if err != nil {
 		return err
 	}
@@ -104,6 +111,7 @@ func (u *uartModuleSource) Stop() {
 		u.uartDriver.Stop()
 		u.uartDriver = nil
 	}
+	u.CancelCTX()
 
 }
 func (u *uartModuleSource) Driver() typex.XExternalDriver {

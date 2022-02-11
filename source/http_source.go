@@ -37,7 +37,10 @@ func (*httpInEndSource) Configs() *typex.XConfig {
 }
 
 //
-func (hh *httpInEndSource) Start() error {
+func (hh *httpInEndSource) Start(cctx typex.CCTX) error {
+	hh.Ctx = cctx.Ctx
+	hh.CancelCTX = cctx.CancelCTX
+
 	config := hh.RuleEngine.GetInEnd(hh.PointId).Config
 	var mainConfig httpConfig
 	if err := utils.BindSourceConfig(config, &mainConfig); err != nil {
@@ -61,9 +64,10 @@ func (hh *httpInEndSource) Start() error {
 			})
 		}
 	})
+
 	go func(ctx context.Context) {
 		http.ListenAndServe(fmt.Sprintf(":%v", mainConfig.Port), hh.engine)
-	}(context.Background())
+	}(hh.Ctx)
 	log.Info("HTTP source started on" + " [0.0.0.0]:" + fmt.Sprintf("%v", mainConfig.Port))
 
 	return nil
@@ -76,6 +80,7 @@ func (mm *httpInEndSource) DataModels() []typex.XDataModel {
 
 //
 func (hh *httpInEndSource) Stop() {
+	hh.CancelCTX()
 
 }
 func (hh *httpInEndSource) Reload() {

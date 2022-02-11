@@ -54,7 +54,7 @@ func NewRuleEngine(config typex.RulexConfig) typex.RuleX {
 //
 func (e *RuleEngine) Start() *typex.RulexConfig {
 	typex.StartQueue(core.GlobalConfig.MaxQueueSize)
-	source.LoadRt()
+	source.LoadSt()
 	target.LoadTt()
 	return e.Config
 }
@@ -231,7 +231,7 @@ func startSources(source typex.XSource, in *typex.InEnd, e *RuleEngine) error {
 			goto TICKER
 		}
 
-	}(context.Background())
+	}(typex.GCTX)
 	log.Infof("InEnd [%v, %v] load successfully", in.Name, in.UUID)
 	return nil
 }
@@ -287,8 +287,9 @@ func startSource(source typex.XSource, e *RuleEngine, id string) error {
 	//----------------------------------
 	// 检查资源 如果是启动的，先给停了
 	//----------------------------------
+	ctx, cancelCTX := context.WithCancel(typex.GCTX)
 
-	if err := source.Start(); err != nil {
+	if err := source.Start(typex.CCTX{Ctx: ctx, CancelCTX: cancelCTX}); err != nil {
 		log.Error("Source start error:", err)
 		if source.Status() == typex.UP {
 			source.Stop()
@@ -375,7 +376,9 @@ func startTarget(target typex.XTarget, out *typex.OutEnd, e typex.RuleX) error {
 		return err
 	}
 	// 然后启动资源
-	if err := target.Start(); err != nil {
+	ctx, cancelCTX := context.WithCancel(typex.GCTX)
+
+	if err := target.Start(typex.CCTX{Ctx: ctx, CancelCTX: cancelCTX}); err != nil {
 		log.Error(err)
 		e.RemoveOutEnd(out.UUID)
 		return err
@@ -410,7 +413,7 @@ func startTarget(target typex.XTarget, out *typex.OutEnd, e typex.RuleX) error {
 			goto TICKER
 		}
 
-	}(context.Background())
+	}(typex.GCTX)
 	log.Infof("Target [%v, %v] load successfully", out.Name, out.UUID)
 	return nil
 }
@@ -425,7 +428,8 @@ func tryIfRestartTarget(target typex.XTarget, e typex.RuleX, id string) {
 		target.Stop()
 		runtime.Gosched()
 		runtime.GC()
-		target.Start()
+		ctx, cancelCTX := context.WithCancel(typex.GCTX)
+		target.Start(typex.CCTX{Ctx: ctx, CancelCTX: cancelCTX})
 	} else {
 		target.Details().SetState(typex.UP)
 	}
@@ -573,8 +577,6 @@ func (e *RuleEngine) Stop() {
 		plugin.Stop()
 		return true
 	})
-	_, cancel := context.WithCancel(context.Background())
-	cancel()
 	// 回收资源
 	runtime.Gosched()
 	runtime.GC()
