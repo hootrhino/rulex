@@ -41,6 +41,9 @@ require (
 	go.mongodb.org/mongo-driver v1.8.3
 	go.uber.org/zap v1.15.0
 	golang.org/x/crypto v0.0.0-20220112180741-5e0467b6c7ce
+	golang.org/x/net v0.0.0-20220127200216-cd36cc0744dd // indirect
+	golang.org/x/sys v0.0.0-20220209214540-3681064d5158 // indirect
+	google.golang.org/genproto v0.0.0-20220210181026-6fee9acbd336 // indirect
 	google.golang.org/grpc v1.44.0
 	google.golang.org/protobuf v1.27.1
 	gopkg.in/ini.v1 v1.66.3

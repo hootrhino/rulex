@@ -6,13 +6,13 @@ import "sync"
 // Global config
 //
 type RulexConfig struct {
-	MaxQueueSize            int    `json:"maxQueueSize"`
-	ResourceRestartInterval int    `json:"resourceRestartInterval"`
-	GomaxProcs              int    `json:"gomaxProcs"`
-	EnablePProf             bool   `json:"enablePProf"`
-	LogLevel                string `json:"logLevel"`
-	LogPath                 string `json:"logPath"`
-	LuaLogPath              string `json:"luaLogPath"`
+	MaxQueueSize          int    `json:"maxQueueSize"`
+	SourceRestartInterval int    `json:"sourceRestartInterval"`
+	GomaxProcs            int    `json:"gomaxProcs"`
+	EnablePProf           bool   `json:"enablePProf"`
+	LogLevel              string `json:"logLevel"`
+	LogPath               string `json:"logPath"`
+	LuaLogPath            string `json:"luaLogPath"`
 }
 
 //

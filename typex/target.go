@@ -1,7 +1,7 @@
 package typex
 
 //
-// Stream from resource and to target
+// Stream from source and to target
 //
 type XTarget interface {
 	//
@@ -32,7 +32,7 @@ type XTarget interface {
 	//
 	// 获取资源状态
 	//
-	Status() ResourceState
+	Status() SourceState
 	//
 	// 获取资源绑定的的详情
 	//

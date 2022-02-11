@@ -41,7 +41,7 @@ func NewUartDriver(
 	onRead func([]byte)) (typex.XExternalDriver, error) {
 	serialPort, err := serial.Open(&config)
 	if err != nil {
-		log.Error("uartModuleResource start failed:", err)
+		log.Error("uartModuleSource start failed:", err)
 		return nil, err
 	}
 	return &uartDriver{

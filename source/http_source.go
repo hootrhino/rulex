@@ -1,4 +1,4 @@
-package resource
+package source
 
 import (
 	"context"
@@ -19,28 +19,28 @@ type httpConfig struct {
 }
 
 //
-type httpInEndResource struct {
+type httpInEndSource struct {
 	typex.XStatus
 	engine *gin.Engine
 }
 
-func NewHttpInEndResource(inEndId string, e typex.RuleX) typex.XResource {
-	h := httpInEndResource{}
+func NewHttpInEndSource(inEndId string, e typex.RuleX) typex.XSource {
+	h := httpInEndSource{}
 	h.PointId = inEndId
 	gin.SetMode(gin.ReleaseMode)
 	h.engine = gin.New()
 	h.RuleEngine = e
 	return &h
 }
-func (*httpInEndResource) Configs() *typex.XConfig {
+func (*httpInEndSource) Configs() *typex.XConfig {
 	return core.GenInConfig(typex.HTTP, "HTTP", httpConfig{})
 }
 
 //
-func (hh *httpInEndResource) Start() error {
+func (hh *httpInEndSource) Start() error {
 	config := hh.RuleEngine.GetInEnd(hh.PointId).Config
 	var mainConfig httpConfig
-	if err := utils.BindResourceConfig(config, &mainConfig); err != nil {
+	if err := utils.BindSourceConfig(config, &mainConfig); err != nil {
 		return err
 	}
 	hh.engine.POST("/in", func(c *gin.Context) {
@@ -64,55 +64,55 @@ func (hh *httpInEndResource) Start() error {
 	go func(ctx context.Context) {
 		http.ListenAndServe(fmt.Sprintf(":%v", mainConfig.Port), hh.engine)
 	}(context.Background())
-	log.Info("HTTP resource started on" + " [0.0.0.0]:" + fmt.Sprintf("%v", mainConfig.Port))
+	log.Info("HTTP source started on" + " [0.0.0.0]:" + fmt.Sprintf("%v", mainConfig.Port))
 
 	return nil
 }
 
 //
-func (mm *httpInEndResource) DataModels() []typex.XDataModel {
+func (mm *httpInEndSource) DataModels() []typex.XDataModel {
 	return []typex.XDataModel{}
 }
 
 //
-func (hh *httpInEndResource) Stop() {
+func (hh *httpInEndSource) Stop() {
 
 }
-func (hh *httpInEndResource) Reload() {
+func (hh *httpInEndSource) Reload() {
 
 }
-func (hh *httpInEndResource) Pause() {
+func (hh *httpInEndSource) Pause() {
 
 }
-func (hh *httpInEndResource) Status() typex.ResourceState {
+func (hh *httpInEndSource) Status() typex.SourceState {
 	return typex.UP
 }
 
-func (hh *httpInEndResource) Register(inEndId string) error {
+func (hh *httpInEndSource) Register(inEndId string) error {
 	hh.PointId = inEndId
 	return nil
 }
 
-func (hh *httpInEndResource) Test(inEndId string) bool {
+func (hh *httpInEndSource) Test(inEndId string) bool {
 	return true
 }
 
-func (hh *httpInEndResource) Enabled() bool {
+func (hh *httpInEndSource) Enabled() bool {
 	return hh.Enable
 }
-func (hh *httpInEndResource) Details() *typex.InEnd {
+func (hh *httpInEndSource) Details() *typex.InEnd {
 	return hh.RuleEngine.GetInEnd(hh.PointId)
 }
-func (m *httpInEndResource) OnStreamApproached(data string) error {
+func (m *httpInEndSource) OnStreamApproached(data string) error {
 	return nil
 }
-func (*httpInEndResource) Driver() typex.XExternalDriver {
+func (*httpInEndSource) Driver() typex.XExternalDriver {
 	return nil
 }
 
 //
 // 拓扑
 //
-func (*httpInEndResource) Topology() []typex.TopologyPoint {
+func (*httpInEndSource) Topology() []typex.TopologyPoint {
 	return []typex.TopologyPoint{}
 }

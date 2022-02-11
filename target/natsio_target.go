@@ -37,7 +37,7 @@ func (nt *natsTarget) Start() error {
 	outEnd := nt.RuleEngine.GetOutEnd(nt.PointId)
 	config := outEnd.Config
 	var mainConfig natsConfig
-	if err := utils.BindResourceConfig(config, &mainConfig); err != nil {
+	if err := utils.BindSourceConfig(config, &mainConfig); err != nil {
 		return err
 	}
 	nc, err := nats.Connect(fmt.Sprintf("%s:%v", mainConfig.Host, mainConfig.Port), func(o *nats.Options) error {
@@ -84,7 +84,7 @@ func (nt *natsTarget) Reload() {
 func (nt *natsTarget) Pause() {
 }
 
-func (nt *natsTarget) Status() typex.ResourceState {
+func (nt *natsTarget) Status() typex.SourceState {
 	if nt.natsConnector != nil {
 		if nt.natsConnector.IsConnected() {
 			return typex.UP

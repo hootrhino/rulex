@@ -97,5 +97,5 @@ var RulexRpc_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "grpc_resource.proto",
+	Metadata: "grpc_source.proto",
 }

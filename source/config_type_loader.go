@@ -1,11 +1,11 @@
-package resource
+package source
 
 import (
 	"rulex/core"
 	"rulex/typex"
 )
 
-var RM typex.ResourceRegistry = core.NewResourceTypeManager()
+var RM typex.SourceRegistry = core.NewSourceTypeManager()
 
 /*
 *

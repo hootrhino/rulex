@@ -26,8 +26,8 @@ func InitGlobalConfig() typex.RulexConfig {
 	//---------------------------------------
 	GlobalConfig.MaxQueueSize = cfg.Section("app").Key("max_queue_size").MustInt(5000)
 	log.Info("| MaxQueueSize is:", GlobalConfig.MaxQueueSize)
-	GlobalConfig.ResourceRestartInterval = cfg.Section("app").Key("resource_restart_interval").MustInt(204800)
-	log.Info("| ResourceRestartInterval is:", GlobalConfig.ResourceRestartInterval)
+	GlobalConfig.SourceRestartInterval = cfg.Section("app").Key("source_restart_interval").MustInt(204800)
+	log.Info("| SourceRestartInterval is:", GlobalConfig.SourceRestartInterval)
 	GlobalConfig.GomaxProcs = cfg.Section("app").Key("gomax_procs").MustInt(2)
 	log.Info("| GomaxProcs is:", GlobalConfig.GomaxProcs)
 	GlobalConfig.EnablePProf = cfg.Section("app").Key("enable_pprof").MustBool(false)

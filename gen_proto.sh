@@ -13,7 +13,7 @@ export PATH=$PATH:$GOROOT:$GOPATH:$GOBIN
 echo ">>> Generate RulexRpc Proto"
 protoc -I ./rulexrpc --go_out=./rulexrpc --go_opt paths=source_relative \
     --go-grpc_out=./rulexrpc --go-grpc_opt paths=source_relative \
-    ./rulexrpc/grpc_resource.proto
+    ./rulexrpc/grpc_source.proto
 # Stream
 echo ">>> Generate XStream Proto"
 protoc -I ./xstream --go_out ./xstream --go_opt paths=source_relative \

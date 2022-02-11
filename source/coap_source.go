@@ -1,4 +1,4 @@
-package resource
+package source
 
 import (
 	"bytes"
@@ -22,24 +22,24 @@ type coAPConfig struct {
 }
 
 //
-type coAPInEndResource struct {
+type coAPInEndSource struct {
 	typex.XStatus
 	router     *mux.Router
 	dataModels []typex.XDataModel
 }
 
-func NewCoAPInEndResource(inEndId string, e typex.RuleX) *coAPInEndResource {
-	c := coAPInEndResource{}
+func NewCoAPInEndSource(inEndId string, e typex.RuleX) *coAPInEndSource {
+	c := coAPInEndSource{}
 	c.PointId = inEndId
 	c.router = mux.NewRouter()
 	c.RuleEngine = e
 	return &c
 }
 
-func (cc *coAPInEndResource) Start() error {
+func (cc *coAPInEndSource) Start() error {
 	config := cc.RuleEngine.GetInEnd(cc.PointId).Config
 	var mainConfig coAPConfig
-	if err := utils.BindResourceConfig(config, &mainConfig); err != nil {
+	if err := utils.BindSourceConfig(config, &mainConfig); err != nil {
 		return err
 	}
 	port := fmt.Sprintf(":%v", mainConfig.Port)
@@ -68,56 +68,56 @@ func (cc *coAPInEndResource) Start() error {
 			return
 		}
 	}(context.Background())
-	log.Info("Coap resource started on [udp]" + port)
+	log.Info("Coap source started on [udp]" + port)
 	return nil
 }
-func (m *coAPInEndResource) OnStreamApproached(data string) error {
+func (m *coAPInEndSource) OnStreamApproached(data string) error {
 	return nil
 }
 
 //
-func (cc *coAPInEndResource) Stop() {
+func (cc *coAPInEndSource) Stop() {
 }
 
-func (cc *coAPInEndResource) DataModels() []typex.XDataModel {
+func (cc *coAPInEndSource) DataModels() []typex.XDataModel {
 	return cc.dataModels
 }
-func (cc *coAPInEndResource) Reload() {
+func (cc *coAPInEndSource) Reload() {
 
 }
-func (cc *coAPInEndResource) Pause() {
+func (cc *coAPInEndSource) Pause() {
 
 }
-func (cc *coAPInEndResource) Status() typex.ResourceState {
+func (cc *coAPInEndSource) Status() typex.SourceState {
 	return typex.UP
 }
 
-func (cc *coAPInEndResource) Register(inEndId string) error {
+func (cc *coAPInEndSource) Register(inEndId string) error {
 	cc.PointId = inEndId
 	return nil
 }
 
-func (cc *coAPInEndResource) Test(inEndId string) bool {
+func (cc *coAPInEndSource) Test(inEndId string) bool {
 	return true
 }
-func (cc *coAPInEndResource) Enabled() bool {
+func (cc *coAPInEndSource) Enabled() bool {
 	return true
 }
-func (cc *coAPInEndResource) Details() *typex.InEnd {
+func (cc *coAPInEndSource) Details() *typex.InEnd {
 	return cc.RuleEngine.GetInEnd(cc.PointId)
 }
 
-func (cc *coAPInEndResource) Driver() typex.XExternalDriver {
+func (cc *coAPInEndSource) Driver() typex.XExternalDriver {
 	return nil
 }
 
-func (*coAPInEndResource) Configs() *typex.XConfig {
+func (*coAPInEndSource) Configs() *typex.XConfig {
 	return core.GenInConfig(typex.COAP, "COAP", coAPConfig{})
 }
 
 //
 // 拓扑
 //
-func (*coAPInEndResource) Topology() []typex.TopologyPoint {
+func (*coAPInEndSource) Topology() []typex.TopologyPoint {
 	return []typex.TopologyPoint{}
 }

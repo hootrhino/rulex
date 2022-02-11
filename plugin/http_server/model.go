@@ -35,7 +35,7 @@ type MRule struct {
 
 type MInEnd struct {
 	RulexModel
-	// UUID for origin resource ID
+	// UUID for origin source ID
 	UUID        string `gorm:"not null"`
 	Type        string `gorm:"not null"`
 	Name        string `gorm:"not null"`
@@ -45,7 +45,7 @@ type MInEnd struct {
 
 type MOutEnd struct {
 	RulexModel
-	// UUID for origin resource ID
+	// UUID for origin source ID
 	UUID        string `gorm:"not null"`
 	Type        string `gorm:"not null"`
 	Name        string `gorm:"not null"`

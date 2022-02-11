@@ -2,7 +2,7 @@ package typex
 
 //
 // Rule type is for property store,
-// XResource implements struct type is actually worker
+// XSource implements struct type is actually worker
 //
 type ModelType int
 

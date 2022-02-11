@@ -1,4 +1,4 @@
-package resource
+package source
 
 import (
 	"context"
@@ -150,33 +150,33 @@ type tcpConfig struct {
 //
 //---------------------------------------------------------------------------
 
-type modbusMasterResource struct {
+type modbusMasterSource struct {
 	typex.XStatus
 	client    modbus.Client
 	cxt       context.Context
 	rtuDriver typex.XExternalDriver
 }
 
-func NewModbusMasterResource(id string, e typex.RuleX) typex.XResource {
-	m := modbusMasterResource{}
+func NewModbusMasterSource(id string, e typex.RuleX) typex.XSource {
+	m := modbusMasterSource{}
 	m.RuleEngine = e
 	m.cxt = context.Background()
 	return &m
 }
-func (*modbusMasterResource) Configs() *typex.XConfig {
+func (*modbusMasterSource) Configs() *typex.XConfig {
 	return core.GenInConfig(typex.MODBUS_MASTER, "MODBUS_MASTER", modBusConfig{})
 }
 
-func (m *modbusMasterResource) Register(inEndId string) error {
+func (m *modbusMasterSource) Register(inEndId string) error {
 	m.PointId = inEndId
 	return nil
 }
 
-func (m *modbusMasterResource) Start() error {
+func (m *modbusMasterSource) Start() error {
 
 	config := m.RuleEngine.GetInEnd(m.PointId).Config
 	var mainConfig modBusConfig
-	if err := utils.BindResourceConfig(config, &mainConfig); err != nil {
+	if err := utils.BindSourceConfig(config, &mainConfig); err != nil {
 		return err
 	}
 
@@ -264,7 +264,7 @@ func (m *modbusMasterResource) Start() error {
 						// error
 						//
 						if err != nil {
-							log.Error("NewModbusMasterResource ReadData error: ", err)
+							log.Error("NewModbusMasterSource ReadData error: ", err)
 						} else {
 							data := registerData{
 								Tag:      rp.Tag,
@@ -285,36 +285,36 @@ func (m *modbusMasterResource) Start() error {
 
 }
 
-func (m *modbusMasterResource) Details() *typex.InEnd {
+func (m *modbusMasterSource) Details() *typex.InEnd {
 	return m.RuleEngine.GetInEnd(m.PointId)
 }
 
-func (m *modbusMasterResource) Test(inEndId string) bool {
+func (m *modbusMasterSource) Test(inEndId string) bool {
 	return true
 }
 
-func (m *modbusMasterResource) Enabled() bool {
+func (m *modbusMasterSource) Enabled() bool {
 	return m.Enable
 }
 
-func (m *modbusMasterResource) DataModels() []typex.XDataModel {
+func (m *modbusMasterSource) DataModels() []typex.XDataModel {
 	return []typex.XDataModel{}
 }
 
-func (m *modbusMasterResource) Reload() {
+func (m *modbusMasterSource) Reload() {
 
 }
 
-func (m *modbusMasterResource) Pause() {
+func (m *modbusMasterSource) Pause() {
 
 }
 
-func (m *modbusMasterResource) Status() typex.ResourceState {
+func (m *modbusMasterSource) Status() typex.SourceState {
 	return typex.UP
 
 }
 
-func (m *modbusMasterResource) Stop() {
+func (m *modbusMasterSource) Stop() {
 	m.cxt.Done()
 }
 
@@ -333,7 +333,7 @@ type dataM struct {
 * 写入值
 *
  */
-func (m *modbusMasterResource) OnStreamApproached(data string) error {
+func (m *modbusMasterSource) OnStreamApproached(data string) error {
 	var dm dataM
 	if err := json.Unmarshal([]byte(data), &dm); err != nil {
 		log.Error(err)
@@ -402,7 +402,7 @@ func (m *modbusMasterResource) OnStreamApproached(data string) error {
 * 只有RTU模式才带驱动
 *
  */
-func (m *modbusMasterResource) Driver() typex.XExternalDriver {
+func (m *modbusMasterSource) Driver() typex.XExternalDriver {
 	if m.client != nil {
 		return m.rtuDriver
 	} else {
@@ -413,6 +413,6 @@ func (m *modbusMasterResource) Driver() typex.XExternalDriver {
 //
 // 拓扑
 //
-func (*modbusMasterResource) Topology() []typex.TopologyPoint {
+func (*modbusMasterSource) Topology() []typex.TopologyPoint {
 	return []typex.TopologyPoint{}
 }

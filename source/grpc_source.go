@@ -1,4 +1,4 @@
-package resource
+package source
 
 import (
 	"context"
@@ -24,33 +24,33 @@ type grpcConfig struct {
 }
 
 type RulexRpcServer struct {
-	grpcInEndResource *grpcInEndResource
+	grpcInEndSource *grpcInEndSource
 	rulexrpc.UnimplementedRulexRpcServer
 }
 
 //
-// Resource interface
+// Source interface
 //
-type grpcInEndResource struct {
+type grpcInEndSource struct {
 	typex.XStatus
 	rulexServer *RulexRpcServer
 	rpcServer   *grpc.Server
 }
 
 //
-func NewGrpcInEndResource(inEndId string, e typex.RuleX) typex.XResource {
-	g := grpcInEndResource{}
+func NewGrpcInEndSource(inEndId string, e typex.RuleX) typex.XSource {
+	g := grpcInEndSource{}
 	g.PointId = inEndId
 	g.RuleEngine = e
 	return &g
 }
 
 //
-func (g *grpcInEndResource) Start() error {
+func (g *grpcInEndSource) Start() error {
 	inEnd := g.RuleEngine.GetInEnd(g.PointId)
 	config := inEnd.Config
 	var mainConfig grpcConfig
-	if err := utils.BindResourceConfig(config, &mainConfig); err != nil {
+	if err := utils.BindSourceConfig(config, &mainConfig); err != nil {
 		return err
 	}
 
@@ -61,11 +61,11 @@ func (g *grpcInEndResource) Start() error {
 	// Important !!!
 	g.rpcServer = grpc.NewServer()
 	g.rulexServer = new(RulexRpcServer)
-	g.rulexServer.grpcInEndResource = g
+	g.rulexServer.grpcInEndSource = g
 	//
 	rulexrpc.RegisterRulexRpcServer(g.rpcServer, g.rulexServer)
 	go func(c context.Context) {
-		log.Info("RulexRpc resource started on", listener.Addr())
+		log.Info("RulexRpc source started on", listener.Addr())
 		g.rpcServer.Serve(listener)
 	}(context.Background())
 
@@ -73,57 +73,57 @@ func (g *grpcInEndResource) Start() error {
 }
 
 //
-func (g *grpcInEndResource) DataModels() []typex.XDataModel {
+func (g *grpcInEndSource) DataModels() []typex.XDataModel {
 	return []typex.XDataModel{}
 }
 
 //
-func (g *grpcInEndResource) Stop() {
+func (g *grpcInEndSource) Stop() {
 	if g.rpcServer != nil {
 		g.rpcServer.Stop()
 	}
 
 }
-func (g *grpcInEndResource) Reload() {
+func (g *grpcInEndSource) Reload() {
 
 }
-func (g *grpcInEndResource) Pause() {
+func (g *grpcInEndSource) Pause() {
 
 }
-func (g *grpcInEndResource) Status() typex.ResourceState {
+func (g *grpcInEndSource) Status() typex.SourceState {
 	return typex.UP
 }
 
-func (g *grpcInEndResource) Register(inEndId string) error {
+func (g *grpcInEndSource) Register(inEndId string) error {
 	g.PointId = inEndId
 	return nil
 }
 
-func (g *grpcInEndResource) Test(inEndId string) bool {
+func (g *grpcInEndSource) Test(inEndId string) bool {
 	return true
 }
 
-func (g *grpcInEndResource) Enabled() bool {
+func (g *grpcInEndSource) Enabled() bool {
 	return true
 }
 
-func (g *grpcInEndResource) Details() *typex.InEnd {
+func (g *grpcInEndSource) Details() *typex.InEnd {
 	return g.RuleEngine.GetInEnd(g.PointId)
 }
-func (m *grpcInEndResource) OnStreamApproached(data string) error {
+func (m *grpcInEndSource) OnStreamApproached(data string) error {
 	return nil
 }
-func (*grpcInEndResource) Driver() typex.XExternalDriver {
+func (*grpcInEndSource) Driver() typex.XExternalDriver {
 	return nil
 }
-func (*grpcInEndResource) Configs() *typex.XConfig {
+func (*grpcInEndSource) Configs() *typex.XConfig {
 	return core.GenInConfig(typex.GRPC, "GRPC", grpcConfig{})
 }
 
 //
 func (r *RulexRpcServer) Work(ctx context.Context, in *rulexrpc.Data) (*rulexrpc.Response, error) {
-	ok, err := r.grpcInEndResource.RuleEngine.Work(
-		r.grpcInEndResource.RuleEngine.GetInEnd(r.grpcInEndResource.PointId),
+	ok, err := r.grpcInEndSource.RuleEngine.Work(
+		r.grpcInEndSource.RuleEngine.GetInEnd(r.grpcInEndSource.PointId),
 		in.Value,
 	)
 	if ok {
@@ -143,6 +143,6 @@ func (r *RulexRpcServer) Work(ctx context.Context, in *rulexrpc.Data) (*rulexrpc
 //
 // 拓扑
 //
-func (*grpcInEndResource) Topology() []typex.TopologyPoint {
+func (*grpcInEndSource) Topology() []typex.TopologyPoint {
 	return []typex.TopologyPoint{}
 }

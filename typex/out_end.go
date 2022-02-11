@@ -8,22 +8,22 @@ import (
 //
 //
 type OutEnd struct {
-	UUID        string        `json:"uuid"`
-	State       ResourceState `json:"state"`
-	Type        TargetType    `json:"type"`
-	Name        string        `json:"name"`
-	Description string        `json:"description"`
+	UUID        string      `json:"uuid"`
+	State       SourceState `json:"state"`
+	Type        TargetType  `json:"type"`
+	Name        string      `json:"name"`
+	Description string      `json:"description"`
 	//
 	Config map[string]interface{} `json:"config"`
 	Target XTarget                `json:"-"`
 }
 
-func (o *OutEnd) GetState() ResourceState {
+func (o *OutEnd) GetState() SourceState {
 	return o.State
 }
 
 //
-func (o *OutEnd) SetState(s ResourceState) {
+func (o *OutEnd) SetState(s SourceState) {
 	o.State = s
 }
 

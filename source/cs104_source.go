@@ -1,4 +1,4 @@
-package resource
+package source
 
 import (
 	"fmt"
@@ -15,7 +15,7 @@ type cs104Config struct {
 	LogMode    bool               `json:"logMode" validate:"required" title:"日志" info:""`
 	DataModels []typex.XDataModel `json:"dataModels" title:"数据模型" info:""`
 }
-type cs104Resource struct {
+type cs104Source struct {
 	typex.XStatus
 
 	host    string
@@ -25,8 +25,8 @@ type cs104Resource struct {
 	client *cs104.Client
 }
 
-func NewCs104Resource() typex.XResource {
-	cs := cs104Resource{}
+func NewCs104Source() typex.XSource {
+	cs := cs104Source{}
 	return &cs
 }
 
@@ -63,7 +63,7 @@ func (cs104Client) ASDUHandler(asdu.Connect, *asdu.ASDU) error {
 //
 // 测试资源是否可用
 //
-func (cs *cs104Resource) Test(inEndId string) bool {
+func (cs *cs104Source) Test(inEndId string) bool {
 	return true
 
 }
@@ -71,7 +71,7 @@ func (cs *cs104Resource) Test(inEndId string) bool {
 //
 // 注册InEndID到资源
 //
-func (cs *cs104Resource) Register(inEndId string) error {
+func (cs *cs104Source) Register(inEndId string) error {
 	cs.PointId = inEndId
 	return nil
 
@@ -80,11 +80,11 @@ func (cs *cs104Resource) Register(inEndId string) error {
 //
 // 启动资源
 //
-func (cs *cs104Resource) Start() error {
+func (cs *cs104Source) Start() error {
 	option := cs104.NewOption()
 	config := cs.RuleEngine.GetInEnd(cs.PointId).Config
 	var mainConfig cs104Config
-	if err := utils.BindResourceConfig(config, &mainConfig); err != nil {
+	if err := utils.BindSourceConfig(config, &mainConfig); err != nil {
 		return err
 	}
 	cs.host = mainConfig.Host
@@ -109,14 +109,14 @@ func (cs *cs104Resource) Start() error {
 //
 // 资源是否被启用
 //
-func (cs *cs104Resource) Enabled() bool {
+func (cs *cs104Source) Enabled() bool {
 	return false
 }
 
 //
 // 数据模型, 用来描述该资源支持的数据, 对应的是云平台的物模型
 //
-func (cs *cs104Resource) DataModels() []typex.XDataModel {
+func (cs *cs104Source) DataModels() []typex.XDataModel {
 	return nil
 
 }
@@ -124,7 +124,7 @@ func (cs *cs104Resource) DataModels() []typex.XDataModel {
 //
 // 获取前端表单定义
 //
-func (cs *cs104Resource) Configs() *typex.XConfig {
+func (cs *cs104Source) Configs() *typex.XConfig {
 	return nil
 
 }
@@ -132,19 +132,19 @@ func (cs *cs104Resource) Configs() *typex.XConfig {
 //
 // 重载: 比如可以在重启的时候把某些数据保存起来
 //
-func (cs *cs104Resource) Reload() {
+func (cs *cs104Source) Reload() {
 }
 
 //
 // 挂起资源, 用来做暂停资源使用
 //
-func (cs *cs104Resource) Pause() {
+func (cs *cs104Source) Pause() {
 }
 
 //
 // 获取资源状态
 //
-func (cs *cs104Resource) Status() typex.ResourceState {
+func (cs *cs104Source) Status() typex.SourceState {
 	return typex.UP
 
 }
@@ -152,7 +152,7 @@ func (cs *cs104Resource) Status() typex.ResourceState {
 //
 // 获取资源绑定的的详情
 //
-func (cs *cs104Resource) Details() *typex.InEnd {
+func (cs *cs104Source) Details() *typex.InEnd {
 	return nil
 
 }
@@ -160,7 +160,7 @@ func (cs *cs104Resource) Details() *typex.InEnd {
 //
 // 不经过规则引擎处理的直达数据接口
 //
-func (cs *cs104Resource) OnStreamApproached(data string) error {
+func (cs *cs104Source) OnStreamApproached(data string) error {
 	return nil
 
 }
@@ -168,7 +168,7 @@ func (cs *cs104Resource) OnStreamApproached(data string) error {
 //
 // 驱动接口, 通常用来和硬件交互
 //
-func (cs *cs104Resource) Driver() typex.XExternalDriver {
+func (cs *cs104Source) Driver() typex.XExternalDriver {
 	return nil
 
 }
@@ -176,7 +176,7 @@ func (cs *cs104Resource) Driver() typex.XExternalDriver {
 //
 //
 //
-func (cs *cs104Resource) Topology() []typex.TopologyPoint {
+func (cs *cs104Source) Topology() []typex.TopologyPoint {
 	return nil
 
 }
@@ -184,5 +184,5 @@ func (cs *cs104Resource) Topology() []typex.TopologyPoint {
 //
 // 停止资源, 用来释放资源
 //
-func (cs *cs104Resource) Stop() {
+func (cs *cs104Source) Stop() {
 }

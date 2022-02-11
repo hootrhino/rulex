@@ -1,6 +1,6 @@
 package typex
 
-type ResourceRegistry interface {
+type SourceRegistry interface {
 	Register(InEndType, *XConfig)
 	Find(InEndType) *XConfig
 	All() []*XConfig

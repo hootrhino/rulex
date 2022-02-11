@@ -2,7 +2,7 @@ package httpserver
 
 import (
 	"net/http"
-	"rulex/resource"
+	"rulex/source"
 	"rulex/statistics"
 	"rulex/target"
 	"rulex/typex"
@@ -81,8 +81,8 @@ func Drivers(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	data := []interface{}{}
 	inEnds := e.AllInEnd()
 	inEnds.Range(func(key, value interface{}) bool {
-		if value.(*typex.InEnd).Resource.Driver() != nil {
-			data = append(data, value.(*typex.InEnd).Resource.Driver().DriverDetail())
+		if value.(*typex.InEnd).Source.Driver() != nil {
+			data = append(data, value.(*typex.InEnd).Source.Driver().DriverDetail())
 		}
 		return true
 	})
@@ -107,7 +107,7 @@ func Statistics(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 //
 // Get statistics data
 //
-func ResourceCount(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+func SourceCount(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	allInEnd := e.AllInEnd()
 	allOutEnd := e.AllOutEnd()
 	allRule := e.AllRule()
@@ -152,13 +152,13 @@ func RType(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		c.JSON(http.StatusOK, Result{
 			Code: http.StatusOK,
 			Msg:  SUCCESS,
-			Data: resource.RM.All(),
+			Data: source.RM.All(),
 		})
 	} else {
 		c.JSON(http.StatusOK, Result{
 			Code: http.StatusOK,
 			Msg:  SUCCESS,
-			Data: resource.RM.Find(typex.InEndType(Type)),
+			Data: source.RM.Find(typex.InEndType(Type)),
 		})
 	}
 

@@ -6,22 +6,22 @@ import "rulex/utils"
 type InEnd struct {
 	//
 	UUID        string          `json:"uuid"`
-	State       ResourceState   `json:"state"`
+	State       SourceState     `json:"state"`
 	Type        InEndType       `json:"type"`
 	Name        string          `json:"name"`
 	Description string          `json:"description"`
 	Binds       map[string]Rule `json:"-"`
 	//
-	Config   map[string]interface{} `json:"config"`
-	Resource XResource              `json:"-"`
+	Config map[string]interface{} `json:"config"`
+	Source XSource                `json:"-"`
 }
 
-func (in *InEnd) GetState() ResourceState {
+func (in *InEnd) GetState() SourceState {
 	return in.State
 }
 
 //
-func (in *InEnd) SetState(s ResourceState) {
+func (in *InEnd) SetState(s SourceState) {
 	in.State = s
 }
 

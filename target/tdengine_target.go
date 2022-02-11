@@ -88,7 +88,7 @@ func (td *tdEngineTarget) Start() error {
 	// curl -u root:taosdata -d 'show databases;' 127.0.0.1:6041/rest/sql
 	config := td.RuleEngine.GetOutEnd(td.PointId).Config
 	var mainConfig tdEngineConfig
-	if err := utils.BindResourceConfig(config, &mainConfig); err != nil {
+	if err := utils.BindSourceConfig(config, &mainConfig); err != nil {
 		return err
 	}
 	td.Fqdn = mainConfig.Fqdn
@@ -136,7 +136,7 @@ func (td *tdEngineTarget) Pause() {
 //
 // 获取资源状态
 //
-func (td *tdEngineTarget) Status() typex.ResourceState {
+func (td *tdEngineTarget) Status() typex.SourceState {
 	if err := execQuery(td.client, td.Username, td.Password, "SELECT CLIENT_VERSION();", td.Url); err != nil {
 		log.Error(err)
 		return typex.DOWN

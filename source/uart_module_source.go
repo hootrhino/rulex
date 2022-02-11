@@ -1,4 +1,4 @@
-package resource
+package source
 
 import (
 	"rulex/core"
@@ -11,7 +11,7 @@ import (
 	"github.com/ngaut/log"
 )
 
-type uartModuleResource struct {
+type uartModuleSource struct {
 	typex.XStatus
 	uartDriver typex.XExternalDriver
 }
@@ -24,37 +24,37 @@ type uartConfig struct {
 	Timeout  *int64 `json:"timeout" validate:"required" title:"超时时间" info:""`
 }
 
-func NewUartModuleResource(inEndId string, e typex.RuleX) typex.XResource {
-	s := uartModuleResource{}
+func NewUartModuleSource(inEndId string, e typex.RuleX) typex.XSource {
+	s := uartModuleSource{}
 	s.PointId = inEndId
 	s.RuleEngine = e
 	//
 	return &s
 }
-func (*uartModuleResource) Configs() *typex.XConfig {
+func (*uartModuleSource) Configs() *typex.XConfig {
 	return core.GenInConfig(typex.UART_MODULE, "UART_MODULE", uartConfig{})
 }
 
-func (mm *uartModuleResource) DataModels() []typex.XDataModel {
+func (mm *uartModuleSource) DataModels() []typex.XDataModel {
 	return []typex.XDataModel{}
 }
 
-func (u *uartModuleResource) Test(inEndId string) bool {
+func (u *uartModuleSource) Test(inEndId string) bool {
 	return true
 }
-func (m *uartModuleResource) OnStreamApproached(data string) error {
+func (m *uartModuleSource) OnStreamApproached(data string) error {
 	m.uartDriver.Write([]byte(data))
 	return nil
 }
-func (u *uartModuleResource) Register(inEndId string) error {
+func (u *uartModuleSource) Register(inEndId string) error {
 	u.PointId = inEndId
 	return nil
 }
 
-func (u *uartModuleResource) Start() error {
+func (u *uartModuleSource) Start() error {
 	config := u.RuleEngine.GetInEnd(u.PointId).Config
 	mainConfig := uartConfig{}
-	if err := utils.BindResourceConfig(config, &mainConfig); err != nil {
+	if err := utils.BindSourceConfig(config, &mainConfig); err != nil {
 		return err
 	}
 	driver, err := driver.NewUartDriver(serial.Config{
@@ -73,21 +73,21 @@ func (u *uartModuleResource) Start() error {
 
 }
 
-func (u *uartModuleResource) Enabled() bool {
+func (u *uartModuleSource) Enabled() bool {
 	return true
 }
 
-func (u *uartModuleResource) Reload() {
+func (u *uartModuleSource) Reload() {
 }
 
-func (u *uartModuleResource) Pause() {
+func (u *uartModuleSource) Pause() {
 
 }
-func (u *uartModuleResource) Details() *typex.InEnd {
+func (u *uartModuleSource) Details() *typex.InEnd {
 	return u.RuleEngine.GetInEnd(u.PointId)
 }
 
-func (u *uartModuleResource) Status() typex.ResourceState {
+func (u *uartModuleSource) Status() typex.SourceState {
 	if u.uartDriver != nil {
 		if err := u.uartDriver.Test(); err != nil {
 			log.Error(err)
@@ -99,20 +99,20 @@ func (u *uartModuleResource) Status() typex.ResourceState {
 	return typex.DOWN
 }
 
-func (u *uartModuleResource) Stop() {
+func (u *uartModuleSource) Stop() {
 	if u.uartDriver != nil {
 		u.uartDriver.Stop()
 		u.uartDriver = nil
 	}
 
 }
-func (u *uartModuleResource) Driver() typex.XExternalDriver {
+func (u *uartModuleSource) Driver() typex.XExternalDriver {
 	return u.uartDriver
 }
 
 //
 // 拓扑
 //
-func (*uartModuleResource) Topology() []typex.TopologyPoint {
+func (*uartModuleSource) Topology() []typex.TopologyPoint {
 	return []typex.TopologyPoint{}
 }

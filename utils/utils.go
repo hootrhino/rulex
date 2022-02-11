@@ -131,9 +131,9 @@ func TransformConfig(s1 []byte, s2 interface{}) error {
 // config: a Map, s: a struct variable
 //
 func BindConfig(config map[string]interface{}, s interface{}) error {
-	return BindResourceConfig(config, s)
+	return BindSourceConfig(config, s)
 }
-func BindResourceConfig(config map[string]interface{}, s interface{}) error {
+func BindSourceConfig(config map[string]interface{}, s interface{}) error {
 	configBytes, err0 := json.Marshal(&config)
 	if err0 != nil {
 		return err0

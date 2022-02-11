@@ -1,18 +1,18 @@
 package typex
 
 //
-// XStatus for resource status
+// XStatus for source status
 //
 type XStatus struct {
-	PointId    string // Input: Resource; Output: Target
+	PointId    string // Input: Source; Output: Target
 	Enable     bool
 	RuleEngine RuleX
 }
 
 //
-// XResource: 终端资源, 比如实际上的 MQTT 客户端
+// XSource: 终端资源, 比如实际上的 MQTT 客户端
 //
-type XResource interface {
+type XSource interface {
 	//
 	// 测试资源是否可用
 	//
@@ -49,7 +49,7 @@ type XResource interface {
 	//
 	// 获取资源状态
 	//
-	Status() ResourceState
+	Status() SourceState
 	//
 	// 获取资源绑定的的详情
 	//

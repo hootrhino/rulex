@@ -1,4 +1,4 @@
-package resource
+package source
 
 //-----------------------------------------------------------------------------
 //                              Warning
@@ -24,19 +24,19 @@ import (
 
 //----------------------------------------------------------------------------------
 
-type snmpResource struct {
+type snmpSource struct {
 	typex.XStatus
 	snmpClients []*gosnmp.GoSNMP
 }
 
-func (s *snmpResource) GetClient(i int) *gosnmp.GoSNMP {
+func (s *snmpSource) GetClient(i int) *gosnmp.GoSNMP {
 	return s.snmpClients[i]
 }
-func (s *snmpResource) SetClient(i int, c *gosnmp.GoSNMP) {
+func (s *snmpSource) SetClient(i int, c *gosnmp.GoSNMP) {
 	s.snmpClients[i] = c
 }
 
-func (s *snmpResource) SystemInfo(i int) map[string]interface{} {
+func (s *snmpSource) SystemInfo(i int) map[string]interface{} {
 	results, err := s.GetClient(i).Get([]string{
 		".1.3.6.1.2.1.1.1.0",    // 信息
 		".1.3.6.1.2.1.1.5.0",    // PCName
@@ -69,7 +69,7 @@ func (s *snmpResource) SystemInfo(i int) map[string]interface{} {
 
 }
 
-func (s *snmpResource) CPUs(i int) map[string]int {
+func (s *snmpSource) CPUs(i int) map[string]int {
 	oid := ".1.3.6.1.2.1.25.3.3.1.2"
 	r := map[string]int{}
 	err := s.GetClient(i).Walk(oid, func(variable gosnmp.SnmpPDU) error {
@@ -85,7 +85,7 @@ func (s *snmpResource) CPUs(i int) map[string]int {
 	}
 	return r
 }
-func (s *snmpResource) InterfaceIPs(i int) []string {
+func (s *snmpSource) InterfaceIPs(i int) []string {
 	oid := "1.3.6.1.2.1.4.20.1.2"
 	var r []string
 	err := s.GetClient(i).Walk(oid, func(variable gosnmp.SnmpPDU) error {
@@ -104,7 +104,7 @@ func (s *snmpResource) InterfaceIPs(i int) []string {
 	return r
 }
 
-func (s *snmpResource) HardwareNetInterfaceMac(i int) []string {
+func (s *snmpSource) HardwareNetInterfaceMac(i int) []string {
 	oid := ".1.3.6.1.2.1.2.2.1.6"
 	maps := map[string]string{}
 	result := make([]string, 0)
@@ -151,16 +151,16 @@ type snmpConfig struct {
 //
 //--------------------------------------------------------------------------------
 
-func NewSNMPInEndResource(inEndId string, e typex.RuleX) *snmpResource {
-	s := snmpResource{}
+func NewSNMPInEndSource(inEndId string, e typex.RuleX) *snmpSource {
+	s := snmpSource{}
 	s.RuleEngine = e
 	s.PointId = inEndId
 	return &s
 }
-func (*snmpResource) Driver() typex.XExternalDriver {
+func (*snmpSource) Driver() typex.XExternalDriver {
 	return nil
 }
-func (s *snmpResource) Test(inEndId string) bool {
+func (s *snmpSource) Test(inEndId string) bool {
 	var r []bool
 	for i := 0; i < len(s.snmpClients); i++ {
 		if err := s.GetClient(i).Connect(); err != nil {
@@ -173,15 +173,15 @@ func (s *snmpResource) Test(inEndId string) bool {
 
 }
 
-func (s *snmpResource) Register(inEndId string) error {
+func (s *snmpSource) Register(inEndId string) error {
 	s.PointId = inEndId
 	return nil
 }
 
-func (s *snmpResource) Start() error {
+func (s *snmpSource) Start() error {
 	config := s.RuleEngine.GetInEnd(s.PointId).Config
 	mainConfig := snmpConfig{}
-	if err := utils.BindResourceConfig(config, &mainConfig); err != nil {
+	if err := utils.BindSourceConfig(config, &mainConfig); err != nil {
 		return err
 	}
 	s.snmpClients = make([]*gosnmp.GoSNMP, len(mainConfig.Targets))
@@ -196,7 +196,7 @@ func (s *snmpResource) Start() error {
 			return err
 		}
 		ticker := time.NewTicker(time.Duration(mainConfig.Frequency) * time.Second)
-		go func(ctx context.Context, idx int, sr *snmpResource) {
+		go func(ctx context.Context, idx int, sr *snmpSource) {
 			for {
 				select {
 				case t := <-ticker.C:
@@ -206,10 +206,10 @@ func (s *snmpResource) Start() error {
 					}
 					dataBytes, err := json.Marshal(data)
 					if err != nil {
-						log.Error("snmpResource json Marshal error: ", err)
+						log.Error("snmpSource json Marshal error: ", err)
 					} else {
 						if _, err0 := sr.RuleEngine.Work(sr.Details(), string(dataBytes)); err0 != nil {
-							log.Error("snmpResource PushQueue error: ", err0)
+							log.Error("snmpSource PushQueue error: ", err0)
 						}
 
 					}
@@ -220,33 +220,33 @@ func (s *snmpResource) Start() error {
 
 			}
 		}(context.Background(), i, s)
-		log.Info("snmpResource start successfully!")
+		log.Info("snmpSource start successfully!")
 	}
 
 	return nil
 }
 
-func (s *snmpResource) Enabled() bool {
+func (s *snmpSource) Enabled() bool {
 	return s.Enable
 }
 
-func (s *snmpResource) Details() *typex.InEnd {
+func (s *snmpSource) Details() *typex.InEnd {
 	return s.RuleEngine.GetInEnd(s.PointId)
 }
 
-func (s *snmpResource) DataModels() []typex.XDataModel {
+func (s *snmpSource) DataModels() []typex.XDataModel {
 	return []typex.XDataModel{}
 }
 
-func (s *snmpResource) Reload() {
+func (s *snmpSource) Reload() {
 
 }
 
-func (s *snmpResource) Pause() {
+func (s *snmpSource) Pause() {
 
 }
 
-func (s *snmpResource) Status() typex.ResourceState {
+func (s *snmpSource) Status() typex.SourceState {
 	var r []bool
 	for i := 0; i < len(s.snmpClients); i++ {
 		if err := s.GetClient(i).Connect(); err != nil {
@@ -263,20 +263,20 @@ func (s *snmpResource) Status() typex.ResourceState {
 	}
 }
 
-func (s *snmpResource) OnStreamApproached(data string) error {
+func (s *snmpSource) OnStreamApproached(data string) error {
 	return nil
 }
 
-func (s *snmpResource) Stop() {
+func (s *snmpSource) Stop() {
 
 }
-func (*snmpResource) Configs() *typex.XConfig {
+func (*snmpSource) Configs() *typex.XConfig {
 	return core.GenInConfig(typex.SNMP_SERVER, "SNMP_SERVER", snmpConfig{})
 }
 
 //
 // 拓扑
 //
-func (*snmpResource) Topology() []typex.TopologyPoint {
+func (*snmpSource) Topology() []typex.TopologyPoint {
 	return []typex.TopologyPoint{}
 }

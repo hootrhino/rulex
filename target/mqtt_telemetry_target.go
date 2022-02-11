@@ -67,7 +67,7 @@ func (mm *MqttTelemetryTarget) Start() error {
 	outEnd := mm.RuleEngine.GetOutEnd(mm.PointId)
 	config := outEnd.Config
 	var mainConfig mqttTelemetryConfig
-	if err := utils.BindResourceConfig(config, &mainConfig); err != nil {
+	if err := utils.BindSourceConfig(config, &mainConfig); err != nil {
 		return err
 	}
 	//
@@ -182,7 +182,7 @@ func (mm *MqttTelemetryTarget) Reload() {
 func (mm *MqttTelemetryTarget) Pause() {
 
 }
-func (mm *MqttTelemetryTarget) Status() typex.ResourceState {
+func (mm *MqttTelemetryTarget) Status() typex.SourceState {
 	if mm.client != nil {
 		if mm.client.IsConnectionOpen() {
 			return typex.UP

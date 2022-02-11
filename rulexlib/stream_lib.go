@@ -68,7 +68,7 @@ func (l *WriteOutStreamLib) LibFun(rx typex.RuleX) func(*lua.LState) int {
 *
  */
 func WriteInStream(e typex.RuleX, id string, data string) bool {
-	err := e.GetInEnd(id).Resource.OnStreamApproached(data)
+	err := e.GetInEnd(id).Source.OnStreamApproached(data)
 	if err != nil {
 		return true
 	} else {

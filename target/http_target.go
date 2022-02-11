@@ -33,7 +33,7 @@ func (ht *HTTPTarget) Register(outEndId string) error {
 func (ht *HTTPTarget) Start() error {
 	config := ht.RuleEngine.GetOutEnd(ht.PointId).Config
 	var mainConfig httpConfig
-	if err := utils.BindResourceConfig(config, &mainConfig); err != nil {
+	if err := utils.BindSourceConfig(config, &mainConfig); err != nil {
 		return err
 	}
 	ht.url = mainConfig.Url
@@ -58,7 +58,7 @@ func (ht *HTTPTarget) Reload() {
 func (ht *HTTPTarget) Pause() {
 
 }
-func (ht *HTTPTarget) Status() typex.ResourceState {
+func (ht *HTTPTarget) Status() typex.SourceState {
 	return typex.UP
 
 }

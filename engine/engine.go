@@ -6,8 +6,8 @@ import (
 	"errors"
 	"fmt"
 	"rulex/core"
-	"rulex/resource"
 	"rulex/rulexlib"
+	"rulex/source"
 	"rulex/statistics"
 	"rulex/target"
 	"rulex/typex"
@@ -54,7 +54,7 @@ func NewRuleEngine(config typex.RulexConfig) typex.RuleX {
 //
 func (e *RuleEngine) Start() *typex.RulexConfig {
 	typex.StartQueue(core.GlobalConfig.MaxQueueSize)
-	resource.LoadRt()
+	source.LoadRt()
 	target.LoadTt()
 	return e.Config
 }
@@ -130,45 +130,45 @@ func (e *RuleEngine) GetConfig() *typex.RulexConfig {
 
 /*
 *
-* TODO: 0.3.0重构此处，换成 ResourceRegistry 形式
+* TODO: 0.3.0重构此处，换成 SourceRegistry 形式
 *
  */
 func (e *RuleEngine) LoadInEnd(in *typex.InEnd) error {
 	if in.Type == typex.MQTT {
-		return startResources(resource.NewMqttInEndResource(in.UUID, e), in, e)
+		return startSources(source.NewMqttInEndSource(in.UUID, e), in, e)
 	}
 	if in.Type == typex.HTTP {
-		return startResources(resource.NewHttpInEndResource(in.UUID, e), in, e)
+		return startSources(source.NewHttpInEndSource(in.UUID, e), in, e)
 	}
 	if in.Type == typex.COAP {
-		return startResources(resource.NewCoAPInEndResource(in.UUID, e), in, e)
+		return startSources(source.NewCoAPInEndSource(in.UUID, e), in, e)
 	}
 	if in.Type == typex.GRPC {
-		return startResources(resource.NewGrpcInEndResource(in.UUID, e), in, e)
+		return startSources(source.NewGrpcInEndSource(in.UUID, e), in, e)
 	}
 	if in.Type == typex.UART_MODULE {
-		return startResources(resource.NewUartModuleResource(in.UUID, e), in, e)
+		return startSources(source.NewUartModuleSource(in.UUID, e), in, e)
 	}
 	if in.Type == typex.MODBUS_MASTER {
-		return startResources(resource.NewModbusMasterResource(in.UUID, e), in, e)
+		return startSources(source.NewModbusMasterSource(in.UUID, e), in, e)
 	}
 	if in.Type == typex.SNMP_SERVER {
-		return startResources(resource.NewSNMPInEndResource(in.UUID, e), in, e)
+		return startSources(source.NewSNMPInEndSource(in.UUID, e), in, e)
 	}
 	if in.Type == typex.NATS_SERVER {
-		return startResources(resource.NewNatsResource(e), in, e)
+		return startSources(source.NewNatsSource(e), in, e)
 	}
 	if in.Type == typex.SIEMENS_S7 {
-		return startResources(resource.NewSiemensS7Resource(e), in, e)
+		return startSources(source.NewSiemensS7Source(e), in, e)
 	}
 	if in.Type == typex.RULEX_UDP {
-		return startResources(resource.NewUdpInEndResource(e), in, e)
+		return startSources(source.NewUdpInEndSource(e), in, e)
 	}
 	return fmt.Errorf("unsupported InEnd type:%s", in.Type)
 }
 
 //
-// start Resources
+// start Sources
 //
 /*
 * Life cycle
@@ -179,22 +179,22 @@ func (e *RuleEngine) LoadInEnd(in *typex.InEnd) error {
                       |                                              |
                       +-------------------Error ---------------------+
 */
-func startResources(resource typex.XResource, in *typex.InEnd, e *RuleEngine) error {
+func startSources(source typex.XSource, in *typex.InEnd, e *RuleEngine) error {
 	//
 	// 先注册, 如果出问题了直接删除就行
 	//
 	// 首先把资源ID给注册进去, 作为资源的全局索引
 	e.SaveInEnd(in)
 
-	if err := resource.Register(in.UUID); err != nil {
+	if err := source.Register(in.UUID); err != nil {
 		log.Error(err)
 		e.RemoveInEnd(in.UUID)
 		return err
 	}
-	// Set resources to inend
-	in.Resource = resource
+	// Set sources to inend
+	in.Source = source
 	// 然后启动资源
-	if err := startResource(resource, e, in.UUID); err != nil {
+	if err := startSource(source, e, in.UUID); err != nil {
 		log.Error(err)
 		e.RemoveInEnd(in.UUID)
 		return err
@@ -219,14 +219,14 @@ func startResources(resource typex.XResource, in *typex.InEnd, e *RuleEngine) er
 			//
 			// 通过HTTP删除资源的时候, 会把数据清了, 只要检测到资源没了, 这里也退出
 			//
-			if resource.Details() == nil {
+			if source.Details() == nil {
 				return
 			}
 			//------------------------------------
 			// 驱动挂了资源也挂了, 因此检查驱动状态在先
 			//------------------------------------
-			tryIfRestartResource(resource, e, in.UUID)
-			// checkDriverState(resource, e, in.UUID)
+			tryIfRestartSource(source, e, in.UUID)
+			// checkDriverState(source, e, in.UUID)
 			//------------------------------------
 			goto TICKER
 		}
@@ -242,15 +242,15 @@ func startResources(resource typex.XResource, in *typex.InEnd, e *RuleEngine) er
 * 这里也有优化点：不能手动控制内存回收可能会产生垃圾
 *
  */
-func checkDriverState(resource typex.XResource, e *RuleEngine, id string) {
-	if resource.Driver() != nil {
+func checkDriverState(source typex.XSource, e *RuleEngine, id string) {
+	if source.Driver() != nil {
 		// 只有资源启动状态才拉起驱动
-		if resource.Status() == typex.UP {
+		if source.Status() == typex.UP {
 			// 必须资源启动, 驱动才有重启意义
-			if resource.Driver().State() == typex.STOP {
-				log.Warn("Driver stopped:", resource.Driver().DriverDetail().Name)
+			if source.Driver().State() == typex.STOP {
+				log.Warn("Driver stopped:", source.Driver().DriverDetail().Name)
 				// 只需要把资源给拉闸, 就会触发重启
-				resource.Stop()
+				source.Stop()
 			}
 		}
 	}
@@ -258,44 +258,44 @@ func checkDriverState(resource typex.XResource, e *RuleEngine, id string) {
 }
 
 //
-// test ResourceState
+// test SourceState
 //
-func tryIfRestartResource(resource typex.XResource, e *RuleEngine, id string) {
-	checkDriverState(resource, e, id)
-	if resource.Status() == typex.DOWN {
-		resource.Details().SetState(typex.DOWN)
+func tryIfRestartSource(source typex.XSource, e *RuleEngine, id string) {
+	checkDriverState(source, e, id)
+	if source.Status() == typex.DOWN {
+		source.Details().SetState(typex.DOWN)
 		//----------------------------------
 		// 当资源挂了以后先给停止, 然后重启
 		//----------------------------------
-		log.Warnf("Resource %v %v down. try to restart it", resource.Details().UUID, resource.Details().Name)
-		resource.Stop()
+		log.Warnf("Source %v %v down. try to restart it", source.Details().UUID, source.Details().Name)
+		source.Stop()
 		//----------------------------------
 		// 主动垃圾回收一波
 		//----------------------------------
 		runtime.Gosched()
 		runtime.GC() // GC 比较慢, 但是是良性卡顿, 问题不大
-		startResource(resource, e, id)
+		startSource(source, e, id)
 	} else {
-		resource.Details().SetState(typex.UP)
+		source.Details().SetState(typex.UP)
 	}
 }
 
 //
 //
 //
-func startResource(resource typex.XResource, e *RuleEngine, id string) error {
+func startSource(source typex.XSource, e *RuleEngine, id string) error {
 	//----------------------------------
 	// 检查资源 如果是启动的，先给停了
 	//----------------------------------
 
-	if err := resource.Start(); err != nil {
-		log.Error("Resource start error:", err)
-		if resource.Status() == typex.UP {
-			resource.Stop()
+	if err := source.Start(); err != nil {
+		log.Error("Source start error:", err)
+		if source.Status() == typex.UP {
+			source.Stop()
 		}
-		if resource.Driver() != nil {
-			if resource.Driver().State() == typex.RUNNING {
-				resource.Driver().Stop()
+		if source.Driver() != nil {
+			if source.Driver().State() == typex.RUNNING {
+				source.Driver().Stop()
 			}
 		}
 		return err
@@ -303,21 +303,21 @@ func startResource(resource typex.XResource, e *RuleEngine, id string) error {
 		//----------------------------------
 		// 驱动也要停了, 然后重启
 		//----------------------------------
-		if resource.Driver() != nil {
-			if resource.Driver().State() == typex.RUNNING {
-				resource.Driver().Stop()
+		if source.Driver() != nil {
+			if source.Driver().State() == typex.RUNNING {
+				source.Driver().Stop()
 			}
 			// Start driver
-			if err := resource.Driver().Init(); err != nil {
+			if err := source.Driver().Init(); err != nil {
 				log.Error("Driver initial error:", err)
 				return errors.New("Driver initial error:" + err.Error())
 			}
-			log.Infof("Try to start driver: [%v]", resource.Driver().DriverDetail().Name)
-			if err := resource.Driver().Work(); err != nil {
+			log.Infof("Try to start driver: [%v]", source.Driver().DriverDetail().Name)
+			if err := source.Driver().Work(); err != nil {
 				log.Error("Driver work error:", err)
 				return errors.New("Driver work error:" + err.Error())
 			}
-			log.Infof("Driver start successfully: [%v]", resource.Driver().DriverDetail().Name)
+			log.Infof("Driver start successfully: [%v]", source.Driver().DriverDetail().Name)
 		}
 		return nil
 	}
@@ -380,7 +380,7 @@ func startTarget(target typex.XTarget, out *typex.OutEnd, e typex.RuleX) error {
 		e.RemoveOutEnd(out.UUID)
 		return err
 	}
-	// Set resources to inend
+	// Set sources to inend
 	out.Target = target
 	//
 	ticker := time.NewTicker(time.Duration(time.Second * 5))
@@ -547,13 +547,13 @@ func (e *RuleEngine) Stop() {
 	log.Info("Ready to stop rulex")
 	e.InEnds.Range(func(key, value interface{}) bool {
 		inEnd := value.(*typex.InEnd)
-		if inEnd.Resource != nil {
+		if inEnd.Source != nil {
 			log.Info("Stop InEnd:", inEnd.Name, inEnd.UUID)
 			e.GetInEnd(inEnd.UUID).SetState(typex.DOWN)
-			inEnd.Resource.Stop()
-			if inEnd.Resource.Driver() != nil {
-				inEnd.Resource.Driver().SetState(typex.STOP)
-				inEnd.Resource.Driver().Stop()
+			inEnd.Source.Stop()
+			if inEnd.Source.Driver() != nil {
+				inEnd.Source.Driver().SetState(typex.STOP)
+				inEnd.Source.Driver().Stop()
 			}
 		}
 		return true

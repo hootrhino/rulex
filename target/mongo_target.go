@@ -42,7 +42,7 @@ func (m *MongoTarget) Register(outEndId string) error {
 func (m *MongoTarget) Start() error {
 	config := m.RuleEngine.GetOutEnd(m.PointId).Config
 	var mainConfig mongoConfig
-	if err := utils.BindResourceConfig(config, &mainConfig); err != nil {
+	if err := utils.BindSourceConfig(config, &mainConfig); err != nil {
 		return err
 	}
 	clientOptions := options.Client().ApplyURI(mainConfig.MongoUrl)
@@ -91,7 +91,7 @@ func (m *MongoTarget) Pause() {
 
 }
 
-func (m *MongoTarget) Status() typex.ResourceState {
+func (m *MongoTarget) Status() typex.SourceState {
 	err1 := m.client.Ping(context.Background(), nil)
 	if err1 != nil {
 		log.Error(err1)

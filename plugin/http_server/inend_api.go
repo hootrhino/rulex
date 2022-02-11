@@ -76,7 +76,7 @@ func CreateInend(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	} else {
 		inend := e.GetInEnd(form.UUID)
 		if inend != nil {
-			inend.Resource.Reload() //重启接口
+			inend.Source.Reload() //重启接口
 			inend.SetState(typex.DOWN)
 			hh.DeleteMInEnd(inend.UUID)
 			if err := hh.InsertMInEnd(&MInEnd{
@@ -132,7 +132,7 @@ func GetInEndConfig(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
 	inend, ok := e.AllInEnd().Load(uuid)
 	if ok {
-		c.JSON(200, (inend.(*typex.InEnd)).Resource.Configs())
+		c.JSON(200, (inend.(*typex.InEnd)).Source.Configs())
 	} else {
 		c.JSON(400, []interface{}{})
 	}

@@ -1,4 +1,4 @@
-package resource
+package source
 
 import (
 	"fmt"
@@ -17,7 +17,7 @@ type natsConfig struct {
 	Port     int32  `json:"port" validate:"required" title:"服务端口" info:""`
 	Topic    string `json:"topic" validate:"required" title:"消息来源" info:""`
 }
-type natsResource struct {
+type natsSource struct {
 	typex.XStatus
 	user          string
 	password      string
@@ -27,16 +27,16 @@ type natsResource struct {
 	natsConnector *nats.Conn
 }
 
-func NewNatsResource(e typex.RuleX) typex.XResource {
-	nt := &natsResource{}
+func NewNatsSource(e typex.RuleX) typex.XSource {
+	nt := &natsSource{}
 	nt.RuleEngine = e
 	return nt
 }
 
-func (nt *natsResource) Start() error {
+func (nt *natsSource) Start() error {
 	config := nt.RuleEngine.GetInEnd(nt.PointId).Config
 	var mainConfig natsConfig
-	if err := utils.BindResourceConfig(config, &mainConfig); err != nil {
+	if err := utils.BindSourceConfig(config, &mainConfig); err != nil {
 		return err
 	}
 	nc, err := nats.Connect(fmt.Sprintf("%s:%v", mainConfig.Host, mainConfig.Port), func(o *nats.Options) error {
@@ -60,14 +60,14 @@ func (nt *natsResource) Start() error {
 			}
 		})
 		if err != nil {
-			log.Error("NatsResource PushQueue error: ", err)
+			log.Error("NatsSource PushQueue error: ", err)
 		}
 		return nil
 	}
 }
 
 // 测试资源状态
-func (nt *natsResource) Test(inendId string) bool {
+func (nt *natsSource) Test(inendId string) bool {
 	if nt.natsConnector != nil {
 		return nt.natsConnector.IsConnected()
 	} else {
@@ -76,23 +76,23 @@ func (nt *natsResource) Test(inendId string) bool {
 }
 
 // 先注册资源ID到出口
-func (nt *natsResource) Register(inendId string) error {
+func (nt *natsSource) Register(inendId string) error {
 	nt.PointId = inendId
 	return nil
 }
 
-func (nt *natsResource) Enabled() bool {
+func (nt *natsSource) Enabled() bool {
 	return true
 }
 
-func (nt *natsResource) Reload() {
+func (nt *natsSource) Reload() {
 
 }
 
-func (nt *natsResource) Pause() {
+func (nt *natsSource) Pause() {
 }
 
-func (nt *natsResource) Status() typex.ResourceState {
+func (nt *natsSource) Status() typex.SourceState {
 	if nt.natsConnector != nil {
 		if nt.natsConnector.IsConnected() {
 			return typex.UP
@@ -102,7 +102,7 @@ func (nt *natsResource) Status() typex.ResourceState {
 
 }
 
-func (nt *natsResource) Details() *typex.InEnd {
+func (nt *natsSource) Details() *typex.InEnd {
 	return nt.RuleEngine.GetInEnd(nt.PointId)
 }
 
@@ -110,11 +110,11 @@ func (nt *natsResource) Details() *typex.InEnd {
 // To: 数据出口
 //--------------------------------------------------------
 
-func (nt *natsResource) OnStreamApproached(data string) error {
+func (nt *natsSource) OnStreamApproached(data string) error {
 	return nil
 }
 
-func (nt *natsResource) Stop() {
+func (nt *natsSource) Stop() {
 	if nt.natsConnector != nil {
 		if nt.natsConnector.IsConnected() {
 			nt.natsConnector.Drain()
@@ -123,20 +123,20 @@ func (nt *natsResource) Stop() {
 		}
 	}
 }
-func (nt *natsResource) Configs() *typex.XConfig {
+func (nt *natsSource) Configs() *typex.XConfig {
 	return core.GenInConfig(typex.NATS_SERVER, "NATS_SERVER", natsConfig{})
 }
 
-func (nt *natsResource) DataModels() []typex.XDataModel {
+func (nt *natsSource) DataModels() []typex.XDataModel {
 	return []typex.XDataModel{}
 }
-func (nt *natsResource) Driver() typex.XExternalDriver {
+func (nt *natsSource) Driver() typex.XExternalDriver {
 	return nil
 }
 
 //
 // 拓扑
 //
-func (*natsResource) Topology() []typex.TopologyPoint {
+func (*natsSource) Topology() []typex.TopologyPoint {
 	return []typex.TopologyPoint{}
 }

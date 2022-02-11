@@ -1,12 +1,12 @@
 package typex
 
-// Resource State
-type ResourceState int
+// Source State
+type SourceState int
 
 const (
-	DOWN  ResourceState = 0
-	UP    ResourceState = 1
-	PAUSE ResourceState = 2
+	DOWN  SourceState = 0
+	UP    SourceState = 1
+	PAUSE SourceState = 2
 )
 
 //
