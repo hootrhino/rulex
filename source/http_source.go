@@ -61,9 +61,13 @@ func (hh *httpInEndSource) Start() error {
 			})
 		}
 	})
+	ctx, cancelCTX := context.WithCancel(typex.GCTX)
+	hh.Ctx = ctx
+	hh.CancelCTX = cancelCTX
+
 	go func(ctx context.Context) {
 		http.ListenAndServe(fmt.Sprintf(":%v", mainConfig.Port), hh.engine)
-	}(context.Background())
+	}(ctx)
 	log.Info("HTTP source started on" + " [0.0.0.0]:" + fmt.Sprintf("%v", mainConfig.Port))
 
 	return nil
@@ -76,6 +80,7 @@ func (mm *httpInEndSource) DataModels() []typex.XDataModel {
 
 //
 func (hh *httpInEndSource) Stop() {
+	hh.CancelCTX()
 
 }
 func (hh *httpInEndSource) Reload() {

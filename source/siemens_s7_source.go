@@ -88,6 +88,10 @@ func (s7 *siemensS7Source) Start() error {
 	s7.stateAddress = mainConfig.StateAddress
 	s7.client = gos7.NewClient(handler)
 	ticker := time.NewTicker(time.Duration(*mainConfig.Frequency) * time.Second)
+	ctx, cancelCTX := context.WithCancel(typex.GCTX)
+	s7.Ctx = ctx
+	s7.CancelCTX = cancelCTX
+
 	for _, d := range mainConfig.Dbs {
 		log.Infof("Start read: Tag:%v Address:%v Start:%v Size:%v", d.Tag, d.Address, d.Start, d.Size)
 		go func(ctx context.Context, d db) {
@@ -124,7 +128,7 @@ func (s7 *siemensS7Source) Start() error {
 				}
 			}
 
-		}(context.Background(), d)
+		}(ctx, d)
 	}
 
 	return nil
@@ -220,5 +224,5 @@ func (s7 *siemensS7Source) Stop() {
 	if s7.client != nil {
 		s7.client = nil
 	}
-	context.Background().Done()
+	s7.CancelCTX()
 }

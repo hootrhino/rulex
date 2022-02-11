@@ -1,6 +1,7 @@
 package source
 
 import (
+	"context"
 	"rulex/core"
 	"rulex/driver"
 	"rulex/typex"
@@ -57,14 +58,19 @@ func (u *uartModuleSource) Start() error {
 	if err := utils.BindSourceConfig(config, &mainConfig); err != nil {
 		return err
 	}
-	driver, err := driver.NewUartDriver(serial.Config{
-		Address:  mainConfig.Address,  // 串口名
-		BaudRate: mainConfig.BaudRate, // 115200
-		DataBits: mainConfig.DataBits, // 8
-		StopBits: mainConfig.StopBits, // 1
-		Parity:   mainConfig.Parity,   //'N'
-		Timeout:  time.Duration(*mainConfig.Timeout) * time.Second,
-	}, u.Details(), u.RuleEngine, nil)
+	ctx, cancelCTX := context.WithCancel(typex.GCTX)
+	u.Ctx = ctx
+	u.CancelCTX = cancelCTX
+
+	driver, err := driver.NewUartDriver(ctx,
+		serial.Config{
+			Address:  mainConfig.Address,  // 串口名
+			BaudRate: mainConfig.BaudRate, // 115200
+			DataBits: mainConfig.DataBits, // 8
+			StopBits: mainConfig.StopBits, // 1
+			Parity:   mainConfig.Parity,   //'N'
+			Timeout:  time.Duration(*mainConfig.Timeout) * time.Second,
+		}, u.Details(), u.RuleEngine, nil)
 	if err != nil {
 		return err
 	}
@@ -104,6 +110,7 @@ func (u *uartModuleSource) Stop() {
 		u.uartDriver.Stop()
 		u.uartDriver = nil
 	}
+	u.CancelCTX()
 
 }
 func (u *uartModuleSource) Driver() typex.XExternalDriver {

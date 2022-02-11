@@ -196,6 +196,10 @@ func (s *snmpSource) Start() error {
 			return err
 		}
 		ticker := time.NewTicker(time.Duration(mainConfig.Frequency) * time.Second)
+		ctx, cancelCTX := context.WithCancel(typex.GCTX)
+		s.Ctx = ctx
+		s.CancelCTX = cancelCTX
+
 		go func(ctx context.Context, idx int, sr *snmpSource) {
 			for {
 				select {
@@ -219,7 +223,7 @@ func (s *snmpSource) Start() error {
 				}
 
 			}
-		}(context.Background(), i, s)
+		}(ctx, i, s)
 		log.Info("snmpSource start successfully!")
 	}
 
@@ -268,7 +272,7 @@ func (s *snmpSource) OnStreamApproached(data string) error {
 }
 
 func (s *snmpSource) Stop() {
-
+	s.CancelCTX()
 }
 func (*snmpSource) Configs() *typex.XConfig {
 	return core.GenInConfig(typex.SNMP_SERVER, "SNMP_SERVER", snmpConfig{})

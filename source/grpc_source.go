@@ -64,10 +64,14 @@ func (g *grpcInEndSource) Start() error {
 	g.rulexServer.grpcInEndSource = g
 	//
 	rulexrpc.RegisterRulexRpcServer(g.rpcServer, g.rulexServer)
+	ctx, cancelCTX := context.WithCancel(typex.GCTX)
+	g.Ctx = ctx
+	g.CancelCTX = cancelCTX
+
 	go func(c context.Context) {
 		log.Info("RulexRpc source started on", listener.Addr())
 		g.rpcServer.Serve(listener)
-	}(context.Background())
+	}(ctx)
 
 	return nil
 }
@@ -82,6 +86,7 @@ func (g *grpcInEndSource) Stop() {
 	if g.rpcServer != nil {
 		g.rpcServer.Stop()
 	}
+	g.CancelCTX()
 
 }
 func (g *grpcInEndSource) Reload() {

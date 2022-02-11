@@ -19,6 +19,11 @@ const _API_V1_ROOT string = "/api/v1/"
 const DEFAULT_DB_PATH string = "./rulex.db"
 const DASHBOARD_ROOT string = "/dashboard/v1/"
 
+type _serverConfig struct {
+	Enable bool   `ini:"enable"`
+	Host   string `ini:"host"`
+	Port   int    `ini:"port"`
+}
 type HttpApiServer struct {
 	Port       int
 	Root       string
@@ -37,10 +42,9 @@ func (hh *HttpApiServer) Init(cfg interface{}) error {
 	gin.SetMode(gin.ReleaseMode)
 	hh.ginEngine = gin.New()
 	configHttpServer(hh)
-	ctx := context.Background()
 	go func(ctx context.Context, port int) {
 		hh.ginEngine.Run(":" + strconv.Itoa(port))
-	}(ctx, hh.Port)
+	}(typex.GCTX, hh.Port)
 	return nil
 }
 

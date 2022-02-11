@@ -45,12 +45,16 @@ func (m *MongoTarget) Start() error {
 	if err := utils.BindSourceConfig(config, &mainConfig); err != nil {
 		return err
 	}
+	ctx, cancelCTX := context.WithCancel(typex.GCTX)
+	m.Ctx = ctx
+	m.CancelCTX = cancelCTX
+
 	clientOptions := options.Client().ApplyURI(mainConfig.MongoUrl)
-	client, err0 := mongo.Connect(context.Background(), clientOptions)
+	client, err0 := mongo.Connect(ctx, clientOptions)
 	if err0 != nil {
 		return err0
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()
 	if err1 := client.Ping(ctx, nil); err1 != nil {
 		return err1
@@ -66,7 +70,7 @@ func (m *MongoTarget) Start() error {
 func (m *MongoTarget) Test(outEndId string) bool {
 	if m.client != nil {
 
-		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+		ctx, cancel := context.WithTimeout(m.Ctx, 3*time.Second)
 		defer cancel()
 		if err1 := m.client.Ping(ctx, nil); err1 != nil {
 			return false
@@ -92,7 +96,7 @@ func (m *MongoTarget) Pause() {
 }
 
 func (m *MongoTarget) Status() typex.SourceState {
-	err1 := m.client.Ping(context.Background(), nil)
+	err1 := m.client.Ping(m.Ctx, nil)
 	if err1 != nil {
 		log.Error(err1)
 		return typex.DOWN
@@ -102,13 +106,14 @@ func (m *MongoTarget) Status() typex.SourceState {
 }
 
 func (m *MongoTarget) Stop() {
-	m.client.Disconnect(context.Background())
+	m.client.Disconnect(m.Ctx)
 	log.Info("Mongotarget Stop success")
+	m.CancelCTX()
 }
 
 func (m *MongoTarget) To(data interface{}) error {
 	document := bson.D{bson.E{Key: "data", Value: data}}
-	_, err := m.collection.InsertOne(context.Background(), document)
+	_, err := m.collection.InsertOne(m.Ctx, document)
 	if err != nil {
 		log.Error("Mongo To Failed:", err)
 	}

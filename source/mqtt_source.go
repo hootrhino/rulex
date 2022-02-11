@@ -86,7 +86,6 @@ func (m *mqttInEndSource) OnStreamApproached(data string) error {
 }
 func (mm *mqttInEndSource) Stop() {
 	mm.client.Disconnect(0)
-	mm = nil
 }
 func (mm *mqttInEndSource) Reload() {
 

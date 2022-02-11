@@ -121,5 +121,5 @@ func StartQueue(maxQueueSize int) {
 				}
 			}
 		}
-	}(context.Background(), DefaultDataCacheQueue)
+	}(GCTX, DefaultDataCacheQueue)
 }

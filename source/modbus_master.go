@@ -153,14 +153,12 @@ type tcpConfig struct {
 type modbusMasterSource struct {
 	typex.XStatus
 	client    modbus.Client
-	cxt       context.Context
 	rtuDriver typex.XExternalDriver
 }
 
 func NewModbusMasterSource(id string, e typex.RuleX) typex.XSource {
 	m := modbusMasterSource{}
 	m.RuleEngine = e
-	m.cxt = context.Background()
 	return &m
 }
 func (*modbusMasterSource) Configs() *typex.XConfig {
@@ -229,6 +227,10 @@ func (m *modbusMasterSource) Start() error {
 	//
 	// 前端传过来个寄存器和地址的配置列表，然后给每个寄存器分配一个协程去读
 	//
+	ctx, cancelCTX := context.WithCancel(typex.GCTX)
+	m.Ctx = ctx
+	m.CancelCTX = cancelCTX
+
 	for _, rCfg := range mainConfig.RegisterParams {
 		log.Info("Start read register:", rCfg.Address)
 		// 每个寄存器配一个协程读数据
@@ -279,7 +281,7 @@ func (m *modbusMasterSource) Start() error {
 					}
 				}
 			}
-		}(m.cxt, rCfg)
+		}(ctx, rCfg)
 	}
 	return nil
 
@@ -315,7 +317,7 @@ func (m *modbusMasterSource) Status() typex.SourceState {
 }
 
 func (m *modbusMasterSource) Stop() {
-	m.cxt.Done()
+	m.CancelCTX()
 }
 
 /*

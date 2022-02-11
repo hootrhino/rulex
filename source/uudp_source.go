@@ -37,6 +37,10 @@ func (u *udpSource) Start() error {
 		log.Error(err)
 		return err
 	}
+	ctx, cancelCTX := context.WithCancel(typex.GCTX)
+	u.Ctx = ctx
+	u.CancelCTX = cancelCTX
+
 	go func(c context.Context, u1 *udpSource) {
 		data := make([]byte, mainConfig.MaxDataLength)
 		for {
@@ -56,7 +60,7 @@ func (u *udpSource) Start() error {
 				}
 			}
 		}
-	}(context.Background(), u)
+	}(ctx, u)
 	log.Infof("UDP source started on [%v]:%v", mainConfig.Host, mainConfig.Port)
 	return nil
 
@@ -103,6 +107,7 @@ func (u *udpSource) Stop() {
 	if u.uDPConn != nil {
 		u.uDPConn.Close()
 	}
+	u.CancelCTX()
 }
 func (*udpSource) Driver() typex.XExternalDriver {
 	return nil

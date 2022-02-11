@@ -61,13 +61,17 @@ func (cc *coAPInEndSource) Start() error {
 			log.Errorf("Cannot set response: %v", err)
 		}
 	}))
+	ctx, cancelCTX := context.WithCancel(typex.GCTX)
+	cc.Ctx = ctx
+	cc.CancelCTX = cancelCTX
+
 	go func(ctx context.Context) {
 		err := coap.ListenAndServe("udp", port, cc.router)
 		if err != nil {
 			log.Error(err)
 			return
 		}
-	}(context.Background())
+	}(ctx)
 	log.Info("Coap source started on [udp]" + port)
 	return nil
 }
@@ -77,6 +81,7 @@ func (m *coAPInEndSource) OnStreamApproached(data string) error {
 
 //
 func (cc *coAPInEndSource) Stop() {
+	cc.CancelCTX()
 }
 
 func (cc *coAPInEndSource) DataModels() []typex.XDataModel {

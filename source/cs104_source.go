@@ -185,4 +185,5 @@ func (cs *cs104Source) Topology() []typex.TopologyPoint {
 // 停止资源, 用来释放资源
 //
 func (cs *cs104Source) Stop() {
+	cs.CancelCTX()
 }

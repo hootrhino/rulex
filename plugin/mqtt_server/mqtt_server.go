@@ -14,6 +14,11 @@ const (
 	defaultTransport string = "tcp"
 )
 
+type _serverConfig struct {
+	Enable bool   `ini:"enable"`
+	Host   string `ini:"host"`
+	Port   int    `ini:"port"`
+}
 type MqttServer struct {
 	mqttServer *mqttServer.Server
 }
