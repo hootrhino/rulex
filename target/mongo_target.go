@@ -39,22 +39,20 @@ func (m *MongoTarget) Register(outEndId string) error {
 	return nil
 }
 
-func (m *MongoTarget) Start() error {
+func (m *MongoTarget) Start(cctx typex.CCTX) error {
+	m.Ctx = cctx.Ctx
+	m.CancelCTX = cctx.CancelCTX
 	config := m.RuleEngine.GetOutEnd(m.PointId).Config
 	var mainConfig mongoConfig
 	if err := utils.BindSourceConfig(config, &mainConfig); err != nil {
 		return err
 	}
-	ctx, cancelCTX := context.WithCancel(typex.GCTX)
-	m.Ctx = ctx
-	m.CancelCTX = cancelCTX
-
 	clientOptions := options.Client().ApplyURI(mainConfig.MongoUrl)
-	client, err0 := mongo.Connect(ctx, clientOptions)
+	client, err0 := mongo.Connect(m.Ctx, clientOptions)
 	if err0 != nil {
 		return err0
 	}
-	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
+	ctx, cancel := context.WithTimeout(m.Ctx, 3*time.Second)
 	defer cancel()
 	if err1 := client.Ping(ctx, nil); err1 != nil {
 		return err1

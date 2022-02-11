@@ -1,7 +1,6 @@
 package source
 
 import (
-	"context"
 	"rulex/core"
 	"rulex/driver"
 	"rulex/typex"
@@ -52,17 +51,19 @@ func (u *uartModuleSource) Register(inEndId string) error {
 	return nil
 }
 
-func (u *uartModuleSource) Start() error {
+func (u *uartModuleSource) Start(cctx typex.CCTX) error {
+	u.Ctx = cctx.Ctx
+	u.CancelCTX = cctx.CancelCTX
+
 	config := u.RuleEngine.GetInEnd(u.PointId).Config
 	mainConfig := uartConfig{}
 	if err := utils.BindSourceConfig(config, &mainConfig); err != nil {
 		return err
 	}
-	ctx, cancelCTX := context.WithCancel(typex.GCTX)
-	u.Ctx = ctx
-	u.CancelCTX = cancelCTX
+	u.Ctx = cctx.Ctx
+	u.CancelCTX = cctx.CancelCTX
 
-	driver, err := driver.NewUartDriver(ctx,
+	driver, err := driver.NewUartDriver(u.Ctx,
 		serial.Config{
 			Address:  mainConfig.Address,  // 串口名
 			BaudRate: mainConfig.BaudRate, // 115200

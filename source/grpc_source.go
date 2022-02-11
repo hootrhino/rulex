@@ -46,9 +46,10 @@ func NewGrpcInEndSource(inEndId string, e typex.RuleX) typex.XSource {
 }
 
 //
-func (g *grpcInEndSource) Start() error {
-	inEnd := g.RuleEngine.GetInEnd(g.PointId)
-	config := inEnd.Config
+func (g *grpcInEndSource) Start(cctx typex.CCTX) error {
+	g.Ctx = cctx.Ctx
+	g.CancelCTX = cctx.CancelCTX
+	config := g.RuleEngine.GetInEnd(g.PointId).Config
 	var mainConfig grpcConfig
 	if err := utils.BindSourceConfig(config, &mainConfig); err != nil {
 		return err
@@ -64,14 +65,11 @@ func (g *grpcInEndSource) Start() error {
 	g.rulexServer.grpcInEndSource = g
 	//
 	rulexrpc.RegisterRulexRpcServer(g.rpcServer, g.rulexServer)
-	ctx, cancelCTX := context.WithCancel(typex.GCTX)
-	g.Ctx = ctx
-	g.CancelCTX = cancelCTX
 
 	go func(c context.Context) {
 		log.Info("RulexRpc source started on", listener.Addr())
 		g.rpcServer.Serve(listener)
-	}(ctx)
+	}(g.Ctx)
 
 	return nil
 }

@@ -37,7 +37,10 @@ func (*httpInEndSource) Configs() *typex.XConfig {
 }
 
 //
-func (hh *httpInEndSource) Start() error {
+func (hh *httpInEndSource) Start(cctx typex.CCTX) error {
+	hh.Ctx = cctx.Ctx
+	hh.CancelCTX = cctx.CancelCTX
+
 	config := hh.RuleEngine.GetInEnd(hh.PointId).Config
 	var mainConfig httpConfig
 	if err := utils.BindSourceConfig(config, &mainConfig); err != nil {
@@ -61,13 +64,10 @@ func (hh *httpInEndSource) Start() error {
 			})
 		}
 	})
-	ctx, cancelCTX := context.WithCancel(typex.GCTX)
-	hh.Ctx = ctx
-	hh.CancelCTX = cancelCTX
 
 	go func(ctx context.Context) {
 		http.ListenAndServe(fmt.Sprintf(":%v", mainConfig.Port), hh.engine)
-	}(ctx)
+	}(hh.Ctx)
 	log.Info("HTTP source started on" + " [0.0.0.0]:" + fmt.Sprintf("%v", mainConfig.Port))
 
 	return nil

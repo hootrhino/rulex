@@ -25,7 +25,10 @@ func NewUdpInEndSource(e typex.RuleX) *udpSource {
 	u.RuleEngine = e
 	return &u
 }
-func (u *udpSource) Start() error {
+func (u *udpSource) Start(cctx typex.CCTX) error {
+	u.Ctx = cctx.Ctx
+	u.CancelCTX = cctx.CancelCTX
+
 	config := u.RuleEngine.GetInEnd(u.PointId).Config
 	var mainConfig udpConfig
 	if err := utils.BindSourceConfig(config, &mainConfig); err != nil {
@@ -37,9 +40,8 @@ func (u *udpSource) Start() error {
 		log.Error(err)
 		return err
 	}
-	ctx, cancelCTX := context.WithCancel(typex.GCTX)
-	u.Ctx = ctx
-	u.CancelCTX = cancelCTX
+	u.Ctx = cctx.Ctx
+	u.CancelCTX = cctx.CancelCTX
 
 	go func(c context.Context, u1 *udpSource) {
 		data := make([]byte, mainConfig.MaxDataLength)
@@ -60,7 +62,7 @@ func (u *udpSource) Start() error {
 				}
 			}
 		}
-	}(ctx, u)
+	}(u.Ctx, u)
 	log.Infof("UDP source started on [%v]:%v", mainConfig.Host, mainConfig.Port)
 	return nil
 

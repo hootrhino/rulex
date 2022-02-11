@@ -16,7 +16,7 @@ type XTarget interface {
 	//
 	// 启动资源
 	//
-	Start() error
+	Start(CCTX) error
 	//
 	// 资源是否被启用
 	//

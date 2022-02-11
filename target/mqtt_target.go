@@ -38,7 +38,9 @@ func NewMqttTarget(e typex.RuleX) typex.XTarget {
 func (*mqttOutEndTarget) Driver() typex.XExternalDriver {
 	return nil
 }
-func (mm *mqttOutEndTarget) Start() error {
+func (mm *mqttOutEndTarget) Start(cctx typex.CCTX) error {
+	mm.Ctx = cctx.Ctx
+	mm.CancelCTX = cctx.CancelCTX
 	outEnd := mm.RuleEngine.GetOutEnd(mm.PointId)
 	config := outEnd.Config
 	var mainConfig mqttConfig
@@ -83,6 +85,7 @@ func (m *mqttOutEndTarget) OnStreamApproached(data string) error {
 }
 func (mm *mqttOutEndTarget) Stop() {
 	mm.client.Disconnect(0)
+	mm.CancelCTX()
 
 }
 func (mm *mqttOutEndTarget) Reload() {

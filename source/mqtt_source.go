@@ -35,7 +35,10 @@ func NewMqttInEndSource(inEndId string, e typex.RuleX) typex.XSource {
 	return m
 }
 
-func (mm *mqttInEndSource) Start() error {
+func (mm *mqttInEndSource) Start(cctx typex.CCTX) error {
+	mm.Ctx = cctx.Ctx
+	mm.CancelCTX = cctx.CancelCTX
+
 	config := mm.RuleEngine.GetInEnd(mm.PointId).Config
 	var mainConfig mqttConfig
 
@@ -86,6 +89,7 @@ func (m *mqttInEndSource) OnStreamApproached(data string) error {
 }
 func (mm *mqttInEndSource) Stop() {
 	mm.client.Disconnect(0)
+	mm.CancelCTX()
 }
 func (mm *mqttInEndSource) Reload() {
 

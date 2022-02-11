@@ -178,7 +178,10 @@ func (s *snmpSource) Register(inEndId string) error {
 	return nil
 }
 
-func (s *snmpSource) Start() error {
+func (s *snmpSource) Start(cctx typex.CCTX) error {
+	s.Ctx = cctx.Ctx
+	s.CancelCTX = cctx.CancelCTX
+
 	config := s.RuleEngine.GetInEnd(s.PointId).Config
 	mainConfig := snmpConfig{}
 	if err := utils.BindSourceConfig(config, &mainConfig); err != nil {
@@ -196,9 +199,8 @@ func (s *snmpSource) Start() error {
 			return err
 		}
 		ticker := time.NewTicker(time.Duration(mainConfig.Frequency) * time.Second)
-		ctx, cancelCTX := context.WithCancel(typex.GCTX)
-		s.Ctx = ctx
-		s.CancelCTX = cancelCTX
+		s.Ctx = cctx.Ctx
+		s.CancelCTX = cctx.CancelCTX
 
 		go func(ctx context.Context, idx int, sr *snmpSource) {
 			for {
@@ -223,7 +225,7 @@ func (s *snmpSource) Start() error {
 				}
 
 			}
-		}(ctx, i, s)
+		}(s.Ctx, i, s)
 		log.Info("snmpSource start successfully!")
 	}
 

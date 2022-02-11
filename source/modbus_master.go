@@ -170,7 +170,9 @@ func (m *modbusMasterSource) Register(inEndId string) error {
 	return nil
 }
 
-func (m *modbusMasterSource) Start() error {
+func (m *modbusMasterSource) Start(cctx typex.CCTX) error {
+	m.Ctx = cctx.Ctx
+	m.CancelCTX = cctx.CancelCTX
 
 	config := m.RuleEngine.GetInEnd(m.PointId).Config
 	var mainConfig modBusConfig
@@ -227,9 +229,8 @@ func (m *modbusMasterSource) Start() error {
 	//
 	// 前端传过来个寄存器和地址的配置列表，然后给每个寄存器分配一个协程去读
 	//
-	ctx, cancelCTX := context.WithCancel(typex.GCTX)
-	m.Ctx = ctx
-	m.CancelCTX = cancelCTX
+	m.Ctx = cctx.Ctx
+	m.CancelCTX = cctx.CancelCTX
 
 	for _, rCfg := range mainConfig.RegisterParams {
 		log.Info("Start read register:", rCfg.Address)
@@ -281,7 +282,7 @@ func (m *modbusMasterSource) Start() error {
 					}
 				}
 			}
-		}(ctx, rCfg)
+		}(m.Ctx, rCfg)
 	}
 	return nil
 

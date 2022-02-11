@@ -80,7 +80,7 @@ func (cs *cs104Source) Register(inEndId string) error {
 //
 // 启动资源
 //
-func (cs *cs104Source) Start() error {
+func (cs *cs104Source) Start(cctx typex.CCTX) error {
 	option := cs104.NewOption()
 	config := cs.RuleEngine.GetInEnd(cs.PointId).Config
 	var mainConfig cs104Config
