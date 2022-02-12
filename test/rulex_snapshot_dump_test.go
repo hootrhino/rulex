@@ -34,11 +34,11 @@ func Test_snapshot_dump(t *testing.T) {
 	hh := httpserver.NewHttpApiServer(2580, "/../plugin/http_server/www/", "./rulex.db", e)
 
 	// HttpApiServer loaded default
-	if err := e.LoadPlugin(hh); err != nil {
+	if err := e.LoadPlugin("plugin.http_server", hh); err != nil {
 		log.Fatal("Rule load failed:", err)
 	}
 	// Load a demo plugin
-	if err := e.LoadPlugin(demo_plugin.NewDemoPlugin()); err != nil {
+	if err := e.LoadPlugin("plugin.demo", demo_plugin.NewDemoPlugin()); err != nil {
 		log.Error("Rule load failed:", err)
 	}
 	// Grpc Inend

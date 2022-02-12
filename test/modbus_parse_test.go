@@ -29,11 +29,11 @@ func Test_Modbus_LUA_Parse(t *testing.T) {
 	hh := httpserver.NewHttpApiServer(2580, "/../plugin/http_server/www/", "./rulex.db", engine)
 
 	// HttpApiServer loaded default
-	if err := engine.LoadPlugin(hh); err != nil {
+	if err := engine.LoadPlugin("plugin.http_server", hh); err != nil {
 		log.Fatal("Rule load failed:", err)
 	}
 	// Load a demo plugin
-	if err := engine.LoadPlugin(demo_plugin.NewDemoPlugin()); err != nil {
+	if err := engine.LoadPlugin("plugin.demo", demo_plugin.NewDemoPlugin()); err != nil {
 		log.Error("Rule load failed:", err)
 	}
 	// Grpc Inend

@@ -32,6 +32,7 @@ func (s *MqttServer) Init(cfg interface{}) error {
 }
 
 func (s *MqttServer) Start() error {
+
 	server := mqttServer.New()
 	tcpPort := listeners.NewTCP(defaultTransport, fmt.Sprintf(":%v", defaultPort))
 

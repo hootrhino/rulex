@@ -42,6 +42,7 @@ func (hh *HttpApiServer) Init(cfg interface{}) error {
 	gin.SetMode(gin.ReleaseMode)
 	hh.ginEngine = gin.New()
 	configHttpServer(hh)
+
 	go func(ctx context.Context, port int) {
 		hh.ginEngine.Run(":" + strconv.Itoa(port))
 	}(typex.GCTX, hh.Port)
