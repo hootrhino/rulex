@@ -29,10 +29,10 @@ func RunRulex(dbPath string) {
 
 	httpServer := httpserver.NewHttpApiServer(2580, "/plugin/http_server/www/", dbPath, engine)
 	// Load Http api Server
-	engine.LoadPlugin(httpServer)
+	engine.LoadPlugin("plugin.http_server", httpServer)
 	// Load Mqtt Server
 
-	if err := engine.LoadPlugin(mqttserver.NewMqttServer()); err != nil {
+	if err := engine.LoadPlugin("plugin.mqtt_server", mqttserver.NewMqttServer()); err != nil {
 		log.Error(err)
 		panic(err)
 	}

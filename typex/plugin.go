@@ -1,15 +1,11 @@
 package typex
 
 //
-type XPluginMetaInfo struct {
-	Name     string `json:"name"`
-	Version  string `json:"version"`
-	Homepage string `json:"homepage"`
-	HelpLink string `json:"helpLink"`
-	Author   string `json:"author"`
-	Email    string `json:"email"`
-	License  string `json:"license"`
-}
+// 插件开发步骤：
+// 1 在ini配置文件中增加配置项
+// 2 实现插件接口: XPlugin
+// 3 LoadPlugin(sectionK string, p typex.XPlugin)
+//
 
 //
 // External Plugin
@@ -19,4 +15,14 @@ type XPlugin interface {
 	Start() error
 	Stop() error
 	PluginMetaInfo() XPluginMetaInfo
+}
+
+type XPluginMetaInfo struct {
+	Name     string `json:"name"`
+	Version  string `json:"version"`
+	Homepage string `json:"homepage"`
+	HelpLink string `json:"helpLink"`
+	Author   string `json:"author"`
+	Email    string `json:"email"`
+	License  string `json:"license"`
 }

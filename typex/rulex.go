@@ -84,7 +84,7 @@ type RuleX interface {
 	//
 	// 加载插件
 	//
-	LoadPlugin(XPlugin) error
+	LoadPlugin(string, XPlugin) error
 	//
 	// 所有插件列表
 	//

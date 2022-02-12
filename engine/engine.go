@@ -11,6 +11,7 @@ import (
 	"rulex/statistics"
 	"rulex/target"
 	"rulex/typex"
+	"rulex/utils"
 	"runtime"
 	"sync"
 	"time"
@@ -615,13 +616,24 @@ func (e *RuleEngine) RunLuaCallbacks(in *typex.InEnd, callbackArgs string) {
 // │ Init ├───►│ Load ├───►│ Stop │
 // └──────┘    └──────┘    └──────┘
 //
-func (e *RuleEngine) LoadPlugin(p typex.XPlugin) error {
-	// TODO get plugin config
-
-	if err := p.Init(nil); err != nil {
-		return err
+func (e *RuleEngine) LoadPlugin(sectionK string, p typex.XPlugin) error {
+	section := utils.GetINISection(sectionK)
+	key, err1 := section.GetKey("enable")
+	if err1 != nil {
+		return err1
+	}
+	enable, err2 := key.Bool()
+	if err2 != nil {
+		return err2
+	}
+	if !enable {
+		log.Infof("Plugin is not enable:%s", p.PluginMetaInfo().Name)
+		return nil
 	}
 
+	if err := p.Init(section); err != nil {
+		return err
+	}
 	_, ok := e.Plugins.Load(p.PluginMetaInfo().Name)
 	if ok {
 		return errors.New("plugin already installed:" + p.PluginMetaInfo().Name)
