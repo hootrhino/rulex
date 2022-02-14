@@ -23,6 +23,7 @@ func Test_server(t *testing.T) {
 	client(t)
 	time.Sleep(2 * time.Second)
 }
+
 func client(t *testing.T) {
 	handler := gos7.NewTCPClientHandler("127.0.0.1:1503", 0, 1)
 	err1 := handler.Connect()
@@ -86,5 +87,34 @@ func Test_gen_config(t *testing.T) {
 	}
 	b, _ := json.MarshalIndent(c, "", " ")
 	t.Log(string(b))
+
+}
+
+/*
+*
+*  Error: Address out of range
+*
+*/
+func Test_readDB(t *testing.T) {
+	handler := gos7.NewTCPClientHandler("10.55.143.60", 0, 1)
+
+	defer handler.Close()
+	if err := handler.Connect();err != nil {
+		t.Error(err)
+		return
+	}
+	client := gos7.NewClient(handler)
+	info,err:= client.GetCPUInfo()
+	if err!=nil{
+		t.Error(err)
+		return
+	}
+	t.Log("CPU:",info.ASName)
+	dataBuf := make([]byte, 20)
+	if err := client.AGReadDB(10, 0, 1, dataBuf); err != nil {
+		t.Error(err)
+		return
+	}
+	t.Log("client.AGReadDB =>", dataBuf)
 
 }
