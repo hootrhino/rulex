@@ -91,13 +91,9 @@ func (s7 *siemensS7Source) Start(cctx typex.CCTX) error {
 	s7.stateAddress = mainConfig.StateAddress
 	s7.client = gos7.NewClient(handler)
 	ticker := time.NewTicker(time.Duration(*mainConfig.Frequency) * time.Second)
-	s7.Ctx = cctx.Ctx
-	s7.CancelCTX = cctx.CancelCTX
-
 	for _, d := range mainConfig.Dbs {
 		log.Infof("Start read: Tag:%v Address:%v Start:%v Size:%v", d.Tag, d.Address, d.Start, d.Size)
 		go func(ctx context.Context, d db) {
-
 			dataBuffer := make([]byte, 512)
 			for {
 
