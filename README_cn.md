@@ -4,16 +4,16 @@
 <img src="./README_RES/structure.png"/>
 </div>
 
-RULEX 是一个被计划用于边缘端的轻量级规则引擎开发框架, 支持多种数据接入以及自定义数据流筛选，可以快速实现边缘端设备的数据处理功能。很适合在网关场景中使用。
+RULEX 是一个轻量级工业类边缘网关开发框架。
 
 ## 快速开始
-### 构建
+### 构建(Linux)
 ```sh
 git clone https://github.com/wwhai/rulex.git
 cd rulex
-make # on windows: make windows
+make
 ```
-> ProtoFile 要在Linux下编译, 需要安装: `sudo apt install protobuf-compiler -y`
+
 ## 支持的平台
 
 | 平台    | 架构   | 编译测试 |
@@ -27,13 +27,14 @@ make # on windows: make windows
 
 ## 跨平台编译
 
-注意:` Arm32位`下编译比较麻烦, 推荐使用`Ubuntu18-04`安装交叉编译工具进行编译, 具体步骤请参考 `.github\workflows\4_build-arm-32-v7.yml` 里面的脚本。
+注意:` Arm32位`下编译步骤请参考 `.github\workflows\4_build-arm-32-v7.yml` 里面的脚本。
 
 ### 启动
-
+启动需要带2个参数，`db` 是保存配置数据的位置，该参数指定的路径最后会生成个 sqlite 文件，`config` 参数是 ini 的路径
 ```sh
-rulex run
+./rulex run -db=main.db -config=conf/rulex.ini
 ```
+> config 文件如果不存在会退出.
 
 ## Dashboard
 ```
