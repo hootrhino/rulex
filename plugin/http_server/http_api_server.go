@@ -59,7 +59,10 @@ func (hh *HttpApiServer) Init(cfg interface{}) error {
 // HttpApiServer Start
 //
 func (hh *HttpApiServer) Start() error {
-	hh.ginEngine.GET("/", hh.addRoute(Index))
+	hh.ginEngine.GET("/", hh.addRoute(func(c *gin.Context, has *HttpApiServer, rx typex.RuleX) {
+		c.Request.URL.Path = "/static/"
+		hh.ginEngine.HandleContext(c)
+	}))
 
 	//
 	// Get all plugins

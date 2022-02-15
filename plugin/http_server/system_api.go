@@ -15,10 +15,6 @@ import (
 	"go.bug.st/serial"
 )
 
-func Index(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
-	c.Redirect(301, "/static/index.html")
-}
-
 /*
 *
 * 健康检查接口, 一般用来监视是否工作
