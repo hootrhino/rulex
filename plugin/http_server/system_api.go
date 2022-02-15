@@ -192,7 +192,7 @@ func TType(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 * 获取本地的串口列表
 *
  */
-func GetUartList(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+func GetUarts(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	ports, err := serial.GetPortsList()
 	if err != nil {
 		c.JSON(http.StatusOK, Result{
@@ -206,5 +206,18 @@ func GetUartList(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		Code: http.StatusOK,
 		Msg:  SUCCESS,
 		Data: ports,
+	})
+}
+
+/*
+*
+* 计算开机时间
+*
+ */
+func StartedAt(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+	c.JSON(http.StatusOK, Result{
+		Code: http.StatusOK,
+		Msg:  SUCCESS,
+		Data: StartedTime,
 	})
 }

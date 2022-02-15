@@ -6,6 +6,7 @@ import (
 	"rulex/typex"
 	"rulex/utils"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 
@@ -18,6 +19,9 @@ import (
 const _API_V1_ROOT string = "/api/v1/"
 const DEFAULT_DB_PATH string = "./rulex.db"
 const DASHBOARD_ROOT string = "/dashboard/v1/"
+
+// 启动时间
+var StartedTime = time.Unix(time.Now().Unix(), 0).Format("2006-01-02 15:04:05")
 
 type _serverConfig struct {
 	Enable bool   `ini:"enable"`
@@ -58,99 +62,103 @@ func (hh *HttpApiServer) Start() error {
 	//
 	// Get all plugins
 	//
-	hh.ginEngine.GET(_API_V1_ROOT+"plugins", hh.addRoute(Plugins))
+	hh.ginEngine.GET(url("plugins"), hh.addRoute(Plugins))
 	//
 	// Get system infomation
 	//
-	hh.ginEngine.GET(_API_V1_ROOT+"system", hh.addRoute(System))
+	hh.ginEngine.GET(url("system"), hh.addRoute(System))
 	//
 	// Ping -> Pong
 	//
-	hh.ginEngine.GET(_API_V1_ROOT+"ping", hh.addRoute(Ping))
+	hh.ginEngine.GET(url("ping"), hh.addRoute(Ping))
 	//
 	//
 	//
-	hh.ginEngine.GET(_API_V1_ROOT+"sourceCount", hh.addRoute(SourceCount))
+	hh.ginEngine.GET(url("sourceCount"), hh.addRoute(SourceCount))
 	//
 	//
 	//
-	hh.ginEngine.GET(_API_V1_ROOT+"logs", hh.addRoute(Logs))
+	hh.ginEngine.GET(url("logs"), hh.addRoute(Logs))
 	//
 	//
 	//
-	hh.ginEngine.POST(_API_V1_ROOT+"logout", hh.addRoute(LogOut))
+	hh.ginEngine.POST(url("logout"), hh.addRoute(LogOut))
 	//
 	// Get all inends
 	//
-	hh.ginEngine.GET(_API_V1_ROOT+"inends", hh.addRoute(InEnds))
+	hh.ginEngine.GET(url("inends"), hh.addRoute(InEnds))
 	//
 	//
 	//
-	hh.ginEngine.GET(_API_V1_ROOT+"drivers", hh.addRoute(Drivers))
+	hh.ginEngine.GET(url("drivers"), hh.addRoute(Drivers))
 	//
 	// Get all outends
 	//
-	hh.ginEngine.GET(_API_V1_ROOT+"outends", hh.addRoute(OutEnds))
+	hh.ginEngine.GET(url("outends"), hh.addRoute(OutEnds))
 	//
 	// Get all rules
 	//
-	hh.ginEngine.GET(_API_V1_ROOT+"rules", hh.addRoute(Rules))
+	hh.ginEngine.GET(url("rules"), hh.addRoute(Rules))
 	//
 	// Get statistics data
 	//
-	hh.ginEngine.GET(_API_V1_ROOT+"statistics", hh.addRoute(Statistics))
+	hh.ginEngine.GET(url("statistics"), hh.addRoute(Statistics))
 	//
 	// Auth
 	//
-	hh.ginEngine.POST(_API_V1_ROOT+"users", hh.addRoute(CreateUser))
+	hh.ginEngine.POST(url("users"), hh.addRoute(CreateUser))
 	//
 	//
 	//
-	hh.ginEngine.POST(_API_V1_ROOT+"login", hh.addRoute(Login))
+	hh.ginEngine.POST(url("login"), hh.addRoute(Login))
 	//
 	//
 	//
-	hh.ginEngine.GET(_API_V1_ROOT+"info", hh.addRoute(Info))
+	hh.ginEngine.GET(url("info"), hh.addRoute(Info))
 	//
 	// Create InEnd
 	//
-	hh.ginEngine.POST(_API_V1_ROOT+"inends", hh.addRoute(CreateInend))
-	hh.ginEngine.GET(_API_V1_ROOT+"inends/config", hh.addRoute(GetInEndConfig))
+	hh.ginEngine.POST(url("inends"), hh.addRoute(CreateInend))
+	hh.ginEngine.GET(url("inends/config"), hh.addRoute(GetInEndConfig))
 	//
 	// Create OutEnd
 	//
-	hh.ginEngine.POST(_API_V1_ROOT+"outends", hh.addRoute(CreateOutEnd))
+	hh.ginEngine.POST(url("outends"), hh.addRoute(CreateOutEnd))
 	//
 	// Create rule
 	//
-	hh.ginEngine.POST(_API_V1_ROOT+"rules", hh.addRoute(CreateRule))
+	hh.ginEngine.POST(url("rules"), hh.addRoute(CreateRule))
 	//
 	// Delete inend by UUID
 	//
-	hh.ginEngine.DELETE(_API_V1_ROOT+"inends", hh.addRoute(DeleteInend))
+	hh.ginEngine.DELETE(url("inends"), hh.addRoute(DeleteInend))
 	//
 	// Delete outend by UUID
 	//
-	hh.ginEngine.DELETE(_API_V1_ROOT+"outends", hh.addRoute(DeleteOutend))
+	hh.ginEngine.DELETE(url("outends"), hh.addRoute(DeleteOutend))
 	//
 	// Delete rule by UUID
 	//
-	hh.ginEngine.DELETE(_API_V1_ROOT+"rules", hh.addRoute(DeleteRule))
+	hh.ginEngine.DELETE(url("rules"), hh.addRoute(DeleteRule))
 	//
 	// 验证 lua 语法
 	//
-	hh.ginEngine.POST(_API_V1_ROOT+"validateRule", hh.addRoute(ValidateLuaSyntax))
+	hh.ginEngine.POST(url("validateRule"), hh.addRoute(ValidateLuaSyntax))
 	//
 	// 获取配置表
 	//
-	hh.ginEngine.GET(_API_V1_ROOT+"rType", hh.addRoute(RType))
-	hh.ginEngine.GET(_API_V1_ROOT+"tType", hh.addRoute(TType))
+	hh.ginEngine.GET(url("rType"), hh.addRoute(RType))
+	hh.ginEngine.GET(url("tType"), hh.addRoute(TType))
 	//
 	// 串口列表
 	//
-	hh.ginEngine.GET(_API_V1_ROOT+"getUartList", hh.addRoute(GetUartList))
+	hh.ginEngine.GET(url("uarts"), hh.addRoute(GetUarts))
+	//
+	// 获取服务启动时间
+	//
+	hh.ginEngine.GET(url("startedAt"), hh.addRoute(StartedAt))
 
-	log.Info("Http server started on http://127.0.0.1:", hh.Port)
+	log.Infof("Http server started on http://0.0.0.0:%v", hh.Port)
 	return nil
 }
 
@@ -184,4 +192,13 @@ func configHttpServer(hh *HttpApiServer) {
 	} else {
 		hh.InitDb(hh.dbPath)
 	}
+}
+
+/*
+*
+* 拼接URL
+*
+ */
+func url(path string) string {
+	return _API_V1_ROOT + path
 }
