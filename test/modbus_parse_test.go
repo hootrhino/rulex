@@ -20,14 +20,11 @@ import (
 )
 
 func Test_Modbus_LUA_Parse(t *testing.T) {
-	core.InitGlobalConfig()
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, syscall.SIGINT, syscall.SIGABRT)
-	engine := engine.NewRuleEngine(core.InitGlobalConfig())
+	engine := engine.NewRuleEngine(core.InitGlobalConfig("conf/rulex.ini"))
 	engine.Start()
-
 	hh := httpserver.NewHttpApiServer(2580, "/../plugin/http_server/www/", "./rulex.db", engine)
-
 	// HttpApiServer loaded default
 	if err := engine.LoadPlugin("plugin.http_server", hh); err != nil {
 		log.Fatal("Rule load failed:", err)

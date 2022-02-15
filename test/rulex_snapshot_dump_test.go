@@ -25,12 +25,10 @@ import (
 *
  */
 func Test_snapshot_dump(t *testing.T) {
-	core.InitGlobalConfig()
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, syscall.SIGINT, syscall.SIGABRT)
-	e := engine.NewRuleEngine(core.InitGlobalConfig())
+	e := engine.NewRuleEngine(core.InitGlobalConfig("conf/rulex.ini"))
 	e.Start()
-
 	hh := httpserver.NewHttpApiServer(2580, "/../plugin/http_server/www/", "./rulex.db", e)
 
 	// HttpApiServer loaded default
