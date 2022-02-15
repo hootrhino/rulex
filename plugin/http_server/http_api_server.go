@@ -2,10 +2,12 @@ package httpserver
 
 import (
 	"context"
+	"embed"
+	"io/fs"
 	"net/http"
 	"rulex/typex"
-	"rulex/utils"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -180,12 +182,32 @@ func (hh *HttpApiServer) PluginMetaInfo() typex.XPluginMetaInfo {
 		License:  "MIT",
 	}
 }
+
+//go:embed  www/*
+var files embed.FS
+
+type customFS struct {
+	efs fs.FS
+}
+
+// Open 实现fs接口
+func (c *customFS) Open(name string) (fs.File, error) {
+	if strings.Contains(name, "/") {
+		name = "static/" + name
+	}
+	return c.efs.Open(name)
+
+}
+
 func configHttpServer(hh *HttpApiServer) {
 	hh.ginEngine.Use(Authorize())
 	hh.ginEngine.Use(Cros())
-	hh.ginEngine.LoadHTMLFiles(utils.GetPwd() + hh.Root + "index.html")
-	hh.ginEngine.StaticFS("/static", http.Dir(utils.GetPwd()+hh.Root+"static"))
-	hh.ginEngine.StaticFile("/favicon.ico", utils.GetPwd()+hh.Root+"favicon.ico")
+	www, err := fs.Sub(files, "www")
+
+	if err == nil {
+		hh.ginEngine.StaticFS("static", http.FS(&customFS{www}))
+	}
+
 	if hh.dbPath == "" {
 		hh.InitDb(DEFAULT_DB_PATH)
 	} else {

@@ -16,7 +16,7 @@ import (
 )
 
 func Index(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
-	c.HTML(200, "index.html", nil)
+	c.Redirect(301, "/static/index.html")
 }
 
 /*
