@@ -34,12 +34,18 @@ func main() {
 						Usage: "Database of rulex",
 						Value: "rulex.db",
 					},
+					&cli.StringFlag{
+						Name:  "config",
+						Usage: "Config of rulex",
+						Value: "rulex.ini",
+					},
 				},
 				Action: func(c *cli.Context) error {
 					utils.ShowBanner()
 					log.Info("Load config db:", c.String("db"))
-					engine.RunRulex(c.String("db"))
-					log.Debug("Run rulex successfully.")
+					log.Info("Load main config:", c.String("config"))
+					engine.RunRulex(c.String("db"), c.String("config"))
+					log.Info("Run rulex successfully.")
 					return nil
 				},
 			},

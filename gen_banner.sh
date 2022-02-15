@@ -4,7 +4,7 @@ HASH=`git rev-list --tags --max-count=1`
 cat >./VERSION <<EOF
 $VERSION
 EOF
-cat >./conf/banner.txt <<EOF
+cat >./utils/banner.txt <<EOF
  -------------------------------------------------------------
 |                ____ _  _ _    ____ _  _                      |
 |                |__/ |  | |    |___  \/           ------      |

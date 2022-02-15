@@ -15,9 +15,9 @@ var GlobalConfig typex.RulexConfig
 //
 // Init config
 //
-func InitGlobalConfig() typex.RulexConfig {
+func InitGlobalConfig(path string) typex.RulexConfig {
 	log.Info("Init rulex config")
-	cfg, err := ini.Load("conf/rulex.ini")
+	cfg, err := ini.Load(path)
 	if err != nil {
 		log.Fatalf("Fail to read config file: %v", err)
 		os.Exit(1)

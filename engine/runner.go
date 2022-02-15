@@ -17,8 +17,8 @@ import (
 //
 // 启动 Rulex
 //
-func RunRulex(dbPath string) {
-	engine := NewRuleEngine(core.InitGlobalConfig())
+func RunRulex(dbPath string, iniPath string) {
+	engine := NewRuleEngine(core.InitGlobalConfig(iniPath))
 	core.StartLogWatcher()
 	rulexlib.StartLuaLogger()
 	core.SetLogLevel()

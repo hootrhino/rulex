@@ -2,24 +2,20 @@
 set -e
 #
 create_pkg() {
-    VERSION=$(cat ./VERSION)
-    echo "Create package: ${rulex-$1-$VERSION}"
+    VERSION=$(git describe --tags --abbrev=0)
+    echo "Create package: ${rulex-$1-${VERSION}}"
     if [ "$1" == "x64windows" ]; then
-        zip -r _release/rulex-$1-$VERSION.zip \
+        zip -r _release/rulex-$1-${VERSION}.zip \
             ./rulex-$1.exe \
-            ./VERSION \
-            ./conf/ \
-            ./plugin/http_server/www
+            ./conf/
         rm -rf ./rulex-*
         rm -rf ./*.exe
     else
-        zip -r _release/rulex-$1-$VERSION.zip \
+        zip -r _release/rulex-$1-${VERSION}.zip \
             ./rulex-$1 \
             ./start.sh \
             ./stop.sh \
-            ./VERSION \
-            ./conf/ \
-            ./plugin/http_server/www
+            ./conf/
         rm -rf ./rulex-*
     fi
 
@@ -127,12 +123,10 @@ cross_compile() {
 # fetch dashboard
 #
 fetch_dashboard() {
-    git clone https://github.com/wwhai/rulex-dashboard.git
-    cd rulex-dashboard
-    npm install --registry=https://registry.npm.taobao.org
-    npm run build:prod
-    cd ../
-    cp -r ./rulex-dashboard/dist/* ./plugin/http_server/www
+    VERSION=$(git describe --tags --abbrev=0)
+    wget https://github.com/i4de/rulex-dashboard/releases/download/${VERSION}/${VERSION}.zip
+    unzip ${VERSION}.zip
+    cp -r ./dist/* ./plugin/http_server/www
 }
 #
 # gen_changelog
