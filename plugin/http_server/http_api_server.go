@@ -185,7 +185,6 @@ func configHttpServer(hh *HttpApiServer) {
 	hh.ginEngine.Use(Cros())
 	hh.ginEngine.LoadHTMLFiles(utils.GetPwd() + hh.Root + "index.html")
 	hh.ginEngine.StaticFS("/static", http.Dir(utils.GetPwd()+hh.Root+"static"))
-	hh.ginEngine.StaticFS("/assets", http.Dir(utils.GetPwd()+hh.Root+"static/assets"))
 	hh.ginEngine.StaticFile("/favicon.ico", utils.GetPwd()+hh.Root+"favicon.ico")
 	if hh.dbPath == "" {
 		hh.InitDb(DEFAULT_DB_PATH)
