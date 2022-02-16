@@ -12,6 +12,8 @@ import (
 	"github.com/robinson/gos7"
 )
 
+var _status typex.SourceState
+
 type db struct {
 	Tag     string `json:"tag"`     // 数据tag
 	Address int    `json:"address"` // 地址
@@ -79,12 +81,14 @@ func (s7 *siemensS7Source) Start(cctx typex.CCTX) error {
 		return err
 	}
 	handler := gos7.NewTCPClientHandler(mainConfig.Host, *mainConfig.Rack, *mainConfig.Slot)
+	handler.Timeout = 5 * time.Second
 	if err := handler.Connect(); err != nil {
 		return err
 	}
 	handler.Timeout = time.Duration(*mainConfig.Timeout) * time.Second
 	handler.IdleTimeout = time.Duration(*mainConfig.IdleTimeout) * time.Second
 	s7.client = gos7.NewClient(handler)
+	_status = typex.UP
 	ticker := time.NewTicker(time.Duration(*mainConfig.Frequency) * time.Second)
 	for _, d := range mainConfig.Dbs {
 		log.Infof("Start read: Tag:%v Address:%v Start:%v Size:%v", d.Tag, d.Address, d.Start, d.Size)
@@ -108,6 +112,7 @@ func (s7 *siemensS7Source) Start(cctx typex.CCTX) error {
 				}
 				err := s7.client.AGReadDB(d.Address, d.Start, d.Size, dataBuffer)
 				if err != nil {
+					_status = typex.DOWN
 					log.Error(err)
 				} else {
 					// log.Info("client.AGReadDB dataBuffer:", dataBuffer)
@@ -167,7 +172,7 @@ func (s7 *siemensS7Source) Pause() {
 // 获取资源状态
 //
 func (s7 *siemensS7Source) Status() typex.SourceState {
-	return typex.UP
+	return _status
 
 }
 
