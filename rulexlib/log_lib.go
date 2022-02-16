@@ -27,7 +27,7 @@ func (l *LogLib) Name() string {
 func (l *LogLib) LibFun(rx typex.RuleX) func(*lua.LState) int {
 	return func(l *lua.LState) int {
 		content := l.ToString(2)
-		LUA_LOGGER.Write([]byte("[CALLBACK]" + content + "\n"))
+		LUA_LOGGER.Write([]byte("[" + time.Now().Format("2006-01-02 15:04:05") + "]: " + content + "\n"))
 		return 0
 	}
 }

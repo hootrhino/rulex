@@ -69,7 +69,7 @@ func (r *Rule) SetVM(o lua.Options) {
 
 /*
 *
-* AddLib: 根据 KV形式加载库
+* AddLib: 根据 KV形式加载库(推荐)
 *
  */
 func (r *Rule) AddLib(rx RuleX, funcName string, f func(*lua.LState) int) {
@@ -78,7 +78,7 @@ func (r *Rule) AddLib(rx RuleX, funcName string, f func(*lua.LState) int) {
 
 /*
 *
-* LoadLib: 根据 XLib 接口加载
+* LoadLib: 根据 XLib 接口加载(后期即将废弃)
 *
  */
 func (r *Rule) LoadLib(rx RuleX, lib XLib) {
