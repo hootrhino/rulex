@@ -35,9 +35,9 @@ func (sf *mysrv) InterrogationHandler(c asdu.Connect, asduPack *asdu.ASDU, qoi a
 	err := asdu.Single(c, false, asdu.CauseOfTransmission{Cause: asdu.InterrogatedByStation}, asdu.GlobalCommonAddr,
 		asdu.SinglePointInfo{})
 	if err != nil {
-		// log.Println("falied")
+		log.Println("falied")
 	} else {
-		// log.Println("success")
+		log.Println("success")
 	}
 	// go func() {
 	// 	for {

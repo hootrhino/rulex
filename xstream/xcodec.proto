@@ -1,0 +1,26 @@
+syntax = "proto3";
+option go_package = "./;xstream";
+option java_multiple_files = false;
+option java_package = "xstream";
+option java_outer_classname = "XStream";
+
+package xstream;
+//
+// 自定义编解码器, 使用GRPC协议通信
+//
+service XCodec {
+  // 编码
+  rpc Decode (Request) returns (Response) {}
+  // 解码
+  rpc Encode (Request) returns (Response) {}
+}
+
+message Request {
+  bytes value = 1;
+}
+
+message Response {
+  int32 code = 1;
+  string message = 2;
+  bytes data = 3;
+}
