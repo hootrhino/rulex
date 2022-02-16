@@ -107,8 +107,7 @@ func StartQueue(maxQueueSize int) {
 						qd.E.RunHooks(qd.Data)
 					}
 					if qd.Out != nil {
-						outEnds := qd.E.AllOutEnd()
-						v, ok := outEnds.Load(qd.Out.UUID)
+						v, ok := qd.E.AllOutEnd().Load(qd.Out.UUID)
 						if ok {
 							if err := v.(*OutEnd).Target.To(qd.Data); err != nil {
 								statistics.IncOut()
