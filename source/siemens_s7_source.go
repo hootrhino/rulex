@@ -12,16 +12,8 @@ import (
 	"github.com/robinson/gos7"
 )
 
-/*
-*
-* stateAddress: 配置一个地址给RULEX采集状态用，一般来说，只要有返回值就表示成功
-*
- */
-type stateAddress struct {
-	Address int `json:"address"` // 地址
-	Start   int `json:"start"`   // 起始地址
-	Size    int `json:"size"`    // 数据长度
-}
+var _status typex.SourceState
+
 type db struct {
 	Tag     string `json:"tag"`     // 数据tag
 	Address int    `json:"address"` // 地址
@@ -33,20 +25,26 @@ type dbValue struct {
 	Value string `json:"value"`
 }
 type siemensS7config struct {
-	Host         string       `json:"host" validate:"required" title:"IP地址" info:""`          // 127.0.0.1
-	Rack         *int         `json:"rack" validate:"required" title:"架号" info:""`            // 0
-	Slot         *int         `json:"slot" validate:"required" title:"槽号" info:""`            // 1
-	Model        *int         `json:"model" validate:"required" title:"型号" info:""`           // 当前仅仅支持 s7-300
-	Timeout      *int         `json:"timeout" validate:"required" title:"连接超时时间" info:""`     // 5s
-	IdleTimeout  *int         `json:"idleTimeout" validate:"required" title:"心跳超时时间" info:""` // 5s
-	Frequency    *int         `json:"frequency" validate:"required" title:"采集频率" info:""`     // 5s
-	StateAddress stateAddress `json:"stateAddress" validate:"required" title:"状态地址" info:""`  // stateAddress
-	Dbs          []db         `json:"dbs" validate:"required" title:"采集配置" info:""`           // Db
+	Host        string `json:"host" validate:"required" title:"IP地址" info:""`          // 127.0.0.1
+	Rack        *int   `json:"rack" validate:"required" title:"架号" info:""`            // 0
+	Slot        *int   `json:"slot" validate:"required" title:"槽号" info:""`            // 1
+	Model       string `json:"model" validate:"required" title:"型号" info:""`           // s7-200 s7 1500
+	Timeout     *int   `json:"timeout" validate:"required" title:"连接超时时间" info:""`     // 5s
+	IdleTimeout *int   `json:"idleTimeout" validate:"required" title:"心跳超时时间" info:""` // 5s
+	Frequency   *int   `json:"frequency" validate:"required" title:"采集频率" info:""`     // 5s
+	Dbs         []db   `json:"dbs" validate:"required" title:"采集配置" info:""`           // Db
 }
 type siemensS7Source struct {
 	typex.XStatus
-	client       gos7.Client
-	stateAddress stateAddress
+	client      gos7.Client
+	Host        string
+	Rack        *int
+	Slot        *int
+	Model       string
+	Timeout     *int
+	IdleTimeout *int
+	Frequency   *int
+	Dbs         []db
 }
 
 func NewSiemensS7Source(e typex.RuleX) typex.XSource {
@@ -83,13 +81,14 @@ func (s7 *siemensS7Source) Start(cctx typex.CCTX) error {
 		return err
 	}
 	handler := gos7.NewTCPClientHandler(mainConfig.Host, *mainConfig.Rack, *mainConfig.Slot)
+	handler.Timeout = 5 * time.Second
 	if err := handler.Connect(); err != nil {
 		return err
 	}
 	handler.Timeout = time.Duration(*mainConfig.Timeout) * time.Second
 	handler.IdleTimeout = time.Duration(*mainConfig.IdleTimeout) * time.Second
-	s7.stateAddress = mainConfig.StateAddress
 	s7.client = gos7.NewClient(handler)
+	_status = typex.UP
 	ticker := time.NewTicker(time.Duration(*mainConfig.Frequency) * time.Second)
 	for _, d := range mainConfig.Dbs {
 		log.Infof("Start read: Tag:%v Address:%v Start:%v Size:%v", d.Tag, d.Address, d.Start, d.Size)
@@ -113,6 +112,7 @@ func (s7 *siemensS7Source) Start(cctx typex.CCTX) error {
 				}
 				err := s7.client.AGReadDB(d.Address, d.Start, d.Size, dataBuffer)
 				if err != nil {
+					_status = typex.DOWN
 					log.Error(err)
 				} else {
 					// log.Info("client.AGReadDB dataBuffer:", dataBuffer)
@@ -172,18 +172,7 @@ func (s7 *siemensS7Source) Pause() {
 // 获取资源状态
 //
 func (s7 *siemensS7Source) Status() typex.SourceState {
-	if s7.client != nil {
-		b := make([]byte, 1)
-		err := s7.client.AGReadDB(s7.stateAddress.Address, s7.stateAddress.Start, s7.stateAddress.Size, b)
-		if err != nil {
-			log.Error(err)
-			return typex.DOWN
-		} else {
-			return typex.UP
-		}
-	} else {
-		return typex.DOWN
-	}
+	return _status
 
 }
 
