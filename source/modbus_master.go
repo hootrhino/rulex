@@ -18,6 +18,9 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
+// 资源状态
+var _sourceState typex.SourceState = typex.UP
+
 type modBusConfig struct {
 	Mode           string          `json:"mode" title:"工作模式" info:"RTU/TCP"`
 	Timeout        int             `json:"timeout" validate:"required" title:"连接超时" info:""`
@@ -247,6 +250,7 @@ func (m *modbusMasterSource) Start(cctx typex.CCTX) error {
 				select {
 				case <-ctx.Done():
 					{
+						_sourceState = typex.DOWN
 						return
 					}
 				default:
@@ -268,6 +272,8 @@ func (m *modbusMasterSource) Start(cctx typex.CCTX) error {
 						//
 						if err != nil {
 							log.Error("NewModbusMasterSource ReadData error: ", err)
+							_sourceState = typex.DOWN
+
 						} else {
 							data := registerData{
 								Tag:      rp.Tag,
@@ -313,7 +319,7 @@ func (m *modbusMasterSource) Pause() {
 }
 
 func (m *modbusMasterSource) Status() typex.SourceState {
-	return typex.UP
+	return _sourceState
 
 }
 
