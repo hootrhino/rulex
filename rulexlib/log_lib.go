@@ -1,7 +1,6 @@
 package rulexlib
 
 import (
-	"rulex/core"
 	"rulex/typex"
 	"time"
 
@@ -37,6 +36,6 @@ func (l *LogLib) LibFun(rx typex.RuleX) func(*lua.LState) int {
 * StartLuaLogger
 *
  */
-func StartLuaLogger() {
-	LUA_LOGGER = NewLuaLogger("./"+time.Now().Format("2006-01-02_15-04-05-")+core.GlobalConfig.LuaLogPath, 1000)
+func StartLuaLogger(path string) {
+	LUA_LOGGER = NewLuaLogger("./"+time.Now().Format("2006-01-02_15-04-05-")+path, 1000)
 }

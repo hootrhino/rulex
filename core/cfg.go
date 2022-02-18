@@ -1,6 +1,7 @@
 package core
 
 import (
+	"encoding/json"
 	"net/http"
 	"os"
 	"rulex/typex"
@@ -22,25 +23,20 @@ func InitGlobalConfig(path string) typex.RulexConfig {
 		log.Fatalf("Fail to read config file: %v", err)
 		os.Exit(1)
 	}
-
 	//---------------------------------------
-	GlobalConfig.MaxQueueSize = cfg.Section("app").Key("max_queue_size").MustInt(5000)
-	log.Info("| MaxQueueSize is:", GlobalConfig.MaxQueueSize)
-	GlobalConfig.SourceRestartInterval = cfg.Section("app").Key("source_restart_interval").MustInt(204800)
-	log.Info("| SourceRestartInterval is:", GlobalConfig.SourceRestartInterval)
-	GlobalConfig.GomaxProcs = cfg.Section("app").Key("gomax_procs").MustInt(2)
-	log.Info("| GomaxProcs is:", GlobalConfig.GomaxProcs)
-	GlobalConfig.EnablePProf = cfg.Section("app").Key("enable_pprof").MustBool(false)
-	log.Info("| EnablePProf is:", GlobalConfig.EnablePProf)
-	GlobalConfig.LogLevel = cfg.Section("app").Key("log_level").MustString("info")
-	log.Info("| LogLevel is:", GlobalConfig.LogLevel)
-	GlobalConfig.LogPath = cfg.Section("app").Key("log_path").MustString("./rulex-log.txt")
-	log.Info("| LogPath is:", GlobalConfig.LogPath)
-	GlobalConfig.LuaLogPath = cfg.Section("app").Key("lua_log_path").MustString("./rulex-lua-log.txt")
-	log.Info("| LuaLogPath is:", GlobalConfig.LuaLogPath)
-
+	if err := cfg.Section("app").MapTo(&GlobalConfig); err != nil {
+		log.Fatalf("Fail to map config file: %v", err)
+		os.Exit(1)
+	}
 	log.Info("Rulex config init successfully")
+	bytes, err := json.MarshalIndent(GlobalConfig, " ", "  ")
+	if err != nil {
+		log.Fatalf("Fail to marshal config file: %v", err)
+		os.Exit(1)
+	} else {
+		log.Info(string(bytes))
 
+	}
 	return GlobalConfig
 }
 

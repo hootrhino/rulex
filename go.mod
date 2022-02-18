@@ -40,7 +40,7 @@ require (
 	github.com/yuin/gopher-lua v0.0.0-20210529063254-f4c35e4016d9
 	go.bug.st/serial v1.3.4
 	go.mongodb.org/mongo-driver v1.8.3
-	go.uber.org/zap v1.15.0
+	go.uber.org/zap v1.18.1
 	golang.org/x/crypto v0.0.0-20220112180741-5e0467b6c7ce
 	golang.org/x/net v0.0.0-20220127200216-cd36cc0744dd // indirect
 	golang.org/x/sys v0.0.0-20220209214540-3681064d5158 // indirect

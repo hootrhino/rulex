@@ -480,14 +480,18 @@ func (e *RuleEngine) LoadRule(r *typex.Rule) error {
 					// 数据持久化
 					r.LoadLib(e, rulexlib.NewTdEngineLib())
 					r.LoadLib(e, rulexlib.NewMongoLib())
-					// From 0.0.8:
-					//    使用新版本的库加载方式
-					r.AddLib(e, "time", rulexlib.Time(e))
-					r.AddLib(e, "tsunix", rulexlib.TsUnix(e))
-					r.AddLib(e, "tsunixnano", rulexlib.TsUnixNano(e))
+					// From 0.0.8: 使用新版本的库加载方式
+					// 时间库
+					r.AddLib(e, "Time", rulexlib.Time(e))
+					r.AddLib(e, "TsUnix", rulexlib.TsUnix(e))
+					r.AddLib(e, "TsUnixNano", rulexlib.TsUnixNano(e))
+					// 缓存器库
+					r.AddLib(e, "StoreGet", rulexlib.StoreGet(e))
+					r.AddLib(e, "StoreGet", rulexlib.StoreGet(e))
+					r.AddLib(e, "StoreDelete", rulexlib.StoreDelete(e))
 					//--------------------------------------------------------------
 					// Save to rules map
-					//
+					//--------------------------------------------------------------
 					e.SaveRule(r)
 					log.Infof("Rule [%v, %v] load successfully", r.Name, r.UUID)
 					return nil

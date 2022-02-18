@@ -9,8 +9,8 @@ import (
 
 var GLOBAL_LOGGER *typex.LogWriter
 
-func StartLogWatcher() {
-	GLOBAL_LOGGER = typex.NewLogWriter("./"+time.Now().Format("2006-01-02_15-04-05-")+GlobalConfig.LogPath, 1000)
+func StartLogWatcher(path string) {
+	GLOBAL_LOGGER = typex.NewLogWriter("./"+time.Now().Format("2006-01-02_15-04-05-")+path, 1000)
 	log.SetRotateByDay()
 	log.SetOutput(GLOBAL_LOGGER)
 }

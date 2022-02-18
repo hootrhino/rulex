@@ -18,9 +18,11 @@ import (
 // 启动 Rulex
 //
 func RunRulex(dbPath string, iniPath string) {
-	engine := NewRuleEngine(core.InitGlobalConfig(iniPath))
-	core.StartLogWatcher()
-	rulexlib.StartLuaLogger()
+	mainConfig := core.InitGlobalConfig(iniPath)
+	engine := NewRuleEngine(mainConfig)
+	core.StartLogWatcher(core.GlobalConfig.LogPath)
+	core.StartStore(core.GlobalConfig.MaxQueueSize)
+	rulexlib.StartLuaLogger(core.GlobalConfig.LuaLogPath)
 	core.SetLogLevel()
 	core.SetPerformance()
 	c := make(chan os.Signal, 1)
