@@ -60,7 +60,7 @@ func Test_snapshot_dump(t *testing.T) {
 			    print(data)
 				local json = require("json")
 				local V6 = json.decode(data)
-				local V7 = json.encode(rulexlib:MatchBinary(">a:16 b:8 c:8", data, false))
+				local V7 = json.encode(rulexlib:MB(">a:16 b:8 c:8", data, false))
 				-- {"a":"0000000000000001","b":"00000000","c":"00000001"}
 				print("[LUA Actions Callback, rulex.MatchBinary] ==>", V7)
 				return true, data

@@ -15,7 +15,7 @@ Actions =
     --        └───────────────────────────────────────────────────────────────────────────────┘
     function(data)
         local json = require("json")
-        local tb = rulexlib:MatchBinary("<a:16 b:16 c:16 d1:16", data, false)
+        local tb = rulexlib:MB("<a:16 b:16 c:16 d1:16", data, false)
         local result = {}
         result['a'] = rulexlib:ByteToInt64(1, rulexlib:BitStringToBytes(tb["a"]))
         result['b'] = rulexlib:ByteToInt64(1, rulexlib:BitStringToBytes(tb["b"]))

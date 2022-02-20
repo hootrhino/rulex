@@ -21,7 +21,7 @@ Actions = {
         local json = require("json")
         local table = json.decode(data)
         local value = table['value']
-        local parseTable = rulexlib:MatchBinary(">u:16 v:16", value, false)
+        local parseTable = rulexlib:MB(">u:16 v:16", value, false)
         rulexlib:log("UA:", json.encode(parseTable))
         return true, data
     end
