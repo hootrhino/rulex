@@ -18,7 +18,9 @@ import (
 )
 
 func TestFullyRun(t *testing.T) {
-	engine := engine.NewRuleEngine(core.InitGlobalConfig("conf/rulex.ini"))
+	mainConfig := core.InitGlobalConfig("conf/rulex.ini")
+	core.StartStore(core.GlobalConfig.MaxQueueSize)
+	engine := engine.NewRuleEngine(mainConfig)
 	engine.Start()
 
 	hh := httpserver.NewHttpApiServer(2580, "/../plugin/http_server/www/", "../rulex-test_"+time.Now().Format("2006-01-02-15_04_05")+".db", engine)
@@ -47,37 +49,37 @@ func TestFullyRun(t *testing.T) {
 		`
 		Actions = {
 			function(data)
-			    local V1 = rulexlib:JqSelect(".[] | select(.temp > 50000000)", data)
+			    local V1 = rulexlib:JQ(".[] | select(.temp > 50000000)", data)
                 print("[LUA Actions Callback 1 ===> Data is:", data)
-			    print("[LUA Actions Callback 1 ===> .[] | select(.temp >= 50000000)] return => ", rulexlib:JqSelect(".[] | select(.temp > 50000000)", data))
+			    print("[LUA Actions Callback 1 ===> .[] | select(.temp >= 50000000)] return => ", rulexlib:JQ(".[] | select(.temp > 50000000)", data))
 				return true, data
 			end,
 			function(data)
-			    local V2 = rulexlib:JqSelect(".[] | select(.hum < 20)", data)
-			    print("[LUA Actions Callback 2 ===> .[] | select(.hum < 20)] return => ", rulexlib:JqSelect(".[] | select(.hum < 20)", data))
+			    local V2 = rulexlib:JQ(".[] | select(.hum < 20)", data)
+			    print("[LUA Actions Callback 2 ===> .[] | select(.hum < 20)] return => ", rulexlib:JQ(".[] | select(.hum < 20)", data))
 				return true, data
 			end,
 			function(data)
-			    local V3 = rulexlib:JqSelect(".[] | select(.co2 > 50)", data)
-			    print("[LUA Actions Callback 3 ===> .[] | select(.co2 > 50] return => ", rulexlib:JqSelect(".[] | select(.co2 > 50)", data))
+			    local V3 = rulexlib:JQ(".[] | select(.co2 > 50)", data)
+			    print("[LUA Actions Callback 3 ===> .[] | select(.co2 > 50] return => ", rulexlib:JQ(".[] | select(.co2 > 50)", data))
 				return true, data
 			end,
 			function(data)
-			    local V4 = rulexlib:JqSelect(".[] | select(.lex > 50)", data)
-			    print("[LUA Actions Callback 4 ===> .[] | select(.lex > 50)] return => ", rulexlib:JqSelect(".[] | select(.lex > 50)", data))
+			    local V4 = rulexlib:JQ(".[] | select(.lex > 50)", data)
+			    print("[LUA Actions Callback 4 ===> .[] | select(.lex > 50)] return => ", rulexlib:JQ(".[] | select(.lex > 50)", data))
 				return true, data
 			end,
 			function(data)
-				local json = require("json")
-				print("[LUA Actions Callback 5, json.decode] ==>",json.decode(data))
-				print("[LUA Actions Callback 5, json.encode] ==>",json.encode(json.decode(data)))
+				--
+				print("[LUA Actions Callback 5, rulexlib:J2T] ==>",rulexlib:J2T(data))
+				print("[LUA Actions Callback 5, rulexlib:T2J] ==>",rulexlib:T2J(rulexlib:J2T(data)))
 				return true, data
 			end,
 			function(data)
-			    local json = require("json")
+			    --
 				-- 0110_0001 0110_0001 0110_0010
 				-- <a:5 b:3 c:1 => a:00001100 b:00000001 c:0
-				local V6 = json.encode(rulexlib:MatchBinary("<a:5 b:3 c:1", "aab", false))
+				local V6 = rulexlib:T2J(rulexlib:MB("<a:5 b:3 c:1", "aab", false))
 				print("[LUA Actions Callback 6, rulex.MatchBinary] ==>", V6)
 				print("[LUA Actions Callback 6, rulex.MatchBinary] ==>", V6)
 				return true, data
@@ -119,16 +121,25 @@ func TestFullyRun(t *testing.T) {
 		"rule4",
 		"rule4",
 		[]string{grpcInend.UUID},
-		`function Success() print("[rulexlib:JsonDecode(data) Success Callback]=> OK") end`,
+		`function Success() print("[rulexlib:J2T(data) Success Callback]=> OK") end`,
 		`
 		Actions = {
 			function(data)
-			    local t1 = rulexlib:JsonDecode(data)
-			    print("[rulexlib:JsonDecode(data)] ==>", rulexlib:JsonEncode(t1))
+			    local t1 = rulexlib:J2T(data)
+			    print("[rulexlib:J2T(data)] ==>", rulexlib:T2J(t1))
+				return true, data
+			end,
+			function(data)
+			    print("[rulexlib:Time()] ==>", rulexlib:Time())
+			    print("[rulexlib:TsUnix()] ==>", rulexlib:TsUnix())
+			    print("[rulexlib:TsUnixNano()] ==>", rulexlib:TsUnixNano())
+			    rulexlib:VSet('k', 'v')
+			    print("[rulexlib:VGet(k)] ==>", rulexlib:VGet('k'))
+
 				return true, data
 			end
 		}`,
-		`function Failed(error) print("[rulexlib:JsonDecode(data) Failed Callback]", error) end`)
+		`function Failed(error) print("[rulexlib:J2T(data) Failed Callback]", error) end`)
 	if err := engine.LoadRule(rule1); err != nil {
 		log.Error(err)
 	}

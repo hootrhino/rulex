@@ -25,7 +25,7 @@ func NewRulexStore(maxSize int) typex.XStore {
 // 设置值
 func (rs *RulexStore) Set(k string, v string) {
 	rs.bucket.Store(k, v)
-	if (rs.len + 1) > rs.len {
+	if (rs.len + 1) > rs.maxSize {
 		log.Error("Max store size reached:", rs.len)
 	} else {
 		rs.len += 1

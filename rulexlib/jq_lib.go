@@ -9,16 +9,7 @@ import (
 	lua "github.com/yuin/gopher-lua"
 )
 
-type JqLib struct {
-}
-
-func NewJqLib() typex.XLib {
-	return &JqLib{}
-}
-func (l *JqLib) Name() string {
-	return "JqSelect"
-}
-func (l *JqLib) LibFun(rx typex.RuleX) func(*lua.LState) int {
+func JqSelect(rx typex.RuleX) func(*lua.LState) int {
 	return func(stateStack *lua.LState) int {
 		// LUA Args: Jq, Data ->
 		// stack:  ------------
@@ -36,10 +27,10 @@ func (l *JqLib) LibFun(rx typex.RuleX) func(*lua.LState) int {
 			stateStack.Push(lua.LNil)
 			log.Error("Internal Error: ", err, ", InputData:", string(data))
 		}
-		selectResult, err0 := JqSelect(jqExpression, jsonData)
+		selectResult, err0 := JQ(jqExpression, jsonData)
 		if err0 != nil {
 			stateStack.Push(lua.LNil)
-			log.Error("JqSelect Error:", err0)
+			log.Error("JQ Error:", err0)
 		}
 		resultString, err1 := json.Marshal(selectResult)
 		if err1 != nil {
@@ -65,14 +56,14 @@ func VerifyJqExpression(jqExpression string) (*gojq.Query, error) {
 	}
 }
 
-// JqSelect
+// JQ
 /**
 * In either case, you cannot use custom type values as the query input.
 * The type should be []interface{} for an array and map[string]interface{} for a map (just like decoded to an interface{} using the encoding/json package).
 * You can't use []int or map[string]string, for example.
 * If you want to query your custom struct, marshal to JSON, unmarshal to interface{} and use it as the query input.
  */
-func JqSelect(jqExpression string, inputData interface{}) ([]interface{}, error) {
+func JQ(jqExpression string, inputData interface{}) ([]interface{}, error) {
 	/**
 	Input Data Json:
 			[

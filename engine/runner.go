@@ -19,14 +19,14 @@ import (
 //
 func RunRulex(dbPath string, iniPath string) {
 	mainConfig := core.InitGlobalConfig(iniPath)
-	engine := NewRuleEngine(mainConfig)
-	core.StartLogWatcher(core.GlobalConfig.LogPath)
 	core.StartStore(core.GlobalConfig.MaxQueueSize)
+	core.StartLogWatcher(core.GlobalConfig.LogPath)
 	rulexlib.StartLuaLogger(core.GlobalConfig.LuaLogPath)
 	core.SetLogLevel()
 	core.SetPerformance()
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, syscall.SIGINT, syscall.SIGABRT)
+	engine := NewRuleEngine(mainConfig)
 	engine.Start()
 
 	httpServer := httpserver.NewHttpApiServer(2580, "/plugin/http_server/www/", dbPath, engine)

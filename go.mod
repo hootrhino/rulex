@@ -36,7 +36,6 @@ require (
 	github.com/tarm/serial v0.0.0-20180830185346-98f6abe2eb07 // indirect
 	github.com/thinkgos/go-iecp5 v1.2.0
 	github.com/urfave/cli/v2 v2.3.0
-	github.com/wwhai/gopher-json v0.0.0-20201124131017-552bb3c4c3bf
 	github.com/yuin/gopher-lua v0.0.0-20210529063254-f4c35e4016d9
 	go.bug.st/serial v1.3.4
 	go.mongodb.org/mongo-driver v1.8.3

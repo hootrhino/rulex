@@ -13,17 +13,7 @@ func NewLuaLogger(filepath string, maxSlotCount int) *typex.LogWriter {
 	return typex.NewLogWriter(filepath, maxSlotCount)
 }
 
-type LogLib struct {
-}
-
-func NewLogLib() typex.XLib {
-
-	return &LogLib{}
-}
-func (l *LogLib) Name() string {
-	return "log"
-}
-func (l *LogLib) LibFun(rx typex.RuleX) func(*lua.LState) int {
+func Log(rx typex.RuleX) func(*lua.LState) int {
 	return func(l *lua.LState) int {
 		content := l.ToString(2)
 		LUA_LOGGER.Write([]byte("[" + time.Now().Format("2006-01-02 15:04:05") + "]: " + content + "\n"))

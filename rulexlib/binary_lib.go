@@ -21,19 +21,7 @@ import (
 var pattern = `[a-zA-Z0-9]{1,32}:[1-9]+`
 var regexper *regexp.Regexp = regexp.MustCompile(pattern)
 
-type BinaryLib struct {
-	regexper *regexp.Regexp
-}
-
-func NewMatchBinaryLib() typex.XLib {
-	return &BinaryLib{
-		regexper: regexp.MustCompile(pattern),
-	}
-}
-func (l *BinaryLib) Name() string {
-	return "MatchBinary"
-}
-func (l *BinaryLib) LibFun(rx typex.RuleX) func(*lua.LState) int {
+func MatchBinary(rx typex.RuleX) func(*lua.LState) int {
 	return func(state *lua.LState) int {
 		expr := state.ToString(2)
 		data := state.ToString(3)
@@ -48,13 +36,7 @@ func (l *BinaryLib) LibFun(rx typex.RuleX) func(*lua.LState) int {
 	}
 }
 
-type GetABitOnByteLib struct {
-}
-
-func (l *GetABitOnByteLib) Name() string {
-	return "GetABitOnByte"
-}
-func (l *GetABitOnByteLib) LibFun(rx typex.RuleX) func(*lua.LState) int {
+func GetABitOnByte(rx typex.RuleX) func(*lua.LState) int {
 	return func(state *lua.LState) int {
 		if state.Get(2).Type() != lua.LTNumber {
 			state.Push(nil)
@@ -62,7 +44,7 @@ func (l *GetABitOnByteLib) LibFun(rx typex.RuleX) func(*lua.LState) int {
 		}
 		b := uint8(state.ToInt(2))
 		pos := uint8(state.ToInt(3))
-		if v, err := GetABitOnByte(b, pos); err != nil {
+		if v, err := getABitOnByte(b, pos); err != nil {
 			state.Push(nil)
 		} else {
 			state.Push(lua.LNumber(v))
@@ -70,28 +52,13 @@ func (l *GetABitOnByteLib) LibFun(rx typex.RuleX) func(*lua.LState) int {
 		return 1
 	}
 }
-func NewGetABitOnByteLib() typex.XLib {
-	return &GetABitOnByteLib{}
-}
 
-type ByteToBitStringLib struct {
-}
-
-func (l *ByteToBitStringLib) Name() string {
-	return "ByteToBitString"
-}
-
-func (l *ByteToBitStringLib) LibFun(rx typex.RuleX) func(*lua.LState) int {
+func ByteToBitString(rx typex.RuleX) func(*lua.LState) int {
 	return func(state *lua.LState) int {
 		data := state.ToString(2)
-		state.Push(lua.LValue(lua.LString(ByteToBitString([]byte(data)))))
+		state.Push(lua.LValue(lua.LString(byteToBitString([]byte(data)))))
 		return 1
 	}
-}
-
-func NewByteToBitStringLib() typex.XLib {
-
-	return &ByteToBitStringLib{}
 }
 
 //------------------------------------------------------------------------------------
@@ -102,7 +69,7 @@ func NewByteToBitStringLib() typex.XLib {
 // 从一个字节里面提取某 1 个位的值, 只有 0 1 两个值
 //
 
-func GetABitOnByte(b byte, position uint8) (v uint8, errs error) {
+func getABitOnByte(b byte, position uint8) (v uint8, errs error) {
 	//  --------------->
 	//  7 6 5 4 3 2 1 0
 	// |.|.|.|.|.|.|.|.|
@@ -119,7 +86,7 @@ func GetABitOnByte(b byte, position uint8) (v uint8, errs error) {
 // 字节转位串
 //
 
-func ByteToBitString(b []byte) string {
+func byteToBitString(b []byte) string {
 	s := ""
 	for _, v := range b {
 		s += fmt.Sprintf("%08b", v)
@@ -141,14 +108,8 @@ func (k Kl) String() string {
 // Big-Endian:  高位字节放在内存的低地址端, 低位字节放在内存的高地址端。
 // Little-Endian: 低位字节放在内存的低地址段, 高位字节放在内存的高地址端
 //
-type ByteToInt64Lib struct {
-}
 
-func (l *ByteToInt64Lib) Name() string {
-	return "ByteToInt64"
-}
-
-func (l *ByteToInt64Lib) LibFun(rx typex.RuleX) func(*lua.LState) int {
+func ByteToInt64(rx typex.RuleX) func(*lua.LState) int {
 	return func(state *lua.LState) int {
 		endian := state.ToInt(2)
 		data := state.ToString(3)
@@ -161,10 +122,6 @@ func (l *ByteToInt64Lib) LibFun(rx typex.RuleX) func(*lua.LState) int {
 		}
 		return 1
 	}
-}
-
-func NewByteToInt64Lib() typex.XLib {
-	return &ByteToInt64Lib{}
 }
 
 ///
@@ -215,17 +172,11 @@ func ByteToInt(b []byte, order binary.ByteOrder) uint64 {
 * 位串转字节
 *
  */
-type BitStringToBytesLib struct {
-}
 
-func (l *BitStringToBytesLib) Name() string {
-	return "BitStringToBytes"
-}
-
-func (l *BitStringToBytesLib) LibFun(rx typex.RuleX) func(*lua.LState) int {
+func BitStringToBytes(rx typex.RuleX) func(*lua.LState) int {
 	return func(state *lua.LState) int {
 		data := state.ToString(2)
-		b, err := BitStringToBytes(data)
+		b, err := bitStringToBytes(data)
 		if err != nil {
 			state.Push(nil)
 		} else {
@@ -235,12 +186,8 @@ func (l *BitStringToBytesLib) LibFun(rx typex.RuleX) func(*lua.LState) int {
 	}
 }
 
-func NewBitStringToBytesLib() typex.XLib {
-	return &BitStringToBytesLib{}
-}
-
 ////////////////////////
-func BitStringToBytes(s string) ([]byte, error) {
+func bitStringToBytes(s string) ([]byte, error) {
 	b := make([]byte, (len(s)+(8-1))/8)
 	for i := 0; i < len(s); i++ {
 		c := s[i]
@@ -311,14 +258,14 @@ func Match(expr string, data []byte, returnMore bool) []Kl {
 		endian := expr[0]
 		// < 小端
 		if Endian(endian) == binary.LittleEndian {
-			bfs := ByteToBitString(data)
+			bfs := byteToBitString(data)
 			// <a:12 b:12
 			reverseBfs := ReverseString(bfs)
 			buildResult(returnMore, cursor, reverseBfs, expr[1:], &result)
 		}
 		// > 大端
 		if Endian(endian) == binary.BigEndian {
-			bfs := ByteToBitString(data)
+			bfs := byteToBitString(data)
 			// <a:12 b:12
 			buildResult(returnMore, cursor, bfs, expr[1:], &result)
 		}

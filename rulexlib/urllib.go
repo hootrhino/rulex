@@ -19,17 +19,7 @@ func init() {
 
 // parse,
 
-type UrlParseLib struct {
-}
-
-func NewUrlParseLib() typex.XLib {
-	return &UrlParseLib{}
-
-}
-func (l *UrlParseLib) Name() string {
-	return "UrlParse"
-}
-func (l *UrlParseLib) LibFun(rx typex.RuleX) func(*lua.LState) int {
+func UrlParse(rx typex.RuleX) func(*lua.LState) int {
 	return parse
 }
 
@@ -38,18 +28,7 @@ func (l *UrlParseLib) LibFun(rx typex.RuleX) func(*lua.LState) int {
 * build
 *
  */
-
-type UrlBuildLib struct {
-}
-
-func NewUrlBuildLib() typex.XLib {
-	return &UrlBuildLib{}
-
-}
-func (l *UrlBuildLib) Name() string {
-	return "UrlBuild"
-}
-func (l *UrlBuildLib) LibFun(rx typex.RuleX) func(*lua.LState) int {
+func UrlBuild(rx typex.RuleX) func(*lua.LState) int {
 	return build
 }
 
@@ -59,17 +38,7 @@ func (l *UrlBuildLib) LibFun(rx typex.RuleX) func(*lua.LState) int {
 *
  */
 
-type UrlBuildQSLib struct {
-}
-
-func NewUrlBuildQSLib() typex.XLib {
-	return &UrlBuildQSLib{}
-
-}
-func (l *UrlBuildQSLib) Name() string {
-	return "UrlBuildQS"
-}
-func (l *UrlBuildQSLib) LibFun(rx typex.RuleX) func(*lua.LState) int {
+func UrlBuildQS(rx typex.RuleX) func(*lua.LState) int {
 	return buildQueryString
 }
 
@@ -79,18 +48,7 @@ func (l *UrlBuildQSLib) LibFun(rx typex.RuleX) func(*lua.LState) int {
 *
  */
 
-type UrlResolveLib struct {
-}
-
-func NewUrlResolveLib() typex.XLib {
-	return &UrlResolveLib{}
-
-}
-
-func (l *UrlResolveLib) Name() string {
-	return "UrlResolve"
-}
-func (l *UrlResolveLib) LibFun(rx typex.RuleX) func(*lua.LState) int {
+func UrlResolve(rx typex.RuleX) func(*lua.LState) int {
 	return resolve
 }
 

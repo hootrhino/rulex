@@ -45,7 +45,12 @@ func (l *JsonDecodeLib) Name() string {
 func (l *JsonDecodeLib) LibFun(rx typex.RuleX) func(*lua.LState) int {
 	return apiDecode
 }
-
+func JSONE(rx typex.RuleX) func(l *lua.LState) int {
+	return apiEncode
+}
+func JSOND(rx typex.RuleX) func(l *lua.LState) int {
+	return apiDecode
+}
 func apiDecode(L *lua.LState) int {
 	str := L.CheckString(2)
 
