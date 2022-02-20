@@ -2,15 +2,12 @@ package test
 
 import (
 	"context"
-	"os"
-	"os/signal"
 	"rulex/core"
 	"rulex/engine"
 	"rulex/plugin/demo_plugin"
 	httpserver "rulex/plugin/http_server"
 	"rulex/rulexrpc"
 	"rulex/typex"
-	"syscall"
 	"testing"
 	"time"
 
@@ -19,8 +16,6 @@ import (
 )
 
 func Test_Binary_LUA_Parse(t *testing.T) {
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, syscall.SIGINT, syscall.SIGABRT)
 	engine := engine.NewRuleEngine(core.InitGlobalConfig("conf/rulex.ini"))
 	engine.Start()
 

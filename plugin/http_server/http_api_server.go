@@ -32,7 +32,6 @@ type _serverConfig struct {
 }
 type HttpApiServer struct {
 	Port       int
-	Root       string
 	sqliteDb   *gorm.DB
 	dbPath     string
 	ginEngine  *gin.Engine
@@ -40,7 +39,7 @@ type HttpApiServer struct {
 }
 
 func NewHttpApiServer(port int, root string, dbPath string, e typex.RuleX) *HttpApiServer {
-	return &HttpApiServer{Port: port, Root: root, dbPath: dbPath, ruleEngine: e}
+	return &HttpApiServer{Port: port, dbPath: dbPath, ruleEngine: e}
 }
 
 //
