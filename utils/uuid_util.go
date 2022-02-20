@@ -1,19 +1,23 @@
 package utils
 
-import "github.com/google/uuid"
+import (
+	"strings"
+
+	"github.com/google/uuid"
+)
 
 //
 // MakeUUID
 //
 func InUuid() string {
-	return MakeUUID("INEND")
+	return MakeUUID("IN")
 }
 
 //
 // MakeUUID
 //
 func OutUuid() string {
-	return MakeUUID("OUTEND")
+	return MakeUUID("OUT")
 }
 
 //
@@ -27,5 +31,5 @@ func RuleUuid() string {
 // MakeUUID
 //
 func MakeUUID(prefix string) string {
-	return prefix + "_" + uuid.NewString()
+	return prefix + ":" + strings.Replace(uuid.NewString(), "-", "", -1)
 }
