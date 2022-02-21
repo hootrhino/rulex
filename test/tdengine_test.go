@@ -3,6 +3,7 @@ package test
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"rulex/core"
 	"rulex/engine"
 	httpserver "rulex/plugin/http_server"
@@ -83,19 +84,20 @@ func Test_data_to_tdengine(t *testing.T) {
 			"password":       "taosdata",
 			"dbName":         "device",
 			"createDbSql":    "CREATE DATABASE IF NOT EXISTS device UPDATE 0;",
-			"createTableSql": "CREATE TABLE IF NOT EXISTS meter (ts TIMESTAMP, current FLOAT, valtage FLOAT);",
-			"insertSql":      "INSERT INTO meter VALUES (NOW, %v, %v);",
+			"createTableSql": "CREATE TABLE IF NOT EXISTS meter01 (ts TIMESTAMP, co2 INT, hum INT, lex INT, temp INT);",
+			"insertSql":      "INSERT INTO meter01 VALUES (NOW, %v, %v, %v, %v);",
 		})
 	if err := engine.LoadOutEnd(tdOutEnd); err != nil {
 		t.Error(err)
 	}
 	//
-	// Load Rule
+	// Load Rule [{"co2":10,"hum":30,"lex":22,"temp":100}]
 	//
 	callback := strings.Replace(
 		`Actions = {
 			function(data)
-				local Result = rulexlib:DataToTdEngine('$$UUID', '1024, 1025, 234,33, 30')
+				local t = rulexlib:J2T(data)
+				local Result = rulexlib:DataToTdEngine('$$UUID', string.format("%d, %d, %d, %d", t['co2'], t['hum'], t['lex'], t['temp']))
 				print("rulexlib:DataToTdEngine Result", Result==nil)
 				return true, data
 			end
@@ -125,14 +127,18 @@ func Test_data_to_tdengine(t *testing.T) {
 	}
 	defer conn.Close()
 	client := rulexrpc.NewRulexRpcClient(conn)
-	resp, err := client.Work(context.Background(), &rulexrpc.Data{
-		Value: `[{"co2":10,"hum":30,"lex":22,"temp":100}]`,
-	})
-	if err != nil {
-		t.Error(err)
-	}
-	t.Logf("Rulex Rpc Call Result ====>>: %v", resp.GetMessage())
 
-	time.Sleep(1 * time.Second)
+	for i := 0; i < 100; i++ {
+		resp, err := client.Work(context.Background(), &rulexrpc.Data{
+			Value: fmt.Sprintf(`{"co2":%v,"hum":30,"lex":22,"temp":100}`, i),
+		})
+		if err != nil {
+			t.Error(err)
+		}
+		t.Logf("Rulex Rpc Call Result ====>>: %v", resp.GetMessage())
+
+	}
+
+	time.Sleep(30 * time.Second)
 	engine.Stop()
 }
