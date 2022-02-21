@@ -49,7 +49,7 @@ func Test_S7_PLC_Parse(t *testing.T) {
 		`
 		Actions = {
 			function(data)
-				local V0 = rulexlib:MB(">a:8 b:8 c:8 d:8 e:8", data, false)
+				local V0 = rulexlib:MB(">a:16 b:16 c:16 d:16 e:16", data, false)
 				local a = rulexlib:T2J(V0['a'])
 				local b = rulexlib:T2J(V0['b'])
 				local c = rulexlib:T2J(V0['c'])
