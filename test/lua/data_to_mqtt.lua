@@ -13,7 +13,7 @@ end
 Actions = {
     function(data)
         print('Data ======> ', data)
-        rulexlib:DataToMqttServer('OUTEND_58fa7728-b82e-4124-8380-f56eec2731b9', data)
+        rulexlib:DataToMqtt('OUTEND', data)
         return true, data
     end
 }

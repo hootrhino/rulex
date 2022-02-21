@@ -20,7 +20,7 @@ Actions = {
         for _, value in ipairs(jsonData) do
             local name = value["name"]
             if name =="modbus" then
-                rulexlib:DataToMqttServer('f56eec2731b9', {jsonData[0], jsonData[2], jsonData[5]})
+                rulexlib:DataToMqtt('f56eec2731b9', {jsonData[0], jsonData[2], jsonData[5]})
                 return true, data
             end
         end
