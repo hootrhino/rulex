@@ -29,7 +29,7 @@ func Test_snapshot_dump(t *testing.T) {
 	signal.Notify(c, syscall.SIGINT, syscall.SIGABRT)
 	e := engine.NewRuleEngine(core.InitGlobalConfig("conf/rulex.ini"))
 	e.Start()
-	hh := httpserver.NewHttpApiServer(2580, "/../plugin/http_server/www/", "./rulex.db", e)
+	hh := httpserver.NewHttpApiServer(2580, "./rulex.db", e)
 
 	// HttpApiServer loaded default
 	if err := e.LoadPlugin("plugin.http_server", hh); err != nil {

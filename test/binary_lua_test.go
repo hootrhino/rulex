@@ -19,7 +19,7 @@ func Test_Binary_LUA_Parse(t *testing.T) {
 	engine := engine.NewRuleEngine(core.InitGlobalConfig("conf/rulex.ini"))
 	engine.Start()
 
-	hh := httpserver.NewHttpApiServer(2580, "plugin/http_server/templates", "./rulex.db", engine)
+	hh := httpserver.NewHttpApiServer(2580, "./rulex.db", engine)
 
 	// HttpApiServer loaded default
 	if err := engine.LoadPlugin("plugin.http_server", hh); err != nil {

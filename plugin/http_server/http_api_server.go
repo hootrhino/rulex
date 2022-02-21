@@ -20,7 +20,6 @@ import (
 
 const _API_V1_ROOT string = "/api/v1/"
 const DEFAULT_DB_PATH string = "./rulex.db"
-const DASHBOARD_ROOT string = "/dashboard/v1/"
 
 // 启动时间
 var StartedTime = time.Unix(time.Now().Unix(), 0).Format("2006-01-02 15:04:05")
@@ -38,7 +37,7 @@ type HttpApiServer struct {
 	ruleEngine typex.RuleX
 }
 
-func NewHttpApiServer(port int, root string, dbPath string, e typex.RuleX) *HttpApiServer {
+func NewHttpApiServer(port int, dbPath string, e typex.RuleX) *HttpApiServer {
 	return &HttpApiServer{Port: port, dbPath: dbPath, ruleEngine: e}
 }
 

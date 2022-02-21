@@ -12,6 +12,7 @@ import (
 )
 
 var GlobalConfig typex.RulexConfig
+var INIPath string
 
 //
 // Init config
@@ -23,6 +24,7 @@ func InitGlobalConfig(path string) typex.RulexConfig {
 		log.Fatalf("Fail to read config file: %v", err)
 		os.Exit(1)
 	}
+	INIPath = path
 	//---------------------------------------
 	if err := cfg.Section("app").MapTo(&GlobalConfig); err != nil {
 		log.Fatalf("Fail to map config file: %v", err)

@@ -23,7 +23,7 @@ func TestFullyRun(t *testing.T) {
 	engine := engine.NewRuleEngine(mainConfig)
 	engine.Start()
 
-	hh := httpserver.NewHttpApiServer(2580, "/../plugin/http_server/www/", "../rulex-test_"+time.Now().Format("2006-01-02-15_04_05")+".db", engine)
+	hh := httpserver.NewHttpApiServer(2580, "../rulex-test_"+time.Now().Format("2006-01-02-15_04_05")+".db", engine)
 
 	// HttpApiServer loaded default
 	if err := engine.LoadPlugin("plugin.http_server", hh); err != nil {

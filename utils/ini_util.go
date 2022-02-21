@@ -16,8 +16,8 @@ import (
 * }
  */
 
-func INIToStruct(s string, v interface{}) error {
-	cfg, err := ini.Load("conf/rulex.ini")
+func INIToStruct(iniPath string, s string, v interface{}) error {
+	cfg, err := ini.Load(iniPath)
 	if err != nil {
 		log.Fatalf("Fail to read config file: %v", err)
 		os.Exit(1)
@@ -30,8 +30,8 @@ func INIToStruct(s string, v interface{}) error {
 * GetINI
 *
  */
-func GetINISection(s string) *ini.Section {
-	cfg, err := ini.Load("conf/rulex.ini")
+func GetINISection(iniPath string, s string) *ini.Section {
+	cfg, err := ini.Load(iniPath)
 	if err != nil {
 		log.Fatalf("Fail to read config file: %v", err)
 		os.Exit(1)

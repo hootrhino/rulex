@@ -592,7 +592,7 @@ func (e *RuleEngine) RunLuaCallbacks(in *typex.InEnd, callbackArgs string) {
 // └──────┘    └──────┘    └──────┘
 //
 func (e *RuleEngine) LoadPlugin(sectionK string, p typex.XPlugin) error {
-	section := utils.GetINISection(sectionK)
+	section := utils.GetINISection(core.INIPath, sectionK)
 	key, err1 := section.GetKey("enable")
 	if err1 != nil {
 		return err1
