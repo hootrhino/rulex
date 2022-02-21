@@ -18,6 +18,6 @@ Actions = {function(data)
             ["values"] = {0xFF, 0x00, 0xFF, 0x00}
         }
     }
-    rulexlib:WriteInStream('INEND_77c16142-f849-48c3-b150-34aed2d0d9ae', rulexlib:JsonEncode(t))
+    rulexlib:WriteInStream('INEND', rulexlib:T2J(t))
     return false, data
 end}

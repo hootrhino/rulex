@@ -95,8 +95,8 @@ func Test_data_to_tdengine(t *testing.T) {
 	callback := strings.Replace(
 		`Actions = {
 			function(data)
-				local Result = rulexlib:DataToTdEngineServer('$$UUID', '1024, 1025, 234,33, 30')
-				print("rulexlib:DataToTdEngineServer Result", Result==nil)
+				local Result = rulexlib:DataToTdEngine('$$UUID', '1024, 1025, 234,33, 30')
+				print("rulexlib:DataToTdEngine Result", Result==nil)
 				return true, data
 			end
 		}`,
