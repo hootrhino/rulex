@@ -49,18 +49,17 @@ func Test_S7_PLC_Parse(t *testing.T) {
 		`
 		Actions = {
 			function(data)
-			    local t = rulexlib:J2T(data)
-				local V0 = rulexlib:MB("<a:16 b:16 c:16 d:16 e:16", t['value'], false)
+				local V0 = rulexlib:MB(">a:8 b:8 c:8 d:8 e:8", data, false)
 				local a = rulexlib:T2J(V0['a'])
 				local b = rulexlib:T2J(V0['b'])
 				local c = rulexlib:T2J(V0['c'])
 				local d = rulexlib:T2J(V0['d'])
 				local e = rulexlib:T2J(V0['e'])
-				print('a ==> ', a, ' ->', rulexlib:BS2B(a))
-				print('b ==> ', b, ' ->', rulexlib:BS2B(b))
-				print('c ==> ', c, ' ->', rulexlib:BS2B(c))
-				print('d ==> ', d, ' ->', rulexlib:BS2B(d))
-				print('e ==> ', e, ' ->', rulexlib:BS2B(e))
+				print('a ==> ', a, ' ->', rulexlib:BS2B(a), '==> ', rulexlib:B2I64('>', rulexlib:BS2B(a)))
+				print('b ==> ', b, ' ->', rulexlib:BS2B(a), '==> ', rulexlib:B2I64('>', rulexlib:BS2B(b)))
+				print('c ==> ', c, ' ->', rulexlib:BS2B(a), '==> ', rulexlib:B2I64('>', rulexlib:BS2B(c)))
+				print('d ==> ', d, ' ->', rulexlib:BS2B(a), '==> ', rulexlib:B2I64('>', rulexlib:BS2B(d)))
+				print('e ==> ', e, ' ->', rulexlib:BS2B(a), '==> ', rulexlib:B2I64('>', rulexlib:BS2B(e)))
 				return true, data
 			end
 		}`,
@@ -76,7 +75,9 @@ func Test_S7_PLC_Parse(t *testing.T) {
 	client := rulexrpc.NewRulexRpcClient(conn)
 
 	resp, err := client.Work(context.Background(), &rulexrpc.Data{
-		Value: `{"tag":"A","address":10,"start":0,"size":10,"value":"\u0000V\u0000/\u0000'\u0000\ufffd\u0000\ufffd"}`,
+		Value: string([]byte{
+			1, 2, 3, 4, 5, 6, 7, 8, 9,
+			10, 11, 12, 13, 14, 15, 16}),
 	})
 	if err != nil {
 		log.Error("grpc.Dial err: %v", err)

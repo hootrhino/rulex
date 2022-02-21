@@ -3,6 +3,7 @@ package rulexlib
 import (
 	"bytes"
 	"encoding/binary"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"regexp"
@@ -104,22 +105,28 @@ func (k Kl) String() string {
 	return fmt.Sprintf("KL@ K: %v,L: %v,BS: %v", k.K, k.L, k.BS)
 }
 
-//
-// Big-Endian:  高位字节放在内存的低地址端, 低位字节放在内存的高地址端。
-// Little-Endian: 低位字节放在内存的低地址段, 高位字节放在内存的高地址端
+// Example data: 12345678
+// Big-Endian [>]=12345678:  高位字节放在内存的低地址端, 低位字节放在内存的高地址端。
+// Little-Endian [<]=87654321: 低位字节放在内存的低地址段, 高位字节放在内存的高地址端
 //
 
 func ByteToInt64(rx typex.RuleX) func(*lua.LState) int {
 	return func(state *lua.LState) int {
-		endian := state.ToInt(2)
+		endian := state.ToString(2)
 		data := state.ToString(3)
-		if endian == 1 {
+		if endian == ">" {
 			v := ByteToInt([]byte(data), binary.BigEndian)
 			state.Push(lua.LNumber(v))
-		} else {
+			return 1
+
+		}
+		if endian == "<" {
 			v := ByteToInt([]byte(data), binary.LittleEndian)
 			state.Push(lua.LNumber(v))
+			return 1
+
 		}
+		state.Push(nil)
 		return 1
 	}
 }
@@ -175,7 +182,8 @@ func ByteToInt(b []byte, order binary.ByteOrder) uint64 {
 
 func BitStringToBytes(rx typex.RuleX) func(*lua.LState) int {
 	return func(state *lua.LState) int {
-		data := state.ToString(2)
+		data := strings.Replace(state.ToString(2), "\"", "", -1)
+		// data 可能有 '"' 字符
 		b, err := bitStringToBytes(data)
 		if err != nil {
 			state.Push(nil)
@@ -186,7 +194,6 @@ func BitStringToBytes(rx typex.RuleX) func(*lua.LState) int {
 	}
 }
 
-////////////////////////
 func bitStringToBytes(s string) ([]byte, error) {
 	b := make([]byte, (len(s)+(8-1))/8)
 	for i := 0; i < len(s); i++ {
@@ -197,6 +204,44 @@ func bitStringToBytes(s string) ([]byte, error) {
 		b[i>>3] |= (c - '0') << uint(7-i&7)
 	}
 	return b, nil
+}
+
+/*
+*
+* 位串转字节
+*
+ */
+func AsByteSlice(b string) []byte {
+	var out []byte
+	var str string
+
+	for i := len(b); i > 0; i -= 8 {
+		if i-8 < 0 {
+			str = string(b[0:i])
+		} else {
+			str = string(b[i-8 : i])
+		}
+		v, err := strconv.ParseUint(str, 2, 8)
+		if err != nil {
+			panic(err)
+		}
+		out = append([]byte{byte(v)}, out...)
+	}
+	return out
+}
+
+/*
+*
+* 位串转十六进制
+*
+ */
+func AsHexSlice(b string) []string {
+	var out []string
+	byteSlice := AsByteSlice(b)
+	for _, b := range byteSlice {
+		out = append(out, "0x"+hex.EncodeToString([]byte{b}))
+	}
+	return out
 }
 
 /*
