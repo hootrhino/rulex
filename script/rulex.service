@@ -1,9 +1,0 @@
-[Unit]
-Description=RULEX Engine
-[Service]
-User=root
-WorkingDirectory=/usr/local/rulex/
-TimeoutStartSec=5
-/usr/local/rulex/rulex run -config=/usr/local/rulex/rulex.ini
-[Install]
-WantedBy=multi-user.target

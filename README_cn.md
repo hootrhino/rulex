@@ -1,10 +1,11 @@
 # RULEX
 
+***RULEX 是一个轻量级工业类边缘网关开发框架***
+
+## 架构设计
 <div style="text-align:center">
 <img src="./README_RES/structure.png"/>
 </div>
-
-RULEX 是一个轻量级工业类边缘网关开发框架。
 
 ## 快速开始
 ### 构建(Linux)
@@ -107,11 +108,11 @@ end
 Actions = {
     function(data)
         -- 持久化到 MongoDb:
-        rulexlib:DataToMongo("OUTEND_83775a94-9f64-4d37-be17-45dd0c90f56d", data)
+        rulexlib:DataToMongo("45dd0c90f56d", data)
         -- 持久化到 Mysql:
-        rulexlib:DataToMysql("OUTEND_83775a94-9f64-4d37-be17-45dd0c90f56d", data)
+        rulexlib:DataToMysql("45dd0c90f56d", data)
         -- 推送化到 Kafka:
-        rulexlib:DataToKafka("OUTEND_83775a94-9f64-4d37-be17-45dd0c90f56d", data)
+        rulexlib:DataToKafka("45dd0c90f56d", data)
         return true, data
     end
 }
@@ -155,4 +156,4 @@ Actions = {
 - 博客2：https://wwhai.github.io
 
 ## Star
-<img src="https://starchart.cc/wwhai/rulex.svg">
+<img src="https://starchart.cc/i4de/rulex.svg">

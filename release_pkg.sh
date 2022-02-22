@@ -2,21 +2,34 @@
 set -e
 #
 create_pkg() {
-    VERSION=$(git describe --tags --abbrev=0)
+
+    VERSION=$(git describe --tags --always --abbrev=0)
     echo "Create package: ${rulex-$1-${VERSION}}"
     if [ "$1" == "x64windows" ]; then
+        cd rulexc
+        go get
+        CGO_ENABLED=1 GOOS=windows GOARCH=amd64 go build -v -o rulex-cli.exe main.go
+        cd ../
+        cp ./rulexc/rulex-cli.exe ./
         zip -r _release/rulex-$1-${VERSION}.zip \
             ./rulex-$1.exe \
-            ./conf/
-        rm -rf ./rulex-*
-        rm -rf ./*.exe
+            ./rulex-cli.exe \
+            ./conf/rulex.ini
+        rm -rf ./rulex-cli.exe
+        rm -rf ./rulex-$1.exe
     else
+        cd rulexc
+        go get
+        go build -v -o rulex-cli main.go
+        cd ../
+        cp ./rulexc/rulex-cli ./
         zip -r _release/rulex-$1-${VERSION}.zip \
             ./rulex-$1 \
-            ./start.sh \
-            ./stop.sh \
-            ./conf/
-        rm -rf ./rulex-*
+            ./rulex-cli \
+            ./script/crulex.sh \
+            ./conf/rulex.ini
+        rm -rf ./rulex-cli
+        rm -rf ./rulex-$1
     fi
 
 }
@@ -32,6 +45,7 @@ make_zip() {
 
 }
 
+#
 build_x64windows() {
     CGO_ENABLED=1 GOOS=windows GOARCH=amd64 CC=x86_64-w64-mingw32-gcc \
         go build -ldflags "-s -w" -o rulex-$1.exe main.go
@@ -120,12 +134,18 @@ cross_compile() {
     done
 }
 #
+#
+#
+build_rulexcli() {
+    git clone https://github.com/i4de/rulex-cli.git rulexc
+}
+#
 # fetch dashboard
 #
 fetch_dashboard() {
-    VERSION=$(git describe --tags --abbrev=0)
-    wget https://github.com/i4de/rulex-dashboard/releases/download/${VERSION}/${VERSION}.zip
-    unzip ${VERSION}.zip
+    VERSION=$(git describe --tags --always --abbrev=0)
+    wget -q --show-progress https://github.com/i4de/rulex-dashboard/releases/download/${VERSION}/${VERSION}.zip
+    unzip -q ${VERSION}.zip
     cp -r ./dist/* ./plugin/http_server/www
 }
 #
@@ -141,6 +161,7 @@ gen_changelog() {
     printf "${ChangeLog}\n"
 
 }
+
 #
 #-----------------------------------
 #
@@ -159,6 +180,7 @@ init_env() {
 init_env
 cp -r $(ls | egrep -v '^_build$') ./_build/
 cd ./_build/
+build_rulexcli
 fetch_dashboard
 cross_compile
 gen_changelog

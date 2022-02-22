@@ -1,5 +1,4 @@
 APP=rulex
-VERSION=V0.0.1
 .PHONY: all
 all:
 	make build
