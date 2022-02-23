@@ -12,7 +12,9 @@ if [ -z "$1" ]; then
     exit 1
 fi
 if [ "$1" == "releases" ]; then
-    get_all_releases
+    curl -s -H "Accept: application/vnd.github.v3+json" \
+        https://api.github.com/repos/i4de/rulex/releases |
+        jq '[ .[].assets | .[] | .name]'
     exit 1
 fi
 if [ -z "$2" ]; then
@@ -27,14 +29,7 @@ init_env() {
         mkdir -p ${INSTALL_PATH}
     fi
 }
-#
-#
-#
-get_all_releases() {
-    curl -s -H "Accept: application/vnd.github.v3+json" \
-        https://api.github.com/repos/i4de/rulex/releases |
-        jq '[ .[].assets | .[] | .name]'
-}
+
 #
 #
 #
