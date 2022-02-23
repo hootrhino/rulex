@@ -21,12 +21,8 @@ const (
 * 数据模型, 例如某个Modbus电表可以支持读取电流/C 和电压/V参数:
 *[
 *    {
-*        "name":"current",
-*        "valueType":"float",
-*        "value":5
-*    },
-*    {
 *        "name":"volgate",
+*        "tag":"volgate",
 *        "valueType":"float",
 *        "value":220
 *    }
@@ -34,7 +30,8 @@ const (
 *
  */
 type XDataModel struct {
-	Name      string      `json:"name"`
+	Name      string      `json:"name"`      // 字段名
+	Tag       string      `json:"tag"`       // 标签
 	ValueType ModelType   `json:"valueType"` // 值类型
 	Value     interface{} `json:"value"`     // 具体的值
 }
