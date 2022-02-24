@@ -66,7 +66,11 @@ func (hh *httpInEndSource) Start(cctx typex.CCTX) error {
 	})
 
 	go func(ctx context.Context) {
-		http.ListenAndServe(fmt.Sprintf(":%v", mainConfig.Port), hh.engine)
+		err := http.ListenAndServe(fmt.Sprintf(":%v", mainConfig.Port), hh.engine)
+		if err != nil {
+			log.Error(err)
+			return
+		}
 	}(hh.Ctx)
 	log.Info("HTTP source started on" + " [0.0.0.0]:" + fmt.Sprintf("%v", mainConfig.Port))
 

@@ -1,6 +1,7 @@
 package demo_plugin
 
 import (
+	"gopkg.in/ini.v1"
 	"rulex/typex"
 )
 
@@ -11,7 +12,7 @@ func NewDemoPlugin() *DemoPlugin {
 	return &DemoPlugin{}
 }
 
-func (dm *DemoPlugin) Init(cfg interface{}) error {
+func (dm *DemoPlugin) Init(config *ini.Section) error {
 	return nil
 }
 

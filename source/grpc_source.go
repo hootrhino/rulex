@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	DEFAULT_TRANSPORT = "tcp"
+	DefaultTransport = "tcp"
 )
 
 //
@@ -55,7 +55,7 @@ func (g *grpcInEndSource) Start(cctx typex.CCTX) error {
 		return err
 	}
 
-	listener, err := net.Listen(DEFAULT_TRANSPORT, fmt.Sprintf(":%d", mainConfig.Port))
+	listener, err := net.Listen(DefaultTransport, fmt.Sprintf(":%d", mainConfig.Port))
 	if err != nil {
 		return err
 	}

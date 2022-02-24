@@ -47,7 +47,10 @@ func (mm *mqttInEndSource) Start(cctx typex.CCTX) error {
 	}
 
 	var messageHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
-		mm.RuleEngine.Work(mm.RuleEngine.GetInEnd(mm.PointId), string(msg.Payload()))
+		work, err := mm.RuleEngine.Work(mm.RuleEngine.GetInEnd(mm.PointId), string(msg.Payload()))
+		if !work {
+			log.Error(err)
+		}
 
 	}
 	//

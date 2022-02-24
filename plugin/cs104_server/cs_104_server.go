@@ -2,6 +2,8 @@ package plugin
 
 import (
 	"fmt"
+	"gopkg.in/ini.v1"
+
 	"rulex/typex"
 	"time"
 
@@ -55,7 +57,7 @@ func (sf *cs104Server) ASDUHandler(asdu.Connect, *asdu.ASDU) error {
 //---------------------------------------------------------------------------
 //
 //---------------------------------------------------------------------------
-func (cs *cs104Server) Init(cfg interface{}) error {
+func (cs *cs104Server) Init(config *ini.Section) error {
 	cs.server = cs104.NewServer(&cs104Server{})
 	return nil
 }

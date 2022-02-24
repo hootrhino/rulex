@@ -1,10 +1,10 @@
 package utils
 
 import (
-	"log"
-	"os"
-
+	"errors"
 	"gopkg.in/ini.v1"
+	"log"
+	"reflect"
 )
 
 /*
@@ -20,7 +20,6 @@ func INIToStruct(iniPath string, s string, v interface{}) error {
 	cfg, err := ini.Load(iniPath)
 	if err != nil {
 		log.Fatalf("Fail to read config file: %v", err)
-		os.Exit(1)
 	}
 	return cfg.Section(s).MapTo(v)
 }
@@ -34,7 +33,16 @@ func GetINISection(iniPath string, s string) *ini.Section {
 	cfg, err := ini.Load(iniPath)
 	if err != nil {
 		log.Fatalf("Fail to read config file: %v", err)
-		os.Exit(1)
 	}
 	return cfg.Section(s)
+}
+
+//
+// INI转结构体
+//
+func InIMapToStruct(section *ini.Section, s interface{}) error {
+	if reflect.ValueOf(s).Kind() != reflect.Ptr {
+		return errors.New("config must be a pointer")
+	}
+	return section.MapTo(s)
 }

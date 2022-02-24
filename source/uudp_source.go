@@ -107,7 +107,10 @@ func (u *udpSource) Status() typex.SourceState {
 
 func (u *udpSource) Stop() {
 	if u.uDPConn != nil {
-		u.uDPConn.Close()
+		err := u.uDPConn.Close()
+		if err != nil {
+			log.Error(err)
+		}
 	}
 	u.CancelCTX()
 }

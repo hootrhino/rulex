@@ -22,7 +22,6 @@ import (
 
 //
 //
-// RuleEngine
 //
 type RuleEngine struct {
 	Hooks   *sync.Map          `json:"hooks"`
@@ -578,9 +577,16 @@ func (e *RuleEngine) RunLuaCallbacks(in *typex.InEnd, callbackArgs string) {
 			_, err := core.ExecuteActions(&rule, lua.LString(callbackArgs))
 			if err != nil {
 				log.Error("RunLuaCallbacks error:", err)
-				core.ExecuteFailed(rule.VM, lua.LString(err.Error()))
+				_, err := core.ExecuteFailed(rule.VM, lua.LString(err.Error()))
+				if err != nil {
+					log.Error(err)
+				}
 			} else {
-				core.ExecuteSuccess(rule.VM)
+				_, err := core.ExecuteSuccess(rule.VM)
+				if err != nil {
+					log.Error(err)
+					return
+				}
 			}
 		}
 	}

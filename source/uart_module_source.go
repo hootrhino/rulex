@@ -63,7 +63,7 @@ func (u *uartModuleSource) Start(cctx typex.CCTX) error {
 	u.Ctx = cctx.Ctx
 	u.CancelCTX = cctx.CancelCTX
 
-	driver, err := driver.NewUartDriver(u.Ctx,
+	uartDriver, err := driver.NewUartDriver(u.Ctx,
 		serial.Config{
 			Address:  mainConfig.Address,  // 串口名
 			BaudRate: mainConfig.BaudRate, // 115200
@@ -75,7 +75,7 @@ func (u *uartModuleSource) Start(cctx typex.CCTX) error {
 	if err != nil {
 		return err
 	}
-	u.uartDriver = driver
+	u.uartDriver = uartDriver
 	return nil
 
 }

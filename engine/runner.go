@@ -31,12 +31,14 @@ func RunRulex(dbPath string, iniPath string) {
 
 	httpServer := httpserver.NewHttpApiServer(2580, dbPath, engine)
 	// Load Http api Server
-	engine.LoadPlugin("plugin.http_server", httpServer)
+	if err := engine.LoadPlugin("plugin.http_server", httpServer); err != nil {
+		return
+	}
 	// Load Mqtt Server
 
 	if err := engine.LoadPlugin("plugin.mqtt_server", mqttserver.NewMqttServer()); err != nil {
 		log.Error(err)
-		panic(err)
+		return
 	}
 	//
 	// Load inend from sqlite
@@ -85,13 +87,17 @@ func RunRulex(dbPath string, iniPath string) {
 			log.Error("OutEnd load failed:", err)
 		}
 	}
-	signal := <-c
-	log.Warn("Received stop signal:", signal)
+	s := <-c
+	log.Warn("Received stop signal:", s)
 	engine.Stop()
 	//
 	// 关闭日志器
 	//
-	core.GLOBAL_LOGGER.Close()
-	rulexlib.LUA_LOGGER.Close()
+	if err := core.GLOBAL_LOGGER.Close(); err != nil {
+		return
+	}
+	if err := rulexlib.LUA_LOGGER.Close(); err != nil {
+		return
+	}
 	os.Exit(0)
 }

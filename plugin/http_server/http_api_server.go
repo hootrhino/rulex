@@ -3,6 +3,7 @@ package httpserver
 import (
 	"context"
 	"embed"
+	"gopkg.in/ini.v1"
 	"io/fs"
 	"net/http"
 	"rulex/typex"
@@ -42,7 +43,7 @@ func NewHttpApiServer(port int, dbPath string, e typex.RuleX) *HttpApiServer {
 }
 
 //
-func (hh *HttpApiServer) Init(cfg interface{}) error {
+func (hh *HttpApiServer) Init(config *ini.Section) error {
 	gin.SetMode(gin.ReleaseMode)
 	hh.ginEngine = gin.New()
 	configHttpServer(hh)

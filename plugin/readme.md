@@ -7,6 +7,25 @@
    这是Rulex 的核心API插件，主要用于提供 Http restapi 服务， 默认端口是:`2580`
 2. Simple mqtt server
    这是个简单的 Mqtt 服务器，可以用来做测试，实际性能没有测过，不过应该还行，10000以下的设备没啥问题， 默认端口是:`2883`
+## 开发
+开发的时候，需要把配置加进`rulex.ini`，然后在init接口中可以拿到配置，转换成具体的配置即可:
+```go
+// 配置结构体定义
+type _serverConfig struct {
+	Enable bool   `ini:"enable"`
+	Host   string `ini:"host"`
+	Port   int    `ini:"port"`
+}
+// ....
+// 初始化的时候转换
+func (s *MqttServer) Init(config *ini.Section) error {
+    var mainConfig _serverConfig
+    if err := utils.InIMapToStruct(config, &mainConfig); err != nil {
+        return err
+    }
+    s.Host = mainConfig.Host
+    s.Port = mainConfig.Port
+    return nil
+}
 
-## 计划
-未来想把这块功能做成动态链接库的形式，其实就是 golang 的 plugin 特性，以便于用户可以自己开发插件，但是相当长时间内先不干这个。
+```

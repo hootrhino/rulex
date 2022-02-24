@@ -59,7 +59,10 @@ func (nt *natsSource) Start(cctx typex.CCTX) error {
 		//
 		_, err := nt.natsConnector.Subscribe(nt.topic, func(msg *nats.Msg) {
 			if nt.natsConnector != nil {
-				nt.RuleEngine.Work(nt.RuleEngine.GetInEnd(nt.PointId), string(msg.Data))
+				work, err1 := nt.RuleEngine.Work(nt.RuleEngine.GetInEnd(nt.PointId), string(msg.Data))
+				if !work {
+					log.Error(err1)
+				}
 			}
 		})
 		if err != nil {
@@ -120,7 +123,11 @@ func (nt *natsSource) OnStreamApproached(data string) error {
 func (nt *natsSource) Stop() {
 	if nt.natsConnector != nil {
 		if nt.natsConnector.IsConnected() {
-			nt.natsConnector.Drain()
+			err := nt.natsConnector.Drain()
+			if err != nil {
+				log.Error(err)
+				return
+			}
 			nt.natsConnector.Close()
 			nt.natsConnector = nil
 		}

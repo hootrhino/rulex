@@ -122,7 +122,10 @@ func (s7 *siemensS7Source) Start(cctx typex.CCTX) error {
 					dbv.Start = d.Start
 					dbv.Size = d.Size
 					bytes, _ := json.Marshal(dbv)
-					s7.RuleEngine.Work(s7.RuleEngine.GetInEnd(s7.PointId), string(bytes))
+					work, err := s7.RuleEngine.Work(s7.RuleEngine.GetInEnd(s7.PointId), string(bytes))
+					if !work {
+						log.Error(err)
+					}
 				}
 			}
 

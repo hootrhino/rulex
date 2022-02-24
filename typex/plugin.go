@@ -1,5 +1,7 @@
 package typex
 
+import "gopkg.in/ini.v1"
+
 //
 // 插件开发步骤：
 // 1 在ini配置文件中增加配置项
@@ -11,7 +13,7 @@ package typex
 // External Plugin
 //
 type XPlugin interface {
-	Init(interface{}) error // 参数为外部配置
+	Init(*ini.Section) error // 参数为外部配置
 	Start() error
 	Stop() error
 	PluginMetaInfo() XPluginMetaInfo

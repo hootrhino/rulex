@@ -4,14 +4,14 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/plgd-dev/go-coap/v2/message"
+	"github.com/plgd-dev/go-coap/v2/message/codes"
 	"rulex/core"
 	"rulex/typex"
 	"rulex/utils"
 
 	"github.com/ngaut/log"
 	"github.com/plgd-dev/go-coap/v2"
-	"github.com/plgd-dev/go-coap/v2/message"
-	"github.com/plgd-dev/go-coap/v2/message/codes"
 	"github.com/plgd-dev/go-coap/v2/mux"
 )
 
@@ -58,9 +58,11 @@ func (cc *coAPInEndSource) Start(cctx typex.CCTX) error {
 	//
 	cc.router.Handle("/in", mux.HandlerFunc(func(w mux.ResponseWriter, msg *mux.Message) {
 		// log.Debugf("Received Coap Data: %#v", msg)
-		cc.RuleEngine.Work(cc.RuleEngine.GetInEnd(cc.PointId), msg.String())
-		err := w.SetResponse(codes.Content, message.TextPlain, bytes.NewReader([]byte("ok")))
-		if err != nil {
+		work, err := cc.RuleEngine.Work(cc.RuleEngine.GetInEnd(cc.PointId), msg.String())
+		if !work {
+			log.Error(err)
+		}
+		if err := w.SetResponse(codes.Content, message.TextPlain, bytes.NewReader([]byte("ok"))); err != nil {
 			log.Errorf("Cannot set response: %v", err)
 		}
 	}))
