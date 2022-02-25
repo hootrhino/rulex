@@ -2,9 +2,11 @@ package plugin
 
 import (
 	"fmt"
+
 	"gopkg.in/ini.v1"
 
 	"rulex/typex"
+	"rulex/utils"
 	"time"
 
 	"github.com/ngaut/log"
@@ -32,7 +34,8 @@ type cs104Server struct {
 func NewCs104Server() typex.XPlugin {
 	return &cs104Server{}
 }
-func (sf *cs104Server) InterrogationHandler(c asdu.Connect, asduPack *asdu.ASDU, qoi asdu.QualifierOfInterrogation) error {
+func (sf *cs104Server) InterrogationHandler(c asdu.Connect,
+	asduPack *asdu.ASDU, qoi asdu.QualifierOfInterrogation) error {
 	return nil
 }
 func (sf *cs104Server) CounterInterrogationHandler(asdu.Connect, *asdu.ASDU, asdu.QualifierCountCall) error {
@@ -59,6 +62,12 @@ func (sf *cs104Server) ASDUHandler(asdu.Connect, *asdu.ASDU) error {
 //---------------------------------------------------------------------------
 func (cs *cs104Server) Init(config *ini.Section) error {
 	cs.server = cs104.NewServer(&cs104Server{})
+	var mainConfig _serverConfig
+	if err := utils.InIMapToStruct(config, &mainConfig); err != nil {
+		return err
+	}
+	cs.Host = mainConfig.Host
+	cs.Port = mainConfig.Port
 	return nil
 }
 

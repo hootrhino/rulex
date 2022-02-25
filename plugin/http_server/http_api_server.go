@@ -3,13 +3,15 @@ package httpserver
 import (
 	"context"
 	"embed"
-	"gopkg.in/ini.v1"
 	"io/fs"
 	"net/http"
 	"rulex/typex"
+	"rulex/utils"
 	"strconv"
 	"strings"
 	"time"
+
+	"gopkg.in/ini.v1"
 
 	"github.com/gin-gonic/gin"
 
@@ -32,6 +34,7 @@ type _serverConfig struct {
 }
 type HttpApiServer struct {
 	Port       int
+	Host       string
 	sqliteDb   *gorm.DB
 	dbPath     string
 	ginEngine  *gin.Engine
@@ -46,6 +49,12 @@ func NewHttpApiServer(port int, dbPath string, e typex.RuleX) *HttpApiServer {
 func (hh *HttpApiServer) Init(config *ini.Section) error {
 	gin.SetMode(gin.ReleaseMode)
 	hh.ginEngine = gin.New()
+	var mainConfig _serverConfig
+	if err := utils.InIMapToStruct(config, &mainConfig); err != nil {
+		return err
+	}
+	hh.Host = mainConfig.Host
+	hh.Port = mainConfig.Port
 	configHttpServer(hh)
 
 	go func(ctx context.Context, port int) {
