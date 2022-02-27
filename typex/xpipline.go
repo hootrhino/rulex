@@ -79,6 +79,9 @@ func callLuaFunc(vm *lua.LState, callable *lua.LFunction, args ...lua.LValue) ([
 	if callable == nil {
 		return nil, errors.New("callable function is not exists")
 	} else {
+		// TODO:
+		// 此处有很大的优化空间，目前是解释执行，后期专门重构一下换成编译执行来提高效率
+		//
 		coroutine, _ := vm.NewThread()
 		//
 		// callback return value :lValues =[bool, T]
