@@ -182,10 +182,26 @@ func startSources(source typex.XSource, in *typex.InEnd, e *RuleEngine) error {
 	//
 	// 先注册, 如果出问题了直接删除就行
 	//
-	// 首先把资源ID给注册进去, 作为资源的全局索引
+	// 首先把资源ID给注册进去, 作为资源的全局索引，确保资源可以拿到配置
 	e.SaveInEnd(in)
-
+	//
+	// TODO: 从 0.1.2开始， Register 接口将废弃，由 Init 替换
+	//
 	if err := source.Register(in.UUID); err != nil {
+		log.Error(err)
+		e.RemoveInEnd(in.UUID)
+		return err
+	}
+
+	// Load config
+	config := e.GetInEnd(in.UUID).Config
+	if config == nil {
+		e.RemoveInEnd(in.UUID)
+		err := fmt.Errorf("source [%v] config is nil", in.Name)
+		return err
+	}
+
+	if err := source.Init(in.UUID, config); err != nil {
 		log.Error(err)
 		e.RemoveInEnd(in.UUID)
 		return err

@@ -4,11 +4,12 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/plgd-dev/go-coap/v2/message"
-	"github.com/plgd-dev/go-coap/v2/message/codes"
 	"rulex/core"
 	"rulex/typex"
 	"rulex/utils"
+
+	"github.com/plgd-dev/go-coap/v2/message"
+	"github.com/plgd-dev/go-coap/v2/message/codes"
 
 	"github.com/ngaut/log"
 	"github.com/plgd-dev/go-coap/v2"
@@ -25,6 +26,7 @@ type coAPConfig struct {
 type coAPInEndSource struct {
 	typex.XStatus
 	router     *mux.Router
+	port       uint16
 	dataModels []typex.XDataModel
 }
 
@@ -104,6 +106,16 @@ func (cc *coAPInEndSource) Register(inEndId string) error {
 	return nil
 }
 
+func (cc *coAPInEndSource) Init(inEndId string, cfg map[string]interface{}) error {
+	cc.PointId = inEndId
+	var mainConfig coAPConfig
+	if err := utils.BindSourceConfig(cfg, &mainConfig); err != nil {
+		return err
+	}
+	cc.port = mainConfig.Port
+	cc.dataModels = mainConfig.DataModels
+	return nil
+}
 func (cc *coAPInEndSource) Test(inEndId string) bool {
 	return true
 }

@@ -117,7 +117,9 @@ func (mm *mqttInEndSource) Register(inEndId string) error {
 	mm.PointId = inEndId
 	return nil
 }
-
+func (mm *mqttInEndSource) Init(inEndId string, cfg map[string]interface{}) error {
+	return nil
+}
 func (mm *mqttInEndSource) Test(inEndId string) bool {
 	if mm.client != nil {
 		return mm.client.IsConnected()

@@ -172,7 +172,10 @@ func (m *modbusMasterSource) Register(inEndId string) error {
 	m.PointId = inEndId
 	return nil
 }
+func (m *modbusMasterSource) Init(inEndId string, cfg map[string]interface{}) error {
 
+	return nil
+}
 func (m *modbusMasterSource) Start(cctx typex.CCTX) error {
 	m.Ctx = cctx.Ctx
 	m.CancelCTX = cctx.CancelCTX

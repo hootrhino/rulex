@@ -86,7 +86,9 @@ func (nt *natsSource) Register(inendId string) error {
 	nt.PointId = inendId
 	return nil
 }
-
+func (nt *natsSource) Init(inEndId string, cfg map[string]interface{}) error {
+	return nil
+}
 func (nt *natsSource) Enabled() bool {
 	return true
 }

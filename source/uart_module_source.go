@@ -50,7 +50,9 @@ func (u *uartModuleSource) Register(inEndId string) error {
 	u.PointId = inEndId
 	return nil
 }
-
+func (u *uartModuleSource) Init(inEndId string, cfg map[string]interface{}) error {
+	return nil
+}
 func (u *uartModuleSource) Start(cctx typex.CCTX) error {
 	u.Ctx = cctx.Ctx
 	u.CancelCTX = cctx.CancelCTX

@@ -76,6 +76,9 @@ func (cs *cs104Source) Register(inEndId string) error {
 	return nil
 
 }
+func (cs *cs104Source) Init(inEndId string, cfg map[string]interface{}) error {
+	return nil
+}
 
 //
 // 启动资源

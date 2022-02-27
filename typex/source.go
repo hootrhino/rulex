@@ -21,7 +21,10 @@ type XSource interface {
 	// 测试资源是否可用
 	//
 	Test(inEndId string) bool
-
+	//
+	// 用来初始化传递资源配置
+	//
+	Init(inEndId string, cfg map[string]interface{}) error
 	//
 	// 注册InEndID到资源
 	//

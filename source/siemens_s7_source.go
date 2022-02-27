@@ -67,6 +67,9 @@ func (s7 *siemensS7Source) Register(inEndId string) error {
 	s7.PointId = inEndId
 	return nil
 }
+func (s7 *siemensS7Source) Init(inEndId string, cfg map[string]interface{}) error {
+	return nil
+}
 
 //
 // 启动资源

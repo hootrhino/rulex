@@ -102,6 +102,10 @@ func (hh *httpInEndSource) Register(inEndId string) error {
 	return nil
 }
 
+func (hh *httpInEndSource) Init(inEndId string, cfg map[string]interface{}) error {
+
+	return nil
+}
 func (hh *httpInEndSource) Test(inEndId string) bool {
 	return true
 }

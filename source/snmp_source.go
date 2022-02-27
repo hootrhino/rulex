@@ -177,7 +177,9 @@ func (s *snmpSource) Register(inEndId string) error {
 	s.PointId = inEndId
 	return nil
 }
-
+func (s *snmpSource) Init(inEndId string, cfg map[string]interface{}) error {
+	return nil
+}
 func (s *snmpSource) Start(cctx typex.CCTX) error {
 	s.Ctx = cctx.Ctx
 	s.CancelCTX = cctx.CancelCTX
