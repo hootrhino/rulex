@@ -79,6 +79,10 @@ func (td *tdEngineTarget) Register(inEndId string) error {
 	td.PointId = inEndId
 	return nil
 }
+func (td *tdEngineTarget) Init(outEndId string, cfg map[string]interface{}) error {
+	td.PointId = outEndId
+	return nil
+}
 
 //
 // 启动资源

@@ -38,7 +38,10 @@ func (m *MongoTarget) Register(outEndId string) error {
 	m.PointId = outEndId
 	return nil
 }
-
+func (m *MongoTarget) Init(outEndId string, cfg map[string]interface{}) error {
+	m.PointId = outEndId
+	return nil
+}
 func (m *MongoTarget) Start(cctx typex.CCTX) error {
 	m.Ctx = cctx.Ctx
 	m.CancelCTX = cctx.CancelCTX

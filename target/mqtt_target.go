@@ -111,7 +111,10 @@ func (mm *mqttOutEndTarget) Register(outEndId string) error {
 	mm.PointId = outEndId
 	return nil
 }
-
+func (mm *mqttOutEndTarget) Init(outEndId string, cfg map[string]interface{}) error {
+	mm.PointId = outEndId
+	return nil
+}
 func (mm *mqttOutEndTarget) Test(outEndId string) bool {
 	if mm.client != nil {
 		return mm.client.IsConnected()

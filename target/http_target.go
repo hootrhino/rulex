@@ -30,6 +30,11 @@ func (ht *HTTPTarget) Register(outEndId string) error {
 	return nil
 
 }
+func (ht *HTTPTarget) Init(outEndId string, cfg map[string]interface{}) error {
+	ht.PointId = outEndId
+	return nil
+
+}
 func (ht *HTTPTarget) Start(cctx typex.CCTX) error {
 	ht.Ctx = cctx.Ctx
 	ht.CancelCTX = cctx.CancelCTX

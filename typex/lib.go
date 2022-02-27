@@ -3,7 +3,7 @@ package typex
 import lua "github.com/yuin/gopher-lua"
 
 //
-// XLib: 库函数接口
+// XLib: 库函数接口; TODO: V0.1.2废弃
 //
 type XLib interface {
 	Name() string

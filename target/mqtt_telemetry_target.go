@@ -202,7 +202,10 @@ func (mm *MqttTelemetryTarget) Register(outEndId string) error {
 	mm.PointId = outEndId
 	return nil
 }
-
+func (mm *MqttTelemetryTarget) Init(outEndId string, cfg map[string]interface{}) error {
+	mm.PointId = outEndId
+	return nil
+}
 func (mm *MqttTelemetryTarget) Test(outEndId string) bool {
 	if mm.client != nil {
 		return mm.client.IsConnected()
