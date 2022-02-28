@@ -113,11 +113,8 @@ func (mm *mqttInEndSource) Status() typex.SourceState {
 
 }
 
-func (mm *mqttInEndSource) Register(inEndId string) error {
-	mm.PointId = inEndId
-	return nil
-}
 func (mm *mqttInEndSource) Init(inEndId string, cfg map[string]interface{}) error {
+	mm.PointId = inEndId
 	return nil
 }
 func (mm *mqttInEndSource) Test(inEndId string) bool {

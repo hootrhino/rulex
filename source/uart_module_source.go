@@ -46,11 +46,9 @@ func (m *uartModuleSource) OnStreamApproached(data string) error {
 	m.uartDriver.Write([]byte(data))
 	return nil
 }
-func (u *uartModuleSource) Register(inEndId string) error {
-	u.PointId = inEndId
-	return nil
-}
+
 func (u *uartModuleSource) Init(inEndId string, cfg map[string]interface{}) error {
+	u.PointId = inEndId
 	return nil
 }
 func (u *uartModuleSource) Start(cctx typex.CCTX) error {

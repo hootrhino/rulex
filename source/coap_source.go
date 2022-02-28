@@ -101,11 +101,6 @@ func (cc *coAPInEndSource) Status() typex.SourceState {
 	return typex.UP
 }
 
-func (cc *coAPInEndSource) Register(inEndId string) error {
-	cc.PointId = inEndId
-	return nil
-}
-
 func (cc *coAPInEndSource) Init(inEndId string, cfg map[string]interface{}) error {
 	cc.PointId = inEndId
 	var mainConfig coAPConfig

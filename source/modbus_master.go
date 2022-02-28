@@ -168,11 +168,8 @@ func (*modbusMasterSource) Configs() *typex.XConfig {
 	return core.GenInConfig(typex.MODBUS_MASTER, "MODBUS_MASTER", modBusConfig{})
 }
 
-func (m *modbusMasterSource) Register(inEndId string) error {
-	m.PointId = inEndId
-	return nil
-}
 func (m *modbusMasterSource) Init(inEndId string, cfg map[string]interface{}) error {
+	m.PointId = inEndId
 
 	return nil
 }

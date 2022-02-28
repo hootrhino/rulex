@@ -63,11 +63,9 @@ func (s7 *siemensS7Source) Test(inEndId string) bool {
 //
 // 注册InEndID到资源
 //
-func (s7 *siemensS7Source) Register(inEndId string) error {
-	s7.PointId = inEndId
-	return nil
-}
+
 func (s7 *siemensS7Source) Init(inEndId string, cfg map[string]interface{}) error {
+	s7.PointId = inEndId
 	return nil
 }
 

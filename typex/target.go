@@ -13,10 +13,6 @@ type XTarget interface {
 	//
 	Init(outEndId string, cfg map[string]interface{}) error
 	//
-	// 注册InEndID到资源
-	//
-	Register(outEndId string) error
-	//
 	// 启动资源
 	//
 	Start(CCTX) error

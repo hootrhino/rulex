@@ -184,15 +184,6 @@ func startSources(source typex.XSource, in *typex.InEnd, e *RuleEngine) error {
 	//
 	// 首先把资源ID给注册进去, 作为资源的全局索引，确保资源可以拿到配置
 	e.SaveInEnd(in)
-	//
-	// TODO: 从 0.1.2开始， Register 接口将废弃，由 Init 替换
-	//
-	if err := source.Register(in.UUID); err != nil {
-		log.Error(err)
-		e.RemoveInEnd(in.UUID)
-		return err
-	}
-
 	// Load config
 	config := e.GetInEnd(in.UUID).Config
 	if config == nil {
@@ -384,15 +375,17 @@ func startTarget(target typex.XTarget, out *typex.OutEnd, e typex.RuleX) error {
 	// 先注册, 如果出问题了直接删除就行
 	//
 	e.SaveOutEnd(out)
-	// 首先把资源ID给注册进去, 作为资源的全局索引
-	if err := target.Register(out.UUID); err != nil {
-		log.Error(err)
+
+	// Load config
+	config := e.GetOutEnd(out.UUID).Config
+	if config == nil {
 		e.RemoveOutEnd(out.UUID)
+		err := fmt.Errorf("target [%v] config is nil", out.Name)
 		return err
 	}
+
 	// 然后启动资源
 	ctx, cancelCTX := context.WithCancel(typex.GCTX)
-
 	if err := target.Start(typex.CCTX{Ctx: ctx, CancelCTX: cancelCTX}); err != nil {
 		log.Error(err)
 		e.RemoveOutEnd(out.UUID)

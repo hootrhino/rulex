@@ -173,11 +173,9 @@ func (s *snmpSource) Test(inEndId string) bool {
 
 }
 
-func (s *snmpSource) Register(inEndId string) error {
-	s.PointId = inEndId
-	return nil
-}
+
 func (s *snmpSource) Init(inEndId string, cfg map[string]interface{}) error {
+	s.PointId = inEndId
 	return nil
 }
 func (s *snmpSource) Start(cctx typex.CCTX) error {

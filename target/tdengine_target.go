@@ -75,10 +75,7 @@ func (td *tdEngineTarget) Test(inEndId string) bool {
 //
 // 注册InEndID到资源
 //
-func (td *tdEngineTarget) Register(inEndId string) error {
-	td.PointId = inEndId
-	return nil
-}
+
 func (td *tdEngineTarget) Init(outEndId string, cfg map[string]interface{}) error {
 	td.PointId = outEndId
 	return nil

@@ -82,11 +82,9 @@ func (u *udpSource) Test(inEndId string) bool {
 	return true
 }
 
-func (u *udpSource) Register(inEndId string) error {
-	u.PointId = inEndId
-	return nil
-}
+
 func (u *udpSource) Init(inEndId string, cfg map[string]interface{}) error {
+	u.PointId = inEndId
 	return nil
 }
 func (u *udpSource) Enabled() bool {

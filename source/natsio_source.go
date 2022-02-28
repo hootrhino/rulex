@@ -81,12 +81,8 @@ func (nt *natsSource) Test(inendId string) bool {
 	}
 }
 
-// 先注册资源ID到出口
-func (nt *natsSource) Register(inendId string) error {
-	nt.PointId = inendId
-	return nil
-}
 func (nt *natsSource) Init(inEndId string, cfg map[string]interface{}) error {
+	nt.PointId = inEndId
 	return nil
 }
 func (nt *natsSource) Enabled() bool {

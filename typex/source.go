@@ -26,10 +26,6 @@ type XSource interface {
 	//
 	Init(inEndId string, cfg map[string]interface{}) error
 	//
-	// 注册InEndID到资源
-	//
-	Register(inEndId string) error
-	//
 	// 启动资源
 	//
 	Start(CCTX) error

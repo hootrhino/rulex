@@ -71,11 +71,6 @@ func (cs *cs104Source) Test(inEndId string) bool {
 //
 // 注册InEndID到资源
 //
-func (cs *cs104Source) Register(inEndId string) error {
-	cs.PointId = inEndId
-	return nil
-
-}
 func (cs *cs104Source) Init(inEndId string, cfg map[string]interface{}) error {
 	return nil
 }

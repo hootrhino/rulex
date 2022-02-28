@@ -97,13 +97,8 @@ func (hh *httpInEndSource) Status() typex.SourceState {
 	return typex.UP
 }
 
-func (hh *httpInEndSource) Register(inEndId string) error {
-	hh.PointId = inEndId
-	return nil
-}
-
 func (hh *httpInEndSource) Init(inEndId string, cfg map[string]interface{}) error {
-
+	hh.PointId = inEndId
 	return nil
 }
 func (hh *httpInEndSource) Test(inEndId string) bool {

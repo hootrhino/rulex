@@ -97,12 +97,9 @@ func (g *grpcInEndSource) Status() typex.SourceState {
 	return typex.UP
 }
 
-func (g *grpcInEndSource) Register(inEndId string) error {
-	g.PointId = inEndId
-	return nil
-}
 func (g *grpcInEndSource) Init(inEndId string, cfg map[string]interface{}) error {
 
+	g.PointId = inEndId
 	return nil
 }
 func (g *grpcInEndSource) Test(inEndId string) bool {
