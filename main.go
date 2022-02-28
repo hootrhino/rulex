@@ -15,8 +15,7 @@ import (
 )
 
 //
-//go:generate ./gen_version.sh
-//go:generate ./gen_banner.sh
+//go:generate ./gen_info.sh
 //
 func main() {
 

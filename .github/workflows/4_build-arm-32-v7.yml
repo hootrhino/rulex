@@ -18,8 +18,8 @@ jobs:
         run: |
           sudo apt update -y
           sudo apt install jq protobuf-compiler gcc-arm-linux-gnueabi -y
-          chmod 755 ./gen_version.sh
-          chmod +x ./gen_version.sh
+          chmod 755 ./gen_info.sh
+          chmod +x ./gen_info.sh
           chmod 755 ./gen_proto.sh
           chmod +x ./gen_proto.sh
           make

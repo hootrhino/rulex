@@ -20,11 +20,9 @@ jobs:
             sudo apt update -y
             sudo apt install jq cloc protobuf-compiler -y
             cloc ./
-            chmod 755 ./gen_version.sh
-            chmod +x ./gen_version.sh
+            chmod 755 ./gen_info.sh
+            chmod +x ./gen_info.sh
             chmod 755 ./gen_proto.sh
             chmod +x ./gen_proto.sh
-            chmod 755 ./gen_banner.sh
-            chmod +x ./gen_banner.sh
             make
             go test -timeout 30s -run ^TestFullyRun$ rulex/test -v

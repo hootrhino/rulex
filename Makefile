@@ -6,8 +6,7 @@ all:
 .PHONY: build
 build:
 	go mod tidy
-	chmod +x gen_version.sh
-	chmod +x gen_banner.sh
+	chmod +x gen_info.sh
 	go generate
 	CGO_ENABLED=1 GOOS=linux
 	go build -v -ldflags "-s -w" -o ${APP} main.go
