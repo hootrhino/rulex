@@ -103,9 +103,21 @@ func (hh *HttpApiServer) LoadNewestInEnd(uuid string) error {
 		log.Error(err1)
 		return err1
 	}
+	// :mInEnd: {k1 :{k1:v1}, k2 :{k2:v2}} --> InEnd: [{k1:v1}, {k2:v2}]
+	var dataModelsMap map[string]typex.XDataModel
+	if err1 := json.Unmarshal([]byte(mInEnd.DataModels), &dataModelsMap); err1 != nil {
+		log.Error(err1)
+		return err1
+	}
+	var dataModels []typex.XDataModel
+	// {k1 :{k1:v1}, k2 :{k2:v2}} --> [{k1:v1}, {k2:v2}]
+	for _, v := range dataModelsMap {
+		dataModels = append(dataModels, v)
+	}
 	in := typex.NewInEnd(mInEnd.Type, mInEnd.Name, mInEnd.Description, config)
 	// Important !!!!!!!! in.Id = mInEnd.UUID
 	in.UUID = mInEnd.UUID
+	in.DataModels = dataModels
 	if err2 := hh.ruleEngine.LoadInEnd(in); err2 != nil {
 		log.Error(err2)
 		return err2

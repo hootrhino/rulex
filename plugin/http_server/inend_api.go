@@ -5,6 +5,7 @@ import (
 	"rulex/typex"
 	"rulex/utils"
 
+	"github.com/emirpasic/gods/maps/linkedhashmap"
 	"github.com/gin-gonic/gin"
 	"github.com/ngaut/log"
 	"gopkg.in/square/go-jose.v2/json"
@@ -46,16 +47,31 @@ func CreateInend(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		Name        string                 `json:"name" binding:"required"`
 		Description string                 `json:"description"`
 		Config      map[string]interface{} `json:"config" binding:"required"`
+		DataModels  []typex.XDataModel     `json:"dataModels"`
 	}
 	form := Form{}
 
-	if err := c.ShouldBindJSON(&form); err != nil {
-		c.JSON(200, Error400(err))
+	if err0 := c.ShouldBindJSON(&form); err0 != nil {
+		c.JSON(200, Error400(err0))
 		return
 	}
 	configJson, err1 := json.Marshal(form.Config)
 	if err1 != nil {
 		c.JSON(200, Error400(err1))
+		return
+	}
+	//
+	// 把数据模型表加工成MAP结构来缩短查询时间
+	//
+	// [{k1:v1}, {k2:v2}] --> {k1 :{k1:v1}, k2 :{k2:v2}}
+	//
+	var dataModelsMap = linkedhashmap.New()
+	for _, v := range form.DataModels {
+		dataModelsMap.Put(v.Name, v)
+	}
+	dataModelsJson, err2 := dataModelsMap.ToJSON()
+	if err1 != nil {
+		c.JSON(200, Error400(err2))
 		return
 	}
 	var uuid *string = new(string)
@@ -67,6 +83,7 @@ func CreateInend(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 			Name:        form.Name,
 			Description: form.Description,
 			Config:      string(configJson),
+			DataModels:  string(dataModelsJson),
 		}); err != nil {
 			c.JSON(200, Error400(err))
 			return
@@ -85,6 +102,7 @@ func CreateInend(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 				Name:        form.Name,
 				Description: form.Description,
 				Config:      string(configJson),
+				DataModels:  string(dataModelsJson),
 			}); err != nil {
 				c.JSON(200, Error400(err))
 				return
