@@ -75,20 +75,17 @@ func (r *Rule) AddLib(rx RuleX, funcName string, f func(*lua.LState) int) {
 	//
 	// rulexlib: 标准库命名空间
 	//
-	rulex := r.VM.G.Global
-	r.VM.SetGlobal("rulexlib", rulex)
-	loadLib(rulex, r.VM, funcName, f)
+	rulexTb := r.VM.G.Global
+	r.VM.SetGlobal("rulexlib", rulexTb)
+	loadLib(rulexTb, r.VM, funcName, f)
 }
 
-/*
-*
-* LoadLib: 根据 XLib 接口加载(后期即将废弃)
-*
- */
-func (r *Rule) LoadLib(rx RuleX, tb *lua.LTable, lib XLib) {
-	loadLib(tb, r.VM, lib.Name(), lib.LibFun(rx))
-}
-func loadLib(tb *lua.LTable, VM *lua.LState, funcName string, f func(*lua.LState) int) {
+func loadLib(
+	tb *lua.LTable,
+	VM *lua.LState,
+	funcName string,
+	f func(*lua.LState) int,
+) {
 	mod := VM.SetFuncs(tb, map[string]lua.LGFunction{
 		funcName: f,
 	})

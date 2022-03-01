@@ -54,5 +54,7 @@ func LoadBuildInLuaLib(e typex.RuleX, r *typex.Rule) {
 	// JSON
 	r.AddLib(e, "T2J", rulexlib.JSONE(e)) // Lua Table -> JSON
 	r.AddLib(e, "J2T", rulexlib.JSOND(e)) // JSON -> Lua Table
+	// Get Rule ID
+	r.AddLib(e, "RUUID", rulexlib.SelfRuleUUID(e, r.UUID))
 
 }
