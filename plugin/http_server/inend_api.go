@@ -7,7 +7,6 @@ import (
 
 	"github.com/emirpasic/gods/maps/linkedhashmap"
 	"github.com/gin-gonic/gin"
-	"github.com/ngaut/log"
 	"gopkg.in/square/go-jose.v2/json"
 )
 
