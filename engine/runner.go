@@ -48,10 +48,16 @@ func RunRulex(dbPath string, iniPath string) {
 		if err := json.Unmarshal([]byte(minEnd.Config), &config); err != nil {
 			log.Error(err)
 		}
-		in1 := typex.NewInEnd(minEnd.Type, minEnd.Name, minEnd.Description, config)
+		// :mInEnd: {k1 :{k1:v1}, k2 :{k2:v2}} --> InEnd: [{k1:v1}, {k2:v2}]
+		var dataModelsMap map[string]typex.XDataModel
+		if err := json.Unmarshal([]byte(minEnd.DataModels), &dataModelsMap); err != nil {
+			log.Error(err)
+		}
+		in := typex.NewInEnd(minEnd.Type, minEnd.Name, minEnd.Description, config)
 		// Important !!!!!!!!
-		in1.UUID = minEnd.UUID
-		if err := engine.LoadInEnd(in1); err != nil {
+		in.UUID = minEnd.UUID
+		in.DataModelsMap = dataModelsMap
+		if err := engine.LoadInEnd(in); err != nil {
 			log.Error("InEnd load failed:", err)
 		}
 	}

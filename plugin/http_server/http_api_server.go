@@ -22,7 +22,7 @@ import (
 )
 
 const _API_V1_ROOT string = "/api/v1/"
-const DEFAULT_DB_PATH string = "./rulex.db"
+const _DEFAULT_DB_PATH string = "./rulex.db"
 
 // 启动时间
 var StartedTime = time.Unix(time.Now().Unix(), 0).Format("2006-01-02 15:04:05")
@@ -132,7 +132,14 @@ func (hh *HttpApiServer) Start() error {
 	// Create InEnd
 	//
 	hh.ginEngine.POST(url("inends"), hh.addRoute(CreateInend))
+	//
+	// 配置表
+	//
 	hh.ginEngine.GET(url("inends/config"), hh.addRoute(GetInEndConfig))
+	//
+	// 数据模型表
+	//
+	hh.ginEngine.GET(url("inends/models"), hh.addRoute(GetInEndModels))
 	//
 	// Create OutEnd
 	//
@@ -220,7 +227,7 @@ func configHttpServer(hh *HttpApiServer) {
 	}
 
 	if hh.dbPath == "" {
-		hh.InitDb(DEFAULT_DB_PATH)
+		hh.InitDb(_DEFAULT_DB_PATH)
 	} else {
 		hh.InitDb(hh.dbPath)
 	}

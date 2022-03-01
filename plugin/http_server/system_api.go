@@ -59,13 +59,14 @@ func System(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		Code: http.StatusOK,
 		Msg:  SUCCESS,
 		Data: gin.H{
-			"version":    e.Version().Version,
-			"diskInfo":   int(diskInfo.UsedPercent),
-			"system":     bToMb(m.Sys),
-			"alloc":      bToMb(m.Alloc),
-			"total":      bToMb(m.TotalAlloc),
-			"cpuPercent": cpuPercent,
-			"osArch":     runtime.GOOS + "-" + runtime.GOARCH,
+			"version":     e.Version().Version,
+			"diskInfo":    int(diskInfo.UsedPercent),
+			"system":      bToMb(m.Sys),
+			"alloc":       bToMb(m.Alloc),
+			"total":       bToMb(m.TotalAlloc),
+			"cpuPercent":  cpuPercent,
+			"osArch":      runtime.GOOS + "-" + runtime.GOARCH,
+			"startedTime": StartedTime,
 		},
 	})
 }
@@ -82,22 +83,14 @@ func Drivers(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		}
 		return true
 	})
-	c.JSON(200, Result{
-		Code: 200,
-		Msg:  SUCCESS,
-		Data: data,
-	})
+	c.JSON(http.StatusOK, OkWithData(data))
 }
 
 //
 // Get statistics data
 //
 func Statistics(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
-	c.JSON(http.StatusOK, Result{
-		Code: http.StatusOK,
-		Msg:  SUCCESS,
-		Data: statistics.AllStatistics(),
-	})
+	c.JSON(http.StatusOK, OkWithData(statistics.AllStatistics()))
 }
 
 //

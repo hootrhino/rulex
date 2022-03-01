@@ -23,17 +23,10 @@ func InEnds(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 			data = append(data, value)
 			return true
 		})
-		c.JSON(http.StatusOK, Result{
-			Code: http.StatusOK,
-			Msg:  SUCCESS,
-			Data: data,
-		})
+		c.JSON(http.StatusOK, OkWithData(data))
 	} else {
-		c.JSON(http.StatusOK, Result{
-			Code: http.StatusOK,
-			Msg:  SUCCESS,
-			Data: e.GetInEnd(uuid),
-		})
+		c.JSON(http.StatusOK, OkWithData(e.GetInEnd(uuid)))
+
 	}
 }
 
@@ -52,12 +45,12 @@ func CreateInend(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	form := Form{}
 
 	if err0 := c.ShouldBindJSON(&form); err0 != nil {
-		c.JSON(200, Error400(err0))
+		c.JSON(http.StatusOK, Error400(err0))
 		return
 	}
 	configJson, err1 := json.Marshal(form.Config)
 	if err1 != nil {
-		c.JSON(200, Error400(err1))
+		c.JSON(http.StatusOK, Error400(err1))
 		return
 	}
 	//
@@ -71,7 +64,7 @@ func CreateInend(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	}
 	dataModelsJson, err2 := dataModelsMap.ToJSON()
 	if err1 != nil {
-		c.JSON(200, Error400(err2))
+		c.JSON(http.StatusOK, Error400(err2))
 		return
 	}
 	var uuid *string = new(string)
@@ -85,7 +78,7 @@ func CreateInend(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 			Config:      string(configJson),
 			DataModels:  string(dataModelsJson),
 		}); err != nil {
-			c.JSON(200, Error400(err))
+			c.JSON(http.StatusOK, Error400(err))
 			return
 		} else {
 			uuid = &newUUID
@@ -104,7 +97,7 @@ func CreateInend(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 				Config:      string(configJson),
 				DataModels:  string(dataModelsJson),
 			}); err != nil {
-				c.JSON(200, Error400(err))
+				c.JSON(http.StatusOK, Error400(err))
 				return
 			}
 			uuid = &form.UUID
@@ -112,11 +105,10 @@ func CreateInend(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	}
 
 	if err := hh.LoadNewestInEnd(*uuid); err != nil {
-		log.Error(err)
-		c.JSON(200, Error400(err))
+		c.JSON(http.StatusOK, Error400(err))
 		return
 	} else {
-		c.JSON(200, Ok())
+		c.JSON(http.StatusOK, Ok())
 		return
 	}
 
@@ -129,30 +121,51 @@ func DeleteInend(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
 	_, err := hh.GetMInEnd(uuid)
 	if err != nil {
-		c.JSON(200, Error400(err))
+		c.JSON(http.StatusOK, Error400(err))
 		return
 	}
 	if err := hh.DeleteMInEnd(uuid); err != nil {
-		c.JSON(200, Error400(err))
+		c.JSON(http.StatusOK, Error400(err))
 	} else {
 		e.RemoveInEnd(uuid)
-		c.JSON(200, Ok())
+		c.JSON(http.StatusOK, Ok())
 	}
 
 }
 
 /*
 *
-* GetInEndConfig
+* UI配置表
 *
  */
 func GetInEndConfig(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
-	inend, ok := e.AllInEnd().Load(uuid)
-	if ok {
-		c.JSON(200, (inend.(*typex.InEnd)).Source.Configs())
+	inend := e.GetInEnd(uuid)
+	if inend != nil {
+		c.JSON(http.StatusOK, OkWithData(inend.Source.Configs()))
 	} else {
-		c.JSON(400, []interface{}{})
+		c.JSON(http.StatusOK, OkWithEmpty())
+	}
+
+}
+
+/*
+*
+* 属性表
+*
+ */
+func GetInEndModels(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+	uuid, _ := c.GetQuery("uuid")
+	inend := e.GetInEnd(uuid)
+	if inend != nil {
+		modelsMap := inend.DataModelsMap
+		models := make([]typex.XDataModel, 0)
+		for _, v := range modelsMap {
+			models = append(models, v)
+		}
+		c.JSON(http.StatusOK, OkWithData(models))
+	} else {
+		c.JSON(http.StatusOK, OkWithEmpty())
 	}
 
 }

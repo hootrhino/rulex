@@ -81,7 +81,7 @@ func Login(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		Code: http.StatusOK,
 		Msg:  "Auth Success",
 		Data: map[string]interface{}{
-			"token":  "defe7c05fea849c78cec647273427ee7",
+			"token":  "token",
 			"avatar": "rulex",
 			"name":   "rulex",
 		},
@@ -125,7 +125,7 @@ func Info(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		Code: http.StatusOK,
 		Msg:  "Auth Success",
 		Data: map[string]interface{}{
-			"token":  "defe7c05fea849c78cec647273427ee7",
+			"token":  "token",
 			"avatar": "rulex",
 			"name":   "rulex",
 		},

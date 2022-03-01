@@ -12,9 +12,9 @@ type InEnd struct {
 	Description string          `json:"description"`
 	Binds       map[string]Rule `json:"-"`
 	//
-	Config     map[string]interface{} `json:"config"`
-	DataModels []XDataModel           `json:"dataModels"`
-	Source     XSource                `json:"-"`
+	Config        map[string]interface{} `json:"config"`
+	DataModelsMap map[string]XDataModel  `json:"-"`
+	Source        XSource                `json:"-"`
 }
 
 func (in *InEnd) GetState() SourceState {
