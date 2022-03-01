@@ -5,6 +5,10 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"rulex/core"
+	"rulex/engine"
+	"rulex/typex"
+	"time"
 
 	"github.com/ngaut/log"
 )
@@ -48,4 +52,25 @@ func HttpGet(api string) string {
 		return ""
 	}
 	return string(body)
+}
+
+/*
+*
+* 起一个测试服务
+*
+ */
+func TestEngine() typex.RuleX {
+	mainConfig := core.InitGlobalConfig("conf/rulex.ini")
+	core.StartStore(core.GlobalConfig.MaxQueueSize)
+	engine := engine.NewRuleEngine(mainConfig)
+	return engine
+}
+
+/*
+*
+* 生成测试数据库的文件名
+*
+ */
+func GenDate() string {
+	return "rulex-test_" + time.Now().Format("2006-01-02-15_04_05")
 }

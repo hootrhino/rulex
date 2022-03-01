@@ -2,9 +2,6 @@ package test
 
 import (
 	"context"
-
-	"rulex/core"
-	"rulex/engine"
 	httpserver "rulex/plugin/http_server"
 	"rulex/rulexrpc"
 	"rulex/typex"
@@ -18,22 +15,19 @@ import (
 )
 
 func TestFullyRun(t *testing.T) {
-	mainConfig := core.InitGlobalConfig("conf/rulex.ini")
-	core.StartStore(core.GlobalConfig.MaxQueueSize)
-	engine := engine.NewRuleEngine(mainConfig)
+	engine := TestEngine()
 	engine.Start()
-
-	hh := httpserver.NewHttpApiServer(2580, "../rulex-test_"+time.Now().Format("2006-01-02-15_04_05")+".db", engine)
-
-	// HttpApiServer loaded default
-	if err := engine.LoadPlugin("plugin.http_server", hh); err != nil {
+	if err := engine.LoadPlugin("plugin.http_server", httpserver.NewHttpApiServer(
+		2580,
+		"../"+GenDate()+".db",
+		engine,
+	)); err != nil {
 		log.Fatal("Rule load failed:", err)
 	}
 	// Grpc Inend
 	grpcInend := typex.NewInEnd("GRPC", "Rulex Grpc InEnd", "Rulex Grpc InEnd", map[string]interface{}{
 		"port": 2581,
 	})
-
 	if err := engine.LoadInEnd(grpcInend); err != nil {
 		log.Error("grpcInend load failed:", err)
 	}
