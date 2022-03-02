@@ -1,25 +1,25 @@
 syntax = "proto3";
-option go_package = "./;xstream";
+option go_package = "./;rulexrpc";
 option java_multiple_files = false;
-option java_package = "xstream";
+option java_package = "rulexrpc";
 option java_outer_classname = "XStream";
 
-package xstream;
+package rulexrpc;
 //
 // 自定义编解码器, 使用GRPC协议通信
 //
-service XCodec {
+service Codec {
   // 编码
-  rpc Decode (Request) returns (Response) {}
+  rpc Decode (CodecRequest) returns (CodecResponse) {}
   // 解码
-  rpc Encode (Request) returns (Response) {}
+  rpc Encode (CodecRequest) returns (CodecResponse) {}
 }
 
-message Request {
+message CodecRequest {
   bytes value = 1;
 }
 
-message Response {
+message CodecResponse {
   int32 code = 1;
   string message = 2;
   bytes data = 3;

@@ -18,7 +18,6 @@ func LoadTt() {
 	TM.Register(typex.HTTP_TARGET, core.GenOutConfig(typex.HTTP_TARGET, "About HTTP_TARGET", httpConfig{}))
 	TM.Register(typex.MONGO_SINGLE, core.GenOutConfig(typex.MONGO_SINGLE, "About HTTP_TARGET", mongoConfig{}))
 	TM.Register(typex.MQTT_TARGET, core.GenOutConfig(typex.MQTT_TARGET, "About HTTP_TARGET", mqttConfig{}))
-	TM.Register(typex.MQTT_TELEMETRY_TARGET, core.GenOutConfig(typex.MQTT_TELEMETRY_TARGET, "About HTTP_TARGET", mqttTelemetryConfig{}))
 	TM.Register(typex.NATS_TARGET, core.GenOutConfig(typex.NATS_TARGET, "About HTTP_TARGET", natsConfig{}))
 	TM.Register(typex.TDENGINE_TARGET, core.GenOutConfig(typex.TDENGINE_TARGET, "About HTTP_TARGET", tdEngineConfig{}))
 }

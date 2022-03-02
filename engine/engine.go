@@ -348,9 +348,6 @@ func tryCreateOutEnd(out *typex.OutEnd, e typex.RuleX) error {
 	if out.Type == typex.MQTT_TARGET {
 		return startTarget(target.NewMqttTarget(e), out, e)
 	}
-	if out.Type == typex.MQTT_TELEMETRY_TARGET {
-		return startTarget(target.NewMqttTelemetryTarget(e), out, e)
-	}
 	if out.Type == typex.NATS_TARGET {
 		return startTarget(target.NewNatsTarget(e), out, e)
 	}
@@ -359,6 +356,9 @@ func tryCreateOutEnd(out *typex.OutEnd, e typex.RuleX) error {
 	}
 	if out.Type == typex.TDENGINE_TARGET {
 		return startTarget(target.NewTdEngineTarget(e), out, e)
+	}
+	if out.Type == typex.GRPC_CODEC_TARGET {
+		return startTarget(target.NewCodecTarget(e), out, e)
 	}
 	return errors.New("unsupported target type:" + out.Type.String())
 
@@ -383,7 +383,11 @@ func startTarget(target typex.XTarget, out *typex.OutEnd, e typex.RuleX) error {
 		err := fmt.Errorf("target [%v] config is nil", out.Name)
 		return err
 	}
-
+	if err := target.Init(out.UUID, config); err != nil {
+		log.Error(err)
+		e.RemoveInEnd(out.UUID)
+		return err
+	}
 	// 然后启动资源
 	ctx, cancelCTX := context.WithCancel(typex.GCTX)
 	if err := target.Start(typex.CCTX{Ctx: ctx, CancelCTX: cancelCTX}); err != nil {

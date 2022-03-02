@@ -43,7 +43,7 @@ type XTarget interface {
 	//
 	// 数据出口
 	//
-	To(data interface{}) error
+	To(data interface{}) (interface{}, error)
 	//
 	// 不经过规则引擎处理的直达数据
 	//

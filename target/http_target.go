@@ -69,9 +69,9 @@ func (ht *HTTPTarget) Status() typex.SourceState {
 	return typex.UP
 
 }
-func (ht *HTTPTarget) To(data interface{}) error {
-	_, err := utils.Post(ht.client, data, ht.url, ht.headers)
-	return err
+func (ht *HTTPTarget) To(data interface{}) (interface{}, error) {
+	r, err := utils.Post(ht.client, data, ht.url, ht.headers)
+	return r, err
 }
 
 //

@@ -239,7 +239,7 @@ func execQuery(client http.Client, username string, password string, sql string,
 * 比如: 10.22,220.12,123,......
 *
  */
-func (td *tdEngineTarget) To(data interface{}) error {
+func (td *tdEngineTarget) To(data interface{}) (interface{}, error) {
 	switch s := data.(type) {
 	case string:
 		{
@@ -248,10 +248,10 @@ func (td *tdEngineTarget) To(data interface{}) error {
 			for _, v := range ss {
 				insertSql = strings.Replace(insertSql, "%v", strings.TrimSpace(v), 1)
 			}
-			return execQuery(td.client, td.Username, td.Password, insertSql, td.Url)
+			return execQuery(td.client, td.Username, td.Password, insertSql, td.Url), nil
 		}
 	}
-	return nil
+	return nil, nil
 }
 
 /*

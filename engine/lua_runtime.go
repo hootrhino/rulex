@@ -56,5 +56,8 @@ func LoadBuildInLuaLib(e typex.RuleX, r *typex.Rule) {
 	r.AddLib(e, "J2T", rulexlib.JSOND(e)) // JSON -> Lua Table
 	// Get Rule ID
 	r.AddLib(e, "RUUID", rulexlib.SelfRuleUUID(e, r.UUID))
+	// Codec
+	r.AddLib(e, "RPCENC", rulexlib.RPCEncode(e))
+	r.AddLib(e, "RPCDEC", rulexlib.RPCDecode(e))
 
 }

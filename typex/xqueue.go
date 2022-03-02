@@ -109,7 +109,7 @@ func StartQueue(maxQueueSize int) {
 					if qd.Out != nil {
 						v, ok := qd.E.AllOutEnd().Load(qd.Out.UUID)
 						if ok {
-							if err := v.(*OutEnd).Target.To(qd.Data); err != nil {
+							if _, err := v.(*OutEnd).Target.To(qd.Data); err != nil {
 								statistics.IncOut()
 							} else {
 								statistics.IncOutFailed()

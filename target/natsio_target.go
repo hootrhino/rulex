@@ -106,18 +106,18 @@ func (nt *natsTarget) Details() *typex.OutEnd {
 //--------------------------------------------------------
 // To: 数据出口
 //--------------------------------------------------------
-func (nt *natsTarget) To(data interface{}) error {
+func (nt *natsTarget) To(data interface{}) (interface{}, error) {
 	if nt.natsConnector != nil {
-		return nt.natsConnector.Publish(nt.topic, []byte((data.(string))))
+		return nil, nt.natsConnector.Publish(nt.topic, []byte((data.(string))))
 	}
-	return errors.New("natsConnector is nil")
+	return nil, errors.New("natsConnector is nil")
 }
 
 //--------------------------------------------------------
 // OnStreamApproached: 不经过规则引擎处理的直达出口端数据接口
 //--------------------------------------------------------
 func (nt *natsTarget) OnStreamApproached(data string) error {
-	return nt.To(data)
+	return nil
 }
 
 func (nt *natsTarget) Stop() {

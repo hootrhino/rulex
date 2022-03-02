@@ -112,13 +112,13 @@ func (m *MongoTarget) Stop() {
 	m.CancelCTX()
 }
 
-func (m *MongoTarget) To(data interface{}) error {
+func (m *MongoTarget) To(data interface{}) (interface{}, error) {
 	document := bson.D{bson.E{Key: "data", Value: data}}
-	_, err := m.collection.InsertOne(m.Ctx, document)
+	r, err := m.collection.InsertOne(m.Ctx, document)
 	if err != nil {
 		log.Error("Mongo To Failed:", err)
 	}
-	return err
+	return r.InsertedID, err
 }
 func (m *MongoTarget) Details() *typex.OutEnd {
 	return m.RuleEngine.GetOutEnd(m.PointId)

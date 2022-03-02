@@ -75,18 +75,19 @@ func (i TargetType) String() string {
 *
  */
 const (
-	MONGO_SINGLE          TargetType = "MONGO_SINGLE"
-	MONGO_CLUSTER         TargetType = "MONGO_CLUSTER"
-	REDIS_SINGLE          TargetType = "REDIS_SINGLE"
-	FLINK_SINGLE          TargetType = "FLINK_SINGLE"
-	MQTT_TARGET           TargetType = "MQTT"
-	MQTT_TELEMETRY_TARGET TargetType = "MQTT_TELEMETRY_TARGET"
-	MYSQL_TARGET          TargetType = "MYSQL"
-	PGSQL_TARGET          TargetType = "PGSQL"
-	NATS_TARGET           TargetType = "NATS"
-	HTTP_TARGET           TargetType = "HTTP"
+	MONGO_SINGLE  TargetType = "MONGO_SINGLE"
+	MONGO_CLUSTER TargetType = "MONGO_CLUSTER"
+	REDIS_SINGLE  TargetType = "REDIS_SINGLE"
+	FLINK_SINGLE  TargetType = "FLINK_SINGLE"
+	MQTT_TARGET   TargetType = "MQTT"
+	MYSQL_TARGET  TargetType = "MYSQL"
+	PGSQL_TARGET  TargetType = "PGSQL"
+	NATS_TARGET   TargetType = "NATS"
+	HTTP_TARGET   TargetType = "HTTP"
 	//
 	// TDENGINE
 	//
 	TDENGINE_TARGET TargetType = "TDENGINE"
+	//
+	GRPC_CODEC_TARGET TargetType = "GRPC_CODEC_TARGET"
 )

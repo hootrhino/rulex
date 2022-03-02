@@ -132,11 +132,11 @@ func (mm *mqttOutEndTarget) Details() *typex.OutEnd {
 //
 //
 //
-func (mm *mqttOutEndTarget) To(data interface{}) error {
+func (mm *mqttOutEndTarget) To(data interface{}) (interface{}, error) {
 	if mm.client != nil {
-		return mm.client.Publish(mm.DataTopic, 2, false, data).Error()
+		return mm.client.Publish(mm.DataTopic, 2, false, data).Error(), nil
 	}
-	return errors.New("mqtt client is nil")
+	return nil, errors.New("mqtt client is nil")
 }
 
 /*

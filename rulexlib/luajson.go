@@ -10,7 +10,7 @@ import (
 
 /*
 *
-* JsonEncodeLib,Encode converts Lua values to JSON.
+* JsonEncodeLib,_Encode converts Lua values to JSON.
 *
  */
 type JsonEncodeLib struct {
@@ -29,7 +29,7 @@ func (l *JsonEncodeLib) LibFun(rx typex.RuleX) func(*lua.LState) int {
 
 /*
 *
-* JsonDecodeLib, Decode converts the JSON encoded data to Lua values.
+* JsonDecodeLib, _Decode converts the JSON encoded data to Lua values.
 *
  */
 type JsonDecodeLib struct {
@@ -54,7 +54,7 @@ func JSOND(rx typex.RuleX) func(l *lua.LState) int {
 func apiDecode(L *lua.LState) int {
 	str := L.CheckString(2)
 
-	value, err := Decode(L, []byte(str))
+	value, err := _Decode(L, []byte(str))
 	if err != nil {
 		L.Push(lua.LNil)
 		L.Push(lua.LString(err.Error()))
@@ -67,7 +67,7 @@ func apiDecode(L *lua.LState) int {
 func apiEncode(L *lua.LState) int {
 	value := L.CheckAny(2)
 
-	data, err := Encode(value)
+	data, err := _Encode(value)
 	if err != nil {
 		L.Push(lua.LNil)
 		L.Push(lua.LString(err.Error()))
@@ -89,8 +89,8 @@ func (i invalidTypeError) Error() string {
 	return `cannot encode ` + lua.LValueType(i).String() + ` to JSON`
 }
 
-// Encode returns the JSON encoding of value.
-func Encode(value lua.LValue) ([]byte, error) {
+// _Encode returns the JSON encoding of value.
+func _Encode(value lua.LValue) ([]byte, error) {
 	return json.Marshal(jsonValue{
 		LValue:  value,
 		visited: make(map[*lua.LTable]bool),
@@ -160,8 +160,8 @@ func (j jsonValue) MarshalJSON() (data []byte, err error) {
 	return
 }
 
-// Decode converts the JSON encoded data to Lua values.
-func Decode(L *lua.LState, data []byte) (lua.LValue, error) {
+// _Decode converts the JSON encoded data to Lua values.
+func _Decode(L *lua.LState, data []byte) (lua.LValue, error) {
 	var value interface{}
 	err := json.Unmarshal(data, &value)
 	if err != nil {
