@@ -21,8 +21,8 @@ const (
 * 数据模型, 例如某个Modbus电表可以支持读取电流/C 和电压/V参数:
 *[
 *    {
-*        "name":"volgate",
-*        "tag":"volgate",
+*        "name":"voltage",
+*        "tag":"voltage",
 *        "valueType":"float",
 *        "value":220
 *    }

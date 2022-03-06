@@ -11,9 +11,6 @@ import (
 *
  */
 func LoadBuildInLuaLib(e typex.RuleX, r *typex.Rule) {
-	//--------------------------------------------------------------
-	// Load Stdlib
-	//--------------------------------------------------------------
 	// 消息转发
 	r.AddLib(e, "DataToHttp", rulexlib.DataToHttp(e))
 	r.AddLib(e, "DataToMqtt", rulexlib.DataToMqtt(e))
@@ -22,7 +19,6 @@ func LoadBuildInLuaLib(e typex.RuleX, r *typex.Rule) {
 	r.AddLib(e, "JQ", rulexlib.JqSelect(e))
 	// 日志
 	r.AddLib(e, "log", rulexlib.Log(e))
-
 	// 直达数据
 	r.AddLib(e, "WriteInStream", rulexlib.WriteInStream(e))
 	r.AddLib(e, "WriteOutStream", rulexlib.WriteOutStream(e))
@@ -40,9 +36,6 @@ func LoadBuildInLuaLib(e typex.RuleX, r *typex.Rule) {
 	// 数据持久化
 	r.AddLib(e, "DataToTdEngine", rulexlib.DataToTdEngine(e))
 	r.AddLib(e, "DataToMongo", rulexlib.DataToMongo(e))
-	// --------------------------------------
-	// From 0.0.8: 使用新版本的库加载方式
-	// --------------------------------------
 	// 时间库
 	r.AddLib(e, "Time", rulexlib.Time(e))
 	r.AddLib(e, "TsUnix", rulexlib.TsUnix(e))
