@@ -71,7 +71,10 @@ func (hh *HttpApiServer) Start() error {
 		c.Request.URL.Path = "/static/"
 		hh.ginEngine.HandleContext(c)
 	}))
-
+	//
+	// WebSocket server
+	//
+	hh.ginEngine.GET("/ws", hh.addRoute(WS))
 	//
 	// Get all plugins
 	//
