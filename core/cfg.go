@@ -37,7 +37,6 @@ func InitGlobalConfig(path string) typex.RulexConfig {
 		os.Exit(1)
 	} else {
 		log.Info(string(bytes))
-
 	}
 	return GlobalConfig
 }
@@ -49,33 +48,38 @@ func SetLogLevel() {
 		log.SetLevel(log.LogLevel(log.LOG_FATAL))
 	case "error":
 		log.SetLevel(log.LogLevel(log.LOG_ERROR))
-
 	case "warn":
 		log.SetLevel(log.LogLevel(log.LOG_LEVEL_WARN))
-
 	case "warning":
 		log.SetLevel(log.LogLevel(log.LOG_WARNING))
-
 	case "debug":
 		log.SetLevel(log.LogLevel(log.LOG_DEBUG))
-
 	case "info":
 		log.SetLevel(log.LogLevel(log.LOG_INFO))
 	case "all":
 		log.SetLevel(log.LogLevel(log.LOG_LEVEL_ALL))
-
 	}
 
 }
 
+/*
+*
+* 设置性能，通常用来Debug用，生产环境建议关闭
+*
+ */
 func SetPerformance() {
-	log.Info("Go max process is:", GlobalConfig.GomaxProcs)
-	runtime.GOMAXPROCS(GlobalConfig.GomaxProcs)
+	if GlobalConfig.GomaxProcs > 0 {
+		if GlobalConfig.GomaxProcs < runtime.NumCPU() {
+			runtime.GOMAXPROCS(GlobalConfig.GomaxProcs)
+		} else {
+			log.Warnf("GomaxProcs is %v, but current CPU number is:%v", GlobalConfig.GomaxProcs, runtime.NumCPU())
+		}
+	}
 	//------------------------------------------------------
 	// pprof: https://segmentfault.com/a/1190000016412013
 	//------------------------------------------------------
 	if GlobalConfig.EnablePProf {
-		log.Debug("Start PProf debug")
+		log.Debug("Start PProf debug at: 0.0.0.0:6060")
 		runtime.SetMutexProfileFraction(1)
 		runtime.SetBlockProfileRate(1)
 		runtime.SetCPUProfileRate(1)
