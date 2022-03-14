@@ -40,6 +40,7 @@ func LoadBuildInLuaLib(e typex.RuleX, r *typex.Rule) {
 	r.AddLib(e, "Time", rulexlib.Time(e))
 	r.AddLib(e, "TsUnix", rulexlib.TsUnix(e))
 	r.AddLib(e, "TsUnixNano", rulexlib.TsUnixNano(e))
+	r.AddLib(e, "NtpTime", rulexlib.NtpTime(e))
 	// 缓存器库
 	r.AddLib(e, "VSet", rulexlib.StoreSet(e))
 	r.AddLib(e, "VGet", rulexlib.StoreGet(e))
