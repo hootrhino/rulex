@@ -18,7 +18,7 @@ require (
 	github.com/goburrow/serial v0.1.0
 	github.com/google/uuid v1.3.0
 	github.com/gopcua/opcua v0.3.1
-	github.com/gorilla/websocket v1.4.2 // indirect
+	github.com/gorilla/websocket v1.4.2
 	github.com/gosnmp/gosnmp v1.34.0
 	github.com/hashicorp/hcl/v2 v2.11.1
 	github.com/iancoleman/strcase v0.2.0

@@ -1,8 +1,10 @@
 #! /bin/bash
 set -e
+
+RESPOSITORY="https://github.com/i4de"
+
 #
 create_pkg() {
-
     VERSION=$(git describe --tags --always --abbrev=0)
     echo "Create package: ${rulex-$1-${VERSION}}"
     if [ "$1" == "x64windows" ]; then
@@ -137,14 +139,14 @@ cross_compile() {
 #
 #
 build_rulexcli() {
-    git clone https://github.com/i4de/rulex-cli.git rulexc
+    git clone ${RESPOSITORY}/rulex-cli.git rulexc
 }
 #
 # fetch dashboard
 #
 fetch_dashboard() {
     VERSION=$(git describe --tags --always --abbrev=0)
-    wget -q --show-progress https://github.com/i4de/rulex-dashboard/releases/download/${VERSION}/${VERSION}.zip
+    wget -q --show-progress ${RESPOSITORY}/rulex-dashboard/releases/download/${VERSION}/${VERSION}.zip
     unzip -q ${VERSION}.zip
     cp -r ./dist/* ./plugin/http_server/www
 }
