@@ -48,5 +48,3 @@ clean:
 	go clean
 	rm _release -rf
 	rm *.db *log.txt
-
-.PHONY: clean-grpc
