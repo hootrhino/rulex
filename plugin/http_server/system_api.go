@@ -49,7 +49,7 @@ func bToMb(b uint64) uint64 {
 // Get system infomation
 //
 func System(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
-	cpuPercent, _ := cpu.Percent(time.Millisecond, true)
+	cpuPercent, _ := cpu.Percent(5*time.Millisecond, true)
 	parts, _ := disk.Partitions(true)
 	diskInfo, _ := disk.Usage(parts[0].Mountpoint)
 	// For info on each, see: https://golang.org/pkg/runtime/#MemStats
@@ -64,7 +64,7 @@ func System(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 			"system":      bToMb(m.Sys),
 			"alloc":       bToMb(m.Alloc),
 			"total":       bToMb(m.TotalAlloc),
-			"cpuPercent":  cpuPercent,
+			"cpuPercent":  calculateCpuPercent(cpuPercent),
 			"osArch":      runtime.GOOS + "-" + runtime.GOARCH,
 			"startedTime": StartedTime,
 		},
@@ -209,4 +209,15 @@ func StartedAt(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		Msg:  SUCCESS,
 		Data: StartedTime,
 	})
+}
+
+//
+// 计算CPU平均使用率
+//
+func calculateCpuPercent(cpus []float64) float64 {
+	var acc float64 = 0
+	for _, v := range cpus {
+		acc += v
+	}
+	return acc / float64(len(cpus))
 }
