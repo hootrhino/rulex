@@ -232,8 +232,6 @@ func (m *modbusMasterSource) Start(cctx typex.CCTX) error {
 	//
 	// 前端传过来个寄存器和地址的配置列表，然后给每个寄存器分配一个协程去读
 	//
-	m.Ctx = cctx.Ctx
-	m.CancelCTX = cctx.CancelCTX
 
 	for _, rCfg := range mainConfig.RegisterParams {
 		log.Info("Start read register:", rCfg.Address)

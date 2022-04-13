@@ -16,12 +16,13 @@ type uartModuleSource struct {
 	uartDriver typex.XExternalDriver
 }
 type uartConfig struct {
-	Address  string `json:"address" validate:"required" title:"串口地址" info:""`
-	BaudRate int    `json:"baudRate" validate:"required" title:"波特率" info:""`
-	DataBits int    `json:"dataBits" validate:"required" title:"数据位" info:""`
-	StopBits int    `json:"stopBits" validate:"required" title:"停止位" info:""`
-	Parity   string `json:"parity" validate:"required" title:"分割大小" info:""`
-	Timeout  *int64 `json:"timeout" validate:"required" title:"超时时间" info:""`
+	Address    string `json:"address" validate:"required" title:"串口地址" info:""`
+	BaudRate   int    `json:"baudRate" validate:"required" title:"波特率" info:""`
+	DataBits   int    `json:"dataBits" validate:"required" title:"数据位" info:""`
+	StopBits   int    `json:"stopBits" validate:"required" title:"停止位" info:""`
+	Parity     string `json:"parity" validate:"required" title:"分割大小" info:""`
+	Timeout    *int64 `json:"timeout" validate:"required" title:"超时时间" info:""`
+	BufferSize *int   `json:"bufferSize" validate:"required" title:"缓冲区大小" info:""`
 }
 
 func NewUartModuleSource(inEndId string, e typex.RuleX) typex.XSource {
@@ -60,18 +61,15 @@ func (u *uartModuleSource) Start(cctx typex.CCTX) error {
 	if err := utils.BindSourceConfig(config, &mainConfig); err != nil {
 		return err
 	}
-	u.Ctx = cctx.Ctx
-	u.CancelCTX = cctx.CancelCTX
-
 	uartDriver, err := driver.NewUartDriver(u.Ctx,
 		serial.Config{
-			Address:  mainConfig.Address,  // 串口名
-			BaudRate: mainConfig.BaudRate, // 115200
-			DataBits: mainConfig.DataBits, // 8
-			StopBits: mainConfig.StopBits, // 1
-			Parity:   mainConfig.Parity,   //'N'
-			Timeout:  time.Duration(*mainConfig.Timeout) * time.Second,
-		}, u.Details(), u.RuleEngine, nil)
+			Address:  mainConfig.Address,                               // 串口名
+			BaudRate: mainConfig.BaudRate,                              // 115200
+			DataBits: mainConfig.DataBits,                              // 8
+			StopBits: mainConfig.StopBits,                              // 1
+			Parity:   mainConfig.Parity,                                //'N'
+			Timeout:  time.Duration(*mainConfig.Timeout) * time.Second, // 超时时间
+		}, u.Details(), u.RuleEngine, *mainConfig.BufferSize, nil)
 	if err != nil {
 		return err
 	}

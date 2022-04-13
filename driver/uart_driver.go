@@ -15,9 +15,9 @@ import (
 )
 
 // 数据缓冲区,单位: 字节
-const max_BUFFER_SIZE = 1024 * 4 // 4KB
+// const max_BUFFER_SIZE = 1024 * 4 // 4KB
 
-var buffer = [max_BUFFER_SIZE]byte{}
+// var buffer = [max_BUFFER_SIZE]byte{}
 
 //------------------------------------------------------------------------
 // 内部函数
@@ -29,6 +29,8 @@ type uartDriver struct {
 	In         *typex.InEnd
 	RuleEngine typex.RuleX
 	onRead     func([]byte)
+	bufferSize int
+	buffer     []byte
 }
 
 //
@@ -39,6 +41,7 @@ func NewUartDriver(
 	config serial.Config,
 	in *typex.InEnd,
 	e typex.RuleX,
+	bufferSize int,
 	onRead func([]byte)) (typex.XExternalDriver, error) {
 	serialPort, err := serial.Open(&config)
 	if err != nil {
@@ -50,6 +53,7 @@ func NewUartDriver(
 		RuleEngine: e,
 		serialPort: serialPort,
 		ctx:        ctx,
+		buffer:     make([]byte, bufferSize),
 		onRead:     onRead,
 	}, nil
 }
@@ -74,8 +78,9 @@ func (a *uartDriver) Work() error {
 		for a.state == typex.RUNNING {
 			<-ticker.C
 			if _, err0 := a.serialPort.Read(data); err0 != nil {
-
+				//
 				// 有的串口因为CPU频率原因 超时属于正常情况, 所以不计为错误
+				// 只需要重启一下就可
 				if !strings.Contains(err0.Error(), "timeout") {
 					log.Error("error:", err0)
 					a.Stop()
@@ -96,21 +101,21 @@ func (a *uartDriver) Work() error {
 			//---------------------------------------------------------------------------
 			if data[0] == '#' {
 				// log.Info("bytes => ", string(buffer[:acc]), buffer[:acc], acc)
-				a.RuleEngine.Work(a.In, string(buffer[1:acc]))
+				a.RuleEngine.Work(a.In, string(a.buffer[1:acc]))
 				// 重新初始化缓冲区
 				for i := 0; i < acc-1; i++ {
-					buffer[i] = 0
+					a.buffer[i] = 0
 				}
 				data[0] = 0
 				acc = 0
 			}
 			// 此处是为了过滤空行以及制表符
 			if (data[0] != 0) && (data[0] != '\r') && (data[0] != '\n') {
-				if acc <= max_BUFFER_SIZE {
-					buffer[acc] = data[0]
+				if acc <= a.bufferSize {
+					a.buffer[acc] = data[0]
 					acc += 1
 				} else {
-					log.Error("max buffer reached!")
+					log.Errorf("data length exceed maximum buffer size limit: %v", a.bufferSize)
 				}
 
 			}
@@ -155,8 +160,8 @@ func (a *uartDriver) Write(b []byte) (int, error) {
 }
 func (a *uartDriver) DriverDetail() *typex.DriverDetail {
 	return &typex.DriverDetail{
-		Name:        "Generic Uart Driver",
+		Name:        "General Uart Driver",
 		Type:        "UART",
-		Description: "A General Uart Driver",
+		Description: "A General Uart Driver Can Be Used For Common UART Device",
 	}
 }

@@ -199,8 +199,6 @@ func (s *snmpSource) Start(cctx typex.CCTX) error {
 			return err
 		}
 		ticker := time.NewTicker(time.Duration(mainConfig.Frequency) * time.Second)
-		s.Ctx = cctx.Ctx
-		s.CancelCTX = cctx.CancelCTX
 
 		go func(ctx context.Context, idx int, sr *snmpSource) {
 			for {

@@ -3,8 +3,10 @@ package test
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"rulex/core"
 	"rulex/engine"
 	"rulex/typex"
@@ -73,4 +75,27 @@ func TestEngine() typex.RuleX {
  */
 func GenDate() string {
 	return "rulex-test_" + time.Now().Format("2006-01-02-15_04_05")
+}
+
+/*
+*
+* 创建文件夹
+*
+ */
+func MKDir(dirName string) error {
+	err := os.Mkdir(dirName, os.ModeDir)
+	if err == nil {
+		return nil
+	}
+	if os.IsExist(err) {
+		info, err := os.Stat(dirName)
+		if err != nil {
+			return err
+		}
+		if !info.IsDir() {
+			return errors.New("path exists but is not a directory")
+		}
+		return nil
+	}
+	return err
 }

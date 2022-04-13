@@ -40,8 +40,6 @@ func (u *udpSource) Start(cctx typex.CCTX) error {
 		log.Error(err)
 		return err
 	}
-	u.Ctx = cctx.Ctx
-	u.CancelCTX = cctx.CancelCTX
 
 	go func(c context.Context, u1 *udpSource) {
 		data := make([]byte, mainConfig.MaxDataLength)
