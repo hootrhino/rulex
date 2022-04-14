@@ -177,8 +177,25 @@ init_env() {
 
 }
 #
+# 检查是否安装了这些软件
+#
+check_cmd() {
+    DEPS=("git" "jq" "gcc" "make")
+    for dep in ${DEPS[@]}; do
+        echo ">>> Check dependcy command: $dep"
+        if ! [ -x "$(command -v $dep)" ]; then
+            echo "||| Error: $dep is not installed."
+            exit 1
+        else
+            echo ">>> $dep has been installed."
+        fi
+    done
+
+}
+#
 #-----------------------------------
 #
+check_cmd
 init_env
 cp -r $(ls | egrep -v '^_build$') ./_build/
 cd ./_build/
