@@ -6,11 +6,12 @@ import "context"
 // XStatus for source status
 //
 type XStatus struct {
-	PointId    string // Input: Source; Output: Target
-	Enable     bool
-	Ctx        context.Context
-	CancelCTX  context.CancelFunc
-	RuleEngine RuleX
+	PointId     string // Input: Source; Output: Target
+	Enable      bool
+	Ctx         context.Context
+	CancelCTX   context.CancelFunc
+	XDataModels []XDataModel `json:"dataModels" title:"数据模型" info:""`
+	RuleEngine  RuleX
 }
 
 //

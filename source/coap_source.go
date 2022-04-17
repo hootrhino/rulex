@@ -89,7 +89,7 @@ func (cc *coAPInEndSource) Stop() {
 }
 
 func (cc *coAPInEndSource) DataModels() []typex.XDataModel {
-	return cc.dataModels
+	return cc.XDataModels
 }
 func (cc *coAPInEndSource) Reload() {
 

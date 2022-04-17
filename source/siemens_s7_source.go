@@ -147,7 +147,7 @@ func (s7 *siemensS7Source) Enabled() bool {
 // 数据模型, 用来描述该资源支持的数据, 对应的是云平台的物模型
 //
 func (s7 *siemensS7Source) DataModels() []typex.XDataModel {
-	return []typex.XDataModel{}
+	return s7.XDataModels
 }
 
 //

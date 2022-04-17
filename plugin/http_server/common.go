@@ -111,7 +111,7 @@ func (hh *HttpApiServer) LoadNewestInEnd(uuid string) error {
 	}
 	// :mInEnd: {k1 :{k1:v1}, k2 :{k2:v2}} --> InEnd: [{k1:v1}, {k2:v2}]
 	var dataModelsMap map[string]typex.XDataModel
-	if err1 := json.Unmarshal([]byte(mInEnd.DataModels), &dataModelsMap); err1 != nil {
+	if err1 := json.Unmarshal([]byte(mInEnd.XDataModels), &dataModelsMap); err1 != nil {
 		log.Error(err1)
 		return err1
 	}

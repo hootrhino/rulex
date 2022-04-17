@@ -50,7 +50,7 @@ func RunRulex(dbPath string, iniPath string) {
 		}
 		// :mInEnd: {k1 :{k1:v1}, k2 :{k2:v2}} --> InEnd: [{k1:v1}, {k2:v2}]
 		var dataModelsMap map[string]typex.XDataModel
-		if err := json.Unmarshal([]byte(minEnd.DataModels), &dataModelsMap); err != nil {
+		if err := json.Unmarshal([]byte(minEnd.XDataModels), &dataModelsMap); err != nil {
 			log.Error(err)
 		}
 		in := typex.NewInEnd(minEnd.Type, minEnd.Name, minEnd.Description, config)

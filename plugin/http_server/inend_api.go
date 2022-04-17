@@ -75,7 +75,7 @@ func CreateInend(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 			Name:        form.Name,
 			Description: form.Description,
 			Config:      string(configJson),
-			DataModels:  string(dataModelsJson),
+			XDataModels:  string(dataModelsJson),
 		}); err != nil {
 			c.JSON(http.StatusOK, Error400(err))
 			return
@@ -94,7 +94,7 @@ func CreateInend(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 				Name:        form.Name,
 				Description: form.Description,
 				Config:      string(configJson),
-				DataModels:  string(dataModelsJson),
+				XDataModels:  string(dataModelsJson),
 			}); err != nil {
 				c.JSON(http.StatusOK, Error400(err))
 				return
@@ -157,12 +157,8 @@ func GetInEndModels(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
 	inend := e.GetInEnd(uuid)
 	if inend != nil {
-		modelsMap := inend.DataModelsMap
-		models := make([]typex.XDataModel, 0)
-		for _, v := range modelsMap {
-			models = append(models, v)
-		}
-		c.JSON(http.StatusOK, OkWithData(models))
+		modelsMap := inend.Source.DataModels()
+		c.JSON(http.StatusOK, OkWithData(modelsMap))
 	} else {
 		c.JSON(http.StatusOK, OkWithEmpty())
 	}

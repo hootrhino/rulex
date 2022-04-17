@@ -137,7 +137,7 @@ func (nt *natsSource) Configs() *typex.XConfig {
 }
 
 func (nt *natsSource) DataModels() []typex.XDataModel {
-	return []typex.XDataModel{}
+	return nt.XDataModels
 }
 func (nt *natsSource) Driver() typex.XExternalDriver {
 	return nil

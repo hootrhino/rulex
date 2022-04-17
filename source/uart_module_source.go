@@ -37,7 +37,7 @@ func (*uartModuleSource) Configs() *typex.XConfig {
 }
 
 func (mm *uartModuleSource) DataModels() []typex.XDataModel {
-	return []typex.XDataModel{}
+	return mm.XDataModels
 }
 
 func (u *uartModuleSource) Test(inEndId string) bool {

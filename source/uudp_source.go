@@ -90,7 +90,7 @@ func (u *udpSource) Enabled() bool {
 }
 
 func (u *udpSource) DataModels() []typex.XDataModel {
-	return []typex.XDataModel{}
+	return u.XDataModels
 }
 
 func (u *udpSource) Reload() {

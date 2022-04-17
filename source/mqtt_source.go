@@ -85,7 +85,7 @@ func (mm *mqttInEndSource) Start(cctx typex.CCTX) error {
 }
 
 func (mm *mqttInEndSource) DataModels() []typex.XDataModel {
-	return []typex.XDataModel{}
+	return mm.XDataModels
 }
 func (m *mqttInEndSource) OnStreamApproached(data string) error {
 	return nil

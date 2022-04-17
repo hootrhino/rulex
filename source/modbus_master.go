@@ -305,7 +305,7 @@ func (m *modbusMasterSource) Enabled() bool {
 }
 
 func (m *modbusMasterSource) DataModels() []typex.XDataModel {
-	return []typex.XDataModel{}
+	return m.XDataModels
 }
 
 func (m *modbusMasterSource) Reload() {

@@ -41,7 +41,7 @@ type MInEnd struct {
 	Name        string `gorm:"not null"`
 	Description string
 	Config      string
-	DataModels  string
+	XDataModels string
 }
 
 type MOutEnd struct {

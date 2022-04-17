@@ -78,7 +78,7 @@ func (mm *mqttOutEndTarget) Start(cctx typex.CCTX) error {
 }
 
 func (mm *mqttOutEndTarget) DataModels() []typex.XDataModel {
-	return []typex.XDataModel{}
+	return mm.XDataModels
 }
 func (m *mqttOutEndTarget) OnStreamApproached(data string) error {
 	return nil

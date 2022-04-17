@@ -239,7 +239,7 @@ func (s *snmpSource) Details() *typex.InEnd {
 }
 
 func (s *snmpSource) DataModels() []typex.XDataModel {
-	return []typex.XDataModel{}
+	return s.XDataModels
 }
 
 func (s *snmpSource) Reload() {

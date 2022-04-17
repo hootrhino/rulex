@@ -46,6 +46,7 @@ func (hh *httpInEndSource) Start(cctx typex.CCTX) error {
 	if err := utils.BindSourceConfig(config, &mainConfig); err != nil {
 		return err
 	}
+	hh.XDataModels = mainConfig.DataModels
 	hh.engine.POST("/in", func(c *gin.Context) {
 		type Form struct {
 			Data string
@@ -79,7 +80,7 @@ func (hh *httpInEndSource) Start(cctx typex.CCTX) error {
 
 //
 func (mm *httpInEndSource) DataModels() []typex.XDataModel {
-	return []typex.XDataModel{}
+	return mm.XDataModels
 }
 
 //
