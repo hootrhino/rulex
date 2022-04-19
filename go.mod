@@ -53,4 +53,5 @@ require (
 	gopkg.in/square/go-jose.v2 v2.6.0
 	gorm.io/driver/sqlite v1.2.6
 	gorm.io/gorm v1.22.5
+	tinygo.org/x/bluetooth v0.4.0
 )
