@@ -85,6 +85,7 @@ func callLuaFunc(vm *lua.LState, callable *lua.LFunction, args ...lua.LValue) ([
 		coroutine, _ := vm.NewThread()
 		//
 		// callback return value :lValues =[bool, T]
+		// TODO 这里还有个问题：Resume 是异步的，这样会导致数据数据乱了，后期准备重构成 call 形式
 		//
 		state, err, lValues := vm.Resume(coroutine, callable, args...)
 		if state == lua.ResumeOK {

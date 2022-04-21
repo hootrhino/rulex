@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math/rand"
 	"rulex/core"
 	"rulex/engine"
 	httpserver "rulex/plugin/http_server"
@@ -78,7 +79,7 @@ func Test_data_to_tdengine(t *testing.T) {
 		"Test_data_to_tdengine",
 		"Test_data_to_tdengine",
 		map[string]interface{}{
-			"fqdn":           "106.15.225.172",
+			"fqdn":           "10.55.16.241",
 			"port":           6041,
 			"username":       "root",
 			"password":       "taosdata",
@@ -99,7 +100,7 @@ func Test_data_to_tdengine(t *testing.T) {
 				local t = rulexlib:J2T(data)
 				local Result = rulexlib:DataToTdEngine('$$UUID', string.format("%d, %d, %d, %d", t['co2'], t['hum'], t['lex'], t['temp']))
 				print("rulexlib:DataToTdEngine Result", Result==nil)
-				return true, data
+				return false, data
 			end
 		}`,
 		"$$UUID",
@@ -127,18 +128,18 @@ func Test_data_to_tdengine(t *testing.T) {
 	}
 	defer conn.Close()
 	client := rulexrpc.NewRulexRpcClient(conn)
-
-	for i := 0; i < 100; i++ {
+	rand.Seed(time.Now().Unix())
+	for i := 0; i < 2; i++ {
 		resp, err := client.Work(context.Background(), &rulexrpc.Data{
-			Value: fmt.Sprintf(`{"co2":%v,"hum":30,"lex":22,"temp":100}`, i),
+			Value: fmt.Sprintf(`{"co2":%v,"hum":%v,"lex":%v,"temp":%v}`, rand.Int63n(100), rand.Int63n(100), rand.Int63n(100), rand.Int63n(100)),
 		})
 		if err != nil {
 			t.Error(err)
 		}
-		t.Logf("Rulex Rpc Call Result ====>>: %v", resp.GetMessage())
+		t.Logf("Rulex Rpc Call Result ====>>: %v --%v", resp.GetMessage(), i)
 
 	}
 
-	time.Sleep(30 * time.Second)
+	time.Sleep(3 * time.Second)
 	engine.Stop()
 }
