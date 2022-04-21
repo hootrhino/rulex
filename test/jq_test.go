@@ -49,10 +49,14 @@ func Test_JQ_Parse(t *testing.T) {
 		`
 		Actions = {
 			function(data)
-				local V2 = rulexlib:JQ(".[] | select(.hum < 20)", data)
-				print("rulexlib:JQ(".[] | select(.hum < 20)", data))
 				return true, data
-			end
+			end,
+			function(data)
+				return true, data
+			end,
+			function(data)
+				return true, data
+			end,
 		}`,
 		`function Failed(error) print("[LUA Failed Callback]", error) end`)
 	if err := engine.LoadRule(rule); err != nil {
@@ -66,7 +70,7 @@ func Test_JQ_Parse(t *testing.T) {
 	client := rulexrpc.NewRulexRpcClient(conn)
 
 	resp, err := client.Work(context.Background(), &rulexrpc.Data{
-		Value: `[{"co2":10,"hum":30,"lex":22,"temp":100},{"co2":100,"hum":300,"lex":220,"temp":1000},{"co2":1000,"hum":3000,"lex":2200,"temp":10000}]`,
+		Value: `[{"co2":10,"hum":30,"lex":22,"temp":100}]`,
 	})
 	if err != nil {
 		log.Error("grpc.Dial err: %v", err)
