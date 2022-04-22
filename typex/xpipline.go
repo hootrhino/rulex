@@ -2,7 +2,6 @@ package typex
 
 import (
 	"errors"
-	"log"
 	"strconv"
 
 	lua "github.com/yuin/gopher-lua"
@@ -82,17 +81,20 @@ func callLuaFunc(vm *lua.LState, callable *lua.LFunction, args ...lua.LValue) ([
 		Fn:      callable,
 		NRet:    2,
 		Protect: true,
-	})
+	}, args...)
 	if err != nil {
 		return nil, errors.New("call function error")
 	}
-	log.Println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-	log.Printf("Args >>>   %v", args)
-	log.Printf("Get(-1) >>>   %v", vm.Get(-1))
-	log.Printf("Get(-2) >>>   %v", vm.Get(-2))
-	log.Printf("Get(-3) >>>   %v", vm.Get(-3))
-	log.Println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
-
-	return []lua.LValue{vm.Get(-2), lua.LString("ok")}, nil
+	// log.Println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+	// // log.Printf("Args    >>>   %v", args)
+	// log.Printf("Get(-1) >>>   %v", vm.Get(-1))
+	// log.Printf("Get(-2) >>>   %v", vm.Get(-2))
+	// log.Printf("Get(-3) >>>   %v", vm.Get(-3))
+	// log.Printf("Get(-4) >>>   %v", vm.Get(-4))
+	// log.Println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
+	vm.Pop(-1)
+	vm.Pop(-2)
+	vm.Pop(-3)
+	return []lua.LValue{vm.Get(-2), vm.Get(-1)}, nil
 
 }

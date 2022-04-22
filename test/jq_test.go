@@ -49,12 +49,15 @@ func Test_JQ_Parse(t *testing.T) {
 		`
 		Actions = {
 			function(data)
+			    print(data)
+				return true, '[1,2,3,4]'
+			end,
+			function(data)
+			print(data)
 				return true, data
 			end,
 			function(data)
-				return true, data
-			end,
-			function(data)
+			print(data)
 				return true, data
 			end,
 		}`,
