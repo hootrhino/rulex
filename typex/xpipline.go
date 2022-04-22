@@ -22,32 +22,30 @@ func pipLine(vm *lua.LState, acc int, funcs map[string]*lua.LFunction, arg lua.L
 		values, err0 := callLuaFunc(vm, funcs[strconv.Itoa(acc)], arg)
 		if err0 != nil {
 			return nil, err0
-		} else {
-			return validate(values, func() (lua.LValue, error) {
-				result := values[1]
-				return result, nil
-			})
 		}
-	} else {
-		values, err0 := callLuaFunc(vm, funcs[strconv.Itoa(acc)], arg)
-		if err0 != nil {
-			return nil, err0
-		} else {
-			return validate(values, func() (lua.LValue, error) {
-				next := values[0]
-				result := values[1]
-				if next.Type() == lua.LTBool {
-					if next.(lua.LBool) {
-						return pipLine(vm, acc+1, funcs, result)
-					} else {
-						return result, nil
-					}
-				} else {
-					return nil, errors.New("'Action' callback first argument is must be bool")
-				}
-			})
-		}
+		return validate(values, func() (lua.LValue, error) {
+			result := values[1]
+			return result, nil
+		})
+
 	}
+	values, err0 := callLuaFunc(vm, funcs[strconv.Itoa(acc)], arg)
+	if err0 != nil {
+		return nil, err0
+	}
+	return validate(values, func() (lua.LValue, error) {
+		next := values[0]
+		result := values[1]
+		if next.Type() == lua.LTBool {
+			if next.(lua.LBool) {
+				return pipLine(vm, acc+1, funcs, result)
+			}
+			return result, nil
+		}
+		return nil, errors.New("'Action' callback first argument is must be bool")
+
+	})
+
 }
 
 //
@@ -78,22 +76,18 @@ func Execute(vm *lua.LState, k string, args ...lua.LValue) (interface{}, error) 
 func callLuaFunc(vm *lua.LState, callable *lua.LFunction, args ...lua.LValue) ([]lua.LValue, error) {
 	if callable == nil {
 		return nil, errors.New("callable function is not exists")
-	} else {
-		// TODO:
-		// 此处有很大的优化空间，目前是解释执行，后期专门重构一下换成编译执行来提高效率
-		//
-		coroutine, _ := vm.NewThread()
-		//
-		// callback return value :lValues =[bool, T]
-		// TODO 这里还有个问题：Resume 是异步的，这样会导致数据数据乱了，后期准备重构成 call 形式
-		//
-		state, err, lValues := vm.Resume(coroutine, callable, args...)
-		if state == lua.ResumeOK {
-			//
-			// only need T
-			//
-			return lValues[:2], nil
-		}
-		return nil, errors.New("lua run error, message is: " + err.Error())
 	}
+	err := vm.CallByParam(lua.P{
+		Fn:      callable,
+		NRet:    2,
+		Protect: true,
+	}, args...)
+	if err != nil {
+		return nil, errors.New("call function error")
+	}
+	vm.Pop(-1)
+	vm.Pop(-2)
+	vm.Pop(-3)
+	return []lua.LValue{vm.Get(-2), vm.Get(-1)}, nil
+
 }

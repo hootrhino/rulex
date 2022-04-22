@@ -16,7 +16,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-func Test_JQ_Parse(t *testing.T) {
+func Test_DataToMongo(t *testing.T) {
 	mainConfig := core.InitGlobalConfig("conf/rulex.ini")
 	core.StartStore(core.GlobalConfig.MaxQueueSize)
 	core.StartLogWatcher(core.GlobalConfig.LogPath)
@@ -39,7 +39,18 @@ func Test_JQ_Parse(t *testing.T) {
 	if err := engine.LoadInEnd(grpcInend); err != nil {
 		log.Error("Rule load failed:", err)
 	}
-
+	//
+	mongoOut := typex.NewOutEnd("MONGO_SINGLE",
+		"MONGO_SINGLE",
+		"MONGO_SINGLE", map[string]interface{}{
+			"mongoUrl":   "mongodb://admin:123456@127.0.0.1:27017/?connect=direct",
+			"database":   "gateway_test",
+			"collection": "env",
+		})
+	mongoOut.UUID = "mongoOut"
+	if err := engine.LoadOutEnd(mongoOut); err != nil {
+		log.Fatal(err)
+	}
 	rule := typex.NewRule(engine,
 		"uuid",
 		"Just a test",
@@ -49,19 +60,10 @@ func Test_JQ_Parse(t *testing.T) {
 		`
 		Actions = {
 			function(data)
-				print("[LUA rulexlib:J2T] ==>",rulexlib:J2T(data))
-				print("[LUA rulexlib:T2J] ==>",rulexlib:T2J(rulexlib:J2T(data)))
-				print("[LUA rulexlib:T2J] ==>",rulexlib:T2J(rulexlib:J2T(data)) == data)
+			    local r = rulexlib:DataToMongo('mongoOut', data)
+				print("[LUA DataToMongo] ==>", r)
 				return true, data
-			end,
-			function(data)
-			print(data)
-				return true, data
-			end,
-			function(data)
-			print(data)
-				return true, data
-			end,
+			end
 		}`,
 		`function Failed(error) print("[LUA Failed Callback]", error) end`)
 	if err := engine.LoadRule(rule); err != nil {
