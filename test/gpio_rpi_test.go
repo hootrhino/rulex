@@ -3,7 +3,10 @@ package test
 import (
 	"fmt"
 	"os"
+	"os/signal"
+	"syscall"
 	"testing"
+	"time"
 
 	"github.com/warthog618/config"
 	"github.com/warthog618/config/blob"
