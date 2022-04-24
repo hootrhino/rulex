@@ -28,6 +28,7 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/mitchellh/mapstructure v1.4.3
 	github.com/mochi-co/mqtt v1.1.1
+	github.com/muka/go-bluetooth v0.0.0-20210812063148-b6c83362e27d
 	github.com/nats-io/nats-server/v2 v2.7.2 // indirect
 	github.com/nats-io/nats.go v1.13.1-0.20220121202836-972a071d373d
 	github.com/ngaut/log v0.0.0-20210830112240-0124ec040aeb
@@ -35,9 +36,13 @@ require (
 	github.com/robinson/gos7 v0.0.0-20211020181838-a2b780484319
 	github.com/shirou/gopsutil v2.21.11+incompatible
 	github.com/shirou/gopsutil/v3 v3.22.1
+	github.com/sirupsen/logrus v1.6.0
+	github.com/suapapa/go_eddystone v1.3.1
 	github.com/tarm/serial v0.0.0-20180830185346-98f6abe2eb07 // indirect
 	github.com/thinkgos/go-iecp5 v1.2.0
 	github.com/urfave/cli/v2 v2.3.0
+	github.com/warthog618/config v0.4.1
+	github.com/warthog618/gpiod v0.8.0
 	github.com/wwhai/ntp v0.3.0
 	github.com/yuin/gopher-lua v0.0.0-20210529063254-f4c35e4016d9
 	go.bug.st/serial v1.3.4
@@ -53,5 +58,4 @@ require (
 	gopkg.in/square/go-jose.v2 v2.6.0
 	gorm.io/driver/sqlite v1.2.6
 	gorm.io/gorm v1.22.5
-	tinygo.org/x/bluetooth v0.4.0
 )
