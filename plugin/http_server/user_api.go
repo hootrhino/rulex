@@ -144,6 +144,11 @@ type JwtClaims struct {
 	jwt.StandardClaims
 }
 
+/*
+*
+* 生成Token
+*
+ */
 func generateToken(username string) (string, error) {
 	claims := &JwtClaims{
 		Username: username,
@@ -155,7 +160,16 @@ func generateToken(username string) (string, error) {
 	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString([]byte(SECRETKEY))
 	return token, err
 }
+
+/*
+*
+* 解析Token
+*
+ */
 func parseToken(tokenString string) (*JwtClaims, error) {
+	if tokenString == "" {
+		return nil, fmt.Errorf("expected token string on headers")
+	}
 
 	token, err := jwt.ParseWithClaims(tokenString, &JwtClaims{},
 		func(token *jwt.Token) (interface{}, error) {
