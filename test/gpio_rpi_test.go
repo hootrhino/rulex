@@ -1,16 +1,9 @@
-// SPDX-FileCopyrightText: 2020 Kent Gibson <warthog618@gmail.com>
-//
-// SPDX-License-Identifier: MIT
-
-//go:build linux
-// +build linux
-
-// A simple example that toggles an output pin.
 package test
 
 import (
 	"fmt"
 	"os"
+	"testing"
 
 	"github.com/warthog618/config"
 	"github.com/warthog618/config/blob"
