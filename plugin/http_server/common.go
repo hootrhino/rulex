@@ -36,6 +36,9 @@ func OkWithEmpty() Result {
 func OkWithData(data interface{}) Result {
 	return Result{200, "操作成功", data}
 }
+func Error(s string) R {
+	return R{4001, s}
+}
 func Error400(e error) R {
 	return R{4001, e.Error()}
 }

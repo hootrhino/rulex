@@ -7,6 +7,7 @@ require (
 	github.com/Kowiste/ProfinetServer v0.0.0-20200929093941-9c422ae1f008
 	github.com/adrianmo/go-nmea v1.6.0
 	github.com/cjoudrey/gluaurl v0.0.0-20161028222611-31cbb9bef199
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/eclipse/paho.mqtt.golang v1.3.5
 	github.com/emirpasic/gods v1.12.0
 	github.com/gin-gonic/gin v1.7.7
