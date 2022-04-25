@@ -38,12 +38,11 @@ require (
 	github.com/shirou/gopsutil v2.21.11+incompatible
 	github.com/shirou/gopsutil/v3 v3.22.1
 	github.com/sirupsen/logrus v1.6.0
+	github.com/stianeikeland/go-rpio/v4 v4.6.0
 	github.com/suapapa/go_eddystone v1.3.1
 	github.com/tarm/serial v0.0.0-20180830185346-98f6abe2eb07 // indirect
 	github.com/thinkgos/go-iecp5 v1.2.0
 	github.com/urfave/cli/v2 v2.3.0
-	github.com/warthog618/config v0.4.1
-	github.com/warthog618/gpiod v0.8.0
 	github.com/wwhai/ntp v0.3.0
 	github.com/yuin/gopher-lua v0.0.0-20210529063254-f4c35e4016d9
 	go.bug.st/serial v1.3.4
