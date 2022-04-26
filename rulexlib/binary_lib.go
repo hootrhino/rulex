@@ -419,3 +419,29 @@ func reverse(runes []rune, length int) {
 func isMark(r rune) bool {
 	return unicode.Is(unicode.Mn, r) || unicode.Is(unicode.Me, r) || unicode.Is(unicode.Mc, r)
 }
+
+/*
+*
+* Hex to number
+*
+ */
+func HToN(rx typex.RuleX) func(*lua.LState) int {
+	return func(l *lua.LState) int {
+		s := l.ToString(2)
+		if iv, err := HexToNumber(s); err != nil {
+			log.Error(err)
+			l.Push(lua.LNil)
+		} else {
+			l.Push(lua.LNumber(iv))
+		}
+		return 1
+	}
+}
+
+func HexToNumber(s string) (int64, error) {
+	iv, err := strconv.ParseInt(s, 16, len(s)*8)
+	if err != nil {
+		return 0, err
+	}
+	return iv, nil
+}

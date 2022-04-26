@@ -2,6 +2,7 @@ package source
 
 import (
 	"context"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -278,7 +279,8 @@ func (m *modbusMasterSource) Start(cctx typex.CCTX) error {
 								Function: rp.Function,
 								Address:  rp.Address,
 								Quantity: rp.Quantity,
-								Value:    string(results),
+								// 默认将Modbus数据编码成十六进制格式
+								Value: hex.EncodeToString(results),
 							}
 							bytes, _ := json.Marshal(data)
 							m.RuleEngine.Work(m.RuleEngine.GetInEnd(m.PointId), string(bytes))
