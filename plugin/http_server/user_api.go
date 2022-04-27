@@ -4,7 +4,6 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
-	"net/http"
 	"rulex/core"
 	"rulex/typex"
 	"time"
@@ -22,7 +21,7 @@ const (
 //
 func Users(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	users := hh.AllMUser()
-	c.JSON(http.StatusOK, OkWithData(users))
+	c.JSON(200, OkWithData(users))
 }
 
 //
@@ -37,7 +36,7 @@ func CreateUser(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	}
 	form := Form{}
 	if err := c.ShouldBindJSON(&form); err != nil {
-		c.JSON(http.StatusBadRequest, Error400(err))
+		c.JSON(200, Error400(err))
 		return
 	}
 
@@ -48,10 +47,10 @@ func CreateUser(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 			Password:    md5Hash(form.Password),
 			Description: form.Description,
 		})
-		c.JSON(http.StatusOK, Ok())
+		c.JSON(200, Ok())
 		return
 	}
-	c.JSON(http.StatusBadRequest, Error("用户名已存在:"+form.Username))
+	c.JSON(200, Error("用户名已存在:"+form.Username))
 }
 
 /*
@@ -76,18 +75,18 @@ func Login(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	}
 	var u _user
 	if err := c.BindJSON(&u); err != nil {
-		c.JSON(http.StatusBadRequest, Error400(err))
+		c.JSON(200, Error400(err))
 		return
 	}
 	if _, err := hh.GetMUser(u.Username, md5Hash(u.Password)); err != nil {
-		c.JSON(http.StatusBadRequest, Error400(err))
+		c.JSON(200, Error400(err))
 		return
 	}
 	if token, err := generateToken(u.Username); err != nil {
-		c.JSON(http.StatusBadRequest, Error400(err))
+		c.JSON(200, Error400(err))
 		return
 	} else {
-		c.JSON(http.StatusOK, OkWithData(token))
+		c.JSON(200, OkWithData(token))
 	}
 }
 
@@ -107,15 +106,15 @@ func Logs(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 			logs = append(logs, Data{i, s})
 		}
 	}
-	c.JSON(http.StatusOK, Result{
-		Code: http.StatusOK,
+	c.JSON(200, Result{
+		Code: 200,
 		Msg:  SUCCESS,
 		Data: logs,
 	})
 }
 
 func LogOut(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
-	c.JSON(http.StatusOK, Ok())
+	c.JSON(200, Ok())
 }
 
 /*
@@ -126,10 +125,10 @@ func LogOut(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 func Info(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	token := c.GetHeader("token")
 	if claims, err := parseToken(token); err != nil {
-		c.JSON(http.StatusBadRequest, Error400(err))
+		c.JSON(200, Error400(err))
 		return
 	} else {
-		c.JSON(http.StatusOK, OkWithData(map[string]interface{}{
+		c.JSON(200, OkWithData(map[string]interface{}{
 			"token":  token,
 			"avatar": "rulex",
 			"name":   claims.Username,

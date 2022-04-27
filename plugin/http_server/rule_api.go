@@ -3,7 +3,6 @@ package httpserver
 import (
 	"errors"
 	"fmt"
-	"net/http"
 	"rulex/core"
 	"rulex/typex"
 	"rulex/utils"
@@ -24,14 +23,14 @@ func Rules(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 			data = append(data, value)
 			return true
 		})
-		c.JSON(http.StatusOK, Result{
-			Code: http.StatusOK,
+		c.JSON(200, Result{
+			Code: 200,
 			Msg:  SUCCESS,
 			Data: data,
 		})
 	} else {
-		c.JSON(http.StatusOK, Result{
-			Code: http.StatusOK,
+		c.JSON(200, Result{
+			Code: 200,
 			Msg:  SUCCESS,
 			Data: e.GetRule(uuid),
 		})

@@ -9,11 +9,12 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
+
 /*
 *
 *
 *
-*/
+ */
 func (s *HttpApiServer) InitDb(dbPath string) {
 	var err error
 	s.sqliteDb, err = gorm.Open(sqlite.Open(dbPath), &gorm.Config{
@@ -139,7 +140,7 @@ func (s *HttpApiServer) UpdateMOutEnd(uuid string, o *MOutEnd) error {
 }
 
 //-----------------------------------------------------------------------------------
-
+// USER
 //-----------------------------------------------------------------------------------
 func (s *HttpApiServer) GetMUser(username string, password string) (*MUser, error) {
 	m := new(MUser)

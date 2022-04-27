@@ -2,7 +2,6 @@ package httpserver
 
 import (
 	"errors"
-	"net/http"
 	"rulex/typex"
 
 	"github.com/gin-gonic/gin"
@@ -84,7 +83,7 @@ func cros(c *gin.Context) {
 	}
 
 	if method == "OPTIONS" {
-		c.JSON(http.StatusOK, "")
+		c.JSON(200, "")
 	}
 	c.Next()
 }

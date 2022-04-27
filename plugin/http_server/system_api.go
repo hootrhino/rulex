@@ -35,8 +35,8 @@ func Plugins(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		data = append(data, value.(typex.XPlugin).PluginMetaInfo())
 		return true
 	})
-	c.JSON(http.StatusOK, Result{
-		Code: http.StatusOK,
+	c.JSON(200, Result{
+		Code: 200,
 		Msg:  SUCCESS,
 		Data: data,
 	})
@@ -55,8 +55,8 @@ func System(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	// For info on each, see: https://golang.org/pkg/runtime/#MemStats
 	var m runtime.MemStats
 	runtime.ReadMemStats(&m)
-	c.JSON(http.StatusOK, Result{
-		Code: http.StatusOK,
+	c.JSON(200, Result{
+		Code: 200,
 		Msg:  SUCCESS,
 		Data: gin.H{
 			"version":     e.Version().Version,
@@ -83,14 +83,14 @@ func Drivers(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		}
 		return true
 	})
-	c.JSON(http.StatusOK, OkWithData(data))
+	c.JSON(200, OkWithData(data))
 }
 
 //
 // Get statistics data
 //
 func Statistics(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
-	c.JSON(http.StatusOK, OkWithData(statistics.AllStatistics()))
+	c.JSON(200, OkWithData(statistics.AllStatistics()))
 }
 
 //
@@ -118,8 +118,8 @@ func SourceCount(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		c4 += 1
 		return true
 	})
-	c.JSON(http.StatusOK, Result{
-		Code: http.StatusOK,
+	c.JSON(200, Result{
+		Code: 200,
 		Msg:  SUCCESS,
 		Data: map[string]int{
 			"inends":  c1,
@@ -138,14 +138,14 @@ func SourceCount(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 func RType(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	Type, _ := c.GetQuery("type")
 	if Type == "" {
-		c.JSON(http.StatusOK, Result{
-			Code: http.StatusOK,
+		c.JSON(200, Result{
+			Code: 200,
 			Msg:  SUCCESS,
 			Data: source.SM.All(),
 		})
 	} else {
-		c.JSON(http.StatusOK, Result{
-			Code: http.StatusOK,
+		c.JSON(200, Result{
+			Code: 200,
 			Msg:  SUCCESS,
 			Data: source.SM.Find(typex.InEndType(Type)),
 		})
@@ -161,14 +161,14 @@ func RType(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 func TType(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	Type, _ := c.GetQuery("type")
 	if Type == "" {
-		c.JSON(http.StatusOK, Result{
-			Code: http.StatusOK,
+		c.JSON(200, Result{
+			Code: 200,
 			Msg:  SUCCESS,
 			Data: target.TM.All(),
 		})
 	} else {
-		c.JSON(http.StatusOK, Result{
-			Code: http.StatusOK,
+		c.JSON(200, Result{
+			Code: 200,
 			Msg:  SUCCESS,
 			Data: target.TM.Find(typex.TargetType(Type)),
 		})
@@ -184,15 +184,15 @@ func TType(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 func GetUarts(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	ports, err := serial.GetPortsList()
 	if err != nil {
-		c.JSON(http.StatusOK, Result{
+		c.JSON(200, Result{
 			Code: http.StatusBadGateway,
 			Msg:  err.Error(),
 			Data: ports,
 		})
 		return
 	}
-	c.JSON(http.StatusOK, Result{
-		Code: http.StatusOK,
+	c.JSON(200, Result{
+		Code: 200,
 		Msg:  SUCCESS,
 		Data: ports,
 	})
@@ -204,8 +204,8 @@ func GetUarts(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 *
  */
 func StartedAt(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
-	c.JSON(http.StatusOK, Result{
-		Code: http.StatusOK,
+	c.JSON(200, Result{
+		Code: 200,
 		Msg:  SUCCESS,
 		Data: StartedTime,
 	})
