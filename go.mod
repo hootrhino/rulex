@@ -38,7 +38,6 @@ require (
 	github.com/shirou/gopsutil v2.21.11+incompatible
 	github.com/shirou/gopsutil/v3 v3.22.1
 	github.com/sirupsen/logrus v1.6.0
-	github.com/stianeikeland/go-rpio/v4 v4.6.0
 	github.com/suapapa/go_eddystone v1.3.1
 	github.com/tarm/serial v0.0.0-20180830185346-98f6abe2eb07 // indirect
 	github.com/thinkgos/go-iecp5 v1.2.0

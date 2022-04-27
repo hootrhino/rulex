@@ -429,7 +429,6 @@ func HToN(rx typex.RuleX) func(*lua.LState) int {
 	return func(l *lua.LState) int {
 		s := l.ToString(2)
 		if iv, err := HexToNumber(s); err != nil {
-			log.Error(err)
 			l.Push(lua.LNil)
 		} else {
 			l.Push(lua.LNumber(iv))
@@ -449,7 +448,6 @@ func HsubToN(rx typex.RuleX) func(*lua.LState) int {
 		start := l.ToInt(3)
 		offset := l.ToInt(4)
 		if iv, err := HexToNumber(s[start:offset]); err != nil {
-			log.Error(err)
 			l.Push(lua.LNil)
 		} else {
 			l.Push(lua.LNumber(iv))
