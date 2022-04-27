@@ -29,6 +29,7 @@ func LoadBuildInLuaLib(e typex.RuleX, r *typex.Rule) {
 	r.AddLib(e, "B2I64", rulexlib.ByteToInt64(e))
 	r.AddLib(e, "BS2B", rulexlib.BitStringToBytes(e))
 	r.AddLib(e, "HToN", rulexlib.HToN(e))
+	r.AddLib(e, "HsubToN", rulexlib.HsubToN(e))
 	// URL处理
 	r.AddLib(e, "UrlBuild", rulexlib.UrlBuild(e))
 	r.AddLib(e, "UrlBuildQS", rulexlib.UrlBuildQS(e))

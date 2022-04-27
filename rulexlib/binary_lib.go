@@ -438,6 +438,26 @@ func HToN(rx typex.RuleX) func(*lua.LState) int {
 	}
 }
 
+/*
+*
+* 取某个Hex字符串的子串转换成数字
+*
+ */
+func HsubToN(rx typex.RuleX) func(*lua.LState) int {
+	return func(l *lua.LState) int {
+		s := l.ToString(2)
+		start := l.ToInt(3)
+		offset := l.ToInt(4)
+		if iv, err := HexToNumber(s[start:offset]); err != nil {
+			log.Error(err)
+			l.Push(lua.LNil)
+		} else {
+			l.Push(lua.LNumber(iv))
+		}
+		return 1
+	}
+}
+
 func HexToNumber(s string) (int64, error) {
 	iv, err := strconv.ParseInt(s, 16, len(s)*8)
 	if err != nil {
