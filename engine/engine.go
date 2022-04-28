@@ -163,6 +163,9 @@ func (e *RuleEngine) LoadInEnd(in *typex.InEnd) error {
 	if in.Type == typex.RULEX_UDP {
 		return startSources(source.NewUdpInEndSource(e), in, e)
 	}
+	if in.Type == typex.RTU485_THER {
+		return startSources(source.NewRtu485THerSource(e), in, e)
+	}
 	return fmt.Errorf("unsupported InEnd type:%s", in.Type)
 }
 

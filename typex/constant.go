@@ -58,6 +58,10 @@ const (
 	// RULEX UDP 自定义简单协议
 	//
 	RULEX_UDP InEndType = "RULEX_UDP"
+	//
+	//
+	//
+	RTU485_THER InEndType = "RTU485_THER"
 )
 
 //
