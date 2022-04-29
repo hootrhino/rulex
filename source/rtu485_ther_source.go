@@ -2,7 +2,8 @@ package source
 
 import (
 	"context"
-	"encoding/hex"
+	"encoding/binary"
+	"encoding/json"
 
 	"rulex/core"
 	"rulex/driver"
@@ -24,11 +25,16 @@ type _modBusConfig struct {
 }
 
 type _rtuConfig struct {
-	Uart     string `json:"uart" validate:"required" title:"串口路径" info:"本地系统的串口路径"`
-	BaudRate int    `json:"baudRate" validate:"required" title:"波特率" info:"串口通信波特率"`
-	DataBits int    `json:"dataBits" validate:"required" title:"数据位" info:"串口通信数据位"`
-	Parity   string `json:"parity" validate:"required" title:"校验位" info:"串口通信校验位"`
-	StopBits int    `json:"stopBits" validate:"required" title:"停止位" info:"串口通信停止位"`
+	Uart     string       `json:"uart" validate:"required" title:"串口路径" info:"本地系统的串口路径"`
+	BaudRate int          `json:"baudRate" validate:"required" title:"波特率" info:"串口通信波特率"`
+	DataBits int          `json:"dataBits" validate:"required" title:"数据位" info:"串口通信数据位"`
+	Parity   typex.Parity `json:"parity" validate:"required" title:"校验位" info:"串口通信校验位"`
+	StopBits int          `json:"stopBits" validate:"required" title:"停止位" info:"串口通信停止位"`
+}
+type _data struct {
+	SlaverId    byte    `json:"slaverId"`
+	Humidity    float32 `json:"humidity"`
+	Temperature float32 `json:"temperature"`
 }
 
 //
@@ -63,24 +69,19 @@ func (m *rtu485THerSource) Start(cctx typex.CCTX) error {
 	if err := utils.BindSourceConfig(config, &mainConfig); err != nil {
 		return err
 	}
-
 	var rtuConfig rtuConfig
 	if errs := mapstructure.Decode(mainConfig.Config, &rtuConfig); errs != nil {
 		log.Error(errs)
 		return errs
 	}
 	handler := modbus.NewRTUClientHandler(rtuConfig.Uart)
+	// handler.Logger = golog.New(os.Stdout, "485THerSource: ", log.LstdFlags)
 	handler.BaudRate = rtuConfig.BaudRate
-	//
-	// rtuConfig
-	//
 	handler.DataBits = rtuConfig.DataBits
 	handler.Parity = rtuConfig.Parity
 	handler.StopBits = rtuConfig.StopBits
-	//---------
 	handler.SlaveId = mainConfig.SlaverId
 	handler.Timeout = time.Duration(*mainConfig.Timeout) * time.Second
-	//---------
 	if err := handler.Connect(); err != nil {
 		return err
 	}
@@ -106,12 +107,16 @@ func (m *rtu485THerSource) Start(cctx typex.CCTX) error {
 				{
 					n, err := rtuDriver.Read(buffer)
 					if err != nil {
-						log.Error(err)
+						log.Error("uart read error: ", err, ", may should check uart config if baud rate is correct?")
 						_sourceState = typex.DOWN
 						return
 					}
-					// 直接把Hex数据返回出去
-					m.RuleEngine.Work(m.RuleEngine.GetInEnd(m.PointId), hex.EncodeToString(buffer[:n]))
+					b, _ := json.Marshal(_data{
+						SlaverId:    mainConfig.SlaverId,
+						Humidity:    float32(binary.BigEndian.Uint16(buffer[0:2])) * 0.1,
+						Temperature: float32(binary.BigEndian.Uint16(buffer[2:n])) * 0.1,
+					})
+					m.RuleEngine.Work(m.RuleEngine.GetInEnd(m.PointId), string(b))
 				}
 
 			}

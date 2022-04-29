@@ -95,3 +95,16 @@ const (
 	//
 	GRPC_CODEC_TARGET TargetType = "GRPC_CODEC_TARGET"
 )
+
+/*
+*
+* 串口校验形式
+*
+ */
+type Parity string
+
+const (
+	ODD  Parity = "O" // 奇校验
+	EVEN Parity = "E" // 偶校验
+	NONE Parity = "N" // 不校验
+)
