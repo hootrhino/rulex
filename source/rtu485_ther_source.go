@@ -18,10 +18,9 @@ import (
 )
 
 type _modBusConfig struct {
-	Timeout   *int       `json:"timeout" validate:"required" title:"连接超时" info:""`
-	SlaverId  byte       `json:"slaverId" validate:"required" title:"TCP端口" info:""`
-	Frequency *int64     `json:"frequency" validate:"required" title:"采集频率" info:""`
-	Config    _rtuConfig `json:"config" validate:"required" title:"工作模式" info:""`
+	Timeout  *int       `json:"timeout" validate:"required" title:"连接超时" info:""`
+	SlaverId byte       `json:"slaverId" validate:"required" title:"TCP端口" info:""`
+	Config   _rtuConfig `json:"config" validate:"required" title:"工作模式" info:""`
 }
 
 type _rtuConfig struct {
@@ -76,10 +75,11 @@ func (m *rtu485THerSource) Start(cctx typex.CCTX) error {
 	}
 	handler := modbus.NewRTUClientHandler(rtuConfig.Uart)
 	// handler.Logger = golog.New(os.Stdout, "485THerSource: ", log.LstdFlags)
-	handler.BaudRate = rtuConfig.BaudRate
-	handler.DataBits = rtuConfig.DataBits
-	handler.Parity = rtuConfig.Parity
-	handler.StopBits = rtuConfig.StopBits
+	// 串口配置固定写法
+	handler.BaudRate = 4800
+	handler.DataBits = 8
+	handler.Parity = "N"
+	handler.StopBits = 1
 	handler.SlaveId = mainConfig.SlaverId
 	handler.Timeout = time.Duration(*mainConfig.Timeout) * time.Second
 	if err := handler.Connect(); err != nil {
@@ -91,7 +91,7 @@ func (m *rtu485THerSource) Start(cctx typex.CCTX) error {
 	// Start
 	//---------------------------------------------------------------------------------
 
-	ticker := time.NewTicker(time.Duration(*mainConfig.Frequency) * time.Second)
+	ticker := time.NewTicker(time.Duration(3) * time.Second)
 	go func(ctx context.Context, rtuDriver typex.XExternalDriver) {
 		defer ticker.Stop()
 		buffer := make([]byte, 4) //4字节数据
