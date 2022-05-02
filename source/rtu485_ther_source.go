@@ -4,7 +4,9 @@ import (
 	"context"
 	"encoding/binary"
 	"encoding/json"
+	"os"
 
+	golog "log"
 	"rulex/core"
 	"rulex/driver"
 	"rulex/typex"
@@ -42,16 +44,14 @@ type _data struct {
 
 type rtu485THerSource struct {
 	typex.XStatus
-	clients   []modbus.Client
-	clientIds []byte
-	drivers   []typex.XExternalDriver
+	client    modbus.Client
+	slaverIds []byte
+	driver    typex.XExternalDriver
 }
 
 func NewRtu485THerSource(e typex.RuleX) typex.XSource {
 	m := rtu485THerSource{}
 	m.RuleEngine = e
-	m.drivers = make([]typex.XExternalDriver, 0)
-	m.clients = make([]modbus.Client, 0)
 	return &m
 }
 func (*rtu485THerSource) Configs() *typex.XConfig {
@@ -78,7 +78,6 @@ func (m *rtu485THerSource) Start(cctx typex.CCTX) error {
 		return errs
 	}
 
-	// handler.Logger = golog.New(os.Stdout, "485THerSource: ", log.LstdFlags)
 	// 串口配置固定写法
 	handler := modbus.NewRTUClientHandler(rtuConfig.Uart)
 	handler.BaudRate = 4800
@@ -86,24 +85,19 @@ func (m *rtu485THerSource) Start(cctx typex.CCTX) error {
 	handler.Parity = "N"
 	handler.StopBits = 1
 	handler.Timeout = time.Duration(*mainConfig.Timeout) * time.Second
-	for i, sId := range mainConfig.SlaverIds {
-		handler.SlaveId = sId
-		if err := handler.Connect(); err != nil {
-			return err
-		}
-		m.clients = append(m.clients, modbus.NewClient(handler))
-		driver := driver.NewRtu485_THer_Driver(m.Details(), m.RuleEngine, m.clients[i])
-		m.drivers = append(m.drivers, driver)
-		m.clientIds = append(m.clientIds, sId)
+	handler.Logger = golog.New(os.Stdout, "485THerSource: ", log.LstdFlags)
+	if err := handler.Connect(); err != nil {
+		return err
 	}
+	m.client = modbus.NewClient(handler)
+	m.driver = driver.NewRtu485_THer_Driver(m.Details(), m.RuleEngine, m.client)
 	//---------------------------------------------------------------------------------
 	// Start
 	//---------------------------------------------------------------------------------
 
-	for i, driver := range m.drivers {
-		ticker := time.NewTicker(time.Duration(3) * time.Second)
-		// log.Debug("start driver:", i)
-		go func(ctx context.Context, idx byte, rtuDriver typex.XExternalDriver) {
+	for _, slaverId := range m.slaverIds {
+		go func(ctx context.Context, slaverId byte, rtuDriver typex.XExternalDriver, handler *modbus.RTUClientHandler) {
+			ticker := time.NewTicker(time.Duration(5) * time.Second)
 			defer ticker.Stop()
 			buffer := make([]byte, 4) //4字节数据
 			for {
@@ -116,14 +110,15 @@ func (m *rtu485THerSource) Start(cctx typex.CCTX) error {
 					}
 				default:
 					{
+						handler.SlaveId = slaverId // 配置ID
 						n, err := rtuDriver.Read(buffer)
 						if err != nil {
-							log.Error("uart read error, SlaverId: ", m.clientIds[idx], " error:", err, ", may should check uart config if baud rate is correct?")
+							log.Error("uart read error, SlaverId: ", slaverId, " error:", err, ", may should check uart config if baud rate is correct?")
 							_sourceState = typex.DOWN
 							return
 						}
 						b, _ := json.Marshal(_data{
-							SlaverId:    m.clientIds[idx],
+							SlaverId:    slaverId,
 							Humidity:    float32(binary.BigEndian.Uint16(buffer[0:2])) * 0.1,
 							Temperature: float32(binary.BigEndian.Uint16(buffer[2:n])) * 0.1,
 						})
@@ -132,7 +127,7 @@ func (m *rtu485THerSource) Start(cctx typex.CCTX) error {
 
 				}
 			}
-		}(m.Ctx, byte(i), driver)
+		}(m.Ctx, slaverId, m.driver, handler)
 	}
 
 	return nil
@@ -169,9 +164,7 @@ func (m *rtu485THerSource) Status() typex.SourceState {
 }
 
 func (m *rtu485THerSource) Stop() {
-	for _, d := range m.drivers {
-		d.Stop()
-	}
+	m.driver.Stop()
 	m.CancelCTX()
 }
 
@@ -190,8 +183,8 @@ func (m *rtu485THerSource) OnStreamApproached(data string) error {
 *
  */
 func (m *rtu485THerSource) Driver() typex.XExternalDriver {
-	if m.drivers[0] != nil {
-		return m.drivers[0]
+	if m.driver != nil {
+		return m.driver
 	} else {
 		return nil
 	}

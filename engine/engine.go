@@ -309,29 +309,27 @@ func startSource(source typex.XSource, e *RuleEngine, id string) error {
 			}
 		}
 		return err
-	} else {
-		//----------------------------------
-		// 驱动也要停了, 然后重启
-		//----------------------------------
-		if source.Driver() != nil {
-			if source.Driver().State() == typex.RUNNING {
-				source.Driver().Stop()
-			}
-			// Start driver
-			if err := source.Driver().Init(); err != nil {
-				log.Error("Driver initial error:", err)
-				return errors.New("Driver initial error:" + err.Error())
-			}
-			log.Infof("Try to start driver: [%v]", source.Driver().DriverDetail().Name)
-			if err := source.Driver().Work(); err != nil {
-				log.Error("Driver work error:", err)
-				return errors.New("Driver work error:" + err.Error())
-			}
-			log.Infof("Driver start successfully: [%v]", source.Driver().DriverDetail().Name)
-		}
-		return nil
 	}
-
+	//----------------------------------
+	// 驱动也要停了, 然后重启
+	//----------------------------------
+	if source.Driver() != nil {
+		if source.Driver().State() == typex.RUNNING {
+			source.Driver().Stop()
+		}
+		// Start driver
+		if err := source.Driver().Init(); err != nil {
+			log.Error("Driver initial error:", err)
+			return errors.New("Driver initial error:" + err.Error())
+		}
+		log.Infof("Try to start driver: [%v]", source.Driver().DriverDetail().Name)
+		if err := source.Driver().Work(); err != nil {
+			log.Error("Driver work error:", err)
+			return errors.New("Driver work error:" + err.Error())
+		}
+		log.Infof("Driver start successfully: [%v]", source.Driver().DriverDetail().Name)
+	}
+	return nil
 }
 
 //
@@ -653,10 +651,10 @@ func (e *RuleEngine) LoadHook(h typex.XHook) error {
 	value, _ := e.Hooks.Load(h.Name())
 	if value != nil {
 		return errors.New("hook have been loaded:" + h.Name())
-	} else {
-		e.Hooks.Store(h.Name(), h)
-		return nil
 	}
+	e.Hooks.Store(h.Name(), h)
+	return nil
+
 }
 
 //
@@ -681,9 +679,8 @@ func (e *RuleEngine) GetInEnd(uuid string) *typex.InEnd {
 	v, ok := (e.InEnds).Load(uuid)
 	if ok {
 		return v.(*typex.InEnd)
-	} else {
-		return nil
 	}
+	return nil
 }
 
 //
