@@ -4,9 +4,7 @@ import (
 	"context"
 	"encoding/binary"
 	"encoding/json"
-	"os"
 
-	golog "log"
 	"rulex/core"
 	"rulex/driver"
 	"rulex/typex"
@@ -85,7 +83,7 @@ func (m *rtu485THerSource) Start(cctx typex.CCTX) error {
 	handler.Parity = "N"
 	handler.StopBits = 1
 	handler.Timeout = time.Duration(*mainConfig.Timeout) * time.Second
-	handler.Logger = golog.New(os.Stdout, "485THerSource: ", log.LstdFlags)
+	// handler.Logger = golog.New(os.Stdout, "485THerSource: ", log.LstdFlags)
 	if err := handler.Connect(); err != nil {
 		return err
 	}
