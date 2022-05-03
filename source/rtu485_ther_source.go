@@ -45,6 +45,7 @@ type rtu485THerSource struct {
 	client    modbus.Client
 	slaverIds []byte
 	driver    typex.XExternalDriver
+	status    typex.SourceState
 }
 
 func NewRtu485THerSource(e typex.RuleX) typex.XSource {
@@ -64,7 +65,6 @@ func (m *rtu485THerSource) Init(inEndId string, cfg map[string]interface{}) erro
 func (m *rtu485THerSource) Start(cctx typex.CCTX) error {
 	m.Ctx = cctx.Ctx
 	m.CancelCTX = cctx.CancelCTX
-
 	config := m.RuleEngine.GetInEnd(m.PointId).Config
 	var mainConfig _modBusConfig
 	if err := utils.BindSourceConfig(config, &mainConfig); err != nil {
@@ -89,10 +89,11 @@ func (m *rtu485THerSource) Start(cctx typex.CCTX) error {
 	}
 	m.client = modbus.NewClient(handler)
 	m.driver = driver.NewRtu485_THer_Driver(m.Details(), m.RuleEngine, m.client)
+	m.slaverIds = append(m.slaverIds, mainConfig.SlaverIds...)
 	//---------------------------------------------------------------------------------
 	// Start
 	//---------------------------------------------------------------------------------
-
+	m.status = typex.UP
 	for _, slaverId := range m.slaverIds {
 		go func(ctx context.Context, slaverId byte, rtuDriver typex.XExternalDriver, handler *modbus.RTUClientHandler) {
 			ticker := time.NewTicker(time.Duration(5) * time.Second)
@@ -103,7 +104,7 @@ func (m *rtu485THerSource) Start(cctx typex.CCTX) error {
 				select {
 				case <-ctx.Done():
 					{
-						_sourceState = typex.DOWN
+						m.status = typex.DOWN
 						return
 					}
 				default:
@@ -112,7 +113,7 @@ func (m *rtu485THerSource) Start(cctx typex.CCTX) error {
 						n, err := rtuDriver.Read(buffer)
 						if err != nil {
 							log.Error("uart read error, SlaverId: ", slaverId, " error:", err, ", may should check uart config if baud rate is correct?")
-							_sourceState = typex.DOWN
+							m.status = typex.DOWN
 							return
 						}
 						b, _ := json.Marshal(_data{
@@ -137,7 +138,7 @@ func (m *rtu485THerSource) Details() *typex.InEnd {
 }
 
 func (m *rtu485THerSource) Test(inEndId string) bool {
-	return true
+	return m.status == typex.UP
 }
 
 func (m *rtu485THerSource) Enabled() bool {
@@ -157,12 +158,14 @@ func (m *rtu485THerSource) Pause() {
 }
 
 func (m *rtu485THerSource) Status() typex.SourceState {
-	return _sourceState
+	return m.status
 
 }
 
 func (m *rtu485THerSource) Stop() {
-	m.driver.Stop()
+	if m.driver != nil {
+		m.driver.Stop()
+	}
 	m.CancelCTX()
 }
 
