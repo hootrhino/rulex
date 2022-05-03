@@ -120,6 +120,7 @@ type registerParam struct {
 type registerData struct {
 	Tag      string `json:"tag" validate:"required"`      // Function
 	Function int    `json:"function" validate:"required"` // Function
+	SlaverId byte   `json:"slaverId" validate:"required"`
 	Address  uint16 `json:"address" validate:"required"`  // Address
 	Quantity uint16 `json:"quantity" validate:"required"` // Quantity
 	Value    string `json:"value" validate:"required"`    // Quantity
@@ -278,6 +279,7 @@ func (m *modbusMasterSource) Start(cctx typex.CCTX) error {
 								Tag:      rp.Tag,
 								Function: rp.Function,
 								Address:  rp.Address,
+								SlaverId: mainConfig.SlaverId,
 								Quantity: rp.Quantity,
 								// 默认将Modbus数据编码成十六进制格式
 								Value: hex.EncodeToString(results),
