@@ -123,7 +123,7 @@ func LogOut(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 *
  */
 func Info(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
-	token := c.GetHeader("token")
+	token := c.Query("token")
 	if claims, err := parseToken(token); err != nil {
 		c.JSON(200, Error400(err))
 		return
