@@ -2,7 +2,9 @@ package httpserver
 
 import (
 	"errors"
+	"net/http"
 	"rulex/typex"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/ngaut/log"
@@ -44,16 +46,33 @@ func Error400(e error) R {
 func Error500(e error) R {
 	return R{5001, e.Error()}
 }
-func Authorize() gin.HandlerFunc {
+func Authorize(hh *HttpApiServer) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		token := c.Query("token")
+		token := c.GetHeader("X-Token")
 		if token != "" {
-			// TODO add jwt Authorize support
+			// TODO add jwt Authorize
+			if claims, err := parseToken(token); err != nil {
+				c.JSON(http.StatusUnauthorized, gin.H{"msg": "No authority operate"})
+				return
+			}else{
+				var User MUser
+				if err := hh.sqliteDb.Where("Username=?", claims.Username).First(&User).Error; err != nil{
+					c.JSON(http.StatusUnauthorized, gin.H{"msg": "No authority operate"})
+					return
+				}
+				c.Next()
+			}
 			c.Next()
 		} else {
 			// c.Abort()
-			// c.JSON(http.StatusUnauthorized, gin.H{"msg": "No authority operate"})
-			c.Next()
+			// 登录的URL
+			if strings.Contains(c.Request.URL.Path, "login") {
+				c.Next()
+			}else{
+				c.JSON(http.StatusUnauthorized, gin.H{"msg": "No authority operate"})
+			}
+
+			//c.Next()
 			return
 		}
 	}

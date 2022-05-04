@@ -221,7 +221,7 @@ func (c *customFS) Open(name string) (fs.File, error) {
 }
 
 func configHttpServer(hh *HttpApiServer) {
-	hh.ginEngine.Use(Authorize())
+	hh.ginEngine.Use(Authorize(hh))
 	hh.ginEngine.Use(Cros())
 	www, err := fs.Sub(files, "www")
 
