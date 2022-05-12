@@ -58,6 +58,10 @@ const (
 	// RULEX UDP 自定义简单协议
 	//
 	RULEX_UDP InEndType = "RULEX_UDP"
+	//
+	//
+	//
+	RTU485_THER InEndType = "RTU485_THER"
 )
 
 //
@@ -90,4 +94,17 @@ const (
 	TDENGINE_TARGET TargetType = "TDENGINE"
 	//
 	GRPC_CODEC_TARGET TargetType = "GRPC_CODEC_TARGET"
+)
+
+/*
+*
+* 串口校验形式
+*
+ */
+type Parity string
+
+const (
+	ODD  Parity = "O" // 奇校验
+	EVEN Parity = "E" // 偶校验
+	NONE Parity = "N" // 不校验
 )

@@ -120,6 +120,7 @@ type registerParam struct {
 type registerData struct {
 	Tag      string `json:"tag" validate:"required"`      // Function
 	Function int    `json:"function" validate:"required"` // Function
+	SlaverId byte   `json:"slaverId" validate:"required"`
 	Address  uint16 `json:"address" validate:"required"`  // Address
 	Quantity uint16 `json:"quantity" validate:"required"` // Quantity
 	Value    string `json:"value" validate:"required"`    // Quantity
@@ -138,7 +139,7 @@ type rtuConfig struct {
 	Uart     string `json:"uart" validate:"required" title:"串口路径" info:"本地系统的串口路径"`
 	BaudRate int    `json:"baudRate" validate:"required" title:"波特率" info:"串口通信波特率"`
 	DataBits int    `json:"dataBits" validate:"required" title:"数据位" info:"串口通信数据位"`
-	Parity   string `json:"parity" validate:"required" title:"分割位" info:"串口通信分割位"`
+	Parity   string `json:"parity" validate:"required" title:"校验位" info:"串口通信分割位"`
 	StopBits int    `json:"stopBits" validate:"required" title:"停止位" info:"串口通信停止位"`
 }
 
@@ -278,6 +279,7 @@ func (m *modbusMasterSource) Start(cctx typex.CCTX) error {
 								Tag:      rp.Tag,
 								Function: rp.Function,
 								Address:  rp.Address,
+								SlaverId: mainConfig.SlaverId,
 								Quantity: rp.Quantity,
 								// 默认将Modbus数据编码成十六进制格式
 								Value: hex.EncodeToString(results),

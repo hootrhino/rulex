@@ -6,6 +6,11 @@ import (
 )
 
 /*
+#include "utils.h"
+*/
+import "C"
+
+/*
 *
 * pwd
 *
@@ -16,4 +21,8 @@ func GetPwd() string {
 		log.Fatal(err)
 	}
 	return dir
+}
+
+func GetPid() int {
+	return int(C.GetPid())
 }

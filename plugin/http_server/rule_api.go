@@ -1,7 +1,6 @@
 package httpserver
 
 import (
-	"errors"
 	"fmt"
 	"rulex/core"
 	"rulex/typex"
@@ -59,10 +58,12 @@ func CreateRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 
 	if len(form.From) > 0 {
 		for _, id := range form.From {
-			if e.GetInEnd(id).UUID == "" {
-				c.JSON(200, errors.New(`"inend not exists:" `+id))
+			in := e.GetInEnd(id)
+			if in == nil {
+				c.JSON(200, Error(`inend not exists: `+id))
 				return
 			}
+
 		}
 		// tmpRule 是一个一次性的临时rule，用来验证规则，这么做主要是为了防止真实Lua Vm 被污染
 		tmpRule := typex.NewRule(nil,
@@ -117,7 +118,7 @@ func CreateRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		return
 
 	} else {
-		c.JSON(200, Error400(errors.New("'From' must contain least one UUID")))
+		c.JSON(200, Error("'From' must contain least one UUID"))
 		return
 	}
 
@@ -191,7 +192,7 @@ func TestLuaCallback(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	}
 	value, ok := e.AllInEnd().Load(uuid)
 	if !ok {
-		c.JSON(200, Error400((fmt.Errorf("'InEnd' not exists: %v", uuid))))
+		c.JSON(200, Error(fmt.Sprintf("'InEnd' not exists: %v", uuid)))
 		return
 	}
 	_, err1 := e.Work((value).(*typex.InEnd), data)
@@ -216,7 +217,7 @@ func TestOutEndCallback(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	}
 	value, ok := e.AllOutEnd().Load(uuid)
 	if !ok {
-		c.JSON(200, Error400((fmt.Errorf("'OutEnd' not exists: %v", uuid))))
+		c.JSON(200, Error((fmt.Sprintf("'OutEnd' not exists: %v", uuid))))
 		return
 	}
 	e.PushOutQueue((value).(*typex.OutEnd), data)

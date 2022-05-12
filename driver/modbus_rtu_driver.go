@@ -50,7 +50,7 @@ func (d *modBusRtuDriver) SetState(s typex.DriverState) {
 	d.state = s
 }
 
-func (d *modBusRtuDriver) Read(_ []byte) (int, error) {
+func (d *modBusRtuDriver) Read(data []byte) (int, error) {
 	return 0, nil
 
 }
