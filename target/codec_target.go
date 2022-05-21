@@ -150,13 +150,6 @@ func (ct *codecTarget) To(data interface{}) (interface{}, error) {
 }
 
 //
-// 不经过规则引擎处理的直达数据
-//
-func (ct *codecTarget) OnStreamApproached(data string) error {
-	return nil
-}
-
-//
 // 停止资源, 用来释放资源
 //
 func (ct *codecTarget) Stop() {

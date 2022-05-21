@@ -187,12 +187,6 @@ func (s7 *siemensS7Source) Details() *typex.InEnd {
 	return s7.RuleEngine.GetInEnd(s7.PointId)
 }
 
-//
-// 不经过规则引擎处理的直达数据接口
-//
-func (s7 *siemensS7Source) OnStreamApproached(data string) error {
-	return nil
-}
 
 //
 // 驱动接口, 通常用来和硬件交互

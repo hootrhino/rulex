@@ -15,7 +15,6 @@ type XSource interface {
 	Pause()
 	Status() SourceState
 	Details() *InEnd
-	OnStreamApproached(data string) error
 	Driver() XExternalDriver
 	Topology() []TopologyPoint
 	Stop()

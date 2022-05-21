@@ -49,10 +49,7 @@ func (ht *HTTPTarget) Start(cctx typex.CCTX) error {
 	log.Info("HTTPTarget started")
 	return nil
 }
-func (ht *HTTPTarget) OnStreamApproached(data string) error {
-	_, err := utils.Post(ht.client, data, ht.url, ht.headers)
-	return err
-}
+
 func (ht *HTTPTarget) Test(outEndId string) bool {
 	return true
 }

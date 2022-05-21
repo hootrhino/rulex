@@ -267,10 +267,6 @@ func (s *snmpSource) Status() typex.SourceState {
 	}
 }
 
-func (s *snmpSource) OnStreamApproached(data string) error {
-	return nil
-}
-
 func (s *snmpSource) Stop() {
 	s.CancelCTX()
 }

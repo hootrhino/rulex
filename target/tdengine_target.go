@@ -155,12 +155,7 @@ func (td *tdEngineTarget) Details() *typex.OutEnd {
 
 }
 
-//
-// 不经过规则引擎处理的直达数据接口
-//
-func (td *tdEngineTarget) OnStreamApproached(data string) error {
-	return nil
-}
+
 
 //
 // 驱动接口, 通常用来和硬件交互

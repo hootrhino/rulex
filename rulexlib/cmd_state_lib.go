@@ -2,10 +2,8 @@ package rulexlib
 
 import (
 	"encoding/json"
-	"rulex/typex"
-
-	"github.com/ngaut/log"
 	lua "github.com/yuin/gopher-lua"
+	"rulex/typex"
 )
 
 /*
@@ -46,10 +44,4 @@ func FailedCmd(rx typex.RuleX) func(*lua.LState) int {
 	}
 }
 func write(e typex.RuleX, uuid string, incoming string) {
-	outEnd, exists := e.AllOutEnd().Load(uuid)
-	if exists {
-		(outEnd.(*typex.OutEnd)).Target.OnStreamApproached(incoming)
-	} else {
-		log.Error("OutEnd: " + uuid + " not exists")
-	}
 }

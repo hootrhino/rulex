@@ -127,6 +127,26 @@ type RuleX interface {
 	// Snapshot Dump
 	//
 	SnapshotDump() string
+	//
+	// 加载设备
+	//
+	LoadDevice(*Device) error
+	//
+	// 获取设备
+	//
+	GetDevice(string) *Device
+	//
+	// 保存设备
+	//
+	SaveDevice(*Device)
+	//
+	//
+	//
+	AllDevices() *sync.Map
+	//
+	// 删除设备
+	//
+	RemoveDevice(string)
 }
 
 //

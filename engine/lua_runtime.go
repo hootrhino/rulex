@@ -19,9 +19,6 @@ func LoadBuildInLuaLib(e typex.RuleX, r *typex.Rule) {
 	r.AddLib(e, "JQ", rulexlib.JqSelect(e))
 	// 日志
 	r.AddLib(e, "log", rulexlib.Log(e))
-	// 直达数据
-	r.AddLib(e, "WriteInStream", rulexlib.WriteInStream(e))
-	r.AddLib(e, "WriteOutStream", rulexlib.WriteOutStream(e))
 	// 二进制操作
 	r.AddLib(e, "MB", rulexlib.MatchBinary(e))
 	r.AddLib(e, "B2BS", rulexlib.ByteToBitString(e))

@@ -10,7 +10,6 @@ package typex
 //------------------------------------------------
 type XStream interface {
 	Start() error
-	OnStreamApproached(data string) error
 	State() XStatus
 	Close()
 }

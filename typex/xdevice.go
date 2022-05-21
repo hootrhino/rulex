@@ -13,30 +13,45 @@ const (
 	DEV_RUNNING DeviceState = 1
 )
 
-type DeviceInfo struct {
-	Name         string // 设备名称，例如：灯光开关
-	Type         string // 类型,一般是设备-型号，比如 ARDUINO-R3
-	ActionScript string // 当收到指令的时候响应脚本
-	Description  string // 设备描述信息
+// 设备元数据
+type Device struct {
+	UUID         string                 `json:"uuid"`
+	Name         string                 `json:"name"`         // 设备名称，例如：灯光开关
+	Type         string                 `json:"type"`         // 类型,一般是设备-型号，比如 ARDUINO-R3
+	ActionScript string                 `json:"actionScript"` // 当收到指令的时候响应脚本
+	Description  string                 `json:"description"`  // 设备描述信息
+	State        DeviceState            `json:"state"`        // 状态
+	Config       map[string]interface{} `json:"config"`       // 配置
+	Device       XDevice                `json:"_"`
 }
+
+// 设备的属性，是个描述结构
 type DeviceProperty struct {
 	Name  string
 	Type  string
 	Value interface{}
 }
-type AbstractDevice interface {
+
+//
+// 真实工作设备,即具体实现
+//
+type XDevice interface {
 	//  初始化
-	Init(config map[string]interface{})
+	Init(devId string, config map[string]interface{}) error
 	// 启动
 	Start(CCTX) error
 	// 从设备里面读数据出来
 	Read([]byte) (int, error)
 	// 把数据写入设备
 	Write([]byte) (int, error)
-	// 获取设备信息
-	Info() DeviceInfo
 	// 设备当前状态
-	State() DeviceState
+	Status() DeviceState
+	// 停止设备
+	Stop()
 	// 设备属性，是一系列属性描述
 	Property() []DeviceProperty
+	// 真实设备
+	Details() *Device
+	// 状态
+	SetState(DeviceState)
 }
