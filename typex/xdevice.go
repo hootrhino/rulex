@@ -6,7 +6,10 @@
 // 因此需要抽象出来一个层专门来描述这些设备
 package typex
 
+import "rulex/utils"
+
 type DeviceState int
+type DeviceType string
 
 const (
 	DEV_STOP    DeviceState = 0
@@ -17,12 +20,26 @@ const (
 type Device struct {
 	UUID         string                 `json:"uuid"`
 	Name         string                 `json:"name"`         // 设备名称，例如：灯光开关
-	Type         string                 `json:"type"`         // 类型,一般是设备-型号，比如 ARDUINO-R3
+	Type         DeviceType             `json:"type"`         // 类型,一般是设备-型号，比如 ARDUINO-R3
 	ActionScript string                 `json:"actionScript"` // 当收到指令的时候响应脚本
 	Description  string                 `json:"description"`  // 设备描述信息
 	State        DeviceState            `json:"state"`        // 状态
 	Config       map[string]interface{} `json:"config"`       // 配置
-	Device       XDevice                `json:"_"`
+	Device       XDevice                `json:"-"`
+}
+
+func NewDevice(t DeviceType,
+	name string,
+	description string,
+	config map[string]interface{}) *Device {
+	return &Device{
+		UUID:        utils.DeviceUuid(),
+		Name:        name,
+		Type:        t,
+		State:       DEV_STOP,
+		Description: description,
+		Config:      config,
+	}
 }
 
 // 设备的属性，是个描述结构

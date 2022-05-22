@@ -20,26 +20,17 @@ func OutEnds(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 			data = append(data, value)
 			return true
 		})
-		c.JSON(200, Result{
-			Code: 200,
-			Msg:  SUCCESS,
-			Data: data,
-		})
+		c.JSON(200, OkWithData(data))
 	} else {
-
-		c.JSON(200, Result{
-			Code: 200,
-			Msg:  SUCCESS,
-			Data: e.GetOutEnd(uuid),
-		})
+		c.JSON(200, OkWithData(e.GetOutEnd(uuid)))
 	}
 
 }
 
 //
-// Delete outend by UUID
+// Delete outEnd by UUID
 //
-func DeleteOutend(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+func DeleteOutEnd(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
 	_, err := hh.GetMOutEnd(uuid)
 	if err != nil {
@@ -94,11 +85,11 @@ func CreateOutEnd(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 			uuid = &newUUID
 		}
 	} else {
-		outend := e.GetOutEnd(form.UUID)
-		if outend != nil {
-			outend.SetState(typex.DOWN)
-			outend.Target.Reload() // 重启
-			hh.DeleteMOutEnd(outend.UUID)
+		outEnd := e.GetOutEnd(form.UUID)
+		if outEnd != nil {
+			outEnd.SetState(typex.DOWN)
+			outEnd.Target.Reload() // 重启
+			hh.DeleteMOutEnd(outEnd.UUID)
 			if err := hh.InsertMOutEnd(&MOutEnd{
 				UUID:        form.UUID,
 				Type:        form.Type,

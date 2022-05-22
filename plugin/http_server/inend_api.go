@@ -112,7 +112,7 @@ func CreateInend(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 //
 // Delete inend by UUID
 //
-func DeleteInend(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+func DeleteInEnd(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
 	_, err := hh.GetMInEnd(uuid)
 	if err != nil {

@@ -149,3 +149,23 @@ func (hh *HttpApiServer) LoadNewestOutEnd(uuid string) error {
 	}
 
 }
+
+//
+// LoadNewestDevice
+//
+func (hh *HttpApiServer) LoadNewestDevice(uuid string) error {
+	mDevice, _ := hh.GetDeviceWithUUID(uuid)
+	config := map[string]interface{}{}
+	if err := json.Unmarshal([]byte(mDevice.Config), &config); err != nil {
+		return err
+	}
+	dev := typex.NewDevice(typex.DeviceType(mDevice.Type), mDevice.Name, mDevice.Description, config)
+	// Important !!!!!!!!
+	dev.UUID = mDevice.UUID
+	if err := hh.ruleEngine.LoadDevice(dev); err != nil {
+		return err
+	} else {
+		return nil
+	}
+
+}

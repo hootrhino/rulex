@@ -61,3 +61,13 @@ type MUser struct {
 	Password    string `gorm:"not null"`
 	Description string
 }
+
+// 设备元数据
+type MDevice struct {
+	UUID         string `gorm:"not null"`
+	Name         string `gorm:"not null"`
+	Type         string `gorm:"not null"`
+	ActionScript string
+	Config       string
+	Description  string
+}

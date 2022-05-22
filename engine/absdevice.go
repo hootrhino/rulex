@@ -15,6 +15,50 @@ import (
 //--------------------------------------------------------------------------------------------------
 // Abstract device
 //--------------------------------------------------------------------------------------------------
+
+//
+// 获取设备
+//
+func (e *RuleEngine) GetDevice(id string) *typex.Device {
+	v, ok := (e.Devices).Load(id)
+	if ok {
+		return v.(*typex.Device)
+	} else {
+		return nil
+	}
+
+}
+
+//
+// 保存设备
+//
+func (e *RuleEngine) SaveDevice(dev *typex.Device) {
+	e.Devices.Store(dev.UUID, dev)
+}
+
+//
+// 获取所有外挂设备
+//
+func (e *RuleEngine) AllDevices() *sync.Map {
+	return e.Devices
+
+}
+
+//
+// 删除设备
+//
+func (e *RuleEngine) RemoveDevice(uuid string) {
+	if dev := e.GetDevice(uuid); dev != nil {
+		dev.Device.Stop()
+		e.OutEnds.Delete(uuid)
+		dev = nil
+		log.Infof("Device [%v] has been deleted", uuid)
+	}
+}
+
+//
+//
+//
 func (e *RuleEngine) LoadDevice(deviceInfo *typex.Device) error {
 	//
 	// TODO `SIMPLE` Just for development stage; it will be deleted before tag
@@ -73,46 +117,6 @@ func startDevices(abstractDevice typex.XDevice, deviceInfo *typex.Device, e *Rul
 	}(typex.GCTX)
 	log.Infof("device [%v, %v] load successfully", deviceInfo.Name, deviceInfo.UUID)
 	return nil
-}
-
-//
-// 获取设备
-//
-func (e *RuleEngine) GetDevice(id string) *typex.Device {
-	v, ok := (e.Devices).Load(id)
-	if ok {
-		return v.(*typex.Device)
-	} else {
-		return nil
-	}
-
-}
-
-//
-// 保存设备
-//
-func (e *RuleEngine) SaveDevice(dev *typex.Device) {
-	e.Devices.Store(dev.UUID, dev)
-}
-
-//
-// 获取所有外挂设备
-//
-func (e *RuleEngine) AllDevices() *sync.Map {
-	return e.Devices
-
-}
-
-//
-// 删除设备
-//
-func (e *RuleEngine) RemoveDevice(uuid string) {
-	if dev := e.GetDevice(uuid); dev != nil {
-		dev.Device.Stop()
-		e.OutEnds.Delete(uuid)
-		dev = nil
-		log.Infof("Device [%v] has been deleted", uuid)
-	}
 }
 
 //

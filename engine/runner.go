@@ -93,6 +93,24 @@ func RunRulex(dbPath string, iniPath string) {
 			log.Error("OutEnd load failed:", err)
 		}
 	}
+	// 加载设备
+	for _, mDevice := range httpServer.AllDevices() {
+		config := map[string]interface{}{}
+		if err := json.Unmarshal([]byte(mDevice.Config), &config); err != nil {
+			log.Error(err)
+		}
+		newDevice := &typex.Device{
+			UUID:         mDevice.UUID,
+			Name:         mDevice.Name,
+			Type:         typex.DeviceType(mDevice.Type),
+			ActionScript: mDevice.ActionScript,
+			Description:  mDevice.Description,
+			Config:       config,
+		}
+		if err := engine.LoadDevice(newDevice); err != nil {
+			log.Error("Device load failed:", err)
+		}
+	}
 	s := <-c
 	log.Warn("Received stop signal:", s)
 	engine.Stop()
