@@ -6,7 +6,15 @@
 // 因此需要抽象出来一个层专门来描述这些设备
 package typex
 
-import "rulex/utils"
+import (
+	"rulex/utils"
+
+	lua "github.com/yuin/gopher-lua"
+)
+
+const _VM_Registry_Size int = 1024 * 1024    // 默认堆栈大小
+const _VM_Registry_MaxSize int = 1024 * 1024 // 默认最大堆栈
+const _VM_Registry_GrowStep int = 32         // 默认CPU消耗
 
 type DeviceState int
 type DeviceType string
@@ -26,11 +34,13 @@ type Device struct {
 	State        DeviceState            `json:"state"`        // 状态
 	Config       map[string]interface{} `json:"config"`       // 配置
 	Device       XDevice                `json:"-"`
+	VM           *lua.LState            `json:"-"`
 }
 
 func NewDevice(t DeviceType,
 	name string,
 	description string,
+	actionScript string,
 	config map[string]interface{}) *Device {
 	return &Device{
 		UUID:        utils.DeviceUuid(),
@@ -39,6 +49,11 @@ func NewDevice(t DeviceType,
 		State:       DEV_STOP,
 		Description: description,
 		Config:      config,
+		VM: lua.NewState(lua.Options{
+			RegistrySize:     _VM_Registry_Size,
+			RegistryMaxSize:  _VM_Registry_MaxSize,
+			RegistryGrowStep: _VM_Registry_GrowStep,
+		}),
 	}
 }
 
@@ -58,9 +73,9 @@ type XDevice interface {
 	// 启动
 	Start(CCTX) error
 	// 从设备里面读数据出来
-	Read([]byte) (int, error)
+	OnRead([]byte) (int, error)
 	// 把数据写入设备
-	Write([]byte) (int, error)
+	OnWrite([]byte) (int, error)
 	// 设备当前状态
 	Status() DeviceState
 	// 停止设备

@@ -159,7 +159,7 @@ func (hh *HttpApiServer) LoadNewestDevice(uuid string) error {
 	if err := json.Unmarshal([]byte(mDevice.Config), &config); err != nil {
 		return err
 	}
-	dev := typex.NewDevice(typex.DeviceType(mDevice.Type), mDevice.Name, mDevice.Description, config)
+	dev := typex.NewDevice(typex.DeviceType(mDevice.Type), mDevice.Name, mDevice.Description, mDevice.ActionScript, config)
 	// Important !!!!!!!!
 	dev.UUID = mDevice.UUID
 	if err := hh.ruleEngine.LoadDevice(dev); err != nil {

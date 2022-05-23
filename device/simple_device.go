@@ -30,13 +30,13 @@ func (d *simpleDevice) Start(_ typex.CCTX) error {
 }
 
 // 从设备里面读数据出来
-func (d *simpleDevice) Read(_ []byte) (int, error) {
+func (d *simpleDevice) OnRead(_ []byte) (int, error) {
 	log.Info("simpleDevice Read")
 	return 0, nil
 }
 
 // 把数据写入设备
-func (d *simpleDevice) Write(_ []byte) (int, error) {
+func (d *simpleDevice) OnWrite(_ []byte) (int, error) {
 	log.Info("simpleDevice Write")
 	return 0, nil
 }
