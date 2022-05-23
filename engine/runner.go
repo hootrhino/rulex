@@ -70,7 +70,8 @@ func RunRulex(dbPath string, iniPath string) {
 			mRule.UUID,
 			mRule.Name,
 			mRule.Description,
-			mRule.From,
+			mRule.FromSource,
+			mRule.FromDevice,
 			mRule.Success,
 			mRule.Actions,
 			mRule.Failed)

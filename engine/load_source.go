@@ -181,7 +181,7 @@ func startSource(source typex.XSource, e *RuleEngine, id string) error {
 	//----------------------------------
 	// 检查资源 如果是启动的，先给停了
 	//----------------------------------
-	ctx, cancelCTX := context.WithCancel(typex.GCTX)
+	ctx, cancelCTX := typex.NewCCTX()
 
 	if err := source.Start(typex.CCTX{Ctx: ctx, CancelCTX: cancelCTX}); err != nil {
 		log.Error("Source start error:", err)

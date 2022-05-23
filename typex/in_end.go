@@ -10,7 +10,7 @@ type InEnd struct {
 	Type        InEndType       `json:"type"`
 	Name        string          `json:"name"`
 	Description string          `json:"description"`
-	Binds       map[string]Rule `json:"-"`
+	BindRules   map[string]Rule `json:"-"`
 	//
 	Config        map[string]interface{} `json:"config"`
 	DataModelsMap map[string]XDataModel  `json:"-"`
@@ -37,7 +37,7 @@ func NewInEnd(t string,
 		Type:        InEndType(t),
 		Name:        n,
 		Description: d,
-		Binds:       map[string]Rule{},
+		BindRules:   map[string]Rule{},
 		Config:      c,
 	}
 }

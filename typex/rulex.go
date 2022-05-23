@@ -30,6 +30,7 @@ type RuleX interface {
 	PushQueue(QueueData) error
 	PushInQueue(in *InEnd, data string) error
 	PushOutQueue(out *OutEnd, data string) error
+	PushDeviceQueue(device *Device, data string) error
 	//
 	// 执行任务
 	//
@@ -109,11 +110,12 @@ type RuleX interface {
 	//
 	// 运行 lua 回调
 	//
-	RunLuaCallbacks(*InEnd, string)
+	RunSourceCallbacks(*InEnd, string)
+	RunDeviceCallbacks(*Device, string)
 	//
 	// 运行 hook
 	//
-	RunHooks(string)
+	RunHooks(string) //TODO Hook 未来某个版本会加强,主要用来加载本地动态库
 	//
 	// 获取版本
 	//
@@ -151,7 +153,7 @@ type RuleX interface {
 
 //
 // 拓扑接入点，比如 modbus 检测点等
-// UUID: gyh9uo7uh7o67uijh
+// UUID: gyh9uo7uh7o67u
 // Name: ModbusMeter001
 // Alive: true
 // Tag: modbus

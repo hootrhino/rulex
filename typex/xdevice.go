@@ -8,13 +8,7 @@ package typex
 
 import (
 	"rulex/utils"
-
-	lua "github.com/yuin/gopher-lua"
 )
-
-const _VM_Registry_Size int = 1024 * 1024    // 默认堆栈大小
-const _VM_Registry_MaxSize int = 1024 * 1024 // 默认最大堆栈
-const _VM_Registry_GrowStep int = 32         // 默认CPU消耗
 
 type DeviceState int
 type DeviceType string
@@ -31,10 +25,10 @@ type Device struct {
 	Type         DeviceType             `json:"type"`         // 类型,一般是设备-型号，比如 ARDUINO-R3
 	ActionScript string                 `json:"actionScript"` // 当收到指令的时候响应脚本
 	Description  string                 `json:"description"`  // 设备描述信息
-	State        DeviceState            `json:"state"`        // 状态
-	Config       map[string]interface{} `json:"config"`       // 配置
+	BindRules    map[string]Rule        `json:"-"`
+	State        DeviceState            `json:"state"`  // 状态
+	Config       map[string]interface{} `json:"config"` // 配置
 	Device       XDevice                `json:"-"`
-	VM           *lua.LState            `json:"-"`
 }
 
 func NewDevice(t DeviceType,
@@ -49,11 +43,6 @@ func NewDevice(t DeviceType,
 		State:       DEV_STOP,
 		Description: description,
 		Config:      config,
-		VM: lua.NewState(lua.Options{
-			RegistrySize:     _VM_Registry_Size,
-			RegistryMaxSize:  _VM_Registry_MaxSize,
-			RegistryGrowStep: _VM_Registry_GrowStep,
-		}),
 	}
 }
 

@@ -6,6 +6,10 @@ import (
 
 type RuleStatus int
 
+const _VM_Registry_Size int = 1024 * 1024    // 默认堆栈大小
+const _VM_Registry_MaxSize int = 1024 * 1024 // 默认最大堆栈
+const _VM_Registry_GrowStep int = 32         // 默认CPU消耗
+
 //
 //  规则状态：
 //  0: 停止
@@ -21,7 +25,8 @@ type Rule struct {
 	UUID        string      `json:"uuid"`
 	Status      RuleStatus  `json:"status"`
 	Name        string      `json:"name"`
-	From        []string    `json:"from"`
+	FromSource  []string    `json:"fromSource"` // 来自数据源
+	FromDevice  []string    `json:"fromDevice"` // 来自设备
 	Actions     string      `json:"actions"`
 	Success     string      `json:"success"`
 	Failed      string      `json:"failed"`
@@ -36,7 +41,8 @@ func NewRule(e RuleX,
 	uuid string,
 	name string,
 	description string,
-	from []string,
+	fromSource []string,
+	fromDevice []string,
 	success string,
 	actions string,
 	failed string) *Rule {
@@ -44,15 +50,16 @@ func NewRule(e RuleX,
 		UUID:        uuid,
 		Name:        name,
 		Description: description,
-		From:        from,
+		FromSource:  fromSource,
+		FromDevice:  fromDevice,
 		Status:      RULE_RUNNING, // 默认为启用
 		Actions:     actions,
 		Success:     success,
 		Failed:      failed,
 		VM: lua.NewState(lua.Options{
-			RegistrySize:     1024 * 1024,
-			RegistryMaxSize:  1024 * 1024,
-			RegistryGrowStep: 32,
+			RegistrySize:     _VM_Registry_Size,
+			RegistryMaxSize:  _VM_Registry_MaxSize,
+			RegistryGrowStep: _VM_Registry_GrowStep,
 		}),
 	}
 }

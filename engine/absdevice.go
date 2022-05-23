@@ -123,7 +123,7 @@ func startDevices(abstractDevice typex.XDevice, deviceInfo *typex.Device, e *Rul
 //
 //
 func startDevice(abstractDevice typex.XDevice, e *RuleEngine, devId string) error {
-	ctx, cancelCTX := context.WithCancel(typex.GCTX)
+	ctx, cancelCTX := typex.NewCCTX()
 	if err := abstractDevice.Start(typex.CCTX{Ctx: ctx, CancelCTX: cancelCTX}); err != nil {
 		log.Error("Source start error:", err)
 		return err

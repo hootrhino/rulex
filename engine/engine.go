@@ -76,8 +76,8 @@ func (e *RuleEngine) PushQueue(qd typex.QueueData) error {
 func (e *RuleEngine) PushInQueue(in *typex.InEnd, data string) error {
 	qd := typex.QueueData{
 		E:    e,
-		In:   in,
-		Out:  nil,
+		I:    in,
+		O:    nil,
 		Data: data,
 	}
 	err := typex.DefaultDataCacheQueue.Push(qd)
@@ -92,8 +92,27 @@ func (e *RuleEngine) PushInQueue(in *typex.InEnd, data string) error {
 func (e *RuleEngine) PushOutQueue(out *typex.OutEnd, data string) error {
 	qd := typex.QueueData{
 		E:    e,
-		In:   nil,
-		Out:  out,
+		I:    nil,
+		O:    out,
+		Data: data,
+	}
+	err := typex.DefaultDataCacheQueue.Push(qd)
+	if err != nil {
+		log.Error("PushOutQueue error:", err)
+		statistics.IncInFailed()
+	} else {
+		statistics.IncIn()
+	}
+	return err
+}
+
+//
+func (e *RuleEngine) PushDeviceQueue(device *typex.Device, data string) error {
+	qd := typex.QueueData{
+		E:    e,
+		I:    nil,
+		O:    nil,
+		D:    device,
 		Data: data,
 	}
 	err := typex.DefaultDataCacheQueue.Push(qd)
@@ -187,7 +206,7 @@ func startTarget(target typex.XTarget, out *typex.OutEnd, e typex.RuleX) error {
 		return err
 	}
 	// 然后启动资源
-	ctx, cancelCTX := context.WithCancel(typex.GCTX)
+	ctx, cancelCTX := typex.NewCCTX()
 	if err := target.Start(typex.CCTX{Ctx: ctx, CancelCTX: cancelCTX}); err != nil {
 		log.Error(err)
 		e.RemoveOutEnd(out.UUID)
@@ -238,43 +257,45 @@ func tryIfRestartTarget(target typex.XTarget, e typex.RuleX, id string) {
 		target.Stop()
 		runtime.Gosched()
 		runtime.GC()
-		ctx, cancelCTX := context.WithCancel(typex.GCTX)
+		ctx, cancelCTX := typex.NewCCTX()
 		target.Start(typex.CCTX{Ctx: ctx, CancelCTX: cancelCTX})
 	} else {
 		target.Details().State = typex.UP
 	}
 }
 
-// LoadRule
+//
+// LoadRule: 每个规则都绑定了资源(FromSource)或者设备(FromDevice)
+//
 func (e *RuleEngine) LoadRule(r *typex.Rule) error {
 	if err := core.VerifyCallback(r); err != nil {
 		return err
 	}
-	// 判断是否有源ID
-	if len(r.From) > 0 {
-		for _, inUUId := range r.From {
-			// 查找输入定义的资源是否存在
-			if in := e.GetInEnd(inUUId); in != nil {
-				// Bind to rule, Key:RuleId, Value: Rule
-				// RULE_0f8619ef-3cf2-452f-8dd7-aa1db4ecfdde {
-				// ...
-				// ...
-				// }
-				// 绑定资源和规则，建立关联关系
-				(in.Binds)[r.UUID] = *r
-				//--------------------------------------------------------------
-				// Load LoadBuildInLuaLib
-				//--------------------------------------------------------------
-				LoadBuildInLuaLib(e, r)
-				//--------------------------------------------------------------
-				// Save to rules map
-				//--------------------------------------------------------------
-				e.SaveRule(r)
-				log.Infof("Rule [%v, %v] load successfully", r.Name, r.UUID)
-				return nil
-			} else {
-				return errors.New("'InEnd':" + inUUId + " is not exists")
-			}
+	e.SaveRule(r)
+	//--------------------------------------------------------------
+	// Load LoadBuildInLuaLib
+	//--------------------------------------------------------------
+	LoadBuildInLuaLib(e, r)
+	log.Infof("Rule [%v, %v] load successfully", r.Name, r.UUID)
+	// 绑定输入资源
+	for _, inUUId := range r.FromSource {
+		// 查找输入定义的资源是否存在
+		if in := e.GetInEnd(inUUId); in != nil {
+			(in.BindRules)[r.UUID] = *r
+			return nil
+		} else {
+			return errors.New("'InEnd':" + inUUId + " is not exists")
+		}
+	}
+	// 绑定设备(From 1.0.1)
+	for _, devUUId := range r.FromDevice {
+		// 查找输入定义的资源是否存在
+		if Device := e.GetDevice(devUUId); Device != nil {
+			// 绑定资源和规则，建立关联关系
+			(Device.BindRules)[r.UUID] = *r
+			return nil
+		} else {
+			return errors.New("'Device':" + devUUId + " is not exists")
 		}
 	}
 
@@ -310,9 +331,20 @@ func (e *RuleEngine) RemoveRule(ruleId string) {
 		inEnds := e.AllInEnd()
 		inEnds.Range(func(key, value interface{}) bool {
 			inEnd := value.(*typex.InEnd)
-			for _, r := range inEnd.Binds {
+			for _, r := range inEnd.BindRules {
 				if rule.UUID == r.UUID {
-					delete(inEnd.Binds, ruleId)
+					delete(inEnd.BindRules, ruleId)
+				}
+			}
+			return true
+		})
+		// 清空Device的绑定
+		Devices := e.AllDevices()
+		Devices.Range(func(key, value interface{}) bool {
+			Device := value.(*typex.Device)
+			for _, r := range Device.BindRules {
+				if rule.UUID == r.UUID {
+					delete(Device.BindRules, ruleId)
 				}
 			}
 			return true
@@ -390,8 +422,34 @@ func (e *RuleEngine) Work(in *typex.InEnd, data string) (bool, error) {
 //
 // 执行lua脚本
 //
-func (e *RuleEngine) RunLuaCallbacks(in *typex.InEnd, callbackArgs string) {
-	for _, rule := range in.Binds {
+func (e *RuleEngine) RunSourceCallbacks(in *typex.InEnd, callbackArgs string) {
+	// 执行来自资源的脚本
+	for _, rule := range in.BindRules {
+		if rule.Status == typex.RULE_RUNNING {
+			_, err := core.ExecuteActions(&rule, lua.LString(callbackArgs))
+			if err != nil {
+				log.Error("RunLuaCallbacks error:", err)
+				_, err := core.ExecuteFailed(rule.VM, lua.LString(err.Error()))
+				if err != nil {
+					log.Error(err)
+				}
+			} else {
+				_, err := core.ExecuteSuccess(rule.VM)
+				if err != nil {
+					log.Error(err)
+					return
+				}
+			}
+		}
+	}
+}
+
+//
+// 执行lua脚本
+//
+func (e *RuleEngine) RunDeviceCallbacks(Device *typex.Device, callbackArgs string) {
+	// 执行来自资源的脚本
+	for _, rule := range Device.BindRules {
 		if rule.Status == typex.RULE_RUNNING {
 			_, err := core.ExecuteActions(&rule, lua.LString(callbackArgs))
 			if err != nil {

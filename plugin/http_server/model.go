@@ -11,14 +11,24 @@ type RulexModel struct {
 	ID        uint `gorm:"primarykey"`
 	CreatedAt time.Time
 }
-type from []string
+type fromSource []string
+type fromDevice []string
 
-func (f from) Value() (driver.Value, error) {
+func (f fromSource) Value() (driver.Value, error) {
 	b, err := json.Marshal(f)
 	return string(b), err
 }
 
-func (f *from) Scan(data interface{}) error {
+func (f *fromSource) Scan(data interface{}) error {
+	return json.Unmarshal([]byte(data.(string)), f)
+}
+
+func (f fromDevice) Value() (driver.Value, error) {
+	b, err := json.Marshal(f)
+	return string(b), err
+}
+
+func (f *fromDevice) Scan(data interface{}) error {
 	return json.Unmarshal([]byte(data.(string)), f)
 }
 
@@ -27,10 +37,11 @@ type MRule struct {
 	UUID        string `gorm:"not null"`
 	Name        string `gorm:"not null"`
 	Description string
-	From        from   `gorm:"not null type:string[]"`
-	Actions     string `gorm:"not null"`
-	Success     string `gorm:"not null"`
-	Failed      string `gorm:"not null"`
+	FromSource  fromSource `gorm:"not null type:string[]"`
+	FromDevice  fromDevice `gorm:"not null type:string[]"`
+	Actions     string     `gorm:"not null"`
+	Success     string     `gorm:"not null"`
+	Failed      string     `gorm:"not null"`
 }
 
 type MInEnd struct {
