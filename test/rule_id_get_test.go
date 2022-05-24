@@ -45,6 +45,7 @@ func Test_Get_RULE_ID(t *testing.T) {
 		"Just a test",
 		"Just a test",
 		[]string{grpcInend.UUID},
+		[]string{},
 		`function Success() print("[LUA Success Callback]=> OK") end`,
 		`
 		Actions = {

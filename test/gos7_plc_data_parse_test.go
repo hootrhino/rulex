@@ -45,6 +45,7 @@ func Test_S7_PLC_Parse(t *testing.T) {
 		"Just a test",
 		"Just a test",
 		[]string{grpcInend.UUID},
+		[]string{},
 		`function Success() print("[LUA Success Callback]=> OK") end`,
 		`
 		Actions = {

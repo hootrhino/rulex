@@ -112,6 +112,7 @@ func Test_data_to_tdengine(t *testing.T) {
 		"rule1",
 		"rule1",
 		[]string{grpcInend.UUID},
+		[]string{},
 		`function Success() print("[Test_data_to_tdengine Success Callback]=> OK") end`,
 		callback,
 		`function Failed(error) print("[Test_data_to_tdengine Failed Callback]", error) end`)

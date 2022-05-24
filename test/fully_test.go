@@ -39,6 +39,7 @@ func TestFullyRun(t *testing.T) {
 		"rule1",
 		"rule1",
 		[]string{grpcInend.UUID},
+		[]string{},
 		`function Success() print("[LUA Success Callback]=> OK") end`,
 		`
 		Actions = {
@@ -86,6 +87,7 @@ func TestFullyRun(t *testing.T) {
 		"rule2",
 		"rule2",
 		[]string{grpcInend.UUID},
+		[]string{},
 		`function Success() print("[LUA Success Callback]=> OK") end`,
 		`
 		Actions = {
@@ -101,6 +103,7 @@ func TestFullyRun(t *testing.T) {
 		"rule3",
 		"rule3",
 		[]string{grpcInend.UUID},
+		[]string{},
 		`function Success() print("[LUA Success Callback]=> OK") end`,
 		`
 		Actions = {
@@ -115,6 +118,7 @@ func TestFullyRun(t *testing.T) {
 		"rule4",
 		"rule4",
 		[]string{grpcInend.UUID},
+		[]string{},
 		`function Success() print("[rulexlib:J2T(data) Success Callback]=> OK") end`,
 		`
 		Actions = {
