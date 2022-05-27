@@ -43,10 +43,6 @@ func (mm *uartModuleSource) DataModels() []typex.XDataModel {
 func (u *uartModuleSource) Test(inEndId string) bool {
 	return true
 }
-func (m *uartModuleSource) OnStreamApproached(data string) error {
-	m.uartDriver.Write([]byte(data))
-	return nil
-}
 
 func (u *uartModuleSource) Init(inEndId string, cfg map[string]interface{}) error {
 	u.PointId = inEndId

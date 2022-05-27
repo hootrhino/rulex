@@ -77,6 +77,7 @@ func TestInitData(t *testing.T) {
 		"Just a test",
 		"Just a test",
 		[]string{grpcInend.UUID},
+		[]string{},
 		`function Success() print("[LUA Success]OK") end`,
 		`
 			Actions = {
@@ -89,7 +90,8 @@ func TestInitData(t *testing.T) {
 	hh.InsertMRule(&httpserver.MRule{
 		Name:        rule.Name,
 		Description: rule.Description,
-		From:        rule.From,
+		FromSource:  rule.FromSource,
+		FromDevice:  rule.FromDevice,
 		Actions:     rule.Actions,
 		Success:     rule.Success,
 		Failed:      rule.Failed,

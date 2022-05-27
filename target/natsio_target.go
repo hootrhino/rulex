@@ -113,13 +113,6 @@ func (nt *natsTarget) To(data interface{}) (interface{}, error) {
 	return nil, errors.New("natsConnector is nil")
 }
 
-//--------------------------------------------------------
-// OnStreamApproached: 不经过规则引擎处理的直达出口端数据接口
-//--------------------------------------------------------
-func (nt *natsTarget) OnStreamApproached(data string) error {
-	return nil
-}
-
 func (nt *natsTarget) Stop() {
 	if nt.natsConnector != nil {
 		if nt.natsConnector.IsConnected() {

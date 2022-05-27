@@ -31,9 +31,7 @@ func NewMongoTarget(e typex.RuleX) typex.XTarget {
 	mg.RuleEngine = e
 	return mg
 }
-func (m *MongoTarget) OnStreamApproached(data string) error {
-	return nil
-}
+
 func (m *MongoTarget) Register(outEndId string) error {
 	m.PointId = outEndId
 	return nil

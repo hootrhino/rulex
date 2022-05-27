@@ -19,6 +19,9 @@ func InUuid() string {
 func OutUuid() string {
 	return MakeUUID("OUT")
 }
+func DeviceUuid() string {
+	return MakeUUID("DEVICE")
+}
 
 //
 // MakeUUID

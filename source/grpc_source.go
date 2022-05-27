@@ -113,9 +113,7 @@ func (g *grpcInEndSource) Enabled() bool {
 func (g *grpcInEndSource) Details() *typex.InEnd {
 	return g.RuleEngine.GetInEnd(g.PointId)
 }
-func (m *grpcInEndSource) OnStreamApproached(data string) error {
-	return nil
-}
+
 func (*grpcInEndSource) Driver() typex.XExternalDriver {
 	return nil
 }

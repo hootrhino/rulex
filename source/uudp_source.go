@@ -65,13 +65,7 @@ func (u *udpSource) Start(cctx typex.CCTX) error {
 	return nil
 
 }
-func (u *udpSource) OnStreamApproached(data string) error {
-	work, err := u.RuleEngine.Work(u.RuleEngine.GetInEnd(u.PointId), data)
-	if !work {
-		return err
-	}
-	return nil
-}
+
 func (u *udpSource) Details() *typex.InEnd {
 	return u.RuleEngine.GetInEnd(u.PointId)
 }

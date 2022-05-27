@@ -45,10 +45,6 @@ type XTarget interface {
 	//
 	To(data interface{}) (interface{}, error)
 	//
-	// 不经过规则引擎处理的直达数据
-	//
-	OnStreamApproached(data string) error
-	//
 	// 停止资源, 用来释放资源
 	//
 	Stop()

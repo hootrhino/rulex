@@ -59,10 +59,6 @@ type XSource interface {
 	//
 	Details() *InEnd
 	//
-	// 不经过规则引擎处理的直达数据接口, 此处建议处理一些直接控制源相关的业务，比如状态同步，控制底层硬件驱动等
-	//
-	OnStreamApproached(data string) error
-	//
 	// 驱动接口, 通常用来和硬件交互
 	//
 	Driver() XExternalDriver

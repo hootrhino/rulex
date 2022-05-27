@@ -156,14 +156,6 @@ func (cs *cs104Source) Details() *typex.InEnd {
 }
 
 //
-// 不经过规则引擎处理的直达数据接口
-//
-func (cs *cs104Source) OnStreamApproached(data string) error {
-	return nil
-
-}
-
-//
 // 驱动接口, 通常用来和硬件交互
 //
 func (cs *cs104Source) Driver() typex.XExternalDriver {

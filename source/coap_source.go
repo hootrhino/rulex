@@ -79,9 +79,6 @@ func (cc *coAPInEndSource) Start(cctx typex.CCTX) error {
 	log.Info("Coap source started on [udp]" + port)
 	return nil
 }
-func (m *coAPInEndSource) OnStreamApproached(data string) error {
-	return nil
-}
 
 //
 func (cc *coAPInEndSource) Stop() {

@@ -80,7 +80,7 @@ func (hh *HttpApiServer) Start() error {
 	//
 	hh.ginEngine.GET(url("plugins"), hh.addRoute(Plugins))
 	//
-	// Get system infomation
+	// Get system information
 	//
 	hh.ginEngine.GET(url("system"), hh.addRoute(System))
 	//
@@ -154,11 +154,11 @@ func (hh *HttpApiServer) Start() error {
 	//
 	// Delete inend by UUID
 	//
-	hh.ginEngine.DELETE(url("inends"), hh.addRoute(DeleteInend))
+	hh.ginEngine.DELETE(url("inends"), hh.addRoute(DeleteInEnd))
 	//
-	// Delete outend by UUID
+	// Delete outEnd by UUID
 	//
-	hh.ginEngine.DELETE(url("outends"), hh.addRoute(DeleteOutend))
+	hh.ginEngine.DELETE(url("outends"), hh.addRoute(DeleteOutEnd))
 	//
 	// Delete rule by UUID
 	//
@@ -180,6 +180,13 @@ func (hh *HttpApiServer) Start() error {
 	// 获取服务启动时间
 	//
 	hh.ginEngine.GET(url("startedAt"), hh.addRoute(StartedAt))
+	//
+	// 设备管理
+	//
+	hh.ginEngine.GET(url("devices"), hh.addRoute(Devices))
+	hh.ginEngine.POST(url("devices"), hh.addRoute(CreateDevice))
+	hh.ginEngine.PUT(url("devices"), hh.addRoute(UpdateDevice))
+	hh.ginEngine.DELETE(url("devices"), hh.addRoute(DeleteDevice))
 
 	log.Infof("Http server started on http://0.0.0.0:%v", hh.Port)
 	return nil
@@ -194,10 +201,10 @@ func (hh *HttpApiServer) Db() *gorm.DB {
 }
 func (hh *HttpApiServer) PluginMetaInfo() typex.XPluginMetaInfo {
 	return typex.XPluginMetaInfo{
-		Name:     "Http Api Server",
-		Version:  "0.0.1",
-		Homepage: "www.ezlinker.cn",
-		HelpLink: "www.ezlinker.cn",
+		Name:     "Rulex Base Api Server",
+		Version:  typex.DefaultVersion.Version,
+		Homepage: "https://rulex.pages.dev",
+		HelpLink: "https://rulex.pages.dev",
 		Author:   "wwhai",
 		Email:    "cnwwhai@gmail.com",
 		License:  "MIT",

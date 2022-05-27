@@ -80,9 +80,7 @@ func (mm *mqttOutEndTarget) Start(cctx typex.CCTX) error {
 func (mm *mqttOutEndTarget) DataModels() []typex.XDataModel {
 	return mm.XDataModels
 }
-func (m *mqttOutEndTarget) OnStreamApproached(data string) error {
-	return nil
-}
+
 func (mm *mqttOutEndTarget) Stop() {
 	mm.client.Disconnect(0)
 	mm.CancelCTX()

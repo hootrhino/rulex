@@ -27,14 +27,15 @@ type XQueue interface {
 
 //
 type QueueData struct {
-	In   *InEnd
-	Out  *OutEnd
+	I    *InEnd
+	O    *OutEnd
+	D    *Device
 	E    RuleX
 	Data string
 }
 
 func (qd QueueData) String() string {
-	return "QueueData@In:" + qd.In.UUID + ", Data:" + qd.Data
+	return "QueueData@In:" + qd.I.UUID + ", Data:" + qd.Data
 }
 
 /*
@@ -97,21 +98,27 @@ func StartQueue(maxQueueSize int) {
 			case qd := <-xQueue.GetQueue():
 				{
 					//
-					// 消息队列有2种用法:
+					// Rulex内置消息队列用法:
 					// 1 进来的数据缓存
 					// 2 出去的消息缓存
+					// 3 设备数据缓存
 					// 只需要判断 in 或者 out 是不是 nil即可
 					//
-					if qd.In != nil {
-						qd.E.RunLuaCallbacks(qd.In, qd.Data)
+					if qd.I != nil {
+						qd.E.RunSourceCallbacks(qd.I, qd.Data)
 						qd.E.RunHooks(qd.Data)
 					}
-					if qd.Out != nil {
-						v, ok := qd.E.AllOutEnd().Load(qd.Out.UUID)
+					if qd.D != nil {
+						qd.E.RunDeviceCallbacks(qd.D, qd.Data)
+						qd.E.RunHooks(qd.Data)
+					}
+					if qd.O != nil {
+						v, ok := qd.E.AllOutEnd().Load(qd.O.UUID)
 						if ok {
 							if _, err := v.(*OutEnd).Target.To(qd.Data); err != nil {
 								statistics.IncOut()
 							} else {
+								log.Error(err.Error())
 								statistics.IncOutFailed()
 							}
 

@@ -12,7 +12,7 @@ import (
 
 /*
 *
-*
+* 初始化数据库
 *
  */
 func (s *HttpApiServer) InitDb(dbPath string) {
@@ -24,10 +24,16 @@ func (s *HttpApiServer) InitDb(dbPath string) {
 		log.Error(err)
 		os.Exit(1)
 	}
-	s.sqliteDb.AutoMigrate(&MInEnd{})
-	s.sqliteDb.AutoMigrate(&MOutEnd{})
-	s.sqliteDb.AutoMigrate(&MRule{})
-	s.sqliteDb.AutoMigrate(&MUser{})
+	var err1 error = nil
+	err1 = s.sqliteDb.AutoMigrate(&MInEnd{})
+	err1 = s.sqliteDb.AutoMigrate(&MOutEnd{})
+	err1 = s.sqliteDb.AutoMigrate(&MRule{})
+	err1 = s.sqliteDb.AutoMigrate(&MUser{})
+	err1 = s.sqliteDb.AutoMigrate(&MDevice{})
+	if err1 != nil {
+		log.Error(err1)
+		os.Exit(1)
+	}
 }
 
 //-----------------------------------------------------------------------------------
@@ -188,4 +194,51 @@ func (s *HttpApiServer) AllMUser() []MUser {
 	users := []MUser{}
 	s.sqliteDb.Find(&users)
 	return users
+}
+
+func (s *HttpApiServer) AllDevices() []MDevice {
+	devices := []MDevice{}
+	s.sqliteDb.Find(&devices)
+	return devices
+}
+
+//-------------------------------------------------------------------------------------
+
+//
+// 获取设备列表
+//
+func (s *HttpApiServer) GetDeviceWithUUID(uuid string) (*MDevice, error) {
+	m := new(MDevice)
+	if err := s.sqliteDb.Where("uuid=?", uuid).First(m).Error; err != nil {
+		return nil, err
+	} else {
+		return m, nil
+	}
+}
+
+//
+// 删除设备
+//
+func (s *HttpApiServer) DeleteDevice(uuid string) error {
+	return s.sqliteDb.Where("uuid=?", uuid).Delete(&MDevice{}).Error
+}
+
+//
+// 创建设备
+//
+func (s *HttpApiServer) InsertDevice(o *MDevice) error {
+	return s.sqliteDb.Table("m_devices").Create(o).Error
+}
+
+//
+// 更新设备信息
+//
+func (s *HttpApiServer) UpdateDevice(uuid string, o *MDevice) error {
+	m := MDevice{}
+	if err := s.sqliteDb.Where("uuid=?", uuid).First(&m).Error; err != nil {
+		return err
+	} else {
+		s.sqliteDb.Model(m).Updates(*o)
+		return nil
+	}
 }

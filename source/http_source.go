@@ -112,9 +112,7 @@ func (hh *httpInEndSource) Enabled() bool {
 func (hh *httpInEndSource) Details() *typex.InEnd {
 	return hh.RuleEngine.GetInEnd(hh.PointId)
 }
-func (m *httpInEndSource) OnStreamApproached(data string) error {
-	return nil
-}
+
 func (*httpInEndSource) Driver() typex.XExternalDriver {
 	return nil
 }

@@ -114,10 +114,6 @@ func (nt *natsSource) Details() *typex.InEnd {
 // To: 数据出口
 //--------------------------------------------------------
 
-func (nt *natsSource) OnStreamApproached(data string) error {
-	return nil
-}
-
 func (nt *natsSource) Stop() {
 	if nt.natsConnector != nil {
 		if nt.natsConnector.IsConnected() {

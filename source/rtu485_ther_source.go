@@ -171,15 +171,6 @@ func (m *rtu485THerSource) Stop() {
 
 /*
 *
-* 写入值
-*
- */
-func (m *rtu485THerSource) OnStreamApproached(data string) error {
-	return nil
-}
-
-/*
-*
 * 只有RTU模式才带驱动
 *
  */
