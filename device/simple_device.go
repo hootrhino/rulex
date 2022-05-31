@@ -65,3 +65,7 @@ func (d *simpleDevice) Stop() {
 	log.Info("simpleDevice Stop")
 	d.CancelCTX()
 }
+func (d *simpleDevice) Driver() typex.XExternalDriver {
+
+	return nil
+}

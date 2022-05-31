@@ -109,22 +109,23 @@ func (m *rtu485THerSource) Start(cctx typex.CCTX) error {
 					}
 				default:
 					{
-						handler.SlaveId = slaverId // 配置ID
-						n, err := rtuDriver.Read(buffer)
-						if err != nil {
-							log.Error("uart read error, SlaverId: ", slaverId, " error:", err, ", may should check uart config if baud rate is correct?")
-							m.status = typex.DOWN
-							return
-						}
-						b, _ := json.Marshal(_data{
-							SlaverId:    slaverId,
-							Humidity:    float32(binary.BigEndian.Uint16(buffer[0:2])) * 0.1,
-							Temperature: float32(binary.BigEndian.Uint16(buffer[2:n])) * 0.1,
-						})
-						m.RuleEngine.Work(m.RuleEngine.GetInEnd(m.PointId), string(b))
+
 					}
 
 				}
+				handler.SlaveId = slaverId // 配置ID
+				n, err := rtuDriver.Read(buffer)
+				if err != nil {
+					log.Error("uart read error, SlaverId: ", slaverId, " error:", err, ", may should check uart config if baud rate is correct?")
+					m.status = typex.DOWN
+					return
+				}
+				b, _ := json.Marshal(_data{
+					SlaverId:    slaverId,
+					Humidity:    float32(binary.BigEndian.Uint16(buffer[0:2])) * 0.1,
+					Temperature: float32(binary.BigEndian.Uint16(buffer[2:n])) * 0.1,
+				})
+				m.RuleEngine.Work(m.RuleEngine.GetInEnd(m.PointId), string(b))
 			}
 		}(m.Ctx, slaverId, m.driver, handler)
 	}

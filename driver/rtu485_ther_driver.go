@@ -30,7 +30,6 @@ type rtu485_THer_Driver struct {
 
 func NewRtu485_THer_Driver(in *typex.InEnd, e typex.RuleX,
 	client modbus.Client) typex.XExternalDriver {
-
 	return &rtu485_THer_Driver{
 		state:      typex.RUNNING,
 		In:         in,

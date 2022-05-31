@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/mitchellh/mapstructure"
 )
 
 //
@@ -38,4 +39,13 @@ func BindSourceConfig(config map[string]interface{}, s interface{}) error {
 		return err
 	}
 	return nil
+}
+
+//
+// Map转成结构体
+//Decode takes an input structure and uses reflection to translate it to the output structure.
+//    output must be a pointer to a map or struct.
+//
+func MaoToTerm(input interface{}, output interface{}) error {
+	return mapstructure.Decode(input, output)
 }

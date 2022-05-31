@@ -66,6 +66,9 @@ func (e *RuleEngine) LoadDevice(deviceInfo *typex.Device) error {
 	if deviceInfo.Type == "SIMPLE" {
 		return startDevices(device.NewSimpleDevice(deviceInfo.UUID, e), deviceInfo, e)
 	}
+	if deviceInfo.Type == "TS200V02" {
+		return startDevices(device.NewTS200Sensor(deviceInfo.UUID, e), deviceInfo, e)
+	}
 	return fmt.Errorf("unsupported InEnd type:%s", deviceInfo.Type)
 
 }

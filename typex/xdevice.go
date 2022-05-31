@@ -75,4 +75,6 @@ type XDevice interface {
 	Details() *Device
 	// 状态
 	SetState(DeviceState)
+	// 驱动接口, 通常用来和硬件交互
+	Driver() XExternalDriver
 }
