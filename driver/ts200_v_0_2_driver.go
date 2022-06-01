@@ -64,7 +64,7 @@ func (tss *ts200_v_0_2_Driver) Read(data []byte) (int, error) {
 	// |地址码|功能码|寄存器地址|寄存器长度|校验码|校验码
 	// |XX    |03   |17       | 长度     |CRC  |  CRC
 	// -----------------------------------------------
-	// 09 45 1A F7   00 6F 00 89  00 89 FF FF FF FF 00 0B
+	// 01 03 00 11 00 08 14 09 09 45 1A F7 00 6F 00 89  00 89 FF FF FF FF 00 0B
 	// TEMP  HUM     PM1   PM2.5  Pm10  CO2   TOVC  CHOH
 	//
 	result, err := tss.client.ReadHoldingRegisters(17, 8)

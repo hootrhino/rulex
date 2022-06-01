@@ -32,8 +32,8 @@ func Test_TS200_ReadData(t *testing.T) {
 		"uuid",
 		"Just a test",
 		"Just a test",
-		[]string{"TS200"},
 		[]string{},
+		[]string{"TS200"},
 		`function Success() print("[LUA Success Callback]=> OK") end`,
 		`
 		Actions = {

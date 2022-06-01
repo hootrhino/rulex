@@ -20,7 +20,7 @@ import (
 // 获取设备
 //
 func (e *RuleEngine) GetDevice(id string) *typex.Device {
-	v, ok := (e.Devices).Load(id)
+	v, ok := e.Devices.Load(id)
 	if ok {
 		return v.(*typex.Device)
 	} else {
@@ -83,6 +83,8 @@ func startDevices(abstractDevice typex.XDevice, deviceInfo *typex.Device, e *Rul
 		return err
 	}
 	if err := abstractDevice.Init(deviceInfo.UUID, config); err != nil {
+		e.RemoveDevice(deviceInfo.UUID)
+		err := fmt.Errorf("device [%v] Init error", deviceInfo.UUID)
 		return err
 	}
 	// Bind

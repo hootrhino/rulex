@@ -98,7 +98,7 @@ func (e *RuleEngine) PushInQueue(in *typex.InEnd, data string) error {
 func (e *RuleEngine) PushDeviceQueue(Device *typex.Device, data string) error {
 	qd := typex.QueueData{
 		D:    Device,
-		E:    nil,
+		E:    e,
 		I:    nil,
 		O:    nil,
 		Data: data,
