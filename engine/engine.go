@@ -288,7 +288,7 @@ func (e *RuleEngine) LoadRule(r *typex.Rule) error {
 			(in.BindRules)[r.UUID] = *r
 			return nil
 		} else {
-			return errors.New("'InEnd':" + inUUId + " is not exists")
+			return errors.New("'InEnd':" + inUUId + " is not exists when bind resource")
 		}
 	}
 	// 绑定设备(From 1.0.1)
@@ -299,7 +299,7 @@ func (e *RuleEngine) LoadRule(r *typex.Rule) error {
 			(Device.BindRules)[r.UUID] = *r
 			return nil
 		} else {
-			return errors.New("'Device':" + devUUId + " is not exists")
+			return errors.New("'Device':" + devUUId + " is not exists when bind resource")
 		}
 	}
 

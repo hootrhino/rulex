@@ -68,17 +68,17 @@ func (tss *ts200_v_0_2_Driver) Read(data []byte) (int, error) {
 	// TEMP  HUM     PM1   PM2.5  Pm10  CO2   TOVC  CHOH
 	//
 	result, err := tss.client.ReadHoldingRegisters(17, 8)
-	if len(result) == 8 {
+	if len(result) == 16 {
 
 		sd := _sensor_data{
-			TEMP: float32(binary.BigEndian.Uint16(result[0:1])) * 0.01,
-			HUM:  float32(binary.BigEndian.Uint16(result[1:2])) * 0.01,
-			PM1:  binary.BigEndian.Uint16(result[2:3]),
-			PM25: binary.BigEndian.Uint16(result[3:4]),
-			PM10: binary.BigEndian.Uint16(result[4:5]),
-			CO2:  binary.BigEndian.Uint16(result[5:6]),
-			TOVC: float32(binary.BigEndian.Uint16(result[6:7])) * 0.01,
-			CHOH: float32(binary.BigEndian.Uint16(result[7:8])) * 0.01,
+			TEMP: float32(binary.BigEndian.Uint16(result[0:2])) * 0.01,
+			HUM:  float32(binary.BigEndian.Uint16(result[2:4])) * 0.01,
+			PM1:  binary.BigEndian.Uint16(result[4:6]),
+			PM25: binary.BigEndian.Uint16(result[6:8]),
+			PM10: binary.BigEndian.Uint16(result[8:10]),
+			CO2:  binary.BigEndian.Uint16(result[10:12]),
+			TOVC: float32(binary.BigEndian.Uint16(result[12:14])) * 0.01,
+			CHOH: float32(binary.BigEndian.Uint16(result[14:16])) * 0.01,
 		}
 		bytes, _ := json.Marshal(sd)
 		copy(data, bytes)
