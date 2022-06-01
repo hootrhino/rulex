@@ -34,7 +34,8 @@ type RuleX interface {
 	//
 	// 执行任务
 	//
-	Work(*InEnd, string) (bool, error)
+	WorkInEnd(*InEnd, string) (bool, error)
+	WorkDevice(*Device, string) (bool, error)
 	//
 	// 获取配置
 	//

@@ -285,7 +285,7 @@ func (m *modbusMasterSource) Start(cctx typex.CCTX) error {
 								Value: hex.EncodeToString(results),
 							}
 							bytes, _ := json.Marshal(data)
-							m.RuleEngine.Work(m.RuleEngine.GetInEnd(m.PointId), string(bytes))
+							m.RuleEngine.WorkInEnd(m.RuleEngine.GetInEnd(m.PointId), string(bytes))
 						}
 					}
 				}
@@ -338,7 +338,6 @@ type dataM struct {
 	Type   int                    `json:"type" validate:"required"`
 	Params map[string]interface{} `json:"params" validate:"required"`
 }
-
 
 /*
 *

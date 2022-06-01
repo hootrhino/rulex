@@ -89,30 +89,34 @@ func (e *RuleEngine) PushInQueue(in *typex.InEnd, data string) error {
 	}
 	return err
 }
-func (e *RuleEngine) PushOutQueue(out *typex.OutEnd, data string) error {
+
+/*
+*
+* 设备数据入流引擎
+*
+ */
+func (e *RuleEngine) PushDeviceQueue(Device *typex.Device, data string) error {
 	qd := typex.QueueData{
-		E:    e,
+		D:    Device,
+		E:    nil,
 		I:    nil,
-		O:    out,
+		O:    nil,
 		Data: data,
 	}
 	err := typex.DefaultDataCacheQueue.Push(qd)
 	if err != nil {
-		log.Error("PushOutQueue error:", err)
+		log.Error("PushInQueue error:", err)
 		statistics.IncInFailed()
 	} else {
 		statistics.IncIn()
 	}
 	return err
 }
-
-//
-func (e *RuleEngine) PushDeviceQueue(device *typex.Device, data string) error {
+func (e *RuleEngine) PushOutQueue(out *typex.OutEnd, data string) error {
 	qd := typex.QueueData{
 		E:    e,
 		I:    nil,
-		O:    nil,
-		D:    device,
+		O:    out,
 		Data: data,
 	}
 	err := typex.DefaultDataCacheQueue.Push(qd)
@@ -412,8 +416,18 @@ func (e *RuleEngine) Stop() {
 //
 // 核心功能: Work
 //
-func (e *RuleEngine) Work(in *typex.InEnd, data string) (bool, error) {
+func (e *RuleEngine) WorkInEnd(in *typex.InEnd, data string) (bool, error) {
 	if err := e.PushInQueue(in, data); err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+//
+// 核心功能: Work
+//
+func (e *RuleEngine) WorkDevice(Device *typex.Device, data string) (bool, error) {
+	if err := e.PushDeviceQueue(Device, data); err != nil {
 		return false, err
 	}
 	return true, nil

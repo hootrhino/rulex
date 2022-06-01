@@ -58,7 +58,7 @@ func (hh *httpInEndSource) Start(cctx typex.CCTX) error {
 				"message": err.Error(),
 			})
 		} else {
-			hh.RuleEngine.Work(hh.RuleEngine.GetInEnd(hh.PointId), inForm.Data)
+			hh.RuleEngine.WorkInEnd(hh.RuleEngine.GetInEnd(hh.PointId), inForm.Data)
 			c.JSON(200, gin.H{
 				"message": "ok",
 				"data":    inForm,

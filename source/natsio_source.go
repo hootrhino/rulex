@@ -59,7 +59,7 @@ func (nt *natsSource) Start(cctx typex.CCTX) error {
 		//
 		_, err := nt.natsConnector.Subscribe(nt.topic, func(msg *nats.Msg) {
 			if nt.natsConnector != nil {
-				work, err1 := nt.RuleEngine.Work(nt.RuleEngine.GetInEnd(nt.PointId), string(msg.Data))
+				work, err1 := nt.RuleEngine.WorkInEnd(nt.RuleEngine.GetInEnd(nt.PointId), string(msg.Data))
 				if !work {
 					log.Error(err1)
 				}

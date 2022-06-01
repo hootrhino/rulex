@@ -60,7 +60,7 @@ func (cc *coAPInEndSource) Start(cctx typex.CCTX) error {
 	//
 	cc.router.Handle("/in", mux.HandlerFunc(func(w mux.ResponseWriter, msg *mux.Message) {
 		// log.Debugf("Received Coap Data: %#v", msg)
-		work, err := cc.RuleEngine.Work(cc.RuleEngine.GetInEnd(cc.PointId), msg.String())
+		work, err := cc.RuleEngine.WorkInEnd(cc.RuleEngine.GetInEnd(cc.PointId), msg.String())
 		if !work {
 			log.Error(err)
 		}

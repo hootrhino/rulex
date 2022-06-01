@@ -123,7 +123,7 @@ func (s7 *siemensS7Source) Start(cctx typex.CCTX) error {
 					dbv.Start = d.Start
 					dbv.Size = d.Size
 					bytes, _ := json.Marshal(dbv)
-					work, err := s7.RuleEngine.Work(s7.RuleEngine.GetInEnd(s7.PointId), string(bytes))
+					work, err := s7.RuleEngine.WorkInEnd(s7.RuleEngine.GetInEnd(s7.PointId), string(bytes))
 					if !work {
 						log.Error(err)
 					}
@@ -186,7 +186,6 @@ func (s7 *siemensS7Source) Status() typex.SourceState {
 func (s7 *siemensS7Source) Details() *typex.InEnd {
 	return s7.RuleEngine.GetInEnd(s7.PointId)
 }
-
 
 //
 // 驱动接口, 通常用来和硬件交互

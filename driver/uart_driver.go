@@ -101,7 +101,7 @@ func (a *uartDriver) Work() error {
 			//---------------------------------------------------------------------------
 			if data[0] == '#' {
 				// log.Info("bytes => ", string(buffer[:acc]), buffer[:acc], acc)
-				a.RuleEngine.Work(a.In, string(a.buffer[1:acc]))
+				a.RuleEngine.WorkInEnd(a.In, string(a.buffer[1:acc]))
 				// 重新初始化缓冲区
 				for i := 0; i < acc-1; i++ {
 					a.buffer[i] = 0

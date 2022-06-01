@@ -173,7 +173,6 @@ func (s *snmpSource) Test(inEndId string) bool {
 
 }
 
-
 func (s *snmpSource) Init(inEndId string, cfg map[string]interface{}) error {
 	s.PointId = inEndId
 	return nil
@@ -212,7 +211,7 @@ func (s *snmpSource) Start(cctx typex.CCTX) error {
 					if err != nil {
 						log.Error("snmpSource json Marshal error: ", err)
 					} else {
-						if _, err0 := sr.RuleEngine.Work(sr.Details(), string(dataBytes)); err0 != nil {
+						if _, err0 := sr.RuleEngine.WorkInEnd(sr.Details(), string(dataBytes)); err0 != nil {
 							log.Error("snmpSource PushQueue error: ", err0)
 						}
 

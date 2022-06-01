@@ -28,7 +28,6 @@ type _rtuConfig struct {
 type ts200_v_0_2_sensor struct {
 	typex.XStatus
 	status     typex.DeviceState
-	device     *typex.Device
 	RuleEngine typex.RuleX
 	driver     typex.XExternalDriver
 	slaverIds  []byte
@@ -53,7 +52,7 @@ func (tss *ts200_v_0_2_sensor) Init(devId string, config map[string]interface{})
 func (tss *ts200_v_0_2_sensor) Start(cctx typex.CCTX) error {
 	tss.Ctx = cctx.Ctx
 	tss.CancelCTX = cctx.CancelCTX
-	config := tss.RuleEngine.GetInEnd(tss.PointId).Config
+	config := tss.RuleEngine.GetDevice(tss.PointId).Config
 	var mainConfig _modBusConfig
 	if err := utils.BindSourceConfig(config, &mainConfig); err != nil {
 		return err
@@ -104,7 +103,7 @@ func (tss *ts200_v_0_2_sensor) Start(cctx typex.CCTX) error {
 				if err != nil {
 					log.Error(err)
 				} else {
-					tss.RuleEngine.Work(tss.RuleEngine.GetInEnd(tss.PointId), string(buffer[:n]))
+					tss.RuleEngine.WorkDevice(tss.RuleEngine.GetDevice(tss.PointId), string(buffer[:n]))
 				}
 			}
 
@@ -115,9 +114,7 @@ func (tss *ts200_v_0_2_sensor) Start(cctx typex.CCTX) error {
 
 // 从设备里面读数据出来
 func (tss *ts200_v_0_2_sensor) OnRead(data []byte) (int, error) {
-	// 获取全部传感器数据：
-	// |地址码|功能码|寄存器地址|寄存器长度|校验码|校验码
-	// |XX    |03   |17       | 长度     |CRC  |  CRC
+
 	n, err := tss.driver.Read(data)
 	if err != nil {
 		log.Error(err)

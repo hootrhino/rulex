@@ -123,7 +123,7 @@ func (*grpcInEndSource) Configs() *typex.XConfig {
 
 //
 func (r *RulexRpcServer) Work(ctx context.Context, in *rulexrpc.Data) (*rulexrpc.Response, error) {
-	ok, err := r.grpcInEndSource.RuleEngine.Work(
+	ok, err := r.grpcInEndSource.RuleEngine.WorkInEnd(
 		r.grpcInEndSource.RuleEngine.GetInEnd(r.grpcInEndSource.PointId),
 		in.Value,
 	)

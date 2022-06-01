@@ -211,7 +211,7 @@ func TestLuaCallback(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		c.JSON(200, Error(fmt.Sprintf("'InEnd' not exists: %v", uuid)))
 		return
 	}
-	_, err1 := e.Work((value).(*typex.InEnd), data)
+	_, err1 := e.WorkInEnd((value).(*typex.InEnd), data)
 	if err1 != nil {
 		c.JSON(200, Error400(err1))
 	}

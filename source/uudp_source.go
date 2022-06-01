@@ -49,7 +49,7 @@ func (u *udpSource) Start(cctx typex.CCTX) error {
 				log.Error(err.Error())
 			} else {
 				// log.Infof("Receive udp data:<%s> %s\n", remoteAddr, data[:n])
-				work, err := u.RuleEngine.Work(u.RuleEngine.GetInEnd(u.PointId), string(data[:n]))
+				work, err := u.RuleEngine.WorkInEnd(u.RuleEngine.GetInEnd(u.PointId), string(data[:n]))
 				if !work {
 					log.Error(err)
 				}
@@ -73,7 +73,6 @@ func (u *udpSource) Details() *typex.InEnd {
 func (u *udpSource) Test(inEndId string) bool {
 	return true
 }
-
 
 func (u *udpSource) Init(inEndId string, cfg map[string]interface{}) error {
 	u.PointId = inEndId
