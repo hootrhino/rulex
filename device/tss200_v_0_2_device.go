@@ -25,7 +25,7 @@ type _rtuConfig struct {
 	Parity   typex.Parity `json:"parity" validate:"required" title:"校验位" info:"串口通信校验位"`
 	StopBits int          `json:"stopBits" validate:"required" title:"停止位" info:"串口通信停止位"`
 }
-type ts200_v_0_2_sensor struct {
+type tss200_v_0_2_sensor struct {
 	typex.XStatus
 	status     typex.DeviceState
 	RuleEngine typex.RuleX
@@ -33,23 +33,23 @@ type ts200_v_0_2_sensor struct {
 	slaverIds  []byte
 }
 
-var _ typex.XDevice = new(ts200_v_0_2_sensor)
+var _ typex.XDevice = new(tss200_v_0_2_sensor)
 
 func NewTS200Sensor(deviceId string, e typex.RuleX) typex.XDevice {
-	tss := new(ts200_v_0_2_sensor)
+	tss := new(tss200_v_0_2_sensor)
 	tss.PointId = deviceId
 	tss.RuleEngine = e
 	return tss
 }
 
 //  初始化
-func (tss *ts200_v_0_2_sensor) Init(devId string, config map[string]interface{}) error {
+func (tss *tss200_v_0_2_sensor) Init(devId string, config map[string]interface{}) error {
 
 	return nil
 }
 
 // 启动
-func (tss *ts200_v_0_2_sensor) Start(cctx typex.CCTX) error {
+func (tss *tss200_v_0_2_sensor) Start(cctx typex.CCTX) error {
 	tss.Ctx = cctx.Ctx
 	tss.CancelCTX = cctx.CancelCTX
 	config := tss.RuleEngine.GetDevice(tss.PointId).Config
@@ -75,7 +75,7 @@ func (tss *ts200_v_0_2_sensor) Start(cctx typex.CCTX) error {
 		return err
 	}
 	client := modbus.NewClient(handler)
-	tss.driver = driver.NewTS200_v_0_2_Driver(tss.Details(), tss.RuleEngine, client)
+	tss.driver = driver.NewTSS200_v_0_2_Driver(tss.Details(), tss.RuleEngine, client)
 	tss.slaverIds = append(tss.slaverIds, mainConfig.SlaverIds...)
 	//---------------------------------------------------------------------------------
 	// Start
@@ -113,7 +113,7 @@ func (tss *ts200_v_0_2_sensor) Start(cctx typex.CCTX) error {
 }
 
 // 从设备里面读数据出来
-func (tss *ts200_v_0_2_sensor) OnRead(data []byte) (int, error) {
+func (tss *tss200_v_0_2_sensor) OnRead(data []byte) (int, error) {
 
 	n, err := tss.driver.Read(data)
 	if err != nil {
@@ -124,37 +124,37 @@ func (tss *ts200_v_0_2_sensor) OnRead(data []byte) (int, error) {
 }
 
 // 把数据写入设备
-func (tss *ts200_v_0_2_sensor) OnWrite(_ []byte) (int, error) {
+func (tss *tss200_v_0_2_sensor) OnWrite(_ []byte) (int, error) {
 	return 0, nil
 }
 
 // 设备当前状态
-func (tss *ts200_v_0_2_sensor) Status() typex.DeviceState {
+func (tss *tss200_v_0_2_sensor) Status() typex.DeviceState {
 	return typex.DEV_RUNNING
 }
 
 // 停止设备
-func (tss *ts200_v_0_2_sensor) Stop() {
+func (tss *tss200_v_0_2_sensor) Stop() {
 	tss.CancelCTX()
 }
 
 // 设备属性，是一系列属性描述
-func (tss *ts200_v_0_2_sensor) Property() []typex.DeviceProperty {
+func (tss *tss200_v_0_2_sensor) Property() []typex.DeviceProperty {
 	return []typex.DeviceProperty{}
 }
 
 // 真实设备
-func (tss *ts200_v_0_2_sensor) Details() *typex.Device {
+func (tss *tss200_v_0_2_sensor) Details() *typex.Device {
 	return tss.RuleEngine.GetDevice(tss.PointId)
 }
 
 // 状态
-func (tss *ts200_v_0_2_sensor) SetState(status typex.DeviceState) {
+func (tss *tss200_v_0_2_sensor) SetState(status typex.DeviceState) {
 	tss.status = status
 
 }
 
 // 驱动
-func (tss *ts200_v_0_2_sensor) Driver() typex.XExternalDriver {
+func (tss *tss200_v_0_2_sensor) Driver() typex.XExternalDriver {
 	return tss.driver
 }

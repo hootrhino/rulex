@@ -13,7 +13,7 @@ import (
 	"github.com/ngaut/log"
 )
 
-func Test_TS200_ReadData(t *testing.T) {
+func Test_TSS200_ReadData(t *testing.T) {
 	mainConfig := core.InitGlobalConfig("conf/rulex.ini")
 	core.StartStore(core.GlobalConfig.MaxQueueSize)
 	core.StartLogWatcher(core.GlobalConfig.LogPath)
@@ -46,12 +46,12 @@ func Test_TS200_ReadData(t *testing.T) {
 	if err := engine.LoadRule(rule); err != nil {
 		log.Error(err)
 	}
-	ts200 := &typex.Device{
-		UUID:         "TS200V02",
-		Name:         "TS200V02",
-		Type:         "TS200V02",
+	tss200 := &typex.Device{
+		UUID:         "TSS200V02",
+		Name:         "TSS200V02",
+		Type:         "TSS200V02",
 		ActionScript: "{}",
-		Description:  "TS200V02",
+		Description:  "TSS200V02",
 		Config: map[string]interface{}{
 			"timeout":   5,
 			"slaverIds": []int{1},
@@ -65,7 +65,7 @@ func Test_TS200_ReadData(t *testing.T) {
 		},
 	}
 
-	if err := engine.LoadDevice(ts200); err != nil {
+	if err := engine.LoadDevice(tss200); err != nil {
 		t.Log(err)
 	}
 	time.Sleep(20 * time.Second)

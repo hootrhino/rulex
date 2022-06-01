@@ -12,39 +12,39 @@ import (
 	"github.com/goburrow/modbus"
 )
 
-type ts200_v_0_2_Driver struct {
+type tss200_v_0_2_Driver struct {
 	state      typex.DriverState
 	client     modbus.Client
 	device     *typex.Device
 	RuleEngine typex.RuleX
 }
 
-func NewTS200_v_0_2_Driver(d *typex.Device, e typex.RuleX,
+func NewTSS200_v_0_2_Driver(d *typex.Device, e typex.RuleX,
 	client modbus.Client) typex.XExternalDriver {
-	return &ts200_v_0_2_Driver{
+	return &tss200_v_0_2_Driver{
 		state:      typex.RUNNING,
 		device:     d,
 		RuleEngine: e,
 		client:     client,
 	}
 }
-func (tss *ts200_v_0_2_Driver) Test() error {
+func (tss *tss200_v_0_2_Driver) Test() error {
 	return nil
 }
 
-func (tss *ts200_v_0_2_Driver) Init() error {
+func (tss *tss200_v_0_2_Driver) Init() error {
 	return nil
 }
 
-func (tss *ts200_v_0_2_Driver) Work() error {
+func (tss *tss200_v_0_2_Driver) Work() error {
 	return nil
 }
 
-func (tss *ts200_v_0_2_Driver) State() typex.DriverState {
+func (tss *tss200_v_0_2_Driver) State() typex.DriverState {
 	return typex.RUNNING
 }
 
-func (tss *ts200_v_0_2_Driver) SetState(state typex.DriverState) {
+func (tss *tss200_v_0_2_Driver) SetState(state typex.DriverState) {
 	tss.state = state
 }
 
@@ -59,7 +59,7 @@ type _sensor_data struct {
 	CHOH float32 `json:"choh"` //系数: 0.001
 }
 
-func (tss *ts200_v_0_2_Driver) Read(data []byte) (int, error) {
+func (tss *tss200_v_0_2_Driver) Read(data []byte) (int, error) {
 	// 获取全部传感器数据：
 	// |地址码|功能码|寄存器地址|寄存器长度|校验码|校验码
 	// |XX    |03   |17       | 长度     |CRC  |  CRC
@@ -87,12 +87,12 @@ func (tss *ts200_v_0_2_Driver) Read(data []byte) (int, error) {
 	return len(data), err
 }
 
-func (tss *ts200_v_0_2_Driver) Write(_ []byte) (int, error) {
+func (tss *tss200_v_0_2_Driver) Write(_ []byte) (int, error) {
 	return 0, nil
 }
 
 //---------------------------------------------------
-func (tss *ts200_v_0_2_Driver) DriverDetail() *typex.DriverDetail {
+func (tss *tss200_v_0_2_Driver) DriverDetail() *typex.DriverDetail {
 	return &typex.DriverDetail{
 		Name:        "TC-S200",
 		Type:        "UART",
@@ -100,7 +100,7 @@ func (tss *ts200_v_0_2_Driver) DriverDetail() *typex.DriverDetail {
 	}
 }
 
-func (tss *ts200_v_0_2_Driver) Stop() error {
+func (tss *tss200_v_0_2_Driver) Stop() error {
 	tss.state = typex.STOP
 	return nil
 }
