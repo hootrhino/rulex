@@ -21,9 +21,10 @@ import (
 )
 
 //
-//
+// 规则引擎
 //
 type RuleEngine struct {
+	SideCar core.SideCar       `json:"-"`
 	Hooks   *sync.Map          `json:"hooks"`
 	Rules   *sync.Map          `json:"rules"`
 	Plugins *sync.Map          `json:"plugins"`
@@ -39,6 +40,7 @@ type RuleEngine struct {
 //
 func NewRuleEngine(config typex.RulexConfig) typex.RuleX {
 	return &RuleEngine{
+		SideCar: core.NewSideCarManager(typex.GCTX),
 		Plugins: &sync.Map{},
 		Hooks:   &sync.Map{},
 		Rules:   &sync.Map{},

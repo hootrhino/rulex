@@ -81,7 +81,7 @@ func Test_S7_PLC_Parse(t *testing.T) {
 			10, 11, 12, 13, 14, 15, 16}),
 	})
 	if err != nil {
-		log.Error("grpc.Dial err: %v", err)
+		log.Errorf("grpc.Dial err: %v", err)
 	}
 	log.Infof("Rulex Rpc Call Result ====>>: %v", resp.GetMessage())
 

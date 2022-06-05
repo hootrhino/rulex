@@ -1,0 +1,58 @@
+syntax = "proto3";
+option go_package = "./;sidecar";
+option java_multiple_files = false;
+option java_package = "sidecar";
+option java_outer_classname = "sidecar";
+
+package sidecar;
+
+service sidecar {
+  // 初始化, 主要是为了传配置进去
+  rpc Init (Config) returns (Request) {}
+  // 启动
+  rpc Start (Request) returns (Response) {}
+  // 获取状态
+  rpc Status (Request) returns (Response) {}
+  // 读数据
+  rpc Read (ReadRequest) returns (ReadResponse) {}
+  // 写数据
+  rpc Write (WriteRequest) returns (WriteResponse) {}
+  // 停止
+  rpc Stop (Request) returns (Response) {}
+}
+
+message Config {
+    map<string, string> kv = 1;
+}
+message Request {
+
+}
+message Response {
+    int32 code = 1;
+    string message = 2;
+}
+
+message StatusResponse {
+    enum Status {
+        RUNNING = 0;
+        ERROR = 1;
+        STOPED = 2;
+    }
+    Status status = 1;
+    string message = 2;
+}
+// 读
+message ReadRequest{
+}
+message ReadResponse{
+    int32 len = 1;
+    bytes data = 2;
+}
+// 写
+message WriteRequest{
+    bytes data = 1;
+}
+message WriteResponse{
+    int32 code = 1;
+    bytes message = 2;
+}
