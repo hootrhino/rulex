@@ -73,4 +73,19 @@ func Test() {
 ]
 ```
 ***注意点***：
-> Tag必须包含 title 字段, info 字段是可选的，在界面上的体现是那个小【？】，起到帮助信息作用.
+- Tag必须包含 title 字段, info 字段是可选的，在界面上的体现是那个小【？】，起到帮助信息作用.
+- Sqlite 里面的数据删除以后记得同步在Rulex里面也删除，防止冗余,例如:
+    ```go
+    func RemoveGoods(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+        uuid, _ := c.GetQuery("uuid")
+        goods, err := hh.GetGoodsWithUUID(uuid)
+        if err != nil {
+            c.JSON(200, Error400(err))
+        } else {
+            // 数据库和内存都要删除
+            hh.DeleteGoods(goods.UUID)
+            e.RemoveGoods(goods.UUID)
+            c.JSON(200, Error("删除成功"))
+        }
+    }
+    ```

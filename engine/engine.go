@@ -665,9 +665,9 @@ func (e *RuleEngine) SnapshotDump() string {
 	system := map[string]interface{}{
 		"version":  e.Version().Version,
 		"diskInfo": int(diskInfo.UsedPercent),
-		"system":   bToMb(m.Sys),
-		"alloc":    bToMb(m.Alloc),
-		"total":    bToMb(m.TotalAlloc),
+		"system":   utils.BToMb(m.Sys),
+		"alloc":    utils.BToMb(m.Alloc),
+		"total":    utils.BToMb(m.TotalAlloc),
 		"osArch":   runtime.GOOS + "-" + runtime.GOARCH,
 	}
 	data := map[string]interface{}{
@@ -686,9 +686,6 @@ func (e *RuleEngine) SnapshotDump() string {
 	}
 	return string(b)
 }
-func bToMb(b uint64) uint64 {
-	return b / 1024 / 1024
-}
 
 /*
 *
@@ -696,7 +693,7 @@ func bToMb(b uint64) uint64 {
 *
  */
 func (e *RuleEngine) LoadGoods(goods typex.Goods) error {
-	return e.SideCar.Fork(goods.Addr, goods.UUID, goods.Args)
+	return e.SideCar.Fork(goods)
 }
 
 //
@@ -714,12 +711,19 @@ func (e *RuleEngine) RemoveGoods(uuid string) error {
 // 所有外部驱动
 //
 func (e *RuleEngine) AllGoods() *sync.Map {
-	return e.AllGoods()
+	return e.SideCar.AllGoods()
 }
 
 //
-// 获取某个外部驱动
+// 获取某个外部驱动信息
 //
 func (e *RuleEngine) GetGoods(uuid string) *typex.Goods {
-	return e.GetGoods(uuid)
+	goodsProcess := e.SideCar.Get(uuid)
+	goods := typex.Goods{
+		UUID:        goodsProcess.UUID(),
+		Addr:        goodsProcess.Addr(),
+		Description: goodsProcess.Description(),
+		Args:        goodsProcess.Args(),
+	}
+	return &goods
 }

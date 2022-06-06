@@ -11,24 +11,14 @@ type RulexModel struct {
 	ID        uint `gorm:"primarykey"`
 	CreatedAt time.Time
 }
-type fromSource []string
-type fromDevice []string
+type stringList []string
 
-func (f fromSource) Value() (driver.Value, error) {
+func (f stringList) Value() (driver.Value, error) {
 	b, err := json.Marshal(f)
 	return string(b), err
 }
 
-func (f *fromSource) Scan(data interface{}) error {
-	return json.Unmarshal([]byte(data.(string)), f)
-}
-
-func (f fromDevice) Value() (driver.Value, error) {
-	b, err := json.Marshal(f)
-	return string(b), err
-}
-
-func (f *fromDevice) Scan(data interface{}) error {
+func (f *stringList) Scan(data interface{}) error {
 	return json.Unmarshal([]byte(data.(string)), f)
 }
 
@@ -37,8 +27,8 @@ type MRule struct {
 	UUID        string `gorm:"not null"`
 	Name        string `gorm:"not null"`
 	Description string
-	FromSource  fromSource `gorm:"not null type:string[]"`
-	FromDevice  fromDevice `gorm:"not null type:string[]"`
+	FromSource  stringList `gorm:"not null type:string[]"`
+	FromDevice  stringList `gorm:"not null type:string[]"`
 	Actions     string     `gorm:"not null"`
 	Success     string     `gorm:"not null"`
 	Failed      string     `gorm:"not null"`
@@ -75,6 +65,7 @@ type MUser struct {
 
 // 设备元数据
 type MDevice struct {
+	RulexModel
 	UUID         string `gorm:"not null"`
 	Name         string `gorm:"not null"`
 	Type         string `gorm:"not null"`
@@ -86,18 +77,11 @@ type MDevice struct {
 //
 // 外挂
 //
-type args []string
-
-func (f *args) Scan(data interface{}) error {
-	return json.Unmarshal([]byte(data.(string)), f)
-}
 
 type MGoods struct {
-	UUID string `gorm:"not null"`
-	// TCP or Unix Socket
-	Addr string `gorm:"not null"`
-	// Description text
-	Description string `gorm:"not null"`
-	// Additional Args
-	Args args `gorm:"not null"`
+	RulexModel
+	UUID        string     `gorm:"not null"`
+	Addr        string     `gorm:"not null"`
+	Description string     `gorm:"not null"`
+	Args        stringList `gorm:"not null"`
 }

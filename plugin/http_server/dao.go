@@ -18,20 +18,36 @@ import (
 func (s *HttpApiServer) InitDb(dbPath string) {
 	var err error
 	s.sqliteDb, err = gorm.Open(sqlite.Open(dbPath), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Error),
+		Logger: logger.Default.LogMode(logger.Error), // 只输出错误日志
 	})
 	if err != nil {
 		log.Error(err)
 		os.Exit(1)
 	}
-	var err1 error = nil
-	err1 = s.sqliteDb.AutoMigrate(&MInEnd{})
-	err1 = s.sqliteDb.AutoMigrate(&MOutEnd{})
-	err1 = s.sqliteDb.AutoMigrate(&MRule{})
-	err1 = s.sqliteDb.AutoMigrate(&MUser{})
-	err1 = s.sqliteDb.AutoMigrate(&MDevice{})
-	if err1 != nil {
-		log.Error(err1)
+	// 注册数据库配置表
+	// 这么写看起来是很难受, 但是这玩意就是go的哲学啊(大道至简？？？)
+	if err := s.sqliteDb.AutoMigrate(&MInEnd{}); err != nil {
+		log.Fatal(err)
+		os.Exit(1)
+	}
+	if err := s.sqliteDb.AutoMigrate(&MOutEnd{}); err != nil {
+		log.Fatal(err)
+		os.Exit(1)
+	}
+	if err := s.sqliteDb.AutoMigrate(&MRule{}); err != nil {
+		log.Fatal(err)
+		os.Exit(1)
+	}
+	if err := s.sqliteDb.AutoMigrate(&MUser{}); err != nil {
+		log.Fatal(err)
+		os.Exit(1)
+	}
+	if err := s.sqliteDb.AutoMigrate(&MDevice{}); err != nil {
+		log.Fatal(err)
+		os.Exit(1)
+	}
+	if err := s.sqliteDb.AutoMigrate(&MGoods{}); err != nil {
+		log.Fatal(err)
 		os.Exit(1)
 	}
 }

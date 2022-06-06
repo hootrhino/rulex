@@ -6,13 +6,8 @@ import (
 )
 
 /*
-#include "utils.h"
-*/
-import "C"
-
-/*
 *
-* pwd
+* GetPwd
 *
  */
 func GetPwd() string {
@@ -22,7 +17,6 @@ func GetPwd() string {
 	}
 	return dir
 }
-
-func GetPid() int {
-	return int(C.GetPid())
+func BToMb(b uint64) uint64 {
+	return b / 1024 / 1024
 }

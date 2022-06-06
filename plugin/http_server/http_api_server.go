@@ -187,7 +187,11 @@ func (hh *HttpApiServer) Start() error {
 	hh.ginEngine.POST(url("devices"), hh.addRoute(CreateDevice))
 	hh.ginEngine.PUT(url("devices"), hh.addRoute(UpdateDevice))
 	hh.ginEngine.DELETE(url("devices"), hh.addRoute(DeleteDevice))
-
+	// 外挂管理
+	hh.ginEngine.GET(url("goods"), hh.addRoute(Goods))
+	hh.ginEngine.POST(url("goods"), hh.addRoute(CreateGoods))
+	hh.ginEngine.PUT(url("goods"), hh.addRoute(UpdateGoods))
+	hh.ginEngine.DELETE(url("goods"), hh.addRoute(DeleteGoods))
 	log.Infof("Http server started on http://0.0.0.0:%v", hh.Port)
 	return nil
 }

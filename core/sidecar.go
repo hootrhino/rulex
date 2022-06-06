@@ -15,6 +15,7 @@ package core
 import (
 	"context"
 	"encoding/json"
+	"rulex/typex"
 	"syscall"
 
 	"os"
@@ -29,8 +30,8 @@ import (
 //--------------------------------------------------------------------------------------------------
 
 type SideCar interface {
-	Fork(name string, uuid string, args []string) error
-	Get(name string) *GoodsProcess
+	Fork(typex.Goods) error
+	Get(addr string) *GoodsProcess
 	Save(*GoodsProcess)
 	Remove(uuid string)
 	AllGoods() *sync.Map
@@ -42,29 +43,50 @@ type SideCar interface {
 //--------------------------------------------------------------------------------------------------
 
 type GoodsProcess struct {
-	running bool
-	uuid    string
-	name    string
-	args    []string
-	ctx     context.Context
-	cmd     *exec.Cmd
-	cancel  context.CancelFunc
+	running     bool
+	uuid        string
+	addr        string
+	description string
+	args        []string
+	ctx         context.Context
+	cmd         *exec.Cmd
+	cancel      context.CancelFunc
 }
 
+func (t *GoodsProcess) Running() bool {
+	return t.running
+}
+func (t *GoodsProcess) Description() string {
+	return t.description
+}
+func (t *GoodsProcess) UUID() string {
+	return t.uuid
+}
+func (t *GoodsProcess) Addr() string {
+	return t.addr
+}
+func (t *GoodsProcess) Args() []string {
+	return t.args
+}
 func (t GoodsProcess) String() string {
 	r := map[string]interface{}{
-		"running": t.running,
-		"uuid":    t.uuid,
-		"name":    t.name,
-		"args":    t.args,
+		"running":     t.running,
+		"uuid":        t.uuid,
+		"addr":        t.addr,
+		"description": t.description,
+		"args":        t.args,
 	}
 	b, _ := json.Marshal(r)
 	return string(b)
 }
 func (scm *GoodsProcess) Stop() {
-	scm.cmd.Process.Kill()
-	scm.cancel()
-	scm.cmd = nil
+	if scm.cmd != nil {
+		if scm.cmd.Process != nil {
+			scm.cmd.Process.Kill()
+			scm.cmd = nil
+			scm.cancel()
+		}
+	}
 }
 
 func NewGoodsProcess() *GoodsProcess {
@@ -89,23 +111,24 @@ func NewSideCarManager(ctx context.Context) SideCar {
 
 /*
 *
-* 执行外挂
+* 执行外
 *
  */
-func (scm *SidecarManager) Fork(name string, uuid string, args []string) error {
-	log.Infof("fork goods process, (uuid = %v, name = %v, args = %v)", uuid, name, args)
-	cmd := exec.Command(name, args...)
+func (scm *SidecarManager) Fork(goods typex.Goods) error {
+	log.Infof("fork goods process, (uuid = %v, addr = %v, args = %v)", goods.UUID, goods.Addr, goods.Args)
+	cmd := exec.Command(goods.Addr, goods.Args...)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	ctx, cancel := context.WithCancel(scm.ctx)
 	goodsProcess := &GoodsProcess{
-		name:   name,
-		uuid:   uuid,
-		args:   args,
-		cmd:    cmd,
-		ctx:    ctx,
-		cancel: cancel,
+		addr:        goods.Addr,
+		uuid:        goods.UUID,
+		description: goods.Description,
+		args:        goods.Args,
+		cmd:         cmd,
+		ctx:         ctx,
+		cancel:      cancel,
 	}
 	wg := sync.WaitGroup{}
 	wg.Add(2)
@@ -130,10 +153,11 @@ func (scm *SidecarManager) Save(goodsProcess *GoodsProcess) {
 	scm.goodsProcessMap.Store(goodsProcess.uuid, goodsProcess)
 }
 
-// 从内存里删除
+// 从内存里删除, 删除后记得停止挂件
 func (scm *SidecarManager) Remove(uuid string) {
-	_, ok := scm.goodsProcessMap.Load(uuid)
+	v, ok := scm.goodsProcessMap.Load(uuid)
 	if ok {
+		(v.(*GoodsProcess)).Stop()
 		scm.goodsProcessMap.Delete(uuid)
 	}
 }
@@ -161,10 +185,10 @@ func (scm *SidecarManager) run(wg *sync.WaitGroup, goodsProcess *GoodsProcess) e
 	}
 	wg.Done()
 	goodsProcess.running = true
-	log.Infof("goods process(pid = %v, uuid = %v, name = %v, args = %v) fork and started: ",
+	log.Infof("goods process(pid = %v, uuid = %v, addr = %v, args = %v) fork and started",
 		goodsProcess.cmd.Process.Pid,
 		goodsProcess.uuid,
-		goodsProcess.name,
+		goodsProcess.addr,
 		goodsProcess.args)
 	if err := goodsProcess.cmd.Wait(); err != nil {
 		log.Error("cmd Wait error:", err)
@@ -186,17 +210,17 @@ func (scm *SidecarManager) probe(wg *sync.WaitGroup, goodsProcess *GoodsProcess)
 			{
 				process := goodsProcess.cmd.Process
 				if process != nil {
-					log.Infof("goods process(pid = %v,uuid = %v, name = %v, args = %v) stopped",
+					log.Infof("goods process(pid = %v,uuid = %v, addr = %v, args = %v) stopped",
 						goodsProcess.cmd.Process.Pid,
 						goodsProcess.uuid,
-						goodsProcess.name,
+						goodsProcess.addr,
 						goodsProcess.args)
 					process.Kill()
 					process.Signal(syscall.SIGKILL)
 				} else {
-					log.Infof("goods process(uuid = %v, name = %v, args = %v) stopped",
+					log.Infof("goods process(uuid = %v, addr = %v, args = %v) stopped",
 						goodsProcess.uuid,
-						goodsProcess.name,
+						goodsProcess.addr,
 						goodsProcess.args)
 				}
 				scm.Remove(goodsProcess.uuid)
@@ -220,5 +244,5 @@ func (scm *SidecarManager) probe(wg *sync.WaitGroup, goodsProcess *GoodsProcess)
 *
  */
 func (scm *SidecarManager) AllGoods() *sync.Map {
-	return &scm.goodsProcessMap
+	return scm.goodsProcessMap
 }
