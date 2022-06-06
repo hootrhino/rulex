@@ -22,7 +22,7 @@ type tss200_v_0_2_Driver struct {
 func NewTSS200_v_0_2_Driver(d *typex.Device, e typex.RuleX,
 	client modbus.Client) typex.XExternalDriver {
 	return &tss200_v_0_2_Driver{
-		state:      typex.RUNNING,
+		state:      typex.DRIVER_STOP,
 		device:     d,
 		RuleEngine: e,
 		client:     client,
@@ -41,12 +41,9 @@ func (tss *tss200_v_0_2_Driver) Work() error {
 }
 
 func (tss *tss200_v_0_2_Driver) State() typex.DriverState {
-	return typex.RUNNING
+	return typex.DRIVER_RUNNING
 }
 
-func (tss *tss200_v_0_2_Driver) SetState(state typex.DriverState) {
-	tss.state = state
-}
 
 type _sensor_data struct {
 	TEMP float32 `json:"temp"` //系数: 0.01
@@ -101,6 +98,6 @@ func (tss *tss200_v_0_2_Driver) DriverDetail() *typex.DriverDetail {
 }
 
 func (tss *tss200_v_0_2_Driver) Stop() error {
-	tss.state = typex.STOP
+	tss.state = typex.DRIVER_STOP
 	return nil
 }

@@ -150,6 +150,22 @@ type RuleX interface {
 	// 删除设备
 	//
 	RemoveDevice(string)
+	//
+	// 加载外部驱动
+	//
+	LoadGoods(goods Goods) error
+	//
+	// 删除外部驱动
+	//
+	RemoveGoods(uuid string) error
+	//
+	// 所有外部驱动
+	//
+	AllGoods() *sync.Map
+	//
+	// 获取某个外部驱动
+	//
+	GetGoods(uuid string) *Goods
 }
 
 //

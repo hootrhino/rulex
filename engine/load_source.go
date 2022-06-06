@@ -141,7 +141,7 @@ func checkDriverState(source typex.XSource, e *RuleEngine, id string) {
 		// 只有资源启动状态才拉起驱动
 		if source.Status() == typex.UP {
 			// 必须资源启动, 驱动才有重启意义
-			if source.Driver().State() == typex.STOP {
+			if source.Driver().State() == typex.DRIVER_STOP {
 				log.Warn("Driver stopped:", source.Driver().DriverDetail().Name)
 				// 只需要把资源给拉闸, 就会触发重启
 				source.Stop()
@@ -189,7 +189,7 @@ func startSource(source typex.XSource, e *RuleEngine, id string) error {
 			source.Stop()
 		}
 		if source.Driver() != nil {
-			if source.Driver().State() == typex.RUNNING {
+			if source.Driver().State() == typex.DRIVER_RUNNING {
 				source.Driver().Stop()
 			}
 		}
@@ -199,7 +199,7 @@ func startSource(source typex.XSource, e *RuleEngine, id string) error {
 	// 驱动也要停了, 然后重启
 	//----------------------------------
 	if source.Driver() != nil {
-		if source.Driver().State() == typex.RUNNING {
+		if source.Driver().State() == typex.DRIVER_RUNNING {
 			source.Driver().Stop()
 		}
 		// Start driver

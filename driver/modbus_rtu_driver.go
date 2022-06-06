@@ -23,7 +23,7 @@ func NewModBusRtuDriver(
 	e typex.RuleX,
 	client modbus.Client) typex.XExternalDriver {
 	return &modBusRtuDriver{
-		state:      typex.RUNNING,
+		state:      typex.DRIVER_RUNNING,
 		In:         in,
 		RuleEngine: e,
 		client:     client,
@@ -46,9 +46,6 @@ func (d *modBusRtuDriver) State() typex.DriverState {
 	return d.state
 }
 
-func (d *modBusRtuDriver) SetState(s typex.DriverState) {
-	d.state = s
-}
 
 func (d *modBusRtuDriver) Read(data []byte) (int, error) {
 	return 0, nil

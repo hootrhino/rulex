@@ -45,14 +45,10 @@ func NewRawUartDriver(
 //
 //
 func (a *rawUartDriver) Init() error {
-	a.state = typex.RUNNING
+	a.state = typex.DRIVER_RUNNING
 	return nil
 }
 
-func (a *rawUartDriver) SetState(state typex.DriverState) {
-	a.state = state
-
-}
 func (a *rawUartDriver) Work() error {
 	serialPort, err := serial.Open(&a.config)
 	a.serialPort = serialPort
@@ -67,7 +63,7 @@ func (a *rawUartDriver) State() typex.DriverState {
 	return a.state
 }
 func (a *rawUartDriver) Stop() error {
-	a.state = typex.STOP
+	a.state = typex.DRIVER_STOP
 	return a.serialPort.Close()
 }
 

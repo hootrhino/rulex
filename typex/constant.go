@@ -15,8 +15,8 @@ const (
 type DriverState int
 
 const (
-	STOP    DriverState = 0
-	RUNNING DriverState = 1
+	DRIVER_STOP    DriverState = 0
+	DRIVER_RUNNING DriverState = 1
 )
 
 //

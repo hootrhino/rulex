@@ -2,11 +2,10 @@ package test
 
 import (
 	"context"
-	"rulex/sidecar"
-	"testing"
-
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"rulex/sidecar"
+	"testing"
 )
 
 func fork() {

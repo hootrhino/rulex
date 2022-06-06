@@ -14,6 +14,13 @@ func InUuid() string {
 }
 
 //
+// GoodsUuid
+//
+func GoodsUuid() string {
+	return MakeUUID("GOODS")
+}
+
+//
 // MakeUUID
 //
 func OutUuid() string {

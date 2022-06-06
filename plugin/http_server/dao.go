@@ -150,7 +150,8 @@ func (s *HttpApiServer) UpdateMOutEnd(uuid string, o *MOutEnd) error {
 //-----------------------------------------------------------------------------------
 func (s *HttpApiServer) GetMUser(username string, password string) (*MUser, error) {
 	m := new(MUser)
-	if err := s.sqliteDb.Where("Username=?", username).Where("Password=?", password).First(m).Error; err != nil {
+	if err := s.sqliteDb.Where("Username=?", username).Where("Password=?",
+		password).First(m).Error; err != nil {
 		return nil, err
 	} else {
 		return m, nil
@@ -239,6 +240,49 @@ func (s *HttpApiServer) UpdateDevice(uuid string, o *MDevice) error {
 		return err
 	} else {
 		s.sqliteDb.Model(m).Updates(*o)
+		return nil
+	}
+}
+
+//-------------------------------------------------------------------------------------
+// Goods
+//-------------------------------------------------------------------------------------
+
+//
+// 获取Goods列表
+//
+func (s *HttpApiServer) GetGoodsWithUUID(uuid string) (*MGoods, error) {
+	m := MGoods{}
+	if err := s.sqliteDb.Where("uuid=?", uuid).First(&m).Error; err != nil {
+		return nil, err
+	} else {
+		return &m, nil
+	}
+}
+
+//
+// 删除Goods
+//
+func (s *HttpApiServer) DeleteGoods(uuid string) error {
+	return s.sqliteDb.Where("uuid=?", uuid).Delete(&MGoods{}).Error
+}
+
+//
+// 创建Goods
+//
+func (s *HttpApiServer) InsertGoods(goods *MGoods) error {
+	return s.sqliteDb.Table("m_goods").Create(goods).Error
+}
+
+//
+// 更新Goods
+//
+func (s *HttpApiServer) UpdateGoods(uuid string, goods *MGoods) error {
+	m := MGoods{}
+	if err := s.sqliteDb.Where("uuid=?", uuid).First(&m).Error; err != nil {
+		return err
+	} else {
+		s.sqliteDb.Model(m).Updates(*goods)
 		return nil
 	}
 }

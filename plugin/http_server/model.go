@@ -82,3 +82,22 @@ type MDevice struct {
 	Config       string
 	Description  string
 }
+
+//
+// 外挂
+//
+type args []string
+
+func (f *args) Scan(data interface{}) error {
+	return json.Unmarshal([]byte(data.(string)), f)
+}
+
+type MGoods struct {
+	UUID string `gorm:"not null"`
+	// TCP or Unix Socket
+	Addr string `gorm:"not null"`
+	// Description text
+	Description string `gorm:"not null"`
+	// Additional Args
+	Args args `gorm:"not null"`
+}

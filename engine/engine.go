@@ -380,7 +380,6 @@ func (e *RuleEngine) Stop() {
 			e.GetInEnd(inEnd.UUID).SetState(typex.DOWN)
 			inEnd.Source.Stop()
 			if inEnd.Source.Driver() != nil {
-				inEnd.Source.Driver().SetState(typex.STOP)
 				inEnd.Source.Driver().Stop()
 			}
 		}
@@ -689,4 +688,38 @@ func (e *RuleEngine) SnapshotDump() string {
 }
 func bToMb(b uint64) uint64 {
 	return b / 1024 / 1024
+}
+
+/*
+*
+* 加载外部程序
+*
+ */
+func (e *RuleEngine) LoadGoods(goods typex.Goods) error {
+	return e.SideCar.Fork(goods.Addr, goods.UUID, goods.Args)
+}
+
+//
+// 删除外部驱动
+//
+func (e *RuleEngine) RemoveGoods(uuid string) error {
+	if e.GetGoods(uuid) != nil {
+		e.SideCar.Remove(uuid)
+		return nil
+	}
+	return fmt.Errorf("goods %v not exists", uuid)
+}
+
+//
+// 所有外部驱动
+//
+func (e *RuleEngine) AllGoods() *sync.Map {
+	return e.AllGoods()
+}
+
+//
+// 获取某个外部驱动
+//
+func (e *RuleEngine) GetGoods(uuid string) *typex.Goods {
+	return e.GetGoods(uuid)
 }

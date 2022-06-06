@@ -31,7 +31,7 @@ type rtu485_THer_Driver struct {
 func NewRtu485_THer_Driver(in *typex.InEnd, e typex.RuleX,
 	client modbus.Client) typex.XExternalDriver {
 	return &rtu485_THer_Driver{
-		state:      typex.RUNNING,
+		state:      typex.DRIVER_STOP,
 		In:         in,
 		RuleEngine: e,
 		client:     client,
@@ -50,12 +50,9 @@ func (rtu485 *rtu485_THer_Driver) Work() error {
 }
 
 func (rtu485 *rtu485_THer_Driver) State() typex.DriverState {
-	return typex.RUNNING
+	return typex.DRIVER_RUNNING
 }
 
-func (rtu485 *rtu485_THer_Driver) SetState(state typex.DriverState) {
-	rtu485.state = state
-}
 
 func (rtu485 *rtu485_THer_Driver) Read(data []byte) (int, error) {
 	// Example: 0x02 0x92 0xFF 0x98
@@ -79,6 +76,6 @@ func (rtu485 *rtu485_THer_Driver) DriverDetail() *typex.DriverDetail {
 }
 
 func (rtu485 *rtu485_THer_Driver) Stop() error {
-	rtu485.state = typex.STOP
+	rtu485.state = typex.DRIVER_STOP
 	return nil
 }

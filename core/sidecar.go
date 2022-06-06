@@ -32,7 +32,8 @@ type SideCar interface {
 	Fork(name string, uuid string, args []string) error
 	Get(name string) *GoodsProcess
 	Save(*GoodsProcess)
-	Remove(*GoodsProcess)
+	Remove(uuid string)
+	AllGoods() *sync.Map
 	Stop()
 }
 
@@ -76,13 +77,13 @@ func NewGoodsProcess() *GoodsProcess {
 
 type SidecarManager struct {
 	ctx             context.Context
-	goodsProcessMap sync.Map // Key: UUID, Value: GoodsProcess
+	goodsProcessMap *sync.Map // Key: UUID, Value: GoodsProcess
 }
 
 func NewSideCarManager(ctx context.Context) SideCar {
 	return &SidecarManager{
 		ctx:             ctx,
-		goodsProcessMap: sync.Map{},
+		goodsProcessMap: &sync.Map{},
 	}
 }
 
@@ -130,10 +131,10 @@ func (scm *SidecarManager) Save(goodsProcess *GoodsProcess) {
 }
 
 // 从内存里删除
-func (scm *SidecarManager) Remove(goodsProcess *GoodsProcess) {
-	_, ok := scm.goodsProcessMap.Load(goodsProcess.uuid)
+func (scm *SidecarManager) Remove(uuid string) {
+	_, ok := scm.goodsProcessMap.Load(uuid)
 	if ok {
-		scm.goodsProcessMap.Delete(goodsProcess.uuid)
+		scm.goodsProcessMap.Delete(uuid)
 	}
 }
 
@@ -198,7 +199,7 @@ func (scm *SidecarManager) probe(wg *sync.WaitGroup, goodsProcess *GoodsProcess)
 						goodsProcess.name,
 						goodsProcess.args)
 				}
-				scm.Remove(goodsProcess)
+				scm.Remove(goodsProcess.uuid)
 				return
 			}
 		default:
@@ -211,4 +212,13 @@ func (scm *SidecarManager) probe(wg *sync.WaitGroup, goodsProcess *GoodsProcess)
 			}
 		}
 	}
+}
+
+/*
+*
+* 返回外挂MAP
+*
+ */
+func (scm *SidecarManager) AllGoods() *sync.Map {
+	return &scm.goodsProcessMap
 }

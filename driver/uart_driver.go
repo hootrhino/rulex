@@ -62,20 +62,17 @@ func NewUartDriver(
 //
 //
 func (a *uartDriver) Init() error {
-	a.state = typex.RUNNING
+	a.state = typex.DRIVER_RUNNING
 	return nil
 }
 
-func (a *uartDriver) SetState(state typex.DriverState) {
-	a.state = state
 
-}
 func (a *uartDriver) Work() error {
 	ticker := time.NewTicker(time.Duration(time.Microsecond * 400))
 	go func(ctx context.Context) {
 		acc := 0
 		data := make([]byte, 1)
-		for a.state == typex.RUNNING {
+		for a.state == typex.DRIVER_RUNNING {
 			<-ticker.C
 			if _, err0 := a.serialPort.Read(data); err0 != nil {
 				//
@@ -129,7 +126,7 @@ func (a *uartDriver) State() typex.DriverState {
 
 }
 func (a *uartDriver) Stop() error {
-	a.state = typex.STOP
+	a.state = typex.DRIVER_STOP
 	return a.serialPort.Close()
 }
 
