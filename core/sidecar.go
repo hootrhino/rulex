@@ -79,7 +79,7 @@ func (t GoodsProcess) String() string {
 	b, _ := json.Marshal(r)
 	return string(b)
 }
-func (scm *GoodsProcess) Stop() {
+func (scm *GoodsProcess) stop() {
 	if scm.cmd != nil {
 		if scm.cmd.Process != nil {
 			scm.cmd.Process.Kill()
@@ -153,22 +153,26 @@ func (scm *SidecarManager) Save(goodsProcess *GoodsProcess) {
 	scm.goodsProcessMap.Store(goodsProcess.uuid, goodsProcess)
 }
 
-// 从内存里删除, 删除后记得停止挂件
+//
+// 从内存里删除, 删除后记得停止挂件, 通常外部配置表也要删除, 比如Sqlite
+//
 func (scm *SidecarManager) Remove(uuid string) {
 	v, ok := scm.goodsProcessMap.Load(uuid)
 	if ok {
-		(v.(*GoodsProcess)).Stop()
+		(v.(*GoodsProcess)).stop()
 		scm.goodsProcessMap.Delete(uuid)
 	}
 }
 
-// 停止外挂
+//
+// 停止外挂运行时管理器
+//
 func (scm *SidecarManager) Stop() {
 	scm.goodsProcessMap.Range(func(key, value interface{}) bool {
-		(value.(*GoodsProcess)).Stop()
+		(value.(*GoodsProcess)).stop()
 		return true
 	})
-
+	scm = nil
 }
 
 //
