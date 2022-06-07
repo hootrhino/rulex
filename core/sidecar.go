@@ -208,31 +208,36 @@ func (scm *SidecarManager) probe(wg *sync.WaitGroup, goodsProcess *GoodsProcess)
 		select {
 		case <-goodsProcess.ctx.Done():
 			{
-				process := goodsProcess.cmd.Process
-				if process != nil {
-					log.Infof("goods process(pid = %v,uuid = %v, addr = %v, args = %v) stopped",
-						goodsProcess.cmd.Process.Pid,
-						goodsProcess.uuid,
-						goodsProcess.addr,
-						goodsProcess.args)
-					process.Kill()
-					process.Signal(syscall.SIGKILL)
-				} else {
-					log.Infof("goods process(uuid = %v, addr = %v, args = %v) stopped",
-						goodsProcess.uuid,
-						goodsProcess.addr,
-						goodsProcess.args)
+				if goodsProcess.cmd != nil {
+					process := goodsProcess.cmd.Process
+					if process != nil {
+						log.Infof("goods process(pid = %v,uuid = %v, addr = %v, args = %v) stopped",
+							goodsProcess.cmd.Process.Pid,
+							goodsProcess.uuid,
+							goodsProcess.addr,
+							goodsProcess.args)
+						process.Kill()
+						process.Signal(syscall.SIGKILL)
+					} else {
+						log.Infof("goods process(uuid = %v, addr = %v, args = %v) stopped",
+							goodsProcess.uuid,
+							goodsProcess.addr,
+							goodsProcess.args)
+					}
 				}
 				scm.Remove(goodsProcess.uuid)
 				return
 			}
 		default:
 			{
-				if goodsProcess.cmd.ProcessState != nil {
-					goodsProcess.running = true
-				} else {
-					goodsProcess.running = false
+				if goodsProcess.cmd != nil {
+					if goodsProcess.cmd.ProcessState != nil {
+						goodsProcess.running = true
+					} else {
+						goodsProcess.running = false
+					}
 				}
+
 			}
 		}
 	}

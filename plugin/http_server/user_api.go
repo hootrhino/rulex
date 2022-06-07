@@ -4,7 +4,6 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
-	"rulex/core"
 	"rulex/typex"
 	"time"
 
@@ -101,7 +100,7 @@ func Logs(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		Content string `json:"content" binding:"required"`
 	}
 	logs := []Data{}
-	for i, s := range core.GLOBAL_LOGGER.Slot() {
+	for i, s := range typex.GLOBAL_LOGGER.Slot() {
 		if s != "" {
 			logs = append(logs, Data{i, s})
 		}

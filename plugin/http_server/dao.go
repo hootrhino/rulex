@@ -267,6 +267,12 @@ func (s *HttpApiServer) UpdateDevice(uuid string, o *MDevice) error {
 //
 // 获取Goods列表
 //
+func (s *HttpApiServer) AllGoods() []MGoods {
+	m := []MGoods{}
+	s.sqliteDb.Find(&m)
+	return m
+
+}
 func (s *HttpApiServer) GetGoodsWithUUID(uuid string) (*MGoods, error) {
 	m := MGoods{}
 	if err := s.sqliteDb.Where("uuid=?", uuid).First(&m).Error; err != nil {

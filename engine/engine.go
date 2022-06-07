@@ -408,6 +408,8 @@ func (e *RuleEngine) Stop() {
 		Device.Device.Stop()
 		return true
 	})
+	// 外挂停了
+	e.SideCar.Stop()
 	// 回收资源
 	runtime.Gosched()
 	runtime.GC()

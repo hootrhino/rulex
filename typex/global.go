@@ -4,6 +4,8 @@ import "context"
 
 // Global context
 var GCTX = context.Background()
+var LUA_LOGGER *LogWriter
+var GLOBAL_LOGGER *LogWriter
 
 // child context
 type CCTX struct {

@@ -25,7 +25,7 @@ func RunRulex(dbPath string, iniPath string) {
 	core.SetLogLevel()
 	core.SetPerformance()
 	c := make(chan os.Signal, 1)
-	signal.Notify(c, syscall.SIGINT, syscall.SIGABRT)
+	signal.Notify(c, syscall.SIGINT, syscall.SIGABRT, syscall.SIGTERM)
 	engine := NewRuleEngine(mainConfig)
 	engine.Start()
 
@@ -80,7 +80,7 @@ func RunRulex(dbPath string, iniPath string) {
 		}
 	}
 	//
-	// Load out end from sqlite
+	// Load out from sqlite
 	//
 	for _, mOutEnd := range httpServer.AllMOutEnd() {
 		config := map[string]interface{}{}
@@ -112,16 +112,28 @@ func RunRulex(dbPath string, iniPath string) {
 			log.Error("Device load failed:", err)
 		}
 	}
+	// 加载外挂
+	for _, mGoods := range httpServer.AllGoods() {
+		newGoods := typex.Goods{
+			UUID:        mGoods.UUID,
+			Addr:        mGoods.Addr,
+			Description: mGoods.Description,
+			Args:        mGoods.Args,
+		}
+		if err := engine.LoadGoods(newGoods); err != nil {
+			log.Error("Goods load failed:", err)
+		}
+	}
 	s := <-c
 	log.Warn("Received stop signal:", s)
 	engine.Stop()
 	//
 	// 关闭日志器
 	//
-	if err := core.GLOBAL_LOGGER.Close(); err != nil {
+	if err := typex.GLOBAL_LOGGER.Close(); err != nil {
 		return
 	}
-	if err := rulexlib.LUA_LOGGER.Close(); err != nil {
+	if err := typex.LUA_LOGGER.Close(); err != nil {
 		return
 	}
 	os.Exit(0)
