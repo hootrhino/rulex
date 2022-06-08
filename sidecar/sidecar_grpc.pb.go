@@ -19,7 +19,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type SidecarClient interface {
 	// 初始化, 主要是为了传配置进去
-	Init(ctx context.Context, in *Config, opts ...grpc.CallOption) (*Request, error)
+	Init(ctx context.Context, in *Config, opts ...grpc.CallOption) (*Response, error)
 	// 启动
 	Start(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error)
 	// 获取状态
@@ -40,8 +40,8 @@ func NewSidecarClient(cc grpc.ClientConnInterface) SidecarClient {
 	return &sidecarClient{cc}
 }
 
-func (c *sidecarClient) Init(ctx context.Context, in *Config, opts ...grpc.CallOption) (*Request, error) {
-	out := new(Request)
+func (c *sidecarClient) Init(ctx context.Context, in *Config, opts ...grpc.CallOption) (*Response, error) {
+	out := new(Response)
 	err := c.cc.Invoke(ctx, "/sidecar.sidecar/Init", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -99,7 +99,7 @@ func (c *sidecarClient) Stop(ctx context.Context, in *Request, opts ...grpc.Call
 // for forward compatibility
 type SidecarServer interface {
 	// 初始化, 主要是为了传配置进去
-	Init(context.Context, *Config) (*Request, error)
+	Init(context.Context, *Config) (*Response, error)
 	// 启动
 	Start(context.Context, *Request) (*Response, error)
 	// 获取状态
@@ -117,7 +117,7 @@ type SidecarServer interface {
 type UnimplementedSidecarServer struct {
 }
 
-func (UnimplementedSidecarServer) Init(context.Context, *Config) (*Request, error) {
+func (UnimplementedSidecarServer) Init(context.Context, *Config) (*Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Init not implemented")
 }
 func (UnimplementedSidecarServer) Start(context.Context, *Request) (*Response, error) {

@@ -1,6 +1,6 @@
 #! /bin/bash
 # set Env path
-export GOROOT=/usr/local/go
+export GOROOT=/usr/bin/go
 export GOPATH=$HOME/go
 export GOBIN=$GOPATH/bin
 export PATH=$PATH:$GOROOT:$GOPATH:$GOBIN
