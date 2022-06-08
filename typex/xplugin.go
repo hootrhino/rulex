@@ -14,7 +14,7 @@ import "gopkg.in/ini.v1"
 //
 type XPlugin interface {
 	Init(*ini.Section) error // 参数为外部配置
-	Start() error
+	Start(RuleX) error
 	Stop() error
 	PluginMetaInfo() XPluginMetaInfo
 }

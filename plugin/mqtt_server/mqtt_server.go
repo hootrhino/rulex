@@ -45,7 +45,7 @@ func (s *MqttServer) Init(config *ini.Section) error {
 	return nil
 }
 
-func (s *MqttServer) Start() error {
+func (s *MqttServer) Start(r typex.RuleX) error {
 	server := mqttServer.New()
 	tcpPort := listeners.NewTCP(defaultTransport, fmt.Sprintf(":%v", s.Port))
 

@@ -514,7 +514,7 @@ func (e *RuleEngine) LoadPlugin(sectionK string, p typex.XPlugin) error {
 		return errors.New("plugin already installed:" + p.PluginMetaInfo().Name)
 	}
 
-	if err := p.Start(); err != nil {
+	if err := p.Start(e); err != nil {
 		return err
 	}
 

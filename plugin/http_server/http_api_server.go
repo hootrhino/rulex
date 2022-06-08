@@ -66,7 +66,7 @@ func (hh *HttpApiServer) Init(config *ini.Section) error {
 //
 // HttpApiServer Start
 //
-func (hh *HttpApiServer) Start() error {
+func (hh *HttpApiServer) Start(r typex.RuleX) error {
 	hh.ginEngine.GET("/", hh.addRoute(func(c *gin.Context, has *HttpApiServer, rx typex.RuleX) {
 		c.Request.URL.Path = "/static/"
 		hh.ginEngine.HandleContext(c)
