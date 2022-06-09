@@ -32,7 +32,7 @@ func (tss *tss200_v_0_2_Driver) Test() error {
 	return nil
 }
 
-func (tss *tss200_v_0_2_Driver) Init() error {
+func (tss *tss200_v_0_2_Driver) Init(map[string]string) error {
 	return nil
 }
 

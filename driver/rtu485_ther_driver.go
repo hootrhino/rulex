@@ -41,7 +41,7 @@ func (rtu485 *rtu485_THer_Driver) Test() error {
 	return nil
 }
 
-func (rtu485 *rtu485_THer_Driver) Init() error {
+func (rtu485 *rtu485_THer_Driver) Init(map[string]string) error {
 	return nil
 }
 

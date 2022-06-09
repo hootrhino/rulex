@@ -16,7 +16,7 @@ func (dm *DemoPlugin) Init(config *ini.Section) error {
 	return nil
 }
 
-func (dm *DemoPlugin) Start() error {
+func (dm *DemoPlugin) Start(typex.RuleX) error {
 	return nil
 }
 func (dm *DemoPlugin) Stop() error {

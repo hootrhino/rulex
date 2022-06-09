@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"rulex/core"
+	"rulex/sidecar"
 	"rulex/source"
 	"rulex/statistics"
 	"rulex/target"
@@ -24,7 +25,7 @@ import (
 // 规则引擎
 //
 type RuleEngine struct {
-	SideCar core.SideCar       `json:"-"`
+	SideCar sidecar.SideCar    `json:"-"`
 	Hooks   *sync.Map          `json:"hooks"`
 	Rules   *sync.Map          `json:"rules"`
 	Plugins *sync.Map          `json:"plugins"`
@@ -40,7 +41,7 @@ type RuleEngine struct {
 //
 func NewRuleEngine(config typex.RulexConfig) typex.RuleX {
 	return &RuleEngine{
-		SideCar: core.NewSideCarManager(typex.GCTX),
+		SideCar: sidecar.NewSideCarManager(typex.GCTX),
 		Plugins: &sync.Map{},
 		Hooks:   &sync.Map{},
 		Rules:   &sync.Map{},
@@ -401,7 +402,7 @@ func (e *RuleEngine) Stop() {
 		plugin.Stop()
 		return true
 	})
-	// 停止所有外挂 设备
+	// 停止所有设备
 	e.Devices.Range(func(key, value interface{}) bool {
 		Device := value.(*typex.Device)
 		log.Info("Stop Device:", Device.Name)
@@ -409,7 +410,13 @@ func (e *RuleEngine) Stop() {
 		return true
 	})
 	// 外挂停了
-	e.SideCar.Stop()
+	e.AllGoods().Range(func(key, value interface{}) bool {
+		goodsProcess := value.(*sidecar.GoodsProcess)
+		log.Info("Stop Goods Process:", goodsProcess.UUID())
+		goodsProcess.Stop()
+		return true
+	})
+
 	// 回收资源
 	runtime.Gosched()
 	runtime.GC()
@@ -694,7 +701,7 @@ func (e *RuleEngine) SnapshotDump() string {
 * 加载外部程序
 *
  */
-func (e *RuleEngine) LoadGoods(goods typex.Goods) error {
+func (e *RuleEngine) LoadGoods(goods sidecar.Goods) error {
 	return e.SideCar.Fork(goods)
 }
 
@@ -719,13 +726,20 @@ func (e *RuleEngine) AllGoods() *sync.Map {
 //
 // 获取某个外部驱动信息
 //
-func (e *RuleEngine) GetGoods(uuid string) *typex.Goods {
+func (e *RuleEngine) GetGoods(uuid string) *sidecar.Goods {
 	goodsProcess := e.SideCar.Get(uuid)
-	goods := typex.Goods{
+	goods := sidecar.Goods{
 		UUID:        goodsProcess.UUID(),
 		Addr:        goodsProcess.Addr(),
 		Description: goodsProcess.Description(),
 		Args:        goodsProcess.Args(),
 	}
 	return &goods
+}
+
+//
+// 取一个进程
+//
+func (e *RuleEngine) PickUpProcess(uuid string) *sidecar.GoodsProcess {
+	return e.SideCar.Get(uuid)
 }

@@ -44,7 +44,7 @@ func NewRawUartDriver(
 //
 //
 //
-func (a *rawUartDriver) Init() error {
+func (a *rawUartDriver) Init(map[string]string) error {
 	a.state = typex.DRIVER_RUNNING
 	return nil
 }

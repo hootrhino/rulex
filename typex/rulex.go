@@ -1,6 +1,9 @@
 package typex
 
-import "sync"
+import (
+	"rulex/sidecar"
+	"sync"
+)
 
 //
 // Global config
@@ -151,9 +154,14 @@ type RuleX interface {
 	//
 	RemoveDevice(string)
 	//
+	// 取一个进程
+	//
+	PickUpProcess(uuid string) *sidecar.GoodsProcess
+
+	//
 	// 加载外部驱动
 	//
-	LoadGoods(goods Goods) error
+	LoadGoods(goods sidecar.Goods) error
 	//
 	// 删除外部驱动
 	//
@@ -165,7 +173,7 @@ type RuleX interface {
 	//
 	// 获取某个外部驱动
 	//
-	GetGoods(uuid string) *Goods
+	GetGoods(uuid string) *sidecar.Goods
 }
 
 //

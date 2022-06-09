@@ -34,7 +34,7 @@ func (d *modBusRtuDriver) Test() error {
 	return nil
 }
 
-func (d *modBusRtuDriver) Init() error {
+func (d *modBusRtuDriver) Init(map[string]string) error {
 	return nil
 }
 

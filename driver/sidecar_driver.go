@@ -1,39 +1,25 @@
 // 拖车驱动
 package driver
 
-//   // 初始化, 主要是为了传配置进去
-//   rpc Init (Config) returns (Request) {}
-//   // 启动
-//   rpc Start (Request) returns (Response) {}
-//   // 获取状态
-//   rpc Status (Request) returns (Response) {}
-//   // 读数据
-//   rpc Read (ReadRequest) returns (ReadResponse) {}
-//   // 写数据
-//   rpc Write (WriteRequest) returns (WriteResponse) {}
-//   // 停止
-//   rpc Stop (Request) returns (Response) {}
-//
 import (
 	"context"
 	"rulex/sidecar"
 	"rulex/typex"
 
+	"github.com/ngaut/log"
 	"google.golang.org/grpc"
 )
 
 type SideCarDriver struct {
 	state      typex.DriverState
-	device     *typex.Device
 	RuleEngine typex.RuleX
 	client     sidecar.SidecarClient
+	config     map[string]string
 }
 
-func NewSideCarDriver(d *typex.Device,
-	grpcConn *grpc.ClientConn, e typex.RuleX) typex.XExternalDriver {
+func NewSideCarDriver(e typex.RuleX, grpcConn *grpc.ClientConn) typex.XExternalDriver {
 	sideCarDriver := &SideCarDriver{
 		state:      typex.DRIVER_STOP,
-		device:     d,
 		RuleEngine: e,
 		client:     sidecar.NewSidecarClient(grpcConn),
 	}
@@ -41,24 +27,36 @@ func NewSideCarDriver(d *typex.Device,
 
 }
 func (sc *SideCarDriver) Test() error {
-	_, err := sc.client.Status(context.Background(), &sidecar.Request{})
-	if err != nil {
+	if err := sc.t(); err != nil {
+		log.Error(err)
 		return err
 	}
 	return nil
 }
 
-func (sc *SideCarDriver) Init() error {
+func (sc *SideCarDriver) Init(config map[string]string) error {
+	sc.config = config
+	_, err := sc.client.Init(context.Background(), &sidecar.Config{
+		Kv: sc.config,
+	})
+	if err != nil {
+		log.Error(err)
+		return err
+	}
 	return nil
 }
 
 func (sc *SideCarDriver) Work() error {
+	_, err := sc.client.Start(context.Background(), &sidecar.Request{})
+	if err != nil {
+		log.Error(err)
+		return err
+	}
 	return nil
 }
 
 func (sc *SideCarDriver) State() typex.DriverState {
-	_, err := sc.client.Status(context.Background(), &sidecar.Request{})
-	if err != nil {
+	if sc.t() != nil {
 		return typex.DRIVER_STOP
 	}
 	return typex.DRIVER_RUNNING
@@ -72,6 +70,7 @@ func (sc *SideCarDriver) State() typex.DriverState {
 func (sc *SideCarDriver) Read(data []byte) (int, error) {
 	response, err := sc.client.Read(context.Background(), &sidecar.ReadRequest{})
 	if err != nil {
+		log.Error(err)
 		return 0, err
 	}
 	copy(data, response.GetData())
@@ -88,6 +87,7 @@ func (sc *SideCarDriver) Write(data []byte) (int, error) {
 		Data: data,
 	})
 	if err != nil {
+		log.Error(err)
 		return 0, err
 	}
 	return int(response.Code), nil
@@ -103,6 +103,22 @@ func (sc *SideCarDriver) DriverDetail() *typex.DriverDetail {
 }
 
 func (sc *SideCarDriver) Stop() error {
-	sc.client.Stop(context.Background(), &sidecar.Request{})
+	_, err := sc.client.Stop(context.Background(), &sidecar.Request{})
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	return nil
+}
+
+//----------------------------------------------------------------------
+// 私有函数
+//----------------------------------------------------------------------
+func (sc *SideCarDriver) t() error {
+	_, err := sc.client.Status(context.Background(), &sidecar.Request{})
+	if err != nil {
+		log.Error(err)
+		return err
+	}
 	return nil
 }

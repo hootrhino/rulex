@@ -61,11 +61,10 @@ func NewUartDriver(
 //
 //
 //
-func (a *uartDriver) Init() error {
+func (a *uartDriver) Init(map[string]string) error {
 	a.state = typex.DRIVER_RUNNING
 	return nil
 }
-
 
 func (a *uartDriver) Work() error {
 	ticker := time.NewTicker(time.Duration(time.Microsecond * 400))

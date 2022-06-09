@@ -1,4 +1,4 @@
-package core
+package sidecar
 
 //
 // Sidecar就是拖车,带着小车一起跑,比喻了SideCar实际上是个进程管理器
@@ -15,7 +15,6 @@ package core
 import (
 	"context"
 	"encoding/json"
-	"rulex/typex"
 	"syscall"
 
 	"os"
@@ -29,8 +28,23 @@ import (
 // SideCar 接口
 //--------------------------------------------------------------------------------------------------
 
+/*
+*
+* 子进程的配置, 将 SocketAddr 传入 GRPC 客户端, Args 传入外挂的启动参数
+*  $> /test_driver Args
+ */
+type Goods struct {
+	UUID string
+	// TCP or Unix Socket
+	Addr string
+	// Description text
+	Description string
+	// Additional Args
+	Args []string
+}
+
 type SideCar interface {
-	Fork(typex.Goods) error
+	Fork(Goods) error
 	Get(addr string) *GoodsProcess
 	Save(*GoodsProcess)
 	Remove(uuid string)
@@ -79,7 +93,7 @@ func (t GoodsProcess) String() string {
 	b, _ := json.Marshal(r)
 	return string(b)
 }
-func (scm *GoodsProcess) stop() {
+func (scm *GoodsProcess) Stop() {
 	if scm.cmd != nil {
 		if scm.cmd.Process != nil {
 			scm.cmd.Process.Kill()
@@ -114,7 +128,7 @@ func NewSideCarManager(ctx context.Context) SideCar {
 * 执行外
 *
  */
-func (scm *SidecarManager) Fork(goods typex.Goods) error {
+func (scm *SidecarManager) Fork(goods Goods) error {
 	log.Infof("fork goods process, (uuid = %v, addr = %v, args = %v)", goods.UUID, goods.Addr, goods.Args)
 	cmd := exec.Command(goods.Addr, goods.Args...)
 	cmd.Stdin = os.Stdin
@@ -159,17 +173,17 @@ func (scm *SidecarManager) Save(goodsProcess *GoodsProcess) {
 func (scm *SidecarManager) Remove(uuid string) {
 	v, ok := scm.goodsProcessMap.Load(uuid)
 	if ok {
-		(v.(*GoodsProcess)).stop()
+		(v.(*GoodsProcess)).Stop()
 		scm.goodsProcessMap.Delete(uuid)
 	}
 }
 
 //
-// 停止外挂运行时管理器
+// 停止外挂运行时管理器, 这个要是停了基本上就是程序结束了
 //
 func (scm *SidecarManager) Stop() {
 	scm.goodsProcessMap.Range(func(key, value interface{}) bool {
-		(value.(*GoodsProcess)).stop()
+		(value.(*GoodsProcess)).Stop()
 		return true
 	})
 	scm = nil

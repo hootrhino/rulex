@@ -1,6 +1,7 @@
 package httpserver
 
 import (
+	"rulex/sidecar"
 	"rulex/typex"
 	"rulex/utils"
 
@@ -15,9 +16,9 @@ import (
 func Goods(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
 	if uuid == "" {
-		data := []*typex.Goods{}
+		data := []*sidecar.Goods{}
 		e.AllGoods().Range(func(key, value interface{}) bool {
-			v := value.(*typex.Goods)
+			v := value.(*sidecar.Goods)
 			data = append(data, v)
 			return true
 		})
@@ -72,7 +73,7 @@ func CreateGoods(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		c.JSON(200, Error400(err))
 		return
 	}
-	goods := typex.Goods{
+	goods := sidecar.Goods{
 		UUID:        mGoods.UUID,
 		Addr:        mGoods.Addr,
 		Description: mGoods.Description,

@@ -2,6 +2,7 @@ package engine
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"rulex/device"
 	"rulex/typex"
@@ -60,12 +61,6 @@ func (e *RuleEngine) RemoveDevice(uuid string) {
 //
 //
 func (e *RuleEngine) LoadDevice(deviceInfo *typex.Device) error {
-	//
-	// TODO `SIMPLE` Just for development stage; it will be deleted before tag
-	//
-	if deviceInfo.Type == "SIMPLE" {
-		return startDevices(device.NewSimpleDevice(deviceInfo.UUID, e), deviceInfo, e)
-	}
 	if deviceInfo.Type == "TSS200V02" {
 		return startDevices(device.NewTS200Sensor(deviceInfo.UUID, e), deviceInfo, e)
 	}
@@ -73,6 +68,11 @@ func (e *RuleEngine) LoadDevice(deviceInfo *typex.Device) error {
 
 }
 
+/*
+*
+* 启动一个和RULEX直连的外部设备
+*
+ */
 func startDevices(abstractDevice typex.XDevice, deviceInfo *typex.Device, e *RuleEngine) error {
 	e.SaveDevice(deviceInfo)
 	// Load config
@@ -90,7 +90,7 @@ func startDevices(abstractDevice typex.XDevice, deviceInfo *typex.Device, e *Rul
 	// Bind
 	deviceInfo.Device = abstractDevice
 	// start
-	if err := startDevice(abstractDevice, e, deviceInfo.UUID); err != nil {
+	if err := startDevice(abstractDevice, e); err != nil {
 		log.Error(err)
 		e.RemoveDevice(deviceInfo.UUID)
 		return err
@@ -127,16 +127,41 @@ func startDevices(abstractDevice typex.XDevice, deviceInfo *typex.Device, e *Rul
 //
 //
 //
-func startDevice(abstractDevice typex.XDevice, e *RuleEngine, devId string) error {
+func startDevice(abstractDevice typex.XDevice, e *RuleEngine) error {
 	ctx, cancelCTX := typex.NewCCTX()
 	if err := abstractDevice.Start(typex.CCTX{Ctx: ctx, CancelCTX: cancelCTX}); err != nil {
-		log.Error("Source start error:", err)
+		log.Error("abstractDevice start error:", err)
 		return err
+	}
+	if abstractDevice.Driver() != nil {
+		if abstractDevice.Driver().State() == typex.DRIVER_RUNNING {
+			abstractDevice.Driver().Stop()
+		}
+	}
+	//----------------------------------
+	// 驱动也要停了, 然后重启
+	//----------------------------------
+	if abstractDevice.Driver() != nil {
+		if abstractDevice.Driver().State() == typex.DRIVER_RUNNING {
+			abstractDevice.Driver().Stop()
+		}
+		// Start driver
+		if err := abstractDevice.Driver().Init(map[string]string{}); err != nil {
+			log.Error("Driver initial error:", err)
+			return errors.New("Driver initial error:" + err.Error())
+		}
+		log.Infof("Try to start driver: [%v]", abstractDevice.Driver().DriverDetail().Name)
+		if err := abstractDevice.Driver().Work(); err != nil {
+			log.Error("Driver work error:", err)
+			return errors.New("Driver work error:" + err.Error())
+		}
+		log.Infof("Driver start successfully: [%v]", abstractDevice.Driver().DriverDetail().Name)
 	}
 	return nil
 }
 
 func tryIfRestartDevice(abstractDevice typex.XDevice, e *RuleEngine, devId string) {
+	checkDeviceDriverState(abstractDevice)
 	// 当内存里面的设备状态已经停止的时候，及时更新数据库里的
 	// 此处本质上是个同步过程
 	if abstractDevice.Status() == typex.DEV_STOP {
@@ -145,8 +170,31 @@ func tryIfRestartDevice(abstractDevice typex.XDevice, e *RuleEngine, devId strin
 		abstractDevice.Stop()
 		runtime.Gosched()
 		runtime.GC()
-		startDevice(abstractDevice, e, devId)
+		startDevice(abstractDevice, e)
 	} else {
 		abstractDevice.Details().State = typex.DEV_RUNNING
 	}
+
+}
+
+/*
+*
+* 检查是否需要重新拉起资源
+* 这里也有优化点：不能手动控制内存回收可能会产生垃圾
+*
+ */
+func checkDeviceDriverState(abstractDevice typex.XDevice) {
+	if abstractDevice.Driver() == nil {
+		return
+	}
+	// 只有资源启动状态才拉起驱动
+	if abstractDevice.Status() == typex.DEV_RUNNING {
+		// 必须资源启动, 驱动才有重启意义
+		if abstractDevice.Driver().State() == typex.DRIVER_STOP {
+			log.Warn("Driver stopped:", abstractDevice.Driver().DriverDetail().Name)
+			// 只需要把资源给拉闸, 就会触发重启
+			abstractDevice.Stop()
+		}
+	}
+
 }

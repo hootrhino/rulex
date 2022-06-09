@@ -11,9 +11,13 @@ type DriverDetail struct {
 	Type        string `json:"type" binding:"required"`
 	Description string `json:"description" binding:"required"`
 }
+
+//
+// 驱动由源(Source)或者设备(Device)启动,驱动的状态(Status)被RULEX获取,或者被源或者设备获取后返回给RULEX
+//
 type XExternalDriver interface {
 	Test() error
-	Init() error
+	Init(map[string]string) error
 	Work() error
 	State() DriverState
 	Read([]byte) (int, error)

@@ -8,6 +8,7 @@ import (
 	httpserver "rulex/plugin/http_server"
 	mqttserver "rulex/plugin/mqtt_server"
 	"rulex/rulexlib"
+	"rulex/sidecar"
 	"rulex/typex"
 	"syscall"
 
@@ -114,7 +115,7 @@ func RunRulex(dbPath string, iniPath string) {
 	}
 	// 加载外挂
 	for _, mGoods := range httpServer.AllGoods() {
-		newGoods := typex.Goods{
+		newGoods := sidecar.Goods{
 			UUID:        mGoods.UUID,
 			Addr:        mGoods.Addr,
 			Description: mGoods.Description,
