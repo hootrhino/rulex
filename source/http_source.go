@@ -95,7 +95,7 @@ func (hh *httpInEndSource) Pause() {
 
 }
 func (hh *httpInEndSource) Status() typex.SourceState {
-	return typex.UP
+	return typex.SOURCE_UP
 }
 
 func (hh *httpInEndSource) Init(inEndId string, cfg map[string]interface{}) error {

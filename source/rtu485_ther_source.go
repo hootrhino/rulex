@@ -93,7 +93,7 @@ func (m *rtu485THerSource) Start(cctx typex.CCTX) error {
 	//---------------------------------------------------------------------------------
 	// Start
 	//---------------------------------------------------------------------------------
-	m.status = typex.UP
+	m.status = typex.SOURCE_UP
 	for _, slaverId := range m.slaverIds {
 		go func(ctx context.Context, slaverId byte, rtuDriver typex.XExternalDriver, handler *modbus.RTUClientHandler) {
 			ticker := time.NewTicker(time.Duration(5) * time.Second)
@@ -104,7 +104,7 @@ func (m *rtu485THerSource) Start(cctx typex.CCTX) error {
 				select {
 				case <-ctx.Done():
 					{
-						m.status = typex.DOWN
+						m.status = typex.SOURCE_DOWN
 						return
 					}
 				default:
@@ -117,7 +117,7 @@ func (m *rtu485THerSource) Start(cctx typex.CCTX) error {
 				n, err := rtuDriver.Read(buffer)
 				if err != nil {
 					log.Error("uart read error, SlaverId: ", slaverId, " error:", err, ", may should check uart config if baud rate is correct?")
-					m.status = typex.DOWN
+					m.status = typex.SOURCE_DOWN
 					return
 				}
 				b, _ := json.Marshal(_data{
@@ -139,7 +139,7 @@ func (m *rtu485THerSource) Details() *typex.InEnd {
 }
 
 func (m *rtu485THerSource) Test(inEndId string) bool {
-	return m.status == typex.UP
+	return m.status == typex.SOURCE_UP
 }
 
 func (m *rtu485THerSource) Enabled() bool {

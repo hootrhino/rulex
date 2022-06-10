@@ -260,9 +260,9 @@ func (s *snmpSource) Status() typex.SourceState {
 	}
 
 	if len(r) == len(s.snmpClients) {
-		return typex.UP
+		return typex.SOURCE_UP
 	} else {
-		return typex.DOWN
+		return typex.SOURCE_DOWN
 	}
 }
 

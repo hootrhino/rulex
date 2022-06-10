@@ -95,12 +95,12 @@ func (mm *mqttOutEndTarget) Pause() {
 func (mm *mqttOutEndTarget) Status() typex.SourceState {
 	if mm.client != nil {
 		if mm.client.IsConnectionOpen() {
-			return typex.UP
+			return typex.SOURCE_UP
 		} else {
-			return typex.DOWN
+			return typex.SOURCE_DOWN
 		}
 	} else {
-		return typex.DOWN
+		return typex.SOURCE_DOWN
 	}
 
 }

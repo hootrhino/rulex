@@ -87,7 +87,7 @@ func CreateOutEnd(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	} else {
 		outEnd := e.GetOutEnd(form.UUID)
 		if outEnd != nil {
-			outEnd.SetState(typex.DOWN)
+			outEnd.SetState(typex.SOURCE_DOWN)
 			outEnd.Target.Reload() // 重启
 			hh.DeleteMOutEnd(outEnd.UUID)
 			if err := hh.InsertMOutEnd(&MOutEnd{

@@ -92,10 +92,10 @@ func (nt *natsTarget) Pause() {
 func (nt *natsTarget) Status() typex.SourceState {
 	if nt.natsConnector != nil {
 		if nt.natsConnector.IsConnected() {
-			return typex.UP
+			return typex.SOURCE_UP
 		}
 	}
-	return typex.DOWN
+	return typex.SOURCE_DOWN
 
 }
 

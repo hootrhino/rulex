@@ -93,7 +93,7 @@ func (u *udpSource) Pause() {
 }
 
 func (u *udpSource) Status() typex.SourceState {
-	return typex.UP
+	return typex.SOURCE_UP
 }
 
 func (u *udpSource) Stop() {

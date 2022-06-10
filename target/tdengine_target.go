@@ -142,9 +142,9 @@ func (td *tdEngineTarget) Pause() {
 func (td *tdEngineTarget) Status() typex.SourceState {
 	if err := execQuery(td.client, td.Username, td.Password, "SELECT CLIENT_VERSION();", td.Url); err != nil {
 		log.Error(err)
-		return typex.DOWN
+		return typex.SOURCE_DOWN
 	}
-	return typex.UP
+	return typex.SOURCE_UP
 }
 
 //
@@ -154,8 +154,6 @@ func (td *tdEngineTarget) Details() *typex.OutEnd {
 	return td.RuleEngine.GetOutEnd(td.PointId)
 
 }
-
-
 
 //
 // 驱动接口, 通常用来和硬件交互

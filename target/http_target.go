@@ -63,7 +63,7 @@ func (ht *HTTPTarget) Pause() {
 
 }
 func (ht *HTTPTarget) Status() typex.SourceState {
-	return typex.UP
+	return typex.SOURCE_UP
 
 }
 func (ht *HTTPTarget) To(data interface{}) (interface{}, error) {

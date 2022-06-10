@@ -4,9 +4,9 @@ package typex
 type SourceState int
 
 const (
-	DOWN  SourceState = 0
-	UP    SourceState = 1
-	PAUSE SourceState = 2
+	SOURCE_DOWN  SourceState = 0
+	SOURCE_UP    SourceState = 1
+	SOURCE_PAUSE SourceState = 2
 )
 
 //

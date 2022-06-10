@@ -98,9 +98,9 @@ func (m *MongoTarget) Status() typex.SourceState {
 	err1 := m.client.Ping(m.Ctx, nil)
 	if err1 != nil {
 		log.Error(err1)
-		return typex.DOWN
+		return typex.SOURCE_DOWN
 	} else {
-		return typex.UP
+		return typex.SOURCE_UP
 	}
 }
 

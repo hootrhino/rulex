@@ -143,7 +143,7 @@ func (cs *cs104Source) Pause() {
 // 获取资源状态
 //
 func (cs *cs104Source) Status() typex.SourceState {
-	return typex.UP
+	return typex.SOURCE_UP
 
 }
 

@@ -95,7 +95,7 @@ func (cc *coAPInEndSource) Pause() {
 
 }
 func (cc *coAPInEndSource) Status() typex.SourceState {
-	return typex.UP
+	return typex.SOURCE_UP
 }
 
 func (cc *coAPInEndSource) Init(inEndId string, cfg map[string]interface{}) error {

@@ -89,7 +89,7 @@ func (s7 *siemensS7Source) Start(cctx typex.CCTX) error {
 	handler.Timeout = time.Duration(*mainConfig.Timeout) * time.Second
 	handler.IdleTimeout = time.Duration(*mainConfig.IdleTimeout) * time.Second
 	s7.client = gos7.NewClient(handler)
-	_status = typex.UP
+	_status = typex.SOURCE_UP
 	ticker := time.NewTicker(time.Duration(*mainConfig.Frequency) * time.Second)
 	for _, d := range mainConfig.Dbs {
 		log.Infof("Start read: Tag:%v Address:%v Start:%v Size:%v", d.Tag, d.Address, d.Start, d.Size)
@@ -113,7 +113,7 @@ func (s7 *siemensS7Source) Start(cctx typex.CCTX) error {
 				}
 				err := s7.client.AGReadDB(d.Address, d.Start, d.Size, dataBuffer)
 				if err != nil {
-					_status = typex.DOWN
+					_status = typex.SOURCE_DOWN
 					log.Error(err)
 				} else {
 					// log.Info("client.AGReadDB dataBuffer:", dataBuffer)

@@ -1,0 +1,121 @@
+package engine
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"rulex/target"
+	"rulex/typex"
+	"runtime"
+	"time"
+
+	"github.com/ngaut/log"
+)
+
+//
+// LoadOutEnd
+//
+func (e *RuleEngine) LoadOutEnd(out *typex.OutEnd) error {
+	if out.Type == typex.MONGO_SINGLE {
+		return startTarget(target.NewMongoTarget(e), out, e)
+	}
+	if out.Type == typex.MQTT_TARGET {
+		return startTarget(target.NewMqttTarget(e), out, e)
+	}
+	if out.Type == typex.NATS_TARGET {
+		return startTarget(target.NewNatsTarget(e), out, e)
+	}
+	if out.Type == typex.HTTP_TARGET {
+		return startTarget(target.NewHTTPTarget(e), out, e)
+	}
+	if out.Type == typex.TDENGINE_TARGET {
+		return startTarget(target.NewTdEngineTarget(e), out, e)
+	}
+	if out.Type == typex.GRPC_CODEC_TARGET {
+		return startTarget(target.NewCodecTarget(e), out, e)
+	}
+	return errors.New("unsupported target type:" + out.Type.String())
+}
+
+//
+// Start output target
+//
+// Target life cycle:
+//     Register -> Start -> running/restart cycle
+//
+func startTarget(target typex.XTarget, out *typex.OutEnd, e typex.RuleX) error {
+	//
+	// 先注册, 如果出问题了直接删除就行
+	//
+	e.SaveOutEnd(out)
+
+	// Load config
+	config := e.GetOutEnd(out.UUID).Config
+	if config == nil {
+		e.RemoveOutEnd(out.UUID)
+		err := fmt.Errorf("target [%v] config is nil", out.Name)
+		return err
+	}
+	if err := target.Init(out.UUID, config); err != nil {
+		log.Error(err)
+		e.RemoveInEnd(out.UUID)
+		return err
+	}
+	// 然后启动资源
+	ctx, cancelCTX := typex.NewCCTX()
+	if err := target.Start(typex.CCTX{Ctx: ctx, CancelCTX: cancelCTX}); err != nil {
+		log.Error(err)
+		e.RemoveOutEnd(out.UUID)
+		return err
+	}
+	// Set sources to inend
+	out.Target = target
+	//
+	ticker := time.NewTicker(time.Duration(time.Second * 5))
+	tryIfRestartTarget(target, e, out.UUID)
+	go func(ctx context.Context) {
+
+		// 5 seconds
+		//
+	TICKER:
+		<-ticker.C
+		select {
+		case <-ctx.Done():
+			{
+				return
+			}
+		default:
+			{
+				goto CHECK
+			}
+		}
+	CHECK:
+		{
+			if target.Details() == nil {
+				return
+			}
+			tryIfRestartTarget(target, e, out.UUID)
+			goto TICKER
+		}
+
+	}(typex.GCTX)
+	log.Infof("Target [%v, %v] load successfully", out.Name, out.UUID)
+	return nil
+}
+
+//
+// 监测状态, 如果挂了重启
+//
+func tryIfRestartTarget(target typex.XTarget, e typex.RuleX, id string) {
+	if target.Status() == typex.SOURCE_DOWN {
+		target.Details().State = typex.SOURCE_DOWN
+		log.Warnf("Target [%v, %v] down. try to restart it", target.Details().Name, target.Details().UUID)
+		target.Stop()
+		runtime.Gosched()
+		runtime.GC()
+		ctx, cancelCTX := typex.NewCCTX()
+		target.Start(typex.CCTX{Ctx: ctx, CancelCTX: cancelCTX})
+	} else {
+		target.Details().State = typex.SOURCE_UP
+	}
+}

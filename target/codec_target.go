@@ -29,7 +29,7 @@ type codecTarget struct {
 }
 
 func NewCodecTarget(rx typex.RuleX) typex.XTarget {
-	_state = typex.DOWN
+	_state = typex.SOURCE_DOWN
 	ct := &codecTarget{}
 	ct.RuleEngine = rx
 	return ct
@@ -72,7 +72,7 @@ func (ct *codecTarget) Start(cctx typex.CCTX) error {
 	}
 	ct.rpcConnection = rpcConnection
 	ct.client = rulexrpc.NewCodecClient(rpcConnection)
-	_state = typex.UP
+	_state = typex.SOURCE_UP
 	return nil
 
 }
@@ -137,15 +137,15 @@ func (ct *codecTarget) To(data interface{}) (interface{}, error) {
 	} else if ct._type == "ENCODE" {
 		response, err = ct.client.Encode(ct.Ctx, dataRequest)
 	} else {
-		_state = typex.DOWN
+		_state = typex.SOURCE_DOWN
 		return nil, fmt.Errorf("unknown operate type:%s", ct._type)
 	}
 	if err != nil {
-		_state = typex.DOWN
+		_state = typex.SOURCE_DOWN
 		return nil, err
 
 	}
-	_state = typex.UP
+	_state = typex.SOURCE_UP
 	return response.GetData(), nil
 }
 

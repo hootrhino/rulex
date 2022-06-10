@@ -20,7 +20,7 @@ import (
 )
 
 // 资源状态
-var _sourceState typex.SourceState = typex.UP
+var _sourceState typex.SourceState = typex.SOURCE_UP
 
 type modBusConfig struct {
 	Mode           string          `json:"mode" title:"工作模式" info:"RTU/TCP"`
@@ -250,7 +250,7 @@ func (m *modbusMasterSource) Start(cctx typex.CCTX) error {
 				select {
 				case <-ctx.Done():
 					{
-						_sourceState = typex.DOWN
+						_sourceState = typex.SOURCE_DOWN
 						return
 					}
 				default:
@@ -272,7 +272,7 @@ func (m *modbusMasterSource) Start(cctx typex.CCTX) error {
 						//
 						if err != nil {
 							log.Error("NewModbusMasterSource ReadData error: ", err)
-							_sourceState = typex.DOWN
+							_sourceState = typex.SOURCE_DOWN
 
 						} else {
 							data := registerData{

@@ -94,7 +94,7 @@ func (g *grpcInEndSource) Pause() {
 
 }
 func (g *grpcInEndSource) Status() typex.SourceState {
-	return typex.UP
+	return typex.SOURCE_UP
 }
 
 func (g *grpcInEndSource) Init(inEndId string, cfg map[string]interface{}) error {

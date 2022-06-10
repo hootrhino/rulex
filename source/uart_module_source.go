@@ -92,12 +92,12 @@ func (u *uartModuleSource) Status() typex.SourceState {
 	if u.uartDriver != nil {
 		if err := u.uartDriver.Test(); err != nil {
 			log.Error(err)
-			return typex.DOWN
+			return typex.SOURCE_DOWN
 		} else {
-			return typex.UP
+			return typex.SOURCE_UP
 		}
 	}
-	return typex.DOWN
+	return typex.SOURCE_DOWN
 }
 
 func (u *uartModuleSource) Stop() {

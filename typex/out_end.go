@@ -37,7 +37,7 @@ func NewOutEnd(t TargetType,
 	return &OutEnd{
 		UUID:        utils.MakeUUID("OUTEND"),
 		Type:        TargetType(t),
-		State:       DOWN,
+		State:       SOURCE_DOWN,
 		Name:        n,
 		Description: d,
 		Config:      c,
