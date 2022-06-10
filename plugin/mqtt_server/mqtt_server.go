@@ -67,6 +67,10 @@ func (s *MqttServer) Start(r typex.RuleX) error {
 			log.Warnf("Client disconnected:%s", client.ID)
 		}
 	}
+	s.mqttServer.Events.OnMessage = func(c events.Client, p events.Packet) (events.Packet, error) {
+		
+		return p, nil
+	}
 	log.Infof("MqttServer start at [0.0.0.0:%v] successfully", s.Port)
 	return nil
 }

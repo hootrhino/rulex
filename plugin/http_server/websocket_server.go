@@ -1,37 +1,46 @@
 package httpserver
 
 import (
-	"net/http"
-	"rulex/typex"
+	socketio "github.com/googollee/go-socket.io"
 
-	"github.com/gin-gonic/gin"
-	"github.com/gorilla/websocket"
 	"github.com/ngaut/log"
 )
 
-var upgrader = websocket.Upgrader{}
+/*
+*
+* 起一个websocket
+*
+ */
+func configSocketIO(server *socketio.Server) {
 
-func WS(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
-	ws(c.Writer, c.Request)
-}
-func ws(w http.ResponseWriter, r *http.Request) {
-	conn, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		log.Error(err)
-		return
-	}
-	defer conn.Close()
-	for {
-		mt, message, err := conn.ReadMessage()
-		if err != nil {
-			log.Error(err)
-			break
-		}
-		log.Debugf("Server recv: %s", message)
-		err = conn.WriteMessage(mt, []byte("test"))
-		if err != nil {
-			log.Error(err)
-			break
-		}
-	}
+	server.OnConnect("/", func(s socketio.Conn) error {
+		s.SetContext("")
+		log.Debug("connected:", s.ID())
+		return nil
+	})
+
+	server.OnEvent("/", "notice", func(s socketio.Conn, msg string) {
+		log.Debug("notice:", msg)
+		s.Emit("reply", "have "+msg)
+	})
+
+	server.OnEvent("/chat", "msg", func(s socketio.Conn, msg string) string {
+		s.SetContext(msg)
+		return "recv " + msg
+	})
+
+	server.OnEvent("/", "bye", func(s socketio.Conn) string {
+		last := s.Context().(string)
+		s.Emit("bye", last)
+		s.Close()
+		return last
+	})
+
+	server.OnError("/", func(s socketio.Conn, e error) {
+		log.Debug("meet error:", e)
+	})
+
+	server.OnDisconnect("/", func(s socketio.Conn, msg string) {
+		log.Debug("closed", msg)
+	})
 }

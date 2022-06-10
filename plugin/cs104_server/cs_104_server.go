@@ -71,7 +71,7 @@ func (cs *cs104Server) Init(config *ini.Section) error {
 	return nil
 }
 
-func (cs *cs104Server) Start() error {
+func (cs *cs104Server) Start(typex.RuleX) error {
 	cs.server.SetOnConnectionHandler(func(c asdu.Connect) {
 		log.Warn("Connected: ", c.Params())
 	})

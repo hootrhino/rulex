@@ -11,9 +11,9 @@ import (
 	"strings"
 	"time"
 
-	"gopkg.in/ini.v1"
-
 	"github.com/gin-gonic/gin"
+	socketio "github.com/googollee/go-socket.io"
+	"gopkg.in/ini.v1"
 
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/ngaut/log"
@@ -56,10 +56,25 @@ func (hh *HttpApiServer) Init(config *ini.Section) error {
 	hh.Host = mainConfig.Host
 	hh.Port = mainConfig.Port
 	configHttpServer(hh)
-
+	//
+	// Http server
+	//
 	go func(ctx context.Context, port int) {
-		hh.ginEngine.Run(":" + strconv.Itoa(port))
+		if err := hh.ginEngine.Run(":" + strconv.Itoa(port)); err != nil {
+			log.Fatalf("httpserver listen error: %s\n", err)
+		}
 	}(typex.GCTX, hh.Port)
+	//
+	// WebSocket server
+	//
+	socketioServer := socketio.NewServer(nil)
+	configSocketIO(socketioServer)
+	hh.ginEngine.GET("/socket.io", gin.WrapH(socketioServer))
+	go func(ctx context.Context) {
+		if err := socketioServer.Serve(); err != nil {
+			log.Fatalf("socketio listen error: %s\n", err)
+		}
+	}(context.Background())
 	return nil
 }
 
@@ -71,10 +86,7 @@ func (hh *HttpApiServer) Start(r typex.RuleX) error {
 		c.Request.URL.Path = "/static/"
 		hh.ginEngine.HandleContext(c)
 	}))
-	//
-	// WebSocket server
-	//
-	hh.ginEngine.GET("/ws", hh.addRoute(WS))
+
 	//
 	// Get all plugins
 	//

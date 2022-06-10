@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <script src="https://cdn.bootcdn.net/ajax/libs/socket.io/4.5.1/socket.io.min.js"></script>
+    <script>
+        var socket = io('ws://127.0.0.1:2580.socket.io', { transports: ['websocket'] });
+        socket.on('message', function (message) {
+            console.log('new message');
+            console.log(message);
+        });
+        socket.on('connect', function () {
+            console.log('socket connected');
+            socket.emit('send', { name: "my name", message: "hello" }, function (result) {
+                console.log('sended successfully');
+                console.log(result);
+            });
+        });
+    </script>
+</head>
+
+<body>
+
+</body>
+
+</html>
