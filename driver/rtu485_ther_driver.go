@@ -5,7 +5,9 @@
 package driver
 
 import (
+	"encoding/json"
 	"rulex/typex"
+	"rulex/utils"
 
 	"github.com/goburrow/modbus"
 )
@@ -24,19 +26,20 @@ import (
 type rtu485_THer_Driver struct {
 	state      typex.DriverState
 	client     modbus.Client
-	In         *typex.InEnd
+	device     *typex.Device
 	RuleEngine typex.RuleX
 }
 
-func NewRtu485_THer_Driver(in *typex.InEnd, e typex.RuleX,
+func NewRtu485_THer_Driver(d *typex.Device, e typex.RuleX,
 	client modbus.Client) typex.XExternalDriver {
 	return &rtu485_THer_Driver{
 		state:      typex.DRIVER_STOP,
-		In:         in,
+		device:     d,
 		RuleEngine: e,
 		client:     client,
 	}
 }
+
 func (rtu485 *rtu485_THer_Driver) Test() error {
 	return nil
 }
@@ -53,12 +56,22 @@ func (rtu485 *rtu485_THer_Driver) State() typex.DriverState {
 	return typex.DRIVER_RUNNING
 }
 
-
 func (rtu485 *rtu485_THer_Driver) Read(data []byte) (int, error) {
 	// Example: 0x02 0x92 0xFF 0x98
+	type sensor_data struct {
+		TEMP float32 `json:"temp"` //系数: 0.1
+		HUM  float32 `json:"hum"`  //系数: 0.1
+	}
 	results, err := rtu485.client.ReadHoldingRegisters(0x00, 2)
-	copy(data, results)
-	return len(results), err
+	if len(results) == 2 {
+		sdata := sensor_data{
+			HUM:  float32(utils.BToU16(results, 0, 1)) * 0.01,
+			TEMP: float32(utils.BToU16(results, 1, 2)) * 0.01,
+		}
+		bytes, _ := json.Marshal(sdata)
+		copy(data, bytes)
+	}
+	return len(data), err
 }
 
 func (rtu485 *rtu485_THer_Driver) Write(_ []byte) (int, error) {
@@ -69,9 +82,9 @@ func (rtu485 *rtu485_THer_Driver) Write(_ []byte) (int, error) {
 //---------------------------------------------------
 func (rtu485 *rtu485_THer_Driver) DriverDetail() *typex.DriverDetail {
 	return &typex.DriverDetail{
-		Name:        "RTU 485 Temperature And Humidity Detector Driver",
+		Name:        "Temperature And Humidity Sensor Driver",
 		Type:        "UART",
-		Description: "RTU 485 Temperature And Humidity Detector Driver",
+		Description: "RTU 485 Temperature And Humidity Sensor Driver",
 	}
 }
 

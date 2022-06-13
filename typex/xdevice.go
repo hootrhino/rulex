@@ -11,11 +11,18 @@ import (
 )
 
 type DeviceState int
-type DeviceType string
 
 const (
 	DEV_STOP    DeviceState = 0
 	DEV_RUNNING DeviceState = 1
+)
+
+type DeviceType string
+
+// 设备类型, 后期逐步增加
+const (
+	TSS200V02   DeviceType = "TSS200V02"
+	RTU485_THER DeviceType = "RTU485_THER"
 )
 
 // 设备元数据

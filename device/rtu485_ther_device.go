@@ -12,7 +12,7 @@ import (
 	"github.com/ngaut/log"
 )
 
-type tss200_v_0_2_sensor struct {
+type rtu485_ther struct {
 	typex.XStatus
 	status     typex.DeviceState
 	RuleEngine typex.RuleX
@@ -20,21 +20,21 @@ type tss200_v_0_2_sensor struct {
 	slaverIds  []byte
 }
 
-func NewTS200Sensor(deviceId string, e typex.RuleX) typex.XDevice {
-	tss := new(tss200_v_0_2_sensor)
+func NewRtu485Ther(deviceId string, e typex.RuleX) typex.XDevice {
+	tss := new(rtu485_ther)
 	tss.PointId = deviceId
 	tss.RuleEngine = e
 	return tss
 }
 
 //  初始化
-func (tss *tss200_v_0_2_sensor) Init(devId string, config map[string]interface{}) error {
+func (tss *rtu485_ther) Init(devId string, config map[string]interface{}) error {
 
 	return nil
 }
 
 // 启动
-func (tss *tss200_v_0_2_sensor) Start(cctx typex.CCTX) error {
+func (tss *rtu485_ther) Start(cctx typex.CCTX) error {
 	tss.Ctx = cctx.Ctx
 	tss.CancelCTX = cctx.CancelCTX
 	config := tss.RuleEngine.GetDevice(tss.PointId).Config
@@ -50,7 +50,7 @@ func (tss *tss200_v_0_2_sensor) Start(cctx typex.CCTX) error {
 
 	// 串口配置固定写法
 	handler := modbus.NewRTUClientHandler(rtuConfig.Uart)
-	handler.BaudRate = 4800
+	handler.BaudRate = 9600
 	handler.DataBits = 8
 	handler.Parity = "N"
 	handler.StopBits = 1
@@ -70,7 +70,7 @@ func (tss *tss200_v_0_2_sensor) Start(cctx typex.CCTX) error {
 		go func(ctx context.Context, slaverId byte, rtuDriver typex.XExternalDriver, handler *modbus.RTUClientHandler) {
 			ticker := time.NewTicker(time.Duration(5) * time.Second)
 			defer ticker.Stop()
-			buffer := make([]byte, 128) //128字节数据
+			buffer := make([]byte, 32) //32字节数据
 			for {
 				<-ticker.C
 				select {
@@ -98,7 +98,7 @@ func (tss *tss200_v_0_2_sensor) Start(cctx typex.CCTX) error {
 }
 
 // 从设备里面读数据出来
-func (tss *tss200_v_0_2_sensor) OnRead(data []byte) (int, error) {
+func (tss *rtu485_ther) OnRead(data []byte) (int, error) {
 
 	n, err := tss.driver.Read(data)
 	if err != nil {
@@ -109,37 +109,37 @@ func (tss *tss200_v_0_2_sensor) OnRead(data []byte) (int, error) {
 }
 
 // 把数据写入设备
-func (tss *tss200_v_0_2_sensor) OnWrite(_ []byte) (int, error) {
+func (tss *rtu485_ther) OnWrite(_ []byte) (int, error) {
 	return 0, nil
 }
 
 // 设备当前状态
-func (tss *tss200_v_0_2_sensor) Status() typex.DeviceState {
+func (tss *rtu485_ther) Status() typex.DeviceState {
 	return typex.DEV_RUNNING
 }
 
 // 停止设备
-func (tss *tss200_v_0_2_sensor) Stop() {
+func (tss *rtu485_ther) Stop() {
 	tss.CancelCTX()
 }
 
 // 设备属性，是一系列属性描述
-func (tss *tss200_v_0_2_sensor) Property() []typex.DeviceProperty {
+func (tss *rtu485_ther) Property() []typex.DeviceProperty {
 	return []typex.DeviceProperty{}
 }
 
 // 真实设备
-func (tss *tss200_v_0_2_sensor) Details() *typex.Device {
+func (tss *rtu485_ther) Details() *typex.Device {
 	return tss.RuleEngine.GetDevice(tss.PointId)
 }
 
 // 状态
-func (tss *tss200_v_0_2_sensor) SetState(status typex.DeviceState) {
+func (tss *rtu485_ther) SetState(status typex.DeviceState) {
 	tss.status = status
 
 }
 
 // 驱动
-func (tss *tss200_v_0_2_sensor) Driver() typex.XExternalDriver {
+func (tss *rtu485_ther) Driver() typex.XExternalDriver {
 	return tss.driver
 }
