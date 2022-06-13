@@ -94,8 +94,8 @@ func (sc *SideCarDriver) Write(data []byte) (int, error) {
 }
 
 //---------------------------------------------------
-func (sc *SideCarDriver) DriverDetail() *typex.DriverDetail {
-	return &typex.DriverDetail{
+func (sc *SideCarDriver) DriverDetail() typex.DriverDetail {
+	return typex.DriverDetail{
 		Name:        "SIDECAR-DRIVER",
 		Type:        "SIDECAR",
 		Description: "SIDECAR 通用GRPC协议驱动",

@@ -44,7 +44,6 @@ func (tss *tss200_v_0_2_Driver) State() typex.DriverState {
 	return typex.DRIVER_RUNNING
 }
 
-
 type _sensor_data struct {
 	TEMP float32 `json:"temp"` //系数: 0.01
 	HUM  float32 `json:"hum"`  //系数: 0.01
@@ -89,8 +88,8 @@ func (tss *tss200_v_0_2_Driver) Write(_ []byte) (int, error) {
 }
 
 //---------------------------------------------------
-func (tss *tss200_v_0_2_Driver) DriverDetail() *typex.DriverDetail {
-	return &typex.DriverDetail{
+func (tss *tss200_v_0_2_Driver) DriverDetail() typex.DriverDetail {
+	return typex.DriverDetail{
 		Name:        "TC-S200",
 		Type:        "UART",
 		Description: "TC-S200 系列空气质量监测仪",

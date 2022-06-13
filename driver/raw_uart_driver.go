@@ -85,8 +85,8 @@ func (a *rawUartDriver) Read(b []byte) (int, error) {
 func (a *rawUartDriver) Write(b []byte) (int, error) {
 	return a.serialPort.Write(b)
 }
-func (a *rawUartDriver) DriverDetail() *typex.DriverDetail {
-	return &typex.DriverDetail{
+func (a *rawUartDriver) DriverDetail() typex.DriverDetail {
+	return typex.DriverDetail{
 		Name:        "Raw Uart Driver",
 		Type:        "RAW_UART",
 		Description: "Raw Uart Driver",

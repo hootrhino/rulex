@@ -154,8 +154,8 @@ func (a *uartDriver) Write(b []byte) (int, error) {
 	}
 
 }
-func (a *uartDriver) DriverDetail() *typex.DriverDetail {
-	return &typex.DriverDetail{
+func (a *uartDriver) DriverDetail() typex.DriverDetail {
+	return typex.DriverDetail{
 		Name:        "General Uart Driver",
 		Type:        "UART",
 		Description: "A General Uart Driver Can Be Used For Common UART Device",

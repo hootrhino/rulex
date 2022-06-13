@@ -46,7 +46,6 @@ func (d *modBusRtuDriver) State() typex.DriverState {
 	return d.state
 }
 
-
 func (d *modBusRtuDriver) Read(data []byte) (int, error) {
 	return 0, nil
 
@@ -56,8 +55,8 @@ func (d *modBusRtuDriver) Write(_ []byte) (int, error) {
 	return 0, nil
 }
 
-func (d *modBusRtuDriver) DriverDetail() *typex.DriverDetail {
-	return &typex.DriverDetail{
+func (d *modBusRtuDriver) DriverDetail() typex.DriverDetail {
+	return typex.DriverDetail{
 		Name:        "ModBus RTU Driver",
 		Type:        "UART",
 		Description: "ModBus RTU Driver",

@@ -80,8 +80,8 @@ func (rtu485 *rtu485_THer_Driver) Write(_ []byte) (int, error) {
 }
 
 //---------------------------------------------------
-func (rtu485 *rtu485_THer_Driver) DriverDetail() *typex.DriverDetail {
-	return &typex.DriverDetail{
+func (rtu485 *rtu485_THer_Driver) DriverDetail() typex.DriverDetail {
+	return typex.DriverDetail{
 		Name:        "Temperature And Humidity Sensor Driver",
 		Type:        "UART",
 		Description: "RTU 485 Temperature And Humidity Sensor Driver",

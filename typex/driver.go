@@ -22,6 +22,6 @@ type XExternalDriver interface {
 	State() DriverState
 	Read([]byte) (int, error)
 	Write([]byte) (int, error)
-	DriverDetail() *DriverDetail
+	DriverDetail() DriverDetail
 	Stop() error
 }
