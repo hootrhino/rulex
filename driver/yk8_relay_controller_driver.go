@@ -30,19 +30,19 @@ func NewYK8RelayControllerDriver(d *typex.Device, e typex.RuleX,
 	}
 }
 
-func (rtu485 *YK8RelayControllerDriver) Test() error {
+func (yk8 *YK8RelayControllerDriver) Test() error {
 	return nil
 }
 
-func (rtu485 *YK8RelayControllerDriver) Init(map[string]string) error {
+func (yk8 *YK8RelayControllerDriver) Init(map[string]string) error {
 	return nil
 }
 
-func (rtu485 *YK8RelayControllerDriver) Work() error {
+func (yk8 *YK8RelayControllerDriver) Work() error {
 	return nil
 }
 
-func (rtu485 *YK8RelayControllerDriver) State() typex.DriverState {
+func (yk8 *YK8RelayControllerDriver) State() typex.DriverState {
 	return typex.DRIVER_RUNNING
 }
 
@@ -63,8 +63,8 @@ type yk08sw struct {
 * 读数据
 *
  */
-func (rtu485 *YK8RelayControllerDriver) Read(data []byte) (int, error) {
-	results, err := rtu485.client.ReadCoils(0x00, 1)
+func (yk8 *YK8RelayControllerDriver) Read(data []byte) (int, error) {
+	results, err := yk8.client.ReadCoils(0x00, 1)
 	if err != nil {
 		return 0, err
 	}
@@ -88,7 +88,7 @@ func (rtu485 *YK8RelayControllerDriver) Read(data []byte) (int, error) {
 //
 // data = [1,1,1,1,1,1,1,1]
 //
-func (rtu485 *YK8RelayControllerDriver) Write(data []byte) (int, error) {
+func (yk8 *YK8RelayControllerDriver) Write(data []byte) (int, error) {
 	if len(data) != 8 {
 		return 0, errors.New("操作继电器组最少8个布尔值")
 	}
@@ -120,7 +120,7 @@ func (rtu485 *YK8RelayControllerDriver) Write(data []byte) (int, error) {
 	setABitOnByte(&value, 6, Sw7)
 	setABitOnByte(&value, 7, Sw8)
 
-	_, err := rtu485.client.WriteMultipleCoils(0, 1, []byte{value})
+	_, err := yk8.client.WriteMultipleCoils(0, 1, []byte{value})
 	if err != nil {
 		return 0, err
 	}
@@ -128,7 +128,7 @@ func (rtu485 *YK8RelayControllerDriver) Write(data []byte) (int, error) {
 }
 
 //---------------------------------------------------
-func (rtu485 *YK8RelayControllerDriver) DriverDetail() typex.DriverDetail {
+func (yk8 *YK8RelayControllerDriver) DriverDetail() typex.DriverDetail {
 	return typex.DriverDetail{
 		Name:        "YK-08-RELAY CONTROLLER",
 		Type:        "UART",
@@ -136,8 +136,8 @@ func (rtu485 *YK8RelayControllerDriver) DriverDetail() typex.DriverDetail {
 	}
 }
 
-func (rtu485 *YK8RelayControllerDriver) Stop() error {
-	rtu485.state = typex.DRIVER_STOP
+func (yk8 *YK8RelayControllerDriver) Stop() error {
+	yk8.state = typex.DRIVER_STOP
 	return nil
 }
 
@@ -192,8 +192,8 @@ func setABitOnByte(b *byte, position uint8, value bool) (byte, error) {
 *
  */
 func byteToBool1(data byte, index uint8) bool {
-	return getABitOnByte(data, index) == 0
+	return getABitOnByte(data, index) == 1
 }
 func byteToBool2(data byte) bool {
-	return data == 0
+	return data == 1
 }
