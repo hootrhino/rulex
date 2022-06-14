@@ -47,6 +47,7 @@ func (yk8 *YK8RelayControllerDriver) State() typex.DriverState {
 }
 
 //
+
 type yk08sw struct {
 	Sw1 bool `json:"sw1"`
 	Sw2 bool `json:"sw2"`
@@ -64,20 +65,20 @@ type yk08sw struct {
 *
  */
 func (yk8 *YK8RelayControllerDriver) Read(data []byte) (int, error) {
-	results, err := yk8.client.ReadCoils(0x00, 1)
+	results, err := yk8.client.ReadCoils(0x00, 0x08)
 	if err != nil {
 		return 0, err
 	}
 	if len(results) == 1 {
 		yks := yk08sw{
-			Sw1: byteToBool1(results[0], 0),
-			Sw2: byteToBool1(results[0], 1),
-			Sw3: byteToBool1(results[0], 2),
-			Sw4: byteToBool1(results[0], 3),
-			Sw5: byteToBool1(results[0], 4),
-			Sw6: byteToBool1(results[0], 5),
-			Sw7: byteToBool1(results[0], 6),
-			Sw8: byteToBool1(results[0], 7),
+			Sw1: bitToBool(results[0], 0),
+			Sw2: bitToBool(results[0], 1),
+			Sw3: bitToBool(results[0], 2),
+			Sw4: bitToBool(results[0], 3),
+			Sw5: bitToBool(results[0], 4),
+			Sw6: bitToBool(results[0], 5),
+			Sw7: bitToBool(results[0], 6),
+			Sw8: bitToBool(results[0], 7),
 		}
 		bytes, _ := json.Marshal(yks)
 		copy(data, bytes)
@@ -98,14 +99,14 @@ func (yk8 *YK8RelayControllerDriver) Write(data []byte) (int, error) {
 		}
 	}
 
-	Sw1 := byteToBool2(data[0])
-	Sw2 := byteToBool2(data[1])
-	Sw3 := byteToBool2(data[2])
-	Sw4 := byteToBool2(data[3])
-	Sw5 := byteToBool2(data[4])
-	Sw6 := byteToBool2(data[5])
-	Sw7 := byteToBool2(data[6])
-	Sw8 := byteToBool2(data[7])
+	Sw1 := byteToBool(data[0])
+	Sw2 := byteToBool(data[1])
+	Sw3 := byteToBool(data[2])
+	Sw4 := byteToBool(data[3])
+	Sw5 := byteToBool(data[4])
+	Sw6 := byteToBool(data[5])
+	Sw7 := byteToBool(data[6])
+	Sw8 := byteToBool(data[7])
 	var value byte
 	setABitOnByte(&value, 0, Sw1)
 	setABitOnByte(&value, 1, Sw2)

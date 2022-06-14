@@ -186,8 +186,7 @@ func (e *RuleEngine) LoadRule(r *typex.Rule) error {
 			return errors.New("'Device':" + devUUId + " is not exists when bind resource")
 		}
 	}
-
-	return errors.New("'From' can not be empty")
+	return nil
 
 }
 

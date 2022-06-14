@@ -12,11 +12,14 @@ import "errors"
 *
  */
 func getABitOnByte(b byte, position uint8) (v uint8) {
-	mask := 0b00000001
+	if position > 8 {
+		return 0
+	}
+	var mask byte = 0b00000001
 	if position == 0 {
 		return (b & byte(mask)) >> position
 	}
-	return (b & (1 << mask)) >> position
+	return (b & (mask << int(position))) >> position
 
 }
 
@@ -48,12 +51,18 @@ func setABitOnByte(b *byte, position uint8, value bool) (byte, error) {
 
 /*
 *
-* 字节转逻辑
+* 字节上某个位转逻辑值
 *
  */
-func byteToBool1(data byte, index uint8) bool {
+func bitToBool(data byte, index uint8) bool {
 	return getABitOnByte(data, index) == 1
 }
-func byteToBool2(data byte) bool {
+
+/*
+*
+* 字节转布尔值 本质上是判断是否等于0 or 1
+*
+ */
+func byteToBool(data byte) bool {
 	return data == 1
 }

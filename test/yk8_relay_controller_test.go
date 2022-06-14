@@ -17,7 +17,7 @@ import (
 func TestRTU_YK08(t *testing.T) {
 	handler := modbus.NewRTUClientHandler("COM6")
 	handler.BaudRate = 9600
-	handler.DataBits = 1
+	handler.DataBits = 8
 	handler.Parity = "N"
 	handler.StopBits = 1
 	handler.SlaveId = 1
@@ -98,4 +98,27 @@ func TestRTU_YK08(t *testing.T) {
 		t.Log("===> ", results)
 	}
 
+}
+
+func TestRTU_YK081(t *testing.T) {
+	handler := modbus.NewRTUClientHandler("COM6")
+	handler.BaudRate = 9600
+	handler.DataBits = 8
+	handler.Parity = "N"
+	handler.StopBits = 1
+	handler.SlaveId = 1
+	handler.Logger = log.New(os.Stdout, "rtu: ", log.LstdFlags)
+	if err := handler.Connect(); err != nil {
+		t.Error(err)
+		return
+	}
+	defer handler.Close()
+	client := modbus.NewClient(handler)
+
+	if results, err := client.ReadCoils(0x00, 0x08); err != nil {
+		t.Error(err)
+		return
+	} else {
+		t.Log("===> ", results)
+	}
 }

@@ -55,31 +55,13 @@ func RunRulex(dbPath string, iniPath string) {
 			log.Error(err)
 		}
 		in := typex.NewInEnd(minEnd.Type, minEnd.Name, minEnd.Description, config)
-		// Important !!!!!!!!
-		in.UUID = minEnd.UUID
+		in.UUID = minEnd.UUID // Important !!!!!!!!
 		in.DataModelsMap = dataModelsMap
 		if err := engine.LoadInEnd(in); err != nil {
 			log.Error("InEnd load failed:", err)
 		}
 	}
 
-	//
-	// Load rule from sqlite
-	//
-	for _, mRule := range httpServer.AllMRules() {
-		rule := typex.NewRule(engine,
-			mRule.UUID,
-			mRule.Name,
-			mRule.Description,
-			mRule.FromSource,
-			mRule.FromDevice,
-			mRule.Success,
-			mRule.Actions,
-			mRule.Failed)
-		if err := engine.LoadRule(rule); err != nil {
-			log.Error(err)
-		}
-	}
 	//
 	// Load out from sqlite
 	//
@@ -89,8 +71,7 @@ func RunRulex(dbPath string, iniPath string) {
 			log.Error(err)
 		}
 		newOutEnd := typex.NewOutEnd(typex.TargetType(mOutEnd.Type), mOutEnd.Name, mOutEnd.Description, config)
-		// Important !!!!!!!!
-		newOutEnd.UUID = mOutEnd.UUID
+		newOutEnd.UUID = mOutEnd.UUID // Important !!!!!!!!
 		if err := engine.LoadOutEnd(newOutEnd); err != nil {
 			log.Error("OutEnd load failed:", err)
 		}
@@ -102,6 +83,7 @@ func RunRulex(dbPath string, iniPath string) {
 			log.Error(err)
 		}
 		newDevice := typex.NewDevice(typex.DeviceType(mDevice.Type), mDevice.Name, mDevice.Description, mDevice.ActionScript, config)
+		newDevice.UUID = mDevice.UUID // Important !!!!!!!!
 		if err := engine.LoadDevice(newDevice); err != nil {
 			log.Error("Device load failed:", err)
 		}
@@ -116,6 +98,23 @@ func RunRulex(dbPath string, iniPath string) {
 		}
 		if err := engine.LoadGoods(newGoods); err != nil {
 			log.Error("Goods load failed:", err)
+		}
+	}
+	//
+	// 规则最后加载
+	//
+	for _, mRule := range httpServer.AllMRules() {
+		rule := typex.NewRule(engine,
+			mRule.UUID,
+			mRule.Name,
+			mRule.Description,
+			mRule.FromSource,
+			mRule.FromDevice,
+			mRule.Success,
+			mRule.Actions,
+			mRule.Failed)
+		if err := engine.LoadRule(rule); err != nil {
+			log.Error(err)
 		}
 	}
 	s := <-c

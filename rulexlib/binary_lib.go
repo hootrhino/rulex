@@ -70,17 +70,16 @@ func ByteToBitString(rx typex.RuleX) func(*lua.LState) int {
 // 从一个字节里面提取某 1 个位的值, 只有 0 1 两个值
 //
 
-func getABitOnByte(b byte, position uint8) (v uint8, errs error) {
-	//  --------------->
-	//  7 6 5 4 3 2 1 0
-	// |.|.|.|.|.|.|.|.|
-	//
-	mask := 0b00000001
+func getABitOnByte(b byte, position uint8) (uint8, error) {
+	if position > 8 {
+		return 0, errors.New("position must greater than 8")
+	}
+	var mask byte = 0b00000001
 	if position == 0 {
 		return (b & byte(mask)) >> position, nil
-	} else {
-		return (b & (1 << mask)) >> position, nil
 	}
+	return (b & (mask << int(position))) >> position, nil
+
 }
 
 //

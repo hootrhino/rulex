@@ -93,7 +93,8 @@ func (yk8 *YK8Controller) Start(cctx typex.CCTX) error {
 				if err != nil {
 					log.Error(err)
 				} else {
-					yk8.RuleEngine.WorkDevice(yk8.RuleEngine.GetDevice(yk8.PointId), string(buffer[:n]))
+					td := yk8.RuleEngine.GetDevice(yk8.PointId)
+					yk8.RuleEngine.WorkDevice(td, string(buffer[:n]))
 				}
 			}
 
