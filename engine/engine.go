@@ -623,3 +623,51 @@ func (e *RuleEngine) GetGoods(uuid string) *sidecar.Goods {
 func (e *RuleEngine) PickUpProcess(uuid string) *sidecar.GoodsProcess {
 	return e.SideCar.Get(uuid)
 }
+
+//
+// 重启源
+//
+func (e *RuleEngine) RestartInEnd(uuid string) error {
+	if value, ok := e.InEnds.Load(uuid); ok {
+		o := (value.(*typex.InEnd))
+		o.Source.Stop()
+		if err := e.LoadInEnd(o); err != nil {
+			log.Error("InEnd load failed:", err)
+			return err
+		}
+		return nil
+	}
+	return errors.New("InEnd:" + uuid + "not exists")
+}
+
+//
+// 重启目标
+//
+func (e *RuleEngine) RestartOutEnd(uuid string) error {
+	if value, ok := e.OutEnds.Load(uuid); ok {
+		o := (value.(*typex.OutEnd))
+		o.Target.Stop()
+		if err := e.LoadOutEnd(o); err != nil {
+			log.Error("OutEnd load failed:", err)
+			return err
+		}
+		return nil
+	}
+	return errors.New("OutEnd:" + uuid + "not exists")
+}
+
+//
+// 重启设备
+//
+func (e *RuleEngine) RestartDevice(uuid string) error {
+	if value, ok := e.Devices.Load(uuid); ok {
+		o := (value.(*typex.Device))
+		o.Device.Stop()
+		if err := e.LoadDevice(o); err != nil {
+			log.Error("Device load failed:", err)
+			return err
+		}
+		return nil
+	}
+	return errors.New("Device:" + uuid + "not exists")
+}

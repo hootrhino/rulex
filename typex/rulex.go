@@ -174,6 +174,18 @@ type RuleX interface {
 	// 获取某个外部驱动
 	//
 	GetGoods(uuid string) *sidecar.Goods
+	//
+	// 重启源
+	//
+	RestartInEnd(uuid string) error
+	//
+	// 重启目标
+	//
+	RestartOutEnd(uuid string) error
+	//
+	// 重启设备
+	//
+	RestartDevice(uuid string) error
 }
 
 //
