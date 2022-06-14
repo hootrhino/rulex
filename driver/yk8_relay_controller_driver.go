@@ -60,7 +60,7 @@ type yk08sw struct {
 
 /*
 *
-* 读数据
+* 读出来的是个JSON, 记录了8个开关的状态
 *
  */
 func (yk8 *YK8RelayControllerDriver) Read(data []byte) (int, error) {
@@ -86,18 +86,14 @@ func (yk8 *YK8RelayControllerDriver) Read(data []byte) (int, error) {
 }
 
 //
-// data = [1,1,1,1,1,1,1,1]
+// 写入数据必须是有8个布尔值的字节数组: [1,1,1,1,1,1,1,1]
 //
 func (yk8 *YK8RelayControllerDriver) Write(data []byte) (int, error) {
 	if len(data) != 8 {
 		return 0, errors.New("操作继电器组最少8个布尔值")
 	}
 	for _, v := range data {
-		if v == 0 {
-			continue
-		} else if v == 1 {
-			continue
-		} else {
+		if v > 1 {
 			return 0, errors.New("必须是逻辑值")
 		}
 	}
@@ -139,61 +135,4 @@ func (yk8 *YK8RelayControllerDriver) DriverDetail() typex.DriverDetail {
 func (yk8 *YK8RelayControllerDriver) Stop() error {
 	yk8.state = typex.DRIVER_STOP
 	return nil
-}
-
-//--------------------------------------------------------------------------------------------------
-// 内部函数
-//--------------------------------------------------------------------------------------------------
-
-/*
-*
-* 取某个字节上的位
-*
- */
-func getABitOnByte(b byte, position uint8) (v uint8) {
-	mask := 0b00000001
-	if position == 0 {
-		return (b & byte(mask)) >> position
-	} else {
-		return (b & (1 << mask)) >> position
-	}
-}
-
-/*
-*
-* 设置字节上的某个位
-*
- */
-func setABitOnByte(b *byte, position uint8, value bool) (byte, error) {
-	if position > 7 {
-		return 0, errors.New("下标必须是0-7, 高位在前, 低位在后")
-	}
-	if value {
-		return *b & 0b1111_1111, nil
-	} else {
-		masks := []byte{
-			0b11111110,
-			0b11111101,
-			0b11111011,
-			0b11110111,
-			0b11101111,
-			0b11011111,
-			0b10111111,
-			0b01111111,
-		}
-		return *b & masks[position], nil
-	}
-
-}
-
-/*
-*
-* 字节转逻辑
-*
- */
-func byteToBool1(data byte, index uint8) bool {
-	return getABitOnByte(data, index) == 1
-}
-func byteToBool2(data byte) bool {
-	return data == 1
 }

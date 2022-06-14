@@ -12,36 +12,37 @@ import (
 	"github.com/ngaut/log"
 )
 
-type tss200_v_0_2_sensor struct {
+type YK8Controller struct {
 	typex.XStatus
 	status     typex.DeviceState
 	RuleEngine typex.RuleX
 	driver     typex.XExternalDriver
 	slaverIds  []byte
 }
+
 /*
 *
-* TSS200环境传感器
+* 8路继电器
 *
-*/
-func NewTS200Sensor(deviceId string, e typex.RuleX) typex.XDevice {
-	tss := new(tss200_v_0_2_sensor)
-	tss.PointId = deviceId
-	tss.RuleEngine = e
-	return tss
+ */
+func NewYK8Controller(deviceId string, e typex.RuleX) typex.XDevice {
+	yk8 := new(YK8Controller)
+	yk8.PointId = deviceId
+	yk8.RuleEngine = e
+	return yk8
 }
 
 //  初始化
-func (tss *tss200_v_0_2_sensor) Init(devId string, config map[string]interface{}) error {
+func (yk8 *YK8Controller) Init(devId string, config map[string]interface{}) error {
 
 	return nil
 }
 
 // 启动
-func (tss *tss200_v_0_2_sensor) Start(cctx typex.CCTX) error {
-	tss.Ctx = cctx.Ctx
-	tss.CancelCTX = cctx.CancelCTX
-	config := tss.RuleEngine.GetDevice(tss.PointId).Config
+func (yk8 *YK8Controller) Start(cctx typex.CCTX) error {
+	yk8.Ctx = cctx.Ctx
+	yk8.CancelCTX = cctx.CancelCTX
+	config := yk8.RuleEngine.GetDevice(yk8.PointId).Config
 	var mainConfig modBusConfig
 	if err := utils.BindSourceConfig(config, &mainConfig); err != nil {
 		return err
@@ -54,7 +55,7 @@ func (tss *tss200_v_0_2_sensor) Start(cctx typex.CCTX) error {
 
 	// 串口配置固定写法
 	handler := modbus.NewRTUClientHandler(rtuConfig.Uart)
-	handler.BaudRate = 4800
+	handler.BaudRate = 9600
 	handler.DataBits = 8
 	handler.Parity = "N"
 	handler.StopBits = 1
@@ -64,13 +65,13 @@ func (tss *tss200_v_0_2_sensor) Start(cctx typex.CCTX) error {
 		return err
 	}
 	client := modbus.NewClient(handler)
-	tss.driver = driver.NewRtu485_THer_Driver(tss.Details(), tss.RuleEngine, client)
-	tss.slaverIds = append(tss.slaverIds, mainConfig.SlaverIds...)
+	yk8.driver = driver.NewYK8RelayControllerDriver(yk8.Details(), yk8.RuleEngine, client)
+	yk8.slaverIds = append(yk8.slaverIds, mainConfig.SlaverIds...)
 	//---------------------------------------------------------------------------------
 	// Start
 	//---------------------------------------------------------------------------------
-	tss.status = typex.DEV_RUNNING
-	for _, slaverId := range tss.slaverIds {
+	yk8.status = typex.DEV_RUNNING
+	for _, slaverId := range yk8.slaverIds {
 		go func(ctx context.Context, slaverId byte, rtuDriver typex.XExternalDriver, handler *modbus.RTUClientHandler) {
 			ticker := time.NewTicker(time.Duration(5) * time.Second)
 			defer ticker.Stop()
@@ -80,7 +81,7 @@ func (tss *tss200_v_0_2_sensor) Start(cctx typex.CCTX) error {
 				select {
 				case <-ctx.Done():
 					{
-						tss.status = typex.DEV_STOP
+						yk8.status = typex.DEV_STOP
 						return
 					}
 				default:
@@ -92,58 +93,58 @@ func (tss *tss200_v_0_2_sensor) Start(cctx typex.CCTX) error {
 				if err != nil {
 					log.Error(err)
 				} else {
-					tss.RuleEngine.WorkDevice(tss.RuleEngine.GetDevice(tss.PointId), string(buffer[:n]))
+					yk8.RuleEngine.WorkDevice(yk8.RuleEngine.GetDevice(yk8.PointId), string(buffer[:n]))
 				}
 			}
 
-		}(tss.Ctx, slaverId, tss.driver, handler)
+		}(yk8.Ctx, slaverId, yk8.driver, handler)
 	}
 	return nil
 }
 
 // 从设备里面读数据出来
-func (tss *tss200_v_0_2_sensor) OnRead(data []byte) (int, error) {
+func (yk8 *YK8Controller) OnRead(data []byte) (int, error) {
 
-	n, err := tss.driver.Read(data)
+	n, err := yk8.driver.Read(data)
 	if err != nil {
 		log.Error(err)
-		tss.status = typex.DEV_STOP
+		yk8.status = typex.DEV_STOP
 	}
 	return n, err
 }
 
 // 把数据写入设备
-func (tss *tss200_v_0_2_sensor) OnWrite(b []byte) (int, error) {
-	return tss.driver.Write(b)
+func (yk8 *YK8Controller) OnWrite(b []byte) (int, error) {
+	return yk8.driver.Write(b)
 }
 
 // 设备当前状态
-func (tss *tss200_v_0_2_sensor) Status() typex.DeviceState {
+func (yk8 *YK8Controller) Status() typex.DeviceState {
 	return typex.DEV_RUNNING
 }
 
 // 停止设备
-func (tss *tss200_v_0_2_sensor) Stop() {
-	tss.CancelCTX()
+func (yk8 *YK8Controller) Stop() {
+	yk8.CancelCTX()
 }
 
 // 设备属性，是一系列属性描述
-func (tss *tss200_v_0_2_sensor) Property() []typex.DeviceProperty {
+func (yk8 *YK8Controller) Property() []typex.DeviceProperty {
 	return []typex.DeviceProperty{}
 }
 
 // 真实设备
-func (tss *tss200_v_0_2_sensor) Details() *typex.Device {
-	return tss.RuleEngine.GetDevice(tss.PointId)
+func (yk8 *YK8Controller) Details() *typex.Device {
+	return yk8.RuleEngine.GetDevice(yk8.PointId)
 }
 
 // 状态
-func (tss *tss200_v_0_2_sensor) SetState(status typex.DeviceState) {
-	tss.status = status
+func (yk8 *YK8Controller) SetState(status typex.DeviceState) {
+	yk8.status = status
 
 }
 
 // 驱动
-func (tss *tss200_v_0_2_sensor) Driver() typex.XExternalDriver {
-	return tss.driver
+func (yk8 *YK8Controller) Driver() typex.XExternalDriver {
+	return yk8.driver
 }

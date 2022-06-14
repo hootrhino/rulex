@@ -50,6 +50,7 @@ func NewDevice(t DeviceType,
 		State:       DEV_STOP,
 		Description: description,
 		Config:      config,
+		BindRules:   map[string]Rule{},
 	}
 }
 

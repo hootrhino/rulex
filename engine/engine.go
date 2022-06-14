@@ -182,7 +182,6 @@ func (e *RuleEngine) LoadRule(r *typex.Rule) error {
 		if Device := e.GetDevice(devUUId); Device != nil {
 			// 绑定资源和规则，建立关联关系
 			(Device.BindRules)[r.UUID] = *r
-			return nil
 		} else {
 			return errors.New("'Device':" + devUUId + " is not exists when bind resource")
 		}

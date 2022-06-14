@@ -20,6 +20,11 @@ type rtu485_ther struct {
 	slaverIds  []byte
 }
 
+/*
+*
+* 温湿度传感器
+*
+ */
 func NewRtu485Ther(deviceId string, e typex.RuleX) typex.XDevice {
 	tss := new(rtu485_ther)
 	tss.PointId = deviceId

@@ -58,11 +58,14 @@ func (e *RuleEngine) RemoveDevice(uuid string) {
 }
 
 //
-//
+// 加载设备
 //
 func (e *RuleEngine) LoadDevice(deviceInfo *typex.Device) error {
 	if deviceInfo.Type == "TSS200V02" {
 		return startDevices(device.NewTS200Sensor(deviceInfo.UUID, e), deviceInfo, e)
+	}
+	if deviceInfo.Type == "YK8RELAY" {
+		return startDevices(device.NewYK8Controller(deviceInfo.UUID, e), deviceInfo, e)
 	}
 	if deviceInfo.Type == "RTU485_THER" {
 		return startDevices(device.NewRtu485Ther(deviceInfo.UUID, e), deviceInfo, e)

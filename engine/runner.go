@@ -101,14 +101,7 @@ func RunRulex(dbPath string, iniPath string) {
 		if err := json.Unmarshal([]byte(mDevice.Config), &config); err != nil {
 			log.Error(err)
 		}
-		newDevice := &typex.Device{
-			UUID:         mDevice.UUID,
-			Name:         mDevice.Name,
-			Type:         typex.DeviceType(mDevice.Type),
-			ActionScript: mDevice.ActionScript,
-			Description:  mDevice.Description,
-			Config:       config,
-		}
+		newDevice := typex.NewDevice(typex.DeviceType(mDevice.Type), mDevice.Name, mDevice.Description, mDevice.ActionScript, config)
 		if err := engine.LoadDevice(newDevice); err != nil {
 			log.Error("Device load failed:", err)
 		}
