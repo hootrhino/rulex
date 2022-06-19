@@ -630,7 +630,9 @@ func (e *RuleEngine) PickUpProcess(uuid string) *sidecar.GoodsProcess {
 func (e *RuleEngine) RestartInEnd(uuid string) error {
 	if value, ok := e.InEnds.Load(uuid); ok {
 		o := (value.(*typex.InEnd))
-		o.Source.Stop()
+		if o.State == typex.SOURCE_UP {
+			o.Source.Stop()
+		}
 		if err := e.LoadInEnd(o); err != nil {
 			log.Error("InEnd load failed:", err)
 			return err
@@ -646,7 +648,9 @@ func (e *RuleEngine) RestartInEnd(uuid string) error {
 func (e *RuleEngine) RestartOutEnd(uuid string) error {
 	if value, ok := e.OutEnds.Load(uuid); ok {
 		o := (value.(*typex.OutEnd))
-		o.Target.Stop()
+		if o.State == typex.SOURCE_UP {
+			o.Target.Stop()
+		}
 		if err := e.LoadOutEnd(o); err != nil {
 			log.Error("OutEnd load failed:", err)
 			return err
@@ -662,7 +666,9 @@ func (e *RuleEngine) RestartOutEnd(uuid string) error {
 func (e *RuleEngine) RestartDevice(uuid string) error {
 	if value, ok := e.Devices.Load(uuid); ok {
 		o := (value.(*typex.Device))
-		o.Device.Stop()
+		if o.State == typex.DEV_RUNNING {
+			o.Device.Stop()
+		}
 		if err := e.LoadDevice(o); err != nil {
 			log.Error("Device load failed:", err)
 			return err
