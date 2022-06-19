@@ -52,5 +52,8 @@ func LoadBuildInLuaLib(e typex.RuleX, r *typex.Rule) {
 	// Codec
 	r.AddLib(e, "RPCENC", rulexlib.RPCEncode(e))
 	r.AddLib(e, "RPCDEC", rulexlib.RPCDecode(e))
+	// Device R/W
+	r.AddLib(e, "ReadDevice", rulexlib.ReadDevice(e))
+	r.AddLib(e, "WriteDevice", rulexlib.WriteDevice(e))
 
 }
