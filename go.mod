@@ -17,6 +17,7 @@ require (
 	github.com/go-redis/redis/v8 v8.11.4
 	github.com/goburrow/modbus v0.1.0
 	github.com/goburrow/serial v0.1.0
+	github.com/gomodule/redigo v1.8.8 // indirect
 	github.com/google/uuid v1.3.0
 	github.com/googollee/go-socket.io v1.6.2
 	github.com/gopcua/opcua v0.3.1
