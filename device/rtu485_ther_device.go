@@ -2,6 +2,9 @@ package device
 
 import (
 	"context"
+	"encoding/json"
+	golog "log"
+	"os"
 	"rulex/driver"
 	"rulex/typex"
 	"rulex/utils"
@@ -18,6 +21,14 @@ type rtu485_ther struct {
 	RuleEngine typex.RuleX
 	driver     typex.XExternalDriver
 	slaverIds  []byte
+}
+
+var __debug bool = false
+
+// Example: 0x02 0x92 0xFF 0x98
+type __sensor_data struct {
+	TEMP float32 `json:"temp"` //系数: 0.1
+	HUM  float32 `json:"hum"`  //系数: 0.1
 }
 
 /*
@@ -55,17 +66,19 @@ func (tss *rtu485_ther) Start(cctx typex.CCTX) error {
 
 	// 串口配置固定写法
 	handler := modbus.NewRTUClientHandler(rtuConfig.Uart)
-	handler.BaudRate = 9600
+	handler.BaudRate = 4800
 	handler.DataBits = 8
 	handler.Parity = "N"
 	handler.StopBits = 1
 	handler.Timeout = time.Duration(*mainConfig.Timeout) * time.Second
-	// handler.Logger = golog.New(os.Stdout, "485THerSource: ", log.LstdFlags)
+	if __debug {
+		handler.Logger = golog.New(os.Stdout, "485THerSource: ", log.LstdFlags)
+	}
 	if err := handler.Connect(); err != nil {
 		return err
 	}
 	client := modbus.NewClient(handler)
-	tss.driver = driver.NewRtu485_THer_Driver(tss.Details(), tss.RuleEngine, client)
+	tss.driver = driver.NewRtu485THerDriver(tss.Details(), tss.RuleEngine, client)
 	tss.slaverIds = append(tss.slaverIds, mainConfig.SlaverIds...)
 	//---------------------------------------------------------------------------------
 	// Start
@@ -75,7 +88,8 @@ func (tss *rtu485_ther) Start(cctx typex.CCTX) error {
 		go func(ctx context.Context, slaverId byte, rtuDriver typex.XExternalDriver, handler *modbus.RTUClientHandler) {
 			ticker := time.NewTicker(time.Duration(5) * time.Second)
 			defer ticker.Stop()
-			buffer := make([]byte, 32) //32字节数据
+			// {"SlaveId":1,"Data":"{\"temp\":28.7,\"hum\":66.1}}
+			buffer := make([]byte, 64) //32字节数据
 			for {
 				<-ticker.C
 				select {
@@ -93,7 +107,14 @@ func (tss *rtu485_ther) Start(cctx typex.CCTX) error {
 				if err != nil {
 					log.Error(err)
 				} else {
-					tss.RuleEngine.WorkDevice(tss.RuleEngine.GetDevice(tss.PointId), string(buffer[:n]))
+					Device := tss.RuleEngine.GetDevice(tss.PointId)
+					sdata := __sensor_data{}
+					json.Unmarshal(buffer[:n], &sdata)
+					bytes, _ := json.Marshal(map[string]interface{}{
+						"slaveId": handler.SlaveId,
+						"data":    sdata,
+					})
+					tss.RuleEngine.WorkDevice(Device, string(bytes))
 				}
 			}
 

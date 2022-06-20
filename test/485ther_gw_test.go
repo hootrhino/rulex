@@ -1,14 +1,18 @@
 package test
 
 import (
+	"os"
+	"os/signal"
 	"rulex/core"
 	"rulex/engine"
 	httpserver "rulex/plugin/http_server"
 	"rulex/rulexlib"
+	"syscall"
 
 	"rulex/typex"
 	"testing"
-	"time"
+
+	"github.com/ngaut/log"
 )
 
 /*
@@ -23,56 +27,65 @@ func Test_modbus_485_sensor_gateway(t *testing.T) {
 	rulexlib.StartLuaLogger(core.GlobalConfig.LuaLogPath)
 	core.SetLogLevel()
 	core.SetPerformance()
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, syscall.SIGINT, syscall.SIGABRT, syscall.SIGTERM)
 	engine := engine.NewRuleEngine(mainConfig)
 	engine.Start()
 
-	hh := httpserver.NewHttpApiServer(2580, "../rulex-test_"+time.Now().Format("2006-01-02-15_04_05")+".db", engine)
+	hh := httpserver.NewHttpApiServer(2580, "./rulex.db", engine)
 
 	// HttpApiServer loaded default
 	if err := engine.LoadPlugin("plugin.http_server", hh); err != nil {
 		t.Fatal("Rule load failed:", err)
 	}
 	// RTU485_THER Inend
-	RTU485_THERInend := typex.NewDevice("RTU485_THER", "RTU485_THER", "RTU485_THER", "", map[string]interface{}{
-		"slaverIds": []int{1},
-		"timeout":   5,
-		"frequency": 5,
-		"config": map[string]interface{}{
-			"uart":     "COM3",
-			"baudRate": 115200,
-			"dataBits": 8,
-			"parity":   "N",
-			"stopBits": 1,
+	RTU485Device := typex.NewDevice("RTU485_THER",
+		"温湿度采集器", "温湿度采集器", "", map[string]interface{}{
+			"slaverIds": []int{1},
+			"timeout":   5,
+			"frequency": 5,
+			"config": map[string]interface{}{
+				"uart":     "COM6",
+				"baudRate": 4800,
+				"dataBits": 8,
+				"parity":   "N",
+				"stopBits": 1,
+			},
+		})
+	RTU485Device.UUID = "RTU485Device1"
+	if err := engine.LoadDevice(RTU485Device); err != nil {
+		t.Error("RTU485Device load failed:", err)
+	}
+	mqttOutEnd := typex.NewOutEnd(
+		"MQTT",
+		"MQTT桥接",
+		"MQTT桥接", map[string]interface{}{
+			"Host":      "127.0.0.1",
+			"Port":      1883,
+			"DataTopic": "iothub/upstream/IGW00000001",
+			"ClientId":  "IGW00000001",
+			"Username":  "IGW00000001",
+			"Password":  "IGW00000001",
 		},
-	})
-
-	if err := engine.LoadDevice(RTU485_THERInend); err != nil {
-		t.Error("grpcInend load failed:", err)
+	)
+	mqttOutEnd.UUID = "mqttOutEnd"
+	if err := engine.LoadOutEnd(mqttOutEnd); err != nil {
+		t.Error("mqttOutEnd load failed:", err)
 	}
 	rule := typex.NewRule(engine,
 		"uuid",
-		"Just a test",
-		"Just a test",
+		"数据推送至IOTHUB",
+		"数据推送至IOTHUB",
 		[]string{},
-		[]string{RTU485_THERInend.UUID}, // 数据来自设备
+		[]string{RTU485Device.UUID}, // 数据来自设备
 		`function Success() print("[LUA Success Callback]=> OK") end`,
 		`
 		Actions = {
 			function(data)
-				local table = rulexlib:J2T(data)
-				local value = table['value']
-				local t = rulexlib:HsubToN(value, 5, 8)
-				local h = rulexlib:HsubToN(value, 0, 4)
-				local t1 = rulexlib:HToN(string.sub(value, 5, 8))
-				local h2 = rulexlib:HToN(string.sub(value, 0, 4))
-				print('Data ========> ', rulexlib:T2J({
-					Device = "TH00000001",
-					Ts = rulexlib:TsUnix(),
-					T = t,
-					H = h,
-					T1 = t1,
-					H2 = h2
-				}))
+			    local t = rulexlib:J2T(data)
+				t['type'] = 'sub_device'
+				t['sn'] = 'IGW00000001'
+				rulexlib:DataToMqtt('mqttOutEnd', rulexlib:T2J(t))
 				return true, data
 			end
 		}`,
@@ -80,6 +93,15 @@ func Test_modbus_485_sensor_gateway(t *testing.T) {
 	if err := engine.LoadRule(rule); err != nil {
 		t.Error(err)
 	}
-	time.Sleep(3 * time.Second)
+	s := <-c
+	log.Warn("Received stop signal:", s)
 	engine.Stop()
+
+	if err := typex.GLOBAL_LOGGER.Close(); err != nil {
+		return
+	}
+	if err := typex.LUA_LOGGER.Close(); err != nil {
+		return
+	}
+	os.Exit(0)
 }

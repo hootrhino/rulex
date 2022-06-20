@@ -64,7 +64,7 @@ func (tss *tss200_v_0_2_sensor) Start(cctx typex.CCTX) error {
 		return err
 	}
 	client := modbus.NewClient(handler)
-	tss.driver = driver.NewRtu485_THer_Driver(tss.Details(), tss.RuleEngine, client)
+	tss.driver = driver.NewTSS200_v_0_2_Driver(tss.Details(), tss.RuleEngine, client)
 	tss.slaverIds = append(tss.slaverIds, mainConfig.SlaverIds...)
 	//---------------------------------------------------------------------------------
 	// Start

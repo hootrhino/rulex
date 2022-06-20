@@ -10,7 +10,14 @@ import (
 	"rulex/utils"
 
 	"github.com/goburrow/modbus"
+	"github.com/ngaut/log"
 )
+
+// Example: 0x02 0x92 0xFF 0x98
+type sensor_data struct {
+	TEMP float32 `json:"temp"` //系数: 0.1
+	HUM  float32 `json:"hum"`  //系数: 0.1
+}
 
 // 协议：UART：485 baud=4800 无校验 数据位1 停止位1
 // 功能码为: 3（ReadHoldingRegisters）
@@ -30,7 +37,7 @@ type rtu485_THer_Driver struct {
 	RuleEngine typex.RuleX
 }
 
-func NewRtu485_THer_Driver(d *typex.Device, e typex.RuleX,
+func NewRtu485THerDriver(d *typex.Device, e typex.RuleX,
 	client modbus.Client) typex.XExternalDriver {
 	return &rtu485_THer_Driver{
 		state:      typex.DRIVER_STOP,
@@ -41,10 +48,12 @@ func NewRtu485_THer_Driver(d *typex.Device, e typex.RuleX,
 }
 
 func (rtu485 *rtu485_THer_Driver) Test() error {
-	return nil
+	_, err := rtu485.client.ReadHoldingRegisters(0x00, 2)
+	return err
 }
 
 func (rtu485 *rtu485_THer_Driver) Init(map[string]string) error {
+
 	return nil
 }
 
@@ -57,21 +66,22 @@ func (rtu485 *rtu485_THer_Driver) State() typex.DriverState {
 }
 
 func (rtu485 *rtu485_THer_Driver) Read(data []byte) (int, error) {
-	// Example: 0x02 0x92 0xFF 0x98
-	type sensor_data struct {
-		TEMP float32 `json:"temp"` //系数: 0.1
-		HUM  float32 `json:"hum"`  //系数: 0.1
-	}
+
 	results, err := rtu485.client.ReadHoldingRegisters(0x00, 2)
-	if len(results) == 2 {
+	var length = 0
+	if len(results) == 4 {
 		sdata := sensor_data{
-			HUM:  float32(utils.BToU16(results, 0, 1)) * 0.01,
-			TEMP: float32(utils.BToU16(results, 1, 2)) * 0.01,
+			HUM:  float32(utils.BToU16(results, 0, 2)) * 0.1,
+			TEMP: float32(utils.BToU16(results, 2, 4)) * 0.1,
 		}
-		bytes, _ := json.Marshal(sdata)
+		bytes, err := json.Marshal(sdata)
+		if err != nil {
+			log.Error(err)
+		}
 		copy(data, bytes)
+		length = len(bytes)
 	}
-	return len(data), err
+	return length, err
 }
 
 func (rtu485 *rtu485_THer_Driver) Write(_ []byte) (int, error) {

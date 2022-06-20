@@ -63,7 +63,7 @@ func (mm *mqttOutEndTarget) Start(cctx typex.CCTX) error {
 	mm.DataTopic = mainConfig.DataTopic
 	opts.OnConnect = connectHandler
 	opts.OnConnectionLost = connectLostHandler
-	opts.SetPingTimeout(3 * time.Second)
+	opts.SetPingTimeout(5 * time.Second)
 	opts.SetAutoReconnect(true)
 	opts.SetMaxReconnectInterval(5 * time.Second)
 	mm.client = mqtt.NewClient(opts)
@@ -132,7 +132,7 @@ func (mm *mqttOutEndTarget) Details() *typex.OutEnd {
 //
 func (mm *mqttOutEndTarget) To(data interface{}) (interface{}, error) {
 	if mm.client != nil {
-		return mm.client.Publish(mm.DataTopic, 2, false, data).Error(), nil
+		return mm.client.Publish(mm.DataTopic, 1, false, data).Error(), nil
 	}
 	return nil, errors.New("mqtt client is nil")
 }
@@ -143,5 +143,5 @@ func (mm *mqttOutEndTarget) To(data interface{}) (interface{}, error) {
 *
  */
 func (*mqttOutEndTarget) Configs() *typex.XConfig {
-	return core.GenOutConfig(typex.MQTT_TARGET, "MQTT_TARGET", httpConfig{})
+	return core.GenOutConfig(typex.MQTT_TARGET, "MQTT", httpConfig{})
 }
