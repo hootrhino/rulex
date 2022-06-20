@@ -82,7 +82,9 @@ func (mm *mqttOutEndTarget) DataModels() []typex.XDataModel {
 }
 
 func (mm *mqttOutEndTarget) Stop() {
-	mm.client.Disconnect(0)
+	if mm.client != nil {
+		mm.client.Disconnect(0)
+	}
 	mm.CancelCTX()
 
 }

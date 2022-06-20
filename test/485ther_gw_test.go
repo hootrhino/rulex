@@ -41,11 +41,11 @@ func Test_modbus_485_sensor_gateway(t *testing.T) {
 	// RTU485_THER Inend
 	RTU485Device := typex.NewDevice("RTU485_THER",
 		"温湿度采集器", "温湿度采集器", "", map[string]interface{}{
-			"slaverIds": []int{1},
+			"slaverIds": []uint8{1, 2},
 			"timeout":   5,
 			"frequency": 5,
 			"config": map[string]interface{}{
-				"uart":     "COM6",
+				"uart":     "COM3",
 				"baudRate": 4800,
 				"dataBits": 8,
 				"parity":   "N",
@@ -60,7 +60,7 @@ func Test_modbus_485_sensor_gateway(t *testing.T) {
 		"MQTT",
 		"MQTT桥接",
 		"MQTT桥接", map[string]interface{}{
-			"Host":      "127.0.0.1",
+			"Host":      "106.15.225.172",
 			"Port":      1883,
 			"DataTopic": "iothub/upstream/IGW00000001",
 			"ClientId":  "IGW00000001",
@@ -77,15 +77,17 @@ func Test_modbus_485_sensor_gateway(t *testing.T) {
 		"数据推送至IOTHUB",
 		"数据推送至IOTHUB",
 		[]string{},
-		[]string{RTU485Device.UUID}, // 数据来自设备
+		[]string{RTU485Device.UUID}, // 数据来自网关设备,所以这里需要配置设备ID
 		`function Success() print("[LUA Success Callback]=> OK") end`,
 		`
 		Actions = {
 			function(data)
-			    local t = rulexlib:J2T(data)
+				local t = rulexlib:J2T(data)
 				t['type'] = 'sub_device'
 				t['sn'] = 'IGW00000001'
-				rulexlib:DataToMqtt('mqttOutEnd', rulexlib:T2J(t))
+				local jsons = rulexlib:T2J(t)
+				rulexlib:log(jsons)
+				rulexlib:DataToMqtt('mqttOutEnd', jsons)
 				return true, data
 			end
 		}`,

@@ -503,9 +503,11 @@ func (e *RuleEngine) SaveOutEnd(out *typex.OutEnd) {
 //
 func (e *RuleEngine) RemoveOutEnd(uuid string) {
 	if outEnd := e.GetOutEnd(uuid); outEnd != nil {
-		outEnd.Target.Stop()
-		e.OutEnds.Delete(uuid)
-		outEnd = nil
+		if outEnd.Target != nil {
+			outEnd.Target.Stop()
+			e.OutEnds.Delete(uuid)
+			outEnd = nil
+		}
 		log.Infof("InEnd [%v] has been deleted", uuid)
 	}
 }

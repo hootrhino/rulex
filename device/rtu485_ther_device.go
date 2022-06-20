@@ -8,6 +8,7 @@ import (
 	"rulex/driver"
 	"rulex/typex"
 	"rulex/utils"
+	"sync"
 	"time"
 
 	"github.com/goburrow/modbus"
@@ -83,6 +84,7 @@ func (tss *rtu485_ther) Start(cctx typex.CCTX) error {
 	//---------------------------------------------------------------------------------
 	// Start
 	//---------------------------------------------------------------------------------
+	lock := sync.Mutex{}
 	tss.status = typex.DEV_RUNNING
 	for _, slaverId := range tss.slaverIds {
 		go func(ctx context.Context, slaverId byte, rtuDriver typex.XExternalDriver, handler *modbus.RTUClientHandler) {
@@ -102,8 +104,10 @@ func (tss *rtu485_ther) Start(cctx typex.CCTX) error {
 					{
 					}
 				}
+				lock.Lock()
 				handler.SlaveId = slaverId // 配置ID
 				n, err := rtuDriver.Read(buffer)
+				lock.Unlock()
 				if err != nil {
 					log.Error(err)
 				} else {
