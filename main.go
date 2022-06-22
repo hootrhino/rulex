@@ -23,7 +23,7 @@ func main() {
 	//--------------------------------------
 	app := &cli.App{
 		Name:  "RULEX, a lightweight iot data rule gateway",
-		Usage: "http://rulex.ezlinker.cn",
+		Usage: "http://rulex.pages.dev",
 		Commands: []*cli.Command{
 			{
 				Name:  "run",
