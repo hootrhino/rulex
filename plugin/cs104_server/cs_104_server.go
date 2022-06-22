@@ -5,9 +5,10 @@ import (
 
 	"gopkg.in/ini.v1"
 
-	"rulex/typex"
-	"rulex/utils"
 	"time"
+
+	"github.com/i4de/rulex/typex"
+	"github.com/i4de/rulex/utils"
 
 	"github.com/ngaut/log"
 	"github.com/thinkgos/go-iecp5/asdu"

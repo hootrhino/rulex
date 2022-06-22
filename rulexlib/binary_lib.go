@@ -7,10 +7,11 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
-	"rulex/typex"
 	"strconv"
 	"strings"
 	"unicode"
+
+	"github.com/i4de/rulex/typex"
 
 	"github.com/ngaut/log"
 	lua "github.com/yuin/gopher-lua"

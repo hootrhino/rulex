@@ -3,8 +3,9 @@ package core
 import (
 	"fmt"
 	"reflect"
-	"rulex/typex"
 	"strings"
+
+	"github.com/i4de/rulex/typex"
 
 	"github.com/iancoleman/strcase"
 	"github.com/ngaut/log"

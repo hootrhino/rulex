@@ -5,11 +5,12 @@ import (
 	"encoding/json"
 	golog "log"
 	"os"
-	"rulex/driver"
-	"rulex/typex"
-	"rulex/utils"
 	"sync"
 	"time"
+
+	"github.com/i4de/rulex/driver"
+	"github.com/i4de/rulex/typex"
+	"github.com/i4de/rulex/utils"
 
 	"github.com/goburrow/modbus"
 	"github.com/mitchellh/mapstructure"

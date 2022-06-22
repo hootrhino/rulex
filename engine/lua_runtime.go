@@ -1,8 +1,8 @@
 package engine
 
 import (
-	"rulex/rulexlib"
-	"rulex/typex"
+	"github.com/i4de/rulex/rulexlib"
+	"github.com/i4de/rulex/typex"
 )
 
 /*

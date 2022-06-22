@@ -1,12 +1,13 @@
 package test
 
 import (
-	"rulex/core"
-	"rulex/engine"
+	"github.com/i4de/rulex/core"
+	"github.com/i4de/rulex/engine"
 
-	"rulex/typex"
 	"testing"
 	"time"
+
+	"github.com/i4de/rulex/typex"
 )
 
 func Test_ABS_device1(t *testing.T) {

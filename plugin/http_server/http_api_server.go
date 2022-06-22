@@ -5,11 +5,12 @@ import (
 	"embed"
 	"io/fs"
 	"net/http"
-	"rulex/typex"
-	"rulex/utils"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/i4de/rulex/typex"
+	"github.com/i4de/rulex/utils"
 
 	"github.com/gin-gonic/gin"
 	socketio "github.com/googollee/go-socket.io"

@@ -6,9 +6,10 @@ package driver
 import (
 	"context"
 	"errors"
-	"rulex/typex"
 	"strings"
 	"time"
+
+	"github.com/i4de/rulex/typex"
 
 	"github.com/goburrow/serial"
 	"github.com/ngaut/log"

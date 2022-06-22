@@ -1,7 +1,7 @@
 package driver
 
 import (
-	"rulex/typex"
+	"github.com/i4de/rulex/typex"
 
 	"github.com/robinson/gos7"
 )

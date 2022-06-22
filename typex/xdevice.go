@@ -7,7 +7,7 @@
 package typex
 
 import (
-	"rulex/utils"
+	"github.com/i4de/rulex/utils"
 )
 
 type DeviceState int

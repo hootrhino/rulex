@@ -4,11 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"rulex/device"
-	"rulex/typex"
 	"runtime"
 	"sync"
 	"time"
+
+	"github.com/i4de/rulex/device"
+	"github.com/i4de/rulex/typex"
 
 	"github.com/ngaut/log"
 )

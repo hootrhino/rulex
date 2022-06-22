@@ -2,8 +2,9 @@ package rulexlib
 
 import (
 	"encoding/json"
+
+	"github.com/i4de/rulex/typex"
 	lua "github.com/yuin/gopher-lua"
-	"rulex/typex"
 )
 
 /*

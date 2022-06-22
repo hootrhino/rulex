@@ -1,8 +1,9 @@
 package rulexlib
 
 import (
-	"rulex/typex"
 	"time"
+
+	"github.com/i4de/rulex/typex"
 
 	lua "github.com/yuin/gopher-lua"
 )

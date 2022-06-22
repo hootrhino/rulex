@@ -1,8 +1,9 @@
 package test
 
 import (
-	"rulex/rulexlib"
 	"testing"
+
+	"github.com/i4de/rulex/rulexlib"
 
 	"github.com/go-playground/assert/v2"
 )

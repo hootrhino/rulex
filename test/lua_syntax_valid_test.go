@@ -3,11 +3,12 @@ package test
 import (
 	"os"
 	"os/signal"
-	"rulex/core"
-	"rulex/engine"
-	"rulex/typex"
 	"syscall"
 	"testing"
+
+	"github.com/i4de/rulex/core"
+	"github.com/i4de/rulex/engine"
+	"github.com/i4de/rulex/typex"
 )
 
 func TestLuaSyntax1(t *testing.T) {

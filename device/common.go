@@ -1,6 +1,6 @@
 package device
 
-import "rulex/typex"
+import "github.com/i4de/rulex/typex"
 
 type modBusConfig struct {
 	Timeout   *int       `json:"timeout" validate:"required" title:"连接超时" info:""`

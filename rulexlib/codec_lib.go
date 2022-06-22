@@ -2,7 +2,8 @@ package rulexlib
 
 import (
 	"reflect"
-	"rulex/typex"
+
+	"github.com/i4de/rulex/typex"
 
 	lua "github.com/yuin/gopher-lua"
 )

@@ -1,8 +1,9 @@
 package core
 
 import (
-	"rulex/typex"
 	"time"
+
+	"github.com/i4de/rulex/typex"
 
 	"github.com/ngaut/log"
 )

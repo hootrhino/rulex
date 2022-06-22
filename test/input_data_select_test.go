@@ -2,7 +2,8 @@ package test
 
 import (
 	"encoding/json"
-	"rulex/rulexlib"
+
+	"github.com/i4de/rulex/rulexlib"
 
 	"testing"
 

@@ -1,12 +1,13 @@
 package test
 
 import (
-	"rulex/core"
-	"rulex/engine"
-	httpserver "rulex/plugin/http_server"
-	"rulex/rulexlib"
-	"rulex/sidecar"
 	"runtime"
+
+	"github.com/i4de/rulex/core"
+	"github.com/i4de/rulex/engine"
+	httpserver "github.com/i4de/rulex/plugin/http_server"
+	"github.com/i4de/rulex/rulexlib"
+	"github.com/i4de/rulex/sidecar"
 
 	"testing"
 	"time"

@@ -4,10 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"rulex/source"
-	"rulex/typex"
 	"runtime"
 	"time"
+
+	"github.com/i4de/rulex/source"
+	"github.com/i4de/rulex/typex"
 
 	"github.com/ngaut/log"
 )

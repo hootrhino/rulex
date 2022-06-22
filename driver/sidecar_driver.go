@@ -3,8 +3,9 @@ package driver
 
 import (
 	"context"
-	"rulex/sidecar"
-	"rulex/typex"
+
+	"github.com/i4de/rulex/sidecar"
+	"github.com/i4de/rulex/typex"
 
 	"github.com/ngaut/log"
 	"google.golang.org/grpc"

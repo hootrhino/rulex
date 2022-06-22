@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"net/url"
 	"regexp"
-	"rulex/typex"
 	"sort"
 	"strings"
+
+	"github.com/i4de/rulex/typex"
 
 	lua "github.com/yuin/gopher-lua"
 )

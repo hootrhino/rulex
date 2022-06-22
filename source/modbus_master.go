@@ -7,11 +7,12 @@ import (
 	"errors"
 	"fmt"
 
-	"rulex/core"
-	"rulex/driver"
-	"rulex/typex"
-	"rulex/utils"
 	"time"
+
+	"github.com/i4de/rulex/core"
+	"github.com/i4de/rulex/driver"
+	"github.com/i4de/rulex/typex"
+	"github.com/i4de/rulex/utils"
 
 	"github.com/ngaut/log"
 

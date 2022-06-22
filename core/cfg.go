@@ -4,8 +4,9 @@ import (
 	"encoding/json"
 	"net/http"
 	"os"
-	"rulex/typex"
 	"runtime"
+
+	"github.com/i4de/rulex/typex"
 
 	"github.com/ngaut/log"
 	"gopkg.in/ini.v1"

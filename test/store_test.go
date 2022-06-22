@@ -1,8 +1,9 @@
 package test
 
 import (
-	"rulex/core"
 	"testing"
+
+	"github.com/i4de/rulex/core"
 )
 
 func Test_get_set(t *testing.T) {

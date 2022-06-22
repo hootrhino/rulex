@@ -2,11 +2,12 @@ package test
 
 import (
 	"encoding/json"
-	"rulex/core"
-	"rulex/engine"
-	httpserver "rulex/plugin/http_server"
-	"rulex/typex"
 	"testing"
+
+	"github.com/i4de/rulex/core"
+	"github.com/i4de/rulex/engine"
+	httpserver "github.com/i4de/rulex/plugin/http_server"
+	"github.com/i4de/rulex/typex"
 
 	"github.com/ngaut/log"
 )

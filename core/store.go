@@ -1,8 +1,8 @@
 package core
 
 import (
-	"rulex/store"
-	"rulex/typex"
+	"github.com/i4de/rulex/store"
+	"github.com/i4de/rulex/typex"
 )
 
 var GlobalStore typex.XStore

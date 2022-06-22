@@ -7,10 +7,11 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"rulex/core"
-	"rulex/engine"
-	"rulex/typex"
 	"time"
+
+	"github.com/i4de/rulex/core"
+	"github.com/i4de/rulex/engine"
+	"github.com/i4de/rulex/typex"
 
 	"github.com/ngaut/log"
 )

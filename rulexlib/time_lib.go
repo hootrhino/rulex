@@ -2,8 +2,9 @@ package rulexlib
 
 import (
 	"fmt"
-	"rulex/typex"
 	"time"
+
+	"github.com/i4de/rulex/typex"
 
 	"github.com/wwhai/ntp"
 

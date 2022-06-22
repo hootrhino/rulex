@@ -2,9 +2,10 @@ package test
 
 import (
 	"encoding/json"
-	"rulex/core"
-	"rulex/typex"
 	"testing"
+
+	"github.com/i4de/rulex/core"
+	"github.com/i4de/rulex/typex"
 )
 
 func Test_RenderConfig(t *testing.T) {

@@ -8,7 +8,8 @@ package driver
 import (
 	"encoding/json"
 	"errors"
-	"rulex/typex"
+
+	"github.com/i4de/rulex/typex"
 
 	"github.com/goburrow/modbus"
 )

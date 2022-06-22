@@ -1,7 +1,7 @@
 package test
 
 import (
-	"rulex/rulexlib"
+	"github.com/i4de/rulex/rulexlib"
 
 	"testing"
 )

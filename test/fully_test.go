@@ -2,9 +2,10 @@ package test
 
 import (
 	"context"
-	httpserver "rulex/plugin/http_server"
-	"rulex/rulexrpc"
-	"rulex/typex"
+
+	httpserver "github.com/i4de/rulex/plugin/http_server"
+	"github.com/i4de/rulex/rulexrpc"
+	"github.com/i4de/rulex/typex"
 
 	"testing"
 	"time"

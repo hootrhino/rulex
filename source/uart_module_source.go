@@ -1,11 +1,12 @@
 package source
 
 import (
-	"rulex/core"
-	"rulex/driver"
-	"rulex/typex"
-	"rulex/utils"
 	"time"
+
+	"github.com/i4de/rulex/core"
+	"github.com/i4de/rulex/driver"
+	"github.com/i4de/rulex/typex"
+	"github.com/i4de/rulex/utils"
 
 	"github.com/goburrow/serial"
 	"github.com/ngaut/log"

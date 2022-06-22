@@ -1,8 +1,9 @@
 package typex
 
 import (
-	"rulex/sidecar"
 	"sync"
+
+	"github.com/i4de/rulex/sidecar"
 )
 
 //

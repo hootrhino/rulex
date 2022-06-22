@@ -2,7 +2,8 @@ package rulexlib
 
 import (
 	"encoding/json"
-	"rulex/typex"
+
+	"github.com/i4de/rulex/typex"
 
 	"github.com/itchyny/gojq"
 	"github.com/ngaut/log"

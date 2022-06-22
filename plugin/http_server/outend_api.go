@@ -1,8 +1,8 @@
 package httpserver
 
 import (
-	"rulex/typex"
-	"rulex/utils"
+	"github.com/i4de/rulex/typex"
+	"github.com/i4de/rulex/utils"
 
 	"github.com/gin-gonic/gin"
 	"gopkg.in/square/go-jose.v2/json"

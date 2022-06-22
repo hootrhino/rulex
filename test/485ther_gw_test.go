@@ -3,14 +3,16 @@ package test
 import (
 	"os"
 	"os/signal"
-	"rulex/core"
-	"rulex/engine"
-	httpserver "rulex/plugin/http_server"
-	"rulex/rulexlib"
 	"syscall"
 
-	"rulex/typex"
+	"github.com/i4de/rulex/core"
+	"github.com/i4de/rulex/engine"
+	httpserver "github.com/i4de/rulex/plugin/http_server"
+	"github.com/i4de/rulex/rulexlib"
+
 	"testing"
+
+	"github.com/i4de/rulex/typex"
 
 	"github.com/ngaut/log"
 )

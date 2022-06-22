@@ -2,12 +2,13 @@ package httpserver
 
 import (
 	"net/http"
-	"rulex/source"
-	"rulex/statistics"
-	"rulex/target"
-	"rulex/typex"
 	"runtime"
 	"time"
+
+	"github.com/i4de/rulex/source"
+	"github.com/i4de/rulex/statistics"
+	"github.com/i4de/rulex/target"
+	"github.com/i4de/rulex/typex"
 
 	"github.com/gin-gonic/gin"
 	"github.com/shirou/gopsutil/cpu"

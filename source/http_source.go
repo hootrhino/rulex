@@ -4,9 +4,10 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"rulex/core"
-	"rulex/typex"
-	"rulex/utils"
+
+	"github.com/i4de/rulex/core"
+	"github.com/i4de/rulex/typex"
+	"github.com/i4de/rulex/utils"
 
 	"github.com/gin-gonic/gin"
 	"github.com/ngaut/log"

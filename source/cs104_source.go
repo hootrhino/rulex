@@ -2,8 +2,9 @@ package source
 
 import (
 	"fmt"
-	"rulex/typex"
-	"rulex/utils"
+
+	"github.com/i4de/rulex/typex"
+	"github.com/i4de/rulex/utils"
 
 	"github.com/thinkgos/go-iecp5/asdu"
 	"github.com/thinkgos/go-iecp5/cs104"

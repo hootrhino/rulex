@@ -1,8 +1,8 @@
 package target
 
 import (
-	"rulex/core"
-	"rulex/typex"
+	"github.com/i4de/rulex/core"
+	"github.com/i4de/rulex/typex"
 )
 
 var TM typex.TargetRegistry = core.NewTargetTypeManager()

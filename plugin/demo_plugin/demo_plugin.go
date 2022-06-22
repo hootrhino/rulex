@@ -1,8 +1,8 @@
 package demo_plugin
 
 import (
+	"github.com/i4de/rulex/typex"
 	"gopkg.in/ini.v1"
-	"rulex/typex"
 )
 
 type DemoPlugin struct {

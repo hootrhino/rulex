@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"rulex/core"
-	"rulex/typex"
-	"rulex/utils"
 	"strings"
+
+	"github.com/i4de/rulex/core"
+	"github.com/i4de/rulex/typex"
+	"github.com/i4de/rulex/utils"
 
 	"github.com/ngaut/log"
 )

@@ -4,7 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"rulex/statistics"
+
+	"github.com/i4de/rulex/statistics"
 
 	"github.com/ngaut/log"
 )

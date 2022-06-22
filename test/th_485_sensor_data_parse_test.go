@@ -3,13 +3,14 @@ package test
 import (
 	"context"
 	"math/rand"
-	"rulex/core"
-	"rulex/engine"
-	httpserver "rulex/plugin/http_server"
-	"rulex/rulexrpc"
-	"rulex/typex"
 	"testing"
 	"time"
+
+	"github.com/i4de/rulex/core"
+	"github.com/i4de/rulex/engine"
+	httpserver "github.com/i4de/rulex/plugin/http_server"
+	"github.com/i4de/rulex/rulexrpc"
+	"github.com/i4de/rulex/typex"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"

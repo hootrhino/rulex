@@ -3,10 +3,11 @@ package source
 import (
 	"context"
 	"encoding/json"
-	"rulex/core"
-	"rulex/typex"
-	"rulex/utils"
 	"time"
+
+	"github.com/i4de/rulex/core"
+	"github.com/i4de/rulex/typex"
+	"github.com/i4de/rulex/utils"
 
 	"github.com/ngaut/log"
 	"github.com/robinson/gos7"

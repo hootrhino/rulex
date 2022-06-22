@@ -3,7 +3,8 @@ package httpserver
 import (
 	"errors"
 	"net/http"
-	"rulex/typex"
+
+	"github.com/i4de/rulex/typex"
 
 	"github.com/gin-gonic/gin"
 	"github.com/ngaut/log"

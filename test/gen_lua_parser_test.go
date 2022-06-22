@@ -2,8 +2,9 @@ package test
 
 import (
 	"encoding/json"
-	"rulex/core"
 	"testing"
+
+	"github.com/i4de/rulex/core"
 )
 
 func Test_gen_lua_code(t *testing.T) {

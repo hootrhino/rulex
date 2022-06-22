@@ -4,10 +4,11 @@ import (
 	"context"
 	"fmt"
 	"net"
-	"rulex/core"
-	"rulex/rulexrpc"
-	"rulex/typex"
-	"rulex/utils"
+
+	"github.com/i4de/rulex/core"
+	"github.com/i4de/rulex/rulexrpc"
+	"github.com/i4de/rulex/typex"
+	"github.com/i4de/rulex/utils"
 
 	"github.com/ngaut/log"
 	"google.golang.org/grpc"

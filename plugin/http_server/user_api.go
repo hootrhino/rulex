@@ -4,8 +4,9 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
-	"rulex/typex"
 	"time"
+
+	"github.com/i4de/rulex/typex"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"

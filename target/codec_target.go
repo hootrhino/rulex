@@ -2,10 +2,11 @@ package target
 
 import (
 	"fmt"
-	"rulex/core"
-	"rulex/rulexrpc"
-	"rulex/typex"
-	"rulex/utils"
+
+	"github.com/i4de/rulex/core"
+	"github.com/i4de/rulex/rulexrpc"
+	"github.com/i4de/rulex/typex"
+	"github.com/i4de/rulex/utils"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"

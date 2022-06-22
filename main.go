@@ -9,9 +9,10 @@ import (
 
 	_ "net/http/pprof"
 	"os"
-	"rulex/engine"
-	"rulex/typex"
-	"rulex/utils"
+
+	"github.com/i4de/rulex/engine"
+	"github.com/i4de/rulex/typex"
+	"github.com/i4de/rulex/utils"
 )
 
 //

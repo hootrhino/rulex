@@ -3,10 +3,11 @@ package target
 import (
 	"errors"
 	"fmt"
-	"rulex/core"
-	"rulex/typex"
-	"rulex/utils"
 	"time"
+
+	"github.com/i4de/rulex/core"
+	"github.com/i4de/rulex/typex"
+	"github.com/i4de/rulex/utils"
 
 	"github.com/ngaut/log"
 

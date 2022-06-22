@@ -8,7 +8,8 @@ package driver
 import (
 	"context"
 	"errors"
-	"rulex/typex"
+
+	"github.com/i4de/rulex/typex"
 
 	"github.com/goburrow/serial"
 	"github.com/ngaut/log"

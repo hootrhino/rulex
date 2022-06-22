@@ -4,13 +4,14 @@ import (
 	"encoding/json"
 	"os"
 	"os/signal"
-	"rulex/core"
-	httpserver "rulex/plugin/http_server"
-	mqttserver "rulex/plugin/mqtt_server"
-	"rulex/rulexlib"
-	"rulex/sidecar"
-	"rulex/typex"
 	"syscall"
+
+	"github.com/i4de/rulex/core"
+	httpserver "github.com/i4de/rulex/plugin/http_server"
+	mqttserver "github.com/i4de/rulex/plugin/mqtt_server"
+	"github.com/i4de/rulex/rulexlib"
+	"github.com/i4de/rulex/sidecar"
+	"github.com/i4de/rulex/typex"
 
 	"github.com/ngaut/log"
 )

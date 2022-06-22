@@ -1,6 +1,6 @@
 package core
 
-import "rulex/typex"
+import "github.com/i4de/rulex/typex"
 
 type targetTypeManager struct {
 	// K: 资源类型

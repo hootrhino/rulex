@@ -1,6 +1,6 @@
 package typex
 
-import "rulex/utils"
+import "github.com/i4de/rulex/utils"
 
 //
 type InEnd struct {

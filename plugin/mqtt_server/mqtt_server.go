@@ -2,14 +2,15 @@ package mqttserver
 
 import (
 	"fmt"
-	"gopkg.in/ini.v1"
-	"rulex/utils"
 
+	"github.com/i4de/rulex/utils"
+	"gopkg.in/ini.v1"
+
+	"github.com/i4de/rulex/typex"
 	mqttServer "github.com/mochi-co/mqtt/server"
 	"github.com/mochi-co/mqtt/server/events"
 	"github.com/mochi-co/mqtt/server/listeners"
 	"github.com/ngaut/log"
-	"rulex/typex"
 )
 
 const (
@@ -68,7 +69,7 @@ func (s *MqttServer) Start(r typex.RuleX) error {
 		}
 	}
 	s.mqttServer.Events.OnMessage = func(c events.Client, p events.Packet) (events.Packet, error) {
-		
+
 		return p, nil
 	}
 	log.Infof("MqttServer start at [0.0.0.0:%v] successfully", s.Port)

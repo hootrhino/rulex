@@ -3,9 +3,10 @@ package rulexlib
 import (
 	"encoding/json"
 	"errors"
-	"rulex/typex"
 
-	"github.com/yuin/gopher-lua"
+	"github.com/i4de/rulex/typex"
+
+	lua "github.com/yuin/gopher-lua"
 )
 
 /*

@@ -6,8 +6,9 @@ package driver
 
 import (
 	"encoding/json"
-	"rulex/typex"
-	"rulex/utils"
+
+	"github.com/i4de/rulex/typex"
+	"github.com/i4de/rulex/utils"
 
 	"github.com/goburrow/modbus"
 	"github.com/ngaut/log"
