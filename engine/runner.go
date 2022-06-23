@@ -121,14 +121,5 @@ func RunRulex(dbPath string, iniPath string) {
 	s := <-c
 	log.Warn("Received stop signal:", s)
 	engine.Stop()
-	//
-	// 关闭日志器
-	//
-	if err := typex.GLOBAL_LOGGER.Close(); err != nil {
-		return
-	}
-	if err := typex.LUA_LOGGER.Close(); err != nil {
-		return
-	}
 	os.Exit(0)
 }
