@@ -64,12 +64,12 @@ func (mm *mqttOutEndTarget) Start(cctx typex.CCTX) error {
 	mm.DataTopic = mainConfig.DataTopic
 	opts.OnConnect = connectHandler
 	opts.OnConnectionLost = connectLostHandler
-	opts.SetPingTimeout(5 * time.Second)
+	opts.SetPingTimeout(10 * time.Second)
 	opts.SetAutoReconnect(true)
-	opts.SetMaxReconnectInterval(5 * time.Second)
+	opts.SetMaxReconnectInterval(10 * time.Second)
 	mm.client = mqtt.NewClient(opts)
 	token := mm.client.Connect()
-	token.WaitTimeout(3 * time.Second)
+	token.WaitTimeout(10 * time.Second)
 	if token.Wait() && token.Error() != nil {
 		return token.Error()
 	} else {
