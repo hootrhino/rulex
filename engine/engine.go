@@ -302,6 +302,13 @@ func (e *RuleEngine) Stop() {
 	// 回收资源
 	runtime.Gosched()
 	runtime.GC()
+
+	if err := typex.GLOBAL_LOGGER.Close(); err != nil {
+		log.Error(err)
+	}
+	if err := typex.LUA_LOGGER.Close(); err != nil {
+		log.Error(err)
+	}
 	log.Info("Stop Rulex successfully")
 }
 
