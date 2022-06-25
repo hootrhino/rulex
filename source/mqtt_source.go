@@ -5,10 +5,9 @@ import (
 	"time"
 
 	"github.com/i4de/rulex/core"
+	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
-
-	"github.com/ngaut/log"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
@@ -50,18 +49,18 @@ func (mm *mqttInEndSource) Start(cctx typex.CCTX) error {
 	var messageHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
 		work, err := mm.RuleEngine.WorkInEnd(mm.RuleEngine.GetInEnd(mm.PointId), string(msg.Payload()))
 		if !work {
-			log.Error(err)
+			glogger.GLogger.Error(err)
 		}
 
 	}
 	//
 	var connectHandler mqtt.OnConnectHandler = func(client mqtt.Client) {
-		log.Infof("Mqtt InEnd Connected Success")
+		glogger.GLogger.Infof("Mqtt InEnd Connected Success")
 		client.Subscribe(mainConfig.Topic, 2, nil)
 	}
 
 	var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err error) {
-		log.Warnf("Connect lost: %v, try to reconnect\n", err)
+		glogger.GLogger.Warnf("Connect lost: %v, try to reconnect\n", err)
 	}
 
 	opts := mqtt.NewClientOptions()

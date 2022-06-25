@@ -2,8 +2,7 @@ package httpserver
 
 import (
 	socketio "github.com/googollee/go-socket.io"
-
-	"github.com/ngaut/log"
+	"github.com/i4de/rulex/glogger"
 )
 
 /*
@@ -15,12 +14,12 @@ func configSocketIO(server *socketio.Server) {
 
 	server.OnConnect("/", func(s socketio.Conn) error {
 		s.SetContext("")
-		log.Debug("connected:", s.ID())
+		glogger.GLogger.Debug("connected:", s.ID())
 		return nil
 	})
 
 	server.OnEvent("/", "notice", func(s socketio.Conn, msg string) {
-		log.Debug("notice:", msg)
+		glogger.GLogger.Debug("notice:", msg)
 		s.Emit("reply", "have "+msg)
 	})
 
@@ -37,10 +36,10 @@ func configSocketIO(server *socketio.Server) {
 	})
 
 	server.OnError("/", func(s socketio.Conn, e error) {
-		log.Debug("meet error:", e)
+		glogger.GLogger.Debug("meet error:", e)
 	})
 
 	server.OnDisconnect("/", func(s socketio.Conn, msg string) {
-		log.Debug("closed", msg)
+		glogger.GLogger.Debug("closed", msg)
 	})
 }

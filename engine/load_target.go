@@ -7,10 +7,9 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/target"
 	"github.com/i4de/rulex/typex"
-
-	"github.com/ngaut/log"
 )
 
 //
@@ -58,14 +57,14 @@ func startTarget(target typex.XTarget, out *typex.OutEnd, e typex.RuleX) error {
 		return err
 	}
 	if err := target.Init(out.UUID, config); err != nil {
-		log.Error(err)
+		glogger.GLogger.Error(err)
 		e.RemoveInEnd(out.UUID)
 		return err
 	}
 	// 然后启动资源
 	ctx, cancelCTX := typex.NewCCTX()
 	if err := target.Start(typex.CCTX{Ctx: ctx, CancelCTX: cancelCTX}); err != nil {
-		log.Error(err)
+		glogger.GLogger.Error(err)
 		e.RemoveOutEnd(out.UUID)
 		return err
 	}
@@ -100,7 +99,7 @@ func startTarget(target typex.XTarget, out *typex.OutEnd, e typex.RuleX) error {
 		}
 
 	}(typex.GCTX)
-	log.Infof("Target [%v, %v] load successfully", out.Name, out.UUID)
+	glogger.GLogger.Infof("Target [%v, %v] load successfully", out.Name, out.UUID)
 	return nil
 }
 
@@ -110,7 +109,7 @@ func startTarget(target typex.XTarget, out *typex.OutEnd, e typex.RuleX) error {
 func tryIfRestartTarget(target typex.XTarget, e typex.RuleX, id string) {
 	if target.Status() == typex.SOURCE_DOWN {
 		target.Details().State = typex.SOURCE_DOWN
-		log.Warnf("Target [%v, %v] down. try to restart it", target.Details().Name, target.Details().UUID)
+		glogger.GLogger.Warnf("Target [%v, %v] down. try to restart it", target.Details().Name, target.Details().UUID)
 		target.Stop()
 		runtime.Gosched()
 		runtime.GC()

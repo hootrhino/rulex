@@ -3,6 +3,7 @@ package mqttserver
 import (
 	"fmt"
 
+	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/utils"
 	"gopkg.in/ini.v1"
 
@@ -10,7 +11,6 @@ import (
 	mqttServer "github.com/mochi-co/mqtt/server"
 	"github.com/mochi-co/mqtt/server/events"
 	"github.com/mochi-co/mqtt/server/listeners"
-	"github.com/ngaut/log"
 )
 
 const (
@@ -60,19 +60,19 @@ func (s *MqttServer) Start(r typex.RuleX) error {
 	s.mqttServer = server
 	s.mqttServer.Events.OnConnect = func(client events.Client, packet events.Packet) {
 		s.clients[client.ID] = &client
-		log.Infof("Client connected:%s", client.ID)
+		glogger.GLogger.Infof("Client connected:%s", client.ID)
 	}
 	s.mqttServer.Events.OnDisconnect = func(client events.Client, err error) {
 		if s.clients[client.ID] != nil {
 			delete(s.clients, client.ID)
-			log.Warnf("Client disconnected:%s", client.ID)
+			glogger.GLogger.Warnf("Client disconnected:%s", client.ID)
 		}
 	}
 	s.mqttServer.Events.OnMessage = func(c events.Client, p events.Packet) (events.Packet, error) {
 
 		return p, nil
 	}
-	log.Infof("MqttServer start at [0.0.0.0:%v] successfully", s.Port)
+	glogger.GLogger.Infof("MqttServer start at [0.0.0.0:%v] successfully", s.Port)
 	return nil
 }
 

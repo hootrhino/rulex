@@ -3,10 +3,10 @@ package test
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"testing"
 	"time"
 
+	"github.com/i4de/rulex/glogger"
 	"github.com/mitchellh/go-homedir"
 	"golang.org/x/crypto/ssh"
 )
@@ -36,38 +36,38 @@ func Test_ssh_tty(t *testing.T) {
 	addr := fmt.Sprintf("%s:%d", sshHost, sshPort)
 	sshClient, err := ssh.Dial("tcp", addr, config)
 	if err != nil {
-		log.Fatal("创建ssh client 失败", err)
+		glogger.GLogger.Fatal("创建ssh client 失败", err)
 	}
 	defer sshClient.Close()
 
 	//创建ssh-session
 	session, err := sshClient.NewSession()
 	if err != nil {
-		log.Fatal("创建ssh session 失败", err)
+		glogger.GLogger.Fatal("创建ssh session 失败", err)
 	}
 	defer session.Close()
 	//执行远程命令
 	combo, err := session.CombinedOutput("whoami; cd /; ls -al;echo https://github.com/dejavuzhou/felix")
 	if err != nil {
-		log.Fatal("远程执行cmd 失败", err)
+		glogger.GLogger.Fatal("远程执行cmd 失败", err)
 	}
-	log.Println("命令输出:", string(combo))
+	glogger.GLogger.Println("命令输出:", string(combo))
 
 }
 
 func publicKeyAuthFunc(kPath string) ssh.AuthMethod {
 	keyPath, err := homedir.Expand(kPath)
 	if err != nil {
-		log.Fatal("find key's home dir failed", err)
+		glogger.GLogger.Fatal("find key's home dir failed", err)
 	}
 	key, err := ioutil.ReadFile(keyPath)
 	if err != nil {
-		log.Fatal("ssh key file read failed", err)
+		glogger.GLogger.Fatal("ssh key file read failed", err)
 	}
 	// Create the Signer for this private key.
 	signer, err := ssh.ParsePrivateKey(key)
 	if err != nil {
-		log.Fatal("ssh key signer failed", err)
+		glogger.GLogger.Fatal("ssh key signer failed", err)
 	}
 	return ssh.PublicKeys(signer)
 }

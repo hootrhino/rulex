@@ -6,12 +6,12 @@ import (
 	"time"
 
 	"github.com/i4de/rulex/driver"
+	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
 
 	"github.com/goburrow/modbus"
 	"github.com/mitchellh/mapstructure"
-	"github.com/ngaut/log"
 )
 
 type tss200_v_0_2_sensor struct {
@@ -50,7 +50,7 @@ func (tss *tss200_v_0_2_sensor) Start(cctx typex.CCTX) error {
 	}
 	var rtuConfig rtuConfig
 	if errs := mapstructure.Decode(mainConfig.Config, &rtuConfig); errs != nil {
-		log.Error(errs)
+		glogger.GLogger.Error(errs)
 		return errs
 	}
 
@@ -61,7 +61,7 @@ func (tss *tss200_v_0_2_sensor) Start(cctx typex.CCTX) error {
 	handler.Parity = "N"
 	handler.StopBits = 1
 	handler.Timeout = time.Duration(*mainConfig.Timeout) * time.Second
-	// handler.Logger = golog.New(os.Stdout, "485THerSource: ", log.LstdFlags)
+	// handler.Logger = golog.New(os.Stdout, "485THerSource: ", glogger.GLogger.LstdFlags)
 	if err := handler.Connect(); err != nil {
 		return err
 	}
@@ -95,7 +95,7 @@ func (tss *tss200_v_0_2_sensor) Start(cctx typex.CCTX) error {
 				n, err := rtuDriver.Read(buffer)
 				lock.Unlock()
 				if err != nil {
-					log.Error(err)
+					glogger.GLogger.Error(err)
 				} else {
 					tss.RuleEngine.WorkDevice(tss.RuleEngine.GetDevice(tss.PointId), string(buffer[:n]))
 				}
@@ -111,7 +111,7 @@ func (tss *tss200_v_0_2_sensor) OnRead(data []byte) (int, error) {
 
 	n, err := tss.driver.Read(data)
 	if err != nil {
-		log.Error(err)
+		glogger.GLogger.Error(err)
 		tss.status = typex.DEV_STOP
 	}
 	return n, err

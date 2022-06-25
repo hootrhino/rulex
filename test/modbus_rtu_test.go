@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/goburrow/modbus"
+	"github.com/i4de/rulex/glogger"
 )
 
 var keys = [8]uint16{0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07}
@@ -61,6 +62,7 @@ func TestRTU485_THer_Usage(t *testing.T) {
 	handler.StopBits = 1
 	handler.SlaveId = 1
 	handler.Logger = log.New(os.Stdout, "rtu: ", log.LstdFlags)
+
 	err := handler.Connect()
 	if err != nil {
 		t.Fatal(err)
@@ -69,8 +71,8 @@ func TestRTU485_THer_Usage(t *testing.T) {
 	client := modbus.NewClient(handler)
 	results, err := client.ReadHoldingRegisters(0x00, 2)
 	if err != nil {
-		log.Fatal(err)
+		glogger.GLogger.Fatal(err)
 	}
-	log.Println(results)
+	glogger.GLogger.Println(results)
 
 }

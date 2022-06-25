@@ -1,10 +1,10 @@
 package test
 
 import (
-	"log"
 	"testing"
 	"time"
 
+	"github.com/i4de/rulex/glogger"
 	"github.com/thinkgos/go-iecp5/asdu"
 	"github.com/thinkgos/go-iecp5/cs104"
 )
@@ -12,17 +12,17 @@ import (
 func Test_104_server(t *testing.T) {
 	srv := cs104.NewServer(&mysrv{})
 	srv.SetOnConnectionHandler(func(c asdu.Connect) {
-		log.Println("on connect")
+		glogger.GLogger.Println("on connect")
 	})
 	srv.SetConnectionLostHandler(func(c asdu.Connect) {
-		log.Println("connect lost")
+		glogger.GLogger.Println("connect lost")
 	})
 	srv.LogMode(true)
 	// go func() {
 	// 	time.Sleep(time.Second * 20)
-	// 	log.Println("try ooooooo", err)
+	// 	glogger.GLogger.Println("try ooooooo", err)
 	// 	err := srv.Close()
-	// 	log.Println("ooooooo", err)
+	// 	glogger.GLogger.Println("ooooooo", err)
 	// }()
 	srv.ListenAndServer(":2404")
 }
@@ -30,23 +30,23 @@ func Test_104_server(t *testing.T) {
 type mysrv struct{}
 
 func (sf *mysrv) InterrogationHandler(c asdu.Connect, asduPack *asdu.ASDU, qoi asdu.QualifierOfInterrogation) error {
-	log.Println("qoi", qoi)
+	glogger.GLogger.Println("qoi", qoi)
 	asduPack.SendReplyMirror(c, asdu.ActivationCon)
 	err := asdu.Single(c, false, asdu.CauseOfTransmission{Cause: asdu.InterrogatedByStation}, asdu.GlobalCommonAddr,
 		asdu.SinglePointInfo{})
 	if err != nil {
-		log.Println("falied")
+		glogger.GLogger.Println("falied")
 	} else {
-		log.Println("success")
+		glogger.GLogger.Println("success")
 	}
 	// go func() {
 	// 	for {
 	// 		err := asdu.Single(c, false, asdu.CauseOfTransmission{Cause: asdu.Spontaneous}, asdu.GlobalCommonAddr,
 	// 			asdu.SinglePointInfo{})
 	// 		if err != nil {
-	// 			log.Println("falied", err)
+	// 			glogger.GLogger.Println("falied", err)
 	// 		} else {
-	// 			log.Println("success", err)
+	// 			glogger.GLogger.Println("success", err)
 	// 		}
 
 	// 		time.Sleep(time.Second * 1)

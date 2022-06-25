@@ -6,11 +6,11 @@ import (
 	"net/http"
 
 	"github.com/i4de/rulex/core"
+	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
 
 	"github.com/gin-gonic/gin"
-	"github.com/ngaut/log"
 )
 
 //
@@ -70,11 +70,11 @@ func (hh *httpInEndSource) Start(cctx typex.CCTX) error {
 	go func(ctx context.Context) {
 		err := http.ListenAndServe(fmt.Sprintf(":%v", mainConfig.Port), hh.engine)
 		if err != nil {
-			log.Error(err)
+			glogger.GLogger.Error(err)
 			return
 		}
 	}(hh.Ctx)
-	log.Info("HTTP source started on" + " [0.0.0.0]:" + fmt.Sprintf("%v", mainConfig.Port))
+	glogger.GLogger.Info("HTTP source started on" + " [0.0.0.0]:" + fmt.Sprintf("%v", mainConfig.Port))
 
 	return nil
 }

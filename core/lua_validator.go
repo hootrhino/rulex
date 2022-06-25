@@ -3,9 +3,9 @@ package core
 import (
 	"errors"
 
+	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 
-	"github.com/ngaut/log"
 	lua "github.com/yuin/gopher-lua"
 )
 
@@ -52,7 +52,7 @@ func ExecuteActions(rule *typex.Rule, arg lua.LValue) (lua.LValue, error) {
 			return typex.RunPipline(rule.VM, funcs, arg)
 		}
 		// if stopped, log warning information
-		log.Warn("Rule has stopped:" + rule.UUID)
+		glogger.GLogger.Warn("Rule has stopped:" + rule.UUID)
 		return lua.LNil, nil
 
 	} else {

@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/i4de/rulex/core"
+	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/sidecar"
 	"github.com/i4de/rulex/source"
 	"github.com/i4de/rulex/statistics"
@@ -15,7 +16,6 @@ import (
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
 
-	"github.com/ngaut/log"
 	"github.com/shirou/gopsutil/disk"
 	lua "github.com/yuin/gopher-lua"
 )
@@ -68,7 +68,7 @@ func (e *RuleEngine) Start() *typex.RulexConfig {
 func (e *RuleEngine) PushQueue(qd typex.QueueData) error {
 	err := typex.DefaultDataCacheQueue.Push(qd)
 	if err != nil {
-		log.Error("PushQueue error:", err)
+		glogger.GLogger.Error("PushQueue error:", err)
 		statistics.IncInFailed()
 	} else {
 		statistics.IncIn()
@@ -84,7 +84,7 @@ func (e *RuleEngine) PushInQueue(in *typex.InEnd, data string) error {
 	}
 	err := typex.DefaultDataCacheQueue.Push(qd)
 	if err != nil {
-		log.Error("PushInQueue error:", err)
+		glogger.GLogger.Error("PushInQueue error:", err)
 		statistics.IncInFailed()
 	} else {
 		statistics.IncIn()
@@ -107,7 +107,7 @@ func (e *RuleEngine) PushDeviceQueue(Device *typex.Device, data string) error {
 	}
 	err := typex.DefaultDataCacheQueue.Push(qd)
 	if err != nil {
-		log.Error("PushInQueue error:", err)
+		glogger.GLogger.Error("PushInQueue error:", err)
 		statistics.IncInFailed()
 	} else {
 		statistics.IncIn()
@@ -124,7 +124,7 @@ func (e *RuleEngine) PushOutQueue(out *typex.OutEnd, data string) error {
 	}
 	err := typex.DefaultDataCacheQueue.Push(qd)
 	if err != nil {
-		log.Error("PushOutQueue error:", err)
+		glogger.GLogger.Error("PushOutQueue error:", err)
 		statistics.IncInFailed()
 	} else {
 		statistics.IncIn()
@@ -167,7 +167,7 @@ func (e *RuleEngine) LoadRule(r *typex.Rule) error {
 	// Load LoadBuildInLuaLib
 	//--------------------------------------------------------------
 	LoadBuildInLuaLib(e, r)
-	log.Infof("Rule [%v, %v] load successfully", r.Name, r.UUID)
+	glogger.GLogger.Infof("Rule [%v, %v] load successfully", r.Name, r.UUID)
 	// 绑定输入资源
 	for _, inUUId := range r.FromSource {
 		// 查找输入定义的资源是否存在
@@ -240,7 +240,7 @@ func (e *RuleEngine) RemoveRule(ruleId string) {
 		})
 		e.Rules.Delete(ruleId)
 		rule = nil
-		log.Infof("Rule [%v] has been deleted", ruleId)
+		glogger.GLogger.Infof("Rule [%v] has been deleted", ruleId)
 	}
 }
 
@@ -255,11 +255,11 @@ func (e *RuleEngine) AllRule() *sync.Map {
 // Stop
 //
 func (e *RuleEngine) Stop() {
-	log.Info("Ready to stop rulex")
+	glogger.GLogger.Info("Ready to stop rulex")
 	e.InEnds.Range(func(key, value interface{}) bool {
 		inEnd := value.(*typex.InEnd)
 		if inEnd.Source != nil {
-			log.Info("Stop InEnd:", inEnd.Name, inEnd.UUID)
+			glogger.GLogger.Info("Stop InEnd:", inEnd.Name, inEnd.UUID)
 			e.GetInEnd(inEnd.UUID).SetState(typex.SOURCE_DOWN)
 			inEnd.Source.Stop()
 			if inEnd.Source.Driver() != nil {
@@ -272,7 +272,7 @@ func (e *RuleEngine) Stop() {
 	e.OutEnds.Range(func(key, value interface{}) bool {
 		outEnd := value.(*typex.OutEnd)
 		if outEnd.Target != nil {
-			log.Info("Stop Target:", outEnd.Name, outEnd.UUID)
+			glogger.GLogger.Info("Stop Target:", outEnd.Name, outEnd.UUID)
 			outEnd.Target.Stop()
 		}
 		return true
@@ -280,21 +280,21 @@ func (e *RuleEngine) Stop() {
 	// 停止所有插件
 	e.Plugins.Range(func(key, value interface{}) bool {
 		plugin := value.(typex.XPlugin)
-		log.Info("Stop plugin:", plugin.PluginMetaInfo().Name)
+		glogger.GLogger.Info("Stop plugin:", plugin.PluginMetaInfo().Name)
 		plugin.Stop()
 		return true
 	})
 	// 停止所有设备
 	e.Devices.Range(func(key, value interface{}) bool {
 		Device := value.(*typex.Device)
-		log.Info("Stop Device:", Device.Name)
+		glogger.GLogger.Info("Stop Device:", Device.Name)
 		Device.Device.Stop()
 		return true
 	})
 	// 外挂停了
 	e.AllGoods().Range(func(key, value interface{}) bool {
 		goodsProcess := value.(*sidecar.GoodsProcess)
-		log.Info("Stop Goods Process:", goodsProcess.UUID())
+		glogger.GLogger.Info("Stop Goods Process:", goodsProcess.UUID())
 		goodsProcess.Stop()
 		return true
 	})
@@ -303,13 +303,13 @@ func (e *RuleEngine) Stop() {
 	runtime.Gosched()
 	runtime.GC()
 
-	if err := typex.GLOBAL_LOGGER.Close(); err != nil {
-		log.Error(err)
+	if err := glogger.GLOBAL_LOGGER.Close(); err != nil {
+		glogger.GLogger.Error(err)
 	}
-	if err := typex.LUA_LOGGER.Close(); err != nil {
-		log.Error(err)
+	if err := glogger.LUA_LOGGER.Close(); err != nil {
+		glogger.GLogger.Error(err)
 	}
-	log.Info("Stop Rulex successfully")
+	glogger.GLogger.Info("Stop Rulex successfully")
 }
 
 //
@@ -341,15 +341,15 @@ func (e *RuleEngine) RunSourceCallbacks(in *typex.InEnd, callbackArgs string) {
 		if rule.Status == typex.RULE_RUNNING {
 			_, err := core.ExecuteActions(&rule, lua.LString(callbackArgs))
 			if err != nil {
-				log.Error("RunLuaCallbacks error:", err)
+				glogger.GLogger.Error("RunLuaCallbacks error:", err)
 				_, err := core.ExecuteFailed(rule.VM, lua.LString(err.Error()))
 				if err != nil {
-					log.Error(err)
+					glogger.GLogger.Error(err)
 				}
 			} else {
 				_, err := core.ExecuteSuccess(rule.VM)
 				if err != nil {
-					log.Error(err)
+					glogger.GLogger.Error(err)
 					return
 				}
 			}
@@ -366,15 +366,15 @@ func (e *RuleEngine) RunDeviceCallbacks(Device *typex.Device, callbackArgs strin
 		if rule.Status == typex.RULE_RUNNING {
 			_, err := core.ExecuteActions(&rule, lua.LString(callbackArgs))
 			if err != nil {
-				log.Error("RunLuaCallbacks error:", err)
+				glogger.GLogger.Error("RunLuaCallbacks error:", err)
 				_, err := core.ExecuteFailed(rule.VM, lua.LString(err.Error()))
 				if err != nil {
-					log.Error(err)
+					glogger.GLogger.Error(err)
 				}
 			} else {
 				_, err := core.ExecuteSuccess(rule.VM)
 				if err != nil {
-					log.Error(err)
+					glogger.GLogger.Error(err)
 					return
 				}
 			}
@@ -398,7 +398,7 @@ func (e *RuleEngine) LoadPlugin(sectionK string, p typex.XPlugin) error {
 		return err2
 	}
 	if !enable {
-		log.Infof("Plugin is not enable:%s", p.PluginMetaInfo().Name)
+		glogger.GLogger.Infof("Plugin is not enable:%s", p.PluginMetaInfo().Name)
 		return nil
 	}
 
@@ -415,7 +415,7 @@ func (e *RuleEngine) LoadPlugin(sectionK string, p typex.XPlugin) error {
 	}
 
 	e.Plugins.Store(p.PluginMetaInfo().Name, p)
-	log.Infof("Plugin start successfully:[%v]", p.PluginMetaInfo().Name)
+	glogger.GLogger.Infof("Plugin start successfully:[%v]", p.PluginMetaInfo().Name)
 	return nil
 
 }
@@ -474,7 +474,7 @@ func (e *RuleEngine) RemoveInEnd(id string) {
 		inEnd.Source.Stop()
 		e.InEnds.Delete(id)
 		inEnd = nil
-		log.Infof("InEnd [%v] has been deleted", id)
+		glogger.GLogger.Infof("InEnd [%v] has been deleted", id)
 	}
 }
 
@@ -516,7 +516,7 @@ func (e *RuleEngine) RemoveOutEnd(uuid string) {
 			e.OutEnds.Delete(uuid)
 			outEnd = nil
 		}
-		log.Infof("InEnd [%v] has been deleted", uuid)
+		glogger.GLogger.Infof("InEnd [%v] has been deleted", uuid)
 	}
 }
 
@@ -582,7 +582,7 @@ func (e *RuleEngine) SnapshotDump() string {
 	}
 	b, err := json.Marshal(data)
 	if err != nil {
-		log.Error(err)
+		glogger.GLogger.Error(err)
 	}
 	return string(b)
 }
@@ -645,7 +645,7 @@ func (e *RuleEngine) RestartInEnd(uuid string) error {
 			o.Source.Stop()
 		}
 		if err := e.LoadInEnd(o); err != nil {
-			log.Error("InEnd load failed:", err)
+			glogger.GLogger.Error("InEnd load failed:", err)
 			return err
 		}
 		return nil
@@ -663,7 +663,7 @@ func (e *RuleEngine) RestartOutEnd(uuid string) error {
 			o.Target.Stop()
 		}
 		if err := e.LoadOutEnd(o); err != nil {
-			log.Error("OutEnd load failed:", err)
+			glogger.GLogger.Error("OutEnd load failed:", err)
 			return err
 		}
 		return nil
@@ -681,7 +681,7 @@ func (e *RuleEngine) RestartDevice(uuid string) error {
 			o.Device.Stop()
 		}
 		if err := e.LoadDevice(o); err != nil {
-			log.Error("Device load failed:", err)
+			glogger.GLogger.Error("Device load failed:", err)
 			return err
 		}
 		return nil

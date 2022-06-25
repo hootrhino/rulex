@@ -1,8 +1,9 @@
 package utils
 
 import (
-	"log"
 	"os"
+
+	"github.com/i4de/rulex/glogger"
 )
 
 /*
@@ -13,7 +14,7 @@ import (
 func GetPwd() string {
 	dir, err := os.Getwd()
 	if err != nil {
-		log.Fatal(err)
+		glogger.GLogger.Fatal(err)
 	}
 	return dir
 }

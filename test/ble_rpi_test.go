@@ -2,15 +2,16 @@ package test
 
 import (
 	"context"
+	"os"
+	"os/signal"
+	"testing"
+
+	"github.com/i4de/rulex/glogger"
 	"github.com/muka/go-bluetooth/api"
 	"github.com/muka/go-bluetooth/api/beacon"
 	"github.com/muka/go-bluetooth/bluez/profile/adapter"
 	"github.com/muka/go-bluetooth/bluez/profile/device"
-	log "github.com/sirupsen/logrus"
 	eddystone "github.com/suapapa/go_eddystone"
-	"os"
-	"os/signal"
-	"testing"
 )
 
 func Test_BLE_Server(t *testing.T) {
@@ -29,13 +30,13 @@ func Run(adapterID string, onlyBeacon bool) error {
 		return err
 	}
 
-	log.Debug("Flush cached devices")
+	glogger.GLogger.Debug("Flush cached devices")
 	err = a.FlushDevices()
 	if err != nil {
 		return err
 	}
 
-	log.Debug("Start discovery")
+	glogger.GLogger.Debug("Start discovery")
 	discovery, cancel, err := api.Discover(a, nil)
 	if err != nil {
 		return err
@@ -52,21 +53,21 @@ func Run(adapterID string, onlyBeacon bool) error {
 
 			dev, err := device.NewDevice1(ev.Path)
 			if err != nil {
-				log.Errorf("%s: %s", ev.Path, err)
+				glogger.GLogger.Errorf("%s: %s", ev.Path, err)
 				continue
 			}
 
 			if dev == nil {
-				log.Errorf("%s: not found", ev.Path)
+				glogger.GLogger.Errorf("%s: not found", ev.Path)
 				continue
 			}
 
-			log.Infof("name=%s addr=%s rssi=%d", dev.Properties.Name, dev.Properties.Address, dev.Properties.RSSI)
+			glogger.GLogger.Infof("name=%s addr=%s rssi=%d", dev.Properties.Name, dev.Properties.Address, dev.Properties.RSSI)
 
 			go func(ev *adapter.DeviceDiscovered) {
 				err = handleBeacon(dev)
 				if err != nil {
-					log.Errorf("%s: %s", ev.Path, err)
+					glogger.GLogger.Errorf("%s: %s", ev.Path, err)
 				}
 			}(ev)
 		}
@@ -77,7 +78,7 @@ func Run(adapterID string, onlyBeacon bool) error {
 	signal.Notify(ch, os.Interrupt, os.Kill) // get notified of all OS signals
 
 	sig := <-ch
-	log.Infof("Received signal [%v]; shutting down...\n", sig)
+	glogger.GLogger.Infof("Received signal [%v]; shutting down...\n", sig)
 
 	return nil
 }
@@ -104,13 +105,13 @@ func handleBeacon(dev *device.Device1) error {
 		name = b.Device.Properties.Name
 	}
 
-	log.Debugf("Found beacon %s %s", b.Type, name)
+	glogger.GLogger.Debugf("Found beacon %s %s", b.Type, name)
 
 	if b.IsEddystone() {
 		ed := b.GetEddystone()
 		switch ed.Frame {
 		case eddystone.UID:
-			log.Debugf(
+			glogger.GLogger.Debugf(
 				"Eddystone UID %s instance %s (%ddbi)",
 				ed.UID,
 				ed.InstanceUID,
@@ -118,7 +119,7 @@ func handleBeacon(dev *device.Device1) error {
 			)
 			break
 		case eddystone.TLM:
-			log.Debugf(
+			glogger.GLogger.Debugf(
 				"Eddystone TLM temp:%.0f batt:%d last reboot:%d advertising pdu:%d (%ddbi)",
 				ed.TLMTemperature,
 				ed.TLMBatteryVoltage,
@@ -128,7 +129,7 @@ func handleBeacon(dev *device.Device1) error {
 			)
 			break
 		case eddystone.URL:
-			log.Debugf(
+			glogger.GLogger.Debugf(
 				"Eddystone URL %s (%ddbi)",
 				ed.URL,
 				ed.CalibratedTxPower,
@@ -139,7 +140,7 @@ func handleBeacon(dev *device.Device1) error {
 	}
 	if b.IsIBeacon() {
 		ibeacon := b.GetIBeacon()
-		log.Debugf(
+		glogger.GLogger.Debugf(
 			"IBeacon %s (%ddbi) (major=%d minor=%d)",
 			ibeacon.ProximityUUID,
 			ibeacon.MeasuredPower,

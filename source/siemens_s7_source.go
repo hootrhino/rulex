@@ -6,10 +6,10 @@ import (
 	"time"
 
 	"github.com/i4de/rulex/core"
+	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
 
-	"github.com/ngaut/log"
 	"github.com/robinson/gos7"
 )
 
@@ -93,7 +93,7 @@ func (s7 *siemensS7Source) Start(cctx typex.CCTX) error {
 	_status = typex.SOURCE_UP
 	ticker := time.NewTicker(time.Duration(*mainConfig.Frequency) * time.Second)
 	for _, d := range mainConfig.Dbs {
-		log.Infof("Start read: Tag:%v Address:%v Start:%v Size:%v", d.Tag, d.Address, d.Start, d.Size)
+		glogger.GLogger.Infof("Start read: Tag:%v Address:%v Start:%v Size:%v", d.Tag, d.Address, d.Start, d.Size)
 		go func(ctx context.Context, d db) {
 			dataBuffer := make([]byte, 512)
 			for {
@@ -115,9 +115,9 @@ func (s7 *siemensS7Source) Start(cctx typex.CCTX) error {
 				err := s7.client.AGReadDB(d.Address, d.Start, d.Size, dataBuffer)
 				if err != nil {
 					_status = typex.SOURCE_DOWN
-					log.Error(err)
+					glogger.GLogger.Error(err)
 				} else {
-					// log.Info("client.AGReadDB dataBuffer:", dataBuffer)
+					// glogger.GLogger.Info("client.AGReadDB dataBuffer:", dataBuffer)
 					dbv := dbValue{Value: string(dataBuffer[:d.Size])}
 					dbv.Tag = d.Tag
 					dbv.Address = d.Address
@@ -126,7 +126,7 @@ func (s7 *siemensS7Source) Start(cctx typex.CCTX) error {
 					bytes, _ := json.Marshal(dbv)
 					work, err := s7.RuleEngine.WorkInEnd(s7.RuleEngine.GetInEnd(s7.PointId), string(bytes))
 					if !work {
-						log.Error(err)
+						glogger.GLogger.Error(err)
 					}
 				}
 			}

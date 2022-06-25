@@ -32,7 +32,6 @@ require (
 	github.com/mochi-co/mqtt v1.2.2
 	github.com/muka/go-bluetooth v0.0.0-20220604035144-0b043d86dc03
 	github.com/nats-io/nats.go v1.16.0
-	github.com/ngaut/log v0.0.0-20210830112240-0124ec040aeb
 	github.com/plgd-dev/go-coap/v2 v2.6.0
 	github.com/robinson/gos7 v0.0.0-20211020181838-a2b780484319
 	github.com/shirou/gopsutil v3.21.11+incompatible

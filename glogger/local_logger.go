@@ -1,10 +1,14 @@
-package typex
+package glogger
 
 import (
-	"log"
 	"os"
 )
 
+/*
+*
+* 日志记录器，未来会移除这个slot
+*
+ */
 type LogWriter struct {
 	file         *os.File
 	logSlot      []string
@@ -14,7 +18,7 @@ type LogWriter struct {
 func NewLogWriter(filepath string, maxSlotCount int) *LogWriter {
 	logFile, err := os.OpenFile(filepath, os.O_WRONLY|os.O_CREATE, 0777)
 	if err != nil {
-		log.Fatalf("Fail to read log file: %v", err)
+		GLogger.Fatalf("Fail to read log file: %v", err)
 		os.Exit(1)
 	}
 

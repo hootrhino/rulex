@@ -9,9 +9,8 @@ import (
 	"time"
 
 	"github.com/i4de/rulex/device"
+	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
-
-	"github.com/ngaut/log"
 )
 
 //--------------------------------------------------------------------------------------------------
@@ -54,7 +53,7 @@ func (e *RuleEngine) RemoveDevice(uuid string) {
 		dev.Device.Stop()
 		e.OutEnds.Delete(uuid)
 		dev = nil
-		log.Infof("Device [%v] has been deleted", uuid)
+		glogger.GLogger.Infof("Device [%v] has been deleted", uuid)
 	}
 }
 
@@ -98,7 +97,7 @@ func startDevices(abstractDevice typex.XDevice, deviceInfo *typex.Device, e *Rul
 	deviceInfo.Device = abstractDevice
 	// start
 	if err := startDevice(abstractDevice, e); err != nil {
-		log.Error(err)
+		glogger.GLogger.Error(err)
 		e.RemoveDevice(deviceInfo.UUID)
 		return err
 	}
@@ -127,7 +126,7 @@ func startDevices(abstractDevice typex.XDevice, deviceInfo *typex.Device, e *Rul
 		}
 
 	}(typex.GCTX)
-	log.Infof("device [%v, %v] load successfully", deviceInfo.Name, deviceInfo.UUID)
+	glogger.GLogger.Infof("device [%v, %v] load successfully", deviceInfo.Name, deviceInfo.UUID)
 	return nil
 }
 
@@ -137,7 +136,7 @@ func startDevices(abstractDevice typex.XDevice, deviceInfo *typex.Device, e *Rul
 func startDevice(abstractDevice typex.XDevice, e *RuleEngine) error {
 	ctx, cancelCTX := typex.NewCCTX()
 	if err := abstractDevice.Start(typex.CCTX{Ctx: ctx, CancelCTX: cancelCTX}); err != nil {
-		log.Error("abstractDevice start error:", err)
+		glogger.GLogger.Error("abstractDevice start error:", err)
 		return err
 	}
 	if abstractDevice.Driver() != nil {
@@ -154,15 +153,15 @@ func startDevice(abstractDevice typex.XDevice, e *RuleEngine) error {
 		}
 		// Start driver
 		if err := abstractDevice.Driver().Init(map[string]string{}); err != nil {
-			log.Error("Driver initial error:", err)
+			glogger.GLogger.Error("Driver initial error:", err)
 			return errors.New("Driver initial error:" + err.Error())
 		}
-		log.Infof("Try to start driver: [%v]", abstractDevice.Driver().DriverDetail().Name)
+		glogger.GLogger.Infof("Try to start driver: [%v]", abstractDevice.Driver().DriverDetail().Name)
 		if err := abstractDevice.Driver().Work(); err != nil {
-			log.Error("Driver work error:", err)
+			glogger.GLogger.Error("Driver work error:", err)
 			return errors.New("Driver work error:" + err.Error())
 		}
-		log.Infof("Driver start successfully: [%v]", abstractDevice.Driver().DriverDetail().Name)
+		glogger.GLogger.Infof("Driver start successfully: [%v]", abstractDevice.Driver().DriverDetail().Name)
 	}
 	return nil
 }
@@ -173,7 +172,7 @@ func tryIfRestartDevice(abstractDevice typex.XDevice, e *RuleEngine, devId strin
 	// 此处本质上是个同步过程
 	if abstractDevice.Status() == typex.DEV_STOP {
 		abstractDevice.Details().State = typex.DEV_STOP
-		log.Warnf("Device %v %v down. try to restart it", abstractDevice.Details().UUID, abstractDevice.Details().Name)
+		glogger.GLogger.Warnf("Device %v %v down. try to restart it", abstractDevice.Details().UUID, abstractDevice.Details().Name)
 		abstractDevice.Stop()
 		runtime.Gosched()
 		runtime.GC()
@@ -198,7 +197,7 @@ func checkDeviceDriverState(abstractDevice typex.XDevice) {
 	if abstractDevice.Status() == typex.DEV_RUNNING {
 		// 必须资源启动, 驱动才有重启意义
 		if abstractDevice.Driver().State() == typex.DRIVER_STOP {
-			log.Warn("Driver stopped:", abstractDevice.Driver().DriverDetail().Name)
+			glogger.GLogger.Warn("Driver stopped:", abstractDevice.Driver().DriverDetail().Name)
 			// 只需要把资源给拉闸, 就会触发重启
 			abstractDevice.Stop()
 		}

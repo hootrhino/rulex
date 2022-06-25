@@ -1,7 +1,6 @@
 package test
 
 import (
-	"log"
 	"net/url"
 	"os"
 	"os/signal"
@@ -9,6 +8,7 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
+	"github.com/i4de/rulex/glogger"
 )
 
 func Test_WS(t *testing.T) {
@@ -20,11 +20,11 @@ func ws() {
 	signal.Notify(interrupt, os.Interrupt)
 
 	u := url.URL{Scheme: "ws", Host: "localhost:2580", Path: "/ws"}
-	log.Printf("connecting to %s", u.String())
+	glogger.GLogger.Printf("connecting to %s", u.String())
 
 	c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
 	if err != nil {
-		log.Fatal("dial:", err)
+		glogger.GLogger.Fatal("dial:", err)
 	}
 	defer c.Close()
 
@@ -35,10 +35,10 @@ func ws() {
 		for {
 			_, message, err := c.ReadMessage()
 			if err != nil {
-				log.Println("read:", err)
+				glogger.GLogger.Println("read:", err)
 				return
 			}
-			log.Printf("Client recv: %s", message)
+			glogger.GLogger.Printf("Client recv: %s", message)
 		}
 	}()
 
@@ -52,14 +52,14 @@ func ws() {
 		case t := <-ticker.C:
 			err := c.WriteMessage(websocket.TextMessage, []byte(t.String()))
 			if err != nil {
-				log.Println("write:", err)
+				glogger.GLogger.Println("write:", err)
 				return
 			}
 		case <-interrupt:
-			log.Println("interrupt")
+			glogger.GLogger.Println("interrupt")
 			err := c.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
 			if err != nil {
-				log.Println("write close:", err)
+				glogger.GLogger.Println("write close:", err)
 				return
 			}
 			select {

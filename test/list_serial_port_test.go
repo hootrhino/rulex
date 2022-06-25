@@ -3,7 +3,7 @@ package test
 import (
 	"testing"
 
-	"github.com/ngaut/log"
+	"github.com/i4de/rulex/glogger"
 	"go.bug.st/serial"
 )
 
@@ -14,7 +14,7 @@ func GetUartList() []string {
 	r := []string{}
 	ports, err := serial.GetPortsList()
 	if err != nil {
-		log.Error(err)
+		glogger.GLogger.Error(err)
 		return r
 	}
 	r = append(r, ports...)

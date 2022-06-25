@@ -1,9 +1,8 @@
 package rulexlib
 
 import (
+	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
-
-	"github.com/ngaut/log"
 )
 
 func handleDataFormat(e typex.RuleX, uuid string, incoming string) {
@@ -11,6 +10,6 @@ func handleDataFormat(e typex.RuleX, uuid string, incoming string) {
 	if outEnd != nil {
 		e.PushOutQueue(outEnd, incoming)
 	}else {
-		log.Error()
+		glogger.GLogger.Error()
 	}
 }

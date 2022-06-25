@@ -1,17 +1,18 @@
 package test
 
-import "testing"
 import (
 	"fmt"
+	"testing"
+
 	"github.com/adrianmo/go-nmea"
-	"log"
+	"github.com/i4de/rulex/glogger"
 )
 
 func TestParseGPS(t *testing.T) {
 	sentence := "$GPRMC,220516,A,5133.82,N,00042.24,W,173.8,231.8,130694,004.2,W*70"
 	s, err := nmea.Parse(sentence)
 	if err != nil {
-		log.Fatal(err)
+		glogger.GLogger.Fatal(err)
 	}
 	if s.DataType() == nmea.TypeRMC {
 		m := s.(nmea.RMC)

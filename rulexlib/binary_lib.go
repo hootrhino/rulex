@@ -11,9 +11,9 @@ import (
 	"strings"
 	"unicode"
 
+	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 
-	"github.com/ngaut/log"
 	lua "github.com/yuin/gopher-lua"
 )
 
@@ -28,7 +28,7 @@ func MatchBinary(rx typex.RuleX) func(*lua.LState) int {
 		expr := state.ToString(2)
 		data := state.ToString(3)
 		returnMore := state.ToBool(4)
-		// log.Debug(expr, data, returnMore)
+		// glogger.GLogger.Debug(expr, data, returnMore)
 		t := lua.LTable{}
 		for _, kl := range Match(expr, []byte(data), returnMore) {
 			t.RawSetString(kl.K, lua.LString(kl.BS))
@@ -139,7 +139,7 @@ func ByteToInt(b []byte, order binary.ByteOrder) uint64 {
 		var x uint8
 		err = binary.Read(bytes.NewBuffer(b), order, &x)
 		if err != nil {
-			log.Error(b, err)
+			glogger.GLogger.Error(b, err)
 		}
 		return uint64(x)
 	}
@@ -148,7 +148,7 @@ func ByteToInt(b []byte, order binary.ByteOrder) uint64 {
 		var x uint16
 		err = binary.Read(bytes.NewBuffer(b), order, &x)
 		if err != nil {
-			log.Error(b, err)
+			glogger.GLogger.Error(b, err)
 		}
 		return uint64(x)
 	}
@@ -157,7 +157,7 @@ func ByteToInt(b []byte, order binary.ByteOrder) uint64 {
 		var x uint32
 		err = binary.Read(bytes.NewBuffer(b), order, &x)
 		if err != nil {
-			log.Error(b, err)
+			glogger.GLogger.Error(b, err)
 		}
 		return uint64(x)
 	}
@@ -166,7 +166,7 @@ func ByteToInt(b []byte, order binary.ByteOrder) uint64 {
 		var x uint64
 		err = binary.Read(bytes.NewBuffer(b), order, &x)
 		if err != nil {
-			log.Error(b, err)
+			glogger.GLogger.Error(b, err)
 		}
 		return x
 	}
@@ -296,7 +296,7 @@ func append0Prefix(n int) string {
 func Match(expr string, data []byte, returnMore bool) []Kl {
 	cursor := 0
 	result := []Kl{}
-	// log.Debug(pattern, expr[1:])
+	// glogger.GLogger.Debug(pattern, expr[1:])
 
 	matched, err := regexp.MatchString(pattern, expr[1:])
 	if matched {
@@ -316,7 +316,7 @@ func Match(expr string, data []byte, returnMore bool) []Kl {
 		}
 
 	} else {
-		log.Error(matched, err)
+		glogger.GLogger.Error(matched, err)
 	}
 	return result
 }

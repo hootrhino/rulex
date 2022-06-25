@@ -21,7 +21,7 @@ import (
 	"os/exec"
 	"sync"
 
-	"github.com/ngaut/log"
+	"github.com/i4de/rulex/glogger"
 )
 
 //--------------------------------------------------------------------------------------------------
@@ -129,7 +129,7 @@ func NewSideCarManager(ctx context.Context) SideCar {
 *
  */
 func (scm *SidecarManager) Fork(goods Goods) error {
-	log.Infof("fork goods process, (uuid = %v, addr = %v, args = %v)", goods.UUID, goods.Addr, goods.Args)
+	glogger.GLogger.Infof("fork goods process, (uuid = %v, addr = %v, args = %v)", goods.UUID, goods.Addr, goods.Args)
 	cmd := exec.Command(goods.Addr, goods.Args...)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
@@ -197,19 +197,19 @@ func (scm *SidecarManager) run(wg *sync.WaitGroup, goodsProcess *GoodsProcess) e
 		goodsProcess.cancel()
 	}()
 	if err := goodsProcess.cmd.Start(); err != nil {
-		log.Error("exec command error:", err)
+		glogger.GLogger.Error("exec command error:", err)
 		wg.Done()
 		return err
 	}
 	wg.Done()
 	goodsProcess.running = true
-	log.Infof("goods process(pid = %v, uuid = %v, addr = %v, args = %v) fork and started",
+	glogger.GLogger.Infof("goods process(pid = %v, uuid = %v, addr = %v, args = %v) fork and started",
 		goodsProcess.cmd.Process.Pid,
 		goodsProcess.uuid,
 		goodsProcess.addr,
 		goodsProcess.args)
 	if err := goodsProcess.cmd.Wait(); err != nil {
-		log.Error("cmd Wait error:", err)
+		glogger.GLogger.Error("cmd Wait error:", err)
 		wg.Done()
 		return err
 	}
@@ -229,7 +229,7 @@ func (scm *SidecarManager) probe(wg *sync.WaitGroup, goodsProcess *GoodsProcess)
 				if goodsProcess.cmd != nil {
 					process := goodsProcess.cmd.Process
 					if process != nil {
-						log.Infof("goods process(pid = %v,uuid = %v, addr = %v, args = %v) stopped",
+						glogger.GLogger.Infof("goods process(pid = %v,uuid = %v, addr = %v, args = %v) stopped",
 							goodsProcess.cmd.Process.Pid,
 							goodsProcess.uuid,
 							goodsProcess.addr,
@@ -237,7 +237,7 @@ func (scm *SidecarManager) probe(wg *sync.WaitGroup, goodsProcess *GoodsProcess)
 						process.Kill()
 						process.Signal(syscall.SIGKILL)
 					} else {
-						log.Infof("goods process(uuid = %v, addr = %v, args = %v) stopped",
+						glogger.GLogger.Infof("goods process(uuid = %v, addr = %v, args = %v) stopped",
 							goodsProcess.uuid,
 							goodsProcess.addr,
 							goodsProcess.args)

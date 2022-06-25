@@ -1,14 +1,14 @@
 package core
 
 import (
-	"encoding/json"
 	"net/http"
 	"os"
 	"runtime"
 
+	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
+	"github.com/sirupsen/logrus"
 
-	"github.com/ngaut/log"
 	"gopkg.in/ini.v1"
 )
 
@@ -19,46 +19,41 @@ var INIPath string
 // Init config
 //
 func InitGlobalConfig(path string) typex.RulexConfig {
-	log.Info("Init rulex config")
+	glogger.GLogger.Info("Init rulex config")
 	cfg, err := ini.Load(path)
 	if err != nil {
-		log.Fatalf("Fail to read config file: %v", err)
+		glogger.GLogger.Fatalf("Fail to read config file: %v", err)
 		os.Exit(1)
 	}
 	INIPath = path
 	//---------------------------------------
 	if err := cfg.Section("app").MapTo(&GlobalConfig); err != nil {
-		log.Fatalf("Fail to map config file: %v", err)
+		glogger.GLogger.Fatalf("Fail to map config file: %v", err)
 		os.Exit(1)
 	}
-	log.Info("Rulex config init successfully")
-	bytes, err := json.MarshalIndent(GlobalConfig, " ", "  ")
-	if err != nil {
-		log.Fatalf("Fail to marshal config file: %v", err)
-		os.Exit(1)
-	} else {
-		log.Info(string(bytes))
-	}
+	glogger.GLogger.Info("Rulex config init successfully")
+	// bytes, err := json.MarshalIndent(GlobalConfig, " ", "  ")
+	// if err != nil {
+	// 	glogger.GLogger.Fatalf("Fail to marshal config file: %v", err)
+	// 	os.Exit(1)
+	// } else {
+	// 	glogger.GLogger.Info(string(bytes))
+	// }
 	return GlobalConfig
 }
 
 func SetLogLevel() {
-	log.SetHighlighting(false)
 	switch GlobalConfig.LogLevel {
 	case "fatal":
-		log.SetLevel(log.LogLevel(log.LOG_FATAL))
+		glogger.GLogger.SetLevel(logrus.FatalLevel)
 	case "error":
-		log.SetLevel(log.LogLevel(log.LOG_ERROR))
+		glogger.GLogger.SetLevel(logrus.ErrorLevel)
 	case "warn":
-		log.SetLevel(log.LogLevel(log.LOG_LEVEL_WARN))
-	case "warning":
-		log.SetLevel(log.LogLevel(log.LOG_WARNING))
+		glogger.GLogger.SetLevel(logrus.WarnLevel)
 	case "debug":
-		log.SetLevel(log.LogLevel(log.LOG_DEBUG))
+		glogger.GLogger.SetLevel(logrus.DebugLevel)
 	case "info":
-		log.SetLevel(log.LogLevel(log.LOG_INFO))
-	case "all":
-		log.SetLevel(log.LogLevel(log.LOG_LEVEL_ALL))
+		glogger.GLogger.SetLevel(logrus.InfoLevel)
 	}
 
 }
@@ -73,14 +68,14 @@ func SetPerformance() {
 		if GlobalConfig.GomaxProcs < runtime.NumCPU() {
 			runtime.GOMAXPROCS(GlobalConfig.GomaxProcs)
 		} else {
-			log.Warnf("GomaxProcs is %v, but current CPU number is:%v", GlobalConfig.GomaxProcs, runtime.NumCPU())
+			glogger.GLogger.Warnf("GomaxProcs is %v, but current CPU number is:%v", GlobalConfig.GomaxProcs, runtime.NumCPU())
 		}
 	}
 	//------------------------------------------------------
 	// pprof: https://segmentfault.com/a/1190000016412013
 	//------------------------------------------------------
 	if GlobalConfig.EnablePProf {
-		log.Debug("Start PProf debug at: 0.0.0.0:6060")
+		glogger.GLogger.Debug("Start PProf debug at: 0.0.0.0:6060")
 		runtime.SetMutexProfileFraction(1)
 		runtime.SetBlockProfileRate(1)
 		runtime.SetCPUProfileRate(1)

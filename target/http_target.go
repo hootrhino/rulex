@@ -4,10 +4,9 @@ import (
 	"net/http"
 
 	"github.com/i4de/rulex/core"
+	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
-
-	"github.com/ngaut/log"
 )
 
 type httpConfig struct {
@@ -47,7 +46,7 @@ func (ht *HTTPTarget) Start(cctx typex.CCTX) error {
 	ht.url = mainConfig.Url
 	ht.headers = mainConfig.Headers
 	ht.client = http.Client{}
-	log.Info("HTTPTarget started")
+	glogger.GLogger.Info("HTTPTarget started")
 	return nil
 }
 

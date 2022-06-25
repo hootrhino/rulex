@@ -108,6 +108,7 @@ func TestRTU_YK081(t *testing.T) {
 	handler.StopBits = 1
 	handler.SlaveId = 1
 	handler.Logger = log.New(os.Stdout, "rtu: ", log.LstdFlags)
+
 	if err := handler.Connect(); err != nil {
 		t.Error(err)
 		return

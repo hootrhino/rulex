@@ -9,12 +9,12 @@ import (
 	"time"
 
 	"github.com/i4de/rulex/driver"
+	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
 
 	"github.com/goburrow/modbus"
 	"github.com/mitchellh/mapstructure"
-	"github.com/ngaut/log"
 )
 
 type rtu485_ther struct {
@@ -62,7 +62,7 @@ func (tss *rtu485_ther) Start(cctx typex.CCTX) error {
 	}
 	var rtuConfig rtuConfig
 	if errs := mapstructure.Decode(mainConfig.Config, &rtuConfig); errs != nil {
-		log.Error(errs)
+		glogger.GLogger.Error(errs)
 		return errs
 	}
 
@@ -74,7 +74,7 @@ func (tss *rtu485_ther) Start(cctx typex.CCTX) error {
 	handler.StopBits = 1
 	handler.Timeout = time.Duration(*mainConfig.Timeout) * time.Second
 	if __debug {
-		handler.Logger = golog.New(os.Stdout, "485THerSource: ", log.LstdFlags)
+		handler.Logger = golog.New(os.Stdout, "485THerSource: ", golog.LstdFlags)
 	}
 	if err := handler.Connect(); err != nil {
 		return err
@@ -110,7 +110,7 @@ func (tss *rtu485_ther) Start(cctx typex.CCTX) error {
 				n, err := rtuDriver.Read(buffer)
 				lock.Unlock()
 				if err != nil {
-					log.Error(err)
+					glogger.GLogger.Error(err)
 				} else {
 					Device := tss.RuleEngine.GetDevice(tss.PointId)
 					sdata := __sensor_data{}
@@ -133,7 +133,7 @@ func (tss *rtu485_ther) OnRead(data []byte) (int, error) {
 
 	n, err := tss.driver.Read(data)
 	if err != nil {
-		log.Error(err)
+		glogger.GLogger.Error(err)
 		tss.status = typex.DEV_STOP
 	}
 	return n, err

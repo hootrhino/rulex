@@ -6,13 +6,13 @@ import (
 	"fmt"
 
 	"github.com/i4de/rulex/core"
+	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
 
 	"github.com/plgd-dev/go-coap/v2/message"
 	"github.com/plgd-dev/go-coap/v2/message/codes"
 
-	"github.com/ngaut/log"
 	"github.com/plgd-dev/go-coap/v2"
 	"github.com/plgd-dev/go-coap/v2/mux"
 )
@@ -52,7 +52,7 @@ func (cc *coAPInEndSource) Start(cctx typex.CCTX) error {
 	cc.dataModels = mainConfig.DataModels
 	cc.router.Use(func(next mux.Handler) mux.Handler {
 		return mux.HandlerFunc(func(w mux.ResponseWriter, r *mux.Message) {
-			// log.Debugf("Client Address %v, %v\n", w.Client().RemoteAddr(), r.String())
+			// glogger.GLogger.Debugf("Client Address %v, %v\n", w.Client().RemoteAddr(), r.String())
 			next.ServeCOAP(w, r)
 		})
 	})
@@ -60,24 +60,24 @@ func (cc *coAPInEndSource) Start(cctx typex.CCTX) error {
 	// /in
 	//
 	cc.router.Handle("/in", mux.HandlerFunc(func(w mux.ResponseWriter, msg *mux.Message) {
-		// log.Debugf("Received Coap Data: %#v", msg)
+		// glogger.GLogger.Debugf("Received Coap Data: %#v", msg)
 		work, err := cc.RuleEngine.WorkInEnd(cc.RuleEngine.GetInEnd(cc.PointId), msg.String())
 		if !work {
-			log.Error(err)
+			glogger.GLogger.Error(err)
 		}
 		if err := w.SetResponse(codes.Content, message.TextPlain, bytes.NewReader([]byte("ok"))); err != nil {
-			log.Errorf("Cannot set response: %v", err)
+			glogger.GLogger.Errorf("Cannot set response: %v", err)
 		}
 	}))
 
 	go func(ctx context.Context) {
 		err := coap.ListenAndServe("udp", port, cc.router)
 		if err != nil {
-			log.Error(err)
+			glogger.GLogger.Error(err)
 			return
 		}
 	}(cc.Ctx)
-	log.Info("Coap source started on [udp]" + port)
+	glogger.GLogger.Info("Coap source started on [udp]" + port)
 	return nil
 }
 

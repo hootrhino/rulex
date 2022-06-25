@@ -7,14 +7,12 @@ import (
 
 	"github.com/i4de/rulex/core"
 	"github.com/i4de/rulex/engine"
+	"github.com/i4de/rulex/glogger"
 	httpserver "github.com/i4de/rulex/plugin/http_server"
-	"github.com/i4de/rulex/rulexlib"
 
 	"testing"
 
 	"github.com/i4de/rulex/typex"
-
-	"github.com/ngaut/log"
 )
 
 /*
@@ -23,10 +21,12 @@ import (
 *
  */
 func Test_modbus_485_sensor_gateway(t *testing.T) {
+	glogger.StartGLogger(core.GlobalConfig.LogPath)
+	glogger.StartLuaLogger(core.GlobalConfig.LuaLogPath)
 	mainConfig := core.InitGlobalConfig("conf/rulex.ini")
 	core.StartStore(core.GlobalConfig.MaxQueueSize)
-	core.StartLogWatcher(core.GlobalConfig.LogPath)
-	rulexlib.StartLuaLogger(core.GlobalConfig.LuaLogPath)
+	glogger.StartGLogger(core.GlobalConfig.LogPath)
+	glogger.StartLuaLogger(core.GlobalConfig.LuaLogPath)
 	core.SetLogLevel()
 	core.SetPerformance()
 	c := make(chan os.Signal, 1)
@@ -98,14 +98,7 @@ func Test_modbus_485_sensor_gateway(t *testing.T) {
 		t.Error(err)
 	}
 	s := <-c
-	log.Warn("Received stop signal:", s)
+	glogger.GLogger.Warn("Received stop signal:", s)
 	engine.Stop()
-
-	if err := typex.GLOBAL_LOGGER.Close(); err != nil {
-		return
-	}
-	if err := typex.LUA_LOGGER.Close(); err != nil {
-		return
-	}
 	os.Exit(0)
 }

@@ -9,10 +9,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 
 	"github.com/goburrow/serial"
-	"github.com/ngaut/log"
 )
 
 // 数据缓冲区,单位: 字节
@@ -46,7 +46,7 @@ func NewUartDriver(
 	onRead func([]byte)) (typex.XExternalDriver, error) {
 	serialPort, err := serial.Open(&config)
 	if err != nil {
-		log.Error("uartModuleSource start failed:", err)
+		glogger.GLogger.Error("uartModuleSource start failed:", err)
 		return nil, err
 	}
 	return &uartDriver{
@@ -79,7 +79,7 @@ func (a *uartDriver) Work() error {
 				// 有的串口因为CPU频率原因 超时属于正常情况, 所以不计为错误
 				// 只需要重启一下就可
 				if !strings.Contains(err0.Error(), "timeout") {
-					log.Error("error:", err0)
+					glogger.GLogger.Error("error:", err0)
 					a.Stop()
 					return
 				} else {
@@ -97,7 +97,7 @@ func (a *uartDriver) Work() error {
 			// # 分隔符: 注意该驱动的消息内容不要包含 #, 因为已经将其作为数据结尾提交符号
 			//---------------------------------------------------------------------------
 			if data[0] == '#' {
-				// log.Info("bytes => ", string(buffer[:acc]), buffer[:acc], acc)
+				// glogger.GLogger.Info("bytes => ", string(buffer[:acc]), buffer[:acc], acc)
 				a.RuleEngine.WorkInEnd(a.In, string(a.buffer[1:acc]))
 				// 重新初始化缓冲区
 				for i := 0; i < acc-1; i++ {
@@ -112,7 +112,7 @@ func (a *uartDriver) Work() error {
 					a.buffer[acc] = data[0]
 					acc += 1
 				} else {
-					log.Errorf("data length exceed maximum buffer size limit: %v", a.bufferSize)
+					glogger.GLogger.Errorf("data length exceed maximum buffer size limit: %v", a.bufferSize)
 				}
 
 			}
@@ -148,7 +148,7 @@ func (a *uartDriver) Read(b []byte) (int, error) {
 func (a *uartDriver) Write(b []byte) (int, error) {
 	n, err := a.serialPort.Write(b)
 	if err != nil {
-		log.Error(err)
+		glogger.GLogger.Error(err)
 		return 0, err
 	} else {
 		return n, nil

@@ -6,11 +6,11 @@ import (
 	"net"
 
 	"github.com/i4de/rulex/core"
+	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/rulexrpc"
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
 
-	"github.com/ngaut/log"
 	"google.golang.org/grpc"
 )
 
@@ -68,7 +68,7 @@ func (g *grpcInEndSource) Start(cctx typex.CCTX) error {
 	rulexrpc.RegisterRulexRpcServer(g.rpcServer, g.rulexServer)
 
 	go func(c context.Context) {
-		log.Info("RulexRpc source started on", listener.Addr())
+		glogger.GLogger.Info("RulexRpc source started on", listener.Addr())
 		g.rpcServer.Serve(listener)
 	}(g.Ctx)
 

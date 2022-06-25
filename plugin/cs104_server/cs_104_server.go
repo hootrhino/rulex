@@ -7,10 +7,10 @@ import (
 
 	"time"
 
+	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
 
-	"github.com/ngaut/log"
 	"github.com/thinkgos/go-iecp5/asdu"
 	"github.com/thinkgos/go-iecp5/cs104"
 )
@@ -74,10 +74,10 @@ func (cs *cs104Server) Init(config *ini.Section) error {
 
 func (cs *cs104Server) Start(typex.RuleX) error {
 	cs.server.SetOnConnectionHandler(func(c asdu.Connect) {
-		log.Warn("Connected: ", c.Params())
+		glogger.GLogger.Warn("Connected: ", c.Params())
 	})
 	cs.server.SetConnectionLostHandler(func(c asdu.Connect) {
-		log.Warn("Disconnected: ", c.Params())
+		glogger.GLogger.Warn("Disconnected: ", c.Params())
 	})
 	cs.server.LogMode(cs.LogMode)
 	cs.server.ListenAndServer(fmt.Sprintf("%s:%d", cs.Host, cs.Port))

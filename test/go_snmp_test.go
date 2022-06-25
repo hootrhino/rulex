@@ -6,11 +6,11 @@ package test
 
 import (
 	"fmt"
-	"log"
 	"strings"
 	"testing"
 
 	"github.com/gosnmp/gosnmp"
+	"github.com/i4de/rulex/glogger"
 )
 
 //
@@ -120,7 +120,7 @@ func TestSnmp(t *testing.T) {
 	gosnmp.Default.Community = "public"
 	err := gosnmp.Default.Connect()
 	if err != nil {
-		log.Fatalf("Connect() err: %v", err)
+		glogger.GLogger.Fatalf("Connect() err: %v", err)
 	}
 	defer gosnmp.Default.Conn.Close()
 

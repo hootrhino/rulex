@@ -9,10 +9,10 @@ import (
 	"context"
 	"errors"
 
+	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 
 	"github.com/goburrow/serial"
-	"github.com/ngaut/log"
 )
 
 type rawUartDriver struct {
@@ -54,7 +54,7 @@ func (a *rawUartDriver) Work() error {
 	serialPort, err := serial.Open(&a.config)
 	a.serialPort = serialPort
 	if err != nil {
-		log.Error("uartModuleSource start failed:", err)
+		glogger.GLogger.Error("uartModuleSource start failed:", err)
 		return err
 	}
 	return nil

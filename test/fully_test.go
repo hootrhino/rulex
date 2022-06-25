@@ -3,6 +3,9 @@ package test
 import (
 	"context"
 
+	"github.com/i4de/rulex/core"
+	"github.com/i4de/rulex/engine"
+	"github.com/i4de/rulex/glogger"
 	httpserver "github.com/i4de/rulex/plugin/http_server"
 	"github.com/i4de/rulex/rulexrpc"
 	"github.com/i4de/rulex/typex"
@@ -10,27 +13,35 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ngaut/log"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
 
 func TestFullyRun(t *testing.T) {
-	engine := TestEngine()
+	glogger.StartGLogger(core.GlobalConfig.LogPath)
+	glogger.StartLuaLogger(core.GlobalConfig.LuaLogPath)
+	mainConfig := core.InitGlobalConfig("conf/rulex.ini")
+	core.StartStore(core.GlobalConfig.MaxQueueSize)
+	glogger.StartGLogger(core.GlobalConfig.LogPath)
+	glogger.StartLuaLogger(core.GlobalConfig.LuaLogPath)
+	core.SetLogLevel()
+	core.SetPerformance()
+	engine := engine.NewRuleEngine(mainConfig)
+
 	engine.Start()
 	if err := engine.LoadPlugin("plugin.http_server", httpserver.NewHttpApiServer(
 		2580,
 		"../"+GenDate()+".db",
 		engine,
 	)); err != nil {
-		log.Fatal("Rule load failed:", err)
+		glogger.GLogger.Fatal("Rule load failed:", err)
 	}
 	// Grpc Inend
 	grpcInend := typex.NewInEnd("GRPC", "Rulex Grpc InEnd", "Rulex Grpc InEnd", map[string]interface{}{
 		"port": 2581,
 	})
 	if err := engine.LoadInEnd(grpcInend); err != nil {
-		log.Error("grpcInend load failed:", err)
+		glogger.GLogger.Error("grpcInend load failed:", err)
 	}
 	//
 	// Load Rule
@@ -140,25 +151,25 @@ func TestFullyRun(t *testing.T) {
 		}`,
 		`function Failed(error) print("[rulexlib:J2T(data) Failed Callback]", error) end`)
 	if err := engine.LoadRule(rule1); err != nil {
-		log.Error(err)
+		glogger.GLogger.Error(err)
 	}
 	if err := engine.LoadRule(rule2); err != nil {
-		log.Error(err)
+		glogger.GLogger.Error(err)
 	}
 	if err := engine.LoadRule(rule3); err != nil {
-		log.Error(err)
+		glogger.GLogger.Error(err)
 	}
 	if err := engine.LoadRule(rule4); err != nil {
-		log.Error(err)
+		glogger.GLogger.Error(err)
 	}
 	conn, err := grpc.Dial("127.0.0.1:2581", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		log.Error("grpc.Dial err: %v", err)
+		glogger.GLogger.Error(err)
 	}
 	defer conn.Close()
 	client := rulexrpc.NewRulexRpcClient(conn)
 	for i := 0; i < 30; i++ {
-		log.Infof("Test count ==========================>>: %v", i)
+		glogger.GLogger.Infof("Test count ==========================>>: %v", i)
 		resp, err := client.Work(context.Background(), &rulexrpc.Data{
 			Value: `
 					[
@@ -169,16 +180,16 @@ func TestFullyRun(t *testing.T) {
 	`})
 
 		if err != nil {
-			log.Error("grpc.Dial err: %v", err)
+			glogger.GLogger.Error(err)
 		}
-		log.Infof("Rulex Rpc Call Result ====>>: %v", resp.GetMessage())
+		glogger.GLogger.Infof("Rulex Rpc Call Result ====>>: %v", resp.GetMessage())
 	}
 
 	time.Sleep(1 * time.Second)
-	log.Info("Test Http system Api===> " + HttpGet("http://127.0.0.1:2580/api/v1/system"))
-	log.Info("Test Http inends Api===> " + HttpGet("http://127.0.0.1:2580/api/v1/inends"))
-	log.Info("Test Http outends Api===> " + HttpGet("http://127.0.0.1:2580/api/v1/outends"))
-	log.Info("Test Http rules Api===> " + HttpGet("http://127.0.0.1:2580/api/v1/rules"))
+	glogger.GLogger.Info("Test Http system Api===> " + HttpGet("http://127.0.0.1:2580/api/v1/system"))
+	glogger.GLogger.Info("Test Http inends Api===> " + HttpGet("http://127.0.0.1:2580/api/v1/inends"))
+	glogger.GLogger.Info("Test Http outends Api===> " + HttpGet("http://127.0.0.1:2580/api/v1/outends"))
+	glogger.GLogger.Info("Test Http rules Api===> " + HttpGet("http://127.0.0.1:2580/api/v1/rules"))
 
 	engine.Stop()
 }

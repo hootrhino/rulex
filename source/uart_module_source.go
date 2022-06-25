@@ -5,11 +5,11 @@ import (
 
 	"github.com/i4de/rulex/core"
 	"github.com/i4de/rulex/driver"
+	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
 
 	"github.com/goburrow/serial"
-	"github.com/ngaut/log"
 )
 
 type uartModuleSource struct {
@@ -92,7 +92,7 @@ func (u *uartModuleSource) Details() *typex.InEnd {
 func (u *uartModuleSource) Status() typex.SourceState {
 	if u.uartDriver != nil {
 		if err := u.uartDriver.Test(); err != nil {
-			log.Error(err)
+			glogger.GLogger.Error(err)
 			return typex.SOURCE_DOWN
 		} else {
 			return typex.SOURCE_UP

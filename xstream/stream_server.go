@@ -4,7 +4,7 @@ import (
 	"net"
 	"time"
 
-	"github.com/ngaut/log"
+	"github.com/i4de/rulex/glogger"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/keepalive"
 )
@@ -23,7 +23,7 @@ func (xs *xStreamServer) OnApproached(s XStream_OnApproachedServer) error {
 	for {
 		var r Response
 		if err := s.RecvMsg(&r); err != nil {
-			log.Error(err)
+			glogger.GLogger.Error(err)
 			return err
 		}
 	}
@@ -49,7 +49,7 @@ func StartXStreamServer() {
 	RegisterXStreamServer(server, &xStreamServer{})
 	listener, err := net.Listen("tcp", ":9999")
 	if err != nil {
-		log.Fatal(err)
+		glogger.GLogger.Fatal(err)
 	}
 	server.Serve(listener)
 }
@@ -61,7 +61,7 @@ func StartXStreamClient() {
 	}
 	conn, err := grpc.Dial("127.0.0.1:9999", grpc.WithKeepaliveParams(kacp))
 	if err != nil {
-		log.Fatal(err)
+		glogger.GLogger.Fatal(err)
 	}
 	defer conn.Close()
 

@@ -4,11 +4,11 @@ import (
 	"fmt"
 
 	"github.com/i4de/rulex/core"
+	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
 
 	"github.com/nats-io/nats.go"
-	"github.com/ngaut/log"
 )
 
 type natsConfig struct {
@@ -62,12 +62,12 @@ func (nt *natsSource) Start(cctx typex.CCTX) error {
 			if nt.natsConnector != nil {
 				work, err1 := nt.RuleEngine.WorkInEnd(nt.RuleEngine.GetInEnd(nt.PointId), string(msg.Data))
 				if !work {
-					log.Error(err1)
+					glogger.GLogger.Error(err1)
 				}
 			}
 		})
 		if err != nil {
-			log.Error("NatsSource PushQueue error: ", err)
+			glogger.GLogger.Error("NatsSource PushQueue error: ", err)
 		}
 		return nil
 	}
@@ -120,7 +120,7 @@ func (nt *natsSource) Stop() {
 		if nt.natsConnector.IsConnected() {
 			err := nt.natsConnector.Drain()
 			if err != nil {
-				log.Error(err)
+				glogger.GLogger.Error(err)
 				return
 			}
 			nt.natsConnector.Close()

@@ -1,10 +1,10 @@
 package test
 
 import (
-	"log"
 	"testing"
 
 	"github.com/hashicorp/hcl/v2/hclsimple"
+	"github.com/i4de/rulex/glogger"
 )
 
 type Config struct {
@@ -28,7 +28,7 @@ func Test_DecodeFile(t *testing.T) {
 	var config Config
 	err := hclsimple.DecodeFile("data/config.hcl", nil, &config)
 	if err != nil {
-		log.Fatalf("Failed to load configuration: %s", err)
+		glogger.GLogger.Fatalf("Failed to load configuration: %s", err)
 	}
-	log.Printf("Configuration is %#v", config)
+	glogger.GLogger.Printf("Configuration is %#v", config)
 }

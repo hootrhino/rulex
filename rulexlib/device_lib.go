@@ -1,9 +1,9 @@
 package rulexlib
 
 import (
+	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 
-	"github.com/ngaut/log"
 	lua "github.com/yuin/gopher-lua"
 )
 
@@ -22,7 +22,7 @@ func ReadDevice(rx typex.RuleX) func(*lua.LState) int {
 		if Device != nil {
 			n, err := Device.Device.OnRead(__readBuffer)
 			if err != nil {
-				log.Error(err)
+				glogger.GLogger.Error(err)
 				l.Push(lua.LNil)
 				l.Push(lua.LString(err.Error()))
 				return 2
@@ -50,7 +50,7 @@ func WriteDevice(rx typex.RuleX) func(*lua.LState) int {
 		if Device != nil {
 			n, err := Device.Device.OnWrite([]byte(data))
 			if err != nil {
-				log.Error(err)
+				glogger.GLogger.Error(err)
 				l.Push(lua.LNil)
 				l.Push(lua.LString(err.Error()))
 				return 2

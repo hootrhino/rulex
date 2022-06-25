@@ -3,8 +3,8 @@ package httpserver
 import (
 	"os"
 
+	"github.com/i4de/rulex/glogger"
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/ngaut/log"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -21,33 +21,33 @@ func (s *HttpApiServer) InitDb(dbPath string) {
 		Logger: logger.Default.LogMode(logger.Error), // 只输出错误日志
 	})
 	if err != nil {
-		log.Error(err)
+		glogger.GLogger.Error(err)
 		os.Exit(1)
 	}
 	// 注册数据库配置表
 	// 这么写看起来是很难受, 但是这玩意就是go的哲学啊(大道至简？？？)
 	if err := s.sqliteDb.AutoMigrate(&MInEnd{}); err != nil {
-		log.Fatal(err)
+		glogger.GLogger.Fatal(err)
 		os.Exit(1)
 	}
 	if err := s.sqliteDb.AutoMigrate(&MOutEnd{}); err != nil {
-		log.Fatal(err)
+		glogger.GLogger.Fatal(err)
 		os.Exit(1)
 	}
 	if err := s.sqliteDb.AutoMigrate(&MRule{}); err != nil {
-		log.Fatal(err)
+		glogger.GLogger.Fatal(err)
 		os.Exit(1)
 	}
 	if err := s.sqliteDb.AutoMigrate(&MUser{}); err != nil {
-		log.Fatal(err)
+		glogger.GLogger.Fatal(err)
 		os.Exit(1)
 	}
 	if err := s.sqliteDb.AutoMigrate(&MDevice{}); err != nil {
-		log.Fatal(err)
+		glogger.GLogger.Fatal(err)
 		os.Exit(1)
 	}
 	if err := s.sqliteDb.AutoMigrate(&MGoods{}); err != nil {
-		log.Fatal(err)
+		glogger.GLogger.Fatal(err)
 		os.Exit(1)
 	}
 }

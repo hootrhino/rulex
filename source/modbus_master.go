@@ -11,10 +11,9 @@ import (
 
 	"github.com/i4de/rulex/core"
 	"github.com/i4de/rulex/driver"
+	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
-
-	"github.com/ngaut/log"
 
 	"github.com/goburrow/modbus"
 	"github.com/mitchellh/mapstructure"
@@ -189,7 +188,7 @@ func (m *modbusMasterSource) Start(cctx typex.CCTX) error {
 	if mainConfig.Mode == "TCP" {
 		var tcpConfig tcpConfig
 		if errs := mapstructure.Decode(mainConfig.Config, &tcpConfig); errs != nil {
-			log.Error(errs)
+			glogger.GLogger.Error(errs)
 			return errs
 		}
 		handler := modbus.NewTCPClientHandler(
@@ -204,7 +203,7 @@ func (m *modbusMasterSource) Start(cctx typex.CCTX) error {
 	} else if mainConfig.Mode == "RTU" {
 		var rtuConfig rtuConfig
 		if errs := mapstructure.Decode(mainConfig.Config, &rtuConfig); errs != nil {
-			log.Error(errs)
+			glogger.GLogger.Error(errs)
 			return errs
 		}
 		handler := modbus.NewRTUClientHandler(rtuConfig.Uart)
@@ -237,7 +236,7 @@ func (m *modbusMasterSource) Start(cctx typex.CCTX) error {
 	//
 
 	for _, rCfg := range mainConfig.RegisterParams {
-		log.Info("Start read register:", rCfg.Address)
+		glogger.GLogger.Info("Start read register:", rCfg.Address)
 		// 每个寄存器配一个协程读数据
 		go func(ctx context.Context, rp registerParam) {
 			defer ticker.Stop()
@@ -272,7 +271,7 @@ func (m *modbusMasterSource) Start(cctx typex.CCTX) error {
 						// error
 						//
 						if err != nil {
-							log.Error("NewModbusMasterSource ReadData error: ", err)
+							glogger.GLogger.Error("NewModbusMasterSource ReadData error: ", err)
 							_sourceState = typex.SOURCE_DOWN
 
 						} else {

@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"runtime"
 
-	"github.com/ngaut/log"
 	"github.com/urfave/cli/v2"
 
 	_ "net/http/pprof"
 	"os"
 
 	"github.com/i4de/rulex/engine"
+	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
 )
@@ -42,10 +42,10 @@ func main() {
 				},
 				Action: func(c *cli.Context) error {
 					utils.ShowBanner()
-					log.Info("Load config db:", c.String("db"))
-					log.Info("Load main config:", c.String("config"))
+					glogger.GLogger.Info("Load config db:", c.String("db"))
+					glogger.GLogger.Info("Load main config:", c.String("config"))
 					engine.RunRulex(c.String("db"), c.String("config"))
-					log.Info("Run rulex successfully.")
+					glogger.GLogger.Info("Run rulex successfully.")
 					return nil
 				},
 			},
@@ -69,6 +69,6 @@ func main() {
 	}
 
 	if err := app.Run(os.Args); err != nil {
-		log.Fatal(err)
+		glogger.GLogger.Fatal(err)
 	}
 }

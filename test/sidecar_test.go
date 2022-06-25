@@ -5,14 +5,12 @@ import (
 
 	"github.com/i4de/rulex/core"
 	"github.com/i4de/rulex/engine"
+	"github.com/i4de/rulex/glogger"
 	httpserver "github.com/i4de/rulex/plugin/http_server"
-	"github.com/i4de/rulex/rulexlib"
 	"github.com/i4de/rulex/sidecar"
 
 	"testing"
 	"time"
-
-	"github.com/ngaut/log"
 )
 
 /*
@@ -22,10 +20,12 @@ import (
 *
  */
 func Test_Sidecar_load(t *testing.T) {
+	glogger.StartGLogger(core.GlobalConfig.LogPath)
+	glogger.StartLuaLogger(core.GlobalConfig.LuaLogPath)
 	mainConfig := core.InitGlobalConfig("conf/rulex.ini")
 	core.StartStore(core.GlobalConfig.MaxQueueSize)
-	core.StartLogWatcher(core.GlobalConfig.LogPath)
-	rulexlib.StartLuaLogger(core.GlobalConfig.LuaLogPath)
+	glogger.StartGLogger(core.GlobalConfig.LogPath)
+	glogger.StartLuaLogger(core.GlobalConfig.LuaLogPath)
 	core.SetLogLevel()
 	core.SetPerformance()
 	engine := engine.NewRuleEngine(mainConfig)
@@ -34,7 +34,7 @@ func Test_Sidecar_load(t *testing.T) {
 	hh := httpserver.NewHttpApiServer(2580, "./rulex.db", engine)
 	// HttpApiServer loaded default
 	if err := engine.LoadPlugin("plugin.http_server", hh); err != nil {
-		log.Fatal("Rule load failed:", err)
+		glogger.GLogger.Fatal("Rule load failed:", err)
 	}
 	path := "script/_temp/grpc_driver_hello_go/grpc_driver_hello_go"
 	if runtime.GOOS == "windows" {
@@ -46,7 +46,7 @@ func Test_Sidecar_load(t *testing.T) {
 		Description: "grpc_driver_hello_go",
 		Args:        []string{"arg1", "arg2"},
 	}); err != nil {
-		log.Fatal("Goods load failed:", err)
+		glogger.GLogger.Fatal("Goods load failed:", err)
 	}
 
 	time.Sleep(5 * time.Second)

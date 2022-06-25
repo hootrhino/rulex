@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/ngaut/log"
+	"github.com/i4de/rulex/glogger"
 )
 
 //
@@ -17,7 +17,7 @@ import (
 func Post(client http.Client, data interface{}, api string, headers map[string]string) (string, error) {
 	bites, errs1 := json.Marshal(data)
 	if errs1 != nil {
-		log.Error(errs1)
+		glogger.GLogger.Error(errs1)
 		return "", errs1
 	}
 	body := strings.NewReader(string(bites))

@@ -5,9 +5,8 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/statistics"
-
-	"github.com/ngaut/log"
 )
 
 //
@@ -67,7 +66,7 @@ func (q *DataCacheQueue) Push(d QueueData) error {
 	// 比较数据和容积
 	if len(q.Queue)+1 > q.GetSize() {
 		msg := fmt.Sprintf("attached max queue size, max size is:%v, current size is: %v", q.GetSize(), len(q.Queue)+1)
-		log.Error(msg)
+		glogger.GLogger.Error(msg)
 		return errors.New(msg)
 	} else {
 		q.Queue <- d
@@ -117,7 +116,7 @@ func StartQueue(maxQueueSize int) {
 						v, ok := qd.E.AllOutEnd().Load(qd.O.UUID)
 						if ok {
 							if _, err := v.(*OutEnd).Target.To(qd.Data); err != nil {
-								log.Error(err)
+								glogger.GLogger.Error(err)
 								statistics.IncOutFailed()
 							} else {
 								statistics.IncOut()

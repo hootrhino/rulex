@@ -3,22 +3,22 @@ package test
 import (
 	"github.com/i4de/rulex/core"
 	"github.com/i4de/rulex/engine"
+	"github.com/i4de/rulex/glogger"
 	httpserver "github.com/i4de/rulex/plugin/http_server"
-	"github.com/i4de/rulex/rulexlib"
 
 	"testing"
 	"time"
 
 	"github.com/i4de/rulex/typex"
-
-	"github.com/ngaut/log"
 )
 
 func Test_TSS200_ReadData(t *testing.T) {
+	glogger.StartGLogger(core.GlobalConfig.LogPath)
+	glogger.StartLuaLogger(core.GlobalConfig.LuaLogPath)
 	mainConfig := core.InitGlobalConfig("conf/rulex.ini")
 	core.StartStore(core.GlobalConfig.MaxQueueSize)
-	core.StartLogWatcher(core.GlobalConfig.LogPath)
-	rulexlib.StartLuaLogger(core.GlobalConfig.LuaLogPath)
+	glogger.StartGLogger(core.GlobalConfig.LogPath)
+	glogger.StartLuaLogger(core.GlobalConfig.LuaLogPath)
 	core.SetLogLevel()
 	core.SetPerformance()
 	engine := engine.NewRuleEngine(mainConfig)
@@ -27,7 +27,7 @@ func Test_TSS200_ReadData(t *testing.T) {
 	hh := httpserver.NewHttpApiServer(2580, "./rulex.db", engine)
 	// HttpApiServer loaded default
 	if err := engine.LoadPlugin("plugin.http_server", hh); err != nil {
-		log.Fatal("Rule load failed:", err)
+		glogger.GLogger.Fatal("Rule load failed:", err)
 	}
 	rule := typex.NewRule(engine,
 		"uuid",
@@ -45,7 +45,7 @@ func Test_TSS200_ReadData(t *testing.T) {
 		}`,
 		`function Failed(error) print("[LUA Failed Callback]", error) end`)
 	if err := engine.LoadRule(rule); err != nil {
-		log.Error(err)
+		glogger.GLogger.Error(err)
 	}
 	tss200 := &typex.Device{
 		UUID:         "TSS200V02",

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 
 	"github.com/dgrijalva/jwt-go"
@@ -101,7 +102,7 @@ func Logs(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		Content string `json:"content" binding:"required"`
 	}
 	logs := []Data{}
-	for i, s := range typex.GLOBAL_LOGGER.Slot() {
+	for i, s := range glogger.GLOBAL_LOGGER.Slot() {
 		if s != "" {
 			logs = append(logs, Data{i, s})
 		}

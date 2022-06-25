@@ -5,10 +5,10 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 
 	"github.com/iancoleman/strcase"
-	"github.com/ngaut/log"
 )
 
 //
@@ -137,7 +137,7 @@ END:
 func GenInConfig(Type typex.InEndType, helpTip string, config interface{}) *typex.XConfig {
 	c, err := renderConfig(Type.String(), helpTip, config)
 	if err != nil {
-		log.Error(err)
+		glogger.GLogger.Error(err)
 		return nil
 	}
 	return c
@@ -145,7 +145,7 @@ func GenInConfig(Type typex.InEndType, helpTip string, config interface{}) *type
 func GenOutConfig(Type typex.TargetType, helpTip string, config interface{}) *typex.XConfig {
 	c, err := renderConfig(Type.String(), helpTip, config)
 	if err != nil {
-		log.Error(err)
+		glogger.GLogger.Error(err)
 		return nil
 	}
 	return c

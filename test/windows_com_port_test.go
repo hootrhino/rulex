@@ -4,13 +4,13 @@ import (
 	"testing"
 
 	"github.com/goburrow/serial"
-	"github.com/ngaut/log"
+	"github.com/i4de/rulex/glogger"
 )
 
 func TestComPort(t *testing.T) {
 	port, err := serial.Open(&serial.Config{Address: "COM4", BaudRate: 115200})
 	if err != nil {
-		log.Fatal(err)
+		glogger.GLogger.Fatal(err)
 	}
 	defer port.Close()
 
@@ -18,7 +18,7 @@ func TestComPort(t *testing.T) {
 	_, err = port.Read(buffer)
 	for {
 		if err != nil {
-			log.Fatal(err)
+			glogger.GLogger.Fatal(err)
 		} else {
 			print((string(buffer)))
 		}

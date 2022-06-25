@@ -6,10 +6,9 @@ import (
 
 	"github.com/i4de/rulex/core"
 	"github.com/i4de/rulex/engine"
+	"github.com/i4de/rulex/glogger"
 	httpserver "github.com/i4de/rulex/plugin/http_server"
 	"github.com/i4de/rulex/typex"
-
-	"github.com/ngaut/log"
 )
 
 //
@@ -21,7 +20,7 @@ func TestInitData(t *testing.T) {
 	hh := httpserver.NewHttpApiServer(3580, "rulex-default-data.db", engine)
 	// HttpApiServer loaded default
 	if err := engine.LoadPlugin("plugin.http_server", hh); err != nil {
-		log.Fatal("Rule load failed:", err)
+		glogger.GLogger.Fatal("Rule load failed:", err)
 	}
 	// Grpc Inend
 	grpcInend := typex.NewInEnd("GRPC", "Rulex Grpc InEnd", "Rulex Grpc InEnd", map[string]interface{}{

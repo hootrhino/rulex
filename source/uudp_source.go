@@ -5,10 +5,9 @@ import (
 	"net"
 
 	"github.com/i4de/rulex/core"
+	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
-
-	"github.com/ngaut/log"
 )
 
 type udpSource struct {
@@ -38,7 +37,7 @@ func (u *udpSource) Start(cctx typex.CCTX) error {
 	addr := &net.UDPAddr{IP: net.ParseIP(mainConfig.Host), Port: mainConfig.Port}
 	var err error
 	if u.uDPConn, err = net.ListenUDP("udp", addr); err != nil {
-		log.Error(err)
+		glogger.GLogger.Error(err)
 		return err
 	}
 
@@ -47,22 +46,22 @@ func (u *udpSource) Start(cctx typex.CCTX) error {
 		for {
 			n, remoteAddr, err := u1.uDPConn.ReadFromUDP(data)
 			if err != nil {
-				log.Error(err.Error())
+				glogger.GLogger.Error(err.Error())
 			} else {
-				// log.Infof("Receive udp data:<%s> %s\n", remoteAddr, data[:n])
+				// glogger.GLogger.Infof("Receive udp data:<%s> %s\n", remoteAddr, data[:n])
 				work, err := u.RuleEngine.WorkInEnd(u.RuleEngine.GetInEnd(u.PointId), string(data[:n]))
 				if !work {
-					log.Error(err)
+					glogger.GLogger.Error(err)
 				}
 				// return ok
 				_, err = u1.uDPConn.WriteToUDP([]byte("ok"), remoteAddr)
 				if err != nil {
-					log.Error(err)
+					glogger.GLogger.Error(err)
 				}
 			}
 		}
 	}(u.Ctx, u)
-	log.Infof("UDP source started on [%v]:%v", mainConfig.Host, mainConfig.Port)
+	glogger.GLogger.Infof("UDP source started on [%v]:%v", mainConfig.Host, mainConfig.Port)
 	return nil
 
 }
@@ -101,7 +100,7 @@ func (u *udpSource) Stop() {
 	if u.uDPConn != nil {
 		err := u.uDPConn.Close()
 		if err != nil {
-			log.Error(err)
+			glogger.GLogger.Error(err)
 		}
 	}
 	u.CancelCTX()

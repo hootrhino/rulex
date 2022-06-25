@@ -4,10 +4,10 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 
 	"github.com/gin-gonic/gin"
-	"github.com/ngaut/log"
 	"gopkg.in/square/go-jose.v2/json"
 )
 
@@ -111,13 +111,13 @@ func (hh *HttpApiServer) LoadNewestInEnd(uuid string) error {
 	}
 	config := map[string]interface{}{}
 	if err1 := json.Unmarshal([]byte(mInEnd.Config), &config); err1 != nil {
-		log.Error(err1)
+		glogger.GLogger.Error(err1)
 		return err1
 	}
 	// :mInEnd: {k1 :{k1:v1}, k2 :{k2:v2}} --> InEnd: [{k1:v1}, {k2:v2}]
 	var dataModelsMap map[string]typex.XDataModel
 	if err1 := json.Unmarshal([]byte(mInEnd.XDataModels), &dataModelsMap); err1 != nil {
-		log.Error(err1)
+		glogger.GLogger.Error(err1)
 		return err1
 	}
 	in := typex.NewInEnd(mInEnd.Type, mInEnd.Name, mInEnd.Description, config)
@@ -125,7 +125,7 @@ func (hh *HttpApiServer) LoadNewestInEnd(uuid string) error {
 	in.UUID = mInEnd.UUID
 	in.DataModelsMap = dataModelsMap
 	if err2 := hh.ruleEngine.LoadInEnd(in); err2 != nil {
-		log.Error(err2)
+		glogger.GLogger.Error(err2)
 		return err2
 	} else {
 		return nil

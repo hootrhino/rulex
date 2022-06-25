@@ -3,9 +3,8 @@ package store
 import (
 	"sync"
 
+	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
-
-	"github.com/ngaut/log"
 )
 
 type RulexStore struct {
@@ -27,7 +26,7 @@ func NewRulexStore(maxSize int) typex.XStore {
 func (rs *RulexStore) Set(k string, v string) {
 	rs.bucket.Store(k, v)
 	if (rs.len + 1) > rs.maxSize {
-		log.Error("Max store size reached:", rs.len)
+		glogger.GLogger.Error("Max store size reached:", rs.len)
 	} else {
 		rs.len += 1
 	}

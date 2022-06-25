@@ -5,13 +5,13 @@ import (
 	"testing"
 
 	"github.com/go-ini/ini"
-	"github.com/ngaut/log"
+	"github.com/i4de/rulex/glogger"
 )
 
 func ReadOSRelease(configfile string) *ini.File {
 	cfg, err := ini.Load(configfile)
 	if err != nil {
-		log.Fatal("Fail to read file: ", err)
+		glogger.GLogger.Fatal("Fail to read file: ", err)
 	}
 	return cfg
 }

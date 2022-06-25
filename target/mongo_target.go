@@ -5,10 +5,10 @@ import (
 	"time"
 
 	"github.com/i4de/rulex/core"
+	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
 
-	"github.com/ngaut/log"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -62,7 +62,7 @@ func (m *MongoTarget) Start(cctx typex.CCTX) error {
 	m.collection = client.Database(mainConfig.Database).Collection(mainConfig.Collection)
 	m.client = client
 	m.Enable = true
-	log.Info("MongoTarget connect successfully")
+	glogger.GLogger.Info("MongoTarget connect successfully")
 	return nil
 
 }
@@ -87,18 +87,18 @@ func (m *MongoTarget) Enabled() bool {
 }
 
 func (m *MongoTarget) Reload() {
-	log.Info("Mongotarget Reload success")
+	glogger.GLogger.Info("Mongotarget Reload success")
 }
 
 func (m *MongoTarget) Pause() {
-	log.Info("Mongotarget Pause success")
+	glogger.GLogger.Info("Mongotarget Pause success")
 
 }
 
 func (m *MongoTarget) Status() typex.SourceState {
 	err1 := m.client.Ping(m.Ctx, nil)
 	if err1 != nil {
-		log.Error(err1)
+		glogger.GLogger.Error(err1)
 		return typex.SOURCE_DOWN
 	} else {
 		return typex.SOURCE_UP
@@ -107,7 +107,7 @@ func (m *MongoTarget) Status() typex.SourceState {
 
 func (m *MongoTarget) Stop() {
 	m.client.Disconnect(m.Ctx)
-	log.Info("Mongotarget Stop success")
+	glogger.GLogger.Info("Mongotarget Stop success")
 	m.CancelCTX()
 }
 
@@ -115,7 +115,7 @@ func (m *MongoTarget) To(data interface{}) (interface{}, error) {
 	document := bson.D{bson.E{Key: "data", Value: data}}
 	r, err := m.collection.InsertOne(m.Ctx, document)
 	if err != nil {
-		log.Error("Mongo To Failed:", err)
+		glogger.GLogger.Error("Mongo To Failed:", err)
 	}
 	return r.InsertedID, err
 }

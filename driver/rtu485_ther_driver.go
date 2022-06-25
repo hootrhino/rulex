@@ -7,11 +7,11 @@ package driver
 import (
 	"encoding/json"
 
+	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
 
 	"github.com/goburrow/modbus"
-	"github.com/ngaut/log"
 )
 
 // Example: 0x02 0x92 0xFF 0x98
@@ -77,7 +77,7 @@ func (rtu485 *rtu485_THer_Driver) Read(data []byte) (int, error) {
 		}
 		bytes, err := json.Marshal(sdata)
 		if err != nil {
-			log.Error(err)
+			glogger.GLogger.Error(err)
 		}
 		copy(data, bytes)
 		length = len(bytes)

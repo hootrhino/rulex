@@ -7,10 +7,9 @@ import (
 	"strings"
 
 	"github.com/i4de/rulex/core"
+	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
-
-	"github.com/ngaut/log"
 )
 
 /*
@@ -67,7 +66,7 @@ func NewTdEngineTarget(e typex.RuleX) typex.XTarget {
 //
 func (td *tdEngineTarget) Test(inEndId string) bool {
 	if err := execQuery(td.client, td.Username, td.Password, "SELECT CLIENT_VERSION();", td.Url); err != nil {
-		log.Error(err)
+		glogger.GLogger.Error(err)
 		return false
 	}
 	return true
@@ -142,7 +141,7 @@ func (td *tdEngineTarget) Pause() {
 //
 func (td *tdEngineTarget) Status() typex.SourceState {
 	if err := execQuery(td.client, td.Username, td.Password, "SELECT CLIENT_VERSION();", td.Url); err != nil {
-		log.Error(err)
+		glogger.GLogger.Error(err)
 		return typex.SOURCE_DOWN
 	}
 	return typex.SOURCE_UP

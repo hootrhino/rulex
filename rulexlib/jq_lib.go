@@ -3,10 +3,10 @@ package rulexlib
 import (
 	"encoding/json"
 
+	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 
 	"github.com/itchyny/gojq"
-	"github.com/ngaut/log"
 	lua "github.com/yuin/gopher-lua"
 )
 
@@ -26,17 +26,17 @@ func JqSelect(rx typex.RuleX) func(*lua.LState) int {
 		var jsonData []interface{}
 		if err := json.Unmarshal([]byte(data), &jsonData); err != nil {
 			stateStack.Push(lua.LNil)
-			log.Error("Internal Error: ", err, ", InputData:", string(data))
+			glogger.GLogger.Error("Internal Error: ", err, ", InputData:", string(data))
 		}
 		selectResult, err0 := JQ(jqExpression, jsonData)
 		if err0 != nil {
 			stateStack.Push(lua.LNil)
-			log.Error("JQ Error:", err0)
+			glogger.GLogger.Error("JQ Error:", err0)
 		}
 		resultString, err1 := json.Marshal(selectResult)
 		if err1 != nil {
 			stateStack.Push(lua.LNil)
-			log.Error("Json Marshal 'selectResult' error:", err1)
+			glogger.GLogger.Error("Json Marshal 'selectResult' error:", err1)
 		}
 
 		if string(resultString) == "[null]" {
@@ -50,7 +50,7 @@ func JqSelect(rx typex.RuleX) func(*lua.LState) int {
 
 func VerifyJqExpression(jqExpression string) (*gojq.Query, error) {
 	if query, err := gojq.Parse(jqExpression); err != nil {
-		log.Error("VerifyJqExpression failed:", jqExpression, ", error:", err)
+		glogger.GLogger.Error("VerifyJqExpression failed:", jqExpression, ", error:", err)
 		return nil, err
 	} else {
 		return query, nil

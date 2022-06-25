@@ -6,12 +6,12 @@ import (
 	"time"
 
 	"github.com/i4de/rulex/driver"
+	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
 
 	"github.com/goburrow/modbus"
 	"github.com/mitchellh/mapstructure"
-	"github.com/ngaut/log"
 )
 
 type YK8Controller struct {
@@ -51,7 +51,7 @@ func (yk8 *YK8Controller) Start(cctx typex.CCTX) error {
 	}
 	var rtuConfig rtuConfig
 	if errs := mapstructure.Decode(mainConfig.Config, &rtuConfig); errs != nil {
-		log.Error(errs)
+		glogger.GLogger.Error(errs)
 		return errs
 	}
 
@@ -62,7 +62,7 @@ func (yk8 *YK8Controller) Start(cctx typex.CCTX) error {
 	handler.Parity = "N"
 	handler.StopBits = 1
 	handler.Timeout = time.Duration(*mainConfig.Timeout) * time.Second
-	// handler.Logger = golog.New(os.Stdout, "485THerSource: ", log.LstdFlags)
+	// handler.Logger = golog.New(os.Stdout, "485THerSource: ", glogger.GLogger.LstdFlags)
 	if err := handler.Connect(); err != nil {
 		return err
 	}
@@ -96,7 +96,7 @@ func (yk8 *YK8Controller) Start(cctx typex.CCTX) error {
 				n, err := rtuDriver.Read(buffer)
 				lock.Unlock()
 				if err != nil {
-					log.Error(err)
+					glogger.GLogger.Error(err)
 				} else {
 					td := yk8.RuleEngine.GetDevice(yk8.PointId)
 					yk8.RuleEngine.WorkDevice(td, string(buffer[:n]))
@@ -113,7 +113,7 @@ func (yk8 *YK8Controller) OnRead(data []byte) (int, error) {
 
 	n, err := yk8.driver.Read(data)
 	if err != nil {
-		log.Error(err)
+		glogger.GLogger.Error(err)
 		yk8.status = typex.DEV_STOP
 	}
 	return n, err

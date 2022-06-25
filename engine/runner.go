@@ -7,23 +7,21 @@ import (
 	"syscall"
 
 	"github.com/i4de/rulex/core"
+	"github.com/i4de/rulex/glogger"
 	httpserver "github.com/i4de/rulex/plugin/http_server"
 	mqttserver "github.com/i4de/rulex/plugin/mqtt_server"
-	"github.com/i4de/rulex/rulexlib"
 	"github.com/i4de/rulex/sidecar"
 	"github.com/i4de/rulex/typex"
-
-	"github.com/ngaut/log"
 )
 
 //
 // 启动 Rulex
 //
 func RunRulex(dbPath string, iniPath string) {
+	glogger.StartGLogger(core.GlobalConfig.LogPath)
+	glogger.StartLuaLogger(core.GlobalConfig.LuaLogPath)
 	mainConfig := core.InitGlobalConfig(iniPath)
 	core.StartStore(core.GlobalConfig.MaxQueueSize)
-	core.StartLogWatcher(core.GlobalConfig.LogPath)
-	rulexlib.StartLuaLogger(core.GlobalConfig.LuaLogPath)
 	core.SetLogLevel()
 	core.SetPerformance()
 	c := make(chan os.Signal, 1)
@@ -39,7 +37,7 @@ func RunRulex(dbPath string, iniPath string) {
 	// Load Mqtt Server
 
 	if err := engine.LoadPlugin("plugin.mqtt_server", mqttserver.NewMqttServer()); err != nil {
-		log.Error(err)
+		glogger.GLogger.Error(err)
 		return
 	}
 	//
@@ -48,18 +46,18 @@ func RunRulex(dbPath string, iniPath string) {
 	for _, minEnd := range httpServer.AllMInEnd() {
 		config := map[string]interface{}{}
 		if err := json.Unmarshal([]byte(minEnd.Config), &config); err != nil {
-			log.Error(err)
+			glogger.GLogger.Error(err)
 		}
 		// :mInEnd: {k1 :{k1:v1}, k2 :{k2:v2}} --> InEnd: [{k1:v1}, {k2:v2}]
 		var dataModelsMap map[string]typex.XDataModel
 		if err := json.Unmarshal([]byte(minEnd.XDataModels), &dataModelsMap); err != nil {
-			log.Error(err)
+			glogger.GLogger.Error(err)
 		}
 		in := typex.NewInEnd(minEnd.Type, minEnd.Name, minEnd.Description, config)
 		in.UUID = minEnd.UUID // Important !!!!!!!!
 		in.DataModelsMap = dataModelsMap
 		if err := engine.LoadInEnd(in); err != nil {
-			log.Error("InEnd load failed:", err)
+			glogger.GLogger.Error("InEnd load failed:", err)
 		}
 	}
 
@@ -69,24 +67,24 @@ func RunRulex(dbPath string, iniPath string) {
 	for _, mOutEnd := range httpServer.AllMOutEnd() {
 		config := map[string]interface{}{}
 		if err := json.Unmarshal([]byte(mOutEnd.Config), &config); err != nil {
-			log.Error(err)
+			glogger.GLogger.Error(err)
 		}
 		newOutEnd := typex.NewOutEnd(typex.TargetType(mOutEnd.Type), mOutEnd.Name, mOutEnd.Description, config)
 		newOutEnd.UUID = mOutEnd.UUID // Important !!!!!!!!
 		if err := engine.LoadOutEnd(newOutEnd); err != nil {
-			log.Error("OutEnd load failed:", err)
+			glogger.GLogger.Error("OutEnd load failed:", err)
 		}
 	}
 	// 加载设备
 	for _, mDevice := range httpServer.AllDevices() {
 		config := map[string]interface{}{}
 		if err := json.Unmarshal([]byte(mDevice.Config), &config); err != nil {
-			log.Error(err)
+			glogger.GLogger.Error(err)
 		}
 		newDevice := typex.NewDevice(typex.DeviceType(mDevice.Type), mDevice.Name, mDevice.Description, mDevice.ActionScript, config)
 		newDevice.UUID = mDevice.UUID // Important !!!!!!!!
 		if err := engine.LoadDevice(newDevice); err != nil {
-			log.Error("Device load failed:", err)
+			glogger.GLogger.Error("Device load failed:", err)
 		}
 	}
 	// 加载外挂
@@ -98,7 +96,7 @@ func RunRulex(dbPath string, iniPath string) {
 			Args:        mGoods.Args,
 		}
 		if err := engine.LoadGoods(newGoods); err != nil {
-			log.Error("Goods load failed:", err)
+			glogger.GLogger.Error("Goods load failed:", err)
 		}
 	}
 	//
@@ -115,11 +113,11 @@ func RunRulex(dbPath string, iniPath string) {
 			mRule.Actions,
 			mRule.Failed)
 		if err := engine.LoadRule(rule); err != nil {
-			log.Error(err)
+			glogger.GLogger.Error(err)
 		}
 	}
 	s := <-c
-	log.Warn("Received stop signal:", s)
+	glogger.GLogger.Warn("Received stop signal:", s)
 	engine.Stop()
 	os.Exit(0)
 }

@@ -8,12 +8,11 @@ import (
 
 	"github.com/i4de/rulex/core"
 	"github.com/i4de/rulex/engine"
+	"github.com/i4de/rulex/glogger"
 	httpserver "github.com/i4de/rulex/plugin/http_server"
-	"github.com/i4de/rulex/rulexlib"
 	"github.com/i4de/rulex/rulexrpc"
 	"github.com/i4de/rulex/typex"
 
-	"github.com/ngaut/log"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -23,13 +22,13 @@ type _rpcCodecServer struct {
 }
 
 func (_rpcCodecServer) Decode(c context.Context, req *rulexrpc.CodecRequest) (resp *rulexrpc.CodecResponse, err error) {
-	log.Debug("[REQUEST]=====================> ", req.String())
+	glogger.GLogger.Debug("[REQUEST]=====================> ", req.String())
 	resp = new(rulexrpc.CodecResponse)
 	resp.Data = []byte("DecodeOK")
 	return resp, nil
 }
 func (_rpcCodecServer) Encode(c context.Context, req *rulexrpc.CodecRequest) (resp *rulexrpc.CodecResponse, err error) {
-	log.Debug("[REQUEST]=====================> ", req.String())
+	glogger.GLogger.Debug("[REQUEST]=====================> ", req.String())
 	resp = new(rulexrpc.CodecResponse)
 	resp.Data = []byte("EncodeOK")
 	return resp, nil
@@ -43,31 +42,34 @@ func (_rpcCodecServer) Encode(c context.Context, req *rulexrpc.CodecRequest) (re
 func _startServer() {
 	listener, err := net.Listen("tcp", ":1998")
 	if err != nil {
-		log.Fatal(err)
+		glogger.GLogger.Fatal(err)
 		return
 	}
 	rpcServer := grpc.NewServer()
 	rulexrpc.RegisterCodecServer(rpcServer, new(_rpcCodecServer))
 	go func(c context.Context) {
-		log.Info("rpcCodecServer started on", listener.Addr())
+		glogger.GLogger.Info("rpcCodecServer started on", listener.Addr())
 		rpcServer.Serve(listener)
 	}(context.TODO())
 
 }
 func Test_Codec(t *testing.T) {
+	glogger.StartGLogger(core.GlobalConfig.LogPath)
+	glogger.StartLuaLogger(core.GlobalConfig.LuaLogPath)
 	mainConfig := core.InitGlobalConfig("conf/rulex.ini")
 	core.StartStore(core.GlobalConfig.MaxQueueSize)
-	core.StartLogWatcher(core.GlobalConfig.LogPath)
-	rulexlib.StartLuaLogger(core.GlobalConfig.LuaLogPath)
+	glogger.StartGLogger(core.GlobalConfig.LogPath)
+	glogger.StartLuaLogger(core.GlobalConfig.LuaLogPath)
 	core.SetLogLevel()
 	core.SetPerformance()
 	engine := engine.NewRuleEngine(mainConfig)
 	engine.Start()
+
 	_startServer()
 	hh := httpserver.NewHttpApiServer(2580, "./rulex.db", engine)
 	// HttpApiServer loaded default
 	if err := engine.LoadPlugin("plugin.http_server", hh); err != nil {
-		log.Fatal("Rule load failed:", err)
+		glogger.GLogger.Fatal("Rule load failed:", err)
 	}
 	// Grpc Inend
 	grpcInend := typex.NewInEnd("GRPC",
@@ -77,7 +79,7 @@ func Test_Codec(t *testing.T) {
 		})
 
 	if err := engine.LoadInEnd(grpcInend); err != nil {
-		log.Fatal("Rule load failed:", err)
+		glogger.GLogger.Fatal("Rule load failed:", err)
 	}
 	grpcCodec1 := typex.NewOutEnd("GRPC_CODEC_TARGET",
 		"GRPC_CODEC_TARGET",
@@ -88,7 +90,7 @@ func Test_Codec(t *testing.T) {
 		})
 	grpcCodec1.UUID = "grpcCodec001"
 	if err := engine.LoadOutEnd(grpcCodec1); err != nil {
-		log.Fatal("grpcCodec load failed:", err)
+		glogger.GLogger.Fatal("grpcCodec load failed:", err)
 	}
 	grpcCodec2 := typex.NewOutEnd("GRPC_CODEC_TARGET",
 		"GRPC_CODEC_TARGET",
@@ -99,7 +101,7 @@ func Test_Codec(t *testing.T) {
 		})
 	grpcCodec2.UUID = "grpcCodec002"
 	if err := engine.LoadOutEnd(grpcCodec2); err != nil {
-		log.Fatal("grpcCodec load failed:", err)
+		glogger.GLogger.Fatal("grpcCodec load failed:", err)
 	}
 	rule := typex.NewRule(engine,
 		"uuid",
@@ -118,11 +120,11 @@ func Test_Codec(t *testing.T) {
 		}`,
 		`function Failed(error) print("[LUA Failed Callback]", error) end`)
 	if err := engine.LoadRule(rule); err != nil {
-		log.Fatal(err)
+		glogger.GLogger.Fatal(err)
 	}
 	grpcConnection, err := grpc.Dial("127.0.0.1:2581", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		log.Fatal("grpc.Dial err: %v", err)
+		glogger.GLogger.Error(err)
 	}
 	defer grpcConnection.Close()
 	client := rulexrpc.NewRulexRpcClient(grpcConnection)
@@ -133,9 +135,9 @@ func Test_Codec(t *testing.T) {
 			10, 11, 12, 13, 14, 15, 16}),
 	})
 	if err != nil {
-		log.Fatal("grpc.Dial err: %v", err)
+		glogger.GLogger.Error(err)
 	}
-	log.Infof("Rulex Rpc Call Result ====>>: %v", resp.GetMessage())
+	glogger.GLogger.Infof("Rulex Rpc Call Result ====>>: %v", resp.GetMessage())
 
 	time.Sleep(1 * time.Second)
 	engine.Stop()

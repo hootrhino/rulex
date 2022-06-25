@@ -2,9 +2,10 @@ package utils
 
 import (
 	"errors"
-	"gopkg.in/ini.v1"
-	"log"
 	"reflect"
+
+	"github.com/i4de/rulex/glogger"
+	"gopkg.in/ini.v1"
 )
 
 /*
@@ -19,7 +20,7 @@ import (
 func INIToStruct(iniPath string, s string, v interface{}) error {
 	cfg, err := ini.Load(iniPath)
 	if err != nil {
-		log.Fatalf("Fail to read config file: %v", err)
+		glogger.GLogger.Fatalf("Fail to read config file: %v", err)
 	}
 	return cfg.Section(s).MapTo(v)
 }
@@ -32,7 +33,7 @@ func INIToStruct(iniPath string, s string, v interface{}) error {
 func GetINISection(iniPath string, s string) *ini.Section {
 	cfg, err := ini.Load(iniPath)
 	if err != nil {
-		log.Fatalf("Fail to read config file: %v", err)
+		glogger.GLogger.Fatalf("Fail to read config file: %v", err)
 	}
 	return cfg.Section(s)
 }

@@ -7,10 +7,9 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/source"
 	"github.com/i4de/rulex/typex"
-
-	"github.com/ngaut/log"
 )
 
 /*
@@ -80,7 +79,7 @@ func startSources(source typex.XSource, in *typex.InEnd, e *RuleEngine) error {
 	}
 
 	if err := source.Init(in.UUID, config); err != nil {
-		log.Error(err)
+		glogger.GLogger.Error(err)
 		e.RemoveInEnd(in.UUID)
 		return err
 	}
@@ -88,7 +87,7 @@ func startSources(source typex.XSource, in *typex.InEnd, e *RuleEngine) error {
 	in.Source = source
 	// 然后启动资源
 	if err := startSource(source, e); err != nil {
-		log.Error(err)
+		glogger.GLogger.Error(err)
 		e.RemoveInEnd(in.UUID)
 		return err
 	}
@@ -124,7 +123,7 @@ func startSources(source typex.XSource, in *typex.InEnd, e *RuleEngine) error {
 		}
 
 	}(typex.GCTX)
-	log.Infof("InEnd [%v, %v] load successfully", in.Name, in.UUID)
+	glogger.GLogger.Infof("InEnd [%v, %v] load successfully", in.Name, in.UUID)
 	return nil
 }
 
@@ -143,7 +142,7 @@ func checkSourceDriverState(source typex.XSource) {
 	if source.Status() == typex.SOURCE_UP {
 		// 必须资源启动, 驱动才有重启意义
 		if source.Driver().State() == typex.DRIVER_STOP {
-			log.Warn("Driver stopped:", source.Driver().DriverDetail().Name)
+			glogger.GLogger.Warn("Driver stopped:", source.Driver().DriverDetail().Name)
 			// 只需要把资源给拉闸, 就会触发重启
 			source.Stop()
 		}
@@ -162,7 +161,7 @@ func tryIfRestartSource(source typex.XSource, e *RuleEngine) {
 		//----------------------------------
 		// 当资源挂了以后先给停止, 然后重启
 		//----------------------------------
-		log.Warnf("Source %v %v down. try to restart it", source.Details().UUID, source.Details().Name)
+		glogger.GLogger.Warnf("Source %v %v down. try to restart it", source.Details().UUID, source.Details().Name)
 		source.Stop()
 		//----------------------------------
 		// 主动垃圾回收一波
@@ -185,7 +184,7 @@ func startSource(source typex.XSource, e *RuleEngine) error {
 	ctx, cancelCTX := typex.NewCCTX()
 
 	if err := source.Start(typex.CCTX{Ctx: ctx, CancelCTX: cancelCTX}); err != nil {
-		log.Error("Source start error:", err)
+		glogger.GLogger.Error("Source start error:", err)
 		if source.Status() == typex.SOURCE_UP {
 			source.Stop()
 		}
@@ -205,15 +204,15 @@ func startSource(source typex.XSource, e *RuleEngine) error {
 		}
 		// Start driver
 		if err := source.Driver().Init(map[string]string{}); err != nil {
-			log.Error("Driver initial error:", err)
+			glogger.GLogger.Error("Driver initial error:", err)
 			return errors.New("Driver initial error:" + err.Error())
 		}
-		log.Infof("Try to start driver: [%v]", source.Driver().DriverDetail().Name)
+		glogger.GLogger.Infof("Try to start driver: [%v]", source.Driver().DriverDetail().Name)
 		if err := source.Driver().Work(); err != nil {
-			log.Error("Driver work error:", err)
+			glogger.GLogger.Error("Driver work error:", err)
 			return errors.New("Driver work error:" + err.Error())
 		}
-		log.Infof("Driver start successfully: [%v]", source.Driver().DriverDetail().Name)
+		glogger.GLogger.Infof("Driver start successfully: [%v]", source.Driver().DriverDetail().Name)
 	}
 	return nil
 }

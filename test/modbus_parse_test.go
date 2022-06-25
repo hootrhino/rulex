@@ -10,12 +10,12 @@ import (
 
 	"github.com/i4de/rulex/core"
 	"github.com/i4de/rulex/engine"
+	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/plugin/demo_plugin"
 	httpserver "github.com/i4de/rulex/plugin/http_server"
 	"github.com/i4de/rulex/rulexrpc"
 	"github.com/i4de/rulex/typex"
 
-	"github.com/ngaut/log"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -28,11 +28,11 @@ func Test_Modbus_LUA_Parse(t *testing.T) {
 	hh := httpserver.NewHttpApiServer(2580, "./rulex.db", engine)
 	// HttpApiServer loaded default
 	if err := engine.LoadPlugin("plugin.http_server", hh); err != nil {
-		log.Fatal("Rule load failed:", err)
+		glogger.GLogger.Fatal("Rule load failed:", err)
 	}
 	// Load a demo plugin
 	if err := engine.LoadPlugin("plugin.demo", demo_plugin.NewDemoPlugin()); err != nil {
-		log.Error("Rule load failed:", err)
+		glogger.GLogger.Error("Rule load failed:", err)
 	}
 	// Grpc Inend
 	grpcInend := typex.NewInEnd("GRPC", "Rulex Grpc InEnd", "Rulex Grpc InEnd", map[string]interface{}{
@@ -40,7 +40,7 @@ func Test_Modbus_LUA_Parse(t *testing.T) {
 	})
 
 	if err := engine.LoadInEnd(grpcInend); err != nil {
-		log.Error("Rule load failed:", err)
+		glogger.GLogger.Error("Rule load failed:", err)
 	}
 
 	rule := typex.NewRule(engine,
@@ -64,11 +64,11 @@ func Test_Modbus_LUA_Parse(t *testing.T) {
 		}`,
 		`function Failed(error) print("[LUA Failed Callback]", error) end`)
 	if err := engine.LoadRule(rule); err != nil {
-		log.Error(err)
+		glogger.GLogger.Error(err)
 	}
 	conn, err := grpc.Dial("127.0.0.1:2581", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		log.Error("grpc.Dial err: %v", err)
+		glogger.GLogger.Error(err)
 	}
 	defer conn.Close()
 	client := rulexrpc.NewRulexRpcClient(conn)
@@ -78,9 +78,9 @@ func Test_Modbus_LUA_Parse(t *testing.T) {
 		Value: string([]byte{0, 1, 0, 1}),
 	})
 	if err != nil {
-		log.Error("grpc.Dial err: %v", err)
+		glogger.GLogger.Error(err)
 	}
-	log.Infof("Rulex Rpc Call Result ====>>: %v", resp.GetMessage())
+	glogger.GLogger.Infof("Rulex Rpc Call Result ====>>: %v", resp.GetMessage())
 
 	time.Sleep(1 * time.Second)
 	engine.Stop()

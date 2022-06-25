@@ -16,11 +16,11 @@ import (
 	"time"
 
 	"github.com/i4de/rulex/core"
+	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
 
 	"github.com/gosnmp/gosnmp"
-	"github.com/ngaut/log"
 )
 
 //----------------------------------------------------------------------------------
@@ -44,7 +44,7 @@ func (s *snmpSource) SystemInfo(i int) map[string]interface{} {
 		".1.3.6.1.2.1.25.2.2.0", // TotalMemory
 	})
 	if err != nil {
-		log.Error(err)
+		glogger.GLogger.Error(err)
 		return map[string]interface{}{
 			"info":        "",
 			"pcName":      "",
@@ -81,7 +81,7 @@ func (s *snmpSource) CPUs(i int) map[string]int {
 		return nil
 	})
 	if err != nil {
-		log.Error(err)
+		glogger.GLogger.Error(err)
 		return r
 	}
 	return r
@@ -99,7 +99,7 @@ func (s *snmpSource) InterfaceIPs(i int) []string {
 		return nil
 	})
 	if err != nil {
-		log.Error(err)
+		glogger.GLogger.Error(err)
 		return r
 	}
 	return r
@@ -121,7 +121,7 @@ func (s *snmpSource) HardwareNetInterfaceMac(i int) []string {
 		return nil
 	})
 	if err != nil {
-		log.Error(err)
+		glogger.GLogger.Error(err)
 		return result
 	}
 	for k := range maps {
@@ -165,7 +165,7 @@ func (s *snmpSource) Test(inEndId string) bool {
 	var r []bool
 	for i := 0; i < len(s.snmpClients); i++ {
 		if err := s.GetClient(i).Connect(); err != nil {
-			log.Errorf("SnmpClient [%v] Connect err: %v", s.GetClient(i).Target, err)
+			glogger.GLogger.Errorf("SnmpClient [%v] Connect err: %v", s.GetClient(i).Target, err)
 		} else {
 			r = append(r, true)
 		}
@@ -195,7 +195,7 @@ func (s *snmpSource) Start(cctx typex.CCTX) error {
 		s.GetClient(i).Timeout = time.Duration(time.Duration(mainConfig.Timeout) * time.Second)
 
 		if err := s.GetClient(i).Connect(); err != nil {
-			log.Errorf("SnmpClient Connect err: %v", err)
+			glogger.GLogger.Errorf("SnmpClient Connect err: %v", err)
 			return err
 		}
 		ticker := time.NewTicker(time.Duration(mainConfig.Frequency) * time.Second)
@@ -210,10 +210,10 @@ func (s *snmpSource) Start(cctx typex.CCTX) error {
 					}
 					dataBytes, err := json.Marshal(data)
 					if err != nil {
-						log.Error("snmpSource json Marshal error: ", err)
+						glogger.GLogger.Error("snmpSource json Marshal error: ", err)
 					} else {
 						if _, err0 := sr.RuleEngine.WorkInEnd(sr.Details(), string(dataBytes)); err0 != nil {
-							log.Error("snmpSource PushQueue error: ", err0)
+							glogger.GLogger.Error("snmpSource PushQueue error: ", err0)
 						}
 
 					}
@@ -224,7 +224,7 @@ func (s *snmpSource) Start(cctx typex.CCTX) error {
 
 			}
 		}(s.Ctx, i, s)
-		log.Info("snmpSource start successfully!")
+		glogger.GLogger.Info("snmpSource start successfully!")
 	}
 
 	return nil
@@ -254,7 +254,7 @@ func (s *snmpSource) Status() typex.SourceState {
 	var r []bool
 	for i := 0; i < len(s.snmpClients); i++ {
 		if err := s.GetClient(i).Connect(); err != nil {
-			log.Errorf("SnmpClient [%v] Connect err: %v", s.GetClient(i).Target, err)
+			glogger.GLogger.Errorf("SnmpClient [%v] Connect err: %v", s.GetClient(i).Target, err)
 		} else {
 			r = append(r, true)
 		}
