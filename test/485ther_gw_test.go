@@ -34,7 +34,7 @@ func Test_modbus_485_sensor_gateway(t *testing.T) {
 	engine := engine.NewRuleEngine(mainConfig)
 	engine.Start()
 
-	hh := httpserver.NewHttpApiServer(2580, "./rulex.db", engine)
+	hh := httpserver.NewHttpApiServer()
 
 	// HttpApiServer loaded default
 	if err := engine.LoadPlugin("plugin.http_server", hh); err != nil {

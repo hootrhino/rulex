@@ -24,7 +24,7 @@ func Test_TSS200_ReadData(t *testing.T) {
 	engine := engine.NewRuleEngine(mainConfig)
 	engine.Start()
 
-	hh := httpserver.NewHttpApiServer(2580, "./rulex.db", engine)
+	hh := httpserver.NewHttpApiServer()
 	// HttpApiServer loaded default
 	if err := engine.LoadPlugin("plugin.http_server", hh); err != nil {
 		glogger.GLogger.Fatal("Rule load failed:", err)

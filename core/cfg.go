@@ -32,13 +32,6 @@ func InitGlobalConfig(path string) typex.RulexConfig {
 		os.Exit(1)
 	}
 	glogger.GLogger.Info("Rulex config init successfully")
-	// bytes, err := json.MarshalIndent(GlobalConfig, " ", "  ")
-	// if err != nil {
-	// 	glogger.GLogger.Fatalf("Fail to marshal config file: %v", err)
-	// 	os.Exit(1)
-	// } else {
-	// 	glogger.GLogger.Info(string(bytes))
-	// }
 	return GlobalConfig
 }
 

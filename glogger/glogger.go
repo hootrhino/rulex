@@ -15,13 +15,12 @@ var GLOBAL_LOGGER *LogWriter
 *
  */
 
-var GLogger *logrus.Logger
+var GLogger *logrus.Logger = logrus.New()
 
 func StartGLogger(path string) {
 	GLOBAL_LOGGER = NewLogWriter("./"+time.Now().Format("2006-01-02_15-04-05-")+path, 1000)
-	GLogger = logrus.New()
 	GLogger.Formatter = new(logrus.JSONFormatter)
-	GLogger.Formatter.(*logrus.JSONFormatter).PrettyPrint = true
+	// GLogger.Formatter.(*logrus.JSONFormatter).PrettyPrint = true
 	GLogger.SetOutput(GLOBAL_LOGGER)
 }
 

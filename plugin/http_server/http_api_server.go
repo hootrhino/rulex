@@ -31,6 +31,7 @@ var StartedTime = time.Unix(time.Now().Unix(), 0).Format("2006-01-02 15:04:05")
 type _serverConfig struct {
 	Enable bool   `ini:"enable"`
 	Host   string `ini:"host"`
+	DbPath string `ini:"dbpath"`
 	Port   int    `ini:"port"`
 }
 type HttpApiServer struct {
@@ -42,8 +43,8 @@ type HttpApiServer struct {
 	ruleEngine typex.RuleX
 }
 
-func NewHttpApiServer(port int, dbPath string, e typex.RuleX) *HttpApiServer {
-	return &HttpApiServer{Port: port, dbPath: dbPath, ruleEngine: e}
+func NewHttpApiServer() *HttpApiServer {
+	return &HttpApiServer{}
 }
 
 //
@@ -55,6 +56,7 @@ func (hh *HttpApiServer) Init(config *ini.Section) error {
 		return err
 	}
 	hh.Host = mainConfig.Host
+	hh.dbPath = mainConfig.DbPath
 	hh.Port = mainConfig.Port
 	configHttpServer(hh)
 	//

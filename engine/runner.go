@@ -9,7 +9,6 @@ import (
 	"github.com/i4de/rulex/core"
 	"github.com/i4de/rulex/glogger"
 	httpserver "github.com/i4de/rulex/plugin/http_server"
-	mqttserver "github.com/i4de/rulex/plugin/mqtt_server"
 	"github.com/i4de/rulex/sidecar"
 	"github.com/i4de/rulex/typex"
 )
@@ -18,9 +17,9 @@ import (
 // 启动 Rulex
 //
 func RunRulex(dbPath string, iniPath string) {
+	mainConfig := core.InitGlobalConfig(iniPath)
 	glogger.StartGLogger(core.GlobalConfig.LogPath)
 	glogger.StartLuaLogger(core.GlobalConfig.LuaLogPath)
-	mainConfig := core.InitGlobalConfig(iniPath)
 	core.StartStore(core.GlobalConfig.MaxQueueSize)
 	core.SetLogLevel()
 	core.SetPerformance()
@@ -28,16 +27,9 @@ func RunRulex(dbPath string, iniPath string) {
 	signal.Notify(c, syscall.SIGINT, syscall.SIGABRT, syscall.SIGTERM)
 	engine := NewRuleEngine(mainConfig)
 	engine.Start()
-
-	httpServer := httpserver.NewHttpApiServer(2580, dbPath, engine)
 	// Load Http api Server
+	httpServer := httpserver.NewHttpApiServer()
 	if err := engine.LoadPlugin("plugin.http_server", httpServer); err != nil {
-		return
-	}
-	// Load Mqtt Server
-
-	if err := engine.LoadPlugin("plugin.mqtt_server", mqttserver.NewMqttServer()); err != nil {
-		glogger.GLogger.Error(err)
 		return
 	}
 	//

@@ -303,13 +303,13 @@ func (e *RuleEngine) Stop() {
 	runtime.Gosched()
 	runtime.GC()
 
+	glogger.GLogger.Info("Stop Rulex successfully")
 	if err := glogger.GLOBAL_LOGGER.Close(); err != nil {
 		glogger.GLogger.Error(err)
 	}
 	if err := glogger.LUA_LOGGER.Close(); err != nil {
 		glogger.GLogger.Error(err)
 	}
-	glogger.GLogger.Info("Stop Rulex successfully")
 }
 
 //

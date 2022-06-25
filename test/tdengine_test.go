@@ -61,7 +61,7 @@ func Test_gen_tdEngineConfig(t *testing.T) {
 func Test_data_to_tdengine(t *testing.T) {
 	engine := engine.NewRuleEngine(core.InitGlobalConfig("conf/rulex.ini"))
 	engine.Start()
-	hh := httpserver.NewHttpApiServer(2580, "../rulex-test_"+time.Now().Format("2006-01-02-15_04_05")+".db", engine)
+	hh := httpserver.NewHttpApiServer()
 
 	// HttpApiServer loaded default
 	if err := engine.LoadPlugin("plugin.http_server", hh); err != nil {

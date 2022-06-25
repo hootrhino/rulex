@@ -18,22 +18,17 @@ import (
 )
 
 func TestFullyRun(t *testing.T) {
-	glogger.StartGLogger(core.GlobalConfig.LogPath)
-	glogger.StartLuaLogger(core.GlobalConfig.LuaLogPath)
 	mainConfig := core.InitGlobalConfig("conf/rulex.ini")
-	core.StartStore(core.GlobalConfig.MaxQueueSize)
+
 	glogger.StartGLogger(core.GlobalConfig.LogPath)
 	glogger.StartLuaLogger(core.GlobalConfig.LuaLogPath)
+	core.StartStore(core.GlobalConfig.MaxQueueSize)
 	core.SetLogLevel()
 	core.SetPerformance()
 	engine := engine.NewRuleEngine(mainConfig)
-
 	engine.Start()
-	if err := engine.LoadPlugin("plugin.http_server", httpserver.NewHttpApiServer(
-		2580,
-		"../"+GenDate()+".db",
-		engine,
-	)); err != nil {
+	engine.Start()
+	if err := engine.LoadPlugin("plugin.http_server", httpserver.NewHttpApiServer()); err != nil {
 		glogger.GLogger.Fatal("Rule load failed:", err)
 	}
 	// Grpc Inend
@@ -147,6 +142,10 @@ func TestFullyRun(t *testing.T) {
 			    print("[rulexlib:VGet(k)] ==>", rulexlib:VGet('k'))
 
 				return true, data
+			end,
+			function(data)
+			    rulexlib:log(rulexlib:Time())
+				return true, data
 			end
 		}`,
 		`function Failed(error) print("[rulexlib:J2T(data) Failed Callback]", error) end`)
@@ -185,11 +184,11 @@ func TestFullyRun(t *testing.T) {
 		glogger.GLogger.Infof("Rulex Rpc Call Result ====>>: %v", resp.GetMessage())
 	}
 
-	time.Sleep(1 * time.Second)
 	glogger.GLogger.Info("Test Http system Api===> " + HttpGet("http://127.0.0.1:2580/api/v1/system"))
 	glogger.GLogger.Info("Test Http inends Api===> " + HttpGet("http://127.0.0.1:2580/api/v1/inends"))
 	glogger.GLogger.Info("Test Http outends Api===> " + HttpGet("http://127.0.0.1:2580/api/v1/outends"))
 	glogger.GLogger.Info("Test Http rules Api===> " + HttpGet("http://127.0.0.1:2580/api/v1/rules"))
 
+	time.Sleep(5 * time.Second)
 	engine.Stop()
 }

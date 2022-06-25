@@ -17,7 +17,7 @@ import (
 func TestInitData(t *testing.T) {
 	engine := engine.NewRuleEngine(core.InitGlobalConfig("conf/rulex.ini"))
 	engine.Start()
-	hh := httpserver.NewHttpApiServer(3580, "rulex-default-data.db", engine)
+	hh := httpserver.NewHttpApiServer()
 	// HttpApiServer loaded default
 	if err := engine.LoadPlugin("plugin.http_server", hh); err != nil {
 		glogger.GLogger.Fatal("Rule load failed:", err)

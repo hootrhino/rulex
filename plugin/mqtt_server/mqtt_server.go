@@ -28,6 +28,7 @@ type MqttServer struct {
 	Port       int
 	mqttServer *mqttServer.Server
 	clients    map[string]*events.Client
+	ruleEngine typex.RuleX
 }
 
 func NewMqttServer() typex.XPlugin {
@@ -47,6 +48,7 @@ func (s *MqttServer) Init(config *ini.Section) error {
 }
 
 func (s *MqttServer) Start(r typex.RuleX) error {
+	s.ruleEngine = r
 	server := mqttServer.New()
 	tcpPort := listeners.NewTCP(defaultTransport, fmt.Sprintf(":%v", s.Port))
 
