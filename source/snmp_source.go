@@ -11,8 +11,7 @@ package source
 import (
 	"context"
 	"encoding/json"
-	"fmt"
-	"strings"
+	"sync"
 	"time"
 
 	"github.com/i4de/rulex/core"
@@ -26,6 +25,7 @@ import (
 //----------------------------------------------------------------------------------
 
 type snmpSource struct {
+	lock sync.Mutex
 	typex.XStatus
 	snmpClients []*gosnmp.GoSNMP
 }
@@ -38,18 +38,25 @@ func (s *snmpSource) SetClient(i int, c *gosnmp.GoSNMP) {
 }
 
 func (s *snmpSource) SystemInfo(i int) map[string]interface{} {
-	results, err := s.GetClient(i).Get([]string{
+	null := map[string]interface{}{
+		"info":        "",
+		"pcName":      "",
+		"totalMemory": 0,
+	}
+	gosn := s.GetClient(i)
+	if gosn == nil {
+		return null
+	}
+
+	results, err := gosn.Get([]string{
 		".1.3.6.1.2.1.1.1.0",    // 信息
 		".1.3.6.1.2.1.1.5.0",    // PCName
 		".1.3.6.1.2.1.25.2.2.0", // TotalMemory
 	})
 	if err != nil {
 		glogger.GLogger.Error(err)
-		return map[string]interface{}{
-			"info":        "",
-			"pcName":      "",
-			"totalMemory": 0,
-		}
+		return null
+
 	}
 	if len(results.Variables) == 3 {
 		Info := string(results.Variables[0].Value.([]byte))
@@ -60,75 +67,70 @@ func (s *snmpSource) SystemInfo(i int) map[string]interface{} {
 			"pcName":      PCName,
 			"totalMemory": TotalMemory,
 		}
-	} else {
-		return map[string]interface{}{
-			"info":        "",
-			"pcName":      "",
-			"totalMemory": 0,
-		}
 	}
+	return null
 
 }
 
-func (s *snmpSource) CPUs(i int) map[string]int {
-	oid := ".1.3.6.1.2.1.25.3.3.1.2"
-	r := map[string]int{}
-	err := s.GetClient(i).Walk(oid, func(variable gosnmp.SnmpPDU) error {
-		if variable.Type == gosnmp.Integer {
-			k := strings.Replace(variable.Name, ".1.3.6.1.2.1.25.3.3.1.2.", "", 1)
-			r[k] = variable.Value.(int)
-		}
-		return nil
-	})
-	if err != nil {
-		glogger.GLogger.Error(err)
-		return r
-	}
-	return r
-}
-func (s *snmpSource) InterfaceIPs(i int) []string {
-	oid := "1.3.6.1.2.1.4.20.1.2"
-	var r []string
-	err := s.GetClient(i).Walk(oid, func(variable gosnmp.SnmpPDU) error {
-		if variable.Type == gosnmp.Integer {
-			ip := strings.Replace(variable.Name, ".1.3.6.1.2.1.4.20.1.2.", "", 1)
-			if ip != "127.0.0.1" {
-				r = append(r, ip)
-			}
-		}
-		return nil
-	})
-	if err != nil {
-		glogger.GLogger.Error(err)
-		return r
-	}
-	return r
-}
+// func (s *snmpSource) CPUs(i int) map[string]int {
+// 	oid := ".1.3.6.1.2.1.25.3.3.1.2"
+// 	r := map[string]int{}
+// 	err := s.GetClient(i).Walk(oid, func(variable gosnmp.SnmpPDU) error {
+// 		if variable.Type == gosnmp.Integer {
+// 			k := strings.Replace(variable.Name, ".1.3.6.1.2.1.25.3.3.1.2.", "", 1)
+// 			r[k] = variable.Value.(int)
+// 		}
+// 		return nil
+// 	})
+// 	if err != nil {
+// 		glogger.GLogger.Error(err)
+// 		return r
+// 	}
+// 	return r
+// }
+// func (s *snmpSource) InterfaceIPs(i int) []string {
+// 	oid := "1.3.6.1.2.1.4.20.1.2"
+// 	var r []string
+// 	err := s.GetClient(i).Walk(oid, func(variable gosnmp.SnmpPDU) error {
+// 		if variable.Type == gosnmp.Integer {
+// 			ip := strings.Replace(variable.Name, ".1.3.6.1.2.1.4.20.1.2.", "", 1)
+// 			if ip != "127.0.0.1" {
+// 				r = append(r, ip)
+// 			}
+// 		}
+// 		return nil
+// 	})
+// 	if err != nil {
+// 		glogger.GLogger.Error(err)
+// 		return r
+// 	}
+// 	return r
+// }
 
-func (s *snmpSource) HardwareNetInterfaceMac(i int) []string {
-	oid := ".1.3.6.1.2.1.2.2.1.6"
-	maps := map[string]string{}
-	result := make([]string, 0)
+// func (s *snmpSource) HardwareNetInterfaceMac(i int) []string {
+// 	oid := ".1.3.6.1.2.1.2.2.1.6"
+// 	maps := map[string]string{}
+// 	result := make([]string, 0)
 
-	err := s.GetClient(i).Walk(oid, func(variable gosnmp.SnmpPDU) error {
-		if variable.Type == gosnmp.OctetString {
-			macByte := variable.Value.([]byte)
-			if len(macByte) == 6 {
-				mac := fmt.Sprintf("%0x-%0x-%0x-%0x-%0x-%0x", macByte[0], macByte[1], macByte[2], macByte[3], macByte[4], macByte[5])
-				maps[mac] = ""
-			}
-		}
-		return nil
-	})
-	if err != nil {
-		glogger.GLogger.Error(err)
-		return result
-	}
-	for k := range maps {
-		result = append(result, k)
-	}
-	return result
-}
+// 	err := s.GetClient(i).Walk(oid, func(variable gosnmp.SnmpPDU) error {
+// 		if variable.Type == gosnmp.OctetString {
+// 			macByte := variable.Value.([]byte)
+// 			if len(macByte) == 6 {
+// 				mac := fmt.Sprintf("%0x-%0x-%0x-%0x-%0x-%0x", macByte[0], macByte[1], macByte[2], macByte[3], macByte[4], macByte[5])
+// 				maps[mac] = ""
+// 			}
+// 		}
+// 		return nil
+// 	})
+// 	if err != nil {
+// 		glogger.GLogger.Error(err)
+// 		return result
+// 	}
+// 	for k := range maps {
+// 		result = append(result, k)
+// 	}
+// 	return result
+// }
 
 //----------------------------------------------------------------------------------
 type target struct {
@@ -156,6 +158,7 @@ func NewSNMPInEndSource(inEndId string, e typex.RuleX) *snmpSource {
 	s := snmpSource{}
 	s.RuleEngine = e
 	s.PointId = inEndId
+	s.lock = sync.Mutex{}
 	return &s
 }
 func (*snmpSource) Driver() typex.XExternalDriver {
@@ -189,41 +192,42 @@ func (s *snmpSource) Start(cctx typex.CCTX) error {
 	}
 	s.snmpClients = make([]*gosnmp.GoSNMP, len(mainConfig.Targets))
 	for i, target := range mainConfig.Targets {
-		s.SetClient(i, gosnmp.Default)
-		s.GetClient(i).Target = target.Target
-		s.GetClient(i).Community = target.Community
-		s.GetClient(i).Timeout = time.Duration(time.Duration(mainConfig.Timeout) * time.Second)
+		gosn := gosnmp.Default
+		gosn.Target = target.Target
+		gosn.Community = target.Community
+		gosn.Timeout = time.Duration(mainConfig.Timeout) * time.Second
+		s.SetClient(i, gosn)
 
-		if err := s.GetClient(i).Connect(); err != nil {
+		if err := gosn.Connect(); err != nil {
 			glogger.GLogger.Errorf("SnmpClient Connect err: %v", err)
 			return err
 		}
-		ticker := time.NewTicker(time.Duration(mainConfig.Frequency) * time.Second)
 
-		go func(ctx context.Context, idx int, sr *snmpSource) {
+		go func(ctx context.Context, idx int) {
+			ticker := time.NewTicker(time.Duration(mainConfig.Frequency) * time.Second)
 			for {
+				t := <-ticker.C
 				select {
-				case t := <-ticker.C:
-					data := map[string]interface{}{
-						"systemInfo": sr.SystemInfo(i), // Waining: CPU maybe used 100%
-						"time":       t.Format("2006-01-02 15:04:05"),
-					}
-					dataBytes, err := json.Marshal(data)
-					if err != nil {
-						glogger.GLogger.Error("snmpSource json Marshal error: ", err)
-					} else {
-						if _, err0 := sr.RuleEngine.WorkInEnd(sr.Details(), string(dataBytes)); err0 != nil {
-							glogger.GLogger.Error("snmpSource PushQueue error: ", err0)
-						}
-
-					}
+				case <-ctx.Done():
+					return
 				default:
 					{
 					}
 				}
+				data := map[string]interface{}{
+					"systemInfo": s.SystemInfo(idx),
+					"time":       t.Format("2006-01-02 15:04:05"),
+				}
+				dataBytes, err := json.Marshal(data)
+				if err != nil {
+					glogger.GLogger.Error("snmpSource json Marshal error: ", err)
+				}
+				if _, err0 := s.RuleEngine.WorkInEnd(s.Details(), string(dataBytes)); err0 != nil {
+					glogger.GLogger.Error("snmpSource PushQueue error: ", err0)
+				}
 
 			}
-		}(s.Ctx, i, s)
+		}(s.Ctx, i)
 		glogger.GLogger.Info("snmpSource start successfully!")
 	}
 
