@@ -16,7 +16,7 @@ type Define struct {
 	Type  string `json:"type"`
 	Specs []Spec `json:"specs"`
 }
-type Propertie struct {
+type Property struct {
 	ID       string `json:"id"`
 	Name     string `json:"name"`
 	Desc     string `json:"desc"`
@@ -68,9 +68,10 @@ type Profile struct {
 	CategoryID string `json:"CategoryId"`
 }
 type Schema struct {
-	Version    string      `json:"version"`
-	Properties []Propertie `json:"properties"`
-	Events     []Event     `json:"events"`
-	Actions    []Action    `json:"actions"`
-	Profile    Profile     `json:"profile"`
+	Version        string     `json:"version"`        // 版本
+	Profile        Profile    `json:"profile"`        // 物的元描述
+	Configurations []Property `json:"configurations"` // 配置
+	Properties     []Property `json:"properties"`     // 属性
+	Events         []Event    `json:"events"`         // 事件
+	Actions        []Action   `json:"actions"`        // 动作
 }
