@@ -45,7 +45,7 @@ func RunRulex(dbPath string, iniPath string) {
 		if err := json.Unmarshal([]byte(minEnd.XDataModels), &dataModelsMap); err != nil {
 			glogger.GLogger.Error(err)
 		}
-		in := typex.NewInEnd(minEnd.Type, minEnd.Name, minEnd.Description, config)
+		in := typex.NewInEnd(typex.InEndType(minEnd.Type), minEnd.Name, minEnd.Description, config)
 		in.UUID = minEnd.UUID // Important !!!!!!!!
 		in.DataModelsMap = dataModelsMap
 		if err := engine.LoadInEnd(in); err != nil {

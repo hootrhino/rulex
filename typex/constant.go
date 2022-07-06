@@ -58,6 +58,10 @@ const (
 	// RULEX UDP 自定义简单协议
 	//
 	RULEX_UDP InEndType = "RULEX_UDP"
+	//
+	// TENCENT_IOT_HUB 自定义简单协议
+	//
+	TENCENT_IOT_HUB InEndType = "TENCENT_IOT_HUB"
 )
 
 //

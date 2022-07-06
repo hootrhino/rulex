@@ -27,14 +27,14 @@ func (in *InEnd) SetState(s SourceState) {
 }
 
 //
-func NewInEnd(t string,
+func NewInEnd(Type InEndType,
 	n string,
 	d string,
 	c map[string]interface{}) *InEnd {
 
 	return &InEnd{
 		UUID:        utils.MakeUUID("INEND"),
-		Type:        InEndType(t),
+		Type:        Type,
 		Name:        n,
 		Description: d,
 		BindRules:   map[string]Rule{},

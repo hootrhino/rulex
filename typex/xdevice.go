@@ -23,6 +23,7 @@ type DeviceType string
 const (
 	TSS200V02   DeviceType = "TSS200V02"
 	RTU485_THER DeviceType = "RTU485_THER"
+	YK08_RELAY  DeviceType = "RTU485_THER"
 )
 
 // 设备元数据

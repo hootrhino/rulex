@@ -120,7 +120,7 @@ func (hh *HttpApiServer) LoadNewestInEnd(uuid string) error {
 		glogger.GLogger.Error(err1)
 		return err1
 	}
-	in := typex.NewInEnd(mInEnd.Type, mInEnd.Name, mInEnd.Description, config)
+	in := typex.NewInEnd(typex.InEndType(mInEnd.Type), mInEnd.Name, mInEnd.Description, config)
 	// Important !!!!!!!! in.Id = mInEnd.UUID
 	in.UUID = mInEnd.UUID
 	in.DataModelsMap = dataModelsMap
