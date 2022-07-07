@@ -119,3 +119,13 @@ func (u *uartModuleSource) Driver() typex.XExternalDriver {
 func (*uartModuleSource) Topology() []typex.TopologyPoint {
 	return []typex.TopologyPoint{}
 }
+
+//
+// 来自外面的数据
+//
+func (*uartModuleSource) DownStream([]byte) {}
+
+//
+// 上行数据
+//
+func (*uartModuleSource) UpStream() {}

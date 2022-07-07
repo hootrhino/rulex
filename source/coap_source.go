@@ -133,3 +133,13 @@ func (*coAPInEndSource) Configs() *typex.XConfig {
 func (*coAPInEndSource) Topology() []typex.TopologyPoint {
 	return []typex.TopologyPoint{}
 }
+
+//
+// 来自外面的数据
+//
+func (*coAPInEndSource) DownStream([]byte) {}
+
+//
+// 上行数据
+//
+func (*coAPInEndSource) UpStream() {}

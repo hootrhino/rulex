@@ -18,7 +18,7 @@ import (
 //
 func RunRulex(dbPath string, iniPath string) {
 	mainConfig := core.InitGlobalConfig(iniPath)
-	glogger.StartGLogger(core.GlobalConfig.LogPath)
+	glogger.StartGLogger(mainConfig.EnableConsole, core.GlobalConfig.LogPath)
 	glogger.StartLuaLogger(core.GlobalConfig.LuaLogPath)
 	core.StartStore(core.GlobalConfig.MaxQueueSize)
 	core.SetLogLevel()

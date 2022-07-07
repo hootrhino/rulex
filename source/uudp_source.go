@@ -118,3 +118,13 @@ func (*udpSource) Configs() *typex.XConfig {
 func (*udpSource) Topology() []typex.TopologyPoint {
 	return []typex.TopologyPoint{}
 }
+
+//
+// 来自外面的数据
+//
+func (*udpSource) DownStream([]byte) {}
+
+//
+// 上行数据
+//
+func (*udpSource) UpStream() {}

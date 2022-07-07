@@ -19,15 +19,14 @@ import (
 
 func TestFullyRun(t *testing.T) {
 	mainConfig := core.InitGlobalConfig("conf/rulex.ini")
-
-	glogger.StartGLogger(core.GlobalConfig.LogPath)
+	glogger.StartGLogger(true, core.GlobalConfig.LogPath)
 	glogger.StartLuaLogger(core.GlobalConfig.LuaLogPath)
 	core.StartStore(core.GlobalConfig.MaxQueueSize)
 	core.SetLogLevel()
 	core.SetPerformance()
 	engine := engine.NewRuleEngine(mainConfig)
 	engine.Start()
-	engine.Start()
+
 	if err := engine.LoadPlugin("plugin.http_server", httpserver.NewHttpApiServer()); err != nil {
 		glogger.GLogger.Fatal("Rule load failed:", err)
 	}

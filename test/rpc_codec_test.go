@@ -54,12 +54,10 @@ func _startServer() {
 
 }
 func Test_Codec(t *testing.T) {
-	glogger.StartGLogger(core.GlobalConfig.LogPath)
-	glogger.StartLuaLogger(core.GlobalConfig.LuaLogPath)
 	mainConfig := core.InitGlobalConfig("conf/rulex.ini")
-	core.StartStore(core.GlobalConfig.MaxQueueSize)
-	glogger.StartGLogger(core.GlobalConfig.LogPath)
+	glogger.StartGLogger(true, core.GlobalConfig.LogPath)
 	glogger.StartLuaLogger(core.GlobalConfig.LuaLogPath)
+	core.StartStore(core.GlobalConfig.MaxQueueSize)
 	core.SetLogLevel()
 	core.SetPerformance()
 	engine := engine.NewRuleEngine(mainConfig)

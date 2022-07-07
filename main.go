@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"runtime"
 
 	"github.com/urfave/cli/v2"
@@ -22,8 +23,8 @@ func main() {
 
 	//--------------------------------------
 	app := &cli.App{
-		Name:  "RULEX, a lightweight iot data rule gateway",
-		Usage: "http://rulex.pages.dev",
+		Name:  "RULEX FrameWork",
+		Usage: "Goto Document: http://rulex.pages.dev",
 		Commands: []*cli.Command{
 			{
 				Name:  "run",
@@ -42,8 +43,6 @@ func main() {
 				},
 				Action: func(c *cli.Context) error {
 					utils.ShowBanner()
-					glogger.GLogger.Info("Load config db:", c.String("db"))
-					glogger.GLogger.Info("Load main config:", c.String("config"))
 					engine.RunRulex(c.String("db"), c.String("config"))
 					glogger.GLogger.Info("Run rulex successfully.")
 					return nil
@@ -69,6 +68,6 @@ func main() {
 	}
 
 	if err := app.Run(os.Args); err != nil {
-		glogger.GLogger.Fatal(err)
+		log.Fatal(err)
 	}
 }

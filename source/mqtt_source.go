@@ -141,3 +141,13 @@ func (*mqttInEndSource) Configs() *typex.XConfig {
 func (*mqttInEndSource) Topology() []typex.TopologyPoint {
 	return []typex.TopologyPoint{}
 }
+
+//
+// 来自外面的数据
+//
+func (*mqttInEndSource) DownStream([]byte) {}
+
+//
+// 上行数据
+//
+func (*mqttInEndSource) UpStream() {}

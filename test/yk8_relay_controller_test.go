@@ -15,7 +15,7 @@ import (
 *
  */
 func TestRTU_YK08(t *testing.T) {
-	handler := modbus.NewRTUClientHandler("COM6")
+	handler := modbus.NewRTUClientHandler("COM3")
 	handler.BaudRate = 9600
 	handler.DataBits = 8
 	handler.Parity = "N"

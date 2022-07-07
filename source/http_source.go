@@ -124,3 +124,13 @@ func (*httpInEndSource) Driver() typex.XExternalDriver {
 func (*httpInEndSource) Topology() []typex.TopologyPoint {
 	return []typex.TopologyPoint{}
 }
+
+//
+// 来自外面的数据
+//
+func (*httpInEndSource) DownStream([]byte) {}
+
+//
+// 上行数据
+//
+func (*httpInEndSource) UpStream() {}

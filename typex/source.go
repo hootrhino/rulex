@@ -70,4 +70,12 @@ type XSource interface {
 	// 停止资源, 用来释放资源
 	//
 	Stop()
+	//
+	// 来自外面的数据
+	//
+	DownStream([]byte)
+	//
+	// 上行数据
+	//
+	UpStream()
 }

@@ -178,3 +178,13 @@ func (cs *cs104Source) Topology() []typex.TopologyPoint {
 func (cs *cs104Source) Stop() {
 	cs.CancelCTX()
 }
+
+//
+// 来自外面的数据
+//
+func (*cs104Source) DownStream([]byte) {}
+
+//
+// 上行数据
+//
+func (*cs104Source) UpStream() {}

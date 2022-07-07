@@ -14,6 +14,7 @@ type RulexConfig struct {
 	SourceRestartInterval int    `ini:"resource_restart_interval" json:"sourceRestartInterval"`
 	GomaxProcs            int    `ini:"gomax_procs" json:"gomaxProcs"`
 	EnablePProf           bool   `ini:"enable_pprof" json:"enablePProf"`
+	EnableConsole         bool   `ini:"enable_console" json:"enableConsole"`
 	LogLevel              string `ini:"log_level" json:"logLevel"`
 	LogPath               string `ini:"log_path" json:"logPath"`
 	LuaLogPath            string `ini:"lua_log_path" json:"luaLogPath"`

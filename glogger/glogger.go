@@ -1,6 +1,7 @@
 package glogger
 
 import (
+	"os"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -17,11 +18,15 @@ var GLOBAL_LOGGER *LogWriter
 
 var GLogger *logrus.Logger = logrus.New()
 
-func StartGLogger(path string) {
+func StartGLogger(EnableConsole bool, path string) {
 	GLOBAL_LOGGER = NewLogWriter("./"+time.Now().Format("2006-01-02_15-04-05-")+path, 1000)
 	GLogger.Formatter = new(logrus.JSONFormatter)
 	// GLogger.Formatter.(*logrus.JSONFormatter).PrettyPrint = true
-	GLogger.SetOutput(GLOBAL_LOGGER)
+	if EnableConsole {
+		GLogger.SetOutput(os.Stdout)
+	} else {
+		GLogger.SetOutput(GLOBAL_LOGGER)
+	}
 }
 
 /*

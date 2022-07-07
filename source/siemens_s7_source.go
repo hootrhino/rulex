@@ -211,3 +211,13 @@ func (s7 *siemensS7Source) Stop() {
 	}
 	s7.CancelCTX()
 }
+
+//
+// 来自外面的数据
+//
+func (*siemensS7Source) DownStream([]byte) {}
+
+//
+// 上行数据
+//
+func (*siemensS7Source) UpStream() {}

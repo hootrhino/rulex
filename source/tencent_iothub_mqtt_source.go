@@ -1,6 +1,7 @@
 package source
 
 import (
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -12,8 +13,18 @@ import (
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
+//
+// 下行数据
+//
+type tencentDownMsg struct {
+	Method      string      `json:"method"`
+	ClientToken string      `json:"clientToken"`
+	Params      interface{} `json:"params"`
+}
+
 var _PropertyTopic = "$thing/down/property/%v/%v"
-var _EventTopic = "$thing/up/event/%v/%v"
+
+// var _EventTopic = "$thing/up/event/%v/%v"
 var _ActionTopic = "$thing/down/action/%v/$%v"
 
 //
@@ -74,10 +85,20 @@ func (tc *tencentIothubSource) Start(cctx typex.CCTX) error {
 	var connectHandler mqtt.OnConnectHandler = func(client mqtt.Client) {
 		glogger.GLogger.Infof("Tencent IOTHUB Connected Success")
 		client.Subscribe(PropertyTopic, 1, func(c mqtt.Client, m mqtt.Message) {
-			glogger.GLogger.Debug("Recv: ", m.Topic(), m.Payload())
+			msg := tencentDownMsg{}
+			if err := json.Unmarshal(m.Payload(), &msg); err != nil {
+				glogger.GLogger.Error(err)
+			} else {
+				glogger.GLogger.Info("Recv: ", m.Topic(), string(m.Payload()))
+			}
 		})
 		client.Subscribe(ActionTopic, 1, func(c mqtt.Client, m mqtt.Message) {
-			glogger.GLogger.Debug("Recv: ", m.Topic(), m.Payload())
+			msg := tencentDownMsg{}
+			if err := json.Unmarshal(m.Payload(), &msg); err != nil {
+				glogger.GLogger.Error(err)
+			} else {
+				glogger.GLogger.Info("Recv: ", m.Topic(), string(m.Payload()))
+			}
 		})
 	}
 
@@ -102,7 +123,6 @@ func (tc *tencentIothubSource) Start(cctx typex.CCTX) error {
 	if token := tc.client.Connect(); token.Wait() && token.Error() != nil {
 		return token.Error()
 	} else {
-
 		return nil
 	}
 
@@ -165,3 +185,13 @@ func (*tencentIothubSource) Configs() *typex.XConfig {
 func (*tencentIothubSource) Topology() []typex.TopologyPoint {
 	return []typex.TopologyPoint{}
 }
+
+//
+// 来自外面的数据
+//
+func (*tencentIothubSource) DownStream([]byte) {}
+
+//
+// 上行数据
+//
+func (*tencentIothubSource) UpStream() {}

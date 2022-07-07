@@ -358,3 +358,13 @@ func (m *modbusMasterSource) Driver() typex.XExternalDriver {
 func (*modbusMasterSource) Topology() []typex.TopologyPoint {
 	return []typex.TopologyPoint{}
 }
+
+//
+// 来自外面的数据
+//
+func (*modbusMasterSource) DownStream([]byte) {}
+
+//
+// 上行数据
+//
+func (*modbusMasterSource) UpStream() {}

@@ -148,3 +148,13 @@ func (r *RulexRpcServer) Work(ctx context.Context, in *rulexrpc.Data) (*rulexrpc
 func (*grpcInEndSource) Topology() []typex.TopologyPoint {
 	return []typex.TopologyPoint{}
 }
+
+//
+// 来自外面的数据
+//
+func (*grpcInEndSource) DownStream([]byte) {}
+
+//
+// 上行数据
+//
+func (*grpcInEndSource) UpStream() {}

@@ -3,9 +3,6 @@ package test
 import (
 	"context"
 	"math/rand"
-	"os"
-	"os/signal"
-	"syscall"
 	"testing"
 	"time"
 
@@ -26,18 +23,15 @@ import (
 *
  */
 func Test_modbus_485_sensor_data_parse(t *testing.T) {
-	glogger.StartGLogger(core.GlobalConfig.LogPath)
-	glogger.StartLuaLogger(core.GlobalConfig.LuaLogPath)
 	mainConfig := core.InitGlobalConfig("conf/rulex.ini")
-	core.StartStore(core.GlobalConfig.MaxQueueSize)
-	glogger.StartGLogger(core.GlobalConfig.LogPath)
+	glogger.StartGLogger(true, core.GlobalConfig.LogPath)
 	glogger.StartLuaLogger(core.GlobalConfig.LuaLogPath)
+	core.StartStore(core.GlobalConfig.MaxQueueSize)
 	core.SetLogLevel()
 	core.SetPerformance()
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, syscall.SIGINT, syscall.SIGABRT, syscall.SIGTERM)
 	engine := engine.NewRuleEngine(mainConfig)
 	engine.Start()
+
 
 	hh := httpserver.NewHttpApiServer()
 

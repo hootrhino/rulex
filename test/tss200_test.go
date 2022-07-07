@@ -13,16 +13,15 @@ import (
 )
 
 func Test_TSS200_ReadData(t *testing.T) {
-	glogger.StartGLogger(core.GlobalConfig.LogPath)
-	glogger.StartLuaLogger(core.GlobalConfig.LuaLogPath)
 	mainConfig := core.InitGlobalConfig("conf/rulex.ini")
-	core.StartStore(core.GlobalConfig.MaxQueueSize)
-	glogger.StartGLogger(core.GlobalConfig.LogPath)
+	glogger.StartGLogger(true, core.GlobalConfig.LogPath)
 	glogger.StartLuaLogger(core.GlobalConfig.LuaLogPath)
+	core.StartStore(core.GlobalConfig.MaxQueueSize)
 	core.SetLogLevel()
 	core.SetPerformance()
 	engine := engine.NewRuleEngine(mainConfig)
 	engine.Start()
+
 
 	hh := httpserver.NewHttpApiServer()
 	// HttpApiServer loaded default
