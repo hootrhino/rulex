@@ -152,6 +152,9 @@ func startDevice(abstractDevice typex.XDevice, e *RuleEngine) error {
 			abstractDevice.Driver().Stop()
 		}
 		// Start driver
+		// TODO: map[string]string{} 未来会被替换成真实的驱动配置
+		// if driverConfig != nil --> Driver().Init(Cfg)
+		//
 		if err := abstractDevice.Driver().Init(map[string]string{}); err != nil {
 			glogger.GLogger.Error("Driver initial error:", err)
 			return errors.New("Driver initial error:" + err.Error())
