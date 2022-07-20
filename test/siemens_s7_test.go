@@ -38,48 +38,6 @@ func client(t *testing.T) {
 	t.Log("client.AGReadDB =>", dataBuf)
 
 }
-func Test_gen_config(t *testing.T) {
-	type stateAddress struct {
-		Address int `json:"address"` // 地址
-		Start   int `json:"start"`   // 起始地址
-		Size    int `json:"size"`    // 数据长度
-	}
-	type db struct {
-		Tag     string `json:"tag"`     // 数据tag
-		Address int    `json:"address"` // 地址
-		Start   int    `json:"start"`   // 起始地址
-		Size    int    `json:"size"`    // 数据长度
-	}
-	type siemensS7config struct {
-		Host         string       `json:"host" validate:"required" title:"IP地址" info:""`          // 127.0.0.1
-		Rack         int          `json:"rack" validate:"required" title:"架号" info:""`            // 0
-		Slot         int          `json:"slot" validate:"required" title:"槽号" info:""`            // 1
-		Timeout      int          `json:"timeout" validate:"required" title:"连接超时时间" info:""`     // 5s
-		IdleTimeout  int          `json:"idleTimeout" validate:"required" title:"心跳超时时间" info:""` // 5s
-		Frequency    int64        `json:"frequency" validate:"required" title:"采集频率" info:""`     // 5s
-		StateAddress stateAddress `json:"stateAddress" validate:"required" title:"状态地址" info:""`  // 5s
-		Dbs          []db         `json:"dbs" validate:"required" title:"采集配置" info:""`           // Db
-	}
-	c := siemensS7config{
-		Host:        "",
-		Rack:        0,
-		Slot:        1,
-		Timeout:     5,
-		IdleTimeout: 5,
-		Frequency:   5,
-		Dbs: []db{
-			{
-				Tag:     "Votage",
-				Address: 0,
-				Start:   1,
-				Size:    1,
-			},
-		},
-	}
-	b, _ := json.MarshalIndent(c, "", " ")
-	t.Log(string(b))
-
-}
 
 /*
 *
@@ -102,4 +60,32 @@ func Test_readDB(t *testing.T) {
 	}
 	t.Log("client.AGReadDB =>", dataBuf)
 
+}
+func Test_gen_db_json(t *testing.T) {
+
+	type S1200Block struct {
+		Tag     string `json:"tag"`     // 数据tag
+		Address int    `json:"address"` // 地址
+		Start   int    `json:"start"`   // 起始地址
+		Size    int    `json:"size"`    // 数据长度
+	}
+	type S1200BlockValue struct {
+		Tag     string `json:"tag"`     // 数据tag
+		Address int    `json:"address"` // 地址
+		Start   int    `json:"start"`   // 起始地址
+		Size    int    `json:"size"`    // 数据长度
+		Value   []byte `json:"value"`
+	}
+	blocks := []S1200BlockValue{{
+		Tag:     "V",
+		Address: 1,
+		Start:   1,
+		Size:    1,
+		Value:   []byte{0, 1, 2, 3, 4},
+	}}
+	bytes, _ := json.Marshal(blocks)
+	t.Log(string(bytes))
+	blocks2 := []S1200BlockValue{}
+	json.Unmarshal(bytes, &blocks2)
+	t.Log(blocks2[0].Value)
 }

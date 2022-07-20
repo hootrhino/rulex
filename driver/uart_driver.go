@@ -70,6 +70,13 @@ func (a *uartDriver) Init(map[string]string) error {
 func (a *uartDriver) Work() error {
 	ticker := time.NewTicker(time.Duration(time.Microsecond * 400))
 	go func(ctx context.Context) {
+		select {
+		case <-ctx.Done():
+			return
+		default:
+			{
+			}
+		}
 		acc := 0
 		data := make([]byte, 1)
 		for a.state == typex.DRIVER_RUNNING {

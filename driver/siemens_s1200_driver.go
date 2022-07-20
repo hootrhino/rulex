@@ -1,7 +1,6 @@
 package driver
 
 import (
-	"encoding/binary"
 	"encoding/json"
 
 	"github.com/i4de/rulex/glogger"
@@ -55,7 +54,7 @@ func (s1200 *siemens_s1200_driver) Work() error {
 }
 
 func (s1200 *siemens_s1200_driver) State() typex.DriverState {
-	_, err := s1200.s7client.GetCPUInfo()
+	_, err := s1200.s7client.PLCGetStatus()
 	if err != nil {
 		glogger.GLogger.Error(err)
 		return typex.DRIVER_STOP
@@ -90,26 +89,33 @@ func (s1200 *siemens_s1200_driver) Read(data []byte) (int, error) {
 
 //
 // db.Address:int, db.Start:int, db.Size:int, rData[]
-// Example: 给地址为1的DB 起始1 写入4个字节: 1 2 3 4
-//          0x00 0x00 0x00 0x01 | 0x00 0x00 0x00 0x01 | 0x00 0x00 0x00 0x04 | 0x04 0x03 0x02 0x01
-// data := []byte{
-// 	0x00, 0x00, 0x00, 0x01,
-// 	0x00, 0x00, 0x00, 0x01,
-// 	0x00, 0x00, 0x00, 0x04,
-// 	0x04, 0x03, 0x02, 0x01,
-// }
-//
+// [
+//     {
+//         "tag":"V",
+//         "address":1,
+//         "start":1,
+//         "size":1,
+//         "value":"AAECAwQ="
+//     }
+// ]
 //
 func (s1200 *siemens_s1200_driver) Write(data []byte) (int, error) {
-	Address := binary.BigEndian.Uint32(data[0:4])
-	Start := binary.BigEndian.Uint32(data[4:8])
-	Size := binary.BigEndian.Uint32(data[8:12])
-	//
-	if err := s1200.s7client.AGWriteDB(int(Address), int(Start), int(Size), data[12:Size]); err != nil {
+	blocks := []S1200BlockValue{}
+	if err := json.Unmarshal(data, &blocks); err != nil {
 		return 0, err
-	} else {
-		return 0, nil
 	}
+	//
+	for _, block := range blocks {
+		if err := s1200.s7client.AGWriteDB(
+			block.Address,
+			block.Start,
+			block.Size,
+			block.Value,
+		); err != nil {
+			return 0, err
+		}
+	}
+	return 0, nil
 }
 
 func (s1200 *siemens_s1200_driver) DriverDetail() typex.DriverDetail {

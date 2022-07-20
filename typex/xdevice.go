@@ -23,7 +23,8 @@ type DeviceType string
 const (
 	TSS200V02   DeviceType = "TSS200V02"
 	RTU485_THER DeviceType = "RTU485_THER"
-	YK08_RELAY  DeviceType = "RTU485_THER"
+	YK08_RELAY  DeviceType = "YK08_RELAY"
+	S1200PLC    DeviceType = "S1200PLC"
 )
 
 // 设备元数据
@@ -66,9 +67,9 @@ type DeviceProperty struct {
 // 真实工作设备,即具体实现
 //
 type XDevice interface {
-	//  初始化
+	//  初始化 通常用来获取设备的配置
 	Init(devId string, config map[string]interface{}) error
-	// 启动
+	// 启动, 设备的工作进程
 	Start(CCTX) error
 	// 从设备里面读数据出来
 	OnRead([]byte) (int, error)
@@ -80,7 +81,7 @@ type XDevice interface {
 	Stop()
 	// 设备属性，是一系列属性描述
 	Property() []DeviceProperty
-	// 真实设备
+	// 链接指向真实设备，保存在内存里面，和SQLite里的数据是对应关系
 	Details() *Device
 	// 状态
 	SetState(DeviceState)

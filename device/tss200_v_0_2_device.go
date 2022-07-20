@@ -20,12 +20,15 @@ type tss200_v_0_2_sensor struct {
 	RuleEngine typex.RuleX
 	driver     typex.XExternalDriver
 	slaverIds  []byte
+	mainConfig modBusConfig
+	rtuConfig  rtuConfig
 }
+
 /*
 *
 * TSS200环境传感器
 *
-*/
+ */
 func NewTS200Sensor(deviceId string, e typex.RuleX) typex.XDevice {
 	tss := new(tss200_v_0_2_sensor)
 	tss.PointId = deviceId
@@ -34,8 +37,16 @@ func NewTS200Sensor(deviceId string, e typex.RuleX) typex.XDevice {
 }
 
 //  初始化
-func (tss *tss200_v_0_2_sensor) Init(devId string, config map[string]interface{}) error {
+func (tss *tss200_v_0_2_sensor) Init(devId string, configMap map[string]interface{}) error {
+	if err := utils.BindSourceConfig(configMap, &tss.mainConfig); err != nil {
+		glogger.GLogger.Error(err)
+		return err
+	}
 
+	if err := mapstructure.Decode(tss.mainConfig.Config, &tss.rtuConfig); err != nil {
+		glogger.GLogger.Error(err)
+		return err
+	}
 	return nil
 }
 
@@ -43,31 +54,21 @@ func (tss *tss200_v_0_2_sensor) Init(devId string, config map[string]interface{}
 func (tss *tss200_v_0_2_sensor) Start(cctx typex.CCTX) error {
 	tss.Ctx = cctx.Ctx
 	tss.CancelCTX = cctx.CancelCTX
-	config := tss.RuleEngine.GetDevice(tss.PointId).Config
-	var mainConfig modBusConfig
-	if err := utils.BindSourceConfig(config, &mainConfig); err != nil {
-		return err
-	}
-	var rtuConfig rtuConfig
-	if errs := mapstructure.Decode(mainConfig.Config, &rtuConfig); errs != nil {
-		glogger.GLogger.Error(errs)
-		return errs
-	}
 
 	// 串口配置固定写法
-	handler := modbus.NewRTUClientHandler(rtuConfig.Uart)
+	handler := modbus.NewRTUClientHandler(tss.rtuConfig.Uart)
 	handler.BaudRate = 4800
 	handler.DataBits = 8
 	handler.Parity = "N"
 	handler.StopBits = 1
-	handler.Timeout = time.Duration(*mainConfig.Timeout) * time.Second
+	handler.Timeout = time.Duration(*tss.mainConfig.Timeout) * time.Second
 	// handler.Logger = golog.New(os.Stdout, "485THerSource: ", glogger.GLogger.LstdFlags)
 	if err := handler.Connect(); err != nil {
 		return err
 	}
 	client := modbus.NewClient(handler)
 	tss.driver = driver.NewTSS200_v_0_2_Driver(tss.Details(), tss.RuleEngine, client)
-	tss.slaverIds = append(tss.slaverIds, mainConfig.SlaverIds...)
+	tss.slaverIds = append(tss.slaverIds, tss.mainConfig.SlaverIds...)
 	//---------------------------------------------------------------------------------
 	// Start
 	//---------------------------------------------------------------------------------
