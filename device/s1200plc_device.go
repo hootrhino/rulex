@@ -13,14 +13,14 @@ import (
 	"github.com/robinson/gos7"
 )
 
-const _4KB int = 4 * 1024
+const _4KB int = 4 * 1024 // 定义一个常量表示默认缓冲区大小
 
 type s1200plc struct {
 	typex.XStatus
 	status     typex.DeviceState
 	RuleEngine typex.RuleX
 	driver     typex.XExternalDriver
-	mainconfig S1200Config
+	mainConfig S1200Config
 	client     gos7.Client
 	block      []driver.S1200Block // PLC 的DB块
 }
@@ -39,7 +39,7 @@ func NewS1200plc(e typex.RuleX) typex.XDevice {
 //  初始化
 func (s1200 *s1200plc) Init(devId string, configMap map[string]interface{}) error {
 	s1200.PointId = devId
-	if err := utils.BindSourceConfig(configMap, &s1200.mainconfig); err != nil {
+	if err := utils.BindSourceConfig(configMap, &s1200.mainConfig); err != nil {
 		glogger.GLogger.Error(err)
 		return err
 	}
@@ -52,18 +52,18 @@ func (s1200 *s1200plc) Start(cctx typex.CCTX) error {
 	s1200.CancelCTX = cctx.CancelCTX
 	handler := gos7.NewTCPClientHandler(
 		// 127.0.0.1:8080
-		fmt.Sprintf("%s:%d", s1200.mainconfig.Host, *s1200.mainconfig.Port),
-		*s1200.mainconfig.Rack,
-		*s1200.mainconfig.Slot)
+		fmt.Sprintf("%s:%d", s1200.mainConfig.Host, *s1200.mainConfig.Port),
+		*s1200.mainConfig.Rack,
+		*s1200.mainConfig.Slot)
 	handler.Timeout = 5 * time.Second
 	if err := handler.Connect(); err != nil {
 		return err
 	}
-	handler.Timeout = time.Duration(*s1200.mainconfig.Timeout) * time.Second
-	handler.IdleTimeout = time.Duration(*s1200.mainconfig.IdleTimeout) * time.Second
+	handler.Timeout = time.Duration(*s1200.mainConfig.Timeout) * time.Second
+	handler.IdleTimeout = time.Duration(*s1200.mainConfig.IdleTimeout) * time.Second
 	s1200.client = gos7.NewClient(handler)
 	s1200.driver = driver.NewS1200Driver(s1200.Details(), s1200.RuleEngine, s1200.client, s1200.block)
-	ticker := time.NewTicker(time.Duration(*s1200.mainconfig.ReadFrequency) * time.Second)
+	ticker := time.NewTicker(time.Duration(*s1200.mainConfig.ReadFrequency) * time.Second)
 
 	go func(ctx context.Context) {
 		// 数据缓冲区,最大4KB

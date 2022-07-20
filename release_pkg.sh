@@ -80,7 +80,7 @@ build_x64android() {
 
 #------------------------------------------
 cross_compile() {
-    ARCHS=("x64windows" "x86linux" "x64linux" "arm64linux" "arm32linux" "arm64android" "x64android")
+    ARCHS=("x64windows" "x86linux" "x64linux" "arm64linux" "arm32linux")
     if [ ! -d "./_release/" ]; then
         mkdir -p ./_release/
     else
@@ -120,18 +120,6 @@ cross_compile() {
             make_zip $arch
             echo "Compile target => ["$arch"] Ok."
 
-        fi
-        if [[ "${arch}" == "arm64android" ]]; then
-            # sudo apt install gcc-arm-linux-gnueabi -y
-            build_arm64android $arch
-            make_zip $arch
-            echo "Compile target => ["$arch"] Ok."
-
-        fi
-        if [[ "${arch}" == "x64android" ]]; then
-            build_x64android $arch
-            make_zip $arch
-            echo "Compile target => ["$arch"] Ok."
         fi
     done
 }
