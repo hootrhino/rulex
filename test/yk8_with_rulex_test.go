@@ -115,27 +115,6 @@ func Test_RULEX_WITH_YK08(t *testing.T) {
 	signal.Notify(c, syscall.SIGINT, syscall.SIGABRT, syscall.SIGTERM)
 	engine := engine.NewRuleEngine(mainConfig)
 	engine.Start()
-
-	//
-	// RTU485_THER Inend
-	//
-	// YK801 := typex.NewDevice(typex.YK08_RELAY,
-	// 	"继电器控制器", "继电器控制器", "", map[string]interface{}{
-	// 		"slaverIds": []uint8{1},
-	// 		"timeout":   5,
-	// 		"frequency": 5,
-	// 		"config": map[string]interface{}{
-	// 			"uart":     "COM3",
-	// 			"baudRate": 9600,
-	// 			"dataBits": 8,
-	// 			"parity":   "N",
-	// 			"stopBits": 1,
-	// 		},
-	// 	})
-	// YK801.UUID = "YK801"
-	// if err := engine.LoadDevice(YK801); err != nil {
-	// 	t.Error("YK08_RELAY load failed:", err)
-	// }
 	//
 	// 腾讯云MQTT
 	//
@@ -143,38 +122,19 @@ func Test_RULEX_WITH_YK08(t *testing.T) {
 		typex.TENCENT_IOT_HUB,
 		"TENCENT_IOT_HUB",
 		"TENCENT_IOT_HUB", map[string]interface{}{
-			"Host":       "Y0ST19XLP1.iotcloud.tencentdevices.com",
+			"Host":       "127.0.0.1",
 			"Port":       1883,
-			"productId":  "Y0ST19XLP1",
-			"deviceName": "YK8_001",
-			"ClientId":   "Y0ST19XLP1YK8_001",
-			"Username":   "Y0ST19XLP1YK8_001;12010126;Y0YVU;1657592838",
-			"Password":   "b679f531ca4eacbd280c87a6d027cd6aba7d63c0e2f1310fd4ec6e31d2fe7163;hmacsha256",
+			"productId":  "TENCENT_IOT_HUB",
+			"deviceName": "TENCENT_IOT_HUB",
+			"ClientId":   "TENCENT_IOT_HUB",
+			"Username":   "TENCENT_IOT_HUB",
+			"Password":   "TENCENT_IOT_HUB",
 		},
 	)
 	TENCENT_IOT_INEND.UUID = "TENCENT_IOT_INEND"
 	if err := engine.LoadInEnd(TENCENT_IOT_INEND); err != nil {
 		t.Error("TENCENT_IOT_INEND load failed:", err)
 	}
-	//
-	// 透传到内部平台
-	//
-	// 	mqttOutEnd := typex.NewOutEnd(typex.MQTT_TARGET,
-	// 		"内网MQTT桥接",
-	// 		"内网MQTT桥接", map[string]interface{}{
-	// 			"Host":      "emqx.dev.inrobot.cloud",
-	// 			"Port":      1883,
-	// 			"DataTopic": "iothub/upstream/YK0801",
-	// 			"ClientId":  "YK0801",
-	// 			"Username":  "YK0801",
-	// 			"Password":  "YK0801",
-	// 		},
-	// 	)
-	// 	mqttOutEnd.UUID = "mqttOutEnd"
-	// 	if err := engine.LoadOutEnd(mqttOutEnd); err != nil {
-	// 		t.Error("mqttOutEnd load failed:", err)
-	// 	}
-	// 	// 加载一个规则
 	rule1 := typex.NewRule(engine,
 		"uuid",
 		"FROM TENCENT_IOT_INEND",
@@ -189,26 +149,10 @@ func Test_RULEX_WITH_YK08(t *testing.T) {
 			return true, data
 		end
 	}`, `function Failed(error) print("[TENCENT_IOT_INEND Failed Callback]", error) end`)
-	// 	rule2 := typex.NewRule(engine,
-	// 		"uuid",
-	// 		"数据推送至IOTHUB",
-	// 		"数据推送至IOTHUB",
-	// 		[]string{},
-	// 		[]string{YK801.UUID},
-	// 		`function Success()end`,
-	// 		`
-	// Actions = {
-	// 	function(data)
-	// 		rulexlib:log(data)
-	// 		return true, data
-	// 	end
-	// }`, `function Failed(error) print("[YK801 Failed Callback]", error) end`)
 	if err := engine.LoadRule(rule1); err != nil {
 		t.Error(err)
 	}
-	// if err := engine.LoadRule(rule2); err != nil {
-	// 	t.Error(err)
-	// }
+
 	s := <-c
 	glogger.GLogger.Warn("Received stop signal:", s)
 	engine.Stop()

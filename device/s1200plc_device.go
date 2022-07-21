@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/i4de/rulex/common"
 	"github.com/i4de/rulex/driver"
 	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
@@ -22,7 +23,7 @@ type s1200plc struct {
 	driver     typex.XExternalDriver
 	mainConfig S1200Config
 	client     gos7.Client
-	block      []driver.S1200Block // PLC 的DB块
+	block      []common.S1200Block // PLC 的DB块
 }
 
 /*

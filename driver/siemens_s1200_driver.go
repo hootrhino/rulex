@@ -3,6 +3,7 @@ package driver
 import (
 	"encoding/json"
 
+	"github.com/i4de/rulex/common"
 	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 
@@ -19,13 +20,13 @@ type siemens_s1200_driver struct {
 	s7client   gos7.Client
 	device     *typex.Device
 	RuleEngine typex.RuleX
-	dbs        []S1200Block // PLC 的DB块
+	dbs        []common.S1200Block // PLC 的DB块
 }
 
 func NewS1200Driver(d *typex.Device,
 	e typex.RuleX,
 	s7client gos7.Client,
-	dbs []S1200Block) typex.XExternalDriver {
+	dbs []common.S1200Block) typex.XExternalDriver {
 	return &siemens_s1200_driver{
 		state:      typex.DRIVER_STOP,
 		device:     d,
@@ -67,13 +68,13 @@ func (s1200 *siemens_s1200_driver) State() typex.DriverState {
 // 读: db --> dbNumber, start, size, buffer[]
 //
 func (s1200 *siemens_s1200_driver) Read(data []byte) (int, error) {
-	values := []S1200BlockValue{}
+	values := []common.S1200BlockValue{}
 	for _, db := range s1200.dbs {
 		rData := []byte{}
 		if err := s1200.s7client.AGReadDB(db.Address, db.Start, db.Size, rData); err != nil {
 			return 0, err
 		}
-		values = append(values, S1200BlockValue{
+		values = append(values, common.S1200BlockValue{
 			Tag:     db.Tag,
 			Address: db.Address,
 			Start:   db.Start,
@@ -100,7 +101,7 @@ func (s1200 *siemens_s1200_driver) Read(data []byte) (int, error) {
 // ]
 //
 func (s1200 *siemens_s1200_driver) Write(data []byte) (int, error) {
-	blocks := []S1200BlockValue{}
+	blocks := []common.S1200BlockValue{}
 	if err := json.Unmarshal(data, &blocks); err != nil {
 		return 0, err
 	}
