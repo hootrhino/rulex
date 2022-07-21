@@ -35,5 +35,6 @@ jobs:
             cd rulex
             go mod tidy
             SET GOOS=windows
-            go build -o rulex.exe main.go
+            go build
+            go.exe test -timeout 30s -run ^TestFullyRun$ github.com/i4de/rulex/test -v -count=1
 
