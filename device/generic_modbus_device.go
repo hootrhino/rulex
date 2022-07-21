@@ -2,7 +2,8 @@ package device
 
 import (
 	"context"
-	"encoding/json"
+	"errors"
+	"fmt"
 	golog "log"
 	"os"
 	"sync"
@@ -18,15 +19,18 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
+var __debug2 bool = false
+
 type generic_modbus_device struct {
 	typex.XStatus
 	status     typex.DeviceState
 	RuleEngine typex.RuleX
 	driver     typex.XExternalDriver
-	handler    *modbus.RTUClientHandler
-	slaverIds  []byte
+	rtuHandler *modbus.RTUClientHandler
+	tcpHandler *modbus.TCPClientHandler
 	mainConfig common.ModBusConfig
 	rtuConfig  common.RTUConfig
+	tcpConfig  common.TCPConfig
 }
 
 /*
@@ -34,22 +38,36 @@ type generic_modbus_device struct {
 * 温湿度传感器
 *
  */
-func NewGenericModbusDevice(deviceId string, e typex.RuleX) typex.XDevice {
+func NewGenericModbusDevice(e typex.RuleX) typex.XDevice {
 	mdev := new(generic_modbus_device)
-	mdev.PointId = deviceId
 	mdev.RuleEngine = e
 	return mdev
 }
 
 //  初始化
 func (mdev *generic_modbus_device) Init(devId string, configMap map[string]interface{}) error {
+	mdev.PointId = devId
 	if err := utils.BindSourceConfig(configMap, &mdev.mainConfig); err != nil {
 		return err
 	}
-	if errs := mapstructure.Decode(mdev.mainConfig.Config, &mdev.rtuConfig); errs != nil {
-		glogger.GLogger.Error(errs)
-		return errs
+	if (mdev.mainConfig.Mode != "RTU") || (mdev.mainConfig.Mode == "TCP") {
+		return errors.New("unsupported mode, only can be one of 'TCP' or 'RTU'")
+
 	}
+
+	if mdev.mainConfig.Mode == "TCP" {
+		if errs := mapstructure.Decode(mdev.mainConfig.Config, &mdev.tcpConfig); errs != nil {
+			glogger.GLogger.Error(errs)
+			return errs
+		}
+	}
+	if mdev.mainConfig.Mode == "RTU" {
+		if errs := mapstructure.Decode(mdev.mainConfig.Config, &mdev.rtuConfig); errs != nil {
+			glogger.GLogger.Error(errs)
+			return errs
+		}
+	}
+
 	return nil
 }
 
@@ -58,67 +76,76 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 	mdev.Ctx = cctx.Ctx
 	mdev.CancelCTX = cctx.CancelCTX
 
-	// 串口配置固定写法
-	mdev.handler = modbus.NewRTUClientHandler(mdev.rtuConfig.Uart)
-	mdev.handler.BaudRate = mdev.rtuConfig.BaudRate
-	mdev.handler.DataBits = 8
-	mdev.handler.Parity = "N"
-	mdev.handler.StopBits = 1
-	mdev.handler.Timeout = time.Duration(5) * time.Second
-	if __debug {
-		mdev.handler.Logger = golog.New(os.Stdout, "485mdevSource: ", golog.LstdFlags)
+	if mdev.mainConfig.Mode == "RTU" {
+		mdev.rtuHandler = modbus.NewRTUClientHandler(mdev.rtuConfig.Uart)
+		mdev.rtuHandler.BaudRate = mdev.rtuConfig.BaudRate
+		mdev.rtuHandler.DataBits = mdev.rtuConfig.DataBits
+		mdev.rtuHandler.Parity = mdev.rtuConfig.Parity
+		mdev.rtuHandler.StopBits = mdev.rtuConfig.StopBits
+		mdev.rtuHandler.Timeout = time.Duration(5) * time.Second
+		if __debug2 {
+			mdev.rtuHandler.Logger = golog.New(os.Stdout, "485mdevSource: ", golog.LstdFlags)
+		}
+
+		if err := mdev.rtuHandler.Connect(); err != nil {
+			return err
+		}
 	}
-	if err := mdev.handler.Connect(); err != nil {
-		return err
+	if mdev.mainConfig.Mode == "TCP" {
+		mdev.tcpHandler = modbus.NewTCPClientHandler(
+			fmt.Sprintf("%s:%v", mdev.tcpConfig.Ip, mdev.tcpConfig.Port),
+		)
+		if __debug2 {
+			mdev.rtuHandler.Logger = golog.New(os.Stdout, "485mdevSource: ", golog.LstdFlags)
+		}
+
+		if err := mdev.tcpHandler.Connect(); err != nil {
+			return err
+		}
 	}
-	client := modbus.NewClient(mdev.handler)
-	mdev.driver = driver.NewModBusRtuDriver(mdev.Details(), mdev.RuleEngine, nil, client)
-	mdev.slaverIds = append(mdev.slaverIds, mdev.mainConfig.SlaverIds...)
+	if mdev.mainConfig.Mode == "TCP" {
+		client := modbus.NewClient(mdev.tcpHandler)
+		mdev.driver = driver.NewModBusTCPDriver(mdev.Details(),
+			mdev.RuleEngine, mdev.mainConfig.Registers, mdev.tcpHandler, client)
+	}
+	if mdev.mainConfig.Mode == "RTU" {
+		client := modbus.NewClient(mdev.rtuHandler)
+		mdev.driver = driver.NewModBusRtuDriver(mdev.Details(),
+			mdev.RuleEngine, mdev.mainConfig.Registers, mdev.rtuHandler, client)
+	}
 	//---------------------------------------------------------------------------------
 	// Start
 	//---------------------------------------------------------------------------------
 	lock := sync.Mutex{}
 	mdev.status = typex.DEV_RUNNING
-	for _, slaverId := range mdev.slaverIds {
-		go func(ctx context.Context, slaverId byte,
-			rtuDriver typex.XExternalDriver,
-			handler *modbus.RTUClientHandler) {
-			ticker := time.NewTicker(time.Duration(5) * time.Second)
-			defer ticker.Stop()
-			// {"SlaveId":1,"Data":"{\"temp\":28.7,\"hum\":66.1}}
-			buffer := make([]byte, 64) //32字节数据
-			for {
-				<-ticker.C
-				select {
-				case <-ctx.Done():
-					{
-						mdev.status = typex.DEV_STOP
-						return
-					}
-				default:
-					{
-					}
+
+	go func(ctx context.Context, Driver typex.XExternalDriver) {
+		ticker := time.NewTicker(time.Duration(5) * time.Second)
+		defer ticker.Stop()
+		buffer := make([]byte, common.T_64KB) //32字节数据
+		for {
+			<-ticker.C
+			select {
+			case <-ctx.Done():
+				{
+					mdev.status = typex.DEV_STOP
+					return
 				}
-				lock.Lock()
-				handler.SlaveId = slaverId // 配置ID
-				n, err := rtuDriver.Read(buffer)
-				lock.Unlock()
-				if err != nil {
-					glogger.GLogger.Error(err)
-				} else {
-					Device := mdev.RuleEngine.GetDevice(mdev.PointId)
-					sdata := __sensor_data{}
-					json.Unmarshal(buffer[:n], &sdata)
-					bytes, _ := json.Marshal(map[string]interface{}{
-						"slaveId": handler.SlaveId,
-						"data":    sdata,
-					})
-					mdev.RuleEngine.WorkDevice(Device, string(bytes))
+			default:
+				{
 				}
 			}
+			lock.Lock()
+			n, err := Driver.Read(buffer)
+			lock.Unlock()
+			if err != nil {
+				glogger.GLogger.Error(err)
+			} else {
+				mdev.RuleEngine.WorkDevice(mdev.Details(), string(buffer[:n]))
+			}
+		}
 
-		}(mdev.Ctx, slaverId, mdev.driver, mdev.handler)
-	}
+	}(mdev.Ctx, mdev.driver)
 	return nil
 }
 
@@ -145,8 +172,11 @@ func (mdev *generic_modbus_device) Status() typex.DeviceState {
 
 // 停止设备
 func (mdev *generic_modbus_device) Stop() {
-	if mdev.handler != nil {
-		mdev.handler.Close()
+	if mdev.tcpHandler != nil {
+		mdev.tcpHandler.Close()
+	}
+	if mdev.rtuHandler != nil {
+		mdev.rtuHandler.Close()
 	}
 	mdev.CancelCTX()
 }

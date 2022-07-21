@@ -21,10 +21,11 @@ type DeviceType string
 
 // 设备类型, 后期逐步增加
 const (
-	TSS200V02   DeviceType = "TSS200V02"
-	RTU485_THER DeviceType = "RTU485_THER"
-	YK08_RELAY  DeviceType = "YK08_RELAY"
-	S1200PLC    DeviceType = "S1200PLC"
+	TSS200V02      DeviceType = "TSS200V02"
+	RTU485_THER    DeviceType = "RTU485_THER"
+	YK08_RELAY     DeviceType = "YK08_RELAY"
+	S1200PLC       DeviceType = "S1200PLC"
+	GENERIC_MODBUS DeviceType = "GENERIC_MODBUS" // 通用Modbus
 )
 
 // 设备元数据
@@ -68,7 +69,7 @@ type DeviceProperty struct {
 //
 type XDevice interface {
 	//  初始化 通常用来获取设备的配置
-	Init(devId string, config map[string]interface{}) error
+	Init(devId string, configMap map[string]interface{}) error
 	// 启动, 设备的工作进程
 	Start(CCTX) error
 	// 从设备里面读数据出来

@@ -29,7 +29,7 @@ type rtu485_ther struct {
 	rtuConfig  common.RTUConfig
 }
 
-var __debug bool = false
+var __debug1 bool = false
 
 // Example: 0x02 0x92 0xFF 0x98
 type __sensor_data struct {
@@ -42,15 +42,15 @@ type __sensor_data struct {
 * 温湿度传感器
 *
  */
-func NewRtu485Ther(deviceId string, e typex.RuleX) typex.XDevice {
+func NewRtu485Ther(e typex.RuleX) typex.XDevice {
 	ther := new(rtu485_ther)
-	ther.PointId = deviceId
 	ther.RuleEngine = e
 	return ther
 }
 
 //  初始化
 func (ther *rtu485_ther) Init(devId string, configMap map[string]interface{}) error {
+	ther.PointId = devId
 	if err := utils.BindSourceConfig(configMap, &ther.mainConfig); err != nil {
 		return err
 	}
@@ -83,7 +83,7 @@ func (ther *rtu485_ther) Start(cctx typex.CCTX) error {
 	ther.handler.Parity = "N"
 	ther.handler.StopBits = 1
 	ther.handler.Timeout = time.Duration(5) * time.Second
-	if __debug {
+	if __debug1 {
 		ther.handler.Logger = golog.New(os.Stdout, "485THerSource: ", golog.LstdFlags)
 	}
 	if err := ther.handler.Connect(); err != nil {
@@ -91,7 +91,6 @@ func (ther *rtu485_ther) Start(cctx typex.CCTX) error {
 	}
 	client := modbus.NewClient(ther.handler)
 	ther.driver = driver.NewRtu485THerDriver(ther.Details(), ther.RuleEngine, client)
-	ther.slaverIds = append(ther.slaverIds, ther.mainConfig.SlaverIds...)
 	//---------------------------------------------------------------------------------
 	// Start
 	//---------------------------------------------------------------------------------

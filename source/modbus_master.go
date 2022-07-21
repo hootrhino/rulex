@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/i4de/rulex/core"
-	"github.com/i4de/rulex/driver"
+
 	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
@@ -157,8 +157,7 @@ type tcpConfig struct {
 
 type modbusMasterSource struct {
 	typex.XStatus
-	client    modbus.Client
-	rtuDriver typex.XExternalDriver
+	client modbus.Client
 }
 
 func NewModbusMasterSource(id string, e typex.RuleX) typex.XSource {
@@ -222,7 +221,6 @@ func (m *modbusMasterSource) Start(cctx typex.CCTX) error {
 			return err
 		}
 		m.client = modbus.NewClient(handler)
-		m.rtuDriver = driver.NewModBusRtuDriver(m.Details(), m.RuleEngine, m.client)
 	} else {
 		return errors.New("no supported mode:" + mainConfig.Mode)
 	}
@@ -345,11 +343,7 @@ type dataM struct {
 *
  */
 func (m *modbusMasterSource) Driver() typex.XExternalDriver {
-	if m.client != nil {
-		return m.rtuDriver
-	} else {
-		return nil
-	}
+	return nil
 }
 
 //

@@ -15,9 +15,9 @@ import (
 * Modbus RTU
 *
  */
-type modBusRtuDriver struct {
+type modBusTCPDriver struct {
 	state      typex.DriverState
-	handler    *modbus.RTUClientHandler
+	handler    *modbus.TCPClientHandler
 	client     modbus.Client
 	In         *typex.InEnd
 	RuleEngine typex.RuleX
@@ -25,13 +25,13 @@ type modBusRtuDriver struct {
 	device     *typex.Device
 }
 
-func NewModBusRtuDriver(
+func NewModBusTCPDriver(
 	d *typex.Device,
 	e typex.RuleX,
 	Registers []common.RegisterRW,
-	handler *modbus.RTUClientHandler,
+	handler *modbus.TCPClientHandler,
 	client modbus.Client) typex.XExternalDriver {
-	return &modBusRtuDriver{
+	return &modBusTCPDriver{
 		state:      typex.DRIVER_RUNNING,
 		device:     d,
 		RuleEngine: e,
@@ -41,23 +41,23 @@ func NewModBusRtuDriver(
 	}
 
 }
-func (d *modBusRtuDriver) Test() error {
+func (d *modBusTCPDriver) Test() error {
 	return nil
 }
 
-func (d *modBusRtuDriver) Init(map[string]string) error {
+func (d *modBusTCPDriver) Init(map[string]string) error {
 	return nil
 }
 
-func (d *modBusRtuDriver) Work() error {
+func (d *modBusTCPDriver) Work() error {
 	return nil
 }
 
-func (d *modBusRtuDriver) State() typex.DriverState {
+func (d *modBusTCPDriver) State() typex.DriverState {
 	return d.state
 }
 
-func (d *modBusRtuDriver) Read(data []byte) (int, error) {
+func (d *modBusTCPDriver) Read(data []byte) (int, error) {
 	datas := map[string]common.RegisterRW{}
 	for _, r := range d.Registers {
 		d.handler.SlaveId = r.SlaverId
@@ -130,7 +130,7 @@ func (d *modBusRtuDriver) Read(data []byte) (int, error) {
 
 }
 
-func (d *modBusRtuDriver) Write(data []byte) (int, error) {
+func (d *modBusTCPDriver) Write(data []byte) (int, error) {
 	datas := []common.RegisterRW{}
 	if err := json.Unmarshal(data, &datas); err != nil {
 		return 0, err
@@ -164,7 +164,7 @@ func (d *modBusRtuDriver) Write(data []byte) (int, error) {
 	return 0, nil
 }
 
-func (d *modBusRtuDriver) DriverDetail() typex.DriverDetail {
+func (d *modBusTCPDriver) DriverDetail() typex.DriverDetail {
 	return typex.DriverDetail{
 		Name:        "ModBus RTU Driver",
 		Type:        "UART",
@@ -172,7 +172,7 @@ func (d *modBusRtuDriver) DriverDetail() typex.DriverDetail {
 	}
 }
 
-func (d *modBusRtuDriver) Stop() error {
+func (d *modBusTCPDriver) Stop() error {
 	d = nil
 	return nil
 }

@@ -62,16 +62,19 @@ func (e *RuleEngine) RemoveDevice(uuid string) {
 //
 func (e *RuleEngine) LoadDevice(deviceInfo *typex.Device) error {
 	if deviceInfo.Type == "TSS200V02" {
-		return startDevices(device.NewTS200Sensor(deviceInfo.UUID, e), deviceInfo, e)
+		return startDevices(device.NewTS200Sensor(e), deviceInfo, e)
 	}
 	if deviceInfo.Type == "YK8RELAY" {
-		return startDevices(device.NewYK8Controller(deviceInfo.UUID, e), deviceInfo, e)
+		return startDevices(device.NewYK8Controller(e), deviceInfo, e)
 	}
 	if deviceInfo.Type == "RTU485_THER" {
-		return startDevices(device.NewRtu485Ther(deviceInfo.UUID, e), deviceInfo, e)
+		return startDevices(device.NewRtu485Ther(e), deviceInfo, e)
 	}
 	if deviceInfo.Type == "S1200PLC" {
 		return startDevices(device.NewS1200plc(e), deviceInfo, e)
+	}
+	if deviceInfo.Type == "GENERIC_MODBUS" {
+		return startDevices(device.NewGenericModbusDevice(e), deviceInfo, e)
 	}
 	return fmt.Errorf("unsupported Device type:%s", deviceInfo.Type)
 

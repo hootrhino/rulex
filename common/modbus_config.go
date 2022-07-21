@@ -3,10 +3,9 @@ package common
 type ModBusConfig struct {
 	Mode      string       `json:"mode" title:"工作模式" info:"RTU/TCP"`
 	Timeout   int          `json:"timeout" validate:"required" title:"连接超时" info:""`
-	SlaverIds []byte       `json:"slaverId" validate:"required" title:"TCP端口" info:""`
 	Frequency int64        `json:"frequency" validate:"required" title:"采集频率" info:""`
 	Config    interface{}  `json:"config" validate:"required" title:"工作模式" info:""`
-	Registers []RegisterRW `json:"registerParams" validate:"required" title:"寄存器配置" info:""`
+	Registers []RegisterRW `json:"registers" validate:"required" title:"寄存器配置" info:""`
 }
 
 const (
@@ -65,7 +64,7 @@ type RegisterRW struct {
 	SlaverId byte   `json:"slaverId" validate:"required"`
 	Address  uint16 `json:"address" validate:"required"`  // Address
 	Quantity uint16 `json:"quantity" validate:"required"` // Quantity
-	Value    []byte `json:"value" validate:"required"`    // Quantity
+	Value    []byte `json:"value"`                        // Quantity
 }
 
 //

@@ -5,6 +5,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/i4de/rulex/common"
 	"github.com/i4de/rulex/driver"
 	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
@@ -20,8 +21,8 @@ type tss200_v_0_2_sensor struct {
 	RuleEngine typex.RuleX
 	driver     typex.XExternalDriver
 	slaverIds  []byte
-	mainConfig modBusConfig
-	rtuConfig  rtuConfig
+	mainConfig common.ModBusConfig
+	rtuConfig  common.RTUConfig
 }
 
 /*
@@ -29,15 +30,16 @@ type tss200_v_0_2_sensor struct {
 * TSS200环境传感器
 *
  */
-func NewTS200Sensor(deviceId string, e typex.RuleX) typex.XDevice {
+func NewTS200Sensor(e typex.RuleX) typex.XDevice {
 	tss := new(tss200_v_0_2_sensor)
-	tss.PointId = deviceId
+
 	tss.RuleEngine = e
 	return tss
 }
 
 //  初始化
 func (tss *tss200_v_0_2_sensor) Init(devId string, configMap map[string]interface{}) error {
+	tss.PointId = devId
 	if err := utils.BindSourceConfig(configMap, &tss.mainConfig); err != nil {
 		glogger.GLogger.Error(err)
 		return err
@@ -61,14 +63,13 @@ func (tss *tss200_v_0_2_sensor) Start(cctx typex.CCTX) error {
 	handler.DataBits = 8
 	handler.Parity = "N"
 	handler.StopBits = 1
-	handler.Timeout = time.Duration(*tss.mainConfig.Timeout) * time.Second
+	handler.Timeout = time.Duration(5) * time.Second
 	// handler.Logger = golog.New(os.Stdout, "485THerSource: ", glogger.GLogger.LstdFlags)
 	if err := handler.Connect(); err != nil {
 		return err
 	}
 	client := modbus.NewClient(handler)
 	tss.driver = driver.NewTSS200_v_0_2_Driver(tss.Details(), tss.RuleEngine, client)
-	tss.slaverIds = append(tss.slaverIds, tss.mainConfig.SlaverIds...)
 	//---------------------------------------------------------------------------------
 	// Start
 	//---------------------------------------------------------------------------------

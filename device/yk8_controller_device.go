@@ -5,6 +5,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/i4de/rulex/common"
 	"github.com/i4de/rulex/driver"
 	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
@@ -27,16 +28,16 @@ type YK8Controller struct {
 * 8路继电器
 *
  */
-func NewYK8Controller(deviceId string, e typex.RuleX) typex.XDevice {
+func NewYK8Controller(e typex.RuleX) typex.XDevice {
 	yk8 := new(YK8Controller)
-	yk8.PointId = deviceId
+
 	yk8.RuleEngine = e
 	return yk8
 }
 
 //  初始化
 func (yk8 *YK8Controller) Init(devId string, config map[string]interface{}) error {
-
+	yk8.PointId = devId
 	return nil
 }
 
@@ -45,11 +46,11 @@ func (yk8 *YK8Controller) Start(cctx typex.CCTX) error {
 	yk8.Ctx = cctx.Ctx
 	yk8.CancelCTX = cctx.CancelCTX
 	config := yk8.RuleEngine.GetDevice(yk8.PointId).Config
-	var mainConfig modBusConfig
+	var mainConfig common.ModBusConfig
 	if err := utils.BindSourceConfig(config, &mainConfig); err != nil {
 		return err
 	}
-	var rtuConfig rtuConfig
+	var rtuConfig common.RTUConfig
 	if errs := mapstructure.Decode(mainConfig.Config, &rtuConfig); errs != nil {
 		glogger.GLogger.Error(errs)
 		return errs
@@ -61,14 +62,13 @@ func (yk8 *YK8Controller) Start(cctx typex.CCTX) error {
 	handler.DataBits = 8
 	handler.Parity = "N"
 	handler.StopBits = 1
-	handler.Timeout = time.Duration(*mainConfig.Timeout) * time.Second
+	handler.Timeout = time.Duration(5) * time.Second
 	// handler.Logger = golog.New(os.Stdout, "485THerSource: ", glogger.GLogger.LstdFlags)
 	if err := handler.Connect(); err != nil {
 		return err
 	}
 	client := modbus.NewClient(handler)
 	yk8.driver = driver.NewYK8RelayControllerDriver(yk8.Details(), yk8.RuleEngine, client)
-	yk8.slaverIds = append(yk8.slaverIds, mainConfig.SlaverIds...)
 	//---------------------------------------------------------------------------------
 	// Start
 	//---------------------------------------------------------------------------------

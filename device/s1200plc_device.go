@@ -14,14 +14,12 @@ import (
 	"github.com/robinson/gos7"
 )
 
-const _4KB int = 4 * 1024 // 定义一个常量表示默认缓冲区大小
-
 type s1200plc struct {
 	typex.XStatus
 	status     typex.DeviceState
 	RuleEngine typex.RuleX
 	driver     typex.XExternalDriver
-	mainConfig S1200Config
+	mainConfig common.S1200Config
 	client     gos7.Client
 	block      []common.S1200Block // PLC 的DB块
 }
@@ -68,7 +66,7 @@ func (s1200 *s1200plc) Start(cctx typex.CCTX) error {
 
 	go func(ctx context.Context) {
 		// 数据缓冲区,最大4KB
-		dataBuffer := make([]byte, _4KB)
+		dataBuffer := make([]byte, common.T_4KB)
 		for {
 			<-ticker.C
 			select {
@@ -121,7 +119,7 @@ func (s1200 *s1200plc) OnRead(data []byte) (int, error) {
 // ]
 //
 func (s1200 *s1200plc) OnWrite(data []byte) (int, error) {
-	blocks := []driver.S1200BlockValue{}
+	blocks := []common.S1200BlockValue{}
 	if err := json.Unmarshal(data, &blocks); err != nil {
 		return 0, err
 	}

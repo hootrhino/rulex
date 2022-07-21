@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"errors"
 
+	"github.com/i4de/rulex/common"
 	"github.com/i4de/rulex/typex"
 
 	"github.com/goburrow/modbus"
@@ -72,14 +73,14 @@ func (yk8 *YK8RelayControllerDriver) Read(data []byte) (int, error) {
 	}
 	if len(results) == 1 {
 		yks := yk08sw{
-			Sw1: bitToBool(results[0], 0),
-			Sw2: bitToBool(results[0], 1),
-			Sw3: bitToBool(results[0], 2),
-			Sw4: bitToBool(results[0], 3),
-			Sw5: bitToBool(results[0], 4),
-			Sw6: bitToBool(results[0], 5),
-			Sw7: bitToBool(results[0], 6),
-			Sw8: bitToBool(results[0], 7),
+			Sw1: common.BitToBool(results[0], 0),
+			Sw2: common.BitToBool(results[0], 1),
+			Sw3: common.BitToBool(results[0], 2),
+			Sw4: common.BitToBool(results[0], 3),
+			Sw5: common.BitToBool(results[0], 4),
+			Sw6: common.BitToBool(results[0], 5),
+			Sw7: common.BitToBool(results[0], 6),
+			Sw8: common.BitToBool(results[0], 7),
 		}
 		bytes, _ := json.Marshal(yks)
 		copy(data, bytes)
@@ -100,23 +101,23 @@ func (yk8 *YK8RelayControllerDriver) Write(data []byte) (int, error) {
 		}
 	}
 
-	Sw1 := byteToBool(data[0])
-	Sw2 := byteToBool(data[1])
-	Sw3 := byteToBool(data[2])
-	Sw4 := byteToBool(data[3])
-	Sw5 := byteToBool(data[4])
-	Sw6 := byteToBool(data[5])
-	Sw7 := byteToBool(data[6])
-	Sw8 := byteToBool(data[7])
+	Sw1 := common.ByteToBool(data[0])
+	Sw2 := common.ByteToBool(data[1])
+	Sw3 := common.ByteToBool(data[2])
+	Sw4 := common.ByteToBool(data[3])
+	Sw5 := common.ByteToBool(data[4])
+	Sw6 := common.ByteToBool(data[5])
+	Sw7 := common.ByteToBool(data[6])
+	Sw8 := common.ByteToBool(data[7])
 	var value byte
-	setABitOnByte(&value, 0, Sw1)
-	setABitOnByte(&value, 1, Sw2)
-	setABitOnByte(&value, 2, Sw3)
-	setABitOnByte(&value, 3, Sw4)
-	setABitOnByte(&value, 4, Sw5)
-	setABitOnByte(&value, 5, Sw6)
-	setABitOnByte(&value, 6, Sw7)
-	setABitOnByte(&value, 7, Sw8)
+	common.SetABitOnByte(&value, 0, Sw1)
+	common.SetABitOnByte(&value, 1, Sw2)
+	common.SetABitOnByte(&value, 2, Sw3)
+	common.SetABitOnByte(&value, 3, Sw4)
+	common.SetABitOnByte(&value, 4, Sw5)
+	common.SetABitOnByte(&value, 5, Sw6)
+	common.SetABitOnByte(&value, 6, Sw7)
+	common.SetABitOnByte(&value, 7, Sw8)
 
 	_, err := yk8.client.WriteMultipleCoils(0, 1, []byte{value})
 	if err != nil {
