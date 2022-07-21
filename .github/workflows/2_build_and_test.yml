@@ -25,4 +25,4 @@ jobs:
             chmod 755 ./gen_proto.sh
             chmod +x ./gen_proto.sh
             make
-            go test -timeout 30s -run ^TestFullyRun$ rulex/test -v
+            go test -timeout 30s -run ^TestFullyRun$ github.com/i4de/rulex/test -v -count=1
