@@ -19,7 +19,7 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
-var __debug2 bool = false
+var __debug2 bool = true
 
 type generic_modbus_device struct {
 	typex.XStatus
@@ -31,6 +31,7 @@ type generic_modbus_device struct {
 	mainConfig common.ModBusConfig
 	rtuConfig  common.RTUConfig
 	tcpConfig  common.TCPConfig
+	locker     sync.Locker
 }
 
 /*
@@ -41,6 +42,7 @@ type generic_modbus_device struct {
 func NewGenericModbusDevice(e typex.RuleX) typex.XDevice {
 	mdev := new(generic_modbus_device)
 	mdev.RuleEngine = e
+	mdev.locker = &sync.Mutex{}
 	return mdev
 }
 
@@ -116,7 +118,6 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 	//---------------------------------------------------------------------------------
 	// Start
 	//---------------------------------------------------------------------------------
-	lock := sync.Mutex{}
 	mdev.status = typex.DEV_RUNNING
 
 	go func(ctx context.Context, Driver typex.XExternalDriver) {
@@ -135,9 +136,9 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 				{
 				}
 			}
-			lock.Lock()
+			mdev.locker.Lock()
 			n, err := Driver.Read(buffer)
-			lock.Unlock()
+			mdev.locker.Unlock()
 			if err != nil {
 				glogger.GLogger.Error(err)
 			} else {

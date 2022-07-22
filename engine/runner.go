@@ -16,7 +16,7 @@ import (
 //
 // 启动 Rulex
 //
-func RunRulex(dbPath string, iniPath string) {
+func RunRulex(iniPath string) {
 	mainConfig := core.InitGlobalConfig(iniPath)
 	glogger.StartGLogger(mainConfig.EnableConsole, core.GlobalConfig.LogPath)
 	glogger.StartLuaLogger(core.GlobalConfig.LuaLogPath)

@@ -72,7 +72,7 @@ func (d *modBusTCPDriver) Read(data []byte) (int, error) {
 				SlaverId: r.SlaverId,
 				Address:  r.Address,
 				Quantity: r.Quantity,
-				Value:    results,
+				Value:    string(results),
 			}
 			datas[r.Tag] = value
 		}
@@ -87,7 +87,7 @@ func (d *modBusTCPDriver) Read(data []byte) (int, error) {
 				SlaverId: r.SlaverId,
 				Address:  r.Address,
 				Quantity: r.Quantity,
-				Value:    (results),
+				Value:    string(results),
 			}
 			datas[r.Tag] = value
 
@@ -103,7 +103,7 @@ func (d *modBusTCPDriver) Read(data []byte) (int, error) {
 				SlaverId: r.SlaverId,
 				Address:  r.Address,
 				Quantity: r.Quantity,
-				Value:    (results),
+				Value:    string(results),
 			}
 			datas[r.Tag] = value
 		}
@@ -118,7 +118,7 @@ func (d *modBusTCPDriver) Read(data []byte) (int, error) {
 				SlaverId: r.SlaverId,
 				Address:  r.Address,
 				Quantity: r.Quantity,
-				Value:    (results),
+				Value:    string(results),
 			}
 			datas[r.Tag] = value
 		}
@@ -137,7 +137,7 @@ func (d *modBusTCPDriver) Write(data []byte) (int, error) {
 	}
 	for _, r := range d.Registers {
 		if r.Function == common.WRITE_SINGLE_COIL {
-			_, err := d.client.WriteSingleCoil(r.Address, binary.BigEndian.Uint16(r.Value[0:2]))
+			_, err := d.client.WriteSingleCoil(r.Address, binary.BigEndian.Uint16([]byte(r.Value)[0:2]))
 			if err != nil {
 				return 0, err
 			}
@@ -149,13 +149,13 @@ func (d *modBusTCPDriver) Write(data []byte) (int, error) {
 			}
 		}
 		if r.Function == common.WRITE_SINGLE_HOLDING_REGISTER {
-			_, err := d.client.WriteSingleRegister(r.Address, binary.BigEndian.Uint16(r.Value[0:2]))
+			_, err := d.client.WriteSingleRegister(r.Address, binary.BigEndian.Uint16([]byte(r.Value)[0:2]))
 			if err != nil {
 				return 0, err
 			}
 		}
 		if r.Function == common.WRITE_MULTIPLE_HOLDING_REGISTERS {
-			_, err := d.client.WriteMultipleRegisters(r.Address, r.Quantity, r.Value)
+			_, err := d.client.WriteMultipleRegisters(r.Address, r.Quantity, []byte(r.Value))
 			if err != nil {
 				return 0, err
 			}

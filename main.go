@@ -43,7 +43,7 @@ func main() {
 				},
 				Action: func(c *cli.Context) error {
 					utils.ShowBanner()
-					engine.RunRulex(c.String("db"), c.String("config"))
+					engine.RunRulex(c.String("config"))
 					glogger.GLogger.Info("Run rulex successfully.")
 					return nil
 				},
@@ -58,7 +58,7 @@ func main() {
 						Usage: "Rulex version",
 					},
 				},
-				Action: func(c *cli.Context) error {
+				Action: func(*cli.Context) error {
 					version := fmt.Sprintf("[%v-%v-%v]", runtime.GOOS, runtime.GOARCH, typex.DefaultVersion.Version)
 					fmt.Println("|> Current Version is: " + version)
 					return nil

@@ -64,7 +64,7 @@ type RegisterRW struct {
 	SlaverId byte   `json:"slaverId" validate:"required"`
 	Address  uint16 `json:"address" validate:"required"`  // Address
 	Quantity uint16 `json:"quantity" validate:"required"` // Quantity
-	Value    []byte `json:"value"`                        // Quantity
+	Value    string `json:"value"`                        // Quantity
 }
 
 //

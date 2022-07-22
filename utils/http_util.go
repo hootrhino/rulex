@@ -10,18 +10,20 @@ import (
 	"github.com/i4de/rulex/glogger"
 )
 
-//
-//
-//
-
-func Post(client http.Client, data interface{}, api string, headers map[string]string) (string, error) {
+/*
+*
+* HTTP POST
+*
+ */
+func Post(client http.Client, data interface{},
+	url string, headers map[string]string) (string, error) {
 	bites, errs1 := json.Marshal(data)
 	if errs1 != nil {
 		glogger.GLogger.Error(errs1)
 		return "", errs1
 	}
 	body := strings.NewReader(string(bites))
-	request, _ := http.NewRequest("POST", api, body)
+	request, _ := http.NewRequest("POST", url, body)
 	request.Header.Set("Content-Type", "application/json")
 	for k, v := range headers {
 		request.Header.Set(k, v)
@@ -44,4 +46,31 @@ func Post(client http.Client, data interface{}, api string, headers map[string]s
 		return "", err3
 	}
 	return string(bytes1), nil
+}
+
+/*
+*
+* HTTP GET
+*
+ */
+func Get(client http.Client, url string) string {
+	var err error
+	request, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		glogger.GLogger.Error(err)
+		return ""
+	}
+
+	response, err := client.Do(request)
+	if err != nil {
+		glogger.GLogger.Error(err)
+		return ""
+	}
+	defer response.Body.Close()
+	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		glogger.GLogger.Error(err)
+		return ""
+	}
+	return string(body)
 }

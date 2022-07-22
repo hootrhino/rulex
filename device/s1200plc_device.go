@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/i4de/rulex/common"
@@ -22,6 +23,7 @@ type s1200plc struct {
 	mainConfig common.S1200Config
 	client     gos7.Client
 	block      []common.S1200Block // PLC 的DB块
+	lock       sync.Mutex
 }
 
 /*
@@ -32,6 +34,7 @@ type s1200plc struct {
 func NewS1200plc(e typex.RuleX) typex.XDevice {
 	s1200 := new(s1200plc)
 	s1200.RuleEngine = e
+	s1200.lock = sync.Mutex{}
 	return s1200
 }
 
@@ -82,7 +85,9 @@ func (s1200 *s1200plc) Start(cctx typex.CCTX) error {
 			if s1200.driver == nil {
 				return
 			}
+			s1200.lock.Lock()
 			n, err := s1200.driver.Read(dataBuffer)
+			s1200.lock.Unlock()
 			if err != nil {
 				glogger.GLogger.Error(err)
 				return
