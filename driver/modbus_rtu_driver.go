@@ -165,9 +165,9 @@ func (d *modBusRtuDriver) Write(data []byte) (int, error) {
 
 func (d *modBusRtuDriver) DriverDetail() typex.DriverDetail {
 	return typex.DriverDetail{
-		Name:        "ModBus RTU Driver",
+		Name:        "Generic ModBus RTU Driver",
 		Type:        "UART",
-		Description: "ModBus RTU Driver",
+		Description: "Generic ModBus RTU Driver",
 	}
 }
 

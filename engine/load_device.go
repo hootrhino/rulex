@@ -50,8 +50,10 @@ func (e *RuleEngine) AllDevices() *sync.Map {
 //
 func (e *RuleEngine) RemoveDevice(uuid string) {
 	if dev := e.GetDevice(uuid); dev != nil {
+		glogger.GLogger.Infof("Device [%v] ready to stop", uuid)
 		dev.Device.Stop()
-		e.OutEnds.Delete(uuid)
+		glogger.GLogger.Infof("Device [%v] has been stopped", uuid)
+		e.Devices.Delete(uuid)
 		dev = nil
 		glogger.GLogger.Infof("Device [%v] has been deleted", uuid)
 	}
