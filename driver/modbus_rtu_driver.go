@@ -172,6 +172,7 @@ func (d *modBusRtuDriver) DriverDetail() typex.DriverDetail {
 }
 
 func (d *modBusRtuDriver) Stop() error {
+	d.handler.Close()
 	d = nil
 	return nil
 }

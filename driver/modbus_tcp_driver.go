@@ -172,6 +172,7 @@ func (d *modBusTCPDriver) DriverDetail() typex.DriverDetail {
 }
 
 func (d *modBusTCPDriver) Stop() error {
+	d.handler.Close()
 	d = nil
 	return nil
 }
