@@ -164,7 +164,7 @@ func (hh *HttpApiServer) LoadNewestDevice(uuid string) error {
 	}
 	dev := typex.NewDevice(typex.DeviceType(mDevice.Type), mDevice.Name, mDevice.Description, mDevice.ActionScript, config)
 	// Important !!!!!!!!
-	dev.UUID = mDevice.UUID
+	dev.UUID = mDevice.UUID // 本质上是配置和内存的数据映射起来
 	if err := hh.ruleEngine.LoadDevice(dev); err != nil {
 		return err
 	} else {

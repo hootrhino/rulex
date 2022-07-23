@@ -120,7 +120,7 @@ func UpdateDevice(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 		c.JSON(200, Error("设备不存在"))
 		return
 	}
-
+	// 所有的更新都先停止资源,然后再加载
 	Device.Device.Stop()
 	if err := hs.UpdateDevice(Device.UUID, &MDevice{
 		UUID:        form.UUID,
