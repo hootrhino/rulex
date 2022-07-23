@@ -19,7 +19,6 @@ type modBusRtuDriver struct {
 	state      typex.DriverState
 	handler    *modbus.RTUClientHandler
 	client     modbus.Client
-	In         *typex.InEnd
 	RuleEngine typex.RuleX
 	Registers  []common.RegisterRW
 	device     *typex.Device

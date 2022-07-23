@@ -19,7 +19,6 @@ type modBusTCPDriver struct {
 	state      typex.DriverState
 	handler    *modbus.TCPClientHandler
 	client     modbus.Client
-	In         *typex.InEnd
 	RuleEngine typex.RuleX
 	Registers  []common.RegisterRW
 	device     *typex.Device

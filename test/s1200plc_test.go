@@ -7,9 +7,8 @@ import (
 	"syscall"
 	"testing"
 
+	"github.com/i4de/rulex/common"
 	"github.com/i4de/rulex/core"
-	"github.com/i4de/rulex/device"
-	"github.com/i4de/rulex/driver"
 	"github.com/i4de/rulex/engine"
 	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
@@ -40,7 +39,7 @@ func Test_gen_config(t *testing.T) {
 	Timeout := 5
 	IdleTimeout := 5
 	ReadFrequency := 5
-	c := device.S1200Config{
+	c := common.S1200Config{
 		Host:          "127.0.0.1",
 		Port:          &port,
 		Rack:          &Rack,
@@ -49,7 +48,7 @@ func Test_gen_config(t *testing.T) {
 		Timeout:       &Timeout,
 		IdleTimeout:   &IdleTimeout,
 		ReadFrequency: &ReadFrequency,
-		Blocks: []driver.S1200Block{
+		Blocks: []common.S1200Block{
 			{
 				Tag:     "V1",
 				Address: 1,
@@ -81,7 +80,7 @@ func Test_parse_config(t *testing.T) {
 			},
 		},
 	}
-	configMain := device.S1200Config{}
+	configMain := common.S1200Config{}
 	configBytes, err0 := json.Marshal(&config)
 	if err0 != nil {
 		t.Fatal(err0)

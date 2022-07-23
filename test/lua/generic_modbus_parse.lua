@@ -29,14 +29,22 @@ end
 -- Actions
 Actions = {function(data)
     local jt = rulexlib:J2T(data)
-    for k, value in pairs(jt) do
-        local dt = rulexlib:MB('<tb:16 vb:16', value['value'], false)
-        print(dt)
-        local hv = rulexlib:B2I64(1, rulexlib:BS2B(dt['tb']))
-        print(hv)
-        local tv = rulexlib:B2I64(1, rulexlib:BS2B(dt['vb']))
-        print(tv)
-        print(k, hv, tv)
+    for k, v in pairs(jt) do
+        local ht = rulexlib:MB('>hv:16 tv:16', v['value'], false)
+        print(k, "Raw value:", ht['hv'], ht['tv'])
+        local humi = rulexlib:B2I64('>', rulexlib:BS2B(ht['hv']))
+        local temp = rulexlib:B2I64('>', rulexlib:BS2B(ht['tv']))
+        local ts = rulexlib:TsUnixNano()
+        local jsont = {
+            method = 'report',
+            clientToken = ts,
+            timestamp = ts,
+            params = {
+                temp = temp,
+                humi = humi
+            }
+        }
+        print(k, "Parsed value:", rulexlib:T2J(jsont))
     end
     return true, data
 end}

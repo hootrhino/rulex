@@ -52,11 +52,9 @@ func (mdev *generic_modbus_device) Init(devId string, configMap map[string]inter
 	if err := utils.BindSourceConfig(configMap, &mdev.mainConfig); err != nil {
 		return err
 	}
-	if (mdev.mainConfig.Mode != "RTU") || (mdev.mainConfig.Mode == "TCP") {
+	if !((mdev.mainConfig.Mode == "RTU") || (mdev.mainConfig.Mode == "TCP")) {
 		return errors.New("unsupported mode, only can be one of 'TCP' or 'RTU'")
-
 	}
-
 	if mdev.mainConfig.Mode == "TCP" {
 		if errs := mapstructure.Decode(mdev.mainConfig.Config, &mdev.tcpConfig); errs != nil {
 			glogger.GLogger.Error(errs)
@@ -84,7 +82,7 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 		mdev.rtuHandler.DataBits = mdev.rtuConfig.DataBits
 		mdev.rtuHandler.Parity = mdev.rtuConfig.Parity
 		mdev.rtuHandler.StopBits = mdev.rtuConfig.StopBits
-		mdev.rtuHandler.Timeout = time.Duration(5) * time.Second
+		// mdev.rtuHandler.Timeout = time.Duration(5) * time.Second
 		if __debug2 {
 			mdev.rtuHandler.Logger = golog.New(os.Stdout, "485mdevSource: ", golog.LstdFlags)
 		}
@@ -92,28 +90,24 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 		if err := mdev.rtuHandler.Connect(); err != nil {
 			return err
 		}
+		client := modbus.NewClient(mdev.rtuHandler)
+		mdev.driver = driver.NewModBusRtuDriver(mdev.Details(),
+			mdev.RuleEngine, mdev.mainConfig.Registers, mdev.rtuHandler, client)
 	}
 	if mdev.mainConfig.Mode == "TCP" {
 		mdev.tcpHandler = modbus.NewTCPClientHandler(
 			fmt.Sprintf("%s:%v", mdev.tcpConfig.Ip, mdev.tcpConfig.Port),
 		)
 		if __debug2 {
-			mdev.rtuHandler.Logger = golog.New(os.Stdout, "485mdevSource: ", golog.LstdFlags)
+			mdev.tcpHandler.Logger = golog.New(os.Stdout, "485mdevSource: ", golog.LstdFlags)
 		}
 
 		if err := mdev.tcpHandler.Connect(); err != nil {
 			return err
 		}
-	}
-	if mdev.mainConfig.Mode == "TCP" {
 		client := modbus.NewClient(mdev.tcpHandler)
 		mdev.driver = driver.NewModBusTCPDriver(mdev.Details(),
 			mdev.RuleEngine, mdev.mainConfig.Registers, mdev.tcpHandler, client)
-	}
-	if mdev.mainConfig.Mode == "RTU" {
-		client := modbus.NewClient(mdev.rtuHandler)
-		mdev.driver = driver.NewModBusRtuDriver(mdev.Details(),
-			mdev.RuleEngine, mdev.mainConfig.Registers, mdev.rtuHandler, client)
 	}
 	//---------------------------------------------------------------------------------
 	// Start
