@@ -29,7 +29,7 @@ arm32:
 	GOARCH=arm
 	GOOS=linux
 	CGO_ENABLED=1
-	go build -ldflags "-s -w" -o ${APP} -ldflags "-linkmode external -extldflags -static" main.go
+	go build -o ${APP} -ldflags "-s -w -linkmode external -extldflags -static" main.go
 
 .PHONY: run
 run:

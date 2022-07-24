@@ -8,29 +8,15 @@ create_pkg() {
     VERSION=$(git describe --tags --always --abbrev=0)
     echo "Create package: ${rulex-$1-${VERSION}}"
     if [ "$1" == "x64windows" ]; then
-        cd rulex-cli
-        go get
-        CGO_ENABLED=1 GOOS=windows GOARCH=amd64 go build -v -o rulex-cli.exe main.go
-        cd ../
-        cp ./rulex-cli/rulex-cli.exe ./
         zip -r _release/rulex-$1-${VERSION}.zip \
             ./rulex-$1.exe \
-            ./rulex-cli.exe \
             ./conf/rulex.ini
-        rm -rf ./rulex-cli.exe
         rm -rf ./rulex-$1.exe
     else
-        cd rulex-cli
-        go get
-        go build -v -o rulex-cli main.go
-        cd ../
-        cp ./rulex-cli/rulex-cli ./
         zip -r _release/rulex-$1-${VERSION}.zip \
             ./rulex-$1 \
-            ./rulex-cli \
             ./script/crulex.sh \
             ./conf/rulex.ini
-        rm -rf ./rulex-cli
         rm -rf ./rulex-$1
     fi
 
@@ -68,14 +54,6 @@ build_arm64linux() {
 build_arm32linux() {
     CGO_ENABLED=1 GOARM=7 GOOS=linux GOARCH=arm CC=arm-linux-gnueabi-gcc \
         go build -ldflags "-s -w" -o rulex-$1 -ldflags "-linkmode external -extldflags -static" main.go
-}
-build_arm64android() {
-    CGO_ENABLED=1 GOOS=linux GOARCH=arm64 CC=aarch64-linux-gnu-gcc \
-        go build -ldflags "-s -w" -o rulex-$1 main.go
-}
-build_x64android() {
-    CGO_ENABLED=1 GOOS=linux GOARCH=amd64 \
-        go build -ldflags "-s -w" -o rulex-$1 main.go
 }
 
 #------------------------------------------
@@ -123,12 +101,7 @@ cross_compile() {
         fi
     done
 }
-#
-#
-#
-build_rulex_cli() {
-    git clone ${RESPOSITORY}/rulex-cli.git
-}
+
 #
 # fetch dashboard
 #
@@ -187,7 +160,6 @@ check_cmd
 init_env
 cp -r $(ls | egrep -v '^_build$') ./_build/
 cd ./_build/
-build_rulex_cli
 fetch_dashboard
 cross_compile
 gen_changelog

@@ -23,4 +23,4 @@ jobs:
           chmod 755 ./gen_proto.sh
           chmod +x ./gen_proto.sh
           make
-          CGO_ENABLED=1 GOARM=7 GOOS=linux GOARCH=arm CC=arm-linux-gnueabi-gcc go build -ldflags "-s -w" -o rulex -ldflags "-linkmode external -extldflags -static" main.go
+          CGO_ENABLED=1 GOARM=7 GOOS=linux GOARCH=arm CC=arm-linux-gnueabi-gcc go build -ldflags "-s -w -linkmode external -extldflags -static" main.go
