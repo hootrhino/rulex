@@ -2,6 +2,8 @@ package device
 
 import (
 	"context"
+	golog "log"
+	"os"
 	"sync"
 	"time"
 
@@ -15,12 +17,17 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
+var __debug4 bool = true
+
 type YK8Controller struct {
 	typex.XStatus
 	status     typex.DeviceState
 	RuleEngine typex.RuleX
 	driver     typex.XExternalDriver
-	slaverIds  []byte
+	rtuHandler *modbus.RTUClientHandler
+	mainConfig common.ModBusConfig
+	rtuConfig  common.RTUConfig
+	locker     sync.Locker
 }
 
 /*
@@ -30,14 +37,23 @@ type YK8Controller struct {
  */
 func NewYK8Controller(e typex.RuleX) typex.XDevice {
 	yk8 := new(YK8Controller)
-
+	yk8.locker = &sync.Mutex{}
 	yk8.RuleEngine = e
 	return yk8
 }
 
 //  初始化
-func (yk8 *YK8Controller) Init(devId string, config map[string]interface{}) error {
+func (yk8 *YK8Controller) Init(devId string, configMap map[string]interface{}) error {
 	yk8.PointId = devId
+	if err := utils.BindSourceConfig(configMap, &yk8.mainConfig); err != nil {
+		glogger.GLogger.Error(err)
+		return err
+	}
+
+	if errs := mapstructure.Decode(yk8.mainConfig.Config, &yk8.rtuConfig); errs != nil {
+		glogger.GLogger.Error(errs)
+		return errs
+	}
 	return nil
 }
 
@@ -45,66 +61,57 @@ func (yk8 *YK8Controller) Init(devId string, config map[string]interface{}) erro
 func (yk8 *YK8Controller) Start(cctx typex.CCTX) error {
 	yk8.Ctx = cctx.Ctx
 	yk8.CancelCTX = cctx.CancelCTX
-	config := yk8.RuleEngine.GetDevice(yk8.PointId).Config
-	var mainConfig common.ModBusConfig
-	if err := utils.BindSourceConfig(config, &mainConfig); err != nil {
-		return err
-	}
-	var rtuConfig common.RTUConfig
-	if errs := mapstructure.Decode(mainConfig.Config, &rtuConfig); errs != nil {
-		glogger.GLogger.Error(errs)
-		return errs
-	}
 
 	// 串口配置固定写法
-	handler := modbus.NewRTUClientHandler(rtuConfig.Uart)
-	handler.BaudRate = 9600
-	handler.DataBits = 8
-	handler.Parity = "N"
-	handler.StopBits = 1
-	handler.Timeout = time.Duration(5) * time.Second
-	// handler.Logger = golog.New(os.Stdout, "485THerSource: ", glogger.GLogger.LstdFlags)
-	if err := handler.Connect(); err != nil {
+	// 下面的参数是传感器固定写法
+	yk8.rtuHandler = modbus.NewRTUClientHandler(yk8.rtuConfig.Uart)
+	yk8.rtuHandler.BaudRate = yk8.rtuConfig.BaudRate
+	yk8.rtuHandler.DataBits = yk8.rtuConfig.DataBits
+	yk8.rtuHandler.Parity = yk8.rtuConfig.Parity
+	yk8.rtuHandler.StopBits = yk8.rtuConfig.StopBits
+	yk8.rtuHandler.Timeout = time.Duration(yk8.mainConfig.Frequency) * time.Second
+	if __debug4 {
+		yk8.rtuHandler.Logger = golog.New(os.Stdout, "YK8-DEVICE: ", golog.LstdFlags)
+	}
+
+	if err := yk8.rtuHandler.Connect(); err != nil {
 		return err
 	}
-	client := modbus.NewClient(handler)
-	yk8.driver = driver.NewYK8RelayControllerDriver(yk8.Details(), yk8.RuleEngine, client)
 	//---------------------------------------------------------------------------------
 	// Start
 	//---------------------------------------------------------------------------------
+	client := modbus.NewClient(yk8.rtuHandler)
+	yk8.driver = driver.NewYK8RelayControllerDriver(yk8.Details(),
+		yk8.RuleEngine, yk8.mainConfig.Registers, yk8.rtuHandler, client)
 	yk8.status = typex.DEV_RUNNING
-	lock := sync.Mutex{}
-	for _, slaverId := range yk8.slaverIds {
-		go func(ctx context.Context, slaverId byte, rtuDriver typex.XExternalDriver, handler *modbus.RTUClientHandler) {
-			ticker := time.NewTicker(time.Duration(5) * time.Second)
-			defer ticker.Stop()
-			buffer := make([]byte, 128) //128字节数据
-			for {
-				<-ticker.C
-				select {
-				case <-ctx.Done():
-					{
-						yk8.status = typex.DEV_STOP
-						return
-					}
-				default:
-					{
-					}
+
+	go func(ctx context.Context, Driver typex.XExternalDriver) {
+		ticker := time.NewTicker(time.Duration(yk8.mainConfig.Frequency) * time.Second)
+		defer ticker.Stop()
+		buffer := make([]byte, common.T_64KB)
+		for {
+			<-ticker.C
+			select {
+			case <-ctx.Done():
+				{
+					yk8.status = typex.DEV_STOP
+					return
 				}
-				lock.Lock()
-				handler.SlaveId = slaverId // 配置ID
-				n, err := rtuDriver.Read(buffer)
-				lock.Unlock()
-				if err != nil {
-					glogger.GLogger.Error(err)
-				} else {
-					td := yk8.RuleEngine.GetDevice(yk8.PointId)
-					yk8.RuleEngine.WorkDevice(td, string(buffer[:n]))
+			default:
+				{
 				}
 			}
+			yk8.locker.Lock()
+			n, err := Driver.Read(buffer)
+			yk8.locker.Unlock()
+			if err != nil {
+				glogger.GLogger.Error(err)
+			} else {
+				yk8.RuleEngine.WorkDevice(yk8.Details(), string(buffer[:n]))
+			}
+		}
 
-		}(yk8.Ctx, slaverId, yk8.driver, handler)
-	}
+	}(yk8.Ctx, yk8.driver)
 	return nil
 }
 
@@ -131,6 +138,9 @@ func (yk8 *YK8Controller) Status() typex.DeviceState {
 
 // 停止设备
 func (yk8 *YK8Controller) Stop() {
+	if yk8.rtuHandler != nil {
+		yk8.rtuHandler.Close()
+	}
 	yk8.CancelCTX()
 }
 

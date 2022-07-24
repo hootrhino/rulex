@@ -2,7 +2,6 @@ package device
 
 import (
 	"context"
-	"encoding/json"
 	golog "log"
 	"os"
 	"sync"
@@ -23,10 +22,10 @@ type rtu485_ther struct {
 	status     typex.DeviceState
 	RuleEngine typex.RuleX
 	driver     typex.XExternalDriver
-	handler    *modbus.RTUClientHandler
-	slaverIds  []byte
+	rtuHandler *modbus.RTUClientHandler
 	mainConfig common.ModBusConfig
 	rtuConfig  common.RTUConfig
+	locker     sync.Locker
 }
 
 var __debug1 bool = false
@@ -65,77 +64,54 @@ func (ther *rtu485_ther) Init(devId string, configMap map[string]interface{}) er
 func (ther *rtu485_ther) Start(cctx typex.CCTX) error {
 	ther.Ctx = cctx.Ctx
 	ther.CancelCTX = cctx.CancelCTX
-	config := ther.RuleEngine.GetDevice(ther.PointId).Config
-	var mainConfig common.ModBusConfig
-	if err := utils.BindSourceConfig(config, &mainConfig); err != nil {
-		return err
-	}
-	var rtuConfig common.RTUConfig
-	if errs := mapstructure.Decode(mainConfig.Config, &rtuConfig); errs != nil {
-		glogger.GLogger.Error(errs)
-		return errs
-	}
-
+	//
 	// 串口配置固定写法
-	ther.handler = modbus.NewRTUClientHandler(rtuConfig.Uart)
-	ther.handler.BaudRate = 4800
-	ther.handler.DataBits = 8
-	ther.handler.Parity = "N"
-	ther.handler.StopBits = 1
-	ther.handler.Timeout = time.Duration(5) * time.Second
+	ther.rtuHandler = modbus.NewRTUClientHandler(ther.rtuConfig.Uart)
+	ther.rtuHandler.BaudRate = ther.rtuConfig.BaudRate
+	ther.rtuHandler.DataBits = ther.rtuConfig.DataBits
+	ther.rtuHandler.Parity = ther.rtuConfig.Parity
+	ther.rtuHandler.StopBits = ther.rtuConfig.StopBits
+	ther.rtuHandler.Timeout = time.Duration(ther.mainConfig.Frequency) * time.Second
 	if __debug1 {
-		ther.handler.Logger = golog.New(os.Stdout, "485THerSource: ", golog.LstdFlags)
+		ther.rtuHandler.Logger = golog.New(os.Stdout, "485-TEMP-HUMI-DEVICE: ", golog.LstdFlags)
 	}
-	if err := ther.handler.Connect(); err != nil {
+	if err := ther.rtuHandler.Connect(); err != nil {
 		return err
 	}
-	client := modbus.NewClient(ther.handler)
-	ther.driver = driver.NewRtu485THerDriver(ther.Details(), ther.RuleEngine, client)
+	client := modbus.NewClient(ther.rtuHandler)
+	ther.driver = driver.NewRtu485THerDriver(ther.Details(),
+		ther.RuleEngine, ther.mainConfig.Registers, ther.rtuHandler, client)
 	//---------------------------------------------------------------------------------
 	// Start
 	//---------------------------------------------------------------------------------
-	lock := sync.Mutex{}
 	ther.status = typex.DEV_RUNNING
-	for _, slaverId := range ther.slaverIds {
-		go func(ctx context.Context, slaverId byte,
-			rtuDriver typex.XExternalDriver,
-			handler *modbus.RTUClientHandler) {
-			ticker := time.NewTicker(time.Duration(5) * time.Second)
-			defer ticker.Stop()
-			// {"SlaveId":1,"Data":"{\"temp\":28.7,\"hum\":66.1}}
-			buffer := make([]byte, 64) //32字节数据
-			for {
-				<-ticker.C
-				select {
-				case <-ctx.Done():
-					{
-						ther.status = typex.DEV_STOP
-						return
-					}
-				default:
-					{
-					}
+	go func(ctx context.Context, Driver typex.XExternalDriver) {
+		ticker := time.NewTicker(time.Duration(ther.mainConfig.Frequency) * time.Second)
+		defer ticker.Stop()
+		buffer := make([]byte, common.T_64KB)
+		for {
+			<-ticker.C
+			select {
+			case <-ctx.Done():
+				{
+					ther.status = typex.DEV_STOP
+					return
 				}
-				lock.Lock()
-				handler.SlaveId = slaverId // 配置ID
-				n, err := rtuDriver.Read(buffer)
-				lock.Unlock()
-				if err != nil {
-					glogger.GLogger.Error(err)
-				} else {
-					Device := ther.RuleEngine.GetDevice(ther.PointId)
-					sdata := __sensor_data{}
-					json.Unmarshal(buffer[:n], &sdata)
-					bytes, _ := json.Marshal(map[string]interface{}{
-						"slaveId": handler.SlaveId,
-						"data":    sdata,
-					})
-					ther.RuleEngine.WorkDevice(Device, string(bytes))
+			default:
+				{
 				}
 			}
+			ther.locker.Lock()
+			n, err := Driver.Read(buffer)
+			ther.locker.Unlock()
+			if err != nil {
+				glogger.GLogger.Error(err)
+			} else {
+				ther.RuleEngine.WorkDevice(ther.Details(), string(buffer[:n]))
+			}
+		}
 
-		}(ther.Ctx, slaverId, ther.driver, ther.handler)
-	}
+	}(ther.Ctx, ther.driver)
 	return nil
 }
 
@@ -162,8 +138,8 @@ func (ther *rtu485_ther) Status() typex.DeviceState {
 
 // 停止设备
 func (ther *rtu485_ther) Stop() {
-	if ther.handler != nil {
-		ther.handler.Close()
+	if ther.rtuHandler != nil {
+		ther.rtuHandler.Close()
 	}
 	ther.CancelCTX()
 }

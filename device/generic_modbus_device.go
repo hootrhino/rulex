@@ -21,6 +21,11 @@ import (
 
 var __debug2 bool = true
 
+/*
+*
+* 这是个通用Modbus采集器, 主要用来在通用场景下采集数据，因此需要配合规则引擎来使用
+*
+ */
 type generic_modbus_device struct {
 	typex.XStatus
 	status     typex.DeviceState
@@ -82,7 +87,7 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 		mdev.rtuHandler.DataBits = mdev.rtuConfig.DataBits
 		mdev.rtuHandler.Parity = mdev.rtuConfig.Parity
 		mdev.rtuHandler.StopBits = mdev.rtuConfig.StopBits
-		// mdev.rtuHandler.Timeout = time.Duration(5) * time.Second
+		mdev.rtuHandler.Timeout = time.Duration(mdev.mainConfig.Frequency) * time.Second
 		if __debug2 {
 			mdev.rtuHandler.Logger = golog.New(os.Stdout, "485mdevSource: ", golog.LstdFlags)
 		}
@@ -117,7 +122,7 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 	go func(ctx context.Context, Driver typex.XExternalDriver) {
 		ticker := time.NewTicker(time.Duration(5) * time.Second)
 		defer ticker.Stop()
-		buffer := make([]byte, common.T_64KB) //32字节数据
+		buffer := make([]byte, common.T_64KB)
 		for {
 			<-ticker.C
 			select {

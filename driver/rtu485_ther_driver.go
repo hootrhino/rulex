@@ -7,6 +7,7 @@ package driver
 import (
 	"encoding/json"
 
+	"github.com/i4de/rulex/common"
 	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
@@ -16,8 +17,8 @@ import (
 
 // Example: 0x02 0x92 0xFF 0x98
 type sensor_data struct {
-	TEMP float32 `json:"temp"` //系数: 0.1
-	HUM  float32 `json:"hum"`  //系数: 0.1
+	Temperature float32 `json:"t"` //系数: 0.1
+	Humidity    float32 `json:"h"` //系数: 0.1
 }
 
 // 协议：UART：485 baud=4800 无校验 数据位1 停止位1
@@ -33,17 +34,22 @@ type sensor_data struct {
 //
 type rtu485_THer_Driver struct {
 	state      typex.DriverState
+	handler    *modbus.RTUClientHandler
 	client     modbus.Client
-	device     *typex.Device
 	RuleEngine typex.RuleX
+	Registers  []common.RegisterRW
+	device     *typex.Device
 }
 
 func NewRtu485THerDriver(d *typex.Device, e typex.RuleX,
+	registers []common.RegisterRW,
+	handler *modbus.RTUClientHandler,
 	client modbus.Client) typex.XExternalDriver {
 	return &rtu485_THer_Driver{
 		state:      typex.DRIVER_STOP,
 		device:     d,
 		RuleEngine: e,
+		handler:    handler,
 		client:     client,
 	}
 }
@@ -67,22 +73,36 @@ func (rtu485 *rtu485_THer_Driver) State() typex.DriverState {
 }
 
 func (rtu485 *rtu485_THer_Driver) Read(data []byte) (int, error) {
-
-	results, err := rtu485.client.ReadHoldingRegisters(0x00, 2)
-	var length = 0
-	if len(results) == 4 {
-		sdata := sensor_data{
-			HUM:  float32(utils.BToU16(results, 0, 2)) * 0.1,
-			TEMP: float32(utils.BToU16(results, 2, 4)) * 0.1,
-		}
-		bytes, err := json.Marshal(sdata)
+	dataMap := map[string]common.RegisterRW{}
+	for _, r := range rtu485.Registers {
+		rtu485.handler.SlaveId = r.SlaverId
+		results, err := rtu485.client.ReadHoldingRegisters(0x00, 2)
 		if err != nil {
-			glogger.GLogger.Error(err)
+			return 0, err
 		}
-		copy(data, bytes)
-		length = len(bytes)
+		if len(results) == 4 {
+			sd := sensor_data{
+				Humidity:    float32(utils.BToU16(results, 0, 2)) * 0.1,
+				Temperature: float32(utils.BToU16(results, 2, 4)) * 0.1,
+			}
+			bytes, _ := json.Marshal(sd)
+			value := common.RegisterRW{
+				Tag:      r.Tag,
+				Function: r.Function,
+				SlaverId: r.SlaverId,
+				Address:  r.Address,
+				Quantity: r.Quantity,
+				Value:    string(bytes),
+			}
+			dataMap[r.Tag] = value
+			if err != nil {
+				glogger.GLogger.Error(err)
+			}
+		}
 	}
-	return length, err
+	bytes, _ := json.Marshal(dataMap)
+	copy(data, bytes)
+	return len(bytes), nil
 }
 
 func (rtu485 *rtu485_THer_Driver) Write(_ []byte) (int, error) {

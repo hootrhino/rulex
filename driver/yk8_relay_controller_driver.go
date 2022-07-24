@@ -17,17 +17,22 @@ import (
 
 type YK8RelayControllerDriver struct {
 	state      typex.DriverState
+	handler    *modbus.RTUClientHandler
 	client     modbus.Client
-	device     *typex.Device
 	RuleEngine typex.RuleX
+	Registers  []common.RegisterRW
+	device     *typex.Device
 }
 
 func NewYK8RelayControllerDriver(d *typex.Device, e typex.RuleX,
+	registers []common.RegisterRW,
+	handler *modbus.RTUClientHandler,
 	client modbus.Client) typex.XExternalDriver {
 	return &YK8RelayControllerDriver{
 		state:      typex.DRIVER_STOP,
 		device:     d,
 		RuleEngine: e,
+		handler:    handler,
 		client:     client,
 	}
 }
@@ -67,25 +72,40 @@ type yk08sw struct {
 *
  */
 func (yk8 *YK8RelayControllerDriver) Read(data []byte) (int, error) {
-	results, err := yk8.client.ReadCoils(0x00, 0x08)
-	if err != nil {
-		return 0, err
-	}
-	if len(results) == 1 {
-		yks := yk08sw{
-			Sw1: common.BitToBool(results[0], 0),
-			Sw2: common.BitToBool(results[0], 1),
-			Sw3: common.BitToBool(results[0], 2),
-			Sw4: common.BitToBool(results[0], 3),
-			Sw5: common.BitToBool(results[0], 4),
-			Sw6: common.BitToBool(results[0], 5),
-			Sw7: common.BitToBool(results[0], 6),
-			Sw8: common.BitToBool(results[0], 7),
+	dataMap := map[string]common.RegisterRW{}
+	for _, r := range yk8.Registers {
+		yk8.handler.SlaveId = r.SlaverId
+		results, err := yk8.client.ReadCoils(0x00, 0x08)
+		if err != nil {
+			return 0, err
 		}
-		bytes, _ := json.Marshal(yks)
-		copy(data, bytes)
+		if len(results) == 1 {
+			yks := yk08sw{
+				Sw1: common.BitToBool(results[0], 0),
+				Sw2: common.BitToBool(results[0], 1),
+				Sw3: common.BitToBool(results[0], 2),
+				Sw4: common.BitToBool(results[0], 3),
+				Sw5: common.BitToBool(results[0], 4),
+				Sw6: common.BitToBool(results[0], 5),
+				Sw7: common.BitToBool(results[0], 6),
+				Sw8: common.BitToBool(results[0], 7),
+			}
+			bytes, _ := json.Marshal(yks)
+			value := common.RegisterRW{
+				Tag:      r.Tag,
+				Function: r.Function,
+				SlaverId: r.SlaverId,
+				Address:  r.Address,
+				Quantity: r.Quantity,
+				Value:    string(bytes),
+			}
+			dataMap[r.Tag] = value
+		}
 	}
-	return len(data), err
+
+	bytes, _ := json.Marshal(dataMap)
+	copy(data, bytes)
+	return len(bytes), nil
 }
 
 //

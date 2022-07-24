@@ -7,6 +7,7 @@ package driver
 import (
 	"encoding/json"
 
+	"github.com/i4de/rulex/common"
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
 
@@ -15,12 +16,16 @@ import (
 
 type tss200_v_0_2_Driver struct {
 	state      typex.DriverState
+	handler    *modbus.RTUClientHandler
 	client     modbus.Client
-	device     *typex.Device
 	RuleEngine typex.RuleX
+	Registers  []common.RegisterRW
+	device     *typex.Device
 }
 
-func NewTSS200_v_0_2_Driver(d *typex.Device, e typex.RuleX,
+func NewTSS200Driver(d *typex.Device, e typex.RuleX,
+	registers []common.RegisterRW,
+	handler *modbus.RTUClientHandler,
 	client modbus.Client) typex.XExternalDriver {
 	return &tss200_v_0_2_Driver{
 		state:      typex.DRIVER_STOP,
@@ -64,26 +69,40 @@ func (tss *tss200_v_0_2_Driver) Read(data []byte) (int, error) {
 	// 01 03 00 11 00 08 14 09 09 45 1A F7 00 6F 00 89  00 89 FF FF FF FF 00 0B
 	// TEMP  HUM     PM1   PM2.5  Pm10  CO2   TOVC  CHOH
 	//
-	result, err := tss.client.ReadHoldingRegisters(17, 8)
-	if len(result) == 16 {
-
-		sd := _sensor_data{
-			TEMP: float32(utils.BToU16(result, 0, 2)) * 0.01,
-			HUM:  float32(utils.BToU16(result, 2, 4)) * 0.01,
-			PM1:  utils.BToU16(result, 4, 6),
-			PM25: utils.BToU16(result, 6, 8),
-			PM10: utils.BToU16(result, 8, 10),
-			CO2:  utils.BToU16(result, 10, 12),
-			TOVC: float32(utils.BToU16(result, 12, 14)) * 0.01,
-			CHOH: float32(utils.BToU16(result, 14, 16)) * 0.01,
+	dataMap := map[string]common.RegisterRW{}
+	for _, r := range tss.Registers {
+		tss.handler.SlaveId = r.SlaverId
+		result, err := tss.client.ReadHoldingRegisters(17, 8)
+		if err != nil {
+			return 0, err
 		}
-		bytes, _ := json.Marshal(sd)
-		copy(data, bytes)
+		if len(result) == 16 {
+			sd := _sensor_data{
+				TEMP: float32(utils.BToU16(result, 0, 2)) * 0.01,
+				HUM:  float32(utils.BToU16(result, 2, 4)) * 0.01,
+				PM1:  utils.BToU16(result, 4, 6),
+				PM25: utils.BToU16(result, 6, 8),
+				PM10: utils.BToU16(result, 8, 10),
+				CO2:  utils.BToU16(result, 10, 12),
+				TOVC: float32(utils.BToU16(result, 12, 14)) * 0.01,
+				CHOH: float32(utils.BToU16(result, 14, 16)) * 0.01,
+			}
+			bytes, _ := json.Marshal(sd)
+			value := common.RegisterRW{
+				Tag:      r.Tag,
+				Function: r.Function,
+				SlaverId: r.SlaverId,
+				Address:  r.Address,
+				Quantity: r.Quantity,
+				Value:    string(bytes),
+			}
+			dataMap[r.Tag] = value
+		}
 	}
-
-	return len(data), err
+	bytes, _ := json.Marshal(dataMap)
+	copy(data, bytes)
+	return len(bytes), nil
 }
-
 func (tss *tss200_v_0_2_Driver) Write(_ []byte) (int, error) {
 	return 0, nil
 }

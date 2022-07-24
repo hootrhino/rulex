@@ -52,6 +52,7 @@ func (s1200 *s1200plc) Init(devId string, configMap map[string]interface{}) erro
 func (s1200 *s1200plc) Start(cctx typex.CCTX) error {
 	s1200.Ctx = cctx.Ctx
 	s1200.CancelCTX = cctx.CancelCTX
+	//
 	handler := gos7.NewTCPClientHandler(
 		// 127.0.0.1:8080
 		fmt.Sprintf("%s:%d", s1200.mainConfig.Host, *s1200.mainConfig.Port),
@@ -65,9 +66,9 @@ func (s1200 *s1200plc) Start(cctx typex.CCTX) error {
 	handler.IdleTimeout = time.Duration(*s1200.mainConfig.IdleTimeout) * time.Second
 	s1200.client = gos7.NewClient(handler)
 	s1200.driver = driver.NewS1200Driver(s1200.Details(), s1200.RuleEngine, s1200.client, s1200.block)
-	ticker := time.NewTicker(time.Duration(*s1200.mainConfig.ReadFrequency) * time.Second)
 
 	go func(ctx context.Context) {
+		ticker := time.NewTicker(time.Duration(*s1200.mainConfig.ReadFrequency) * time.Second)
 		// 数据缓冲区,最大4KB
 		dataBuffer := make([]byte, common.T_4KB)
 		for {

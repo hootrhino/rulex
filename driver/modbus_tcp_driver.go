@@ -57,7 +57,7 @@ func (d *modBusTCPDriver) State() typex.DriverState {
 }
 
 func (d *modBusTCPDriver) Read(data []byte) (int, error) {
-	datas := map[string]common.RegisterRW{}
+	dataMap := map[string]common.RegisterRW{}
 	for _, r := range d.Registers {
 		d.handler.SlaveId = r.SlaverId
 		if r.Function == common.READ_COIL {
@@ -73,7 +73,7 @@ func (d *modBusTCPDriver) Read(data []byte) (int, error) {
 				Quantity: r.Quantity,
 				Value:    string(results),
 			}
-			datas[r.Tag] = value
+			dataMap[r.Tag] = value
 		}
 		if r.Function == common.READ_DISCRETE_INPUT {
 			results, err := d.client.ReadDiscreteInputs(r.Address, r.Quantity)
@@ -88,7 +88,7 @@ func (d *modBusTCPDriver) Read(data []byte) (int, error) {
 				Quantity: r.Quantity,
 				Value:    string(results),
 			}
-			datas[r.Tag] = value
+			dataMap[r.Tag] = value
 
 		}
 		if r.Function == common.READ_HOLDING_REGISTERS {
@@ -104,7 +104,7 @@ func (d *modBusTCPDriver) Read(data []byte) (int, error) {
 				Quantity: r.Quantity,
 				Value:    string(results),
 			}
-			datas[r.Tag] = value
+			dataMap[r.Tag] = value
 		}
 		if r.Function == common.READ_INPUT_REGISTERS {
 			results, err := d.client.ReadInputRegisters(r.Address, r.Quantity)
@@ -119,19 +119,19 @@ func (d *modBusTCPDriver) Read(data []byte) (int, error) {
 				Quantity: r.Quantity,
 				Value:    string(results),
 			}
-			datas[r.Tag] = value
+			dataMap[r.Tag] = value
 		}
 
 	}
-	bytes, _ := json.Marshal(datas)
+	bytes, _ := json.Marshal(dataMap)
 	copy(data, bytes)
 	return len(bytes), nil
 
 }
 
 func (d *modBusTCPDriver) Write(data []byte) (int, error) {
-	datas := []common.RegisterRW{}
-	if err := json.Unmarshal(data, &datas); err != nil {
+	dataMap := []common.RegisterRW{}
+	if err := json.Unmarshal(data, &dataMap); err != nil {
 		return 0, err
 	}
 	for _, r := range d.Registers {
