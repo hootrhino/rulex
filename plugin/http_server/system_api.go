@@ -77,10 +77,15 @@ func System(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 //
 func Drivers(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	data := []interface{}{}
-	inEnds := e.AllInEnd()
-	inEnds.Range(func(key, value interface{}) bool {
+	e.AllInEnd().Range(func(key, value interface{}) bool {
 		if value.(*typex.InEnd).Source.Driver() != nil {
 			data = append(data, value.(*typex.InEnd).Source.Driver().DriverDetail())
+		}
+		return true
+	})
+	e.AllDevices().Range(func(key, value interface{}) bool {
+		if value.(*typex.Device).Device.Driver() != nil {
+			data = append(data, value.(*typex.Device).Device.Driver().DriverDetail())
 		}
 		return true
 	})
