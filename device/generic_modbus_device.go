@@ -120,7 +120,7 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 		mdev.tcpHandler = modbus.NewTCPClientHandler(
 			fmt.Sprintf("%s:%v", mdev.tcpConfig.Ip, mdev.tcpConfig.Port),
 		)
-		if __debug2 {
+		if core.GlobalConfig.AppDebugMode {
 			mdev.tcpHandler.Logger = golog.New(os.Stdout, "485mdevSource: ", golog.LstdFlags)
 		}
 
