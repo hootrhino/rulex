@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os"
 
+	"github.com/i4de/rulex/core"
 	"github.com/i4de/rulex/glogger"
 	_ "github.com/mattn/go-sqlite3"
 	"gorm.io/driver/sqlite"
@@ -18,9 +19,16 @@ import (
  */
 func (s *HttpApiServer) InitDb(dbPath string) {
 	var err error
-	s.sqliteDb, err = gorm.Open(sqlite.Open(dbPath), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Info), // 只输出错误日志
-	})
+	if core.GlobalConfig.AppDebugMode {
+		s.sqliteDb, err = gorm.Open(sqlite.Open(dbPath), &gorm.Config{
+			Logger: logger.Default.LogMode(logger.Info),
+		})
+	} else {
+		s.sqliteDb, err = gorm.Open(sqlite.Open(dbPath), &gorm.Config{
+			Logger: logger.Default.LogMode(logger.Error),
+		})
+	}
+
 	if err != nil {
 		glogger.GLogger.Error(err)
 		os.Exit(1)

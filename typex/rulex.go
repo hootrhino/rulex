@@ -19,6 +19,7 @@ type RulexConfig struct {
 	LogPath               string `ini:"log_path" json:"logPath"`
 	LuaLogPath            string `ini:"lua_log_path" json:"luaLogPath"`
 	MaxStoreSize          int    `ini:"max_store_size" json:"maxStoreSize"`
+	AppDebugMode          bool   `ini:"app_debug_mode" json:"appDebugMode"`
 }
 
 //

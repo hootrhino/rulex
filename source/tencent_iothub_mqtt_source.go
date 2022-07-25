@@ -37,7 +37,7 @@ type tencentIothubSource struct {
 	mainConfig common.TencentMqttConfig
 }
 
-func NewtencentIothubSource(e typex.RuleX) typex.XSource {
+func NewTencentIothubSource(e typex.RuleX) typex.XSource {
 	m := new(tencentIothubSource)
 	m.RuleEngine = e
 	m.mainConfig = common.TencentMqttConfig{}

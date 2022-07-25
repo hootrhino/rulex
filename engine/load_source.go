@@ -28,7 +28,7 @@ func (e *RuleEngine) LoadInEnd(in *typex.InEnd) error {
 		return startSources(source.NewCoAPInEndSource(e), in, e)
 	}
 	if in.Type == typex.GRPC {
-		return startSources(source.NewGrpcInEndSource(in.UUID, e), in, e)
+		return startSources(source.NewGrpcInEndSource(e), in, e)
 	}
 	if in.Type == typex.UART_MODULE {
 		return startSources(source.NewUartModuleSource(in.UUID, e), in, e)
@@ -49,7 +49,7 @@ func (e *RuleEngine) LoadInEnd(in *typex.InEnd) error {
 		return startSources(source.NewUdpInEndSource(e), in, e)
 	}
 	if in.Type == typex.TENCENT_IOT_HUB {
-		return startSources(source.NewtencentIothubSource(e), in, e)
+		return startSources(source.NewTencentIothubSource(e), in, e)
 	}
 
 	return fmt.Errorf("unsupported InEnd type:%s", in.Type)
@@ -61,7 +61,7 @@ func (e *RuleEngine) LoadInEnd(in *typex.InEnd) error {
 /*
 * Life cycle
 +------------------+       +------------------+   +---------------+        +---------------+
-|     Register     |------>|   Start          |-->|     Test      |--+ --->|  Stop         |
+|     Init         |------>|   Start          |-->|     Test      |--+ --->|  Stop         |
 +------------------+  ^    +------------------+   +---------------+  |     +---------------+
                       |                                              |
                       |                                              |

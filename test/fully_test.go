@@ -32,6 +32,7 @@ func TestFullyRun(t *testing.T) {
 	}
 	// Grpc Inend
 	grpcInend := typex.NewInEnd("GRPC", "Rulex Grpc InEnd", "Rulex Grpc InEnd", map[string]interface{}{
+		"host": "127.0.0.1",
 		"port": 2581,
 	})
 	if err := engine.LoadInEnd(grpcInend); err != nil {

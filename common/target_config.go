@@ -61,7 +61,7 @@ type HTTPConfig struct {
 type GrpcConfig struct {
 	Host string `json:"host" validate:"required"`
 	Port int    `json:"port" validate:"required"`
-	Type string `json:"type" validate:"required"`
+	Type string `json:"type"`
 }
 
 /*

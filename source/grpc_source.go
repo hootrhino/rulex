@@ -35,10 +35,10 @@ type grpcInEndSource struct {
 }
 
 //
-func NewGrpcInEndSource(inEndId string, e typex.RuleX) typex.XSource {
+func NewGrpcInEndSource(e typex.RuleX) typex.XSource {
 	g := grpcInEndSource{}
-	g.PointId = inEndId
 	g.RuleEngine = e
+	g.mainConfig = common.GrpcConfig{}
 	return &g
 }
 
