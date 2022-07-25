@@ -78,11 +78,6 @@ func CreateRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 			}
 		}
 	}
-	if (lenDevices < 1) && (lenSources < 1) {
-		c.JSON(200, Error(`必须有一个数据输入项`))
-		return
-	}
-
 	// tmpRule 是一个一次性的临时rule，用来验证规则，这么做主要是为了防止真实Lua Vm 被污染
 	tmpRule := typex.NewRule(nil,
 		"tmpRule",
@@ -100,6 +95,7 @@ func CreateRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	}
 	// 如果是更新操作, 先删除规则
 	if form.UUID != "" {
+		//  DELETE FROM `m_rules` WHERE uuid="UUID"
 		if err1 := hh.DeleteMRule(form.UUID); err1 != nil {
 			c.JSON(200, Error400(err1))
 			return
@@ -136,7 +132,6 @@ func CreateRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	} else {
 		c.JSON(200, Ok())
 	}
-	return
 }
 
 //

@@ -168,6 +168,14 @@ func (hh *HttpApiServer) Start(r typex.RuleX) error {
 	//
 	hh.ginEngine.POST(url("rules"), hh.addRoute(CreateRule))
 	//
+	// Update rule
+	//
+	hh.ginEngine.PUT(url("rules"), hh.addRoute(CreateRule))
+	//
+	// Delete rule by UUID
+	//
+	hh.ginEngine.DELETE(url("rules"), hh.addRoute(DeleteRule))
+	//
 	// Delete inend by UUID
 	//
 	hh.ginEngine.DELETE(url("inends"), hh.addRoute(DeleteInEnd))
@@ -175,10 +183,7 @@ func (hh *HttpApiServer) Start(r typex.RuleX) error {
 	// Delete outEnd by UUID
 	//
 	hh.ginEngine.DELETE(url("outends"), hh.addRoute(DeleteOutEnd))
-	//
-	// Delete rule by UUID
-	//
-	hh.ginEngine.DELETE(url("rules"), hh.addRoute(DeleteRule))
+
 	//
 	// 验证 lua 语法
 	//

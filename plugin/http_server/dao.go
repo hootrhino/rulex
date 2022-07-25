@@ -1,6 +1,7 @@
 package httpserver
 
 import (
+	"errors"
 	"os"
 
 	"github.com/i4de/rulex/glogger"
@@ -18,7 +19,7 @@ import (
 func (s *HttpApiServer) InitDb(dbPath string) {
 	var err error
 	s.sqliteDb, err = gorm.Open(sqlite.Open(dbPath), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Error), // 只输出错误日志
+		Logger: logger.Default.LogMode(logger.Info), // 只输出错误日志
 	})
 	if err != nil {
 		glogger.GLogger.Error(err)
@@ -76,7 +77,10 @@ func (s *HttpApiServer) InsertMRule(r *MRule) error {
 }
 
 func (s *HttpApiServer) DeleteMRule(uuid string) error {
-	return s.sqliteDb.Table("m_rules").Where("uuid=?", uuid).Delete(&MRule{}).Error
+	if s.sqliteDb.Table("m_rules").Where("uuid=?", uuid).Delete(&MRule{}).RowsAffected == 0 {
+		return errors.New("not found:" + uuid)
+	}
+	return nil
 }
 
 func (s *HttpApiServer) UpdateMRule(uuid string, r *MRule) error {
@@ -112,7 +116,10 @@ func (s *HttpApiServer) InsertMInEnd(i *MInEnd) error {
 }
 
 func (s *HttpApiServer) DeleteMInEnd(uuid string) error {
-	return s.sqliteDb.Where("uuid=?", uuid).Delete(&MInEnd{}).Error
+	if s.sqliteDb.Where("uuid=?", uuid).Delete(&MInEnd{}).RowsAffected == 0 {
+		return errors.New("not found:" + uuid)
+	}
+	return nil
 }
 
 func (s *HttpApiServer) UpdateMInEnd(uuid string, i *MInEnd) error {
@@ -148,7 +155,10 @@ func (s *HttpApiServer) InsertMOutEnd(o *MOutEnd) error {
 }
 
 func (s *HttpApiServer) DeleteMOutEnd(uuid string) error {
-	return s.sqliteDb.Where("uuid=?", uuid).Delete(&MOutEnd{}).Error
+	if s.sqliteDb.Where("uuid=?", uuid).Delete(&MOutEnd{}).RowsAffected == 0 {
+		return errors.New("not found:" + uuid)
+	}
+	return nil
 }
 
 func (s *HttpApiServer) UpdateMOutEnd(uuid string, o *MOutEnd) error {
@@ -237,7 +247,11 @@ func (s *HttpApiServer) GetDeviceWithUUID(uuid string) (*MDevice, error) {
 // 删除设备
 //
 func (s *HttpApiServer) DeleteDevice(uuid string) error {
-	return s.sqliteDb.Where("uuid=?", uuid).Delete(&MDevice{}).Error
+
+	if s.sqliteDb.Where("uuid=?", uuid).Delete(&MDevice{}).RowsAffected == 0 {
+		return errors.New("not found:" + uuid)
+	}
+	return nil
 }
 
 //
@@ -286,7 +300,10 @@ func (s *HttpApiServer) GetGoodsWithUUID(uuid string) (*MGoods, error) {
 // 删除Goods
 //
 func (s *HttpApiServer) DeleteGoods(uuid string) error {
-	return s.sqliteDb.Where("uuid=?", uuid).Delete(&MGoods{}).Error
+	if s.sqliteDb.Where("uuid=?", uuid).Delete(&MGoods{}).RowsAffected == 0 {
+		return errors.New("not found:" + uuid)
+	}
+	return nil
 }
 
 //
