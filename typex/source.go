@@ -25,7 +25,7 @@ type XSource interface {
 	//
 	// 用来初始化传递资源配置
 	//
-	Init(inEndId string, cfg map[string]interface{}) error
+	Init(inEndId string, configMap map[string]interface{}) error
 	//
 	// 启动资源
 	//

@@ -11,7 +11,7 @@ type XTarget interface {
 	//
 	// 用来初始化传递资源配置
 	//
-	Init(outEndId string, cfg map[string]interface{}) error
+	Init(outEndId string, configMap map[string]interface{}) error
 	//
 	// 启动资源
 	//
