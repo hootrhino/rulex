@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/i4de/rulex/common"
 	"github.com/i4de/rulex/core"
 	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
@@ -14,42 +15,32 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type mongoConfig struct {
-	MongoUrl   string `json:"mongoUrl" validate:"required"`
-	Database   string `json:"database" validate:"required"`
-	Collection string `json:"collection" validate:"required"`
-}
-
 //
-type MongoTarget struct {
+type mongoTarget struct {
 	typex.XStatus
 	client     *mongo.Client
 	collection *mongo.Collection
+	mainConfig common.MongoConfig
 }
 
 func NewMongoTarget(e typex.RuleX) typex.XTarget {
-	mg := new(MongoTarget)
+	mg := new(mongoTarget)
+	mg.mainConfig = common.MongoConfig{}
 	mg.RuleEngine = e
 	return mg
 }
 
-func (m *MongoTarget) Register(outEndId string) error {
+func (m *mongoTarget) Init(outEndId string, configMap map[string]interface{}) error {
 	m.PointId = outEndId
-	return nil
-}
-func (m *MongoTarget) Init(outEndId string, cfg map[string]interface{}) error {
-	m.PointId = outEndId
-	return nil
-}
-func (m *MongoTarget) Start(cctx typex.CCTX) error {
-	m.Ctx = cctx.Ctx
-	m.CancelCTX = cctx.CancelCTX
-	config := m.RuleEngine.GetOutEnd(m.PointId).Config
-	var mainConfig mongoConfig
-	if err := utils.BindSourceConfig(config, &mainConfig); err != nil {
+	if err := utils.BindSourceConfig(configMap, &m.mainConfig); err != nil {
 		return err
 	}
-	clientOptions := options.Client().ApplyURI(mainConfig.MongoUrl)
+	return nil
+}
+func (m *mongoTarget) Start(cctx typex.CCTX) error {
+	m.Ctx = cctx.Ctx
+	m.CancelCTX = cctx.CancelCTX
+	clientOptions := options.Client().ApplyURI(m.mainConfig.MongoUrl)
 	client, err0 := mongo.Connect(m.Ctx, clientOptions)
 	if err0 != nil {
 		return err0
@@ -59,17 +50,16 @@ func (m *MongoTarget) Start(cctx typex.CCTX) error {
 	if err1 := client.Ping(ctx, nil); err1 != nil {
 		return err1
 	}
-	m.collection = client.Database(mainConfig.Database).Collection(mainConfig.Collection)
+	m.collection = client.Database(m.mainConfig.Database).Collection(m.mainConfig.Collection)
 	m.client = client
 	m.Enable = true
-	glogger.GLogger.Info("MongoTarget connect successfully")
+	glogger.GLogger.Info("mongoTarget connect successfully")
 	return nil
 
 }
 
-func (m *MongoTarget) Test(outEndId string) bool {
+func (m *mongoTarget) Test(outEndId string) bool {
 	if m.client != nil {
-
 		ctx, cancel := context.WithTimeout(m.Ctx, 3*time.Second)
 		defer cancel()
 		if err1 := m.client.Ping(ctx, nil); err1 != nil {
@@ -82,20 +72,19 @@ func (m *MongoTarget) Test(outEndId string) bool {
 
 }
 
-func (m *MongoTarget) Enabled() bool {
+func (m *mongoTarget) Enabled() bool {
 	return m.Enable
 }
 
-func (m *MongoTarget) Reload() {
-	glogger.GLogger.Info("Mongotarget Reload success")
+func (m *mongoTarget) Reload() {
+	glogger.GLogger.Info("Mongo target Reload success")
 }
 
-func (m *MongoTarget) Pause() {
-	glogger.GLogger.Info("Mongotarget Pause success")
-
+func (m *mongoTarget) Pause() {
+	glogger.GLogger.Info("Mongo target Pause success")
 }
 
-func (m *MongoTarget) Status() typex.SourceState {
+func (m *mongoTarget) Status() typex.SourceState {
 	err1 := m.client.Ping(m.Ctx, nil)
 	if err1 != nil {
 		glogger.GLogger.Error(err1)
@@ -105,13 +94,13 @@ func (m *MongoTarget) Status() typex.SourceState {
 	}
 }
 
-func (m *MongoTarget) Stop() {
+func (m *mongoTarget) Stop() {
 	m.client.Disconnect(m.Ctx)
-	glogger.GLogger.Info("Mongotarget Stop success")
+	glogger.GLogger.Info("mongoTarget Stop success")
 	m.CancelCTX()
 }
 
-func (m *MongoTarget) To(data interface{}) (interface{}, error) {
+func (m *mongoTarget) To(data interface{}) (interface{}, error) {
 	document := bson.D{bson.E{Key: "data", Value: data}}
 	r, err := m.collection.InsertOne(m.Ctx, document)
 	if err != nil {
@@ -119,7 +108,7 @@ func (m *MongoTarget) To(data interface{}) (interface{}, error) {
 	}
 	return r.InsertedID, err
 }
-func (m *MongoTarget) Details() *typex.OutEnd {
+func (m *mongoTarget) Details() *typex.OutEnd {
 	return m.RuleEngine.GetOutEnd(m.PointId)
 }
 
@@ -128,6 +117,6 @@ func (m *MongoTarget) Details() *typex.OutEnd {
 * 配置
 *
  */
-func (*MongoTarget) Configs() *typex.XConfig {
-	return core.GenOutConfig(typex.MONGO_SINGLE, "MONGO_SINGLE", httpConfig{})
+func (*mongoTarget) Configs() *typex.XConfig {
+	return core.GenOutConfig(typex.MONGO_SINGLE, "MONGO_SINGLE", common.MongoConfig{})
 }

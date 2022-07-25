@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 
+	"github.com/i4de/rulex/common"
 	"github.com/i4de/rulex/core"
 	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/rulexrpc"
@@ -18,12 +19,6 @@ const (
 	DefaultTransport = "tcp"
 )
 
-//
-type grpcConfig struct {
-	Port       uint16             `json:"port" validate:"required" title:"端口" info:""`
-	DataModels []typex.XDataModel `json:"dataModels" title:"数据模型" info:""`
-}
-
 type RulexRpcServer struct {
 	grpcInEndSource *grpcInEndSource
 	rulexrpc.UnimplementedRulexRpcServer
@@ -36,6 +31,7 @@ type grpcInEndSource struct {
 	typex.XStatus
 	rulexServer *RulexRpcServer
 	rpcServer   *grpc.Server
+	mainConfig  common.GrpcConfig
 }
 
 //
@@ -46,17 +42,25 @@ func NewGrpcInEndSource(inEndId string, e typex.RuleX) typex.XSource {
 	return &g
 }
 
+/*
+*
+* Init
+*
+ */
+func (g *grpcInEndSource) Init(inEndId string, configMap map[string]interface{}) error {
+	g.PointId = inEndId
+	if err := utils.BindSourceConfig(configMap, &g.mainConfig); err != nil {
+		return err
+	}
+	return nil
+}
+
 //
 func (g *grpcInEndSource) Start(cctx typex.CCTX) error {
 	g.Ctx = cctx.Ctx
 	g.CancelCTX = cctx.CancelCTX
-	config := g.RuleEngine.GetInEnd(g.PointId).Config
-	var mainConfig grpcConfig
-	if err := utils.BindSourceConfig(config, &mainConfig); err != nil {
-		return err
-	}
 
-	listener, err := net.Listen(DefaultTransport, fmt.Sprintf(":%d", mainConfig.Port))
+	listener, err := net.Listen(DefaultTransport, fmt.Sprintf(":%d", g.mainConfig.Port))
 	if err != nil {
 		return err
 	}
@@ -98,11 +102,6 @@ func (g *grpcInEndSource) Status() typex.SourceState {
 	return typex.SOURCE_UP
 }
 
-func (g *grpcInEndSource) Init(inEndId string, cfg map[string]interface{}) error {
-
-	g.PointId = inEndId
-	return nil
-}
 func (g *grpcInEndSource) Test(inEndId string) bool {
 	return true
 }
@@ -119,7 +118,7 @@ func (*grpcInEndSource) Driver() typex.XExternalDriver {
 	return nil
 }
 func (*grpcInEndSource) Configs() *typex.XConfig {
-	return core.GenInConfig(typex.GRPC, "GRPC", grpcConfig{})
+	return core.GenInConfig(typex.GRPC, "GRPC", common.GrpcConfig{})
 }
 
 //

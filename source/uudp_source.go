@@ -4,6 +4,7 @@ import (
 	"context"
 	"net"
 
+	"github.com/i4de/rulex/common"
 	"github.com/i4de/rulex/core"
 	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
@@ -12,12 +13,8 @@ import (
 
 type udpSource struct {
 	typex.XStatus
-	uDPConn *net.UDPConn
-}
-type udpConfig struct {
-	Host          string `json:"host" validate:"required" title:"服务地址" info:""`
-	Port          int    `json:"port" validate:"required" title:"服务端口" info:""`
-	MaxDataLength int    `json:"maxDataLength" validate:"required" title:"最大数据包" info:""`
+	uDPConn    *net.UDPConn
+	mainConfig common.RULEXUdpConfig
 }
 
 func NewUdpInEndSource(e typex.RuleX) *udpSource {
@@ -29,12 +26,7 @@ func (u *udpSource) Start(cctx typex.CCTX) error {
 	u.Ctx = cctx.Ctx
 	u.CancelCTX = cctx.CancelCTX
 
-	config := u.RuleEngine.GetInEnd(u.PointId).Config
-	var mainConfig udpConfig
-	if err := utils.BindSourceConfig(config, &mainConfig); err != nil {
-		return err
-	}
-	addr := &net.UDPAddr{IP: net.ParseIP(mainConfig.Host), Port: mainConfig.Port}
+	addr := &net.UDPAddr{IP: net.ParseIP(u.mainConfig.Host), Port: u.mainConfig.Port}
 	var err error
 	if u.uDPConn, err = net.ListenUDP("udp", addr); err != nil {
 		glogger.GLogger.Error(err)
@@ -42,26 +34,32 @@ func (u *udpSource) Start(cctx typex.CCTX) error {
 	}
 
 	go func(c context.Context, u1 *udpSource) {
-		data := make([]byte, mainConfig.MaxDataLength)
+		data := make([]byte, u.mainConfig.MaxDataLength)
 		for {
 			n, remoteAddr, err := u1.uDPConn.ReadFromUDP(data)
 			if err != nil {
 				glogger.GLogger.Error(err.Error())
-			} else {
-				// glogger.GLogger.Infof("Receive udp data:<%s> %s\n", remoteAddr, data[:n])
-				work, err := u.RuleEngine.WorkInEnd(u.RuleEngine.GetInEnd(u.PointId), string(data[:n]))
-				if !work {
-					glogger.GLogger.Error(err)
-				}
 				// return ok
-				_, err = u1.uDPConn.WriteToUDP([]byte("ok"), remoteAddr)
+				_, err = u1.uDPConn.WriteToUDP([]byte("err"), remoteAddr)
 				if err != nil {
 					glogger.GLogger.Error(err)
 				}
+				continue
+			}
+			// glogger.GLogger.Infof("Receive udp data:<%s> %s\n", remoteAddr, data[:n])
+			work, err := u.RuleEngine.WorkInEnd(u.RuleEngine.GetInEnd(u.PointId), string(data[:n]))
+			if !work {
+				glogger.GLogger.Error(err)
+				continue
+			}
+			// return ok
+			_, err = u1.uDPConn.WriteToUDP([]byte("ok"), remoteAddr)
+			if err != nil {
+				glogger.GLogger.Error(err)
 			}
 		}
 	}(u.Ctx, u)
-	glogger.GLogger.Infof("UDP source started on [%v]:%v", mainConfig.Host, mainConfig.Port)
+	glogger.GLogger.Infof("UDP source started on [%v]:%v", u.mainConfig.Host, u.mainConfig.Port)
 	return nil
 
 }
@@ -74,8 +72,11 @@ func (u *udpSource) Test(inEndId string) bool {
 	return true
 }
 
-func (u *udpSource) Init(inEndId string, cfg map[string]interface{}) error {
+func (u *udpSource) Init(inEndId string, configMap map[string]interface{}) error {
 	u.PointId = inEndId
+	if err := utils.BindSourceConfig(configMap, &u.mainConfig); err != nil {
+		return err
+	}
 	return nil
 }
 func (u *udpSource) Enabled() bool {
@@ -109,7 +110,7 @@ func (*udpSource) Driver() typex.XExternalDriver {
 	return nil
 }
 func (*udpSource) Configs() *typex.XConfig {
-	return core.GenInConfig(typex.RULEX_UDP, "RULEX_UDP", udpConfig{})
+	return core.GenInConfig(typex.RULEX_UDP, "RULEX_UDP", common.RULEXUdpConfig{})
 }
 
 //

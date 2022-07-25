@@ -3,6 +3,7 @@ package target
 import (
 	"fmt"
 
+	"github.com/i4de/rulex/common"
 	"github.com/i4de/rulex/core"
 	"github.com/i4de/rulex/rulexrpc"
 	"github.com/i4de/rulex/typex"
@@ -14,24 +15,17 @@ import (
 
 var _state typex.SourceState
 
-type _codecTargetConfig struct {
-	Host string `json:"host" validate:"required"`
-	Port int    `json:"port" validate:"required"`
-	Type string `json:"type" validate:"required"`
-}
-
 type codecTarget struct {
 	typex.XStatus
-	host          string
-	port          int
-	_type         string
 	client        rulexrpc.CodecClient
 	rpcConnection *grpc.ClientConn
+	mainConfig    common.GrpcConfig
 }
 
 func NewCodecTarget(rx typex.RuleX) typex.XTarget {
 	_state = typex.SOURCE_DOWN
 	ct := &codecTarget{}
+	ct.mainConfig = common.GrpcConfig{}
 	ct.RuleEngine = rx
 	return ct
 }
@@ -46,16 +40,12 @@ func (ct *codecTarget) Test(outEndId string) bool {
 //
 // 用来初始化传递资源配置
 //
-func (ct *codecTarget) Init(outEndId string, config map[string]interface{}) error {
-	var mainConfig _codecTargetConfig
-	if err := utils.BindSourceConfig(config, &mainConfig); err != nil {
+func (ct *codecTarget) Init(outEndId string, configMap map[string]interface{}) error {
+	ct.PointId = outEndId
+	//
+	if err := utils.BindSourceConfig(configMap, &ct.mainConfig); err != nil {
 		return err
 	}
-
-	ct.PointId = outEndId
-	ct.host = mainConfig.Host
-	ct.port = mainConfig.Port
-	ct._type = mainConfig.Type
 
 	return nil
 }
@@ -66,7 +56,8 @@ func (ct *codecTarget) Init(outEndId string, config map[string]interface{}) erro
 func (ct *codecTarget) Start(cctx typex.CCTX) error {
 	ct.Ctx = cctx.Ctx
 	ct.CancelCTX = cctx.CancelCTX
-	rpcConnection, err := grpc.Dial(fmt.Sprintf("%s:%d", ct.host, ct.port),
+	//
+	rpcConnection, err := grpc.Dial(fmt.Sprintf("%s:%d", ct.mainConfig.Host, ct.mainConfig.Port),
 		grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return err
@@ -120,7 +111,7 @@ func (ct *codecTarget) Details() *typex.OutEnd {
 //
 //
 func (ct *codecTarget) Configs() *typex.XConfig {
-	return core.GenOutConfig(typex.GRPC_CODEC_TARGET, "GRPC_CODEC_TARGET", httpConfig{})
+	return core.GenOutConfig(typex.GRPC_CODEC_TARGET, "GRPC_CODEC_TARGET", common.GrpcConfig{})
 
 }
 
@@ -133,20 +124,15 @@ func (ct *codecTarget) To(data interface{}) (interface{}, error) {
 	}
 	var response *rulexrpc.CodecResponse
 	var err error
-	if ct._type == "DECODE" {
+	if ct.mainConfig.Type == "DECODE" {
 		response, err = ct.client.Decode(ct.Ctx, dataRequest)
-	} else if ct._type == "ENCODE" {
+	}
+	if ct.mainConfig.Type == "ENCODE" {
 		response, err = ct.client.Encode(ct.Ctx, dataRequest)
-	} else {
-		_state = typex.SOURCE_DOWN
-		return nil, fmt.Errorf("unknown operate type:%s", ct._type)
 	}
 	if err != nil {
-		_state = typex.SOURCE_DOWN
 		return nil, err
-
 	}
-	_state = typex.SOURCE_UP
 	return response.GetData(), nil
 }
 

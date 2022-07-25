@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/i4de/rulex/common"
 	"github.com/i4de/rulex/core"
 	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
@@ -18,33 +19,10 @@ import (
 *
  */
 
-// http://<fqdn>:<port>/rest/sql/[db_name]
-// fqnd: 集群中的任一台主机 FQDN 或 IP 地址
-// port: 配置文件中 httpPort 配置项，缺省为 6041
-// db_name: 可选参数，指定本次所执行的 SQL 语句的默认数据库库名
-// curl -u root:taosdata -d 'show databases;' 106.15.225.172:6041/rest/sql
-type tdEngineConfig struct {
-	Fqdn           string `json:"fqdn" validate:"required"`           // 服务地址
-	Port           int    `json:"port" validate:"required"`           // 服务端口
-	Username       string `json:"username" validate:"required"`       // 用户
-	Password       string `json:"password" validate:"required"`       // 密码
-	DbName         string `json:"dbName" validate:"required"`         // 数据库名
-	CreateDbSql    string `json:"createDbSql" validate:"required"`    // 建库SQL
-	CreateTableSql string `json:"createTableSql" validate:"required"` // 建表SQL
-	InsertSql      string `json:"insertSql" validate:"required"`      // 插入SQL
-}
 type tdEngineTarget struct {
 	typex.XStatus
-	client         http.Client
-	Fqdn           string
-	Port           int
-	Username       string
-	Password       string
-	DbName         string
-	CreateDbSql    string
-	CreateTableSql string
-	InsertSql      string
-	Url            string
+	client     http.Client
+	mainConfig common.TDEngineConfig
 }
 type tdrs struct {
 	Status string `json:"status"`
@@ -54,7 +32,8 @@ type tdrs struct {
 
 func NewTdEngineTarget(e typex.RuleX) typex.XTarget {
 	td := tdEngineTarget{
-		client: http.Client{},
+		client:     http.Client{},
+		mainConfig: common.TDEngineConfig{},
 	}
 	td.RuleEngine = e
 	return &td
@@ -65,7 +44,11 @@ func NewTdEngineTarget(e typex.RuleX) typex.XTarget {
 // 测试资源是否可用
 //
 func (td *tdEngineTarget) Test(inEndId string) bool {
-	if err := execQuery(td.client, td.Username, td.Password, "SELECT CLIENT_VERSION();", td.Url); err != nil {
+	if err := execQuery(td.client,
+		td.mainConfig.Username,
+		td.mainConfig.Password,
+		"SELECT CLIENT_VERSION();",
+		td.mainConfig.Url); err != nil {
 		glogger.GLogger.Error(err)
 		return false
 	}
@@ -76,8 +59,14 @@ func (td *tdEngineTarget) Test(inEndId string) bool {
 // 注册InEndID到资源
 //
 
-func (td *tdEngineTarget) Init(outEndId string, cfg map[string]interface{}) error {
+func (td *tdEngineTarget) Init(outEndId string, configMap map[string]interface{}) error {
 	td.PointId = outEndId
+
+	if err := utils.BindSourceConfig(configMap, &td.mainConfig); err != nil {
+		return err
+	}
+	td.mainConfig.Url = fmt.Sprintf("http://%s:%v/rest/sql/%s",
+		td.mainConfig.Fqdn, td.mainConfig.Port, td.mainConfig.DbName)
 	return nil
 }
 
@@ -87,26 +76,14 @@ func (td *tdEngineTarget) Init(outEndId string, cfg map[string]interface{}) erro
 func (td *tdEngineTarget) Start(cctx typex.CCTX) error {
 	td.Ctx = cctx.Ctx
 	td.CancelCTX = cctx.CancelCTX
-	// http://<fqdn>:<port>/rest/sql/[db_name]
-	// curl -u root:taosdata -d 'show databases;' 127.0.0.1:6041/rest/sql
-	config := td.RuleEngine.GetOutEnd(td.PointId).Config
-	var mainConfig tdEngineConfig
-	if err := utils.BindSourceConfig(config, &mainConfig); err != nil {
+	//
+
+	if err := execQuery(td.client, td.mainConfig.Username,
+		td.mainConfig.Password, td.mainConfig.CreateDbSql, td.mainConfig.Url); err != nil {
 		return err
 	}
-	td.Fqdn = mainConfig.Fqdn
-	td.Port = mainConfig.Port
-	td.Username = mainConfig.Username
-	td.Password = mainConfig.Password
-	td.DbName = mainConfig.DbName
-	td.CreateDbSql = mainConfig.CreateDbSql
-	td.CreateTableSql = mainConfig.CreateTableSql
-	td.InsertSql = mainConfig.InsertSql
-	td.Url = fmt.Sprintf("http://%s:%v/rest/sql/%s", td.Fqdn, td.Port, td.DbName)
-	if err := execQuery(td.client, td.Username, td.Password, td.CreateDbSql, td.Url); err != nil {
-		return err
-	}
-	return execQuery(td.client, td.Username, td.Password, td.CreateTableSql, td.Url)
+	return execQuery(td.client, td.mainConfig.Username,
+		td.mainConfig.Password, td.mainConfig.CreateTableSql, td.mainConfig.Url)
 }
 
 //
@@ -140,7 +117,8 @@ func (td *tdEngineTarget) Pause() {
 // 获取资源状态
 //
 func (td *tdEngineTarget) Status() typex.SourceState {
-	if err := execQuery(td.client, td.Username, td.Password, "SELECT CLIENT_VERSION();", td.Url); err != nil {
+	if err := execQuery(td.client, td.mainConfig.Username,
+		td.mainConfig.Password, "SELECT CLIENT_VERSION();", td.mainConfig.Url); err != nil {
 		glogger.GLogger.Error(err)
 		return typex.SOURCE_DOWN
 	}
@@ -227,7 +205,7 @@ func execQuery(client http.Client, username string, password string, sql string,
 }
 
 /*
-*
+* SQL: INSERT INTO meter VALUES (NOW, %v, %v);
 * 数据到达后写入Tdengine, 这里对数据有严格约束，必须是以,分割的字符串
 * 比如: 10.22,220.12,123,......
 *
@@ -237,11 +215,12 @@ func (td *tdEngineTarget) To(data interface{}) (interface{}, error) {
 	case string:
 		{
 			ss := strings.Split(s, ",")
-			insertSql := td.InsertSql
+			insertSql := td.mainConfig.InsertSql
 			for _, v := range ss {
 				insertSql = strings.Replace(insertSql, "%v", strings.TrimSpace(v), 1)
 			}
-			return execQuery(td.client, td.Username, td.Password, insertSql, td.Url), nil
+			return execQuery(td.client, td.mainConfig.Username,
+				td.mainConfig.Password, insertSql, td.mainConfig.Url), nil
 		}
 	}
 	return nil, nil
@@ -253,5 +232,5 @@ func (td *tdEngineTarget) To(data interface{}) (interface{}, error) {
 *
  */
 func (*tdEngineTarget) Configs() *typex.XConfig {
-	return core.GenOutConfig(typex.TDENGINE_TARGET, "TDENGINE_TARGET", httpConfig{})
+	return core.GenOutConfig(typex.TDENGINE_TARGET, "TDENGINE_TARGET", common.TDEngineConfig{})
 }

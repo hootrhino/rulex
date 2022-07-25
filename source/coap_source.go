@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/i4de/rulex/common"
 	"github.com/i4de/rulex/core"
 	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
@@ -18,38 +19,32 @@ import (
 )
 
 //
-type coAPConfig struct {
-	Port       uint16             `json:"port" validate:"required" title:"端口" info:""`
-	DataModels []typex.XDataModel `json:"dataModels" title:"数据模型" info:""`
-}
-
-//
 type coAPInEndSource struct {
 	typex.XStatus
 	router     *mux.Router
-	port       uint16
-	dataModels []typex.XDataModel
+	mainConfig common.HostConfig
 }
 
-func NewCoAPInEndSource(inEndId string, e typex.RuleX) *coAPInEndSource {
+func NewCoAPInEndSource(e typex.RuleX) *coAPInEndSource {
 	c := coAPInEndSource{}
-	c.PointId = inEndId
 	c.router = mux.NewRouter()
+	c.mainConfig = common.HostConfig{}
 	c.RuleEngine = e
 	return &c
 }
 
+func (cc *coAPInEndSource) Init(inEndId string, configMap map[string]interface{}) error {
+	cc.PointId = inEndId
+	if err := utils.BindSourceConfig(configMap, &cc.mainConfig); err != nil {
+		return err
+	}
+
+	return nil
+}
 func (cc *coAPInEndSource) Start(cctx typex.CCTX) error {
 	cc.Ctx = cctx.Ctx
 	cc.CancelCTX = cctx.CancelCTX
-
-	config := cc.RuleEngine.GetInEnd(cc.PointId).Config
-	var mainConfig coAPConfig
-	if err := utils.BindSourceConfig(config, &mainConfig); err != nil {
-		return err
-	}
-	port := fmt.Sprintf(":%v", mainConfig.Port)
-	cc.dataModels = mainConfig.DataModels
+	port := fmt.Sprintf(":%v", cc.mainConfig.Port)
 	cc.router.Use(func(next mux.Handler) mux.Handler {
 		return mux.HandlerFunc(func(w mux.ResponseWriter, r *mux.Message) {
 			// glogger.GLogger.Debugf("Client Address %v, %v\n", w.Client().RemoteAddr(), r.String())
@@ -99,16 +94,6 @@ func (cc *coAPInEndSource) Status() typex.SourceState {
 	return typex.SOURCE_UP
 }
 
-func (cc *coAPInEndSource) Init(inEndId string, cfg map[string]interface{}) error {
-	cc.PointId = inEndId
-	var mainConfig coAPConfig
-	if err := utils.BindSourceConfig(cfg, &mainConfig); err != nil {
-		return err
-	}
-	cc.port = mainConfig.Port
-	cc.dataModels = mainConfig.DataModels
-	return nil
-}
 func (cc *coAPInEndSource) Test(inEndId string) bool {
 	return true
 }
@@ -124,7 +109,7 @@ func (cc *coAPInEndSource) Driver() typex.XExternalDriver {
 }
 
 func (*coAPInEndSource) Configs() *typex.XConfig {
-	return core.GenInConfig(typex.COAP, "COAP", coAPConfig{})
+	return core.GenInConfig(typex.COAP, "COAP", common.HostConfig{})
 }
 
 //

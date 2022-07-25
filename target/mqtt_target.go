@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/i4de/rulex/common"
 	"github.com/i4de/rulex/core"
 	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
@@ -14,39 +15,34 @@ import (
 )
 
 //
-type mqttConfig struct {
-	Host      string `json:"host" validate:"required"`
-	Port      int    `json:"port" validate:"required"`
-	DataTopic string `json:"dataTopic" validate:"required"` // 上报数据的 Topic
-	ClientId  string `json:"clientId" validate:"required"`
-	Username  string `json:"username" validate:"required"`
-	Password  string `json:"password" validate:"required"`
-}
 
 //
 type mqttOutEndTarget struct {
 	typex.XStatus
-	client    mqtt.Client
-	DataTopic string
+	client     mqtt.Client
+	mainConfig common.MqttConfig
 }
 
 func NewMqttTarget(e typex.RuleX) typex.XTarget {
 	m := new(mqttOutEndTarget)
 	m.RuleEngine = e
+	m.mainConfig = common.MqttConfig{}
 	return m
 }
 func (*mqttOutEndTarget) Driver() typex.XExternalDriver {
 	return nil
 }
+func (mm *mqttOutEndTarget) Init(outEndId string, configMap map[string]interface{}) error {
+	mm.PointId = outEndId
+	if err := utils.BindSourceConfig(configMap, &mm.mainConfig); err != nil {
+		return err
+	}
+	return nil
+}
 func (mm *mqttOutEndTarget) Start(cctx typex.CCTX) error {
 	mm.Ctx = cctx.Ctx
 	mm.CancelCTX = cctx.CancelCTX
-	outEnd := mm.RuleEngine.GetOutEnd(mm.PointId)
-	config := outEnd.Config
-	var mainConfig mqttConfig
-	if err := utils.BindSourceConfig(config, &mainConfig); err != nil {
-		return err
-	}
+	//
 	//
 	var connectHandler mqtt.OnConnectHandler = func(client mqtt.Client) {
 		glogger.GLogger.Infof("Mqtt OutEnd Connected Success")
@@ -56,19 +52,16 @@ func (mm *mqttOutEndTarget) Start(cctx typex.CCTX) error {
 		glogger.GLogger.Warnf("Connect lost: %v, try to reconnect\n", err)
 	}
 	opts := mqtt.NewClientOptions()
-	opts.AddBroker(fmt.Sprintf("tcp://%s:%v", mainConfig.Host, mainConfig.Port))
-	opts.SetClientID(mainConfig.ClientId)
-	opts.SetUsername(mainConfig.Username)
-	opts.SetPassword(mainConfig.Password)
-	mm.DataTopic = mainConfig.DataTopic
+	opts.AddBroker(fmt.Sprintf("tcp://%s:%v", mm.mainConfig.Host, mm.mainConfig.Port))
+	opts.SetClientID(mm.mainConfig.ClientId)
+	opts.SetUsername(mm.mainConfig.Username)
+	opts.SetPassword(mm.mainConfig.Password)
 	opts.OnConnect = connectHandler
 	opts.OnConnectionLost = connectLostHandler
-	opts.SetPingTimeout(10 * time.Second)
 	opts.SetAutoReconnect(true)
-	opts.SetMaxReconnectInterval(10 * time.Second)
+	opts.SetMaxReconnectInterval(30 * time.Second)
 	mm.client = mqtt.NewClient(opts)
 	token := mm.client.Connect()
-	token.WaitTimeout(10 * time.Second)
 	if token.Wait() && token.Error() != nil {
 		return token.Error()
 	} else {
@@ -107,14 +100,6 @@ func (mm *mqttOutEndTarget) Status() typex.SourceState {
 
 }
 
-func (mm *mqttOutEndTarget) Register(outEndId string) error {
-	mm.PointId = outEndId
-	return nil
-}
-func (mm *mqttOutEndTarget) Init(outEndId string, cfg map[string]interface{}) error {
-	mm.PointId = outEndId
-	return nil
-}
 func (mm *mqttOutEndTarget) Test(outEndId string) bool {
 	if mm.client != nil {
 		return mm.client.IsConnected()
@@ -134,7 +119,7 @@ func (mm *mqttOutEndTarget) Details() *typex.OutEnd {
 //
 func (mm *mqttOutEndTarget) To(data interface{}) (interface{}, error) {
 	if mm.client != nil {
-		return mm.client.Publish(mm.DataTopic, 1, false, data).Error(), nil
+		return mm.client.Publish(mm.mainConfig.PubTopic, 1, false, data).Error(), nil
 	}
 	return nil, errors.New("mqtt client is nil")
 }
@@ -145,5 +130,5 @@ func (mm *mqttOutEndTarget) To(data interface{}) (interface{}, error) {
 *
  */
 func (*mqttOutEndTarget) Configs() *typex.XConfig {
-	return core.GenOutConfig(typex.MQTT_TARGET, "MQTT", httpConfig{})
+	return core.GenOutConfig(typex.MQTT_TARGET, "MQTT", common.MqttConfig{})
 }

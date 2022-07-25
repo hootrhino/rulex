@@ -1,6 +1,7 @@
 package source
 
 import (
+	"github.com/i4de/rulex/common"
 	"github.com/i4de/rulex/core"
 	"github.com/i4de/rulex/typex"
 )
@@ -15,13 +16,16 @@ var SM typex.SourceRegistry = core.NewSourceTypeManager()
  */
 
 func LoadSt() {
-	SM.Register(typex.COAP, core.GenInConfig(typex.COAP, "About COAP", coAPConfig{}))
-	SM.Register(typex.GRPC, core.GenInConfig(typex.GRPC, "About GRPC", grpcConfig{}))
-	SM.Register(typex.HTTP, core.GenInConfig(typex.HTTP, "About HTTP", httpConfig{}))
+	SM.Register(typex.COAP, core.GenInConfig(typex.COAP, "About COAP", common.HostConfig{}))
+	SM.Register(typex.GRPC, core.GenInConfig(typex.GRPC, "About GRPC", common.GrpcConfig{}))
+	SM.Register(typex.HTTP, core.GenInConfig(typex.HTTP, "About HTTP", common.HostConfig{}))
+	SM.Register(typex.RULEX_UDP, core.GenInConfig(typex.RULEX_UDP, "About RULEX_UDP", common.RULEXUdpConfig{}))
+	SM.Register(typex.NATS_SERVER, core.GenInConfig(typex.NATS_SERVER, "About NATS_SERVER", common.NatsConfig{}))
+	SM.Register(typex.MQTT, core.GenInConfig(typex.MQTT, "About MQTT", common.NatsConfig{}))
+	//---------------------
+	// TODO 未来这些可能会被删除 转而挂到Device下
+	//---------------------
 	SM.Register(typex.MODBUS_MASTER, core.GenInConfig(typex.MODBUS_MASTER, "About MODBUS_MASTER", modBusConfig{}))
-	SM.Register(typex.MQTT, core.GenInConfig(typex.MQTT, "About MQTT", natsConfig{}))
-	SM.Register(typex.NATS_SERVER, core.GenInConfig(typex.NATS_SERVER, "About NATS_SERVER", snmpConfig{}))
-	SM.Register(typex.SNMP_SERVER, core.GenInConfig(typex.SNMP_SERVER, "About SNMP_SERVER", siemensS7config{}))
+	SM.Register(typex.SNMP_SERVER, core.GenInConfig(typex.SNMP_SERVER, "About SNMP_SERVER", snmpConfig{}))
 	SM.Register(typex.UART_MODULE, core.GenInConfig(typex.UART_MODULE, "About UART_MODULE", uartConfig{}))
-	SM.Register(typex.RULEX_UDP, core.GenInConfig(typex.RULEX_UDP, "About RULEX_UDP", udpConfig{}))
 }

@@ -19,13 +19,13 @@ import (
  */
 func (e *RuleEngine) LoadInEnd(in *typex.InEnd) error {
 	if in.Type == typex.MQTT {
-		return startSources(source.NewMqttInEndSource(in.UUID, e), in, e)
+		return startSources(source.NewMqttInEndSource(e), in, e)
 	}
 	if in.Type == typex.HTTP {
-		return startSources(source.NewHttpInEndSource(in.UUID, e), in, e)
+		return startSources(source.NewHttpInEndSource(e), in, e)
 	}
 	if in.Type == typex.COAP {
-		return startSources(source.NewCoAPInEndSource(in.UUID, e), in, e)
+		return startSources(source.NewCoAPInEndSource(e), in, e)
 	}
 	if in.Type == typex.GRPC {
 		return startSources(source.NewGrpcInEndSource(in.UUID, e), in, e)

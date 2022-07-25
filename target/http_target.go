@@ -3,48 +3,39 @@ package target
 import (
 	"net/http"
 
+	"github.com/i4de/rulex/common"
 	"github.com/i4de/rulex/core"
 	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
 )
 
-type httpConfig struct {
-	Url     string            `json:"url"`
-	Headers map[string]string `json:"headers"`
-}
 type HTTPTarget struct {
 	typex.XStatus
-	url     string
-	headers map[string]string
-	client  http.Client
+	client     http.Client
+	mainConfig common.HTTPConfig
 }
 
 func NewHTTPTarget(e typex.RuleX) typex.XTarget {
 	ht := new(HTTPTarget)
 	ht.RuleEngine = e
+	ht.mainConfig = common.HTTPConfig{}
 	return ht
 }
-func (ht *HTTPTarget) Register(outEndId string) error {
-	ht.PointId = outEndId
-	return nil
 
-}
-func (ht *HTTPTarget) Init(outEndId string, cfg map[string]interface{}) error {
+func (ht *HTTPTarget) Init(outEndId string, configMap map[string]interface{}) error {
 	ht.PointId = outEndId
+
+	if err := utils.BindSourceConfig(configMap, &ht.mainConfig); err != nil {
+		return err
+	}
+
 	return nil
 
 }
 func (ht *HTTPTarget) Start(cctx typex.CCTX) error {
 	ht.Ctx = cctx.Ctx
 	ht.CancelCTX = cctx.CancelCTX
-	config := ht.RuleEngine.GetOutEnd(ht.PointId).Config
-	var mainConfig httpConfig
-	if err := utils.BindSourceConfig(config, &mainConfig); err != nil {
-		return err
-	}
-	ht.url = mainConfig.Url
-	ht.headers = mainConfig.Headers
 	ht.client = http.Client{}
 	glogger.GLogger.Info("HTTPTarget started")
 	return nil
@@ -67,7 +58,7 @@ func (ht *HTTPTarget) Status() typex.SourceState {
 
 }
 func (ht *HTTPTarget) To(data interface{}) (interface{}, error) {
-	r, err := utils.Post(ht.client, data, ht.url, ht.headers)
+	r, err := utils.Post(ht.client, data, ht.mainConfig.Url, ht.mainConfig.Headers)
 	return r, err
 }
 
@@ -85,5 +76,5 @@ func (ht *HTTPTarget) Details() *typex.OutEnd {
 *
  */
 func (*HTTPTarget) Configs() *typex.XConfig {
-	return core.GenOutConfig(typex.HTTP_TARGET, "HTTP_TARGET", httpConfig{})
+	return core.GenOutConfig(typex.HTTP_TARGET, "HTTP_TARGET", common.HTTPConfig{})
 }

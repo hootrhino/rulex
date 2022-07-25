@@ -3,6 +3,7 @@ package source
 import (
 	"fmt"
 
+	"github.com/i4de/rulex/common"
 	"github.com/i4de/rulex/core"
 	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
@@ -11,21 +12,10 @@ import (
 	"github.com/nats-io/nats.go"
 )
 
-type natsConfig struct {
-	User     string `json:"user" validate:"required" title:"连接账户" info:""`
-	Password string `json:"password" validate:"required" title:"连接密码" info:""`
-	Host     string `json:"host" validate:"required" title:"服务地址" info:""`
-	Port     int32  `json:"port" validate:"required" title:"服务端口" info:""`
-	Topic    string `json:"topic" validate:"required" title:"消息来源" info:""`
-}
 type natsSource struct {
 	typex.XStatus
-	user          string
-	password      string
-	host          string
-	port          int32
-	topic         string
 	natsConnector *nats.Conn
+	mainConfig    common.NatsConfig
 }
 
 func NewNatsSource(e typex.RuleX) typex.XSource {
@@ -38,27 +28,17 @@ func (nt *natsSource) Start(cctx typex.CCTX) error {
 	nt.Ctx = cctx.Ctx
 	nt.CancelCTX = cctx.CancelCTX
 
-	config := nt.RuleEngine.GetInEnd(nt.PointId).Config
-	var mainConfig natsConfig
-	if err := utils.BindSourceConfig(config, &mainConfig); err != nil {
-		return err
-	}
-	nc, err := nats.Connect(fmt.Sprintf("%s:%v", mainConfig.Host, mainConfig.Port), func(o *nats.Options) error {
-		o.User = mainConfig.User
-		o.Password = mainConfig.Password
+	nc, err := nats.Connect(fmt.Sprintf("%s:%v", nt.mainConfig.Host, nt.mainConfig.Port), func(o *nats.Options) error {
+		o.User = nt.mainConfig.User
+		o.Password = nt.mainConfig.Password
 		return nil
 	})
 	if err != nil {
 		return err
 	} else {
 		nt.natsConnector = nc
-		nt.host = mainConfig.Host
-		nt.port = mainConfig.Port
-		nt.user = mainConfig.User
-		nt.password = mainConfig.Password
-		nt.topic = mainConfig.Topic
 		//
-		_, err := nt.natsConnector.Subscribe(nt.topic, func(msg *nats.Msg) {
+		_, err := nt.natsConnector.Subscribe(nt.mainConfig.Topic, func(msg *nats.Msg) {
 			if nt.natsConnector != nil {
 				work, err1 := nt.RuleEngine.WorkInEnd(nt.RuleEngine.GetInEnd(nt.PointId), string(msg.Data))
 				if !work {
@@ -82,8 +62,11 @@ func (nt *natsSource) Test(inendId string) bool {
 	}
 }
 
-func (nt *natsSource) Init(inEndId string, cfg map[string]interface{}) error {
+func (nt *natsSource) Init(inEndId string, configMap map[string]interface{}) error {
 	nt.PointId = inEndId
+	if err := utils.BindSourceConfig(configMap, &nt.mainConfig); err != nil {
+		return err
+	}
 	return nil
 }
 func (nt *natsSource) Enabled() bool {
@@ -130,7 +113,7 @@ func (nt *natsSource) Stop() {
 	nt.CancelCTX()
 }
 func (nt *natsSource) Configs() *typex.XConfig {
-	return core.GenInConfig(typex.NATS_SERVER, "NATS_SERVER", natsConfig{})
+	return core.GenInConfig(typex.NATS_SERVER, "NATS_SERVER", common.NatsConfig{})
 }
 
 func (nt *natsSource) DataModels() []typex.XDataModel {

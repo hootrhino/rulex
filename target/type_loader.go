@@ -1,6 +1,7 @@
 package target
 
 import (
+	"github.com/i4de/rulex/common"
 	"github.com/i4de/rulex/core"
 	"github.com/i4de/rulex/typex"
 )
@@ -15,9 +16,9 @@ var TM typex.TargetRegistry = core.NewTargetTypeManager()
  */
 
 func LoadTt() {
-	TM.Register(typex.HTTP_TARGET, core.GenOutConfig(typex.HTTP_TARGET, "About HTTP_TARGET", httpConfig{}))
-	TM.Register(typex.MONGO_SINGLE, core.GenOutConfig(typex.MONGO_SINGLE, "About MONGO_SINGLE", mongoConfig{}))
-	TM.Register(typex.MQTT_TARGET, core.GenOutConfig(typex.MQTT_TARGET, "About MQTT_TARGET", mqttConfig{}))
-	TM.Register(typex.NATS_TARGET, core.GenOutConfig(typex.NATS_TARGET, "About NATS_TARGET", natsConfig{}))
-	TM.Register(typex.TDENGINE_TARGET, core.GenOutConfig(typex.TDENGINE_TARGET, "About TDENGINE_TARGET", tdEngineConfig{}))
+	TM.Register(typex.HTTP_TARGET, core.GenOutConfig(typex.HTTP_TARGET, "About HTTP_TARGET", common.HTTPConfig{}))
+	TM.Register(typex.MONGO_SINGLE, core.GenOutConfig(typex.MONGO_SINGLE, "About MONGO_SINGLE", common.MongoConfig{}))
+	TM.Register(typex.MQTT_TARGET, core.GenOutConfig(typex.MQTT_TARGET, "About MQTT_TARGET", common.MqttConfig{}))
+	TM.Register(typex.NATS_TARGET, core.GenOutConfig(typex.NATS_TARGET, "About NATS_TARGET", common.NatsConfig{}))
+	TM.Register(typex.TDENGINE_TARGET, core.GenOutConfig(typex.TDENGINE_TARGET, "About TDENGINE_TARGET", common.TDEngineConfig{}))
 }
