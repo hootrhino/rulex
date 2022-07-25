@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/i4de/rulex/common"
+	"github.com/i4de/rulex/core"
 	"github.com/i4de/rulex/driver"
 	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
@@ -27,8 +28,6 @@ type rtu485_ther struct {
 	rtuConfig  common.RTUConfig
 	locker     sync.Locker
 }
-
-var __debug1 bool = false
 
 // Example: 0x02 0x92 0xFF 0x98
 type __sensor_data struct {
@@ -72,7 +71,7 @@ func (ther *rtu485_ther) Start(cctx typex.CCTX) error {
 	ther.rtuHandler.Parity = ther.rtuConfig.Parity
 	ther.rtuHandler.StopBits = ther.rtuConfig.StopBits
 	ther.rtuHandler.Timeout = time.Duration(ther.mainConfig.Frequency) * time.Second
-	if __debug1 {
+	if core.GlobalConfig.AppDebugMode {
 		ther.rtuHandler.Logger = golog.New(os.Stdout, "485-TEMP-HUMI-DEVICE: ", golog.LstdFlags)
 	}
 	if err := ther.rtuHandler.Connect(); err != nil {

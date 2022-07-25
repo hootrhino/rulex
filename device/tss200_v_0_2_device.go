@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/i4de/rulex/common"
+	"github.com/i4de/rulex/core"
 	"github.com/i4de/rulex/driver"
 	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
@@ -16,8 +17,6 @@ import (
 	"github.com/goburrow/modbus"
 	"github.com/mitchellh/mapstructure"
 )
-
-var __debug3 bool = true
 
 type tss200V2 struct {
 	typex.XStatus
@@ -70,7 +69,7 @@ func (tss *tss200V2) Start(cctx typex.CCTX) error {
 	tss.rtuHandler.Parity = tss.rtuConfig.Parity
 	tss.rtuHandler.StopBits = tss.rtuConfig.StopBits
 	tss.rtuHandler.Timeout = time.Duration(tss.mainConfig.Frequency) * time.Second
-	if __debug3 {
+	if core.GlobalConfig.AppDebugMode {
 		tss.rtuHandler.Logger = golog.New(os.Stdout, "TSS200-DEVICE: ", golog.LstdFlags)
 	}
 

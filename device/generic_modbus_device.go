@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/i4de/rulex/common"
+	"github.com/i4de/rulex/core"
 	"github.com/i4de/rulex/driver"
 	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
@@ -19,13 +20,29 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
-var __debug2 bool = true
+//
+// 这是个通用Modbus采集器, 主要用来在通用场景下采集数据，因此需要配合规则引擎来使用
+//
+// Modbus 采集到的数据如下, LUA 脚本可做解析, 示例脚本可参照 generic_modbus_parse.lua
+// {
+//     "d1":{
+//         "tag":"d1",
+//         "function":3,
+//         "slaverId":1,
+//         "address":0,
+//         "quantity":2,
+//         "value":"..."
+//     },
+//     "d2":{
+//         "tag":"d2",
+//         "function":3,
+//         "slaverId":2,
+//         "address":0,
+//         "quantity":2,
+//         "value":"..."
+//     }
+// }
 
-/*
-*
-* 这是个通用Modbus采集器, 主要用来在通用场景下采集数据，因此需要配合规则引擎来使用
-*
- */
 type generic_modbus_device struct {
 	typex.XStatus
 	status     typex.DeviceState
@@ -88,7 +105,7 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 		mdev.rtuHandler.Parity = mdev.rtuConfig.Parity
 		mdev.rtuHandler.StopBits = mdev.rtuConfig.StopBits
 		mdev.rtuHandler.Timeout = time.Duration(mdev.mainConfig.Frequency) * time.Second
-		if __debug2 {
+		if core.GlobalConfig.AppDebugMode {
 			mdev.rtuHandler.Logger = golog.New(os.Stdout, "485mdevSource: ", golog.LstdFlags)
 		}
 

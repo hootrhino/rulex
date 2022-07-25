@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/i4de/rulex/common"
+	"github.com/i4de/rulex/core"
 	"github.com/i4de/rulex/driver"
 	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
@@ -16,8 +17,6 @@ import (
 	"github.com/goburrow/modbus"
 	"github.com/mitchellh/mapstructure"
 )
-
-var __debug4 bool = true
 
 type YK8Controller struct {
 	typex.XStatus
@@ -70,7 +69,7 @@ func (yk8 *YK8Controller) Start(cctx typex.CCTX) error {
 	yk8.rtuHandler.Parity = yk8.rtuConfig.Parity
 	yk8.rtuHandler.StopBits = yk8.rtuConfig.StopBits
 	yk8.rtuHandler.Timeout = time.Duration(yk8.mainConfig.Frequency) * time.Second
-	if __debug4 {
+	if core.GlobalConfig.AppDebugMode {
 		yk8.rtuHandler.Logger = golog.New(os.Stdout, "YK8-DEVICE: ", golog.LstdFlags)
 	}
 
