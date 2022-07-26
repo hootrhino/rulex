@@ -1,6 +1,7 @@
 package target
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -39,11 +40,7 @@ func NewTdEngineTarget(e typex.RuleX) typex.XTarget {
 	return &td
 
 }
-
-//
-// 测试资源是否可用
-//
-func (td *tdEngineTarget) Test(inEndId string) bool {
+func (td *tdEngineTarget) test() bool {
 	if err := execQuery(td.client,
 		td.mainConfig.Username,
 		td.mainConfig.Password,
@@ -53,6 +50,13 @@ func (td *tdEngineTarget) Test(inEndId string) bool {
 		return false
 	}
 	return true
+}
+
+//
+// 测试资源是否可用
+//
+func (td *tdEngineTarget) Test(inEndId string) bool {
+	return td.test()
 }
 
 //
@@ -67,7 +71,10 @@ func (td *tdEngineTarget) Init(outEndId string, configMap map[string]interface{}
 	}
 	td.mainConfig.Url = fmt.Sprintf("http://%s:%v/rest/sql/%s",
 		td.mainConfig.Fqdn, td.mainConfig.Port, td.mainConfig.DbName)
-	return nil
+	if td.test() {
+		return nil
+	}
+	return errors.New("tdengine connect error")
 }
 
 //

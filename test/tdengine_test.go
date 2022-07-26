@@ -9,8 +9,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/i4de/rulex/common"
 	"github.com/i4de/rulex/core"
 	"github.com/i4de/rulex/engine"
+	"github.com/i4de/rulex/glogger"
 	httpserver "github.com/i4de/rulex/plugin/http_server"
 	"github.com/i4de/rulex/rulexrpc"
 	"github.com/i4de/rulex/typex"
@@ -19,19 +21,8 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-type tdEngineConfig struct {
-	Fqdn           string `json:"fqdn" validate:"required"`
-	Port           int    `json:"port" validate:"required"`
-	Username       string `json:"username" validate:"required"`
-	Password       string `json:"password" validate:"required"`
-	DbName         string `json:"dbName" validate:"required"`
-	CreateDbSql    string `json:"createDbSql" validate:"required"`
-	CreateTableSql string `json:"createTableSql" validate:"required"`
-	InsertSql      string `json:"insertSql" validate:"required"`
-}
-
 func Test_gen_td_config(t *testing.T) {
-	td := tdEngineConfig{
+	td := common.TDEngineConfig{
 		Fqdn:           "127.0.0.1",                                                                      // 服务地址
 		Port:           4400,                                                                             // 服务端口
 		Username:       "root",                                                                           // 用户
@@ -45,7 +36,7 @@ func Test_gen_td_config(t *testing.T) {
 	t.Log(string(b))
 }
 func Test_gen_tdEngineConfig(t *testing.T) {
-	c, err := core.RenderOutConfig(typex.TDENGINE_TARGET, "TDENGINE", tdEngineConfig{})
+	c, err := core.RenderOutConfig(typex.TDENGINE_TARGET, "TDENGINE", common.TDEngineConfig{})
 	if err != nil {
 		t.Error(err)
 	}
@@ -59,8 +50,15 @@ func Test_gen_tdEngineConfig(t *testing.T) {
 *
  */
 func Test_data_to_tdengine(t *testing.T) {
-	engine := engine.NewRuleEngine(core.InitGlobalConfig("conf/rulex.ini"))
+	mainConfig := core.InitGlobalConfig("conf/rulex.ini")
+	glogger.StartGLogger(true, core.GlobalConfig.LogPath)
+	glogger.StartLuaLogger(core.GlobalConfig.LuaLogPath)
+	core.StartStore(core.GlobalConfig.MaxQueueSize)
+	core.SetLogLevel()
+	core.SetPerformance()
+	engine := engine.NewRuleEngine(mainConfig)
 	engine.Start()
+
 	hh := httpserver.NewHttpApiServer()
 
 	// HttpApiServer loaded default
@@ -68,22 +66,26 @@ func Test_data_to_tdengine(t *testing.T) {
 		t.Fatal("Rule load failed:", err)
 	}
 	// Grpc Inend
-	grpcInend := typex.NewInEnd("GRPC", "Test_data_to_tdengine", "Test_data_to_tdengine", map[string]interface{}{
-		"port": 2581,
-	})
+	grpcInend := typex.NewInEnd(
+		"GRPC",
+		"Test_data_to_tdengine",
+		"Test_data_to_tdengine", map[string]interface{}{
+			"port": 2581,
+			"host": "127.0.0.1",
+		})
 
 	if err := engine.LoadInEnd(grpcInend); err != nil {
-		t.Error("grpcInend load failed:", err)
+		t.Fatal("grpcInend load failed:", err)
 	}
 
 	tdOutEnd := typex.NewOutEnd(typex.TDENGINE_TARGET,
 		"Test_data_to_tdengine",
 		"Test_data_to_tdengine",
 		map[string]interface{}{
-			"fqdn":           "10.55.16.241",
+			"fqdn":           "127.0.0.1",
 			"port":           6041,
 			"username":       "root",
-			"password":       "taosdata",
+			"password":       "root",
 			"dbName":         "device",
 			"createDbSql":    "CREATE DATABASE IF NOT EXISTS device UPDATE 0;",
 			"createTableSql": "CREATE TABLE IF NOT EXISTS meter01 (ts TIMESTAMP, co2 INT, hum INT, lex INT, temp INT);",
