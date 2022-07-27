@@ -288,9 +288,13 @@ func (*snmpSource) Topology() []typex.TopologyPoint {
 //
 // 来自外面的数据
 //
-func (*snmpSource) DownStream([]byte) {}
+func (*snmpSource) DownStream([]byte) (int, error) {
+	return 0, nil
+}
 
 //
 // 上行数据
 //
-func (*snmpSource) UpStream() {}
+func (*snmpSource) UpStream([]byte) (int, error) {
+	return 0, nil
+}

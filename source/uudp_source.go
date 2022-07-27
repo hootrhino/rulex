@@ -123,9 +123,13 @@ func (*udpSource) Topology() []typex.TopologyPoint {
 //
 // 来自外面的数据
 //
-func (*udpSource) DownStream([]byte) {}
+func (*udpSource) DownStream([]byte) (int, error) {
+	return 0, nil
+}
 
 //
 // 上行数据
 //
-func (*udpSource) UpStream() {}
+func (*udpSource) UpStream([]byte) (int, error) {
+	return 0, nil
+}

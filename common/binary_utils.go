@@ -51,6 +51,26 @@ func SetABitOnByte(b *byte, position uint8, value bool) (byte, error) {
 
 /*
 *
+* 字符串转字节
+*
+ */
+func BitStringToBytes(s string) ([]byte, error) {
+	if len(s)%8 != 0 {
+		return nil, errors.New("length must be integer multiple of 8")
+	}
+	b := make([]byte, (len(s)+(8-1))/8)
+	for i := 0; i < len(s); i++ {
+		c := s[i]
+		if c < '0' || c > '1' {
+			return nil, errors.New("value out of range")
+		}
+		b[i>>3] |= (c - '0') << uint(7-i&7)
+	}
+	return b, nil
+}
+
+/*
+*
 * 字节上某个位转逻辑值
 *
  */

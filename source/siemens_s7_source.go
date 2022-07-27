@@ -215,9 +215,13 @@ func (s7 *siemensS7Source) Stop() {
 //
 // 来自外面的数据
 //
-func (*siemensS7Source) DownStream([]byte) {}
+func (*siemensS7Source) DownStream([]byte) (int, error) {
+	return 0, nil
+}
 
 //
 // 上行数据
 //
-func (*siemensS7Source) UpStream() {}
+func (*siemensS7Source) UpStream([]byte) (int, error) {
+	return 0, nil
+}

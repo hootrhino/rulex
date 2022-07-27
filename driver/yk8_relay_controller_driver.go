@@ -7,7 +7,6 @@ package driver
 //
 import (
 	"encoding/json"
-	"errors"
 
 	"github.com/i4de/rulex/common"
 	"github.com/i4de/rulex/typex"
@@ -107,43 +106,33 @@ func (yk8 *YK8RelayControllerDriver) Read(data []byte) (int, error) {
 	copy(data, bytes)
 	return len(bytes), nil
 }
+func i2bool(v byte) bool {
+	if v == 0 {
+		return false
+	}
+	return true
+}
 
 //
-// 写入数据必须是有8个布尔值的字节数组: [1,1,1,1,1,1,1,1]
+// 写入数据
 //
 func (yk8 *YK8RelayControllerDriver) Write(data []byte) (int, error) {
-	if len(data) != 8 {
-		return 0, errors.New("操作继电器组最少8个布尔值")
-	}
-	for _, v := range data {
-		if v > 1 {
-			return 0, errors.New("必须是逻辑值")
-		}
-	}
-
-	Sw1 := common.ByteToBool(data[0])
-	Sw2 := common.ByteToBool(data[1])
-	Sw3 := common.ByteToBool(data[2])
-	Sw4 := common.ByteToBool(data[3])
-	Sw5 := common.ByteToBool(data[4])
-	Sw6 := common.ByteToBool(data[5])
-	Sw7 := common.ByteToBool(data[6])
-	Sw8 := common.ByteToBool(data[7])
-	var value byte
-	common.SetABitOnByte(&value, 0, Sw1)
-	common.SetABitOnByte(&value, 1, Sw2)
-	common.SetABitOnByte(&value, 2, Sw3)
-	common.SetABitOnByte(&value, 3, Sw4)
-	common.SetABitOnByte(&value, 4, Sw5)
-	common.SetABitOnByte(&value, 5, Sw6)
-	common.SetABitOnByte(&value, 6, Sw7)
-	common.SetABitOnByte(&value, 7, Sw8)
-
-	_, err := yk8.client.WriteMultipleCoils(0, 1, []byte{value})
-	if err != nil {
+	dataMap := []common.RegisterRW{}
+	if err := json.Unmarshal(data, &dataMap); err != nil {
 		return 0, err
 	}
-	return 0, err
+	for _, r := range dataMap {
+		yk8.handler.SlaveId = r.SlaverId
+		bytes, err0 := common.BitStringToBytes(r.Value)
+		if err0 != nil {
+			return 0, err0
+		}
+		_, err1 := yk8.client.WriteMultipleCoils(0, 1, bytes)
+		if err1 != nil {
+			return 0, err1
+		}
+	}
+	return 0, nil
 }
 
 //---------------------------------------------------

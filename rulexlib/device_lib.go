@@ -13,21 +13,21 @@ import (
 * 写: rulexlib:WriteDevice(ID, []byte{}) -> data, err
 *
  */
-var __readBuffer []byte = []byte{}
+var deviceReadBuffer []byte = []byte{}
 
 func ReadDevice(rx typex.RuleX) func(*lua.LState) int {
 	return func(l *lua.LState) int {
 		devUUID := l.ToString(2)
 		Device := rx.GetDevice(devUUID)
 		if Device != nil {
-			n, err := Device.Device.OnRead(__readBuffer)
+			n, err := Device.Device.OnRead(deviceReadBuffer)
 			if err != nil {
 				glogger.GLogger.Error(err)
 				l.Push(lua.LNil)
 				l.Push(lua.LString(err.Error()))
 				return 2
 			}
-			l.Push(lua.LString(__readBuffer[:n]))
+			l.Push(lua.LString(deviceReadBuffer[:n]))
 			l.Push(lua.LNil)
 			return 2
 		}
@@ -61,6 +61,6 @@ func WriteDevice(rx typex.RuleX) func(*lua.LState) int {
 		}
 		l.Push(lua.LNil)
 		l.Push(lua.LString("device not exists:" + devUUID))
-		return 0
+		return 2
 	}
 }

@@ -133,9 +133,13 @@ func (*natsSource) Topology() []typex.TopologyPoint {
 //
 // 来自外面的数据
 //
-func (*natsSource) DownStream([]byte) {}
+func (*natsSource) DownStream([]byte) (int, error) {
+	return 0, nil
+}
 
 //
 // 上行数据
 //
-func (*natsSource) UpStream() {}
+func (*natsSource) UpStream([]byte) (int, error) {
+	return 0, nil
+}

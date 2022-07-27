@@ -134,7 +134,7 @@ func (d *modBusRtuDriver) Write(data []byte) (int, error) {
 	if err := json.Unmarshal(data, &dataMap); err != nil {
 		return 0, err
 	}
-	for _, r := range d.Registers {
+	for _, r := range dataMap {
 		if r.Function == common.WRITE_SINGLE_COIL {
 			_, err := d.client.WriteSingleCoil(r.Address, binary.BigEndian.Uint16([]byte(r.Value)[0:2]))
 			if err != nil {

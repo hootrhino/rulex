@@ -139,9 +139,13 @@ func (*mqttInEndSource) Topology() []typex.TopologyPoint {
 //
 // 来自外面的数据
 //
-func (*mqttInEndSource) DownStream([]byte) {}
+func (*mqttInEndSource) DownStream([]byte) (int, error) {
+	return 0, nil
+}
 
 //
 // 上行数据
 //
-func (*mqttInEndSource) UpStream() {}
+func (*mqttInEndSource) UpStream([]byte) (int, error) {
+	return 0, nil
+}

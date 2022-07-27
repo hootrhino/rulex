@@ -122,9 +122,13 @@ func (*coAPInEndSource) Topology() []typex.TopologyPoint {
 //
 // 来自外面的数据
 //
-func (*coAPInEndSource) DownStream([]byte) {}
+func (*coAPInEndSource) DownStream([]byte) (int, error) {
+	return 0, nil
+}
 
 //
 // 上行数据
 //
-func (*coAPInEndSource) UpStream() {}
+func (*coAPInEndSource) UpStream([]byte) (int, error) {
+	return 0, nil
+}

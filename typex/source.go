@@ -73,9 +73,9 @@ type XSource interface {
 	//
 	// 来自外面的数据
 	//
-	DownStream([]byte)
+	DownStream([]byte) (int, error)
 	//
 	// 上行数据
 	//
-	UpStream()
+	UpStream([]byte) (int, error)
 }

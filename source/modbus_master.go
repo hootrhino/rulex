@@ -356,9 +356,13 @@ func (*modbusMasterSource) Topology() []typex.TopologyPoint {
 //
 // 来自外面的数据
 //
-func (*modbusMasterSource) DownStream([]byte) {}
+func (*modbusMasterSource) DownStream([]byte) (int, error) {
+	return 0, nil
+}
 
 //
 // 上行数据
 //
-func (*modbusMasterSource) UpStream() {}
+func (*modbusMasterSource) UpStream([]byte) (int, error) {
+	return 0, nil
+}

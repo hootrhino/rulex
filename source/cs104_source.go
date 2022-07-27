@@ -182,9 +182,13 @@ func (cs *cs104Source) Stop() {
 //
 // 来自外面的数据
 //
-func (*cs104Source) DownStream([]byte) {}
+func (*cs104Source) DownStream([]byte) (int, error) {
+	return 0, nil
+}
 
 //
 // 上行数据
 //
-func (*cs104Source) UpStream() {}
+func (*cs104Source) UpStream([]byte) (int, error) {
+	return 0, nil
+}

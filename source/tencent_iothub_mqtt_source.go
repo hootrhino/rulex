@@ -183,9 +183,13 @@ func (*tencentIothubSource) Topology() []typex.TopologyPoint {
 //
 // 来自外面的数据
 //
-func (*tencentIothubSource) DownStream([]byte) {}
+func (*tencentIothubSource) DownStream([]byte) (int, error) {
+	return 0, nil
+}
 
 //
 // 上行数据
 //
-func (*tencentIothubSource) UpStream() {}
+func (*tencentIothubSource) UpStream([]byte) (int, error) {
+	return 0, nil
+}

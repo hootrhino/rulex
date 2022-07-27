@@ -120,9 +120,13 @@ func (*httpInEndSource) Topology() []typex.TopologyPoint {
 //
 // 来自外面的数据
 //
-func (*httpInEndSource) DownStream([]byte) {}
+func (*httpInEndSource) DownStream([]byte) (int, error) {
+	return 0, nil
+}
 
 //
 // 上行数据
 //
-func (*httpInEndSource) UpStream() {}
+func (*httpInEndSource) UpStream([]byte) (int, error) {
+	return 0, nil
+}

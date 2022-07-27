@@ -9,14 +9,12 @@ function Failed(error)
 end
 -- Actions
 Actions = {function(data)
-    local t = {
-        ["type"] = 5,
-        ["params"] = {
-            ["address"] = 1,
-            ["quantity"] = 1,
-            ["value"] = 0xFF00
-        }
-    }
-    rulexlib:WriteInStream('INEND', rulexlib:T2J(t))
+    n, err = rulexlib:WriteDevice('YK8Device1', rulexlib:T2J({{
+        ['function'] = 15,
+        ['slaverId'] = 3,
+        ['address'] = 0,
+        ['quantity'] = 1,
+        ['value'] = data
+    }}))
     return false, data
 end}

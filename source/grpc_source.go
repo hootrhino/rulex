@@ -151,9 +151,13 @@ func (*grpcInEndSource) Topology() []typex.TopologyPoint {
 //
 // 来自外面的数据
 //
-func (*grpcInEndSource) DownStream([]byte) {}
+func (*grpcInEndSource) DownStream([]byte) (int, error) {
+	return 0, nil
+}
 
 //
 // 上行数据
 //
-func (*grpcInEndSource) UpStream() {}
+func (*grpcInEndSource) UpStream([]byte) (int, error) {
+	return 0, nil
+}
