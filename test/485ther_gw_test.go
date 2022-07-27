@@ -55,6 +55,13 @@ func Test_modbus_485_sensor_gateway(t *testing.T) {
 					"address":  0,
 					"quantity": 2,
 				},
+				{
+					"tag":      "node2",
+					"function": 3,
+					"slaverId": 2,
+					"address":  0,
+					"quantity": 2,
+				},
 			},
 		})
 	RTU485Device.UUID = "RTU485Device1"
@@ -74,7 +81,7 @@ func Test_modbus_485_sensor_gateway(t *testing.T) {
 			"SubTopic": "iothub/down/IGW00000001",
 		},
 	)
-	mqttOutEnd.UUID = "mqttOutEnd"
+	mqttOutEnd.UUID = "mqttOutEnd-iothub"
 	if err := engine.LoadOutEnd(mqttOutEnd); err != nil {
 		t.Error("mqttOutEnd load failed:", err)
 	}
@@ -86,18 +93,23 @@ func Test_modbus_485_sensor_gateway(t *testing.T) {
 		[]string{RTU485Device.UUID}, // 数据来自网关设备,所以这里需要配置设备ID
 		`function Success() print("[LUA Success Callback]=> OK") end`,
 		`
-		Actions = {
-			function(data)
-			    print(data)
-				local t = rulexlib:J2T(data)
-				t['type'] = 'sub_device'
-				t['sn'] = 'IGW00000001'
-				local jsons = rulexlib:T2J(t)
-				rulexlib:log(jsons)
-				rulexlib:DataToMqtt('mqttOutEnd', jsons)
-				return true, data
-			end
-		}`,
+Actions = {function(data)
+	for tag, v in pairs(rulexlib:J2T(data)) do
+		local ts = rulexlib:TsUnixNano()
+		local value = rulexlib:J2T(v['value'])
+		value['tag']= tag;
+		local jsont = {
+			method = 'report',
+			requestId = ts,
+			timestamp = ts,
+			params = value
+		}
+		print('mqttOutEnd-iothub', rulexlib:T2J(jsont))
+		rulexlib:DataToMqtt('mqttOutEnd-iothub', rulexlib:T2J(jsont))
+	end
+	return true, data
+end}
+`,
 		`function Failed(error) print("[LUA Failed Callback]", error) end`)
 	if err := engine.LoadRule(rule); err != nil {
 		t.Error(err)
