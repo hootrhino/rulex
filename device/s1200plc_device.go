@@ -35,6 +35,7 @@ func NewS1200plc(e typex.RuleX) typex.XDevice {
 	s1200 := new(s1200plc)
 	s1200.RuleEngine = e
 	s1200.lock = sync.Mutex{}
+	s1200.mainConfig = common.S1200Config{}
 	return s1200
 }
 

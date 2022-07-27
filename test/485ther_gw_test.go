@@ -1,9 +1,7 @@
 package test
 
 import (
-	"os"
-	"os/signal"
-	"syscall"
+	"time"
 
 	"github.com/i4de/rulex/core"
 	"github.com/i4de/rulex/engine"
@@ -27,11 +25,8 @@ func Test_modbus_485_sensor_gateway(t *testing.T) {
 	core.StartStore(core.GlobalConfig.MaxQueueSize)
 	core.SetLogLevel()
 	core.SetPerformance()
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, syscall.SIGINT, syscall.SIGABRT, syscall.SIGTERM)
 	engine := engine.NewRuleEngine(mainConfig)
 	engine.Start()
-
 
 	hh := httpserver.NewHttpApiServer()
 
@@ -46,11 +41,20 @@ func Test_modbus_485_sensor_gateway(t *testing.T) {
 			"timeout":   5,
 			"frequency": 5,
 			"config": map[string]interface{}{
-				"uart":     "COM3",
-				"baudRate": 4800,
+				"uart":     "COM4",
 				"dataBits": 8,
 				"parity":   "N",
 				"stopBits": 1,
+				"baudRate": 4800,
+			},
+			"registers": []map[string]interface{}{
+				{
+					"tag":      "node1",
+					"function": 3,
+					"slaverId": 1,
+					"address":  0,
+					"quantity": 2,
+				},
 			},
 		})
 	RTU485Device.UUID = "RTU485Device1"
@@ -61,12 +65,13 @@ func Test_modbus_485_sensor_gateway(t *testing.T) {
 		"MQTT",
 		"MQTT桥接",
 		"MQTT桥接", map[string]interface{}{
-			"Host":      "106.15.225.172",
-			"Port":      1883,
-			"DataTopic": "iothub/upstream/IGW00000001",
-			"ClientId":  "IGW00000001",
-			"Username":  "IGW00000001",
-			"Password":  "IGW00000001",
+			"Host":     "127.0.0.1",
+			"Port":     1883,
+			"ClientId": "IGW00000001",
+			"Username": "IGW00000001",
+			"Password": "IGW00000001",
+			"PubTopic": "iothub/up/IGW00000001",
+			"SubTopic": "iothub/down/IGW00000001",
 		},
 	)
 	mqttOutEnd.UUID = "mqttOutEnd"
@@ -83,6 +88,7 @@ func Test_modbus_485_sensor_gateway(t *testing.T) {
 		`
 		Actions = {
 			function(data)
+			    print(data)
 				local t = rulexlib:J2T(data)
 				t['type'] = 'sub_device'
 				t['sn'] = 'IGW00000001'
@@ -96,8 +102,6 @@ func Test_modbus_485_sensor_gateway(t *testing.T) {
 	if err := engine.LoadRule(rule); err != nil {
 		t.Error(err)
 	}
-	s := <-c
-	glogger.GLogger.Warn("Received stop signal:", s)
+	time.Sleep(25 * time.Second)
 	engine.Stop()
-	os.Exit(0)
 }

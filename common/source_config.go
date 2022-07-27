@@ -1,14 +1,5 @@
 package common
 
-/*
-*
-*
-*
- */
-type HostConfig struct {
-	Host string `json:"host" validate:"required"`
-	Port int    `json:"port" validate:"required"`
-}
 
 //
 //

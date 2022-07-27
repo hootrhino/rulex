@@ -59,12 +59,12 @@ type Registers struct {
 *
  */
 type RegisterRW struct {
-	Tag      string `json:"tag" validate:"required"`      // Function
-	Function int    `json:"function" validate:"required"` // Function
-	SlaverId byte   `json:"slaverId" validate:"required"`
-	Address  uint16 `json:"address" validate:"required"`  // Address
-	Quantity uint16 `json:"quantity" validate:"required"` // Quantity
-	Value    string `json:"value"`                        // Quantity
+	Tag      string `json:"tag" validate:"required" title:"数据Tag" info:""`         // Function
+	Function int    `json:"function" validate:"required" title:"Modbus功能" info:""` // Function
+	SlaverId byte   `json:"slaverId" validate:"required" title:"从机ID" info:""`
+	Address  uint16 `json:"address" validate:"required" title:"地址" info:""`  // Address
+	Quantity uint16 `json:"quantity" validate:"required" title:"数量" info:""` // Quantity
+	Value    string `json:"value" title:"值" info:"本地系统的串口路径"`                // Quantity
 }
 
 //
@@ -73,7 +73,7 @@ type RegisterRW struct {
 // DataBits = 8
 // Parity = "N"
 // StopBits = 1
-// SlaveId = 1
+// SlaveId = 1	
 // Timeout = 5 * time.Second
 //
 type RTUConfig struct {
@@ -84,10 +84,3 @@ type RTUConfig struct {
 	StopBits int    `json:"stopBits" validate:"required" title:"停止位" info:"串口通信停止位"`
 }
 
-//
-// 127.0.0.1:1234
-//
-type TCPConfig struct {
-	Ip   string `json:"ip" validate:"required" title:"IP地址" info:"IP地址"`
-	Port int    `json:"port" validate:"required" title:"端口" info:"端口"`
-}

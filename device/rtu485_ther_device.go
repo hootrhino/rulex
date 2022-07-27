@@ -30,11 +30,6 @@ type rtu485_ther struct {
 }
 
 // Example: 0x02 0x92 0xFF 0x98
-type __sensor_data struct {
-	TEMP float32 `json:"temp"` //系数: 0.1
-	HUM  float32 `json:"hum"`  //系数: 0.1
-}
-
 /*
 *
 * 温湿度传感器
@@ -43,6 +38,9 @@ type __sensor_data struct {
 func NewRtu485Ther(e typex.RuleX) typex.XDevice {
 	ther := new(rtu485_ther)
 	ther.RuleEngine = e
+	ther.locker = &sync.Mutex{}
+	ther.mainConfig = common.ModBusConfig{}
+	ther.rtuConfig = common.RTUConfig{}
 	return ther
 }
 

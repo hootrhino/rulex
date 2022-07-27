@@ -51,6 +51,7 @@ func NewRtu485THerDriver(d *typex.Device, e typex.RuleX,
 		RuleEngine: e,
 		handler:    handler,
 		client:     client,
+		Registers:  registers,
 	}
 }
 

@@ -37,6 +37,8 @@ type tss200V2 struct {
 func NewTS200Sensor(e typex.RuleX) typex.XDevice {
 	tss := new(tss200V2)
 	tss.locker = &sync.Mutex{}
+	tss.mainConfig = common.ModBusConfig{}
+	tss.rtuConfig = common.RTUConfig{}
 	tss.RuleEngine = e
 	return tss
 }

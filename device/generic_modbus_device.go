@@ -52,7 +52,7 @@ type generic_modbus_device struct {
 	tcpHandler *modbus.TCPClientHandler
 	mainConfig common.ModBusConfig
 	rtuConfig  common.RTUConfig
-	tcpConfig  common.TCPConfig
+	tcpConfig  common.HostConfig
 	locker     sync.Locker
 }
 
@@ -65,6 +65,9 @@ func NewGenericModbusDevice(e typex.RuleX) typex.XDevice {
 	mdev := new(generic_modbus_device)
 	mdev.RuleEngine = e
 	mdev.locker = &sync.Mutex{}
+	mdev.mainConfig = common.ModBusConfig{}
+	mdev.tcpConfig = common.HostConfig{}
+	mdev.rtuConfig = common.RTUConfig{}
 	return mdev
 }
 
@@ -118,7 +121,7 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 	}
 	if mdev.mainConfig.Mode == "TCP" {
 		mdev.tcpHandler = modbus.NewTCPClientHandler(
-			fmt.Sprintf("%s:%v", mdev.tcpConfig.Ip, mdev.tcpConfig.Port),
+			fmt.Sprintf("%s:%v", mdev.tcpConfig.Host, mdev.tcpConfig.Port),
 		)
 		if core.GlobalConfig.AppDebugMode {
 			mdev.tcpHandler.Logger = golog.New(os.Stdout, "485mdevSource: ", golog.LstdFlags)

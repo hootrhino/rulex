@@ -17,15 +17,15 @@ type S1200Config struct {
 	Blocks        []S1200Block `json:"blocks" validate:"required" title:"采集配置" info:""`        // Db
 }
 type S1200Block struct {
-	Tag     string `json:"tag"`     // 数据tag
-	Address int    `json:"address"` // 地址
-	Start   int    `json:"start"`   // 起始地址
-	Size    int    `json:"size"`    // 数据长度
+	Tag     string `json:"tag" title:"数据tag" info:""`  // 数据tag
+	Address int    `json:"address" title:"地址" info:""` // 地址
+	Start   int    `json:"start" title:"起始地址" info:""` // 起始地址
+	Size    int    `json:"size" title:"数据长度" info:""`  // 数据长度
 }
 type S1200BlockValue struct {
-	Tag     string `json:"tag"`     // 数据tag
-	Address int    `json:"address"` // 地址
-	Start   int    `json:"start"`   // 起始地址
-	Size    int    `json:"size"`    // 数据长度
-	Value   []byte `json:"value"`
+	Tag     string `json:"tag" title:"数据tag" info:""`  // 数据tag
+	Address int    `json:"address" title:"地址" info:""` // 地址
+	Start   int    `json:"start" title:"起始地址" info:""` // 起始地址
+	Size    int    `json:"size" title:"服务地址" info:""`  // 数据长度
+	Value   []byte `json:"value" title:"数据长度" info:""` // 值
 }

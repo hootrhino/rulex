@@ -45,11 +45,15 @@ func (td *tdEngineTarget) test() bool {
 		td.mainConfig.Username,
 		td.mainConfig.Password,
 		"SELECT CLIENT_VERSION();",
-		td.mainConfig.Url); err != nil {
+		td.url()); err != nil {
 		glogger.GLogger.Error(err)
 		return false
 	}
 	return true
+}
+func (td *tdEngineTarget) url() string {
+	return fmt.Sprintf("http://%s:%v/rest/sql/%s",
+		td.mainConfig.Fqdn, td.mainConfig.Port, td.mainConfig.DbName)
 }
 
 //
@@ -69,8 +73,6 @@ func (td *tdEngineTarget) Init(outEndId string, configMap map[string]interface{}
 	if err := utils.BindSourceConfig(configMap, &td.mainConfig); err != nil {
 		return err
 	}
-	td.mainConfig.Url = fmt.Sprintf("http://%s:%v/rest/sql/%s",
-		td.mainConfig.Fqdn, td.mainConfig.Port, td.mainConfig.DbName)
 	if td.test() {
 		return nil
 	}
@@ -86,11 +88,11 @@ func (td *tdEngineTarget) Start(cctx typex.CCTX) error {
 	//
 
 	if err := execQuery(td.client, td.mainConfig.Username,
-		td.mainConfig.Password, td.mainConfig.CreateDbSql, td.mainConfig.Url); err != nil {
+		td.mainConfig.Password, td.mainConfig.CreateDbSql, td.url()); err != nil {
 		return err
 	}
 	return execQuery(td.client, td.mainConfig.Username,
-		td.mainConfig.Password, td.mainConfig.CreateTableSql, td.mainConfig.Url)
+		td.mainConfig.Password, td.mainConfig.CreateTableSql, td.url())
 }
 
 //
@@ -125,7 +127,7 @@ func (td *tdEngineTarget) Pause() {
 //
 func (td *tdEngineTarget) Status() typex.SourceState {
 	if err := execQuery(td.client, td.mainConfig.Username,
-		td.mainConfig.Password, "SELECT CLIENT_VERSION();", td.mainConfig.Url); err != nil {
+		td.mainConfig.Password, "SELECT CLIENT_VERSION();", td.url()); err != nil {
 		glogger.GLogger.Error(err)
 		return typex.SOURCE_DOWN
 	}
@@ -227,7 +229,7 @@ func (td *tdEngineTarget) To(data interface{}) (interface{}, error) {
 				insertSql = strings.Replace(insertSql, "%v", strings.TrimSpace(v), 1)
 			}
 			return execQuery(td.client, td.mainConfig.Username,
-				td.mainConfig.Password, insertSql, td.mainConfig.Url), nil
+				td.mainConfig.Password, insertSql, td.url()), nil
 		}
 	}
 	return nil, nil
