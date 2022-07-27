@@ -38,11 +38,10 @@ func Test_modbus_485_yk8(t *testing.T) {
 	// YK8 Inend
 	YK8Device := typex.NewDevice(typex.YK08_RELAY,
 		"继电器", "继电器", "", map[string]interface{}{
-			"slaverIds": []uint8{1, 2},
 			"timeout":   5,
 			"frequency": 5,
 			"config": map[string]interface{}{
-				"uart":     "COM4",
+				"uart":     "COM3",
 				"dataBits": 8,
 				"parity":   "N",
 				"stopBits": 1,
@@ -64,7 +63,7 @@ func Test_modbus_485_yk8(t *testing.T) {
 	}
 
 	mqttInend := typex.NewInEnd(typex.MQTT, "MQTT", "MQTT", map[string]interface{}{
-		"host":     "127.0.0.1",
+		"host":     "broker.emqx.io",
 		"port":     1883,
 		"clientId": "yk8001",
 		"username": "yk8001",
@@ -91,7 +90,7 @@ func Test_modbus_485_yk8(t *testing.T) {
 				['slaverId'] = 3,
 				['address'] = 0,
 				['quantity'] = 1,
-				['value'] = data
+				['value'] = rulexlib:T2Str({0, 0, 0, 0, 1, 1, 1, 1})
 			}}))
 			if (err) then
 				throw()

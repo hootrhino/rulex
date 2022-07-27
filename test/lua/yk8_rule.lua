@@ -7,6 +7,22 @@ end
 function Failed(error)
     print(error)
 end
+-- 属性下发以后，格式如下:
+-- data = {
+--     "method": "property",
+--     "requestId": "20a4ccfd",
+--     "timestamp": 0123456,
+--     "params": {
+--         "sw1": "1"
+--         "sw2": "1"
+--         "sw3": "1"
+--         "sw4": "1"
+--         "sw5": "1"
+--         "sw6": "1"
+--         "sw7": "1"
+--         "sw8": "1"
+--     }
+-- }
 -- Actions
 Actions = {function(data)
 

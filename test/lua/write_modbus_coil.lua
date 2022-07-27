@@ -9,12 +9,15 @@ function Failed(error)
 end
 -- Actions
 Actions = {function(data)
-    n, err = rulexlib:WriteDevice('YK8Device1', rulexlib:T2J({{
-        ['function'] = 15,
-        ['slaverId'] = 3,
-        ['address'] = 0,
-        ['quantity'] = 1,
-        ['value'] = data
-    }}))
+    local t = {
+        ["type"] = 15,
+        ["params"] = {
+            ["address"] = 3,
+            ["quantity"] = 4,
+            -- 写多个线圈，因为modbus每个寄存器的大小是2字节，因此下面尝试写了2个寄存器是4字节
+            ["values"] = {0xFF}
+        }
+    }
+    rulexlib:WriteInStream('INEND', rulexlib:T2J(t))
     return false, data
 end}
