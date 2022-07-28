@@ -83,7 +83,7 @@ func callLuaFunc(vm *lua.LState, callable *lua.LFunction, args ...lua.LValue) ([
 		Protect: true,
 	}, args...)
 	if err != nil {
-		return nil, errors.New("call function error")
+		return nil, err
 	}
 	vm.Pop(-1)
 	vm.Pop(-2)

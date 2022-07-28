@@ -55,6 +55,10 @@ func LoadBuildInLuaLib(e typex.RuleX, r *typex.Rule) {
 	// Device R/W
 	r.AddLib(e, "ReadDevice", rulexlib.ReadDevice(e))
 	r.AddLib(e, "WriteDevice", rulexlib.WriteDevice(e))
+	// Source R/W
+	r.AddLib(e, "ReadSource", rulexlib.ReadSource(e))
+	r.AddLib(e, "WriteSource", rulexlib.WriteSource(e))
 	// String
 	r.AddLib(e, "T2Str", rulexlib.T2Str(e))
+	r.AddLib(e, "Throw", rulexlib.Throw(e))
 }

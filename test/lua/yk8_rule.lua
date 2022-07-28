@@ -25,19 +25,38 @@ end
 -- }
 -- Actions
 Actions = {function(data)
-
-    rulexlib:WriteDevice('mqttOutEnd-iothub', rulexlib:T2J({{
-        ['function'] = 15,
-        ['slaverId'] = 1,
-        ['address'] = 0,
-        ['quantity'] = 1,
-        ['value'] = '00011000'
-    }, {
-        ['function'] = 15,
-        ['slaverId'] = 1,
-        ['address'] = 0,
-        ['quantity'] = 1,
-        ['value'] = '01111000'
-    }}))
+    local dataT, err = rulexlib:J2T(data)
+    if dataT['method'] == 'property' then
+        local params = dataT['params']
+        local cmd = {
+            [1] = params['sw8'],
+            [2] = params['sw7'],
+            [3] = params['sw6'],
+            [4] = params['sw5'],
+            [5] = params['sw4'],
+            [6] = params['sw3'],
+            [7] = params['sw2'],
+            [8] = params['sw1']
+        }
+        local n1, err1 = rulexlib:WriteDevice('YK8Device1', rulexlib:T2J({{
+            ['function'] = 15,
+            ['slaverId'] = 3,
+            ['address'] = 0,
+            ['quantity'] = 1,
+            ['value'] = rulexlib:T2Str(cmd)
+        }}))
+        if (err1) then
+            rulexlib:Throw(err1)
+        end
+        local n2, err2 = rulexlib:WriteSource('tencentIothub', rulexlib:T2J({
+            method = 'reply',
+            clientToken = dataT['clientToken'],
+            code = 1,
+            status = 'OK'
+        }))
+        if (err2) then
+            rulexlib:Throw(err2)
+        end
+    end
     return true, data
 end}

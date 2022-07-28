@@ -199,7 +199,7 @@ func bitStringToBytes(s string) ([]byte, error) {
 	for i := 0; i < len(s); i++ {
 		c := s[i]
 		if c < '0' || c > '1' {
-			return nil, errors.New("value out of range")
+			return nil, errors.New("bitstring to bytes error, bit value out of range, only can be 0 or 1")
 		}
 		b[i>>3] |= (c - '0') << uint(7-i&7)
 	}

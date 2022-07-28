@@ -23,10 +23,37 @@ type tencentDownMsg struct {
 	Params      interface{} `json:"params"`
 }
 
+// {
+//     "method":"${method}_reply",
+//     "requestId":"20a4ccfd-d308",
+//     "code": 0,
+//     "status":"some message"
+// }
+type tencentUpReply struct {
+	Method      string      `json:"method"`
+	ClientToken string      `json:"clientToken"`
+	Params      interface{} `json:"params"`
+	Code        int         `json:"code"`
+	Status      string      `json:"status"`
+}
+
+//
 var _PropertyTopic = "$thing/down/property/%v/%v"
 
-// var _EventTopic = "$thing/up/event/%v/%v"
+//
 var _ActionTopic = "$thing/down/action/%v/$%v"
+
+//
+var _PropertyUpTopic = "$thing/up/property/%v/%v"
+
+//
+var _ReplyTopic = "$thing/up/reply/%v/%v"
+
+//
+var _EventUpTopic = "$thing/up/event/%v/%v"
+
+//
+var _ActionUpTopic = "$thing/up/action/%v/$%v"
 
 //
 //
@@ -82,22 +109,8 @@ func (tc *tencentIothubSource) Start(cctx typex.CCTX) error {
 	//
 	var connectHandler mqtt.OnConnectHandler = func(client mqtt.Client) {
 		glogger.GLogger.Infof("Tencent IOTHUB Connected Success")
-		client.Subscribe(PropertyTopic, 1, func(c mqtt.Client, m mqtt.Message) {
-			msg := tencentDownMsg{}
-			if err := json.Unmarshal(m.Payload(), &msg); err != nil {
-				glogger.GLogger.Error(err)
-			} else {
-				glogger.GLogger.Info("Recv: ", m.Topic(), string(m.Payload()))
-			}
-		})
-		client.Subscribe(ActionTopic, 1, func(c mqtt.Client, m mqtt.Message) {
-			msg := tencentDownMsg{}
-			if err := json.Unmarshal(m.Payload(), &msg); err != nil {
-				glogger.GLogger.Error(err)
-			} else {
-				glogger.GLogger.Info("Recv: ", m.Topic(), string(m.Payload()))
-			}
-		})
+		client.Subscribe(PropertyTopic, 1, nil)
+		client.Subscribe(ActionTopic, 1, nil)
 	}
 
 	var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err error) {
@@ -183,8 +196,27 @@ func (*tencentIothubSource) Topology() []typex.TopologyPoint {
 //
 // 来自外面的数据
 //
-func (*tencentIothubSource) DownStream([]byte) (int, error) {
-	return 0, nil
+
+func (tc *tencentIothubSource) DownStream(bytes []byte) (int, error) {
+	var msg tencentUpReply
+	if err := json.Unmarshal(bytes, &msg); err != nil {
+		return 0, err
+	}
+	topic := ""
+	var err error
+	if msg.Method == "reply" {
+		topic = fmt.Sprintf(_ReplyTopic, tc.mainConfig.ProductId, tc.mainConfig.DeviceName)
+		err = tc.client.Publish(topic, 1, false, bytes).Error()
+	}
+	if msg.Method == "peoperty" {
+		topic = fmt.Sprintf(_PropertyUpTopic, tc.mainConfig.ProductId, tc.mainConfig.DeviceName)
+		err = tc.client.Publish(topic, 1, false, bytes).Error()
+	}
+	if msg.Method == "event" {
+		topic = fmt.Sprintf(_EventUpTopic, tc.mainConfig.ProductId, tc.mainConfig.DeviceName)
+		err = tc.client.Publish(topic, 1, false, bytes).Error()
+	}
+	return 0, err
 }
 
 //

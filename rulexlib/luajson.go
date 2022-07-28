@@ -62,7 +62,8 @@ func apiDecode(L *lua.LState) int {
 		return 2
 	}
 	L.Push(value)
-	return 1
+	L.Push(lua.LNil)
+	return 2
 }
 
 func apiEncode(L *lua.LState) int {
@@ -75,7 +76,8 @@ func apiEncode(L *lua.LState) int {
 		return 2
 	}
 	L.Push(lua.LString(string(data)))
-	return 1
+	L.Push(lua.LNil)
+	return 2
 }
 
 var (
