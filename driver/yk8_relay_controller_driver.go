@@ -32,6 +32,7 @@ func NewYK8RelayControllerDriver(d *typex.Device, e typex.RuleX,
 		device:     d,
 		RuleEngine: e,
 		handler:    handler,
+		Registers:  registers,
 		client:     client,
 	}
 }
@@ -55,14 +56,14 @@ func (yk8 *YK8RelayControllerDriver) State() typex.DriverState {
 //
 
 type yk08sw struct {
-	Sw1 bool `json:"sw1"`
-	Sw2 bool `json:"sw2"`
-	Sw3 bool `json:"sw3"`
-	Sw4 bool `json:"sw4"`
-	Sw5 bool `json:"sw5"`
-	Sw6 bool `json:"sw6"`
-	Sw7 bool `json:"sw7"`
-	Sw8 bool `json:"sw8"`
+	Sw1 uint8 `json:"sw1"`
+	Sw2 uint8 `json:"sw2"`
+	Sw3 uint8 `json:"sw3"`
+	Sw4 uint8 `json:"sw4"`
+	Sw5 uint8 `json:"sw5"`
+	Sw6 uint8 `json:"sw6"`
+	Sw7 uint8 `json:"sw7"`
+	Sw8 uint8 `json:"sw8"`
 }
 
 /*
@@ -80,14 +81,14 @@ func (yk8 *YK8RelayControllerDriver) Read(data []byte) (int, error) {
 		}
 		if len(results) == 1 {
 			yks := yk08sw{
-				Sw1: common.BitToBool(results[0], 0),
-				Sw2: common.BitToBool(results[0], 1),
-				Sw3: common.BitToBool(results[0], 2),
-				Sw4: common.BitToBool(results[0], 3),
-				Sw5: common.BitToBool(results[0], 4),
-				Sw6: common.BitToBool(results[0], 5),
-				Sw7: common.BitToBool(results[0], 6),
-				Sw8: common.BitToBool(results[0], 7),
+				Sw1: common.BitToUint8(results[0], 0),
+				Sw2: common.BitToUint8(results[0], 1),
+				Sw3: common.BitToUint8(results[0], 2),
+				Sw4: common.BitToUint8(results[0], 3),
+				Sw5: common.BitToUint8(results[0], 4),
+				Sw6: common.BitToUint8(results[0], 5),
+				Sw7: common.BitToUint8(results[0], 6),
+				Sw8: common.BitToUint8(results[0], 7),
 			}
 			bytes, _ := json.Marshal(yks)
 			value := common.RegisterRW{
@@ -105,12 +106,6 @@ func (yk8 *YK8RelayControllerDriver) Read(data []byte) (int, error) {
 	bytes, _ := json.Marshal(dataMap)
 	copy(data, bytes)
 	return len(bytes), nil
-}
-func i2bool(v byte) bool {
-	if v == 0 {
-		return false
-	}
-	return true
 }
 
 //

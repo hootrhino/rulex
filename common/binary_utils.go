@@ -77,6 +77,15 @@ func BitStringToBytes(s string) ([]byte, error) {
 func BitToBool(data byte, index uint8) bool {
 	return GetABitOnByte(data, index) == 1
 }
+func BitToUint8(data byte, index uint8) uint8 {
+	if GetABitOnByte(data, index) == 1 {
+		return 1
+	}
+	if GetABitOnByte(data, index) == 0 {
+		return 0
+	}
+	return 0
+}
 
 /*
 *

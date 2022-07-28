@@ -14,14 +14,6 @@ import (
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
-//
-// 下行数据
-//
-type tencentDownMsg struct {
-	Method      string      `json:"method"`
-	ClientToken string      `json:"clientToken"`
-	Params      interface{} `json:"params"`
-}
 
 // {
 //     "method":"${method}_reply",
@@ -41,7 +33,7 @@ type tencentUpReply struct {
 var _PropertyTopic = "$thing/down/property/%v/%v"
 
 //
-var _ActionTopic = "$thing/down/action/%v/$%v"
+var _ActionTopic = "$thing/down/action/%v/%v"
 
 //
 var _PropertyUpTopic = "$thing/up/property/%v/%v"
@@ -52,8 +44,6 @@ var _ReplyTopic = "$thing/up/reply/%v/%v"
 //
 var _EventUpTopic = "$thing/up/event/%v/%v"
 
-//
-var _ActionUpTopic = "$thing/up/action/%v/$%v"
 
 //
 //
@@ -208,7 +198,7 @@ func (tc *tencentIothubSource) DownStream(bytes []byte) (int, error) {
 		topic = fmt.Sprintf(_ReplyTopic, tc.mainConfig.ProductId, tc.mainConfig.DeviceName)
 		err = tc.client.Publish(topic, 1, false, bytes).Error()
 	}
-	if msg.Method == "peoperty" {
+	if msg.Method == "property" {
 		topic = fmt.Sprintf(_PropertyUpTopic, tc.mainConfig.ProductId, tc.mainConfig.DeviceName)
 		err = tc.client.Publish(topic, 1, false, bytes).Error()
 	}
@@ -216,6 +206,7 @@ func (tc *tencentIothubSource) DownStream(bytes []byte) (int, error) {
 		topic = fmt.Sprintf(_EventUpTopic, tc.mainConfig.ProductId, tc.mainConfig.DeviceName)
 		err = tc.client.Publish(topic, 1, false, bytes).Error()
 	}
+
 	return 0, err
 }
 

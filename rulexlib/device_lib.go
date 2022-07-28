@@ -1,6 +1,7 @@
 package rulexlib
 
 import (
+	"github.com/i4de/rulex/common"
 	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 
@@ -13,7 +14,8 @@ import (
 * 写: rulexlib:WriteDevice(ID, []byte{}) -> data, err
 *
  */
-var deviceReadBuffer []byte = []byte{}
+
+var deviceReadBuffer []byte = make([]byte, common.T_4KB)
 
 func ReadDevice(rx typex.RuleX) func(*lua.LState) int {
 	return func(l *lua.LState) int {

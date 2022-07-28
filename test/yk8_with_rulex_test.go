@@ -125,14 +125,21 @@ func Test_modbus_485_yk8(t *testing.T) {
 			if (err1) then
 				rulexlib:Throw(err1)
 			end
-			local n2, err2 = rulexlib:WriteSource('tencentIothub', rulexlib:T2J({
-				method = 'reply',
-				clientToken = dataT['clientToken'],
-				code = 1,
-				status = 'OK'
-			}))
+			local yksdata, err2 = rulexlib:ReadDevice('YK8Device1')
 			if (err2) then
 				rulexlib:Throw(err2)
+			end
+			local yksT, err3 = rulexlib:J2T(yksdata)
+			if (err3) then
+				rulexlib:Throw(err3)
+			end
+			local n4, err4 = rulexlib:WriteSource('tencentIothub', rulexlib:T2J({
+				method = 'property',
+				clientToken = dataT['clientToken'],
+				params = yksT['value']
+			}))
+			if (err4) then
+				rulexlib:Throw(err4)
 			end
 		end
 		return true, data
