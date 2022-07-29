@@ -3,6 +3,7 @@ package device
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"sync"
 	"time"
@@ -45,6 +46,14 @@ func (s1200 *s1200plc) Init(devId string, configMap map[string]interface{}) erro
 	if err := utils.BindSourceConfig(configMap, &s1200.mainConfig); err != nil {
 		glogger.GLogger.Error(err)
 		return err
+	}
+	// 检查Tag有没有重复
+	tags := []string{}
+	for _, block := range s1200.mainConfig.Blocks {
+		tags = append(tags, block.Tag)
+	}
+	if utils.IsListDuplicated(tags) {
+		return errors.New("tag duplicated")
 	}
 	return nil
 }

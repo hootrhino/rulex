@@ -77,6 +77,14 @@ func (mdev *generic_modbus_device) Init(devId string, configMap map[string]inter
 	if err := utils.BindSourceConfig(configMap, &mdev.mainConfig); err != nil {
 		return err
 	}
+	// 检查Tag有没有重复
+	tags := []string{}
+	for _, register := range mdev.mainConfig.Registers {
+		tags = append(tags, register.Tag)
+	}
+	if utils.IsListDuplicated(tags) {
+		return errors.New("tag duplicated")
+	}
 	if !((mdev.mainConfig.Mode == "RTU") || (mdev.mainConfig.Mode == "TCP")) {
 		return errors.New("unsupported mode, only can be one of 'TCP' or 'RTU'")
 	}

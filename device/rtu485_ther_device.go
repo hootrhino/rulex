@@ -2,6 +2,7 @@ package device
 
 import (
 	"context"
+	"errors"
 	golog "log"
 	"os"
 	"sync"
@@ -53,6 +54,14 @@ func (ther *rtu485_ther) Init(devId string, configMap map[string]interface{}) er
 	if errs := mapstructure.Decode(ther.mainConfig.Config, &ther.rtuConfig); errs != nil {
 		glogger.GLogger.Error(errs)
 		return errs
+	}
+	// 检查Tag有没有重复
+	tags := []string{}
+	for _, register := range ther.mainConfig.Registers {
+		tags = append(tags, register.Tag)
+	}
+	if utils.IsListDuplicated(tags) {
+		return errors.New("tag duplicated")
 	}
 	return nil
 }

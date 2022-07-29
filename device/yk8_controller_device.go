@@ -2,6 +2,7 @@ package device
 
 import (
 	"context"
+	"errors"
 	golog "log"
 	"os"
 	"sync"
@@ -52,6 +53,14 @@ func (yk8 *YK8Controller) Init(devId string, configMap map[string]interface{}) e
 	if errs := mapstructure.Decode(yk8.mainConfig.Config, &yk8.rtuConfig); errs != nil {
 		glogger.GLogger.Error(errs)
 		return errs
+	}
+	// 检查Tag有没有重复
+	tags := []string{}
+	for _, register := range yk8.mainConfig.Registers {
+		tags = append(tags, register.Tag)
+	}
+	if utils.IsListDuplicated(tags) {
+		return errors.New("tag duplicated")
 	}
 	return nil
 }

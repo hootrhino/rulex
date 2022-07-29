@@ -3,13 +3,12 @@ package source
 import (
 	"encoding/json"
 	"fmt"
-	"time"
-
 	"github.com/i4de/rulex/common"
 	"github.com/i4de/rulex/core"
 	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
+	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
@@ -28,20 +27,19 @@ type tencentUpReply struct {
 	Status      string                 `json:"status"`
 }
 
-//
-var _PropertyTopic = "$thing/down/property/%v/%v"
+var (
+	//
+	_PropertyTopic = "$thing/down/property/%v/%v"
 
-//
-var _ActionTopic = "$thing/down/action/%v/%v"
+	//
+	_PropertyUpTopic = "$thing/up/property/%v/%v"
 
-//
-var _PropertyUpTopic = "$thing/up/property/%v/%v"
+	//
+	_ReplyTopic = "$thing/up/reply/%v/%v"
 
-//
-var _ReplyTopic = "$thing/up/reply/%v/%v"
-
-//
-var _EventUpTopic = "$thing/up/event/%v/%v"
+	//
+	_EventUpTopic = "$thing/up/event/%v/%v"
+)
 
 //
 //
@@ -85,20 +83,9 @@ func (tc *tencentIothubSource) Start(cctx typex.CCTX) error {
 	// 事件
 	// EventTopic := fmt.Sprintf(_PropertyTopic, mainConfig.ProductId, mainConfig.DeviceName)
 	// 服务接口
-	ActionTopic := fmt.Sprintf(_ActionTopic, tc.mainConfig.ProductId, tc.mainConfig.DeviceName)
-
-	var messageHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
-		work, err := tc.RuleEngine.WorkInEnd(tc.RuleEngine.GetInEnd(tc.PointId), string(msg.Payload()))
-		if !work {
-			glogger.GLogger.Error(err)
-		}
-
-	}
 	//
 	var connectHandler mqtt.OnConnectHandler = func(client mqtt.Client) {
 		glogger.GLogger.Infof("Tencent IOTHUB Connected Success")
-		client.Subscribe(PropertyTopic, 1, nil)
-		client.Subscribe(ActionTopic, 1, nil)
 	}
 
 	var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err error) {
@@ -112,7 +99,6 @@ func (tc *tencentIothubSource) Start(cctx typex.CCTX) error {
 	opts.SetPassword(tc.mainConfig.Password)
 	opts.OnConnect = connectHandler
 	opts.OnConnectionLost = connectLostHandler
-	opts.SetDefaultPublishHandler(messageHandler)
 	opts.SetPingTimeout(30 * time.Second)
 	opts.SetKeepAlive(60 * time.Second)
 	opts.SetConnectTimeout(30 * time.Second)
@@ -121,9 +107,19 @@ func (tc *tencentIothubSource) Start(cctx typex.CCTX) error {
 	tc.client = mqtt.NewClient(opts)
 	if token := tc.client.Connect(); token.Wait() && token.Error() != nil {
 		return token.Error()
-	} else {
-		return nil
 	}
+	token := tc.client.Subscribe(PropertyTopic, 1, func(c mqtt.Client, msg mqtt.Message) {
+		work, err := tc.RuleEngine.WorkInEnd(tc.RuleEngine.GetInEnd(tc.PointId), string(msg.Payload()))
+		if !work {
+			glogger.GLogger.Error(err)
+		}
+
+	})
+	if token.Error() != nil {
+		glogger.GLogger.Error(token.Error())
+		return token.Error()
+	}
+	return nil
 
 }
 

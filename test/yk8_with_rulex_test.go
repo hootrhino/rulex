@@ -29,12 +29,11 @@ func Test_modbus_485_yk8(t *testing.T) {
 	engine := engine.NewRuleEngine(mainConfig)
 	engine.Start()
 
-	hh := httpserver.NewHttpApiServer()
-
 	// HttpApiServer loaded default
-	if err := engine.LoadPlugin("plugin.http_server", hh); err != nil {
-		t.Fatal("Rule load failed:", err)
+	if err := engine.LoadPlugin("plugin.http_server", httpserver.NewHttpApiServer()); err != nil {
+		t.Fatal("HttpServer load failed:", err)
 	}
+
 	// YK8 Inend
 	YK8Device := typex.NewDevice(typex.YK08_RELAY,
 		"继电器", "继电器", "", map[string]interface{}{
@@ -64,7 +63,7 @@ func Test_modbus_485_yk8(t *testing.T) {
 
 	tencentIothub := typex.NewInEnd(typex.TENCENT_IOT_HUB,
 		"MQTT", "MQTT", map[string]interface{}{
-			"host":       "119.91.206.97",
+			"host":       "42.193.180.26",
 			"port":       1883,
 			"clientId":   "RULEX-001",
 			"username":   "RULEX-001",
@@ -87,7 +86,7 @@ func Test_modbus_485_yk8(t *testing.T) {
 		`function Success() print("[LUA Success Callback]=> OK") end`,
 		`
 		Actions = {
-			function(data)
+		function(data)
 			print(data)
 			local dataT, err = rulexlib:J2T(data)
 			if dataT['method'] == 'control' then

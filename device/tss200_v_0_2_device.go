@@ -2,6 +2,7 @@ package device
 
 import (
 	"context"
+	"errors"
 	golog "log"
 	"os"
 	"sync"
@@ -54,6 +55,14 @@ func (tss *tss200V2) Init(devId string, configMap map[string]interface{}) error 
 	if errs := mapstructure.Decode(tss.mainConfig.Config, &tss.rtuConfig); errs != nil {
 		glogger.GLogger.Error(errs)
 		return errs
+	}
+	// 检查Tag有没有重复
+	tags := []string{}
+	for _, register := range tss.mainConfig.Registers {
+		tags = append(tags, register.Tag)
+	}
+	if utils.IsListDuplicated(tags) {
+		return errors.New("tag duplicated")
 	}
 	return nil
 }
