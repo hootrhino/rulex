@@ -14,7 +14,6 @@ import (
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
-
 // {
 //     "method":"${method}_reply",
 //     "requestId":"20a4ccfd-d308",
@@ -22,11 +21,11 @@ import (
 //     "status":"some message"
 // }
 type tencentUpReply struct {
-	Method      string      `json:"method"`
-	ClientToken string      `json:"clientToken"`
-	Params      interface{} `json:"params"`
-	Code        int         `json:"code"`
-	Status      string      `json:"status"`
+	Method      string                 `json:"method"`
+	ClientToken string                 `json:"clientToken"`
+	Params      map[string]interface{} `json:"params"`
+	Code        int                    `json:"code"`
+	Status      string                 `json:"status"`
 }
 
 //
@@ -43,7 +42,6 @@ var _ReplyTopic = "$thing/up/reply/%v/%v"
 
 //
 var _EventUpTopic = "$thing/up/event/%v/%v"
-
 
 //
 //
@@ -192,21 +190,21 @@ func (tc *tencentIothubSource) DownStream(bytes []byte) (int, error) {
 	if err := json.Unmarshal(bytes, &msg); err != nil {
 		return 0, err
 	}
-	topic := ""
-	var err error
-	if msg.Method == "reply" {
-		topic = fmt.Sprintf(_ReplyTopic, tc.mainConfig.ProductId, tc.mainConfig.DeviceName)
-		err = tc.client.Publish(topic, 1, false, bytes).Error()
-	}
-	if msg.Method == "property" {
-		topic = fmt.Sprintf(_PropertyUpTopic, tc.mainConfig.ProductId, tc.mainConfig.DeviceName)
-		err = tc.client.Publish(topic, 1, false, bytes).Error()
-	}
-	if msg.Method == "event" {
-		topic = fmt.Sprintf(_EventUpTopic, tc.mainConfig.ProductId, tc.mainConfig.DeviceName)
-		err = tc.client.Publish(topic, 1, false, bytes).Error()
-	}
 
+	//
+	// 接受两个类型的指令：
+	//     - control_reply: 控制指令的回复，走回复通道
+	//     - property_reply: 及时状态获取，当调用这个指令后，会上报一个最新的状态
+	//
+	var err error
+	if msg.Method == "control_reply" {
+		topic := fmt.Sprintf(_ReplyTopic, tc.mainConfig.ProductId, tc.mainConfig.DeviceName)
+		err = tc.client.Publish(topic, 1, false, bytes).Error()
+	}
+	if msg.Method == "property_reply" {
+		topic := fmt.Sprintf(_PropertyUpTopic, tc.mainConfig.ProductId, tc.mainConfig.DeviceName)
+		err = tc.client.Publish(topic, 1, false, bytes).Error()
+	}
 	return 0, err
 }
 

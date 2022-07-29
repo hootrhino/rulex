@@ -41,7 +41,7 @@ func Test_modbus_485_yk8(t *testing.T) {
 			"timeout":   5,
 			"frequency": 5,
 			"config": map[string]interface{}{
-				"uart":     "COM4",
+				"uart":     "COM3",
 				"dataBits": 8,
 				"parity":   "N",
 				"stopBits": 1,
@@ -64,34 +64,20 @@ func Test_modbus_485_yk8(t *testing.T) {
 
 	tencentIothub := typex.NewInEnd(typex.TENCENT_IOT_HUB,
 		"MQTT", "MQTT", map[string]interface{}{
-			"host":       "127.0.0.1",
+			"host":       "119.91.206.97",
 			"port":       1883,
-			"clientId":   "yk8001",
-			"username":   "yk8001",
-			"password":   "yk8001",
-			"productId":  "yk8001",
-			"deviceName": "yk8001",
+			"clientId":   "RULEX-001",
+			"username":   "RULEX-001",
+			"password":   "RULEX-001",
+			"productId":  "RULEX-001",
+			"deviceName": "RULEX-001",
 		})
 	tencentIothub.UUID = "tencentIothub"
 
 	if err := engine.LoadInEnd(tencentIothub); err != nil {
 		t.Fatal("mqttOutEnd load failed:", err)
 	}
-	//  {
-	//     "method": "property",
-	//     "clientToken": "0123456",
-	//     "timestamp": 0123456,
-	//     "params": {
-	//         "sw1": "1"
-	//         "sw2": "1"
-	//         "sw3": "1"
-	//         "sw4": "1"
-	//         "sw5": "1"
-	//         "sw6": "1"
-	//         "sw7": "1"
-	//         "sw8": "1"
-	//     }
-	// }
+
 	rule := typex.NewRule(engine,
 		"uuid",
 		"数据推送至IOTHUB",
@@ -100,51 +86,41 @@ func Test_modbus_485_yk8(t *testing.T) {
 		[]string{},
 		`function Success() print("[LUA Success Callback]=> OK") end`,
 		`
-    Actions = {
-		function(data)
-		local dataT, err = rulexlib:J2T(data)
-		if dataT['method'] == 'property' then
-		    local params = dataT['params']
-			local cmd = {
-				[1] = params['sw8'],
-				[2] = params['sw7'],
-				[3] = params['sw6'],
-				[4] = params['sw5'],
-				[5] = params['sw4'],
-				[6] = params['sw3'],
-				[7] = params['sw2'],
-				[8] = params['sw1']
-			}
-			local n1, err1 = rulexlib:WriteDevice('YK8Device1', rulexlib:T2J({{
-				['function'] = 15,
-				['slaverId'] = 3,
-				['address'] = 0,
-				['quantity'] = 1,
-				['value'] = rulexlib:T2Str(cmd)
-			}}))
-			if (err1) then
-				rulexlib:Throw(err1)
+		Actions = {
+			function(data)
+			print(data)
+			local dataT, err = rulexlib:J2T(data)
+			if dataT['method'] == 'control' then
+				local params = dataT['params']
+				local cmd = {
+					[1] = params['sw8'],
+					[2] = params['sw7'],
+					[3] = params['sw6'],
+					[4] = params['sw5'],
+					[5] = params['sw4'],
+					[6] = params['sw3'],
+					[7] = params['sw2'],
+					[8] = params['sw1']
+				}
+				local n1, err1 = rulexlib:WriteDevice('YK8Device1', rulexlib:T2J({{
+					['function'] = 15,
+					['slaverId'] = 3,
+					['address'] = 0,
+					['quantity'] = 1,
+					['value'] = rulexlib:T2Str(cmd)
+				}}))
+
+				local n2, err2 = rulexlib:WriteSource('tencentIothub', rulexlib:T2J({
+					method = 'control_reply',
+					clientToken = dataT['clientToken'],
+					code = 0,
+					status = 'OK'
+				}))
+
 			end
-			local yksdata, err2 = rulexlib:ReadDevice('YK8Device1')
-			if (err2) then
-				rulexlib:Throw(err2)
-			end
-			local yksT, err3 = rulexlib:J2T(yksdata)
-			if (err3) then
-				rulexlib:Throw(err3)
-			end
-			local n4, err4 = rulexlib:WriteSource('tencentIothub', rulexlib:T2J({
-				method = 'property',
-				clientToken = dataT['clientToken'],
-				params = yksT['value']
-			}))
-			if (err4) then
-				rulexlib:Throw(err4)
-			end
+			return true, data
 		end
-		return true, data
-	end
-}
+	}
 `,
 		`function Failed(error) print("[LUA Failed Callback]", error) end`)
 	if err := engine.LoadRule(rule); err != nil {
