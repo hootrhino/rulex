@@ -59,8 +59,9 @@ type _sensor_data struct {
 	PM25 uint16  `json:"pm25"`
 	PM10 uint16  `json:"pm10"`
 	CO2  uint16  `json:"co2"`
-	TOVC float32 `json:"tovc"` //系数: 0.001
+	TVOC float32 `json:"tvoc"` //系数: 0.001
 	CHOH float32 `json:"choh"` //系数: 0.001
+	ECO2 float32 `json:"eco2"` //系数: 0.001
 }
 
 func (tss *tss200_v_0_2_Driver) Read(data []byte) (int, error) {
@@ -69,12 +70,12 @@ func (tss *tss200_v_0_2_Driver) Read(data []byte) (int, error) {
 	// |XX    |03   |17       | 长度     |CRC  |  CRC
 	// -----------------------------------------------
 	// 01 03 00 11 00 08 14 09 09 45 1A F7 00 6F 00 89  00 89 FF FF FF FF 00 0B
-	// TEMP  HUM     PM1   PM2.5  Pm10  CO2   TOVC  CHOH
+	// TEMP  HUM     PM1   PM2.5  Pm10  CO2   TVOC  CHOH
 	//
 	dataMap := map[string]common.RegisterRW{}
 	for _, r := range tss.Registers {
 		tss.handler.SlaveId = r.SlaverId
-		result, err := tss.client.ReadHoldingRegisters(17, 8)
+		result, err := tss.client.ReadHoldingRegisters(17, 9)
 		if err != nil {
 			return 0, err
 		}
@@ -86,8 +87,9 @@ func (tss *tss200_v_0_2_Driver) Read(data []byte) (int, error) {
 				PM25: utils.BToU16(result, 6, 8),
 				PM10: utils.BToU16(result, 8, 10),
 				CO2:  utils.BToU16(result, 10, 12),
-				TOVC: float32(utils.BToU16(result, 12, 14)) * 0.01,
-				CHOH: float32(utils.BToU16(result, 14, 16)) * 0.01,
+				TVOC: float32(utils.BToU16(result, 12, 14)) * 0.01,
+				CHOH: float32(utils.BToU16(result, 14, 16)) * 0.001,
+				ECO2: float32(utils.BToU16(result, 14, 16)) * 0.01,
 			}
 			bytes, _ := json.Marshal(sd)
 			value := common.RegisterRW{
