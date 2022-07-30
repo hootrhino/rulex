@@ -79,7 +79,7 @@ func (tss *tss200_v_0_2_Driver) Read(data []byte) (int, error) {
 		if err != nil {
 			return 0, err
 		}
-		if len(result) == 16 {
+		if len(result) == 18 {
 			sd := _sensor_data{
 				TEMP: float32(utils.BToU16(result, 0, 2)) * 0.01,
 				HUM:  float32(utils.BToU16(result, 2, 4)) * 0.01,
