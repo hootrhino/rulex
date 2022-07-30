@@ -31,7 +31,9 @@ func NewTSS200Driver(d *typex.Device, e typex.RuleX,
 		state:      typex.DRIVER_STOP,
 		device:     d,
 		RuleEngine: e,
+		handler:    handler,
 		client:     client,
+		Registers:  registers,
 	}
 }
 func (tss *tss200_v_0_2_Driver) Test() error {

@@ -14,6 +14,7 @@ import (
 
 func Test_TSS200_ReadData(t *testing.T) {
 	mainConfig := core.InitGlobalConfig("conf/rulex.ini")
+	core.GlobalConfig.AppDebugMode = true
 	glogger.StartGLogger(true, core.GlobalConfig.LogPath)
 	glogger.StartLuaLogger(core.GlobalConfig.LuaLogPath)
 	core.StartStore(core.GlobalConfig.MaxQueueSize)
@@ -22,18 +23,46 @@ func Test_TSS200_ReadData(t *testing.T) {
 	engine := engine.NewRuleEngine(mainConfig)
 	engine.Start()
 
-
 	hh := httpserver.NewHttpApiServer()
 	// HttpApiServer loaded default
 	if err := engine.LoadPlugin("plugin.http_server", hh); err != nil {
 		glogger.GLogger.Fatal("Rule load failed:", err)
+	}
+
+	tss200 := typex.NewDevice(typex.TSS200V02,
+		"TSS200V02", "TSS200V02", "", map[string]interface{}{
+			"mode":      "RTU",
+			"timeout":   10,
+			"frequency": 5,
+			"config": map[string]interface{}{
+				"uart":     "COM2", // 虚拟串口测试, COM2上连了个MODBUS-POOL测试器
+				"dataBits": 8,
+				"parity":   "N",
+				"stopBits": 1,
+				"baudRate": 9600,
+				"ip":       "127.0.0.1",
+				"port":     502,
+			},
+			"registers": []map[string]interface{}{
+				{
+					"tag":      "node1",
+					"function": 3,
+					"slaverId": 1,
+					"address":  17,
+					"quantity": 2,
+				},
+			},
+		})
+	tss200.UUID = "TSS200V02"
+	if err := engine.LoadDevice(tss200); err != nil {
+		t.Log(err)
 	}
 	rule := typex.NewRule(engine,
 		"uuid",
 		"Just a test",
 		"Just a test",
 		[]string{},
-		[]string{"TS200"},
+		[]string{"TSS200V02"},
 		`function Success() print("[LUA Success Callback]=> OK") end`,
 		`
 		Actions = {
@@ -45,28 +74,6 @@ func Test_TSS200_ReadData(t *testing.T) {
 		`function Failed(error) print("[LUA Failed Callback]", error) end`)
 	if err := engine.LoadRule(rule); err != nil {
 		glogger.GLogger.Error(err)
-	}
-	tss200 := &typex.Device{
-		UUID:         "TSS200V02",
-		Name:         "TSS200V02",
-		Type:         "TSS200V02",
-		ActionScript: "{}",
-		Description:  "TSS200V02",
-		Config: map[string]interface{}{
-			"timeout":   5,
-			"slaverIds": []int{1},
-			"config": map[string]interface{}{
-				"uart":     "com10",
-				"baudRate": 9600,
-				"dataBits": 8,
-				"parity":   "N",
-				"stopBits": 1,
-			},
-		},
-	}
-
-	if err := engine.LoadDevice(tss200); err != nil {
-		t.Log(err)
 	}
 	time.Sleep(20 * time.Second)
 	engine.Stop()
