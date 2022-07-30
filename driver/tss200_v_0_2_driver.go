@@ -89,7 +89,7 @@ func (tss *tss200_v_0_2_Driver) Read(data []byte) (int, error) {
 				CO2:  utils.BToU16(result, 10, 12),
 				TVOC: float32(utils.BToU16(result, 12, 14)) * 0.01,
 				CHOH: float32(utils.BToU16(result, 14, 16)) * 0.001,
-				ECO2: float32(utils.BToU16(result, 14, 16)) * 0.01,
+				ECO2: float32(utils.BToU16(result, 16, 18)) * 0.01,
 			}
 			bytes, _ := json.Marshal(sd)
 			value := common.RegisterRW{
