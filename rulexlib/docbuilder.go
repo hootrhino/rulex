@@ -53,7 +53,7 @@ func (doc *RulexLibDoc) AddFunc(f Fun) {
 }
 func (doc *RulexLibDoc) BuildDoc() {
 	body := "# " + doc.Name
-	tHeader := "\n|版本|发布时间|\n| --- | --- | --- |\n"
+	tHeader := "\n|版本|发布时间|\n| --- | --- |\n"
 	body += tHeader + "|" + doc.Version + "|" + doc.ReleaseTime + "|\n"
 	for _, v := range doc.Funcs {
 		body += v.BuildSection()

@@ -7,7 +7,11 @@ import (
 
 	lua "github.com/yuin/gopher-lua"
 )
-
+/*
+*
+* Table 转成 String
+*
+*/
 func T2Str(rx typex.RuleX) func(l *lua.LState) int {
 	return func(l *lua.LState) int {
 		table := l.ToTable(2)
