@@ -131,12 +131,16 @@ func BuildDoc() {
 			ExampleJson: "{}",
 		},
 		Example: `
-Actions = {
-	function(data)
-		print('data ==> ', data)
-		return true, data
-	end
-}
+		{
+			"node1":{
+				"tag":"node1",
+				"function":3,
+				"slaverId":1,
+				"address":17,
+				"quantity":9,
+				"value":"{\"temp\":0.01,\"hum\":0.02,\"pm1\":3,\"pm25\":4,\"pm10\":5,\"co2\":6,\"tvoc\":0.07,\"choh\":0.008,\"eco2\":0.089999996}"
+			}
+		}
 `,
 	})
 	deviceDoc.BuildDoc()

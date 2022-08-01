@@ -49,7 +49,7 @@ func Test_TSS200_ReadData(t *testing.T) {
 					"function": 3,
 					"slaverId": 1,
 					"address":  17,
-					"quantity": 2,
+					"quantity": 9,
 				},
 			},
 		})
