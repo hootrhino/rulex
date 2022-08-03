@@ -8,8 +8,7 @@ import (
 	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
-
-	"github.com/goburrow/serial"
+	serial "github.com/wwhai/goserial"
 )
 
 type uartModuleSource struct {

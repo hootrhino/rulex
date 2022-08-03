@@ -14,8 +14,8 @@ import (
 	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
+	modbus "github.com/wwhai/gomodbus"
 
-	"github.com/goburrow/modbus"
 	"github.com/mitchellh/mapstructure"
 )
 

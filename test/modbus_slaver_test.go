@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/goburrow/modbus"
+	modbus "github.com/wwhai/gomodbus"
 )
 
 func TestTCPClient(t *testing.T) {

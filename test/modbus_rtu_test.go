@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/goburrow/modbus"
 	"github.com/i4de/rulex/glogger"
+	modbus "github.com/wwhai/gomodbus"
 )
 
 var keys = [8]uint16{0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07}

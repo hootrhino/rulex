@@ -9,10 +9,9 @@ import (
 	"context"
 	"errors"
 
+	"github.com/goburrow/serial"
 	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
-
-	"github.com/goburrow/serial"
 )
 
 type rawUartDriver struct {

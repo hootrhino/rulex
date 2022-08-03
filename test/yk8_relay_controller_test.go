@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/goburrow/modbus"
+	"github.com/wwhai/gomodbus"
 )
 
 /*
@@ -122,5 +122,5 @@ func TestRTU_YK081(t *testing.T) {
 	} else {
 		t.Log("===> ", results)
 	}
-	
+
 }

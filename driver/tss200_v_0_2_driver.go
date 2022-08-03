@@ -7,11 +7,10 @@ package driver
 import (
 	"encoding/json"
 
+	"github.com/wwhai/gomodbus"
 	"github.com/i4de/rulex/common"
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
-
-	"github.com/goburrow/modbus"
 )
 
 type tss200_v_0_2_Driver struct {

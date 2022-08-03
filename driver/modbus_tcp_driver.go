@@ -6,8 +6,7 @@ import (
 
 	"github.com/i4de/rulex/common"
 	"github.com/i4de/rulex/typex"
-
-	"github.com/goburrow/modbus"
+	modbus "github.com/wwhai/gomodbus"
 )
 
 /*

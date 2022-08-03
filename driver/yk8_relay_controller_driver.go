@@ -8,10 +8,9 @@ package driver
 import (
 	"encoding/json"
 
+	"github.com/wwhai/gomodbus"
 	"github.com/i4de/rulex/common"
 	"github.com/i4de/rulex/typex"
-
-	"github.com/goburrow/modbus"
 )
 
 type YK8RelayControllerDriver struct {

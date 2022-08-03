@@ -7,12 +7,11 @@ package driver
 import (
 	"encoding/json"
 
+	"github.com/wwhai/gomodbus"
 	"github.com/i4de/rulex/common"
 	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
-
-	"github.com/goburrow/modbus"
 )
 
 // Example: 0x02 0x92 0xFF 0x98

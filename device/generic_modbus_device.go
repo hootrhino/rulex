@@ -9,6 +9,7 @@ import (
 	"sync"
 	"time"
 
+	modbus "github.com/wwhai/gomodbus"
 	"github.com/i4de/rulex/common"
 	"github.com/i4de/rulex/core"
 	"github.com/i4de/rulex/driver"
@@ -16,7 +17,6 @@ import (
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
 
-	"github.com/goburrow/modbus"
 	"github.com/mitchellh/mapstructure"
 )
 

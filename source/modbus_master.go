@@ -10,12 +10,12 @@ import (
 	"time"
 
 	"github.com/i4de/rulex/core"
+	modbus "github.com/wwhai/gomodbus"
 
 	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
 
-	"github.com/goburrow/modbus"
 	"github.com/mitchellh/mapstructure"
 )
 

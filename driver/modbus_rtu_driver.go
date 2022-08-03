@@ -4,10 +4,9 @@ import (
 	"encoding/binary"
 	"encoding/json"
 
+	"github.com/wwhai/gomodbus"
 	"github.com/i4de/rulex/common"
 	"github.com/i4de/rulex/typex"
-
-	"github.com/goburrow/modbus"
 )
 
 /*
