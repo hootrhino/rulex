@@ -13,8 +13,12 @@ import (
 type DeviceState int
 
 const (
-	DEV_STOP    DeviceState = 0
-	DEV_RUNNING DeviceState = 1
+	// 外部停止
+	DEV_STOP DeviceState = 0 // BUG
+	// 设备启用
+	DEV_UP DeviceState = 1
+	// 设备故障
+	DEV_DOWN DeviceState = 2
 )
 
 type DeviceType string

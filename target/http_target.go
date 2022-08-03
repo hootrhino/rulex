@@ -14,6 +14,7 @@ type HTTPTarget struct {
 	typex.XStatus
 	client     http.Client
 	mainConfig common.HTTPConfig
+	status     typex.SourceState
 }
 
 func NewHTTPTarget(e typex.RuleX) typex.XTarget {
@@ -54,7 +55,7 @@ func (ht *HTTPTarget) Pause() {
 
 }
 func (ht *HTTPTarget) Status() typex.SourceState {
-	return typex.SOURCE_UP
+	return ht.status
 
 }
 func (ht *HTTPTarget) To(data interface{}) (interface{}, error) {

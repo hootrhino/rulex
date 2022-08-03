@@ -30,20 +30,8 @@ func (e *RuleEngine) LoadInEnd(in *typex.InEnd) error {
 	if in.Type == typex.GRPC {
 		return startSources(source.NewGrpcInEndSource(e), in, e)
 	}
-	if in.Type == typex.UART_MODULE {
-		return startSources(source.NewUartModuleSource(in.UUID, e), in, e)
-	}
-	if in.Type == typex.MODBUS_MASTER {
-		return startSources(source.NewModbusMasterSource(in.UUID, e), in, e)
-	}
-	if in.Type == typex.SNMP_SERVER {
-		return startSources(source.NewSNMPInEndSource(in.UUID, e), in, e)
-	}
 	if in.Type == typex.NATS_SERVER {
 		return startSources(source.NewNatsSource(e), in, e)
-	}
-	if in.Type == typex.SIEMENS_S7 {
-		return startSources(source.NewSiemensS7Source(e), in, e)
 	}
 	if in.Type == typex.RULEX_UDP {
 		return startSources(source.NewUdpInEndSource(e), in, e)
@@ -159,6 +147,9 @@ func checkSourceDriverState(source typex.XSource) {
 //
 func tryIfRestartSource(source typex.XSource, e *RuleEngine) {
 	checkSourceDriverState(source)
+	if source.Status() == typex.SOURCE_STOP {
+		return
+	}
 	if source.Status() == typex.SOURCE_DOWN {
 		source.Details().SetState(typex.SOURCE_DOWN)
 		//----------------------------------

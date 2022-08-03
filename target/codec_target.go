@@ -13,17 +13,15 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-var _state typex.SourceState
-
 type codecTarget struct {
 	typex.XStatus
 	client        rulexrpc.CodecClient
 	rpcConnection *grpc.ClientConn
 	mainConfig    common.GrpcConfig
+	status        typex.SourceState
 }
 
 func NewCodecTarget(rx typex.RuleX) typex.XTarget {
-	_state = typex.SOURCE_DOWN
 	ct := &codecTarget{}
 	ct.mainConfig = common.GrpcConfig{}
 	ct.RuleEngine = rx
@@ -64,7 +62,7 @@ func (ct *codecTarget) Start(cctx typex.CCTX) error {
 	}
 	ct.rpcConnection = rpcConnection
 	ct.client = rulexrpc.NewCodecClient(rpcConnection)
-	_state = typex.SOURCE_UP
+	ct.status = typex.SOURCE_UP
 	return nil
 
 }
@@ -94,7 +92,7 @@ func (ct *codecTarget) Pause() {
 // 获取资源状态
 //
 func (ct *codecTarget) Status() typex.SourceState {
-	return _state
+	return ct.status
 
 }
 
@@ -141,4 +139,5 @@ func (ct *codecTarget) To(data interface{}) (interface{}, error) {
 //
 func (ct *codecTarget) Stop() {
 	ct.rpcConnection.Close()
+	ct.status = typex.SOURCE_STOP
 }

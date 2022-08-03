@@ -7,6 +7,7 @@ const (
 	SOURCE_DOWN  SourceState = 0
 	SOURCE_UP    SourceState = 1
 	SOURCE_PAUSE SourceState = 2
+	SOURCE_STOP  SourceState = 3
 )
 
 //

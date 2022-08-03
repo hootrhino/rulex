@@ -178,6 +178,9 @@ func startDevice(abstractDevice typex.XDevice, e *RuleEngine) error {
 }
 
 func tryIfRestartDevice(abstractDevice typex.XDevice, e *RuleEngine, devId string) {
+	if abstractDevice.Status() == typex.DEV_STOP {
+		return
+	}
 	checkDeviceDriverState(abstractDevice)
 	// 当内存里面的设备状态已经停止的时候，及时更新数据库里的
 	// 此处本质上是个同步过程
@@ -189,7 +192,7 @@ func tryIfRestartDevice(abstractDevice typex.XDevice, e *RuleEngine, devId strin
 		runtime.GC()
 		startDevice(abstractDevice, e)
 	} else {
-		abstractDevice.Details().State = typex.DEV_RUNNING
+		abstractDevice.Details().State = typex.DEV_UP
 	}
 
 }
@@ -205,7 +208,7 @@ func checkDeviceDriverState(abstractDevice typex.XDevice) {
 		return
 	}
 	// 只有资源启动状态才拉起驱动
-	if abstractDevice.Status() == typex.DEV_RUNNING {
+	if abstractDevice.Status() == typex.DEV_UP {
 		// 必须资源启动, 驱动才有重启意义
 		if abstractDevice.Driver().State() == typex.DRIVER_STOP {
 			glogger.GLogger.Warn("Driver stopped:", abstractDevice.Driver().DriverDetail().Name)

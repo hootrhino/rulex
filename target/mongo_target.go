@@ -21,6 +21,7 @@ type mongoTarget struct {
 	client     *mongo.Client
 	collection *mongo.Collection
 	mainConfig common.MongoConfig
+	status     typex.SourceState
 }
 
 func NewMongoTarget(e typex.RuleX) typex.XTarget {
@@ -53,6 +54,7 @@ func (m *mongoTarget) Start(cctx typex.CCTX) error {
 	m.collection = client.Database(m.mainConfig.Database).Collection(m.mainConfig.Collection)
 	m.client = client
 	m.Enable = true
+	m.status = typex.SOURCE_UP
 	glogger.GLogger.Info("mongoTarget connect successfully")
 	return nil
 
@@ -98,6 +100,7 @@ func (m *mongoTarget) Stop() {
 	m.client.Disconnect(m.Ctx)
 	glogger.GLogger.Info("mongoTarget Stop success")
 	m.CancelCTX()
+	m.status = typex.SOURCE_STOP
 }
 
 func (m *mongoTarget) To(data interface{}) (interface{}, error) {

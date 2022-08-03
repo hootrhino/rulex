@@ -145,15 +145,16 @@ func (s1200 *s1200plc) OnWrite(data []byte) (int, error) {
 // 设备当前状态
 func (s1200 *s1200plc) Status() typex.DeviceState {
 	if s1200.driver.State() == typex.DRIVER_RUNNING {
-		return typex.DEV_RUNNING
+		return typex.DEV_UP
 	}
-	return typex.DEV_STOP
+	return typex.DEV_DOWN
 
 }
 
 // 停止设备
 func (s1200 *s1200plc) Stop() {
 	s1200.CancelCTX()
+	s1200.status = typex.DEV_STOP
 }
 
 // 设备属性，是一系列属性描述

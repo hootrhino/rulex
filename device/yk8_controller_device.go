@@ -91,7 +91,7 @@ func (yk8 *YK8Controller) Start(cctx typex.CCTX) error {
 	client := modbus.NewClient(yk8.rtuHandler)
 	yk8.driver = driver.NewYK8RelayControllerDriver(yk8.Details(),
 		yk8.RuleEngine, yk8.mainConfig.Registers, yk8.rtuHandler, client)
-	yk8.status = typex.DEV_RUNNING
+	yk8.status = typex.DEV_UP
 
 	go func(ctx context.Context, Driver typex.XExternalDriver) {
 		ticker := time.NewTicker(time.Duration(yk8.mainConfig.Frequency) * time.Second)
@@ -102,7 +102,7 @@ func (yk8 *YK8Controller) Start(cctx typex.CCTX) error {
 			select {
 			case <-ctx.Done():
 				{
-					yk8.status = typex.DEV_STOP
+					yk8.status = typex.DEV_DOWN
 					return
 				}
 			default:
@@ -129,7 +129,7 @@ func (yk8 *YK8Controller) OnRead(data []byte) (int, error) {
 	n, err := yk8.driver.Read(data)
 	if err != nil {
 		glogger.GLogger.Error(err)
-		yk8.status = typex.DEV_STOP
+		yk8.status = typex.DEV_DOWN
 	}
 	return n, err
 }
@@ -141,7 +141,7 @@ func (yk8 *YK8Controller) OnWrite(b []byte) (int, error) {
 
 // 设备当前状态
 func (yk8 *YK8Controller) Status() typex.DeviceState {
-	return typex.DEV_RUNNING
+	return typex.DEV_UP
 }
 
 // 停止设备
@@ -150,6 +150,7 @@ func (yk8 *YK8Controller) Stop() {
 		yk8.rtuHandler.Close()
 	}
 	yk8.CancelCTX()
+	yk8.status = typex.DEV_STOP
 }
 
 // 设备属性，是一系列属性描述

@@ -16,6 +16,7 @@ type natsSource struct {
 	typex.XStatus
 	natsConnector *nats.Conn
 	mainConfig    common.NatsConfig
+	status        typex.SourceState
 }
 
 func NewNatsSource(e typex.RuleX) typex.XSource {
@@ -111,6 +112,7 @@ func (nt *natsSource) Stop() {
 		}
 	}
 	nt.CancelCTX()
+	nt.status = typex.SOURCE_STOP
 }
 func (nt *natsSource) Configs() *typex.XConfig {
 	return core.GenInConfig(typex.NATS_SERVER, "NATS_SERVER", common.NatsConfig{})

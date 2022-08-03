@@ -48,6 +48,7 @@ type tencentIothubSource struct {
 	typex.XStatus
 	client     mqtt.Client
 	mainConfig common.TencentMqttConfig
+	status     typex.SourceState
 }
 
 func NewTencentIothubSource(e typex.RuleX) typex.XSource {
@@ -130,6 +131,7 @@ func (tc *tencentIothubSource) DataModels() []typex.XDataModel {
 func (tc *tencentIothubSource) Stop() {
 	tc.client.Disconnect(0)
 	tc.CancelCTX()
+	tc.status = typex.SOURCE_STOP
 }
 func (tc *tencentIothubSource) Reload() {
 

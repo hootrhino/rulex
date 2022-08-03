@@ -14,6 +14,7 @@ import (
 type uartModuleSource struct {
 	typex.XStatus
 	uartDriver typex.XExternalDriver
+	status     typex.SourceState
 }
 type uartConfig struct {
 	Address    string `json:"address" validate:"required" title:"串口地址" info:""`
@@ -106,6 +107,7 @@ func (u *uartModuleSource) Stop() {
 		u.uartDriver = nil
 	}
 	u.CancelCTX()
+	u.status = typex.SOURCE_STOP
 
 }
 func (u *uartModuleSource) Driver() typex.XExternalDriver {

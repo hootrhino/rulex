@@ -93,7 +93,7 @@ func (tss *tss200V2) Start(cctx typex.CCTX) error {
 	client := modbus.NewClient(tss.rtuHandler)
 	tss.driver = driver.NewTSS200Driver(tss.Details(),
 		tss.RuleEngine, tss.mainConfig.Registers, tss.rtuHandler, client)
-	tss.status = typex.DEV_RUNNING
+	tss.status = typex.DEV_UP
 
 	go func(ctx context.Context, Driver typex.XExternalDriver) {
 		ticker := time.NewTicker(time.Duration(tss.mainConfig.Frequency) * time.Second)
@@ -104,7 +104,7 @@ func (tss *tss200V2) Start(cctx typex.CCTX) error {
 			select {
 			case <-ctx.Done():
 				{
-					tss.status = typex.DEV_STOP
+					tss.status = typex.DEV_DOWN
 					return
 				}
 			default:
@@ -131,7 +131,7 @@ func (tss *tss200V2) OnRead(data []byte) (int, error) {
 	n, err := tss.driver.Read(data)
 	if err != nil {
 		glogger.GLogger.Error(err)
-		tss.status = typex.DEV_STOP
+		tss.status = typex.DEV_DOWN
 	}
 	return n, err
 }
@@ -143,7 +143,7 @@ func (tss *tss200V2) OnWrite(b []byte) (int, error) {
 
 // 设备当前状态
 func (tss *tss200V2) Status() typex.DeviceState {
-	return typex.DEV_RUNNING
+	return typex.DEV_UP
 }
 
 // 停止设备
@@ -152,6 +152,7 @@ func (tss *tss200V2) Stop() {
 		tss.rtuHandler.Close()
 	}
 	tss.CancelCTX()
+	tss.status = typex.DEV_STOP
 }
 
 // 设备属性，是一系列属性描述

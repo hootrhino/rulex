@@ -15,6 +15,7 @@ type udpSource struct {
 	typex.XStatus
 	uDPConn    *net.UDPConn
 	mainConfig common.RULEXUdpConfig
+	status     typex.SourceState
 }
 
 func NewUdpInEndSource(e typex.RuleX) *udpSource {
@@ -105,6 +106,7 @@ func (u *udpSource) Stop() {
 		}
 	}
 	u.CancelCTX()
+	u.status = typex.SOURCE_STOP
 }
 func (*udpSource) Driver() typex.XExternalDriver {
 	return nil

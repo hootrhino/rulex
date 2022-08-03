@@ -21,6 +21,7 @@ type mqttOutEndTarget struct {
 	typex.XStatus
 	client     mqtt.Client
 	mainConfig common.MqttConfig
+	status     typex.SourceState
 }
 
 func NewMqttTarget(e typex.RuleX) typex.XTarget {
@@ -65,6 +66,7 @@ func (mm *mqttOutEndTarget) Start(cctx typex.CCTX) error {
 	if token.Wait() && token.Error() != nil {
 		return token.Error()
 	} else {
+		mm.status = typex.SOURCE_UP
 		return nil
 	}
 
@@ -79,6 +81,7 @@ func (mm *mqttOutEndTarget) Stop() {
 		mm.client.Disconnect(0)
 	}
 	mm.CancelCTX()
+	mm.status = typex.SOURCE_DOWN
 
 }
 func (mm *mqttOutEndTarget) Reload() {

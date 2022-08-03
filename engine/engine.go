@@ -581,7 +581,7 @@ func (e *RuleEngine) RestartOutEnd(uuid string) error {
 func (e *RuleEngine) RestartDevice(uuid string) error {
 	if value, ok := e.Devices.Load(uuid); ok {
 		o := (value.(*typex.Device))
-		if o.State == typex.DEV_RUNNING {
+		if o.State == typex.DEV_UP {
 			o.Device.Stop()
 		}
 		if err := e.LoadDevice(o); err != nil {

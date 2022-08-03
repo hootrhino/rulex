@@ -16,6 +16,7 @@ type natsTarget struct {
 	typex.XStatus
 	natsConnector *nats.Conn
 	mainConfig    common.NatsConfig
+	status        typex.SourceState
 }
 
 func NewNatsTarget(e typex.RuleX) typex.XTarget {
@@ -43,6 +44,7 @@ func (nt *natsTarget) Start(cctx typex.CCTX) error {
 		return err
 	} else {
 		nt.natsConnector = nc
+		nt.status = typex.SOURCE_UP
 		return nil
 	}
 }
@@ -100,6 +102,7 @@ func (nt *natsTarget) Stop() {
 		}
 	}
 	nt.CancelCTX()
+	nt.status = typex.SOURCE_STOP
 }
 
 /*

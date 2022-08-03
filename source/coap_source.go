@@ -23,6 +23,7 @@ type coAPInEndSource struct {
 	typex.XStatus
 	router     *mux.Router
 	mainConfig common.HostConfig
+	status     typex.SourceState
 }
 
 func NewCoAPInEndSource(e typex.RuleX) *coAPInEndSource {
@@ -79,6 +80,8 @@ func (cc *coAPInEndSource) Start(cctx typex.CCTX) error {
 //
 func (cc *coAPInEndSource) Stop() {
 	cc.CancelCTX()
+	cc.status = typex.SOURCE_STOP
+
 }
 
 func (cc *coAPInEndSource) DataModels() []typex.XDataModel {

@@ -24,6 +24,7 @@ type tdEngineTarget struct {
 	typex.XStatus
 	client     http.Client
 	mainConfig common.TDEngineConfig
+	status     typex.SourceState
 }
 type tdrs struct {
 	Status string `json:"status"`
@@ -91,8 +92,14 @@ func (td *tdEngineTarget) Start(cctx typex.CCTX) error {
 		td.mainConfig.Password, td.mainConfig.CreateDbSql, td.url()); err != nil {
 		return err
 	}
-	return execQuery(td.client, td.mainConfig.Username,
-		td.mainConfig.Password, td.mainConfig.CreateTableSql, td.url())
+	if err := execQuery(td.client, td.mainConfig.Username,
+		td.mainConfig.Password, td.mainConfig.CreateTableSql, td.url()); err != nil {
+		return err
+	} else {
+		td.status = typex.SOURCE_UP
+		return nil
+	}
+
 }
 
 //
@@ -161,6 +168,7 @@ func (td *tdEngineTarget) Topology() []typex.TopologyPoint {
 //
 func (td *tdEngineTarget) Stop() {
 	td.CancelCTX()
+	td.status = typex.SOURCE_STOP
 }
 
 func post(client http.Client,

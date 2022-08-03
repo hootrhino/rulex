@@ -90,7 +90,7 @@ func (ther *rtu485_ther) Start(cctx typex.CCTX) error {
 	//---------------------------------------------------------------------------------
 	// Start
 	//---------------------------------------------------------------------------------
-	ther.status = typex.DEV_RUNNING
+	ther.status = typex.DEV_UP
 	go func(ctx context.Context, Driver typex.XExternalDriver) {
 		ticker := time.NewTicker(time.Duration(ther.mainConfig.Frequency) * time.Second)
 		defer ticker.Stop()
@@ -139,7 +139,7 @@ func (ther *rtu485_ther) OnWrite(_ []byte) (int, error) {
 
 // 设备当前状态
 func (ther *rtu485_ther) Status() typex.DeviceState {
-	return typex.DEV_RUNNING
+	return typex.DEV_UP
 }
 
 // 停止设备

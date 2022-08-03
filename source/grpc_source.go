@@ -32,6 +32,7 @@ type grpcInEndSource struct {
 	rulexServer *RulexRpcServer
 	rpcServer   *grpc.Server
 	mainConfig  common.GrpcConfig
+	status      typex.SourceState
 }
 
 //
@@ -90,6 +91,7 @@ func (g *grpcInEndSource) Stop() {
 		g.rpcServer.Stop()
 	}
 	g.CancelCTX()
+	g.status = typex.SOURCE_STOP
 
 }
 func (g *grpcInEndSource) Reload() {

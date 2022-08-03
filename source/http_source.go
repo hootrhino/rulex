@@ -19,6 +19,7 @@ type httpInEndSource struct {
 	typex.XStatus
 	engine     *gin.Engine
 	mainConfig common.HostConfig
+	status     typex.SourceState
 }
 
 func NewHttpInEndSource(e typex.RuleX) typex.XSource {
@@ -83,7 +84,7 @@ func (mm *httpInEndSource) DataModels() []typex.XDataModel {
 //
 func (hh *httpInEndSource) Stop() {
 	hh.CancelCTX()
-
+	hh.status = typex.SOURCE_STOP
 }
 func (hh *httpInEndSource) Reload() {
 

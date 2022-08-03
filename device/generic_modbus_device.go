@@ -9,13 +9,13 @@ import (
 	"sync"
 	"time"
 
-	modbus "github.com/wwhai/gomodbus"
 	"github.com/i4de/rulex/common"
 	"github.com/i4de/rulex/core"
 	"github.com/i4de/rulex/driver"
 	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
+	modbus "github.com/wwhai/gomodbus"
 
 	"github.com/mitchellh/mapstructure"
 )
@@ -68,6 +68,7 @@ func NewGenericModbusDevice(e typex.RuleX) typex.XDevice {
 	mdev.mainConfig = common.ModBusConfig{}
 	mdev.tcpConfig = common.HostConfig{}
 	mdev.rtuConfig = common.RTUConfig{}
+	mdev.status = typex.DEV_UP
 	return mdev
 }
 
@@ -145,7 +146,7 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 	//---------------------------------------------------------------------------------
 	// Start
 	//---------------------------------------------------------------------------------
-	mdev.status = typex.DEV_RUNNING
+	mdev.status = typex.DEV_UP
 
 	go func(ctx context.Context, Driver typex.XExternalDriver) {
 		ticker := time.NewTicker(time.Duration(5) * time.Second)
@@ -156,7 +157,7 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 			select {
 			case <-ctx.Done():
 				{
-					mdev.status = typex.DEV_STOP
+					mdev.status = typex.DEV_DOWN
 					return
 				}
 			default:
@@ -183,7 +184,7 @@ func (mdev *generic_modbus_device) OnRead(data []byte) (int, error) {
 	n, err := mdev.driver.Read(data)
 	if err != nil {
 		glogger.GLogger.Error(err)
-		mdev.status = typex.DEV_STOP
+		mdev.status = typex.DEV_DOWN
 	}
 	return n, err
 }
@@ -195,7 +196,7 @@ func (mdev *generic_modbus_device) OnWrite(_ []byte) (int, error) {
 
 // 设备当前状态
 func (mdev *generic_modbus_device) Status() typex.DeviceState {
-	return typex.DEV_RUNNING
+	return mdev.status
 }
 
 // 停止设备
@@ -207,6 +208,7 @@ func (mdev *generic_modbus_device) Stop() {
 		mdev.rtuHandler.Close()
 	}
 	mdev.CancelCTX()
+	mdev.status = typex.DEV_STOP
 }
 
 // 设备属性，是一系列属性描述
@@ -222,7 +224,6 @@ func (mdev *generic_modbus_device) Details() *typex.Device {
 // 状态
 func (mdev *generic_modbus_device) SetState(status typex.DeviceState) {
 	mdev.status = status
-
 }
 
 // 驱动

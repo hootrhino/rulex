@@ -18,6 +18,7 @@ type mqttInEndSource struct {
 	typex.XStatus
 	client     mqtt.Client
 	mainConfig common.MqttConfig
+	status     typex.SourceState
 }
 
 func NewMqttInEndSource(e typex.RuleX) typex.XSource {
@@ -89,6 +90,7 @@ func (mm *mqttInEndSource) DataModels() []typex.XDataModel {
 func (mm *mqttInEndSource) Stop() {
 	mm.client.Disconnect(0)
 	mm.CancelCTX()
+	mm.status = typex.SOURCE_STOP
 }
 func (mm *mqttInEndSource) Reload() {
 

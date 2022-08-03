@@ -22,10 +22,4 @@ func LoadSt() {
 	SM.Register(typex.RULEX_UDP, core.GenInConfig(typex.RULEX_UDP, "About RULEX_UDP", common.RULEXUdpConfig{}))
 	SM.Register(typex.NATS_SERVER, core.GenInConfig(typex.NATS_SERVER, "About NATS_SERVER", common.NatsConfig{}))
 	SM.Register(typex.MQTT, core.GenInConfig(typex.MQTT, "About MQTT", common.NatsConfig{}))
-	//---------------------
-	// TODO 未来这些可能会被删除 转而挂到Device下
-	//---------------------
-	SM.Register(typex.MODBUS_MASTER, core.GenInConfig(typex.MODBUS_MASTER, "About MODBUS_MASTER", modBusConfig{}))
-	SM.Register(typex.SNMP_SERVER, core.GenInConfig(typex.SNMP_SERVER, "About SNMP_SERVER", snmpConfig{}))
-	SM.Register(typex.UART_MODULE, core.GenInConfig(typex.UART_MODULE, "About UART_MODULE", uartConfig{}))
 }

@@ -107,6 +107,9 @@ func startTarget(target typex.XTarget, out *typex.OutEnd, e typex.RuleX) error {
 // 监测状态, 如果挂了重启
 //
 func tryIfRestartTarget(target typex.XTarget, e typex.RuleX, id string) {
+	if target.Status() == typex.SOURCE_STOP {
+		return
+	}
 	if target.Status() == typex.SOURCE_DOWN {
 		target.Details().State = typex.SOURCE_DOWN
 		glogger.GLogger.Warnf("Target [%v, %v] down. try to restart it", target.Details().Name, target.Details().UUID)
