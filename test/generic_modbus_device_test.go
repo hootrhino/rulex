@@ -14,6 +14,7 @@ import (
 
 func Test_Generic_modbus_device(t *testing.T) {
 	mainConfig := core.InitGlobalConfig("conf/rulex.ini")
+	core.GlobalConfig.AppDebugMode = true
 	glogger.StartGLogger(true, core.GlobalConfig.LogPath)
 	glogger.StartLuaLogger(core.GlobalConfig.LuaLogPath)
 	core.StartStore(core.GlobalConfig.MaxQueueSize)
@@ -30,18 +31,18 @@ func Test_Generic_modbus_device(t *testing.T) {
 	}
 	GMODBUS := typex.NewDevice(typex.GENERIC_MODBUS,
 		"GENERIC_MODBUS", "GENERIC_MODBUS", "", map[string]interface{}{
-			// "mode":      "TCP",
-			"mode":      "RTU",
+			"mode": "TCP",
+			// "mode":      "RTU",
 			"timeout":   10,
 			"frequency": 5,
 			"config": map[string]interface{}{
-				"uart":     "COM3", // 虚拟串口测试, COM2上连了个MODBUS-POOL测试器
+				"uart":     "COM4", // 虚拟串口测试, COM2上连了个MODBUS-POOL测试器
 				"dataBits": 8,
 				"parity":   "N",
 				"stopBits": 1,
-				"baudRate": 9600,
-				"ip":       "127.0.0.1",
-				"port":     502,
+				"baudRate": 4800,
+				"host":     "192.168.1.106",
+				"port":     8899,
 			},
 			"registers": []map[string]interface{}{
 				{
@@ -49,7 +50,7 @@ func Test_Generic_modbus_device(t *testing.T) {
 					"function": 3,
 					"slaverId": 1,
 					"address":  0,
-					"quantity": 2,
+					"quantity": 1,
 				},
 			},
 		})
@@ -67,23 +68,7 @@ func Test_Generic_modbus_device(t *testing.T) {
 		`
 		Actions = {
 			function(data)
-				local datat = rulexlib:J2T(data)
-					for k, v in pairs(datat) do
-					    local ht = rulexlib:MB('>hv:16 tv:16', v['value'], false)
-						local humi = rulexlib:B2I64('>', rulexlib:BS2B(ht['hv']))
-						local temp = rulexlib:B2I64('>', rulexlib:BS2B(ht['tv']))
-						local ts = rulexlib:TsUnixNano()
-						local jsont = {
-							method = 'report',
-							clientToken = ts,
-							timestamp = ts,
-							params = {
-								temp = temp,
-								humi = humi
-							}
-						}
-						print(k, "Raw value:", ht['hv'], ht['tv'], "Parsed value:", rulexlib:T2J(jsont))
-					end
+			    print(data)
 				return true, data
 			end
 		}`,

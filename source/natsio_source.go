@@ -2,6 +2,7 @@ package source
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/i4de/rulex/common"
 	"github.com/i4de/rulex/core"
@@ -29,27 +30,32 @@ func (nt *natsSource) Start(cctx typex.CCTX) error {
 	nt.Ctx = cctx.Ctx
 	nt.CancelCTX = cctx.CancelCTX
 
-	nc, err := nats.Connect(fmt.Sprintf("%s:%v", nt.mainConfig.Host, nt.mainConfig.Port), func(o *nats.Options) error {
-		o.User = nt.mainConfig.User
-		o.Password = nt.mainConfig.Password
-		return nil
+	nc, err := nats.Connect(fmt.Sprintf("%s:%v", nt.mainConfig.Host, nt.mainConfig.Port),
+		func(o *nats.Options) error {
+			o.User = nt.mainConfig.User
+			o.Password = nt.mainConfig.Password
+			o.Name = "rulex-nats-source"
+			o.AllowReconnect = true
+			o.ReconnectWait = 5 * time.Second
+			return nil
+		},
+	)
+
+	nc.SetDisconnectHandler(func(c *nats.Conn) {
+		glogger.GLogger.Warn("connection disconnected")
 	})
+	nc.SetReconnectHandler(func(c *nats.Conn) {
+		glogger.GLogger.Warn("connection reconnect")
+		time.Sleep(2 * time.Second)
+		nt.subscribeNats()
+	})
+
 	if err != nil {
 		return err
 	} else {
 		nt.natsConnector = nc
 		//
-		_, err := nt.natsConnector.Subscribe(nt.mainConfig.Topic, func(msg *nats.Msg) {
-			if nt.natsConnector != nil {
-				work, err1 := nt.RuleEngine.WorkInEnd(nt.RuleEngine.GetInEnd(nt.PointId), string(msg.Data))
-				if !work {
-					glogger.GLogger.Error(err1)
-				}
-			}
-		})
-		if err != nil {
-			glogger.GLogger.Error("NatsSource PushQueue error: ", err)
-		}
+		nt.subscribeNats()
 		return nil
 	}
 }
@@ -144,4 +150,19 @@ func (*natsSource) DownStream([]byte) (int, error) {
 //
 func (*natsSource) UpStream([]byte) (int, error) {
 	return 0, nil
+}
+
+//--------------------------------------------------------------------------------------------------
+func (nt *natsSource) subscribeNats() {
+	_, err := nt.natsConnector.Subscribe(nt.mainConfig.Topic, func(msg *nats.Msg) {
+		if nt.natsConnector != nil {
+			work, err1 := nt.RuleEngine.WorkInEnd(nt.RuleEngine.GetInEnd(nt.PointId), string(msg.Data))
+			if !work {
+				glogger.GLogger.Error(err1)
+			}
+		}
+	})
+	if err != nil {
+		glogger.GLogger.Error("NatsSource PushQueue error: ", err)
+	}
 }

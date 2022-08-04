@@ -45,17 +45,20 @@ func (mm *mqttInEndSource) Start(cctx typex.CCTX) error {
 	mm.Ctx = cctx.Ctx
 	mm.CancelCTX = cctx.CancelCTX
 
-	var messageHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
-		work, err := mm.RuleEngine.WorkInEnd(mm.RuleEngine.GetInEnd(mm.PointId), string(msg.Payload()))
-		if !work {
-			glogger.GLogger.Error(err)
-		}
-
-	}
 	//
 	var connectHandler mqtt.OnConnectHandler = func(client mqtt.Client) {
 		glogger.GLogger.Infof("Mqtt InEnd Connected Success")
-		client.Subscribe(mm.mainConfig.SubTopic, 1, nil)
+		token := client.Subscribe(mm.mainConfig.SubTopic, 1, func(c mqtt.Client, msg mqtt.Message) {
+			work, err := mm.RuleEngine.WorkInEnd(mm.RuleEngine.GetInEnd(mm.PointId), string(msg.Payload()))
+			if !work {
+				glogger.GLogger.Error(err)
+			}
+		})
+		if token.Error() != nil {
+			glogger.GLogger.Error(token.Error())
+		} else {
+			glogger.GLogger.Info("topic:", mm.mainConfig.SubTopic, "subscribed")
+		}
 	}
 
 	var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err error) {
@@ -69,10 +72,12 @@ func (mm *mqttInEndSource) Start(cctx typex.CCTX) error {
 	opts.SetPassword(mm.mainConfig.Password)
 	opts.OnConnect = connectHandler
 	opts.OnConnectionLost = connectLostHandler
-	opts.SetDefaultPublishHandler(messageHandler)
-	opts.SetPingTimeout(10 * time.Second)
-	opts.SetAutoReconnect(true)
 
+	opts.SetCleanSession(true)
+	opts.SetPingTimeout(30 * time.Second)
+	opts.SetKeepAlive(60 * time.Second)
+	opts.SetConnectTimeout(30 * time.Second)
+	opts.SetAutoReconnect(true)
 	opts.SetMaxReconnectInterval(5 * time.Second)
 	mm.client = mqtt.NewClient(opts)
 	if token := mm.client.Connect(); token.Wait() && token.Error() != nil {

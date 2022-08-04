@@ -87,6 +87,17 @@ func (tc *tencentIothubSource) Start(cctx typex.CCTX) error {
 	//
 	var connectHandler mqtt.OnConnectHandler = func(client mqtt.Client) {
 		glogger.GLogger.Infof("Tencent IOTHUB Connected Success")
+		token := tc.client.Subscribe(PropertyTopic, 1, func(c mqtt.Client, msg mqtt.Message) {
+			work, err := tc.RuleEngine.WorkInEnd(tc.RuleEngine.GetInEnd(tc.PointId), string(msg.Payload()))
+			if !work {
+				glogger.GLogger.Error(err)
+			}
+		})
+		if token.Error() != nil {
+			glogger.GLogger.Error(token.Error())
+		} else {
+			glogger.GLogger.Info("topic:", PropertyTopic, "subscribed")
+		}
 	}
 
 	var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err error) {
@@ -100,6 +111,7 @@ func (tc *tencentIothubSource) Start(cctx typex.CCTX) error {
 	opts.SetPassword(tc.mainConfig.Password)
 	opts.OnConnect = connectHandler
 	opts.OnConnectionLost = connectLostHandler
+	opts.SetCleanSession(true)
 	opts.SetPingTimeout(30 * time.Second)
 	opts.SetKeepAlive(60 * time.Second)
 	opts.SetConnectTimeout(30 * time.Second)
@@ -109,17 +121,7 @@ func (tc *tencentIothubSource) Start(cctx typex.CCTX) error {
 	if token := tc.client.Connect(); token.Wait() && token.Error() != nil {
 		return token.Error()
 	}
-	token := tc.client.Subscribe(PropertyTopic, 1, func(c mqtt.Client, msg mqtt.Message) {
-		work, err := tc.RuleEngine.WorkInEnd(tc.RuleEngine.GetInEnd(tc.PointId), string(msg.Payload()))
-		if !work {
-			glogger.GLogger.Error(err)
-		}
 
-	})
-	if token.Error() != nil {
-		glogger.GLogger.Error(token.Error())
-		return token.Error()
-	}
 	return nil
 
 }
