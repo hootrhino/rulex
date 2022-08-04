@@ -104,7 +104,7 @@ func (tss *tss200V2) Start(cctx typex.CCTX) error {
 			select {
 			case <-ctx.Done():
 				{
-					tss.status = typex.DEV_DOWN
+					tss.status = typex.DEV_STOP
 					return
 				}
 			default:

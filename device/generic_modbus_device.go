@@ -157,7 +157,7 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 			select {
 			case <-ctx.Done():
 				{
-					mdev.status = typex.DEV_DOWN
+					mdev.status = typex.DEV_STOP
 					return
 				}
 			default:

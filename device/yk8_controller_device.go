@@ -95,14 +95,13 @@ func (yk8 *YK8Controller) Start(cctx typex.CCTX) error {
 
 	go func(ctx context.Context, Driver typex.XExternalDriver) {
 		ticker := time.NewTicker(time.Duration(yk8.mainConfig.Frequency) * time.Second)
-		defer ticker.Stop()
 		buffer := make([]byte, common.T_64KB)
 		for {
 			<-ticker.C
 			select {
 			case <-ctx.Done():
 				{
-					yk8.status = typex.DEV_DOWN
+					yk8.status = typex.DEV_STOP
 					return
 				}
 			default:

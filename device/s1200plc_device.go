@@ -86,6 +86,7 @@ func (s1200 *s1200plc) Start(cctx typex.CCTX) error {
 			select {
 			case <-ctx.Done():
 				{
+					s1200.status = typex.DEV_STOP
 					return
 				}
 			default:
