@@ -178,6 +178,7 @@ func (e *RuleEngine) Stop() {
 		if outEnd.Target != nil {
 			glogger.GLogger.Info("Stop Target:", outEnd.Name, outEnd.UUID)
 			outEnd.Target.Stop()
+			glogger.GLogger.Info("Stop Target:", outEnd.Name, outEnd.UUID, " Succefully")
 		}
 		return true
 	})
@@ -186,6 +187,7 @@ func (e *RuleEngine) Stop() {
 		plugin := value.(typex.XPlugin)
 		glogger.GLogger.Info("Stop plugin:", plugin.PluginMetaInfo().Name)
 		plugin.Stop()
+		glogger.GLogger.Info("Stop plugin:", plugin.PluginMetaInfo().Name, " Succefully")
 		return true
 	})
 	// 停止所有设备
@@ -193,6 +195,7 @@ func (e *RuleEngine) Stop() {
 		Device := value.(*typex.Device)
 		glogger.GLogger.Info("Stop Device:", Device.Name)
 		Device.Device.Stop()
+		glogger.GLogger.Info("Stop Device:", Device.Name, " Succefully")
 		return true
 	})
 	// 外挂停了
@@ -200,12 +203,9 @@ func (e *RuleEngine) Stop() {
 		goodsProcess := value.(*sidecar.GoodsProcess)
 		glogger.GLogger.Info("Stop Goods Process:", goodsProcess.UUID())
 		goodsProcess.Stop()
+		glogger.GLogger.Info("Stop Goods Process:", goodsProcess.UUID(), " Succefully")
 		return true
 	})
-
-	// 回收资源
-	runtime.Gosched()
-	runtime.GC()
 
 	glogger.GLogger.Info("Stop Rulex successfully")
 	if err := glogger.GLOBAL_LOGGER.Close(); err != nil {
