@@ -22,6 +22,7 @@ import (
 	"sync"
 
 	"github.com/i4de/rulex/glogger"
+	"github.com/i4de/rulex/typex"
 )
 
 //--------------------------------------------------------------------------------------------------
@@ -65,6 +66,7 @@ type GoodsProcess struct {
 	ctx         context.Context
 	cmd         *exec.Cmd
 	cancel      context.CancelFunc
+	status      typex.DeviceState
 }
 
 func (t *GoodsProcess) Running() bool {
@@ -101,6 +103,7 @@ func (scm *GoodsProcess) Stop() {
 			scm.cancel()
 		}
 	}
+	scm.status = typex.DEV_STOP
 }
 
 func NewGoodsProcess() *GoodsProcess {
@@ -114,6 +117,7 @@ func NewGoodsProcess() *GoodsProcess {
 type SidecarManager struct {
 	ctx             context.Context
 	goodsProcessMap *sync.Map // Key: UUID, Value: GoodsProcess
+	status          typex.DeviceState
 }
 
 func NewSideCarManager(ctx context.Context) SideCar {
@@ -186,6 +190,7 @@ func (scm *SidecarManager) Stop() {
 		(value.(*GoodsProcess)).Stop()
 		return true
 	})
+	scm.status = typex.DEV_STOP
 	scm = nil
 }
 

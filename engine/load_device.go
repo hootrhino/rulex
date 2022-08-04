@@ -184,8 +184,8 @@ func tryIfRestartDevice(abstractDevice typex.XDevice, e *RuleEngine, devId strin
 	checkDeviceDriverState(abstractDevice)
 	// 当内存里面的设备状态已经停止的时候，及时更新数据库里的
 	// 此处本质上是个同步过程
-	if abstractDevice.Status() == typex.DEV_STOP {
-		abstractDevice.Details().State = typex.DEV_STOP
+	if abstractDevice.Status() == typex.DEV_DOWN {
+		abstractDevice.Details().State = typex.DEV_DOWN
 		glogger.GLogger.Warnf("Device %v %v down. try to restart it", abstractDevice.Details().UUID, abstractDevice.Details().Name)
 		abstractDevice.Stop()
 		runtime.Gosched()
