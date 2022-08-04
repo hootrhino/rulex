@@ -21,6 +21,7 @@ func NewHTTPTarget(e typex.RuleX) typex.XTarget {
 	ht := new(HTTPTarget)
 	ht.RuleEngine = e
 	ht.mainConfig = common.HTTPConfig{}
+	ht.status = typex.SOURCE_DOWN
 	return ht
 }
 

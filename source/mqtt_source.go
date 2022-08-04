@@ -57,8 +57,9 @@ func (mm *mqttInEndSource) Start(cctx typex.CCTX) error {
 		if token.Error() != nil {
 			glogger.GLogger.Error(token.Error())
 		} else {
-			glogger.GLogger.Info("topic:", mm.mainConfig.SubTopic, "subscribed")
+			glogger.GLogger.Info("topic:", mm.mainConfig.SubTopic, " subscribed")
 		}
+		mm.status = typex.SOURCE_UP
 	}
 
 	var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err error) {
@@ -83,6 +84,7 @@ func (mm *mqttInEndSource) Start(cctx typex.CCTX) error {
 	if token := mm.client.Connect(); token.Wait() && token.Error() != nil {
 		return token.Error()
 	} else {
+		mm.status = typex.SOURCE_UP
 		return nil
 	}
 
@@ -104,16 +106,7 @@ func (mm *mqttInEndSource) Pause() {
 
 }
 func (mm *mqttInEndSource) Status() typex.SourceState {
-	if mm.client != nil {
-		if mm.client.IsConnected() {
-			return typex.SOURCE_UP
-		} else {
-			return typex.SOURCE_DOWN
-		}
-	} else {
-		return typex.SOURCE_DOWN
-	}
-
+	return mm.status
 }
 
 func (mm *mqttInEndSource) Test(inEndId string) bool {

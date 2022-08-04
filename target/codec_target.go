@@ -25,6 +25,7 @@ func NewCodecTarget(rx typex.RuleX) typex.XTarget {
 	ct := &codecTarget{}
 	ct.mainConfig = common.GrpcConfig{}
 	ct.RuleEngine = rx
+	ct.status = typex.SOURCE_DOWN
 	return ct
 }
 

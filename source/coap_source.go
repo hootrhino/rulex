@@ -73,6 +73,7 @@ func (cc *coAPInEndSource) Start(cctx typex.CCTX) error {
 			return
 		}
 	}(cc.Ctx)
+	cc.status = typex.SOURCE_UP
 	glogger.GLogger.Info("Coap source started on [udp]" + port)
 	return nil
 }
@@ -94,7 +95,7 @@ func (cc *coAPInEndSource) Pause() {
 
 }
 func (cc *coAPInEndSource) Status() typex.SourceState {
-	return typex.SOURCE_UP
+	return cc.status
 }
 
 func (cc *coAPInEndSource) Test(inEndId string) bool {

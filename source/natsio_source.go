@@ -56,6 +56,7 @@ func (nt *natsSource) Start(cctx typex.CCTX) error {
 		nt.natsConnector = nc
 		//
 		nt.subscribeNats()
+		nt.status = typex.SOURCE_UP
 		return nil
 	}
 }
@@ -88,12 +89,7 @@ func (nt *natsSource) Pause() {
 }
 
 func (nt *natsSource) Status() typex.SourceState {
-	if nt.natsConnector != nil {
-		if nt.natsConnector.IsConnected() {
-			return typex.SOURCE_UP
-		}
-	}
-	return typex.SOURCE_DOWN
+	return nt.status
 
 }
 

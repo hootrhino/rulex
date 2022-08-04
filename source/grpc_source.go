@@ -76,7 +76,7 @@ func (g *grpcInEndSource) Start(cctx typex.CCTX) error {
 		glogger.GLogger.Info("RulexRpc source started on", listener.Addr())
 		g.rpcServer.Serve(listener)
 	}(g.Ctx)
-
+	g.status = typex.SOURCE_UP
 	return nil
 }
 
@@ -101,7 +101,7 @@ func (g *grpcInEndSource) Pause() {
 
 }
 func (g *grpcInEndSource) Status() typex.SourceState {
-	return typex.SOURCE_UP
+	return g.status
 }
 
 func (g *grpcInEndSource) Test(inEndId string) bool {

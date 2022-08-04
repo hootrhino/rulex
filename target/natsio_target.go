@@ -70,13 +70,7 @@ func (nt *natsTarget) Pause() {
 }
 
 func (nt *natsTarget) Status() typex.SourceState {
-	if nt.natsConnector != nil {
-		if nt.natsConnector.IsConnected() {
-			return typex.SOURCE_UP
-		}
-	}
-	return typex.SOURCE_DOWN
-
+	return nt.status
 }
 
 func (nt *natsTarget) Details() *typex.OutEnd {

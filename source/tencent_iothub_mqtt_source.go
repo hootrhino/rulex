@@ -55,6 +55,7 @@ func NewTencentIothubSource(e typex.RuleX) typex.XSource {
 	m := new(tencentIothubSource)
 	m.RuleEngine = e
 	m.mainConfig = common.TencentMqttConfig{}
+	m.status = typex.SOURCE_DOWN
 	return m
 }
 
@@ -96,8 +97,9 @@ func (tc *tencentIothubSource) Start(cctx typex.CCTX) error {
 		if token.Error() != nil {
 			glogger.GLogger.Error(token.Error())
 		} else {
-			glogger.GLogger.Info("topic:", PropertyTopic, "subscribed")
+			glogger.GLogger.Info("topic:", PropertyTopic, " subscribed")
 		}
+		tc.status = typex.SOURCE_UP
 	}
 
 	var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err error) {
@@ -142,16 +144,7 @@ func (tc *tencentIothubSource) Pause() {
 
 }
 func (tc *tencentIothubSource) Status() typex.SourceState {
-	if tc.client != nil {
-		if tc.client.IsConnected() {
-			return typex.SOURCE_UP
-		} else {
-			return typex.SOURCE_DOWN
-		}
-	} else {
-		return typex.SOURCE_DOWN
-	}
-
+	return tc.status
 }
 
 func (tc *tencentIothubSource) Test(inEndId string) bool {

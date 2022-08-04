@@ -28,6 +28,7 @@ func NewMqttTarget(e typex.RuleX) typex.XTarget {
 	m := new(mqttOutEndTarget)
 	m.RuleEngine = e
 	m.mainConfig = common.MqttConfig{}
+	m.status = typex.SOURCE_DOWN
 	return m
 }
 func (*mqttOutEndTarget) Driver() typex.XExternalDriver {
@@ -91,16 +92,7 @@ func (mm *mqttOutEndTarget) Pause() {
 
 }
 func (mm *mqttOutEndTarget) Status() typex.SourceState {
-	if mm.client != nil {
-		if mm.client.IsConnectionOpen() {
-			return typex.SOURCE_UP
-		} else {
-			return typex.SOURCE_DOWN
-		}
-	} else {
-		return typex.SOURCE_DOWN
-	}
-
+	return mm.status
 }
 
 func (mm *mqttOutEndTarget) Test(outEndId string) bool {

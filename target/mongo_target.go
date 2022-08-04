@@ -28,6 +28,7 @@ func NewMongoTarget(e typex.RuleX) typex.XTarget {
 	mg := new(mongoTarget)
 	mg.mainConfig = common.MongoConfig{}
 	mg.RuleEngine = e
+	mg.status = typex.SOURCE_DOWN
 	return mg
 }
 
@@ -87,13 +88,7 @@ func (m *mongoTarget) Pause() {
 }
 
 func (m *mongoTarget) Status() typex.SourceState {
-	err1 := m.client.Ping(m.Ctx, nil)
-	if err1 != nil {
-		glogger.GLogger.Error(err1)
-		return typex.SOURCE_DOWN
-	} else {
-		return typex.SOURCE_UP
-	}
+	return m.status
 }
 
 func (m *mongoTarget) Stop() {

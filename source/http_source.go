@@ -71,6 +71,7 @@ func (hh *httpInEndSource) Start(cctx typex.CCTX) error {
 			return
 		}
 	}(hh.Ctx)
+	hh.status = typex.SOURCE_UP
 	glogger.GLogger.Info("HTTP source started on" + " [0.0.0.0]:" + fmt.Sprintf("%v", hh.mainConfig.Port))
 
 	return nil
@@ -93,7 +94,7 @@ func (hh *httpInEndSource) Pause() {
 
 }
 func (hh *httpInEndSource) Status() typex.SourceState {
-	return typex.SOURCE_UP
+	return hh.status
 }
 
 func (hh *httpInEndSource) Test(inEndId string) bool {

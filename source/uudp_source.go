@@ -60,6 +60,7 @@ func (u *udpSource) Start(cctx typex.CCTX) error {
 			}
 		}
 	}(u.Ctx, u)
+	u.status = typex.SOURCE_UP
 	glogger.GLogger.Infof("UDP source started on [%v]:%v", u.mainConfig.Host, u.mainConfig.Port)
 	return nil
 
@@ -95,7 +96,7 @@ func (u *udpSource) Pause() {
 }
 
 func (u *udpSource) Status() typex.SourceState {
-	return typex.SOURCE_UP
+	return u.status
 }
 
 func (u *udpSource) Stop() {

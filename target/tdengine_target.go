@@ -38,6 +38,7 @@ func NewTdEngineTarget(e typex.RuleX) typex.XTarget {
 		mainConfig: common.TDEngineConfig{},
 	}
 	td.RuleEngine = e
+	td.status = typex.SOURCE_DOWN
 	return &td
 
 }
@@ -133,12 +134,7 @@ func (td *tdEngineTarget) Pause() {
 // 获取资源状态
 //
 func (td *tdEngineTarget) Status() typex.SourceState {
-	if err := execQuery(td.client, td.mainConfig.Username,
-		td.mainConfig.Password, "SELECT CLIENT_VERSION();", td.url()); err != nil {
-		glogger.GLogger.Error(err)
-		return typex.SOURCE_DOWN
-	}
-	return typex.SOURCE_UP
+	return td.status
 }
 
 //
