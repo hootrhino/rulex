@@ -170,6 +170,7 @@ func (e *RuleEngine) Stop() {
 				inEnd.Source.Driver().Stop()
 			}
 		}
+		glogger.GLogger.Info("Stop InEnd:", inEnd.Name, inEnd.UUID, " Succefully")
 		return true
 	})
 	// 停止所有外部资源
