@@ -204,7 +204,11 @@ func tryIfRestartDevice(abstractDevice typex.XDevice, e *RuleEngine, devId strin
 *
  */
 func checkDeviceDriverState(abstractDevice typex.XDevice) {
+
 	if abstractDevice.Driver() == nil {
+		return
+	}
+	if abstractDevice.Status() == typex.DEV_STOP {
 		return
 	}
 	// 只有资源启动状态才拉起驱动
