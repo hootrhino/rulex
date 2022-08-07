@@ -82,6 +82,7 @@ func startTarget(target typex.XTarget, out *typex.OutEnd, e typex.RuleX) error {
 		select {
 		case <-ctx.Done():
 			{
+				ticker.Stop()
 				return
 			}
 		default:

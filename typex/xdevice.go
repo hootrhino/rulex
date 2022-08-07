@@ -14,7 +14,7 @@ type DeviceState int
 
 const (
 	// 外部停止
-	DEV_STOP DeviceState = 0 // BUG
+	DEV_STOP DeviceState = 0
 	// 设备启用
 	DEV_UP DeviceState = 1
 	// 设备故障
@@ -23,13 +23,14 @@ const (
 
 type DeviceType string
 
-// 设备类型, 后期逐步增加
+// 支持的设备类型
 const (
 	TSS200V02      DeviceType = "TSS200V02"
 	RTU485_THER    DeviceType = "RTU485_THER"
 	YK08_RELAY     DeviceType = "YK08_RELAY"
 	S1200PLC       DeviceType = "S1200PLC"
 	GENERIC_MODBUS DeviceType = "GENERIC_MODBUS" // 通用Modbus
+	GENERIC_UART   DeviceType = "GENERIC_UART"   // 通用串口
 )
 
 // 设备元数据

@@ -8,9 +8,9 @@ package driver
 import (
 	"encoding/json"
 
-	"github.com/wwhai/gomodbus"
 	"github.com/i4de/rulex/common"
 	"github.com/i4de/rulex/typex"
+	modbus "github.com/wwhai/gomodbus"
 )
 
 type YK8RelayControllerDriver struct {
@@ -49,7 +49,7 @@ func (yk8 *YK8RelayControllerDriver) Work() error {
 }
 
 func (yk8 *YK8RelayControllerDriver) State() typex.DriverState {
-	return typex.DRIVER_RUNNING
+	return typex.DRIVER_UP
 }
 
 //

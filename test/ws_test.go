@@ -46,8 +46,10 @@ func ws() {
 	defer ticker.Stop()
 
 	for {
+		<-ticker.C
 		select {
 		case <-done:
+			ticker.Stop()
 			return
 		case t := <-ticker.C:
 			err := c.WriteMessage(websocket.TextMessage, []byte(t.String()))

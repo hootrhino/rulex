@@ -99,12 +99,14 @@ func (tss *tss200V2) Start(cctx typex.CCTX) error {
 		ticker := time.NewTicker(time.Duration(tss.mainConfig.Frequency) * time.Second)
 		defer ticker.Stop()
 		buffer := make([]byte, common.T_64KB)
+		tss.driver.Read(buffer) //清理缓存
 		for {
 			<-ticker.C
 			select {
 			case <-ctx.Done():
 				{
 					tss.status = typex.DEV_STOP
+					ticker.Stop()
 					return
 				}
 			default:

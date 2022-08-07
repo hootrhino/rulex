@@ -60,7 +60,7 @@ func (s1200 *siemens_s1200_driver) State() typex.DriverState {
 		glogger.GLogger.Error(err)
 		return typex.DRIVER_STOP
 	}
-	return typex.DRIVER_RUNNING
+	return typex.DRIVER_UP
 }
 
 //

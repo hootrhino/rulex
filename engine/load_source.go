@@ -90,6 +90,7 @@ func startSources(source typex.XSource, in *typex.InEnd, e *RuleEngine) error {
 		select {
 		case <-ctx.Done():
 			{
+				ticker.Stop()
 				return
 			}
 		default:
@@ -183,7 +184,7 @@ func startSource(source typex.XSource, e *RuleEngine) error {
 			source.Stop()
 		}
 		if source.Driver() != nil {
-			if source.Driver().State() == typex.DRIVER_RUNNING {
+			if source.Driver().State() == typex.DRIVER_UP {
 				source.Driver().Stop()
 			}
 		}
@@ -193,7 +194,7 @@ func startSource(source typex.XSource, e *RuleEngine) error {
 	// 驱动也要停了, 然后重启
 	//----------------------------------
 	if source.Driver() != nil {
-		if source.Driver().State() == typex.DRIVER_RUNNING {
+		if source.Driver().State() == typex.DRIVER_UP {
 			source.Driver().Stop()
 		}
 		// Start driver

@@ -78,6 +78,9 @@ func (e *RuleEngine) LoadDevice(deviceInfo *typex.Device) error {
 	if deviceInfo.Type == typex.GENERIC_MODBUS {
 		return startDevices(device.NewGenericModbusDevice(e), deviceInfo, e)
 	}
+	if deviceInfo.Type == typex.GENERIC_UART {
+		return startDevices(device.NewGenericUartDevice(e), deviceInfo, e)
+	}
 	return fmt.Errorf("unsupported Device type:%s", deviceInfo.Type)
 
 }
@@ -117,6 +120,7 @@ func startDevices(abstractDevice typex.XDevice, deviceInfo *typex.Device, e *Rul
 		select {
 		case <-ctx.Done():
 			{
+				ticker.Stop()
 				return
 			}
 		default:
@@ -148,7 +152,7 @@ func startDevice(abstractDevice typex.XDevice, e *RuleEngine) error {
 		return err
 	}
 	if abstractDevice.Driver() != nil {
-		if abstractDevice.Driver().State() == typex.DRIVER_RUNNING {
+		if abstractDevice.Driver().State() == typex.DRIVER_UP {
 			abstractDevice.Driver().Stop()
 		}
 	}
@@ -156,7 +160,7 @@ func startDevice(abstractDevice typex.XDevice, e *RuleEngine) error {
 	// 驱动也要停了, 然后重启
 	//----------------------------------
 	if abstractDevice.Driver() != nil {
-		if abstractDevice.Driver().State() == typex.DRIVER_RUNNING {
+		if abstractDevice.Driver().State() == typex.DRIVER_UP {
 			abstractDevice.Driver().Stop()
 		}
 		// Start driver
