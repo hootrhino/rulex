@@ -93,14 +93,15 @@ func (ther *rtu485_ther) Start(cctx typex.CCTX) error {
 	ther.status = typex.DEV_UP
 	go func(ctx context.Context, Driver typex.XExternalDriver) {
 		ticker := time.NewTicker(time.Duration(ther.mainConfig.Frequency) * time.Second)
-		defer ticker.Stop()
 		buffer := make([]byte, common.T_64KB)
+		ther.driver.Read(buffer) //清理缓存
 		for {
 			<-ticker.C
 			select {
 			case <-ctx.Done():
 				{
 					ther.status = typex.DEV_STOP
+					ticker.Stop()
 					return
 				}
 			default:

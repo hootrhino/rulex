@@ -30,7 +30,7 @@ func NewModBusTCPDriver(
 	handler *modbus.TCPClientHandler,
 	client modbus.Client) typex.XExternalDriver {
 	return &modBusTCPDriver{
-		state:      typex.DRIVER_RUNNING,
+		state:      typex.DRIVER_UP,
 		device:     d,
 		RuleEngine: e,
 		client:     client,

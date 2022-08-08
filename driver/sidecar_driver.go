@@ -60,7 +60,7 @@ func (sc *SideCarDriver) State() typex.DriverState {
 	if sc.t() != nil {
 		return typex.DRIVER_STOP
 	}
-	return typex.DRIVER_RUNNING
+	return typex.DRIVER_UP
 }
 
 /*

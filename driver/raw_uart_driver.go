@@ -9,18 +9,17 @@ import (
 	"context"
 	"errors"
 
-	"github.com/goburrow/serial"
-	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
+	serial "github.com/wwhai/goserial"
 )
 
 type rawUartDriver struct {
 	state      typex.DriverState
-	serialPort serial.Port
 	config     serial.Config
+	serialPort serial.Port
 	ctx        context.Context
-	In         *typex.InEnd
 	RuleEngine typex.RuleX
+	device     *typex.Device
 }
 
 //
@@ -28,34 +27,29 @@ type rawUartDriver struct {
 //
 func NewRawUartDriver(
 	ctx context.Context,
-	config serial.Config,
-	in *typex.InEnd,
 	e typex.RuleX,
-	onRead func([]byte)) (typex.XExternalDriver, error) {
-
+	device *typex.Device,
+	serialPort serial.Port,
+) typex.XExternalDriver {
 	return &rawUartDriver{
-		In:         in,
 		RuleEngine: e,
-		config:     config,
 		ctx:        ctx,
-	}, nil
+		serialPort: serialPort,
+		device:     device,
+	}
 }
 
 //
 //
 //
 func (a *rawUartDriver) Init(map[string]string) error {
-	a.state = typex.DRIVER_RUNNING
+	a.state = typex.DRIVER_UP
+
 	return nil
 }
 
 func (a *rawUartDriver) Work() error {
-	serialPort, err := serial.Open(&a.config)
-	a.serialPort = serialPort
-	if err != nil {
-		glogger.GLogger.Error("uartModuleSource start failed:", err)
-		return err
-	}
+
 	return nil
 
 }

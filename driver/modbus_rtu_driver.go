@@ -4,9 +4,9 @@ import (
 	"encoding/binary"
 	"encoding/json"
 
-	"github.com/wwhai/gomodbus"
 	"github.com/i4de/rulex/common"
 	"github.com/i4de/rulex/typex"
+	"github.com/wwhai/gomodbus"
 )
 
 /*
@@ -30,7 +30,7 @@ func NewModBusRtuDriver(
 	handler *modbus.RTUClientHandler,
 	client modbus.Client) typex.XExternalDriver {
 	return &modBusRtuDriver{
-		state:      typex.DRIVER_RUNNING,
+		state:      typex.DRIVER_UP,
 		device:     d,
 		RuleEngine: e,
 		client:     client,

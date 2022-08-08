@@ -48,7 +48,7 @@ func (tss *tss200_v_0_2_Driver) Work() error {
 }
 
 func (tss *tss200_v_0_2_Driver) State() typex.DriverState {
-	return typex.DRIVER_RUNNING
+	return typex.DRIVER_UP
 }
 
 type _sensor_data struct {

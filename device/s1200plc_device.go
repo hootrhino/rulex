@@ -81,12 +81,14 @@ func (s1200 *s1200plc) Start(cctx typex.CCTX) error {
 		ticker := time.NewTicker(time.Duration(*s1200.mainConfig.ReadFrequency) * time.Second)
 		// 数据缓冲区,最大4KB
 		dataBuffer := make([]byte, common.T_4KB)
+		s1200.driver.Read(dataBuffer) //清理缓存
 		for {
 			<-ticker.C
 			select {
 			case <-ctx.Done():
 				{
 					s1200.status = typex.DEV_STOP
+					ticker.Stop()
 					return
 				}
 			default:
@@ -145,7 +147,7 @@ func (s1200 *s1200plc) OnWrite(data []byte) (int, error) {
 
 // 设备当前状态
 func (s1200 *s1200plc) Status() typex.DeviceState {
-	if s1200.driver.State() == typex.DRIVER_RUNNING {
+	if s1200.driver.State() == typex.DRIVER_UP {
 		return typex.DEV_UP
 	}
 	return typex.DEV_DOWN

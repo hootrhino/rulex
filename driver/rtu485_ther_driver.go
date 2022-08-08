@@ -7,11 +7,11 @@ package driver
 import (
 	"encoding/json"
 
-	"github.com/wwhai/gomodbus"
 	"github.com/i4de/rulex/common"
 	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
+	modbus "github.com/wwhai/gomodbus"
 )
 
 // Example: 0x02 0x92 0xFF 0x98
@@ -69,7 +69,7 @@ func (rtu485 *rtu485_THer_Driver) Work() error {
 }
 
 func (rtu485 *rtu485_THer_Driver) State() typex.DriverState {
-	return typex.DRIVER_RUNNING
+	return typex.DRIVER_UP
 }
 
 func (rtu485 *rtu485_THer_Driver) Read(data []byte) (int, error) {
