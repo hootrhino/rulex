@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"time"
 
 	"github.com/i4de/rulex/typex"
 	"github.com/plgd-dev/kit/v2/log"
@@ -77,11 +78,9 @@ func startSServer(ctxMain context.Context, cancelMain context.CancelFunc) error 
 			log.Error("Error Listener Accept: ", err)
 			continue
 		}
-
 		session := NewSession(peerConn)
-		sensor := NewSensor(session)
 		ctx, cancel := context.WithCancel(ctxMain)
-		go waitForAuth(ctx, cancel, sensor)
+		go waitForAuth(ctx, cancel, session)
 
 	}
 
@@ -92,8 +91,19 @@ func startSServer(ctxMain context.Context, cancelMain context.CancelFunc) error 
 * 等待认证
 *
  */
-func waitForAuth(ctx context.Context, cancel context.CancelFunc, s Sensor) {
+func waitForAuth(ctx context.Context, cancel context.CancelFunc, s Session) {
 	// 等待3秒内是否收到认证报文
-	
+	buffer := make([]byte, 64)
+	for {
+		s.Transport.SetDeadline(time.Now().Add(3 * time.Second))
+		n, err := s.Transport.Read(buffer)
+		if err != nil {
+			log.Error(err)
+			return
+		}
+		id := string(buffer[:n])
+		log.Debug("Sensor ready to auth:", id)
+
+	}
 
 }

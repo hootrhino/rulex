@@ -26,6 +26,7 @@ type ISServer interface {
 *
  */
 type ISensor interface {
+	Addr() string
 	Session() Session
 	Ping() []byte
 	OnRegister() error
@@ -60,12 +61,37 @@ func NewSession(Transport net.Conn) Session {
 
 type Sensor struct {
 	session Session
-	Addr    string
+	addr    string
 	Authed  bool
 }
 
-func NewSensor(session Session) Sensor {
-	return Sensor{session: session}
+func (s *Sensor) Addr() string {
+	return s.addr
+}
+func (s *Sensor) Session() Session {
+
+}
+func (s *Sensor) Ping() []byte {
+
+}
+func (s *Sensor) OnRegister() error {
+
+}
+func (s *Sensor) OnLine() {
+
+}
+func (s *Sensor) OffLine() {
+
+}
+func (s *Sensor) OnError(error) {
+
+}
+func (s *Sensor) OnData([]byte) {
+
+}
+
+func NewSensor(addr string, session Session) Sensor {
+	return Sensor{addr: addr, session: session}
 }
 
 /*
