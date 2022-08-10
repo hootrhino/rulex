@@ -1,7 +1,6 @@
 package sensor_server
 
 import (
-	"context"
 	"net"
 
 	"github.com/google/uuid"
@@ -26,14 +25,14 @@ type ISServer interface {
 *
  */
 type ISensor interface {
-	Addr() string
-	Session() Session
-	Ping() []byte
-	OnRegister() error
-	OnLine()
-	OffLine()
-	OnError(error)
-	OnData([]byte)
+	Sn() string                 // 获取编号
+	Session() Session           // 会话
+	Ping() []byte               // PING包
+	OnRegister(sn string) error // 注册成功
+	OnLine()                    // 上线
+	OffLine()                   // 掉线
+	OnError(error)              // 出错
+	OnData([]byte)              // 来数据
 }
 
 /*
@@ -51,85 +50,4 @@ func NewSession(Transport net.Conn) Session {
 		Id:        uuid.NewString(),
 		Transport: Transport,
 	}
-}
-
-/*
-*
-* 设备表示层、应用层
-*
- */
-
-type Sensor struct {
-	session Session
-	addr    string
-	Authed  bool
-}
-
-func (s *Sensor) Addr() string {
-	return s.addr
-}
-func (s *Sensor) Session() Session {
-
-}
-func (s *Sensor) Ping() []byte {
-
-}
-func (s *Sensor) OnRegister() error {
-
-}
-func (s *Sensor) OnLine() {
-
-}
-func (s *Sensor) OffLine() {
-
-}
-func (s *Sensor) OnError(error) {
-
-}
-func (s *Sensor) OnData([]byte) {
-
-}
-
-func NewSensor(addr string, session Session) Sensor {
-	return Sensor{addr: addr, session: session}
-}
-
-/*
-*
-* 设备的工作进程
-*
- */
-type SensorWorker struct {
-	Ctx    context.Context
-	Cancel context.CancelFunc
-	Sensor ISensor
-}
-
-func (w *SensorWorker) Run() {
-	go func(ctx context.Context) {
-		// ticker := time.NewTicker(5 * time.Second)
-		// defer ticker.Stop()
-		// buffer := make([]byte, common.T_64KB)
-		// for {
-		// 	<-ticker.C
-		// 	select {
-		// 	case <-ctx.Done():
-		// 		{
-		// 			return
-		// 		}
-		// 	default:
-		// 		{
-		// 		}
-		// 	}
-		// 	n, err := w.Sensor.Session().Transport.Read(buffer)
-		// 	if err != nil {
-		// 		log.Error(err)
-		// 		w.Sensor.OnError(err)
-		// 		w.Sensor.OffLine()
-		// 		return
-		// 	}
-		// 	w.Sensor.OnData(buffer[:n])
-		// }
-
-	}(w.Ctx)
 }

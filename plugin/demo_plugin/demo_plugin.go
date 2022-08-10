@@ -27,8 +27,8 @@ func (hh *DemoPlugin) PluginMetaInfo() typex.XPluginMetaInfo {
 	return typex.XPluginMetaInfo{
 		Name:     "DemoPlugin",
 		Version:  "0.0.1",
-		Homepage: "www.ezlinker.cn",
-		HelpLink: "www.ezlinker.cn",
+		Homepage: "www.github.com/i4de/rulex",
+		HelpLink: "www.github.com/i4de/rulex",
 		Author:   "wwhai",
 		Email:    "cnwwhai@gmail.com",
 		License:  "MIT",
