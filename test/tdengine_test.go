@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
-	"strings"
 	"testing"
 	"time"
 
@@ -38,7 +37,7 @@ func Test_gen_td_config(t *testing.T) {
 func Test_gen_tdEngineConfig(t *testing.T) {
 	c, err := core.RenderOutConfig(typex.TDENGINE_TARGET, "TDENGINE", common.TDEngineConfig{})
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	b, _ := json.MarshalIndent(c.Views, "  ", "")
 	t.Log(string(b))
@@ -91,25 +90,22 @@ func Test_data_to_tdengine(t *testing.T) {
 			"createTableSql": "CREATE TABLE IF NOT EXISTS meter01 (ts TIMESTAMP, co2 INT, hum INT, lex INT, temp INT);",
 			"insertSql":      "INSERT INTO meter01 VALUES (NOW, %v, %v, %v, %v);",
 		})
+	tdOutEnd.UUID = "TD1"
 	if err := engine.LoadOutEnd(tdOutEnd); err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	//
 	// Load Rule [{"co2":10,"hum":30,"lex":22,"temp":100}]
 	//
-	callback := strings.Replace(
+	callback :=
 		`Actions = {
 			function(data)
 				local t = rulexlib:J2T(data)
-				local Result = rulexlib:DataToTdEngine('$$UUID', string.format("%d, %d, %d, %d", t['co2'], t['hum'], t['lex'], t['temp']))
+				local Result = rulexlib:DataToTdEngine('TD1', string.format("%d, %d, %d, %d", t['co2'], t['hum'], t['lex'], t['temp']))
 				print("rulexlib:DataToTdEngine Result", Result==nil)
 				return false, data
 			end
-		}`,
-		"$$UUID",
-		tdOutEnd.UUID,
-		1,
-	)
+		}`
 	rule1 := typex.NewRule(engine,
 		"uuid1",
 		"rule1",
@@ -121,24 +117,24 @@ func Test_data_to_tdengine(t *testing.T) {
 		`function Failed(error) print("[Test_data_to_tdengine Failed Callback]", error) end`)
 
 	if err := engine.LoadRule(rule1); err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	//
 	//
 	//
 	conn, err := grpc.Dial("127.0.0.1:2581", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		t.Errorf("grpc.Dial err: %v", err)
+		t.Fatalf("grpc.Dial err: %v", err)
 	}
 	defer conn.Close()
 	client := rulexrpc.NewRulexRpcClient(conn)
 	rand.Seed(time.Now().Unix())
-	for i := 0; i < 2; i++ {
+	for i := 0; i < 3; i++ {
 		resp, err := client.Work(context.Background(), &rulexrpc.Data{
 			Value: fmt.Sprintf(`{"co2":%v,"hum":%v,"lex":%v,"temp":%v}`, rand.Int63n(100), rand.Int63n(100), rand.Int63n(100), rand.Int63n(100)),
 		})
 		if err != nil {
-			t.Error(err)
+			t.Fatal(err)
 		}
 		t.Logf("Rulex Rpc Call Result ====>>: %v --%v", resp.GetMessage(), i)
 
