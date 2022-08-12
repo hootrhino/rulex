@@ -38,7 +38,7 @@ func main() {
 					&cli.StringFlag{
 						Name:  "config",
 						Usage: "Config of rulex",
-						Value: "rulex.ini",
+						Value: "conf/rulex.ini",
 					},
 				},
 				Action: func(c *cli.Context) error {

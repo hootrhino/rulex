@@ -31,6 +31,7 @@ func (i InEndType) String() string {
 }
 
 const (
+	TEXT        InEndType = "TEXT"
 	MQTT        InEndType = "MQTT"
 	HTTP        InEndType = "HTTP"
 	COAP        InEndType = "COAP"

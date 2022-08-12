@@ -40,6 +40,10 @@ func (e *RuleEngine) LoadInEnd(in *typex.InEnd) error {
 		return startSources(source.NewTencentIothubSource(e), in, e)
 	}
 
+	if in.Type == typex.TEXT {
+		return startSources(source.NewTextInEndSource(e), in, e)
+	}
+
 	return fmt.Errorf("unsupported InEnd type:%s", in.Type)
 }
 
