@@ -47,7 +47,7 @@ func (hh *httpInEndSource) Start(cctx typex.CCTX) error {
 
 	hh.engine.POST("/in", func(c *gin.Context) {
 		type Form struct {
-			Data string
+			Data string `json:"data"`
 		}
 		var inForm Form
 		err := c.BindJSON(&inForm)
@@ -58,14 +58,14 @@ func (hh *httpInEndSource) Start(cctx typex.CCTX) error {
 		} else {
 			hh.RuleEngine.WorkInEnd(hh.RuleEngine.GetInEnd(hh.PointId), inForm.Data)
 			c.JSON(200, gin.H{
-				"message": "ok",
-				"data":    inForm,
+				"message": "success",
+				"code":    0,
 			})
 		}
 	})
 
 	go func(ctx context.Context) {
-		err := http.ListenAndServe(fmt.Sprintf(":%v", hh.mainConfig), hh.engine)
+		err := http.ListenAndServe(fmt.Sprintf(":%v", hh.mainConfig.Port), hh.engine)
 		if err != nil {
 			glogger.GLogger.Error(err)
 			return
