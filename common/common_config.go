@@ -40,3 +40,20 @@ type GenericUartConfig struct {
 	Parity    string `json:"parity" validate:"required" title:"奇偶校验" info:"奇偶校验"`
 	StopBits  int    `json:"stopBits" validate:"required" title:"停止位" info:"串口通信停止位"`
 }
+
+/*
+*
+* SNMP 配置
+*
+ */
+type GenericSnmpConfig struct {
+	// Target is an ipv4 address.
+	Target string `json:"target" validate:"required" title:"Target" info:"Target"`
+	// Port is a port.
+	Port uint16 `json:"port" validate:"required" title:"Port" info:"Port"`
+	// Transport is the transport protocol to use ("udp" or "tcp"); if unset "udp" will be used.
+	Transport string `json:"transport" validate:"required" title:"Transport" info:"Transport"`
+	// Community is an SNMP Community string.
+	Community string `json:"community" validate:"required" title:"Community" info:"Community"`
+	Frequency int64  `json:"frequency" validate:"required" title:"采集频率" info:""`
+}

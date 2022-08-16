@@ -128,7 +128,7 @@ func (ther *rtu485_ther) OnRead(data []byte) (int, error) {
 	n, err := ther.driver.Read(data)
 	if err != nil {
 		glogger.GLogger.Error(err)
-		ther.status = typex.DEV_STOP
+		ther.status = typex.DEV_DOWN
 	}
 	return n, err
 }
@@ -140,7 +140,7 @@ func (ther *rtu485_ther) OnWrite(_ []byte) (int, error) {
 
 // 设备当前状态
 func (ther *rtu485_ther) Status() typex.DeviceState {
-	return typex.DEV_UP
+	return ther.status
 }
 
 // 停止设备

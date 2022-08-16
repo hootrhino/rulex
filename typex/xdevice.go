@@ -31,6 +31,7 @@ const (
 	S1200PLC       DeviceType = "S1200PLC"
 	GENERIC_MODBUS DeviceType = "GENERIC_MODBUS" // 通用Modbus
 	GENERIC_UART   DeviceType = "GENERIC_UART"   // 通用串口
+	GENERIC_SNMP   DeviceType = "GENERIC_SNMP"   // 通用GENERIC_SNMP
 )
 
 // 设备元数据

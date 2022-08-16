@@ -41,7 +41,7 @@ Description=RULEX Engine ${RELEASE}-${VERSION}
 User=root
 WorkingDirectory=/usr/local/rulex/
 TimeoutStartSec=5
-ExecStart=/usr/local/rulex/rulex run -config=/usr/local/rulex/rulex.ini
+ExecStart=rulex run -config=rulex.ini
 ExecStop=echo "RULEX stop."
 [Install]
 WantedBy=multi-user.target

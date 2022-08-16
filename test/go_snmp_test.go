@@ -20,7 +20,7 @@ type SystemInfo struct {
 	snmpClient *gosnmp.GoSNMP
 }
 
-func (si *SystemInfo) SystemDescrption() string {
+func (si *SystemInfo) SystemDescription() string {
 	s := ""
 	si.snmpClient.Walk(".1.3.6.1.2.1.1.1.0", func(variable gosnmp.SnmpPDU) error {
 		if variable.Type == gosnmp.OctetString {
@@ -101,19 +101,30 @@ func (si *SystemInfo) HardwareNetInterfaceName() []string {
 }
 func (si *SystemInfo) HardwareNetInterfaceMac() []string {
 	oid := ".1.3.6.1.2.1.2.2.1.6"
-	ss := []string{}
+	result := []string{}
+	macMaps := map[string]string{}
 	si.snmpClient.Walk(oid, func(variable gosnmp.SnmpPDU) error {
+		fmt.Println(variable)
 		if variable.Type == gosnmp.OctetString {
-			mac := variable.Value.([]uint8)
-			for _, v := range mac {
-				fmt.Println(v)
+			macHexs := variable.Value.([]uint8)
+
+			if len(macHexs) > 0 {
+				if macHexs[0] > 0 {
+					hexs := []string{}
+					for _, macHex := range macHexs {
+						hexs = append(hexs, fmt.Sprintf("%X", macHex))
+					}
+					macMaps[strings.Join(hexs, ":")] = strings.Join(hexs, ":")
+				}
 
 			}
-			ss = append(ss, string(variable.Value.([]uint8)))
 		}
 		return nil
 	})
-	return ss
+	for k := range macMaps {
+		result = append(result, k)
+	}
+	return result
 }
 func TestSnmp(t *testing.T) {
 	gosnmp.Default.Target = "127.0.0.1"
@@ -125,13 +136,12 @@ func TestSnmp(t *testing.T) {
 	defer gosnmp.Default.Conn.Close()
 
 	si := &SystemInfo{snmpClient: gosnmp.Default}
-	t.Log(si.SystemDescrption())
+	t.Log(si.SystemDescription())
 	t.Log(si.TotalMemory())
 	t.Log(si.PCName())
-	t.Log(si.CPUs())
-	t.Log(si.ProcessList())
+	// t.Log(si.CPUs())
 	t.Log(si.HardwareNetInterfaceName())
-	t.Log(si.HardwareNetInterfaceMac())
-	t.Log(si.InterfaceIPs())
+	// t.Log(si.HardwareNetInterfaceMac())
+	// t.Log(si.InterfaceIPs())
 
 }

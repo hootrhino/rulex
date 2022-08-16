@@ -7,7 +7,7 @@ import (
 
 /*
 *
-* 加载标准库
+* 加载标准库, 为什么是每个LUA脚本都加载一次？主要是为了隔离，互不影响
 *
  */
 func LoadBuildInLuaLib(e typex.RuleX, r *typex.Rule) {
