@@ -53,7 +53,7 @@ build_arm64linux() {
 }
 build_arm32linux() {
     CGO_ENABLED=1 GOARM=7 GOOS=linux GOARCH=arm CC=arm-linux-gnueabi-gcc \
-        go build -ldflags "-s -w" -o rulex-$1 -ldflags "-linkmode external -extldflags -static" main.go
+        go build -ldflags "-s -w -linkmode external -extldflags -static" -o rulex-$1 main.go
 }
 
 #------------------------------------------
