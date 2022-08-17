@@ -94,7 +94,8 @@ func (sd *genericSnmpDevice) Start(cctx typex.CCTX) error {
 			if err != nil {
 				glogger.GLogger.Error(err)
 			} else {
-				sd.RuleEngine.WorkDevice(sd.Details(), string(buffer[:n]))
+				s := string(buffer[:n])
+				sd.RuleEngine.WorkDevice(sd.Details(), s)
 			}
 		}
 

@@ -76,7 +76,7 @@ func (sd *snmpDriver) Read(data []byte) (int, error) {
 		PCHardIFaces:  sd.hardwareNetInterfaceMac(),
 	})
 	copy(data, bites)
-	return len(data), err
+	return len(bites), err
 }
 
 func (sd *snmpDriver) Write(_ []byte) (int, error) {
@@ -187,7 +187,6 @@ func (sd *snmpDriver) hardwareNetInterfaceMac() []string {
 	result := []string{}
 	macMaps := map[string]string{}
 	err := sd.client.Walk(oid, func(variable gosnmp.SnmpPDU) error {
-		fmt.Println(variable)
 		if variable.Type == gosnmp.OctetString {
 			macHexs := variable.Value.([]uint8)
 

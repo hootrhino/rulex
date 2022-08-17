@@ -74,8 +74,8 @@ func Run(adapterID string, onlyBeacon bool) error {
 
 	}()
 
-	ch := make(chan os.Signal)
-	signal.Notify(ch, os.Interrupt, os.Kill) // get notified of all OS signals
+	ch := make(chan os.Signal, 1)
+	signal.Notify(ch, os.Interrupt) // get notified of all OS signals
 
 	sig := <-ch
 	glogger.GLogger.Infof("Received signal [%v]; shutting down...\n", sig)
@@ -117,7 +117,6 @@ func handleBeacon(dev *device.Device1) error {
 				ed.InstanceUID,
 				ed.CalibratedTxPower,
 			)
-			break
 		case eddystone.TLM:
 			glogger.GLogger.Debugf(
 				"Eddystone TLM temp:%.0f batt:%d last reboot:%d advertising pdu:%d (%ddbi)",
@@ -127,14 +126,12 @@ func handleBeacon(dev *device.Device1) error {
 				ed.TLMAdvertisingPDU,
 				ed.CalibratedTxPower,
 			)
-			break
 		case eddystone.URL:
 			glogger.GLogger.Debugf(
 				"Eddystone URL %s (%ddbi)",
 				ed.URL,
 				ed.CalibratedTxPower,
 			)
-			break
 		}
 
 	}
