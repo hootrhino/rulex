@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	DefaultTransport = "tcp"
+	defaultTransport = "tcp"
 )
 
 type RulexRpcServer struct {
@@ -61,7 +61,7 @@ func (g *grpcInEndSource) Start(cctx typex.CCTX) error {
 	g.Ctx = cctx.Ctx
 	g.CancelCTX = cctx.CancelCTX
 
-	listener, err := net.Listen(DefaultTransport, fmt.Sprintf(":%d", g.mainConfig.Port))
+	listener, err := net.Listen(defaultTransport, fmt.Sprintf(":%d", g.mainConfig.Port))
 	if err != nil {
 		return err
 	}

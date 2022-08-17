@@ -33,10 +33,20 @@ func (u *udpSource) Start(cctx typex.CCTX) error {
 		glogger.GLogger.Error(err)
 		return err
 	}
-
-	go func(c context.Context, u1 *udpSource) {
+	u.status = typex.SOURCE_UP
+	go func(ctx context.Context, u1 *udpSource) {
 		data := make([]byte, u.mainConfig.MaxDataLength)
 		for {
+			select {
+			case <-ctx.Done():
+				{
+					u.status = typex.SOURCE_STOP
+					return
+				}
+			default:
+				{
+				}
+			}
 			n, remoteAddr, err := u1.uDPConn.ReadFromUDP(data)
 			if err != nil {
 				glogger.GLogger.Error(err.Error())
