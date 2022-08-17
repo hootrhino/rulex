@@ -51,14 +51,24 @@ func (sd *genericSnmpDevice) Start(cctx typex.CCTX) error {
 	sd.CancelCTX = cctx.CancelCTX
 	//
 	// 串口配置固定写法
-	gosnmp.Default.Target = sd.mainConfig.Target
-	gosnmp.Default.Port = sd.mainConfig.Port
-	gosnmp.Default.Community = sd.mainConfig.Community
-	err := gosnmp.Default.Connect()
-	if err != nil {
-		glogger.GLogger.Fatalf("Connect() err: %v", err)
+	client := &gosnmp.GoSNMP{
+		Target:             sd.mainConfig.Target,
+		Port:               sd.mainConfig.Port,
+		Community:          sd.mainConfig.Community,
+		Transport:          "udp",
+		Version:            1,
+		Timeout:            time.Duration(5) * time.Second,
+		Retries:            3,
+		ExponentialTimeout: true,
+		MaxOids:            60,
 	}
-	sd.driver = driver.NewSnmpDriver(sd.Details(), sd.RuleEngine, gosnmp.Default)
+	err := client.Connect()
+	if err != nil {
+		glogger.GLogger.Error("Connect() err: %v", err)
+		return err
+	}
+
+	sd.driver = driver.NewSnmpDriver(sd.Details(), sd.RuleEngine, client)
 	//---------------------------------------------------------------------------------
 	// Start
 	//---------------------------------------------------------------------------------

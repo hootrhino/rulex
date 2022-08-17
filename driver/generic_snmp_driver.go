@@ -47,6 +47,7 @@ func (sd *snmpDriver) Test() error {
 }
 
 func (sd *snmpDriver) Init(_ map[string]string) error {
+	sd.state = typex.DRIVER_UP
 	return nil
 }
 
@@ -59,6 +60,7 @@ func (sd *snmpDriver) State() typex.DriverState {
 }
 
 type _snmp_data struct {
+	PCHost        string
 	PCDescription string
 	PCUserName    string
 	PCHardIFaces  []string
@@ -67,6 +69,7 @@ type _snmp_data struct {
 
 func (sd *snmpDriver) Read(data []byte) (int, error) {
 	bites, err := json.Marshal(_snmp_data{
+		PCHost:        sd.client.Target,
 		PCDescription: sd.systemDescription(),
 		PCUserName:    sd.pCUserName(),
 		PCTotalMemory: sd.totalMemory(),
@@ -93,13 +96,29 @@ func (sd *snmpDriver) Stop() error {
 }
 
 //----------------------------------------------------------------
+func (sd *snmpDriver) connect() error {
+	err1 := sd.client.Connect()
+	if err1 != nil {
+		glogger.GLogger.Error("Connect() err: %v", err1)
+		sd.state = typex.DRIVER_DOWN
+		return err1
+	}
+	return nil
+}
+
 /*
 *
 * 获取PC的描述信息
 *
  */
 func (sd *snmpDriver) systemDescription() string {
+
 	s := ""
+
+	if err1 := sd.connect(); err1 != nil {
+		return s
+	}
+
 	err := sd.client.Walk(".1.3.6.1.2.1.1.1.0", func(variable gosnmp.SnmpPDU) error {
 		if variable.Type == gosnmp.OctetString {
 			s = string(variable.Value.([]byte))
@@ -114,6 +133,10 @@ func (sd *snmpDriver) systemDescription() string {
 }
 func (sd *snmpDriver) pCUserName() string {
 	s := ""
+	if err1 := sd.connect(); err1 != nil {
+		return s
+	}
+
 	err := sd.client.Walk(".1.3.6.1.2.1.1.5.0", func(variable gosnmp.SnmpPDU) error {
 		if variable.Type == gosnmp.OctetString {
 			s = string(variable.Value.([]byte))
@@ -134,6 +157,9 @@ func (sd *snmpDriver) pCUserName() string {
  */
 func (sd *snmpDriver) totalMemory() int {
 	v := 0
+	if err1 := sd.connect(); err1 != nil {
+		return v
+	}
 	err := sd.client.Walk(".1.3.6.1.2.1.25.2.2.0", func(variable gosnmp.SnmpPDU) error {
 		if variable.Type == gosnmp.Integer {
 			v = int(variable.Value.(int))
@@ -154,6 +180,9 @@ func (sd *snmpDriver) totalMemory() int {
 *
  */
 func (sd *snmpDriver) hardwareNetInterfaceMac() []string {
+	if err1 := sd.connect(); err1 != nil {
+		return []string{}
+	}
 	oid := ".1.3.6.1.2.1.2.2.1.6"
 	result := []string{}
 	macMaps := map[string]string{}

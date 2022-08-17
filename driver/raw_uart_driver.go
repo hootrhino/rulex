@@ -15,7 +15,6 @@ import (
 
 type rawUartDriver struct {
 	state      typex.DriverState
-	config     serial.Config
 	serialPort serial.Port
 	ctx        context.Context
 	RuleEngine typex.RuleX
