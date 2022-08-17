@@ -63,7 +63,7 @@ func Test_modbus_485_yk8(t *testing.T) {
 
 	tencentIothub := typex.NewInEnd(typex.TENCENT_IOT_HUB,
 		"MQTT", "MQTT", map[string]interface{}{
-			"host":       "42.193.180.26",
+			"host":       "127.0.0.1",
 			"port":       1883,
 			"clientId":   "RULEX-001",
 			"username":   "RULEX-001",
