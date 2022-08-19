@@ -9,7 +9,7 @@ build:
 	chmod +x gen_info.sh
 	go generate
 	CGO_ENABLED=1 GOOS=linux
-	go build -v -ldflags "-s -w" -o ${APP} main.go
+	go build -v -ldflags "-s -w" -o ${APP}
 
 .PHONY: xx
 xx:
@@ -20,20 +20,28 @@ windows:
 	go mod tidy
 	SET GOOS=windows
 	SET CGO_ENABLED=1
-	go build -ldflags "-s -w" -o ${APP}.exe main.go
+	go build -ldflags "-s -w" -o ${APP}.exe
 
 .PHONY: arm32
 arm32:
-	CC=arm-linux-gnueabi-gcc # Support ubuntu 1804, should install 'gcc-arm-linux-gnueabi'
+	CC=arm-linux-gnueabi-gcc
 	GOARM=7
 	GOARCH=arm
 	GOOS=linux
 	CGO_ENABLED=1
-	go build -o ${APP} -ldflags "-s -w -linkmode external -extldflags -static" main.go
+	go build -o ${APP} -ldflags "-s -w -linkmode external -extldflags -static"
+
+.PHONY: arm64
+arm64:
+	CC=arm-linux-gnueabi-gcc
+	GOARCH=arm64
+	GOOS=linux
+	CGO_ENABLED=1
+	go build -o ${APP} -ldflags "-s -w"
 
 .PHONY: run
 run:
-	go run -race main.go run
+	go run -race run
 
 .PHONY: test
 test:
@@ -47,4 +55,4 @@ cover:
 clean:
 	go clean
 	rm _release -rf
-	rm *.db *log.txt
+	rm *.db *log.txt -rf

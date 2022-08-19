@@ -26,13 +26,13 @@ type Result struct {
 }
 
 func Ok() R {
-	return R{200, "操作成功"}
+	return R{200, "success"}
 }
 func OkWithEmpty() Result {
-	return Result{200, "操作成功", []interface{}{}}
+	return Result{200, "success", []interface{}{}}
 }
 func OkWithData(data interface{}) Result {
-	return Result{200, "操作成功", data}
+	return Result{200, "success", data}
 }
 func Error(s string) R {
 	return R{4001, s}
