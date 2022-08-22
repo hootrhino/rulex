@@ -19,26 +19,35 @@ import (
 //     "code": 0,
 //     "status":"some message"
 // }
+const (
+	// 属性下发称之为控制指令
+	METHOD_CONTROL       string = "control"
+	METHOD_CONTROL_REPLY string = "control_reply"
+	// 属性下发称之为控制指令[这是为了兼容一些其他平台，实际上和上面功能完全一一样]
+	METHOD_PROPERTY       string = "property"
+	METHOD_PROPERTY_REPLY string = "property_reply"
+	// 动作请求
+	ACTION_CONTROL       string = "action"
+	ACTION_CONTROL_REPLY string = "action_reply"
+)
+
 type tencentUpReply struct {
 	Method      string                 `json:"method"`
-	ClientToken string                 `json:"clientToken"`
-	Params      map[string]interface{} `json:"params"`
+	ClientToken string                 `json:"clientToken,omitempty"` // 腾讯云
+	Id          string                 `json:"id,omitempty"`          // 兼容非腾讯云平台
+	Params      map[string]interface{} `json:"params,omitempty"`      // 腾讯云
+	Data        map[string]interface{} `json:"data,omitempty"`        // 兼容非腾讯云平台
 	Code        int                    `json:"code"`
 	Status      string                 `json:"status"`
 }
 
 var (
 	//
-	_PropertyTopic = "$thing/down/property/%v/%v"
-
+	_PropertyTopic      = "$thing/down/property/%v/%v"
+	_PropertyReplyTopic = "$thing/up/property/%v/%v"
 	//
-	_PropertyUpTopic = "$thing/up/property/%v/%v"
-
-	//
-	_ReplyTopic = "$thing/up/reply/%v/%v"
-
-	//
-	_EventUpTopic = "$thing/up/event/%v/%v"
+	_ActionTopic      = "$thing/down/action/%v/%v"
+	_ActionReplyTopic = "$thing/up/action/%v/%v"
 )
 
 //
@@ -83,22 +92,40 @@ func (tc *tencentIothubSource) Start(cctx typex.CCTX) error {
 
 	PropertyTopic := fmt.Sprintf(_PropertyTopic, tc.mainConfig.ProductId, tc.mainConfig.DeviceName)
 	// 事件
-	// EventTopic := fmt.Sprintf(_PropertyTopic, mainConfig.ProductId, mainConfig.DeviceName)
+	ActionTopic := fmt.Sprintf(_ActionTopic, tc.mainConfig.ProductId, tc.mainConfig.DeviceName)
 	// 服务接口
 	//
 	var connectHandler mqtt.OnConnectHandler = func(client mqtt.Client) {
 		glogger.GLogger.Infof("Tencent IOTHUB Connected Success")
-		token := tc.client.Subscribe(PropertyTopic, 1, func(c mqtt.Client, msg mqtt.Message) {
-			work, err := tc.RuleEngine.WorkInEnd(tc.RuleEngine.GetInEnd(tc.PointId), string(msg.Payload()))
-			if !work {
-				glogger.GLogger.Error(err)
+		{
+			// 订阅属性下发的Topic
+			token := tc.client.Subscribe(PropertyTopic, 1, func(c mqtt.Client, msg mqtt.Message) {
+				work, err := tc.RuleEngine.WorkInEnd(tc.RuleEngine.GetInEnd(tc.PointId), string(msg.Payload()))
+				if !work {
+					glogger.GLogger.Error(err)
+				}
+			})
+			if token.Error() != nil {
+				glogger.GLogger.Error(token.Error())
+			} else {
+				glogger.GLogger.Info("topic:", PropertyTopic, " subscribed")
 			}
-		})
-		if token.Error() != nil {
-			glogger.GLogger.Error(token.Error())
-		} else {
-			glogger.GLogger.Info("topic:", PropertyTopic, " subscribed")
 		}
+		{
+			// 订阅动作下发的Topic
+			token := tc.client.Subscribe(ActionTopic, 1, func(c mqtt.Client, msg mqtt.Message) {
+				work, err := tc.RuleEngine.WorkInEnd(tc.RuleEngine.GetInEnd(tc.PointId), string(msg.Payload()))
+				if !work {
+					glogger.GLogger.Error(err)
+				}
+			})
+			if token.Error() != nil {
+				glogger.GLogger.Error(token.Error())
+			} else {
+				glogger.GLogger.Info("topic:", PropertyTopic, " subscribed")
+			}
+		}
+
 		tc.status = typex.SOURCE_UP
 	}
 
@@ -190,12 +217,18 @@ func (tc *tencentIothubSource) DownStream(bytes []byte) (int, error) {
 	//     - property_reply: 及时状态获取，当调用这个指令后，会上报一个最新的状态
 	//
 	var err error
-	if msg.Method == "control_reply" {
-		topic := fmt.Sprintf(_ReplyTopic, tc.mainConfig.ProductId, tc.mainConfig.DeviceName)
+	// 属性回复
+	if msg.Method == METHOD_CONTROL_REPLY {
+		topic := fmt.Sprintf(_PropertyReplyTopic, tc.mainConfig.ProductId, tc.mainConfig.DeviceName)
 		err = tc.client.Publish(topic, 1, false, bytes).Error()
 	}
-	if msg.Method == "property_reply" {
-		topic := fmt.Sprintf(_PropertyUpTopic, tc.mainConfig.ProductId, tc.mainConfig.DeviceName)
+	if msg.Method == METHOD_PROPERTY_REPLY {
+		topic := fmt.Sprintf(_PropertyReplyTopic, tc.mainConfig.ProductId, tc.mainConfig.DeviceName)
+		err = tc.client.Publish(topic, 1, false, bytes).Error()
+	}
+	// 事件调用回复
+	if msg.Method == ACTION_CONTROL_REPLY {
+		topic := fmt.Sprintf(_ActionReplyTopic, tc.mainConfig.ProductId, tc.mainConfig.DeviceName)
 		err = tc.client.Publish(topic, 1, false, bytes).Error()
 	}
 	return 0, err

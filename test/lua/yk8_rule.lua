@@ -27,7 +27,8 @@ end
 -- Actions
 Actions = {function(data)
     local dataT, err = rulexlib:J2T(data)
-    if dataT['method'] == 'control' then
+    -- 兼容多种平台
+    if dataT['method'] == 'control' or dataT['method'] == 'property' then
         local params = dataT['params']
         local cmd = {
             [1] = params['sw8'],
