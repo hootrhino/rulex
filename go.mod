@@ -24,7 +24,7 @@ require (
 	github.com/iancoleman/strcase v0.2.0
 	github.com/itchyny/gojq v0.12.8
 	github.com/makiuchi-d/gozxing v0.1.1
-	github.com/mattn/go-sqlite3 v1.14.14
+	github.com/mattn/go-sqlite3 v1.14.15
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/mochi-co/mqtt v1.2.3
@@ -38,7 +38,7 @@ require (
 	github.com/sirupsen/logrus v1.9.0
 	github.com/suapapa/go_eddystone v1.3.1
 	github.com/thinkgos/go-iecp5 v1.2.1
-	github.com/urfave/cli/v2 v2.11.1
+	github.com/urfave/cli/v2 v2.11.2
 	github.com/wwhai/gomodbus v0.2.2
 	github.com/wwhai/goserial v0.2.0
 	github.com/wwhai/ntp v0.3.0
@@ -46,7 +46,7 @@ require (
 	go.bug.st/serial v1.3.5
 	go.mongodb.org/mongo-driver v1.10.1
 	go.uber.org/zap v1.15.0
-	golang.org/x/crypto v0.0.0-20220722155217-630584e8d5aa
+	golang.org/x/crypto v0.0.0-20220817201139-bc19a97f63c8
 	google.golang.org/grpc v1.48.0
 	google.golang.org/protobuf v1.28.1
 	gopkg.in/ini.v1 v1.67.0
@@ -69,7 +69,7 @@ require (
 	github.com/go-ole/go-ole v1.2.6 // indirect
 	github.com/go-playground/locales v0.14.0 // indirect
 	github.com/go-playground/universal-translator v0.18.0 // indirect
-	github.com/goccy/go-json v0.9.10 // indirect
+	github.com/goccy/go-json v0.9.11 // indirect
 	github.com/godbus/dbus/v5 v5.0.3 // indirect
 	github.com/gofrs/uuid v4.2.0+incompatible // indirect
 	github.com/golang/mock v1.6.0 // indirect
@@ -87,7 +87,7 @@ require (
 	github.com/klauspost/compress v1.15.9 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/lufia/plan9stats v0.0.0-20211012122336-39d0f177ccd0 // indirect
-	github.com/mattn/go-isatty v0.0.14 // indirect
+	github.com/mattn/go-isatty v0.0.16 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
 	github.com/mitchellh/go-wordwrap v0.0.0-20150314170334-ad45545899c7 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
@@ -96,7 +96,7 @@ require (
 	github.com/nats-io/nats-server/v2 v2.8.4 // indirect
 	github.com/nats-io/nkeys v0.3.0 // indirect
 	github.com/nats-io/nuid v1.0.1 // indirect
-	github.com/pelletier/go-toml/v2 v2.0.2 // indirect
+	github.com/pelletier/go-toml/v2 v2.0.3 // indirect
 	github.com/pion/dtls/v2 v2.1.5 // indirect
 	github.com/pion/logging v0.2.2 // indirect
 	github.com/pion/transport v0.13.1 // indirect
@@ -120,13 +120,13 @@ require (
 	github.com/youmark/pkcs8 v0.0.0-20201027041543-1326539a0a0a // indirect
 	github.com/yusufpapurcu/wmi v1.2.2 // indirect
 	github.com/zclconf/go-cty v1.8.0 // indirect
-	go.uber.org/atomic v1.9.0 // indirect
+	go.uber.org/atomic v1.10.0 // indirect
 	go.uber.org/multierr v1.5.0 // indirect
-	golang.org/x/net v0.0.0-20220809184613-07c6da5e1ced // indirect
-	golang.org/x/sync v0.0.0-20220722155255-886fb9371eb4 // indirect
-	golang.org/x/sys v0.0.0-20220808155132-1c4a2a72c664 // indirect
+	golang.org/x/net v0.0.0-20220822230855-b0a4917ee28c // indirect
+	golang.org/x/sync v0.0.0-20220819030929-7fc1605a5dde // indirect
+	golang.org/x/sys v0.0.0-20220818161305-2296e01440c6 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
-	google.golang.org/genproto v0.0.0-20220808204814-fd01256a5276 // indirect
+	google.golang.org/genproto v0.0.0-20220822174746-9e6da59bd2fc // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )

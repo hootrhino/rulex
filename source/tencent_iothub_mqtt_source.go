@@ -202,7 +202,7 @@ func (*tencentIothubSource) Topology() []typex.TopologyPoint {
 }
 
 //
-// 来自外面的数据
+// 来自外面的数据,实际上就是LUA脚本调用的时候写进来的参数
 //
 
 func (tc *tencentIothubSource) DownStream(bytes []byte) (int, error) {
@@ -222,6 +222,7 @@ func (tc *tencentIothubSource) DownStream(bytes []byte) (int, error) {
 		topic := fmt.Sprintf(_PropertyReplyTopic, tc.mainConfig.ProductId, tc.mainConfig.DeviceName)
 		err = tc.client.Publish(topic, 1, false, bytes).Error()
 	}
+	// 兼容
 	if msg.Method == METHOD_PROPERTY_REPLY {
 		topic := fmt.Sprintf(_PropertyReplyTopic, tc.mainConfig.ProductId, tc.mainConfig.DeviceName)
 		err = tc.client.Publish(topic, 1, false, bytes).Error()
