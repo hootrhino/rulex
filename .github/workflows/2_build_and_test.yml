@@ -17,12 +17,23 @@ jobs:
           go-version: 1.17
       - name: Linux 构建测试
         run: |
-            sudo apt update -y
-            sudo apt install jq cloc protobuf-compiler -y
-            cloc ./
-            chmod 755 ./gen_info.sh
-            chmod +x ./gen_info.sh
-            chmod 755 ./gen_proto.sh
-            chmod +x ./gen_proto.sh
-            make
-            go test -timeout 30s -run ^TestFullyRun$ github.com/i4de/rulex/test -v -count=1
+          sudo apt update -y
+          sudo apt install jq cloc protobuf-compiler -y
+          cloc ./
+          chmod 755 ./gen_info.sh
+          chmod +x ./gen_info.sh
+          chmod 755 ./gen_proto.sh
+          chmod +x ./gen_proto.sh
+          # for test mqtt
+          echo "Start Mqtt Server"
+          docker run -d -p 1883:1883 -p 9001:9001 eclipse-mosquitto
+          # for test tdengine
+          echo "Start TdEngine"
+          docker run -d --name tdengine --hostname="tdengine" -p 6030-6041:6030-6041 -p 6030-6041:6030-6041/udp tdengine/tdengine
+          make
+          # -------------------------------------------
+          # | every test
+          # -------------------------------------------
+          go test -timeout 30s -run ^TestFullyRun$ github.com/i4de/rulex/test -v -count=1
+          #
+          go test -timeout 30s -run ^Test_data_to_tdengine$ github.com/i4de/rulex/test -v -count=1
