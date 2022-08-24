@@ -84,7 +84,7 @@ func Test_data_to_tdengine(t *testing.T) {
 			"fqdn":           "127.0.0.1",
 			"port":           6041,
 			"username":       "root",
-			"password":       "root",
+			"password":       "taosdata",
 			"dbName":         "device",
 			"createDbSql":    "CREATE DATABASE IF NOT EXISTS device UPDATE 0;",
 			"createTableSql": "CREATE TABLE IF NOT EXISTS meter01 (ts TIMESTAMP, co2 INT, hum INT, lex INT, temp INT);",
