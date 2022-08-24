@@ -76,14 +76,12 @@ func (r *Rule) SetVM(o lua.Options) {
 /*
 *
 * AddLib: 根据 KV形式加载库(推荐)
-*
+*  - Global: 命名空间
+*   - funcName: 函数名称
  */
-func (r *Rule) AddLib(rx RuleX, funcName string, f func(*lua.LState) int) {
-	//
-	// rulexlib: 标准库命名空间
-	//
+func (r *Rule) AddLib(rx RuleX, Global string, funcName string, f func(*lua.LState) int) {
 	rulexTb := r.VM.G.Global
-	r.VM.SetGlobal("rulexlib", rulexTb)
+	r.VM.SetGlobal(Global, rulexTb)
 	loadLib(rulexTb, r.VM, funcName, f)
 }
 
