@@ -24,13 +24,13 @@ jobs:
           chmod +x ./gen_info.sh
           chmod 755 ./gen_proto.sh
           chmod +x ./gen_proto.sh
+          make
           # for test mqtt
           echo "Start Mqtt Server"
           docker run -d -p 1883:1883 -p 9001:9001 eclipse-mosquitto
           # for test tdengine
           echo "Start TdEngine"
           docker run -d --name tdengine --hostname="tdengine" -p 6030-6041:6030-6041 -p 6030-6041:6030-6041/udp tdengine/tdengine
-          make
           # -------------------------------------------
           # | every test
           # -------------------------------------------
