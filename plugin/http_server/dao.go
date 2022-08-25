@@ -21,11 +21,13 @@ func (s *HttpApiServer) InitDb(dbPath string) {
 	var err error
 	if core.GlobalConfig.AppDebugMode {
 		s.sqliteDb, err = gorm.Open(sqlite.Open(dbPath), &gorm.Config{
-			Logger: logger.Default.LogMode(logger.Info),
+			Logger:                 logger.Default.LogMode(logger.Info),
+			SkipDefaultTransaction: false,
 		})
 	} else {
 		s.sqliteDb, err = gorm.Open(sqlite.Open(dbPath), &gorm.Config{
-			Logger: logger.Default.LogMode(logger.Error),
+			Logger:                 logger.Default.LogMode(logger.Error),
+			SkipDefaultTransaction: false,
 		})
 	}
 

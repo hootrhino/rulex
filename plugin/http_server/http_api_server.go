@@ -14,11 +14,9 @@ import (
 	"github.com/i4de/rulex/utils"
 
 	"github.com/gin-gonic/gin"
-	socketio "github.com/googollee/go-socket.io"
 	"gopkg.in/ini.v1"
 
 	_ "github.com/mattn/go-sqlite3"
-
 	"gorm.io/gorm"
 )
 
@@ -70,14 +68,7 @@ func (hh *HttpApiServer) Init(config *ini.Section) error {
 	//
 	// WebSocket server
 	//
-	socketioServer := socketio.NewServer(nil)
-	configSocketIO(socketioServer)
-	hh.ginEngine.GET("/socket.io", gin.WrapH(socketioServer))
-	go func(ctx context.Context) {
-		if err := socketioServer.Serve(); err != nil {
-			glogger.GLogger.Fatalf("socketio listen error: %s\n", err)
-		}
-	}(context.Background())
+	hh.ginEngine.GET("/ws", glogger.WsLogger)
 	return nil
 }
 

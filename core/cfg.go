@@ -47,6 +47,8 @@ func SetLogLevel() {
 		glogger.GLogger.SetLevel(logrus.DebugLevel)
 	case "info":
 		glogger.GLogger.SetLevel(logrus.InfoLevel)
+	case "all", "trace":
+		glogger.GLogger.SetLevel(logrus.TraceLevel)
 	}
 
 }

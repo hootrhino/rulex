@@ -1,26 +1,51 @@
-<!DOCTYPE html>
-<html>
+<!DOCTYPE HTML>
+
+<html lang="en">
 
 <head>
-    <meta charset="utf-8">
-    <script src="https://cdn.bootcdn.net/ajax/libs/socket.io/4.5.1/socket.io.min.js"></script>
-    <script>
-        var socket = io('ws://127.0.0.1:2580.socket.io', { transports: ['websocket'] });
-        socket.on('message', function (message) {
-            console.log('new message');
-            console.log(message);
-        });
-        socket.on('connect', function () {
-            console.log('socket connected');
-            socket.emit('send', { name: "my name", message: "hello" }, function (result) {
-                console.log('sended successfully');
-                console.log(result);
-            });
-        });
+
+    <script type="text/javascript">
+        function WebSocketTest() {
+            if ("WebSocket" in window) {
+                console.log("WebSocket is supported by your Browser!");
+
+                // Let us open a web socket
+                var ws = new WebSocket("ws://localhost:2580/ws");
+
+                ws.onopen = function () {
+                    ws.send("WsTerminal");
+                    console.log("Message is sent...");
+                };
+
+                ws.onmessage = function (event) {
+                    let div = document.createElement('div');
+                    div.id = 'main-div';
+                    div.innerHTML = event.data;
+                    document.body.appendChild(div);
+                };
+
+                ws.onclose = function () {
+                    alert("message")
+                    // websocket is closed.
+                    console.log("Connection is closed...");
+                };
+            } else {
+                // The browser doesn't support WebSocket
+                alert("WebSocket NOT supported by your Browser!");
+            }
+        }
     </script>
+
 </head>
 
 <body>
+    <div id="sse">
+        <h1>Websocket测试</h1>
+        <p>需要打开浏览器调试模式，观测控制台输出</p>
+        <a href="javascript:WebSocketTest()">
+            <h3>Click Run WebSocketTest</h3>
+        </a>
+    </div>
 
 </body>
 
