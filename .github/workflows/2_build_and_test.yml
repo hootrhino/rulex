@@ -31,9 +31,13 @@ jobs:
           # for test tdengine
           echo "Start TdEngine"
           docker run -d --name tdengine --hostname="tdengine" -p 6030-6041:6030-6041 -p 6030-6041:6030-6041/udp tdengine/tdengine
+          echo "Start MongoDB"
+          docker run --rm -p 27017:27017 --name test-mongo -d -e MONGO_INITDB_ROOT_USERNAME=root -e MONGO_INITDB_ROOT_PASSWORD=root mongo
           # -------------------------------------------
           # | every test
           # -------------------------------------------
           go test -timeout 30s -run ^TestFullyRun$ github.com/i4de/rulex/test -v -count=1
           #
           go test -timeout 30s -run ^Test_data_to_tdengine$ github.com/i4de/rulex/test -v -count=1
+          #
+          go test -timeout 30s -run ^Test_DataToMongo$ github.com/i4de/rulex/test -v -count=1

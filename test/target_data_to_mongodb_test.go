@@ -2,9 +2,8 @@ package test
 
 import (
 	"context"
-	"os"
-	"os/signal"
-	"syscall"
+	"fmt"
+
 	"testing"
 	"time"
 
@@ -26,11 +25,8 @@ func Test_DataToMongo(t *testing.T) {
 	core.StartStore(core.GlobalConfig.MaxQueueSize)
 	core.SetLogLevel()
 	core.SetPerformance()
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, syscall.SIGINT, syscall.SIGABRT, syscall.SIGTERM)
 	engine := engine.NewRuleEngine(mainConfig)
 	engine.Start()
-
 
 	hh := httpserver.NewHttpApiServer()
 	// HttpApiServer loaded default
@@ -40,18 +36,20 @@ func Test_DataToMongo(t *testing.T) {
 	// Grpc Inend
 	grpcInend := typex.NewInEnd("GRPC", "Rulex Grpc InEnd", "Rulex Grpc InEnd", map[string]interface{}{
 		"port": 2581,
+		"host": "127.0.0.1",
 	})
 
 	if err := engine.LoadInEnd(grpcInend); err != nil {
 		glogger.GLogger.Error("Rule load failed:", err)
 	}
 	//
-	mongoOut := typex.NewOutEnd("MONGO_SINGLE",
+	ts := fmt.Sprintf("%v", time.Now().UnixMicro())
+	mongoOut := typex.NewOutEnd(typex.MONGO_SINGLE,
 		"MONGO_SINGLE",
 		"MONGO_SINGLE", map[string]interface{}{
-			"mongoUrl":   "mongodb://admin:123456@127.0.0.1:27017/?connect=direct",
-			"database":   "gateway_test",
-			"collection": "env",
+			"mongoUrl":   "mongodb://root:root@127.0.0.1:27017/?connect=direct",
+			"database":   "temp_gateway_test_" + ts,
+			"collection": "temp_gateway_test_" + ts,
 		})
 	mongoOut.UUID = "mongoOut"
 	if err := engine.LoadOutEnd(mongoOut); err != nil {
@@ -67,8 +65,8 @@ func Test_DataToMongo(t *testing.T) {
 		`
 		Actions = {
 			function(data)
-			    local r = rulexlib:DataToMongo('mongoOut', data)
-				print("[LUA DataToMongo] ==>", r)
+			    local err = rulexlib:DataToMongo('mongoOut', data)
+				print("[LUA DataToMongo] ==>", err)
 				return true, data
 			end
 		}`,

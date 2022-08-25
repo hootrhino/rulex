@@ -7,7 +7,7 @@ import (
 )
 
 //
-//
+// 数据推送到Tdengine
 //
 func DataToTdEngine(rx typex.RuleX) func(*lua.LState) int {
 	return func(l *lua.LState) int {
@@ -16,7 +16,12 @@ func DataToTdEngine(rx typex.RuleX) func(*lua.LState) int {
 		// SQL: INSERT INTO meter VALUES (NOW, %v, %v....);
 		//
 		data := l.ToString(3) // Data must arrays [1,2,3,4....]
-		handleDataFormat(rx, id, data)
-		return 0
+		err := handleDataFormat(rx, id, data)
+		if err != nil {
+			l.Push(lua.LString(err.Error()))
+			return 1
+		}
+		l.Push(lua.LNil)
+		return 1
 	}
 }
