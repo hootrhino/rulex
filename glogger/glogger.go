@@ -1,7 +1,7 @@
 package glogger
 
 import (
-	// "os"
+	"os"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -23,9 +23,8 @@ func StartGLogger(EnableConsole bool, path string) {
 	GLogger.Formatter = new(logrus.JSONFormatter)
 	GLogger.SetReportCaller(true)
 	GLogger.Formatter.(*logrus.JSONFormatter).PrettyPrint = true
-
 	if EnableConsole {
-		GLogger.SetOutput(GRealtimeLogger)
+		GLogger.SetOutput(os.Stdout)
 	} else {
 		GLogger.SetOutput(GLOBAL_LOGGER)
 	}

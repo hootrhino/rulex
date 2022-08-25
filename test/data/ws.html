@@ -1,52 +1,152 @@
-<!DOCTYPE HTML>
-
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
-
+    <title>Web Socket Client Example</title>
     <script type="text/javascript">
-        function WebSocketTest() {
-            if ("WebSocket" in window) {
-                console.log("WebSocket is supported by your Browser!");
+        window.onload = function () {
+            var conn;
+            var log = document.getElementById("log");
+            var msg = document.getElementById("msg");
 
-                // Let us open a web socket
-                var ws = new WebSocket("ws://localhost:2580/ws");
-
-                ws.onopen = function () {
-                    ws.send("WsTerminal");
-                    console.log("Message is sent...");
-                };
-
-                ws.onmessage = function (event) {
-                    let div = document.createElement('div');
-                    div.id = 'main-div';
-                    div.innerHTML = event.data;
-                    document.body.appendChild(div);
-                };
-
-                ws.onclose = function () {
-                    alert("message")
-                    // websocket is closed.
-                    console.log("Connection is closed...");
-                };
-            } else {
-                // The browser doesn't support WebSocket
-                alert("WebSocket NOT supported by your Browser!");
+            function appendLog(item) {
+                var doScroll = log.scrollTop === log.scrollHeight - log.clientHeight;
+                log.appendChild(item);
+                if (doScroll) {
+                    log.scrollTop = log.scrollHeight - log.clientHeight;
+                }
             }
-        }
-    </script>
 
+            document.getElementById("connect").onclick = function () {
+                var server = document.getElementById("wsURL");
+                conn = new WebSocket(server.value);
+                if (window["WebSocket"]) {
+                    if (conn) {
+                        conn.onopen = function (evt) {
+                            document.getElementById("disconnect").disabled = false
+                            document.getElementById("sendMsg").disabled = false
+                            document.getElementById("connect").disabled = true
+                            document.getElementById("status").innerHTML = "Connection opened"
+                        }
+                        conn.onclose = function (evt) {
+                            document.getElementById("status").innerHTML = "Connection closed"
+                            document.getElementById("connect").disabled = false
+                        };
+                        conn.onmessage = function (evt) {
+                            var messages = evt.data.split('\n');
+                            for (var i = 0; i < messages.length; i++) {
+                                var item = document.createElement("pre");
+                                item.innerText = messages[i];
+                                appendLog(item);
+                            }
+                        }
+                    }
+                } else {
+                    var item = document.createElement("pre");
+                    item.innerHTML = "<b>Your browser does not support WebSockets.</b>";
+                    appendLog(item);
+                }
+            };
+
+            document.getElementById("disconnect").onclick = function () {
+                conn.close()
+                document.getElementById("sendMsg").disabled = true
+                document.getElementById("connect").disabled = false
+                document.getElementById("disconnect").disabled = true
+                document.getElementById("status").innerHTML = "Connection closed"
+            };
+
+            document.getElementById("form").onsubmit = function () {
+                if (!conn) {
+                    return false;
+                }
+                if (!msg.value) {
+                    return false;
+                }
+                conn.send(msg.value);
+                var item = document.createElement("pre");
+                item.classList.add("subscribeMsg");
+                item.innerHTML = msg.value;
+                appendLog(item);
+                return false;
+            };
+        };
+
+    </script>
+    <style type="text/css">
+        html {
+            overflow: hidden;
+        }
+
+        body {
+            overflow: hidden;
+            padding: 0;
+            margin: 0;
+            width: 100%;
+            height: 100%;
+            background: gray;
+        }
+
+        #log {
+            background: white;
+            margin: 0;
+            padding: 0.5em 0.5em 0.5em 0.5em;
+            top: 1.5em;
+            left: 0.5em;
+            right: 0.5em;
+            bottom: 3em;
+            overflow: auto;
+            position: absolute;
+            height: 530px;
+        }
+
+        #form {
+            padding: 0 0.5em 0 0.5em;
+            margin: 0;
+            position: absolute;
+            bottom: 3em;
+            top: 5em;
+            left: 8px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        #serverLocation {
+            padding-top: 0.3em;
+        }
+
+        #requestSection {
+            height: 38px;
+        }
+
+        #responseMsgSection {
+            height: 570px;
+            position: relative;
+        }
+    </style>
 </head>
 
 <body>
-    <div id="sse">
-        <h1>Websocket测试</h1>
-        <p>需要打开浏览器调试模式，观测控制台输出</p>
-        <a href="javascript:WebSocketTest()">
-            <h3>Click Run WebSocketTest</h3>
-        </a>
-    </div>
-
+    <fieldset id="serverLocation">
+        <legend>Server Location</legend>
+        <div>
+            <input type="button" id="connect" value="Connect" />
+            <input type="button" id="disconnect" value="Disconnect" disabled />
+            <input type="text" id="wsURL" value="ws://127.0.0.1:2580/ws" size="64">
+            <span id="status"></span>
+        </div>
+    </fieldset>
+    <fieldset id="requestSection">
+        <legend>Request</legend>
+        <form id="form">
+            <input type="submit" type="submit" value="Send" />
+            <input type="text" id="msg" size="80" value="WsTerminal" />
+        </form>
+    </fieldset>
+    <fieldset id="responseMsgSection">
+        <legend>Response</legend>
+        <div id="log"></div>
+    </fieldset>
 </body>
 
 </html>

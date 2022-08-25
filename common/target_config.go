@@ -58,6 +58,6 @@ type NatsConfig struct {
 	User     string `json:"user" validate:"required" title:"用户" info:""`
 	Password string `json:"password" validate:"required" title:"密码" info:""`
 	Host     string `json:"host" validate:"required" title:"地址" info:""`
-	Port     string `json:"port" validate:"required" title:"端口" info:""`
+	Port     int    `json:"port" validate:"required" title:"端口" info:""`
 	Topic    string `json:"topic" validate:"required" title:"转发Topic" info:""`
 }
