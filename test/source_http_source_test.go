@@ -5,9 +5,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/i4de/rulex/core"
-	"github.com/i4de/rulex/engine"
-	"github.com/i4de/rulex/glogger"
 	httpserver "github.com/i4de/rulex/plugin/http_server"
 	"github.com/i4de/rulex/utils"
 
@@ -20,13 +17,7 @@ import (
 *
  */
 func Test_http_source(t *testing.T) {
-	mainConfig := core.InitGlobalConfig("conf/rulex.ini")
-	glogger.StartGLogger(true, core.GlobalConfig.LogPath)
-	glogger.StartLuaLogger(core.GlobalConfig.LuaLogPath)
-	core.StartStore(core.GlobalConfig.MaxQueueSize)
-	core.SetLogLevel()
-	core.SetPerformance()
-	engine := engine.NewRuleEngine(mainConfig)
+	engine := RunTestEngine()
 	engine.Start()
 
 	hh := httpserver.NewHttpApiServer()

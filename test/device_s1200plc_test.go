@@ -3,13 +3,11 @@ package test
 import (
 	"encoding/json"
 	"os"
-	"os/signal"
-	"syscall"
+
 	"testing"
 
 	"github.com/i4de/rulex/common"
-	"github.com/i4de/rulex/core"
-	"github.com/i4de/rulex/engine"
+
 	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 )
@@ -98,15 +96,7 @@ func Test_parse_config(t *testing.T) {
 *
  */
 func Test_RULEX_WITH_S1200PLC(t *testing.T) {
-	mainConfig := core.InitGlobalConfig("conf/rulex.ini")
-	glogger.StartGLogger(true, core.GlobalConfig.LogPath)
-	glogger.StartLuaLogger(core.GlobalConfig.LuaLogPath)
-	core.StartStore(core.GlobalConfig.MaxQueueSize)
-	core.SetLogLevel()
-	core.SetPerformance()
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, syscall.SIGINT, syscall.SIGABRT, syscall.SIGTERM)
-	engine := engine.NewRuleEngine(mainConfig)
+	engine := RunTestEngine()
 	engine.Start()
 
 	S1200PLC := typex.NewDevice(typex.S1200PLC,
@@ -176,7 +166,6 @@ func Test_RULEX_WITH_S1200PLC(t *testing.T) {
 		t.Error(err)
 	}
 
-	s := <-c
 	glogger.GLogger.Warn("Received stop signal:", s)
 	engine.Stop()
 	os.Exit(0)

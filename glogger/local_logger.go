@@ -10,9 +10,7 @@ import (
 *
  */
 type LogWriter struct {
-	file         *os.File
-	logSlot      []string
-	maxSlotCount int
+	file *os.File
 }
 
 func NewLogWriter(filepath string, maxSlotCount int) *LogWriter {
@@ -22,23 +20,12 @@ func NewLogWriter(filepath string, maxSlotCount int) *LogWriter {
 		os.Exit(1)
 	}
 
-	return &LogWriter{file: logFile,
-		logSlot: make([]string, maxSlotCount),
-	}
+	return &LogWriter{file: logFile}
 }
 func (lw *LogWriter) Write(b []byte) (n int, err error) {
-	if len(lw.logSlot) > lw.maxSlotCount {
-		lw.logSlot = append(lw.logSlot[1:], string(b))
-	} else {
-		lw.logSlot = append(lw.logSlot, string(b))
-	}
-
 	return lw.file.Write(b)
 }
 
-func (lw *LogWriter) Slot() []string {
-	return lw.logSlot
-}
 func (lw *LogWriter) Close() error {
 	if lw.file != nil {
 		return lw.file.Close()

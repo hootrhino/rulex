@@ -61,9 +61,16 @@ func HttpGet(api string) string {
 * 起一个测试服务
 *
  */
-func TestEngine() typex.RuleX {
+func RunTestEngine() typex.RuleX {
 	mainConfig := core.InitGlobalConfig("conf/rulex.ini")
+	glogger.StartNewRealTimeLogger(core.GlobalConfig.LogLevel)
+	glogger.StartGLogger(mainConfig.EnableConsole, core.GlobalConfig.LogPath)
+	glogger.StartLuaLogger(core.GlobalConfig.LuaLogPath)
+	//
 	core.StartStore(core.GlobalConfig.MaxQueueSize)
+	core.SetLogLevel()
+	core.SetPerformance()
+	// engine
 	engine := engine.NewRuleEngine(mainConfig)
 	return engine
 }

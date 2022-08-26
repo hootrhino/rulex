@@ -1,8 +1,6 @@
 package test
 
 import (
-	"github.com/i4de/rulex/core"
-	"github.com/i4de/rulex/engine"
 	"github.com/i4de/rulex/glogger"
 	httpserver "github.com/i4de/rulex/plugin/http_server"
 
@@ -20,14 +18,7 @@ import (
 //     "PCTotalMemory":33262700
 // }
 func Test_Generic_snmp_device(t *testing.T) {
-	mainConfig := core.InitGlobalConfig("conf/rulex.ini")
-	core.GlobalConfig.AppDebugMode = true
-	glogger.StartGLogger(true, core.GlobalConfig.LogPath)
-	glogger.StartLuaLogger(core.GlobalConfig.LuaLogPath)
-	core.StartStore(core.GlobalConfig.MaxQueueSize)
-	core.SetLogLevel()
-	core.SetPerformance()
-	engine := engine.NewRuleEngine(mainConfig)
+	engine := RunTestEngine()
 	engine.Start()
 
 	hh := httpserver.NewHttpApiServer()
