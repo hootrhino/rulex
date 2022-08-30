@@ -27,11 +27,16 @@ const (
 	METHOD_PROPERTY       string = "property"
 	METHOD_PROPERTY_REPLY string = "property_reply"
 	// 动作请求
-	ACTION_CONTROL       string = "action"
-	ACTION_CONTROL_REPLY string = "action_reply"
+	METHOD_ACTION       string = "action"
+	METHOD_ACTION_REPLY string = "action_reply"
 )
 
-type tencentUpReply struct {
+/*
+*
+* 上行数据，包含了上报属性和回复, 用了omitempty属性来灵活处理字段
+*
+ */
+type tencentUpMsg struct {
 	Method      string                 `json:"method"`
 	ClientToken string                 `json:"clientToken,omitempty"` // 腾讯云
 	Id          string                 `json:"id,omitempty"`          // 兼容非腾讯云平台
@@ -42,12 +47,12 @@ type tencentUpReply struct {
 }
 
 var (
-	//
-	_PropertyTopic      = "$thing/down/property/%v/%v"
-	_PropertyReplyTopic = "$thing/up/property/%v/%v"
-	//
-	_ActionTopic      = "$thing/down/action/%v/%v"
-	_ActionReplyTopic = "$thing/up/action/%v/%v"
+	// 属性
+	_PropertyTopic   = "$thing/down/property/%v/%v"
+	_PropertyUpTopic = "$thing/up/property/%v/%v"
+	// 动作
+	_ActionTopic   = "$thing/down/action/%v/%v"
+	_ActionUpTopic = "$thing/up/action/%v/%v"
 )
 
 //
@@ -206,30 +211,25 @@ func (*tencentIothubSource) Topology() []typex.TopologyPoint {
 //
 
 func (tc *tencentIothubSource) DownStream(bytes []byte) (int, error) {
-	var msg tencentUpReply
+	var msg tencentUpMsg
 	if err := json.Unmarshal(bytes, &msg); err != nil {
 		return 0, err
 	}
-
-	//
-	// 接受两个类型的指令：
-	//     - control_reply: 控制指令的回复，走回复通道
-	//     - property_reply: 及时状态获取，当调用这个指令后，会上报一个最新的状态
 	//
 	var err error
 	// 属性回复
 	if msg.Method == METHOD_CONTROL_REPLY {
-		topic := fmt.Sprintf(_PropertyReplyTopic, tc.mainConfig.ProductId, tc.mainConfig.DeviceName)
+		topic := fmt.Sprintf(_PropertyUpTopic, tc.mainConfig.ProductId, tc.mainConfig.DeviceName)
 		err = tc.client.Publish(topic, 1, false, bytes).Error()
 	}
-	// 兼容
+	// 兼容W3C
 	if msg.Method == METHOD_PROPERTY_REPLY {
-		topic := fmt.Sprintf(_PropertyReplyTopic, tc.mainConfig.ProductId, tc.mainConfig.DeviceName)
+		topic := fmt.Sprintf(_PropertyUpTopic, tc.mainConfig.ProductId, tc.mainConfig.DeviceName)
 		err = tc.client.Publish(topic, 1, false, bytes).Error()
 	}
 	// 事件调用回复
-	if msg.Method == ACTION_CONTROL_REPLY {
-		topic := fmt.Sprintf(_ActionReplyTopic, tc.mainConfig.ProductId, tc.mainConfig.DeviceName)
+	if msg.Method == METHOD_ACTION_REPLY {
+		topic := fmt.Sprintf(_ActionUpTopic, tc.mainConfig.ProductId, tc.mainConfig.DeviceName)
 		err = tc.client.Publish(topic, 1, false, bytes).Error()
 	}
 	return 0, err
