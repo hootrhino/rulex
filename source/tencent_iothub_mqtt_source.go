@@ -31,6 +31,17 @@ const (
 	METHOD_ACTION_REPLY string = "action_reply"
 )
 
+const (
+	// 属性
+	_PropertyTopic      = "$thing/down/property/%v/%v"
+	_PropertyUpTopic    = "$thing/up/property/%v/%v"
+	_PropertyReplyTopic = "$thing/property/reply/%v/%v"
+	// 动作
+	_ActionTopic      = "$thing/down/action/%v/%v"
+	_ActionUpTopic    = "$thing/up/action/%v/%v"
+	_ActionReplyTopic = "$thing/action/reply/%v/%v"
+)
+
 /*
 *
 * 上行数据，包含了上报属性和回复, 用了omitempty属性来灵活处理字段
@@ -45,15 +56,6 @@ type tencentUpMsg struct {
 	Code        int                    `json:"code"`
 	Status      string                 `json:"status"`
 }
-
-var (
-	// 属性
-	_PropertyTopic   = "$thing/down/property/%v/%v"
-	_PropertyUpTopic = "$thing/up/property/%v/%v"
-	// 动作
-	_ActionTopic   = "$thing/down/action/%v/%v"
-	_ActionUpTopic = "$thing/up/action/%v/%v"
-)
 
 //
 //
@@ -217,19 +219,19 @@ func (tc *tencentIothubSource) DownStream(bytes []byte) (int, error) {
 	}
 	//
 	var err error
-	// 属性回复
+	// 属性回复: 兼容腾讯iothub
 	if msg.Method == METHOD_CONTROL_REPLY {
-		topic := fmt.Sprintf(_PropertyUpTopic, tc.mainConfig.ProductId, tc.mainConfig.DeviceName)
+		topic := fmt.Sprintf(_PropertyReplyTopic, tc.mainConfig.ProductId, tc.mainConfig.DeviceName)
 		err = tc.client.Publish(topic, 1, false, bytes).Error()
 	}
-	// 兼容W3C
+	// 属性回复: 兼容W3C
 	if msg.Method == METHOD_PROPERTY_REPLY {
-		topic := fmt.Sprintf(_PropertyUpTopic, tc.mainConfig.ProductId, tc.mainConfig.DeviceName)
+		topic := fmt.Sprintf(_PropertyReplyTopic, tc.mainConfig.ProductId, tc.mainConfig.DeviceName)
 		err = tc.client.Publish(topic, 1, false, bytes).Error()
 	}
 	// 事件调用回复
 	if msg.Method == METHOD_ACTION_REPLY {
-		topic := fmt.Sprintf(_ActionUpTopic, tc.mainConfig.ProductId, tc.mainConfig.DeviceName)
+		topic := fmt.Sprintf(_ActionReplyTopic, tc.mainConfig.ProductId, tc.mainConfig.DeviceName)
 		err = tc.client.Publish(topic, 1, false, bytes).Error()
 	}
 	return 0, err

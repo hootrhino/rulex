@@ -1,10 +1,10 @@
-local source = 'tencentIothub'
-local device = 'YK8Device1'
-function Rule(data)
-    rulexlib:log('Received data from iothub:', data)
+function rule(data)
+    print('Received data from iothub:', data)
+    local source = 'tencentIothub'
+    local device = 'YK8Device1'
     local dataT, err = rulexlib:J2T(data)
     if (err ~= nil) then
-        rulexlib:log('Received data from iothub parse to json error:', err)
+        print('Received data from iothub parse to json error:', err)
         return false, data
     end
     -- Action
@@ -13,25 +13,26 @@ function Rule(data)
         if actionId == 'get_state' then
             local readData, err = rulexlib:ReadDevice(device)
             if (err ~= nil) then
-                rulexlib:log('ReadDevice data from device error:', err)
+                print('ReadDevice data from device error:', err)
                 return false, data
             end
-            rulexlib:log('ReadDevice data from device:', readData)
+            print('ReadDevice data from device:', readData)
             local readDataT, err = rulexlib:J2T(readData)
             if (err ~= nil) then
-                rulexlib:log('Parse ReadDevice data from device error:', err)
+                print('Parse ReadDevice data from device error:', err)
                 return false, data
             end
-            local _, err = iothub:ActionReplySuccess(source, dataT['id'], readDataT['value'])
+            local _, err = iothub:ActionSuccess(source, dataT['id'], readDataT['value'])
             if (err ~= nil) then
-                rulexlib:log('ActionReply error:', err)
+                print('ActionReply error:', err)
                 return false, data
             end
         end
     end
     -- Property
     if dataT['method'] == 'property' then
-        local schemaParams = dataT['data']
+        local schemaParams = rulexlib:J2T(dataT['data'])
+        print('schemaParams:', schemaParams)
         local n1, err = rulexlib:WriteDevice(device, rulexlib:T2J({{
             ['function'] = 15,
             ['slaverId'] = 3,
@@ -49,16 +50,16 @@ function Rule(data)
             })
         }}))
         if (err ~= nil) then
-            rulexlib:log('WriteDevice error:', err)
-            local _, err = iothub:PropertyReplyFailed(source, dataT['id'])
+            print('WriteDevice error:', err)
+            local _, err = iothub:PropertyFailed(source, dataT['id'])
             if (err ~= nil) then
-                rulexlib:log('Reply error:', err)
+                print('Reply error:', err)
                 return false, data
             end
         else
-            local _, err = iothub:PropertyReplySuccess(source, dataT['id'], {})
+            local _, err = iothub:PropertySuccess(source, dataT['id'], {})
             if (err ~= nil) then
-                rulexlib:log('Reply error:', err)
+                print('Reply error:', err)
                 return false, data
             end
         end

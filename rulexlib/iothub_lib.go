@@ -109,9 +109,9 @@ func ActionReplySuccess(rx typex.RuleX) func(*lua.LState) int {
 		if inend := rx.GetInEnd(uuid); inend != nil {
 			bytes, _ := json.Marshal(_reply{
 				Method: "action_reply",
-				Code:   500,
+				Code:   0,
 				Id:     requestId,
-				Status: "Failed",
+				Status: "Success",
 				Out:    outParam,
 			})
 			return returnR(inend, bytes, l)
