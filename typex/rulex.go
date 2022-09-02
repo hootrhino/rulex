@@ -9,6 +9,9 @@ import (
 //
 // Global config
 //
+type Extlib struct {
+	Value []string `ini:"extlibs,,allowshadow" json:"extlibs"`
+}
 type RulexConfig struct {
 	MaxQueueSize          int    `ini:"max_queue_size" json:"maxQueueSize"`
 	SourceRestartInterval int    `ini:"resource_restart_interval" json:"sourceRestartInterval"`
@@ -20,6 +23,7 @@ type RulexConfig struct {
 	LuaLogPath            string `ini:"lua_log_path" json:"luaLogPath"`
 	MaxStoreSize          int    `ini:"max_store_size" json:"maxStoreSize"`
 	AppDebugMode          bool   `ini:"app_debug_mode" json:"appDebugMode"`
+	Extlibs               Extlib `ini:"extlibs,,allowshadow" json:"extlibs"`
 }
 
 //

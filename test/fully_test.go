@@ -131,7 +131,7 @@ func TestFullyRun(t *testing.T) {
 			    print("[rulexlib:TsUnixNano()] ==>", rulexlib:TsUnixNano())
 			    rulexlib:VSet('k', 'v')
 			    print("[rulexlib:VGet(k)] ==>", rulexlib:VGet('k'))
-
+			    print("[HelloLib] ==>", Hello())
 				return true, data
 			end,
 			function(data)

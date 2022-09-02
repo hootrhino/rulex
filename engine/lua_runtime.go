@@ -1,6 +1,7 @@
 package engine
 
 import (
+	"github.com/i4de/rulex/core"
 	"github.com/i4de/rulex/rulexlib"
 	"github.com/i4de/rulex/typex"
 )
@@ -70,4 +71,19 @@ func LoadBuildInLuaLib(e typex.RuleX, r *typex.Rule) {
 	r.AddLib(e, "iothub", "ActionSuccess", rulexlib.ActionReplySuccess(e))
 	r.AddLib(e, "iothub", "ActionFailed", rulexlib.ActionReplyFailed(e))
 
+}
+
+/*
+*
+* 加载外部扩展库
+*
+ */
+func LoadExtLuaLib(e typex.RuleX, r *typex.Rule) error {
+	for _, s := range core.GlobalConfig.Extlibs.Value {
+		err := r.LoadExternLuaLib(s)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }

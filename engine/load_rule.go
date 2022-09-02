@@ -14,7 +14,12 @@ import (
 // 使用MAP来记录RULE的绑定关系, KEY是UUID, Value是规则
 //
 func (e *RuleEngine) LoadRule(r *typex.Rule) error {
+	// 前置语法验证
 	if err := core.VerifyCallback(r); err != nil {
+		return err
+	}
+	// 前置自定义库校验
+	if err := LoadExtLuaLib(e, r); err != nil {
 		return err
 	}
 	e.SaveRule(r)
@@ -22,6 +27,7 @@ func (e *RuleEngine) LoadRule(r *typex.Rule) error {
 	// Load LoadBuildInLuaLib
 	//--------------------------------------------------------------
 	LoadBuildInLuaLib(e, r)
+
 	glogger.GLogger.Infof("Rule [%v, %v] load successfully", r.Name, r.UUID)
 	// 绑定输入资源
 	for _, inUUId := range r.FromSource {

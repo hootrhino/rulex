@@ -75,11 +75,22 @@ func (r *Rule) SetVM(o lua.Options) {
 
 /*
 *
+* 加载外部LUA脚本，方便用户自己写一些东西
+* 需要注意的：
+* - 不要和标准库里面的变量冲突了
+* - 默认加载到 _G 环境里
+ */
+func (r *Rule) LoadExternLuaLib(path string) error {
+	return r.VM.DoFile(path)
+}
+
+/*
+*
 * AddLib: 根据 KV形式加载库(推荐)
 *  - Global: 命名空间
 *   - funcName: 函数名称
  */
-func (r *Rule) AddLib(rx RuleX, Global string, funcName string, f func(*lua.LState) int) {
+func (r *Rule) AddLib(rx RuleX, Global string, funcName string, f func(l *lua.LState) int) {
 	rulexTb := r.VM.G.Global
 	r.VM.SetGlobal(Global, rulexTb)
 	loadLib(rulexTb, r.VM, funcName, f)

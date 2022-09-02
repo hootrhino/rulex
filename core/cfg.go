@@ -20,7 +20,7 @@ var INIPath string
 //
 func InitGlobalConfig(path string) typex.RulexConfig {
 	glogger.GLogger.Info("Init rulex config")
-	cfg, err := ini.Load(path)
+	cfg, err := ini.ShadowLoad(path)
 	if err != nil {
 		glogger.GLogger.Fatalf("Fail to read config file: %v", err)
 		os.Exit(1)
@@ -28,6 +28,10 @@ func InitGlobalConfig(path string) typex.RulexConfig {
 	INIPath = path
 	//---------------------------------------
 	if err := cfg.Section("app").MapTo(&GlobalConfig); err != nil {
+		glogger.GLogger.Fatalf("Fail to map config file: %v", err)
+		os.Exit(1)
+	}
+	if err := cfg.Section("extlibs").MapTo(&GlobalConfig.Extlibs); err != nil {
 		glogger.GLogger.Fatalf("Fail to map config file: %v", err)
 		os.Exit(1)
 	}
