@@ -41,6 +41,7 @@ func Test_rulex_base_lib(t *testing.T) {
 			rulexlib:VSet('k', 'v')
 			print("[rulexlib:VGet(k)] ==>", rulexlib:VGet('k'))
 			Hello()
+			rulexlib:Throw('this is test Throw')
 			return true, data
 		end,
 		function(data)
