@@ -84,7 +84,8 @@ func (q *DataCacheQueue) GetQueue() chan QueueData {
 }
 
 //
-//
+// 此处内置的消息队列用了go的channel, 看似好像很简单，但是经过测试发现完全满足网关需求，甚至都性能过剩了
+// 因此大家看到这里务必担心, 我也知道有很精美的高级框架, 但是用简单的方法来实现功能不是更好吗？
 //
 func StartQueue(maxQueueSize int) {
 	DefaultDataCacheQueue = &DataCacheQueue{
