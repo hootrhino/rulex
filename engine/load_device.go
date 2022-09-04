@@ -59,9 +59,21 @@ func (e *RuleEngine) RemoveDevice(uuid string) {
 	}
 }
 
+/*
+* 从0.4.0开始, 可支持用户加载设备
+* 加载用户设备， 第一个参数为Worker, 第二个参数为设备原始信息，实际上就是元数据
+*
+ */
+func (e *RuleEngine) LoadUserDevice(abstractDevice typex.XDevice, deviceInfo *typex.Device) error {
+	return startDevices(abstractDevice, deviceInfo, e)
+}
+
 //
-// 加载设备
+// 加载内置设备
 //
+func (e *RuleEngine) LoadBuiltinDevice(deviceInfo *typex.Device) error {
+	return e.LoadDevice(deviceInfo)
+}
 func (e *RuleEngine) LoadDevice(deviceInfo *typex.Device) error {
 	if deviceInfo.Type == typex.TSS200V02 {
 		return startDevices(device.NewTS200Sensor(e), deviceInfo, e)

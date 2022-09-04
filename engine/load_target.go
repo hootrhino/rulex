@@ -12,9 +12,24 @@ import (
 	"github.com/i4de/rulex/typex"
 )
 
-//
-// LoadOutEnd
-//
+/*
+*
+* 加载用户自定义输出资源
+*
+ */
+func (e *RuleEngine) LoadUserOutEnd(target typex.XTarget, out *typex.OutEnd) error {
+	return startTarget(target, out, e)
+}
+
+/*
+*
+* 加载内建输出资源
+*
+ */
+
+func (e *RuleEngine) LoadBuiltinOutEnd(out *typex.OutEnd) error {
+	return e.LoadOutEnd(out)
+}
 func (e *RuleEngine) LoadOutEnd(out *typex.OutEnd) error {
 	if out.Type == typex.MONGO_SINGLE {
 		return startTarget(target.NewMongoTarget(e), out, e)

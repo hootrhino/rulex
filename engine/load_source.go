@@ -14,6 +14,24 @@ import (
 
 /*
 *
+* 加载用户资源
+*
+ */
+func (e *RuleEngine) LoadUserInEnd(source typex.XSource, in *typex.InEnd) error {
+	return startSources(source, in, e)
+}
+
+/*
+*
+* 内建资源
+*
+ */
+func (e *RuleEngine) LoadBuiltInEnd(in *typex.InEnd) error {
+	return e.LoadInEnd(in)
+}
+
+/*
+*
 * TODO: 0.3.0重构此处，换成 SourceRegistry 形式
 *
  */
