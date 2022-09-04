@@ -100,12 +100,9 @@ func Logs(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		Id      int    `json:"id" binding:"required"`
 		Content string `json:"content" binding:"required"`
 	}
+	//TODO 日志暂时不记录
 	logs := []Data{}
-	c.JSON(200, Result{
-		Code: 200,
-		Msg:  SUCCESS,
-		Data: logs,
-	})
+	c.JSON(200, OkWithData(logs))
 }
 
 func LogOut(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {

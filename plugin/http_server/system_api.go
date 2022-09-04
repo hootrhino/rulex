@@ -1,7 +1,6 @@
 package httpserver
 
 import (
-	"net/http"
 	"runtime"
 	"time"
 
@@ -36,11 +35,7 @@ func Plugins(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		data = append(data, value.(typex.XPlugin).PluginMetaInfo())
 		return true
 	})
-	c.JSON(200, Result{
-		Code: 200,
-		Msg:  SUCCESS,
-		Data: data,
-	})
+	c.JSON(200, OkWithData(data))
 }
 func bToMb(b uint64) uint64 {
 	return b / 1024 / 1024
@@ -56,20 +51,16 @@ func System(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	// For info on each, see: https://golang.org/pkg/runtime/#MemStats
 	var m runtime.MemStats
 	runtime.ReadMemStats(&m)
-	c.JSON(200, Result{
-		Code: 200,
-		Msg:  SUCCESS,
-		Data: gin.H{
-			"version":     e.Version().Version,
-			"diskInfo":    int(diskInfo.UsedPercent),
-			"system":      bToMb(m.Sys),
-			"alloc":       bToMb(m.Alloc),
-			"total":       bToMb(m.TotalAlloc),
-			"cpuPercent":  calculateCpuPercent(cpuPercent),
-			"osArch":      runtime.GOOS + "-" + runtime.GOARCH,
-			"startedTime": StartedTime,
-		},
-	})
+	c.JSON(200, OkWithData(gin.H{
+		"version":     e.Version().Version,
+		"diskInfo":    int(diskInfo.UsedPercent),
+		"system":      bToMb(m.Sys),
+		"alloc":       bToMb(m.Alloc),
+		"total":       bToMb(m.TotalAlloc),
+		"cpuPercent":  calculateCpuPercent(cpuPercent),
+		"osArch":      runtime.GOOS + "-" + runtime.GOARCH,
+		"startedTime": StartedTime,
+	}))
 }
 
 //
@@ -124,16 +115,12 @@ func SourceCount(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		c4 += 1
 		return true
 	})
-	c.JSON(200, Result{
-		Code: 200,
-		Msg:  SUCCESS,
-		Data: map[string]int{
-			"inends":  c1,
-			"outends": c2,
-			"rules":   c3,
-			"plugins": c4,
-		},
-	})
+	c.JSON(200, OkWithData(map[string]int{
+		"inends":  c1,
+		"outends": c2,
+		"rules":   c3,
+		"plugins": c4,
+	}))
 }
 
 /*
@@ -144,17 +131,9 @@ func SourceCount(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 func RType(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	Type, _ := c.GetQuery("type")
 	if Type == "" {
-		c.JSON(200, Result{
-			Code: 200,
-			Msg:  SUCCESS,
-			Data: source.SM.All(),
-		})
+		c.JSON(200, OkWithData(source.SM.All()))
 	} else {
-		c.JSON(200, Result{
-			Code: 200,
-			Msg:  SUCCESS,
-			Data: source.SM.Find(typex.InEndType(Type)),
-		})
+		c.JSON(200, OkWithData(source.SM.Find(typex.InEndType(Type))))
 	}
 
 }
@@ -167,17 +146,9 @@ func RType(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 func TType(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	Type, _ := c.GetQuery("type")
 	if Type == "" {
-		c.JSON(200, Result{
-			Code: 200,
-			Msg:  SUCCESS,
-			Data: target.TM.All(),
-		})
+		c.JSON(200, OkWithData(target.TM.All()))
 	} else {
-		c.JSON(200, Result{
-			Code: 200,
-			Msg:  SUCCESS,
-			Data: target.TM.Find(typex.TargetType(Type)),
-		})
+		c.JSON(200, OkWithData(target.TM.Find(typex.TargetType(Type))))
 	}
 
 }
@@ -188,20 +159,8 @@ func TType(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 *
  */
 func GetUarts(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
-	ports, err := serial.GetPortsList()
-	if err != nil {
-		c.JSON(200, Result{
-			Code: http.StatusBadGateway,
-			Msg:  err.Error(),
-			Data: ports,
-		})
-		return
-	}
-	c.JSON(200, Result{
-		Code: 200,
-		Msg:  SUCCESS,
-		Data: ports,
-	})
+	ports, _ := serial.GetPortsList()
+	c.JSON(200, OkWithData(ports))
 }
 
 /*
@@ -210,11 +169,7 @@ func GetUarts(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 *
  */
 func StartedAt(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
-	c.JSON(200, Result{
-		Code: 200,
-		Msg:  SUCCESS,
-		Data: StartedTime,
-	})
+	c.JSON(200, OkWithData(StartedTime))
 }
 
 //

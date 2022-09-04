@@ -12,36 +12,28 @@ const SUCCESS string = "Success"
 
 // Http Return
 type R struct {
-	Code int    `json:"code" binding:"required"`
-	Msg  string `json:"msg" binding:"required"`
-}
-
-//
-//
-//
-type Result struct {
-	Code int         `json:"code"`
-	Msg  string      `json:"msg"`
+	Code int         `json:"code" binding:"required"`
+	Msg  string      `json:"msg" binding:"required"`
 	Data interface{} `json:"data"`
 }
 
 func Ok() R {
-	return R{200, "success"}
+	return R{200, SUCCESS, []interface{}{}}
 }
-func OkWithEmpty() Result {
-	return Result{200, "success", []interface{}{}}
+func OkWithEmpty() R {
+	return R{200, SUCCESS, []interface{}{}}
 }
-func OkWithData(data interface{}) Result {
-	return Result{200, "success", data}
+func OkWithData(data interface{}) R {
+	return R{200, SUCCESS, data}
 }
 func Error(s string) R {
-	return R{4001, s}
+	return R{4000, s, nil}
 }
 func Error400(e error) R {
-	return R{4001, e.Error()}
+	return R{4001, e.Error(), []interface{}{}}
 }
 func Error500(e error) R {
-	return R{5001, e.Error()}
+	return R{5001, e.Error(), []interface{}{}}
 }
 
 func (hh *HttpApiServer) Authorize() gin.HandlerFunc {

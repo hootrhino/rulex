@@ -23,17 +23,9 @@ func Rules(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 			data = append(data, value)
 			return true
 		})
-		c.JSON(200, Result{
-			Code: 200,
-			Msg:  SUCCESS,
-			Data: data,
-		})
+		c.JSON(200, OkWithData(data))
 	} else {
-		c.JSON(200, Result{
-			Code: 200,
-			Msg:  SUCCESS,
-			Data: e.GetRule(uuid),
-		})
+		c.JSON(200, OkWithData(e.GetRule(uuid)))
 	}
 }
 
