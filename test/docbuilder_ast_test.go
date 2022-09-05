@@ -11,39 +11,6 @@ import (
 
 /*
 *
-* 准备写个简单的翻译器，把Golang代码直接翻译成Lua
-* 不过看起来应该是个体力活，需要精打细磨，先立Flag再说
-*
- */
-func Test_parse_AST(t *testing.T) {
-	fset := token.NewFileSet()
-	node, err := parser.ParseFile(fset, "data/ast_test_example.go", nil, parser.ParseComments)
-	if err != nil {
-		t.Fatal(err)
-	}
-	// ast.Print(fset, node)
-	for _, v := range node.Decls {
-		switch typa := v.(type) {
-		case *ast.FuncDecl:
-			{
-				if typa.Name.String() == "GoToLuaDemo" {
-					t.Log("函数注释:", typa.Doc.Text())
-					t.Log("函数名:", typa.Name)
-					for _, param := range typa.Type.Params.List {
-						t.Log("函数参数:", param.Type, param.Names)
-					}
-					for _, param := range typa.Type.Results.List {
-						t.Log("函数返回值:", param.Type, param.Names)
-					}
-				}
-			}
-		}
-	}
-
-}
-
-/*
-*
 * 尝试使用AST来生成文档
 *
  */
