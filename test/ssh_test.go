@@ -2,7 +2,7 @@ package test
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"testing"
 	"time"
 
@@ -60,7 +60,7 @@ func publicKeyAuthFunc(kPath string) ssh.AuthMethod {
 	if err != nil {
 		glogger.GLogger.Fatal("find key's home dir failed", err)
 	}
-	key, err := ioutil.ReadFile(keyPath)
+	key, err := os.ReadFile(keyPath)
 	if err != nil {
 		glogger.GLogger.Fatal("ssh key file read failed", err)
 	}

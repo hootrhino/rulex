@@ -3,7 +3,7 @@ package target
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 
@@ -58,9 +58,7 @@ func (td *tdEngineTarget) url() string {
 		td.mainConfig.Fqdn, td.mainConfig.Port, td.mainConfig.DbName)
 }
 
-//
 // 测试资源是否可用
-//
 func (td *tdEngineTarget) Test(inEndId string) bool {
 	return td.test()
 }
@@ -81,9 +79,7 @@ func (td *tdEngineTarget) Init(outEndId string, configMap map[string]interface{}
 	return errors.New("tdengine connect error")
 }
 
-//
 // 启动资源
-//
 func (td *tdEngineTarget) Start(cctx typex.CCTX) error {
 	td.Ctx = cctx.Ctx
 	td.CancelCTX = cctx.CancelCTX
@@ -103,65 +99,46 @@ func (td *tdEngineTarget) Start(cctx typex.CCTX) error {
 
 }
 
-//
 // 资源是否被启用
-//
 func (td *tdEngineTarget) Enabled() bool {
 	return true
 }
 
-//
 // 数据模型, 用来描述该资源支持的数据, 对应的是云平台的物模型
-//
 func (td *tdEngineTarget) DataModels() []typex.XDataModel {
 	return td.XDataModels
 }
 
-//
 // 重载: 比如可以在重启的时候把某些数据保存起来
-//
 func (td *tdEngineTarget) Reload() {
 
 }
 
-//
 // 挂起资源, 用来做暂停资源使用
-//
 func (td *tdEngineTarget) Pause() {
 }
 
-//
 // 获取资源状态
-//
 func (td *tdEngineTarget) Status() typex.SourceState {
 	return td.status
 }
 
-//
 // 获取资源绑定的的详情
-//
 func (td *tdEngineTarget) Details() *typex.OutEnd {
 	return td.RuleEngine.GetOutEnd(td.PointId)
 
 }
 
-//
 // 驱动接口, 通常用来和硬件交互
-//
 func (td *tdEngineTarget) Driver() typex.XExternalDriver {
 	return nil
 }
 
-//
-//
-//
 func (td *tdEngineTarget) Topology() []typex.TopologyPoint {
 	return []typex.TopologyPoint{}
 }
 
-//
 // 停止资源, 用来释放资源
-//
 func (td *tdEngineTarget) Stop() {
 	td.CancelCTX()
 	td.status = typex.SOURCE_STOP
@@ -182,13 +159,13 @@ func post(client http.Client,
 		return "", err2
 	}
 	if response.StatusCode != 200 {
-		bytes0, err3 := ioutil.ReadAll(response.Body)
+		bytes0, err3 := io.ReadAll(response.Body)
 		if err3 != nil {
 			return "", err3
 		}
 		return "", fmt.Errorf("Error:%v", string(bytes0))
 	}
-	bytes1, err3 := ioutil.ReadAll(response.Body)
+	bytes1, err3 := io.ReadAll(response.Body)
 	if err3 != nil {
 		return "", err3
 	}

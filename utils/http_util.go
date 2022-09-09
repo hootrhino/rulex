@@ -3,7 +3,7 @@ package utils
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 
@@ -33,7 +33,7 @@ func Post(client http.Client, data interface{},
 		return "", err2
 	}
 	if response.StatusCode != 200 {
-		bytes0, err3 := ioutil.ReadAll(response.Body)
+		bytes0, err3 := io.ReadAll(response.Body)
 		if err3 != nil {
 			return "", err3
 		}
@@ -41,7 +41,7 @@ func Post(client http.Client, data interface{},
 	}
 	var r []byte
 	response.Body.Read(r)
-	bytes1, err3 := ioutil.ReadAll(response.Body)
+	bytes1, err3 := io.ReadAll(response.Body)
 	if err3 != nil {
 		return "", err3
 	}
@@ -67,7 +67,7 @@ func Get(client http.Client, url string) string {
 		return ""
 	}
 	defer response.Body.Close()
-	body, err := ioutil.ReadAll(response.Body)
+	body, err := io.ReadAll(response.Body)
 	if err != nil {
 		glogger.GLogger.Error(err)
 		return ""

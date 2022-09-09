@@ -10,8 +10,8 @@ import (
 	"github.com/i4de/rulex/typex"
 
 	"github.com/gin-gonic/gin"
-	"github.com/shirou/gopsutil/cpu"
-	"github.com/shirou/gopsutil/disk"
+	"github.com/shirou/gopsutil/v3/cpu"
+	"github.com/shirou/gopsutil/v3/disk"
 	"go.bug.st/serial"
 )
 
@@ -25,9 +25,7 @@ func Ping(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	c.Writer.Flush()
 }
 
-//
 // Get all plugins
-//
 func Plugins(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	data := []interface{}{}
 	plugins := e.AllPlugins()
@@ -41,9 +39,7 @@ func bToMb(b uint64) uint64 {
 	return b / 1024 / 1024
 }
 
-//
 // Get system infomation
-//
 func System(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	cpuPercent, _ := cpu.Percent(5*time.Millisecond, true)
 	parts, _ := disk.Partitions(true)
@@ -63,9 +59,7 @@ func System(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	}))
 }
 
-//
 // Get all Drivers
-//
 func Drivers(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	data := []interface{}{}
 	e.AllInEnd().Range(func(key, value interface{}) bool {
@@ -83,16 +77,12 @@ func Drivers(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	c.JSON(200, OkWithData(data))
 }
 
-//
 // Get statistics data
-//
 func Statistics(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	c.JSON(200, OkWithData(statistics.AllStatistics()))
 }
 
-//
 // Get statistics data
-//
 func SourceCount(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	allInEnd := e.AllInEnd()
 	allOutEnd := e.AllOutEnd()
@@ -172,9 +162,7 @@ func StartedAt(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	c.JSON(200, OkWithData(StartedTime))
 }
 
-//
 // 计算CPU平均使用率
-//
 func calculateCpuPercent(cpus []float64) float64 {
 	var acc float64 = 0
 	for _, v := range cpus {

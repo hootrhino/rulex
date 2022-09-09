@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"time"
@@ -15,7 +15,6 @@ import (
 	"github.com/i4de/rulex/typex"
 )
 
-//
 func HttpPost(data map[string]interface{}, url string) string {
 	p, errs1 := json.Marshal(data)
 	if errs1 != nil {
@@ -27,7 +26,7 @@ func HttpPost(data map[string]interface{}, url string) string {
 	}
 	defer r.Body.Close()
 
-	body, errs5 := ioutil.ReadAll(r.Body)
+	body, errs5 := io.ReadAll(r.Body)
 	if errs5 != nil {
 		glogger.GLogger.Fatal(errs5)
 	}
@@ -48,7 +47,7 @@ func HttpGet(api string) string {
 		return ""
 	}
 	defer response.Body.Close()
-	body, err := ioutil.ReadAll(response.Body)
+	body, err := io.ReadAll(response.Body)
 	if err != nil {
 		glogger.GLogger.Error(err)
 		return ""
