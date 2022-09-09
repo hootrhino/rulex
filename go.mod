@@ -31,7 +31,6 @@ require (
 	github.com/plgd-dev/go-coap/v2 v2.6.0
 	github.com/plgd-dev/kit/v2 v2.0.0-20211006190727-057b33161b90
 	github.com/robinson/gos7 v0.0.0-20211020181838-a2b780484319
-	github.com/shirou/gopsutil v3.21.11+incompatible
 	github.com/shirou/gopsutil/v3 v3.22.7
 	github.com/sirupsen/logrus v1.9.0
 	github.com/suapapa/go_eddystone v1.3.1

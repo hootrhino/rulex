@@ -16,13 +16,11 @@ import (
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
 
-	"github.com/shirou/gopsutil/disk"
+	"github.com/shirou/gopsutil/v3/disk"
 	lua "github.com/yuin/gopher-lua"
 )
 
-//
 // 规则引擎
-//
 type RuleEngine struct {
 	SideCar sidecar.SideCar    `json:"-"`
 	Hooks   *sync.Map          `json:"hooks"`
@@ -35,9 +33,6 @@ type RuleEngine struct {
 	Config  *typex.RulexConfig `json:"config"`
 }
 
-//
-//
-//
 func NewRuleEngine(config typex.RulexConfig) typex.RuleX {
 	return &RuleEngine{
 		SideCar: sidecar.NewSideCarManager(typex.GCTX),
@@ -52,9 +47,6 @@ func NewRuleEngine(config typex.RulexConfig) typex.RuleX {
 	}
 }
 
-//
-//
-//
 func (e *RuleEngine) Start() *typex.RulexConfig {
 	typex.StartQueue(core.GlobalConfig.MaxQueueSize)
 	source.LoadSt()
@@ -62,9 +54,6 @@ func (e *RuleEngine) Start() *typex.RulexConfig {
 	return e.Config
 }
 
-//
-//
-//
 func (e *RuleEngine) PushQueue(qd typex.QueueData) error {
 	err := typex.DefaultDataCacheQueue.Push(qd)
 	if err != nil {
@@ -132,9 +121,6 @@ func (e *RuleEngine) PushOutQueue(out *typex.OutEnd, data string) error {
 	return err
 }
 
-//
-//
-//
 func (e *RuleEngine) GetPlugins() *sync.Map {
 	return e.Plugins
 }
@@ -142,22 +128,15 @@ func (e *RuleEngine) AllPlugins() *sync.Map {
 	return e.Plugins
 }
 
-//
-//
-//
 func (e *RuleEngine) Version() typex.Version {
 	return typex.DefaultVersion
 }
 
-//
-//
 func (e *RuleEngine) GetConfig() *typex.RulexConfig {
 	return e.Config
 }
 
-//
 // Stop
-//
 func (e *RuleEngine) Stop() {
 	glogger.GLogger.Info("Ready to stop rulex")
 	e.InEnds.Range(func(key, value interface{}) bool {
@@ -217,9 +196,7 @@ func (e *RuleEngine) Stop() {
 	}
 }
 
-//
 // 核心功能: Work, 主要就是推流进队列
-//
 func (e *RuleEngine) WorkInEnd(in *typex.InEnd, data string) (bool, error) {
 	if err := e.PushInQueue(in, data); err != nil {
 		return false, err
@@ -227,9 +204,7 @@ func (e *RuleEngine) WorkInEnd(in *typex.InEnd, data string) (bool, error) {
 	return true, nil
 }
 
-//
 // 核心功能: Work, 主要就是推流进队列
-//
 func (e *RuleEngine) WorkDevice(Device *typex.Device, data string) (bool, error) {
 	if err := e.PushDeviceQueue(Device, data); err != nil {
 		return false, err
@@ -237,9 +212,7 @@ func (e *RuleEngine) WorkDevice(Device *typex.Device, data string) (bool, error)
 	return true, nil
 }
 
-//
 // 执行lua脚本
-//
 func (e *RuleEngine) RunSourceCallbacks(in *typex.InEnd, callbackArgs string) {
 	// 执行来自资源的脚本
 	for _, rule := range in.BindRules {
@@ -262,9 +235,7 @@ func (e *RuleEngine) RunSourceCallbacks(in *typex.InEnd, callbackArgs string) {
 	}
 }
 
-//
 // 执行lua脚本
-//
 func (e *RuleEngine) RunDeviceCallbacks(Device *typex.Device, callbackArgs string) {
 	// 执行来自资源的脚本
 	for _, rule := range Device.BindRules {
@@ -287,11 +258,9 @@ func (e *RuleEngine) RunDeviceCallbacks(Device *typex.Device, callbackArgs strin
 	}
 }
 
-//
 // ┌──────┐    ┌──────┐    ┌──────┐
 // │ Init ├───►│ Load ├───►│ Stop │
 // └──────┘    └──────┘    └──────┘
-//
 func (e *RuleEngine) LoadPlugin(sectionK string, p typex.XPlugin) error {
 	section := utils.GetINISection(core.INIPath, sectionK)
 	key, err1 := section.GetKey("enable")
@@ -325,9 +294,7 @@ func (e *RuleEngine) LoadPlugin(sectionK string, p typex.XPlugin) error {
 
 }
 
-//
 // LoadHook
-//
 func (e *RuleEngine) LoadHook(h typex.XHook) error {
 	value, _ := e.Hooks.Load(h.Name())
 	if value != nil {
@@ -338,9 +305,7 @@ func (e *RuleEngine) LoadHook(h typex.XHook) error {
 
 }
 
-//
 // RunHooks
-//
 func (e *RuleEngine) RunHooks(data string) {
 	e.Hooks.Range(func(key, value interface{}) bool {
 		if err := runHook(value.(typex.XHook), data); err != nil {
@@ -353,9 +318,6 @@ func runHook(h typex.XHook, data string) error {
 	return h.Work(data)
 }
 
-//
-//
-//
 func (e *RuleEngine) GetInEnd(uuid string) *typex.InEnd {
 	v, ok := (e.InEnds).Load(uuid)
 	if ok {
@@ -364,16 +326,10 @@ func (e *RuleEngine) GetInEnd(uuid string) *typex.InEnd {
 	return nil
 }
 
-//
-//
-//
 func (e *RuleEngine) SaveInEnd(in *typex.InEnd) {
 	e.InEnds.Store(in.UUID, in)
 }
 
-//
-//
-//
 func (e *RuleEngine) RemoveInEnd(id string) {
 	if inEnd := e.GetInEnd(id); inEnd != nil {
 		inEnd.Source.Stop()
@@ -383,16 +339,10 @@ func (e *RuleEngine) RemoveInEnd(id string) {
 	}
 }
 
-//
-//
-//
 func (e *RuleEngine) AllInEnd() *sync.Map {
 	return e.InEnds
 }
 
-//
-//
-//
 func (e *RuleEngine) GetOutEnd(id string) *typex.OutEnd {
 	v, ok := e.OutEnds.Load(id)
 	if ok {
@@ -403,17 +353,11 @@ func (e *RuleEngine) GetOutEnd(id string) *typex.OutEnd {
 
 }
 
-//
-//
-//
 func (e *RuleEngine) SaveOutEnd(out *typex.OutEnd) {
 	e.OutEnds.Store(out.UUID, out)
 
 }
 
-//
-//
-//
 func (e *RuleEngine) RemoveOutEnd(uuid string) {
 	if outEnd := e.GetOutEnd(uuid); outEnd != nil {
 		if outEnd.Target != nil {
@@ -425,16 +369,13 @@ func (e *RuleEngine) RemoveOutEnd(uuid string) {
 	}
 }
 
-//
-//
-//
 func (e *RuleEngine) AllOutEnd() *sync.Map {
 	return e.OutEnds
 }
 
-//-----------------------------------------------------------------
+// -----------------------------------------------------------------
 // 获取运行时快照
-//-----------------------------------------------------------------
+// -----------------------------------------------------------------
 func (e *RuleEngine) SnapshotDump() string {
 	inends := []interface{}{}
 	rules := []interface{}{}
@@ -501,9 +442,7 @@ func (e *RuleEngine) LoadGoods(goods sidecar.Goods) error {
 	return e.SideCar.Fork(goods)
 }
 
-//
 // 删除外部驱动
-//
 func (e *RuleEngine) RemoveGoods(uuid string) error {
 	if e.GetGoods(uuid) != nil {
 		e.SideCar.Remove(uuid)
@@ -512,16 +451,12 @@ func (e *RuleEngine) RemoveGoods(uuid string) error {
 	return fmt.Errorf("goods %v not exists", uuid)
 }
 
-//
 // 所有外部驱动
-//
 func (e *RuleEngine) AllGoods() *sync.Map {
 	return e.SideCar.AllGoods()
 }
 
-//
 // 获取某个外部驱动信息
-//
 func (e *RuleEngine) GetGoods(uuid string) *sidecar.Goods {
 	goodsProcess := e.SideCar.Get(uuid)
 	goods := sidecar.Goods{
@@ -533,16 +468,12 @@ func (e *RuleEngine) GetGoods(uuid string) *sidecar.Goods {
 	return &goods
 }
 
-//
 // 取一个进程
-//
 func (e *RuleEngine) PickUpProcess(uuid string) *sidecar.GoodsProcess {
 	return e.SideCar.Get(uuid)
 }
 
-//
 // 重启源
-//
 func (e *RuleEngine) RestartInEnd(uuid string) error {
 	if value, ok := e.InEnds.Load(uuid); ok {
 		o := (value.(*typex.InEnd))
@@ -558,9 +489,7 @@ func (e *RuleEngine) RestartInEnd(uuid string) error {
 	return errors.New("InEnd:" + uuid + "not exists")
 }
 
-//
 // 重启目标
-//
 func (e *RuleEngine) RestartOutEnd(uuid string) error {
 	if value, ok := e.OutEnds.Load(uuid); ok {
 		o := (value.(*typex.OutEnd))
@@ -576,9 +505,7 @@ func (e *RuleEngine) RestartOutEnd(uuid string) error {
 	return errors.New("OutEnd:" + uuid + "not exists")
 }
 
-//
 // 重启设备
-//
 func (e *RuleEngine) RestartDevice(uuid string) error {
 	if value, ok := e.Devices.Load(uuid); ok {
 		o := (value.(*typex.Device))
