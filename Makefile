@@ -24,20 +24,13 @@ windows:
 
 .PHONY: arm32
 arm32:
-	CC=arm-linux-gnueabi-gcc
-	GOARM=7
-	GOARCH=arm
-	GOOS=linux
-	CGO_ENABLED=1
-	go build -o ${APP} -ldflags "-s -w -linkmode external -extldflags -static"
+	CGO_ENABLED=1 GOOS=linux GOARCH=arm CC=arm-linux-gnueabi-gcc\
+	    go build -ldflags "-s -w -linkmode external -extldflags -static"
 
 .PHONY: arm64
 arm64:
-	CC=arm-linux-gnueabi-gcc
-	GOARCH=arm64
-	GOOS=linux
-	CGO_ENABLED=1
-	go build -o ${APP} -ldflags "-s -w"
+	CGO_ENABLED=1 GOOS=linux GOARCH=arm64 CC=aarch64-linux-gnu-gcc
+	    go build -ldflags "-s -w -linkmode external -extldflags -static"
 
 .PHONY: run
 run:
