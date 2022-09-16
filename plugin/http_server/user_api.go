@@ -19,8 +19,21 @@ const (
 //
 // All Users
 //
+type user struct {
+	Role        string `json:"role"`
+	Username    string `json:"username"`
+	Description string `json:"description"`
+}
+
 func Users(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
-	users := hh.AllMUser()
+	users := []user{}
+	for _, u := range hh.AllMUser() {
+		users = append(users, user{
+			Role:        u.Role,
+			Username:    u.Username,
+			Description: u.Description,
+		})
+	}
 	c.JSON(200, OkWithData(users))
 }
 

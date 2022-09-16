@@ -223,7 +223,7 @@ func (s *HttpApiServer) AllMInEnd() []MInEnd {
 
 func (s *HttpApiServer) AllMOutEnd() []MOutEnd {
 	outends := []MOutEnd{}
-	s.sqliteDb.Find(&outends)
+	s.sqliteDb.Table("m_out_ends").Find(&outends)
 	return outends
 }
 

@@ -129,6 +129,7 @@ func (hh *HttpApiServer) Start(r typex.RuleX) error {
 	//
 	// Auth
 	//
+	hh.ginEngine.GET(url("users"), hh.addRoute(Users))
 	hh.ginEngine.POST(url("users"), hh.addRoute(CreateUser))
 	//
 	//
