@@ -34,42 +34,6 @@ make
 | MacOS   | X86-64 | 通过     |
 | 其他    | 未知   | 未知     |
 
-## 跨平台编译
-
-注意:` Arm32位`下编译步骤请参考 `.github\workflows\4_build-arm-32-v7.yml` 里面的脚本。
-
-### 启动
-
-启动需要带2个参数，`db` 是保存配置数据的位置，该参数指定的路径最后会生成个 sqlite 文件，`config` 参数是 ini 的路径
-
-```sh
-./rulex run -db=main.db -config=conf/rulex.ini
-```
-
-> config 文件如果不存在会退出.
-
-## Dashboard
-
-```
-浏览器输入：http://127.0.0.1:2580
-```
-
-<div style="text-align:center">
-<img src="./README_RES/1.png"/>
-</div>
-<div style="text-align:center">
-<img src="./README_RES/2.png"/>
-</div>
-<div style="text-align:center">
-<img src="./README_RES/3.png"/>
-</div>
-<div style="text-align:center">
-<img src="./README_RES/4.png"/>
-</div>
-<div style="text-align:center">
-<img src="./README_RES/5.png"/>
-</div>
-
 ## 规则引擎
 
 ### 规则定义

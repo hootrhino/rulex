@@ -29,7 +29,7 @@ arm32:
 
 .PHONY: arm64
 arm64:
-	CGO_ENABLED=1 GOOS=linux GOARCH=arm64 CC=aarch64-linux-gnu-gcc
+	CGO_ENABLED=1 GOOS=linux GOARCH=arm64 CC=aarch64-linux-gnu-gcc\
 	    go build -ldflags "-s -w -linkmode external -extldflags -static"
 
 .PHONY: run
