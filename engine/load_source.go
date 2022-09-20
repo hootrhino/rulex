@@ -57,6 +57,9 @@ func (e *RuleEngine) LoadInEnd(in *typex.InEnd) error {
 	if in.Type == typex.TENCENT_IOT_HUB {
 		return startSources(source.NewTencentIothubSource(e), in, e)
 	}
+	if in.Type == typex.ITHINGS_IOT_HUB {
+		return startSources(source.NewIThingsSource(e), in, e)
+	}
 
 	return fmt.Errorf("unsupported InEnd type:%s", in.Type)
 }
