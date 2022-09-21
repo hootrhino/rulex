@@ -104,35 +104,8 @@ func (tc *tencentIothubSource) Start(cctx typex.CCTX) error {
 	//
 	var connectHandler mqtt.OnConnectHandler = func(client mqtt.Client) {
 		glogger.GLogger.Infof("Tencent IOTHUB Connected Success")
-		{
-			// 订阅属性下发的Topic
-			token := tc.client.Subscribe(PropertyTopic, 1, func(c mqtt.Client, msg mqtt.Message) {
-				work, err := tc.RuleEngine.WorkInEnd(tc.RuleEngine.GetInEnd(tc.PointId), string(msg.Payload()))
-				if !work {
-					glogger.GLogger.Error(err)
-				}
-			})
-			if token.Error() != nil {
-				glogger.GLogger.Error(token.Error())
-			} else {
-				glogger.GLogger.Info("topic:", PropertyTopic, " subscribed")
-			}
-		}
-		{
-			// 订阅动作下发的Topic
-			token := tc.client.Subscribe(ActionTopic, 1, func(c mqtt.Client, msg mqtt.Message) {
-				work, err := tc.RuleEngine.WorkInEnd(tc.RuleEngine.GetInEnd(tc.PointId), string(msg.Payload()))
-				if !work {
-					glogger.GLogger.Error(err)
-				}
-			})
-			if token.Error() != nil {
-				glogger.GLogger.Error(token.Error())
-			} else {
-				glogger.GLogger.Info("topic:", PropertyTopic, " subscribed")
-			}
-		}
-
+		tc.subscribe(PropertyTopic)
+		tc.subscribe(ActionTopic)
 		tc.status = typex.SOURCE_UP
 	}
 
@@ -242,4 +215,18 @@ func (tc *tencentIothubSource) DownStream(bytes []byte) (int, error) {
 //
 func (*tencentIothubSource) UpStream([]byte) (int, error) {
 	return 0, nil
+}
+func (tc *tencentIothubSource) subscribe(topic string) {
+	token := tc.client.Subscribe(topic, 1, func(c mqtt.Client, msg mqtt.Message) {
+		work, err := tc.RuleEngine.WorkInEnd(tc.RuleEngine.GetInEnd(tc.PointId), string(msg.Payload()))
+		if !work {
+			glogger.GLogger.Error(err)
+		}
+	})
+	if token.Error() != nil {
+		glogger.GLogger.Error(token.Error())
+	} else {
+		glogger.GLogger.Info("topic:", topic, " subscribed")
+	}
+
 }
