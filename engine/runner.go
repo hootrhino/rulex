@@ -9,7 +9,7 @@ import (
 	"github.com/i4de/rulex/core"
 	"github.com/i4de/rulex/glogger"
 	httpserver "github.com/i4de/rulex/plugin/http_server"
-	usbmonitor "github.com/i4de/rulex/plugin/usbmonitor"
+	usbmonitor "github.com/i4de/rulex/plugin/usb_monitor"
 	"github.com/i4de/rulex/sidecar"
 	"github.com/i4de/rulex/typex"
 )
@@ -33,10 +33,12 @@ func RunRulex(iniPath string) {
 	// Load Http api Server
 	httpServer := httpserver.NewHttpApiServer()
 	if err := engine.LoadPlugin("plugin.http_server", httpServer); err != nil {
+		glogger.GLogger.Error(err)
 		return
 	}
 	usbMonitor := usbmonitor.NewUsbMonitor()
 	if err := engine.LoadPlugin("plugin.usbmonitor", usbMonitor); err != nil {
+		glogger.GLogger.Error(err)
 		return
 	}
 	//

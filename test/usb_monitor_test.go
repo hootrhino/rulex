@@ -1,25 +1,38 @@
 package test
 
 import (
-	"context"
 	"fmt"
+	"golang.org/x/sys/unix"
 	"testing"
-
-	"github.com/rubiojr/go-usbmon"
 )
 
 func Test_USB_PLUG(t *testing.T) {
-	// Print device properties when plugged in or unplugged
-	filter := &usbmon.ActionFilter{Action: usbmon.ActionAll}
-	devs, err := usbmon.ListenFiltered(context.Background(), filter)
+
+	fd, err := unix.Socket(
+		unix.AF_NETLINK,
+		unix.SOCK_RAW,
+		unix.NETLINK_KOBJECT_UEVENT,
+	)
+
 	if err != nil {
-		panic(err)
+		fmt.Println(err.Error())
 	}
 
-	for dev := range devs {
-		fmt.Printf("Device %s\n", dev.Action())
-		fmt.Println("Serial: " + dev.Serial())
-		fmt.Println("Path: " + dev.Path())
-		fmt.Println("Vendor: " + dev.Vendor())
+	err = unix.Bind(fd, &unix.SockaddrNetlink{
+		Family: unix.AF_NETLINK,
+		Groups: 1,
+		Pid: 0,
+	})
+
+	if err == nil {
+		for {
+			data := make([]byte, 1024)
+			n, _, _ := unix.Recvfrom(fd, data, 0)
+			if n != 0 {
+				fmt.Println(string(data[:n]))
+			}
+		}
+	} else {
+		fmt.Println(err.Error())
 	}
 }

@@ -3,11 +3,11 @@ package usbmonitor
 import (
 	"context"
 	"errors"
+	"fmt"
 	"runtime"
 
-	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
-	"github.com/rubiojr/go-usbmon"
+	"golang.org/x/sys/unix"
 	"gopkg.in/ini.v1"
 )
 
@@ -32,25 +32,44 @@ func (usbm *usbMonitor) Start(_ typex.RuleX) error {
 	if runtime.GOOS == "windows" {
 		return errors.New("USB monitor plugin not support windows")
 	}
-	filter := &usbmon.ActionFilter{Action: usbmon.ActionAll}
-	devs, err := usbmon.ListenFiltered(typex.GCTX, filter)
+
+	fd, err := unix.Socket(
+		unix.AF_NETLINK,
+		unix.SOCK_RAW,
+		unix.NETLINK_KOBJECT_UEVENT,
+	)
+
 	if err != nil {
 		return err
 	}
+
+	err = unix.Bind(fd, &unix.SockaddrNetlink{
+		Family: unix.AF_NETLINK,
+		Groups: 1,
+		Pid:    0,
+	})
+	if err != nil {
+		return err
+	}
+
 	go func(ctx context.Context) {
 		select {
 		case <-ctx.Done():
 			{
 				return
 			}
-		case dev := <-devs:
-			{
-				glogger.GLogger.Infof("USB device %s:%s has %s", dev.Major(), dev.Serial(), dev.Action())
-			}
 		default:
 			{
 			}
 		}
+		for {
+			data := make([]byte, 1024)
+			n, _, _ := unix.Recvfrom(fd, data, 0)
+			if n != 0 {
+				fmt.Println(string(data[:n]))
+			}
+		}
+
 	}(typex.GCTX)
 	return nil
 }
