@@ -5,7 +5,6 @@ all:
 
 .PHONY: build
 build:
-	go mod tidy
 	chmod +x gen_info.sh
 	go generate
 	CGO_ENABLED=1 GOOS=linux
@@ -17,7 +16,6 @@ xx:
 
 .PHONY: windows
 windows:
-	go mod tidy
 	SET GOOS=windows
 	SET CGO_ENABLED=1
 	go build -ldflags "-s -w" -o ${APP}.exe
