@@ -61,6 +61,7 @@ func (usbm *usbMonitor) Start(_ typex.RuleX) error {
 
 	go func(ctx context.Context) {
 		data := make([]byte, 1024)
+		info := make([]string, 10)
 		select {
 		case <-ctx.Done():
 			{
@@ -71,54 +72,20 @@ func (usbm *usbMonitor) Start(_ typex.RuleX) error {
 			}
 		}
 		for {
+			//----
 			// add@/devices/pci0000:00/0000:00:14.0/usb1/1-1/1-1:1.0/ttyUSB0
 			// ACTION=add
 			// DEVPATH=/devices/pci0000:00/0000:00:14.0/usb1/1-1/1-1:1.0/ttyUSB0
 			// SUBSYSTEM=usb-serial
 			// SEQNUM=10822
-
+			//----
+			// remove@/devices/pci0000:00/0000:00:14.0/usb1/1-1/1-1:1.0/ttyUSB0
+			// add@/devices/pci0000:00/0000:00:14.0/usb1/1-1/1-1:1.0/ttyUSB0
 			n, _, _ := unix.Recvfrom(fd, data, 0)
 			if n > 16 {
-				info := []string{}
-				if string(data[:4]) == "add@" {
-					l := 0
-					for i := 0; i < n; i++ {
-						if data[i] == 0 {
-							if strings.Contains(string(data[:l]), "tty") {
-								msg := string(data[strings.Index(string(data[:l]), "tty"):l])
-								jsonBytes, _ := json.Marshal(_info{
-									Type:   "add",
-									Device: msg,
-								})
-								info = append(info, string(jsonBytes))
-							}
-							break
-						} else {
-							l++
-						}
-					}
-				}
-				if string(data[:7]) == "remove@" {
-					l := 0
-					for i := 0; i < n; i++ {
-						if data[i] == 0 {
-							if strings.Contains(string(data[:l]), "tty") {
-								msg := string(data[strings.Index(string(data[:l]), "tty"):l])
-								jsonBytes, _ := json.Marshal(_info{
-									Type:   "add",
-									Device: msg,
-								})
-								info = append(info, string(jsonBytes))
-							}
-							break
-						} else {
-							l++
-						}
-					}
-				}
+				info = append(info, parseType("@add", data, n))
+				info = append(info, parseType("@remove", data, n))
 				if len(info) > 0 {
-					// remove@/devices/pci0000:00/0000:00:14.0/usb1/1-1/1-1:1.0/ttyUSB0
-					// add@/devices/pci0000:00/0000:00:14.0/usb1/1-1/1-1:1.0/ttyUSB0
 					for _, ii := range info {
 						glogger.GLogger.Info(ii)
 					}
@@ -129,10 +96,41 @@ func (usbm *usbMonitor) Start(_ typex.RuleX) error {
 	}(typex.GCTX)
 	return nil
 }
+func parseType(Type string, data []byte, len int) string {
+	if string(data[:7]) == Type {
+		offset := 0
+		for i := 0; i < len; i++ {
+			if data[i] == 0 {
+				return parseMsg(data, offset)
+				break
+			} else {
+				offset++
+			}
+		}
+	}
+	return ""
+}
 
+/*
+*
+* 只监控串口"/dev/tty*"设备, U盘不管
+*
+ */
+func parseMsg(data []byte, offset int) string {
+	if strings.Contains(string(data[:offset]), "tty") {
+		msg := string(data[strings.Index(string(data[:offset]), "tty"):offset])
+		if len(strings.Split(msg, "/")) == 1 {
+			jsonBytes, _ := json.Marshal(_info{
+				Type:   "add",
+				Device: msg,
+			})
+			return string(jsonBytes)
+		}
+	}
+	return ""
+}
 func (usbm *usbMonitor) Stop() error {
 	return nil
-
 }
 
 func (usbm *usbMonitor) PluginMetaInfo() typex.XPluginMetaInfo {
