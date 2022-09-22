@@ -382,6 +382,7 @@ func (e *RuleEngine) SnapshotDump() string {
 	plugins := []interface{}{}
 	outends := []interface{}{}
 	devices := []interface{}{}
+	drivers := []interface{}{}
 	e.AllInEnd().Range(func(key, value interface{}) bool {
 		inends = append(inends, value)
 		return true
@@ -399,9 +400,13 @@ func (e *RuleEngine) SnapshotDump() string {
 		return true
 	})
 	e.AllDevices().Range(func(key, value interface{}) bool {
-		devices = append(devices, value)
+		Device := value.(*typex.Device)
+		if Device.Device.Driver() != nil {
+			drivers = append(drivers, Device.Device.Driver())
+		}
 		return true
 	})
+
 	parts, _ := disk.Partitions(true)
 	diskInfo, _ := disk.Usage(parts[0].Mountpoint)
 	// For info on each, see: https://golang.org/pkg/runtime/#MemStats
@@ -422,6 +427,7 @@ func (e *RuleEngine) SnapshotDump() string {
 		"inends":     inends,
 		"outends":    outends,
 		"devices":    devices,
+		"drivers":    drivers,
 		"statistics": statistics.AllStatistics(),
 		"system":     system,
 		"config":     core.GlobalConfig,

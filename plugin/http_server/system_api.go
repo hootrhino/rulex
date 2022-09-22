@@ -59,6 +59,15 @@ func System(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	}))
 }
 
+/*
+*
+* SnapshotDump
+*
+ */
+func SnapshotDump(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+	c.JSON(200, OkWithData(e.SnapshotDump()))
+}
+
 // Get all Drivers
 func Drivers(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	data := []interface{}{}

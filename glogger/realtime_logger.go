@@ -58,8 +58,8 @@ func level(ss string) []logrus.Level {
 /*
 *
 * 这是用来给外部输出日志的websocket服务器，其功能非常简单，就是单纯的对外输出实时日志，方便调试使用。
-* 注意：该功能需要配合HttpApiServer使用, 客户端连上以后必须在5s内发送一个 ‘WsTerminal’ 的固定字符串到服务器才能
-*       功过认证。
+* 注意：该功能需要配合HttpApiServer使用, 客户端连上以后必须在5s内发送一个 ‘WsTerminal’ 的固定字符
+*       串到服务器才能过认证。
 *
  */
 type RealTimeLogger struct {
