@@ -7,7 +7,7 @@
 
 **希望大家第一眼就看到这个说明 更多文档参考(国内可能需要科学上网): https://rulex.pages.dev**
 
-**注意: master分支已经不能直接用windows编译, 因为引入了Linux 系统级API。非常建议用 Ubuntu 20.04来玩。而且以后大概率是会以优先支持Linux为主，毕竟网关没几个人用windwos做吧**
+**注意: master分支已经不能直接用 windows 编译, 因为引入了Linux 系统级API。非常建议用 Ubuntu 20.04来玩。而且以后大概率是会以优先支持Linux为主，毕竟网关没几个人用 windows 做吧**
 
 ## 架构设计
 
