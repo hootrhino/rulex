@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"runtime"
 	"strings"
 
@@ -61,7 +62,6 @@ func (usbm *usbMonitor) Start(_ typex.RuleX) error {
 
 	go func(ctx context.Context) {
 		data := make([]byte, 1024)
-		info := make([]string, 10)
 		select {
 		case <-ctx.Done():
 			{
@@ -83,26 +83,33 @@ func (usbm *usbMonitor) Start(_ typex.RuleX) error {
 			// add@/devices/pci0000:00/0000:00:14.0/usb1/1-1/1-1:1.0/ttyUSB0
 			n, _, _ := unix.Recvfrom(fd, data, 0)
 			if n > 16 {
-				info = append(info, parseType("@add", data, n))
-				info = append(info, parseType("@remove", data, n))
-				if len(info) > 0 {
-					for _, ii := range info {
-						glogger.GLogger.Info(ii)
-					}
+
+				Msg := parseType(data, n)
+				if len(Msg) > 0 {
+					glogger.GLogger.Info(Msg)
 				}
+
 			}
 		}
 
 	}(typex.GCTX)
 	return nil
 }
-func parseType(Type string, data []byte, len int) string {
-	if string(data[:7]) == Type {
-		offset := 0
+func parseType(data []byte, len int) string {
+	offset := 0
+	if string(data[:4]) == "add@" {
 		for i := 0; i < len; i++ {
 			if data[i] == 0 {
-				return parseMsg(data, offset)
-				break
+				return parseMsg("add", data, offset)
+			} else {
+				offset++
+			}
+		}
+	}
+	if string(data[:7]) == "remove@" {
+		for i := 0; i < len; i++ {
+			if data[i] == 0 {
+				return parseMsg("remove", data, offset)
 			} else {
 				offset++
 			}
@@ -116,15 +123,31 @@ func parseType(Type string, data []byte, len int) string {
 * 只监控串口"/dev/tty*"设备, U盘不管
 *
  */
-func parseMsg(data []byte, offset int) string {
+func parseMsg(Type string, data []byte, offset int) string {
 	if strings.Contains(string(data[:offset]), "tty") {
 		msg := string(data[strings.Index(string(data[:offset]), "tty"):offset])
-		if len(strings.Split(msg, "/")) == 1 {
-			jsonBytes, _ := json.Marshal(_info{
-				Type:   "add",
-				Device: msg,
-			})
+		nameTokens := strings.Split(msg, "/")
+		info := _info{}
+		info.Type = Type
+		// 1 [ttyUSB0]
+		if len(nameTokens) == 1 {
+			info.Device = nameTokens[0]
+			jsonBytes, _ := json.Marshal(info)
 			return string(jsonBytes)
+		}
+		// 2 [tty ttyUSB0]
+		if len(nameTokens) == 2 {
+			info.Device = nameTokens[1]
+			jsonBytes, _ := json.Marshal(info)
+			return string(jsonBytes)
+		}
+		// 3 [ttyUSB0 tty ttyUSB0]
+		if len(nameTokens) == 3 {
+			if nameTokens[0] != nameTokens[2] {
+				info.Device = nameTokens[2]
+				jsonBytes, _ := json.Marshal(info)
+				return string(jsonBytes)
+			}
 		}
 	}
 	return ""
