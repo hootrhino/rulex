@@ -69,6 +69,15 @@ type DeviceProperty struct {
 	Type  string
 	Value interface{}
 }
+type DCAModel struct {
+	UUID    string      `json:"uuid"`
+	Command string      `json:"command"`
+	Args    interface{} `json:"args"`
+}
+type DCAResult struct {
+	Error error
+	Data  string
+}
 
 //
 // 真实工作设备,即具体实现
@@ -94,4 +103,6 @@ type XDevice interface {
 	SetState(DeviceState)
 	// 驱动接口, 通常用来和硬件交互
 	Driver() XExternalDriver
+	// 外部调用
+	OnDCACall(UUID string, Command string, Args interface{}) DCAResult
 }

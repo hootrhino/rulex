@@ -152,3 +152,7 @@ func (sd *genericSnmpDevice) SetState(status typex.DeviceState) {
 func (sd *genericSnmpDevice) Driver() typex.XExternalDriver {
 	return sd.driver
 }
+
+func (sd *genericSnmpDevice) OnDCACall(UUID string, Command string, Args interface{}) typex.DCAResult {
+	return typex.DCAResult{}
+}

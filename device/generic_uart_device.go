@@ -158,3 +158,7 @@ func contains(s []string, e string) bool {
 	}
 	return false
 }
+
+func (uart *genericUartDevice) OnDCACall(UUID string, Command string, Args interface{}) typex.DCAResult {
+	return typex.DCAResult{}
+}

@@ -70,6 +70,10 @@ func LoadBuildInLuaLib(e typex.RuleX, r *typex.Rule) {
 	r.AddLib(e, "iothub", "PropertyFailed", rulexlib.PropertyReplyFailed(e))
 	r.AddLib(e, "iothub", "ActionSuccess", rulexlib.ActionReplySuccess(e))
 	r.AddLib(e, "iothub", "ActionFailed", rulexlib.ActionReplyFailed(e))
+	//------------------------------------------------------------------------
+	// 设备操作
+	//------------------------------------------------------------------------
+	r.AddLib(e, "device", "DCACall", rulexlib.DCACall(e))
 
 }
 

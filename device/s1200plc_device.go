@@ -179,3 +179,7 @@ func (s1200 *s1200plc) SetState(status typex.DeviceState) {
 func (s1200 *s1200plc) Driver() typex.XExternalDriver {
 	return s1200.driver
 }
+
+func (s1200 *s1200plc) OnDCACall(UUID string, Command string, Args interface{}) typex.DCAResult {
+	return typex.DCAResult{}
+}

@@ -177,3 +177,7 @@ func (tss *tss200V2) SetState(status typex.DeviceState) {
 func (tss *tss200V2) Driver() typex.XExternalDriver {
 	return tss.driver
 }
+
+func (tss *tss200V2) OnDCACall(UUID string, Command string, Args interface{}) typex.DCAResult {
+	return typex.DCAResult{}
+}

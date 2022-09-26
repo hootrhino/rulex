@@ -174,3 +174,7 @@ func (yk8 *YK8Controller) SetState(status typex.DeviceState) {
 func (yk8 *YK8Controller) Driver() typex.XExternalDriver {
 	return yk8.driver
 }
+
+func (yk8 *YK8Controller) OnDCACall(UUID string, Command string, Args interface{}) typex.DCAResult {
+	return typex.DCAResult{}
+}

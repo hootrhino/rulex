@@ -171,3 +171,7 @@ func (ther *rtu485_ther) SetState(status typex.DeviceState) {
 func (ther *rtu485_ther) Driver() typex.XExternalDriver {
 	return ther.driver
 }
+
+func (ther *rtu485_ther) OnDCACall(UUID string, Command string, Args interface{}) typex.DCAResult {
+	return typex.DCAResult{}
+}

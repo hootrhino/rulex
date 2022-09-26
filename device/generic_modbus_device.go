@@ -230,3 +230,6 @@ func (mdev *generic_modbus_device) SetState(status typex.DeviceState) {
 func (mdev *generic_modbus_device) Driver() typex.XExternalDriver {
 	return mdev.driver
 }
+func (mdev *generic_modbus_device) OnDCACall(UUID string, Command string, Args interface{}) typex.DCAResult {
+	return typex.DCAResult{}
+}
