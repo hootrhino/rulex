@@ -31,25 +31,25 @@ require (
 	github.com/plgd-dev/go-coap/v2 v2.6.0
 	github.com/plgd-dev/kit/v2 v2.0.0-20211006190727-057b33161b90
 	github.com/robinson/gos7 v0.0.0-20211020181838-a2b780484319
-	github.com/shirou/gopsutil/v3 v3.22.8
+	github.com/shirou/gopsutil/v3 v3.22.9
 	github.com/sirupsen/logrus v1.9.0
 	github.com/suapapa/go_eddystone v1.3.1
 	github.com/thinkgos/go-iecp5 v1.2.1
-	github.com/urfave/cli/v2 v2.16.3
+	github.com/urfave/cli/v2 v2.19.1
 	github.com/wwhai/gomodbus v0.2.2
 	github.com/wwhai/goserial v0.2.0
 	github.com/wwhai/ntp v0.3.0
 	github.com/yuin/gopher-lua v0.0.0-20220504180219-658193537a64
 	go.bug.st/serial v1.4.0
-	go.mongodb.org/mongo-driver v1.10.2
+	go.mongodb.org/mongo-driver v1.10.3
 	go.uber.org/zap v1.15.0
-	golang.org/x/crypto v0.0.0-20220919173607-35f4265a4bc0
-	google.golang.org/grpc v1.49.0
+	golang.org/x/crypto v0.0.0-20221005025214-4161e89ecf1b
+	google.golang.org/grpc v1.50.0
 	google.golang.org/protobuf v1.28.1
 	gopkg.in/ini.v1 v1.67.0
 	gopkg.in/square/go-jose.v2 v2.6.0
-	gorm.io/driver/sqlite v1.3.6
-	gorm.io/gorm v1.23.9
+	gorm.io/driver/sqlite v1.4.2
+	gorm.io/gorm v1.24.0
 )
 
 require (
@@ -77,7 +77,7 @@ require (
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/klauspost/compress v1.15.10 // indirect
+	github.com/klauspost/compress v1.15.11 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/lufia/plan9stats v0.0.0-20220913051719-115f729f3c8c // indirect
 	github.com/mattn/go-isatty v0.0.16 // indirect
@@ -113,11 +113,11 @@ require (
 	github.com/yusufpapurcu/wmi v1.2.2 // indirect
 	go.uber.org/atomic v1.10.0 // indirect
 	go.uber.org/multierr v1.5.0 // indirect
-	golang.org/x/net v0.0.0-20220920203100-d0c6ba3f52d9 // indirect
-	golang.org/x/sync v0.0.0-20220907140024-f12130a52804 // indirect
-	golang.org/x/sys v0.0.0-20220919091848-fb04ddd9f9c8
+	golang.org/x/net v0.0.0-20221004154528-8021a29435af // indirect
+	golang.org/x/sync v0.0.0-20220929204114-8fcdb60fdcc0 // indirect
+	golang.org/x/sys v0.0.0-20221006211917-84dc82d7e875
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
-	google.golang.org/genproto v0.0.0-20220920201722-2b89144ce006 // indirect
+	google.golang.org/genproto v0.0.0-20220930163606-c98284e70a91 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
