@@ -4,17 +4,22 @@ import (
 	"fmt"
 
 	"github.com/i4de/rulex/glogger"
-	"github.com/i4de/rulex/utils"
-	"gopkg.in/ini.v1"
-
 	"github.com/i4de/rulex/typex"
+	"github.com/i4de/rulex/utils"
 	mqttServer "github.com/mochi-co/mqtt/server"
 	"github.com/mochi-co/mqtt/server/events"
 	"github.com/mochi-co/mqtt/server/listeners"
+	"gopkg.in/ini.v1"
 )
 
 const (
 	defaultTransport string = "tcp"
+	banner           string = `
+    __  _______  ____________   _____ __________ _    ____________
+   /  |/  / __ \/_  __/_  __/  / ___// ____/ __ \ |  / / ____/ __ \
+  / /|_/ / / / / / /   / /_____\__ \/ __/ / /_/ / | / / __/ / /_/ /
+ / /  / / /_/ / / /   / /_____/__/ / /___/ _, _/| |/ / /___/ _, _/
+/_/  /_/\___\_\/_/   /_/     /____/_____/_/ |_| |___/_____/_/ |_|`
 )
 
 type _serverConfig struct {
@@ -74,6 +79,7 @@ func (s *MqttServer) Start(r typex.RuleX) error {
 
 		return p, nil
 	}
+	fmt.Println(banner)
 	glogger.GLogger.Infof("MqttServer start at [0.0.0.0:%v] successfully", s.Port)
 	return nil
 }

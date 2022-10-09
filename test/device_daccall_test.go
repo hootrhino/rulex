@@ -1,12 +1,12 @@
 package test
 
 import (
-	"github.com/i4de/rulex/glogger"
-	httpserver "github.com/i4de/rulex/plugin/http_server"
-
 	"testing"
 	"time"
 
+	"github.com/i4de/rulex/glogger"
+	httpserver "github.com/i4de/rulex/plugin/http_server"
+	mqttserver "github.com/i4de/rulex/plugin/mqtt_server"
 	"github.com/i4de/rulex/typex"
 )
 
@@ -17,7 +17,12 @@ func Test_dac_call_device(t *testing.T) {
 	hh := httpserver.NewHttpApiServer()
 	// HttpApiServer loaded default
 	if err := engine.LoadPlugin("plugin.http_server", hh); err != nil {
-		glogger.GLogger.Fatal("Rule load failed:", err)
+		glogger.GLogger.Fatal("NewHttpApiServer load failed:", err)
+		t.Fatal(err)
+	}
+	qq := mqttserver.NewMqttServer()
+	if err := engine.LoadPlugin("plugin.mqtt_server", qq); err != nil {
+		glogger.GLogger.Fatal("NewMqttServer load failed:", err)
 		t.Fatal(err)
 	}
 	GMODBUS := typex.NewDevice(typex.GENERIC_MODBUS,

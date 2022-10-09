@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"runtime"
 	"strings"
 
@@ -11,7 +12,13 @@ import (
 	"github.com/i4de/rulex/typex"
 	"golang.org/x/sys/unix"
 	"gopkg.in/ini.v1"
+
 )
+
+const banner string = `
+     __  _           _       ___ ___ _   _
+| | (_  |_) __ |\/| / \ |\ |  |   | / \ |_)
+|_| __) |_)    |  | \_/ | \| _|_  | \_/ | \`
 
 /*
 *
@@ -92,6 +99,7 @@ func (usbm *usbMonitor) Start(_ typex.RuleX) error {
 		}
 
 	}(typex.GCTX)
+	fmt.Println(banner)
 	return nil
 }
 func parseType(data []byte, len int) string {
