@@ -96,6 +96,9 @@ func (e *RuleEngine) LoadDevice(deviceInfo *typex.Device) error {
 	if deviceInfo.Type == typex.GENERIC_SNMP {
 		return startDevices(device.NewGenericSnmpDevice(e), deviceInfo, e)
 	}
+	if deviceInfo.Type == typex.USER_G776 {
+		return startDevices(device.NewUsrG776DTU(e), deviceInfo, e)
+	}
 	return fmt.Errorf("unsupported Device type:%s", deviceInfo.Type)
 
 }

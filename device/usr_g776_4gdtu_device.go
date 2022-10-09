@@ -15,7 +15,13 @@ import (
 	serial "github.com/wwhai/goserial"
 )
 
-type genericUartDevice struct {
+//
+//
+// 这是有人G776型号的4G DTU模块，主要用来TCP远程透传数据, 实际上就是个很普通的串口读写程序
+// 详细文档: https://www.usr.cn/Download/806.html
+//
+//
+type UsrG776DTU struct {
 	typex.XStatus
 	status     typex.DeviceState
 	RuleEngine typex.RuleX
@@ -26,11 +32,11 @@ type genericUartDevice struct {
 
 /*
 *
-* 通用串口透传
+* 有人4G DTU
 *
  */
-func NewGenericUartDevice(e typex.RuleX) typex.XDevice {
-	uart := new(genericUartDevice)
+func NewUsrG776DTU(e typex.RuleX) typex.XDevice {
+	uart := new(UsrG776DTU)
 	uart.locker = &sync.Mutex{}
 	uart.mainConfig = common.GenericUartConfig{}
 	uart.RuleEngine = e
@@ -38,20 +44,20 @@ func NewGenericUartDevice(e typex.RuleX) typex.XDevice {
 }
 
 //  初始化
-func (uart *genericUartDevice) Init(devId string, configMap map[string]interface{}) error {
+func (uart *UsrG776DTU) Init(devId string, configMap map[string]interface{}) error {
 	uart.PointId = devId
 	if err := utils.BindSourceConfig(configMap, &uart.mainConfig); err != nil {
 		glogger.GLogger.Error(err)
 		return err
 	}
-	if !contains([]string{"N", "E", "O"}, uart.mainConfig.Parity) {
+	if !utils.SContains([]string{"N", "E", "O"}, uart.mainConfig.Parity) {
 		return errors.New("parity value only one of 'N','O','E'")
 	}
 	return nil
 }
 
 // 启动
-func (uart *genericUartDevice) Start(cctx typex.CCTX) error {
+func (uart *UsrG776DTU) Start(cctx typex.CCTX) error {
 	uart.Ctx = cctx.Ctx
 	uart.CancelCTX = cctx.CancelCTX
 
@@ -67,7 +73,7 @@ func (uart *genericUartDevice) Start(cctx typex.CCTX) error {
 	}
 	serialPort, err := serial.Open(&config)
 	if err != nil {
-		glogger.GLogger.Error("rawUartDriver start failed:", err)
+		glogger.GLogger.Error("G776Driver start failed:", err)
 		return err
 	}
 	uart.driver = driver.NewRawUartDriver(uart.Ctx, uart.RuleEngine, uart.Details(), serialPort)
@@ -108,7 +114,7 @@ func (uart *genericUartDevice) Start(cctx typex.CCTX) error {
 //     "tag":"data tag",
 //     "value":"value s"
 // }
-func (uart *genericUartDevice) OnRead(data []byte) (int, error) {
+func (uart *UsrG776DTU) OnRead(data []byte) (int, error) {
 	uart.locker.Lock()
 	n, err := uart.driver.Read(data)
 	uart.locker.Unlock()
@@ -123,17 +129,17 @@ func (uart *genericUartDevice) OnRead(data []byte) (int, error) {
 }
 
 // 把数据写入设备
-func (uart *genericUartDevice) OnWrite(b []byte) (int, error) {
+func (uart *UsrG776DTU) OnWrite(b []byte) (int, error) {
 	return uart.driver.Write(b)
 }
 
 // 设备当前状态
-func (uart *genericUartDevice) Status() typex.DeviceState {
+func (uart *UsrG776DTU) Status() typex.DeviceState {
 	return typex.DEV_UP
 }
 
 // 停止设备
-func (uart *genericUartDevice) Stop() {
+func (uart *UsrG776DTU) Stop() {
 	if uart.driver != nil {
 		uart.driver.Stop()
 	}
@@ -142,38 +148,26 @@ func (uart *genericUartDevice) Stop() {
 }
 
 // 设备属性，是一系列属性描述
-func (uart *genericUartDevice) Property() []typex.DeviceProperty {
+func (uart *UsrG776DTU) Property() []typex.DeviceProperty {
 	return []typex.DeviceProperty{}
 }
 
 // 真实设备
-func (uart *genericUartDevice) Details() *typex.Device {
+func (uart *UsrG776DTU) Details() *typex.Device {
 	return uart.RuleEngine.GetDevice(uart.PointId)
 }
 
 // 状态
-func (uart *genericUartDevice) SetState(status typex.DeviceState) {
+func (uart *UsrG776DTU) SetState(status typex.DeviceState) {
 	uart.status = status
 
 }
 
 // 驱动
-func (uart *genericUartDevice) Driver() typex.XExternalDriver {
+func (uart *UsrG776DTU) Driver() typex.XExternalDriver {
 	return uart.driver
 }
 
-//--------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------
-func contains(s []string, e string) bool {
-	for _, a := range s {
-		if a == e {
-			return true
-		}
-	}
-	return false
-}
-
-func (uart *genericUartDevice) OnDCACall(UUID string, Command string, Args interface{}) typex.DCAResult {
+func (uart *UsrG776DTU) OnDCACall(UUID string, Command string, Args interface{}) typex.DCAResult {
 	return typex.DCAResult{}
 }

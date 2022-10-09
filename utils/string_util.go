@@ -17,3 +17,17 @@ func IsListDuplicated(list []string) bool {
 	// 对比列表的Key元素和列表长度是否等长
 	return len(keys) != len(list)
 }
+
+/*
+*
+* 列表包含
+*
+ */
+func SContains(s []string, e string) bool {
+	for _, a := range s {
+		if a == e {
+			return true
+		}
+	}
+	return false
+}
