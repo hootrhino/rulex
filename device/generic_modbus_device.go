@@ -15,9 +15,9 @@ import (
 	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
+	"github.com/mitchellh/mapstructure"
 	modbus "github.com/wwhai/gomodbus"
 
-	"github.com/mitchellh/mapstructure"
 )
 
 //
@@ -116,7 +116,7 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 		mdev.rtuHandler.DataBits = mdev.rtuConfig.DataBits
 		mdev.rtuHandler.Parity = mdev.rtuConfig.Parity
 		mdev.rtuHandler.StopBits = mdev.rtuConfig.StopBits
-		mdev.rtuHandler.Timeout = time.Duration(mdev.mainConfig.Frequency) * time.Second
+		mdev.rtuHandler.Timeout = time.Duration(mdev.mainConfig.Timeout) * time.Second
 		if core.GlobalConfig.AppDebugMode {
 			mdev.rtuHandler.Logger = golog.New(os.Stdout, "485mdevSource: ", golog.LstdFlags)
 		}

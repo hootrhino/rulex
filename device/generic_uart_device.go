@@ -13,6 +13,7 @@ import (
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
 	serial "github.com/wwhai/goserial"
+
 )
 
 type genericUartDevice struct {
@@ -63,7 +64,7 @@ func (uart *genericUartDevice) Start(cctx typex.CCTX) error {
 		DataBits: uart.mainConfig.DataBits,
 		Parity:   uart.mainConfig.Parity,
 		StopBits: uart.mainConfig.StopBits,
-		Timeout:  time.Duration(uart.mainConfig.Frequency) * time.Second,
+		Timeout:  time.Duration(uart.mainConfig.Timeout) * time.Second,
 	}
 	serialPort, err := serial.Open(&config)
 	if err != nil {

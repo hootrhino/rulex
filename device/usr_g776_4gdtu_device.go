@@ -69,7 +69,7 @@ func (uart *UsrG776DTU) Start(cctx typex.CCTX) error {
 		DataBits: uart.mainConfig.DataBits,
 		Parity:   uart.mainConfig.Parity,
 		StopBits: uart.mainConfig.StopBits,
-		Timeout:  time.Duration(uart.mainConfig.Frequency) * time.Second,
+		Timeout:  time.Duration(uart.mainConfig.Timeout) * time.Second,
 	}
 	serialPort, err := serial.Open(&config)
 	if err != nil {

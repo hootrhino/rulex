@@ -14,9 +14,8 @@ import (
 	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
-	modbus "github.com/wwhai/gomodbus"
-
 	"github.com/mitchellh/mapstructure"
+	modbus "github.com/wwhai/gomodbus"
 )
 
 type rtu485_ther struct {
@@ -77,7 +76,7 @@ func (ther *rtu485_ther) Start(cctx typex.CCTX) error {
 	ther.rtuHandler.DataBits = ther.rtuConfig.DataBits
 	ther.rtuHandler.Parity = ther.rtuConfig.Parity
 	ther.rtuHandler.StopBits = ther.rtuConfig.StopBits
-	ther.rtuHandler.Timeout = time.Duration(ther.mainConfig.Frequency) * time.Second
+	ther.rtuHandler.Timeout = time.Duration(ther.mainConfig.Timeout) * time.Second
 	if core.GlobalConfig.AppDebugMode {
 		ther.rtuHandler.Logger = golog.New(os.Stdout, "485-TEMP-HUMI-DEVICE: ", golog.LstdFlags)
 	}

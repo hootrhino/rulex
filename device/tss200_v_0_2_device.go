@@ -14,9 +14,9 @@ import (
 	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
+	"github.com/mitchellh/mapstructure"
 	modbus "github.com/wwhai/gomodbus"
 
-	"github.com/mitchellh/mapstructure"
 )
 
 type tss200V2 struct {
@@ -79,7 +79,7 @@ func (tss *tss200V2) Start(cctx typex.CCTX) error {
 	tss.rtuHandler.DataBits = tss.rtuConfig.DataBits
 	tss.rtuHandler.Parity = tss.rtuConfig.Parity
 	tss.rtuHandler.StopBits = tss.rtuConfig.StopBits
-	tss.rtuHandler.Timeout = time.Duration(tss.mainConfig.Frequency) * time.Second
+	tss.rtuHandler.Timeout = time.Duration(tss.mainConfig.Timeout) * time.Second
 	if core.GlobalConfig.AppDebugMode {
 		tss.rtuHandler.Logger = golog.New(os.Stdout, "TSS200-DEVICE: ", golog.LstdFlags)
 	}
