@@ -15,7 +15,6 @@ import (
 	"github.com/i4de/rulex/target"
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
-
 	"github.com/shirou/gopsutil/v3/disk"
 	lua "github.com/yuin/gopher-lua"
 )
@@ -186,13 +185,9 @@ func (e *RuleEngine) Stop() {
 		glogger.GLogger.Info("Stop Goods Process:", goodsProcess.UUID(), " Succefully")
 		return true
 	})
-
 	glogger.GLogger.Info("Stop Rulex successfully")
-	if err := glogger.GLOBAL_LOGGER.Close(); err != nil {
-		glogger.GLogger.Error(err)
-	}
-	if err := glogger.LUA_LOGGER.Close(); err != nil {
-		glogger.GLogger.Error(err)
+	if err := glogger.Close(); err != nil {
+		fmt.Println("Close logger error: ", err)
 	}
 }
 

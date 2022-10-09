@@ -9,9 +9,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"github.com/sirupsen/logrus"
+
 )
 
-var GRealtimeLogger *RealTimeLogger
+var private_GRealtimeLogger *RealTimeLogger
 var lock sync.Mutex = sync.Mutex{}
 
 type wsLogHook struct {
@@ -26,7 +27,7 @@ func (hk wsLogHook) Levels() []logrus.Level {
 }
 func (hk wsLogHook) Fire(e *logrus.Entry) error {
 	msg, _ := e.String()
-	GRealtimeLogger.Write([]byte(msg))
+	private_GRealtimeLogger.Write([]byte(msg))
 	return nil
 }
 
@@ -78,7 +79,7 @@ func (w *RealTimeLogger) Write(p []byte) (n int, err error) {
 }
 
 func StartNewRealTimeLogger(s string) *RealTimeLogger {
-	GRealtimeLogger = &RealTimeLogger{
+	private_GRealtimeLogger = &RealTimeLogger{
 		WsServer: websocket.Upgrader{
 			CheckOrigin: func(r *http.Request) bool {
 				return true
@@ -87,7 +88,7 @@ func StartNewRealTimeLogger(s string) *RealTimeLogger {
 		Clients: make(map[string]*websocket.Conn),
 	}
 	GLogger.AddHook(NewWSLogHook(s))
-	return GRealtimeLogger
+	return private_GRealtimeLogger
 }
 
 /*
@@ -98,7 +99,7 @@ func StartNewRealTimeLogger(s string) *RealTimeLogger {
 
 func WsLogger(c *gin.Context) {
 	//upgrade get request to websocket protocol
-	wsConn, err := GRealtimeLogger.WsServer.Upgrade(c.Writer, c.Request, nil)
+	wsConn, err := private_GRealtimeLogger.WsServer.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		return
 	}
@@ -117,12 +118,12 @@ func WsLogger(c *gin.Context) {
 		return
 	}
 	// 最多允许连接10个客户端，实际情况下根本用不了那么多
-	if len(GRealtimeLogger.Clients) >= 10 {
+	if len(private_GRealtimeLogger.Clients) >= 10 {
 		wsConn.WriteMessage(websocket.TextMessage, []byte("Reached max connections"))
 		wsConn.Close()
 		return
 	}
-	GRealtimeLogger.Clients[wsConn.RemoteAddr().String()] = wsConn
+	private_GRealtimeLogger.Clients[wsConn.RemoteAddr().String()] = wsConn
 	wsConn.WriteMessage(websocket.TextMessage, []byte("Connected"))
 	GLogger.Info("WebSocketTerminal connected:" + wsConn.RemoteAddr().String())
 	go func(ctx context.Context, wsConn *websocket.Conn) {
@@ -144,7 +145,7 @@ func WsLogger(c *gin.Context) {
 			if err != nil {
 				wsConn.Close()
 				lock.Lock()
-				delete(GRealtimeLogger.Clients, wsConn.RemoteAddr().String())
+				delete(private_GRealtimeLogger.Clients, wsConn.RemoteAddr().String())
 				lock.Unlock()
 				GLogger.Info("WebSocketTerminal disconnected:" + wsConn.RemoteAddr().String())
 				return
