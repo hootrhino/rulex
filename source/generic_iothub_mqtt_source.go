@@ -3,14 +3,15 @@ package source
 import (
 	"encoding/json"
 	"fmt"
+	"time"
+
+	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/i4de/rulex/common"
 	"github.com/i4de/rulex/core"
 	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
-	"time"
 
-	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
 // {
@@ -55,6 +56,9 @@ type tencentUpMsg struct {
 	Data        map[string]interface{} `json:"data,omitempty"`        // 兼容非腾讯云平台
 	Code        int                    `json:"code"`
 	Status      string                 `json:"status"`
+	// 扩展特性
+	UserDefineTopic string `json:"userDefineTopic,omitempty"` // [特性]扩展属性: 用户自定义Topic
+	SubDeviceId     string `json:"subDeviceId,omitempty"`     // 网关子设备ID
 }
 
 //
@@ -206,6 +210,21 @@ func (tc *tencentIothubSource) DownStream(bytes []byte) (int, error) {
 	if msg.Method == METHOD_ACTION_REPLY {
 		topic := fmt.Sprintf(_ActionReplyTopic, tc.mainConfig.ProductId, tc.mainConfig.DeviceName)
 		err = tc.client.Publish(topic, 1, false, bytes).Error()
+	}
+	// 用户自定义Topic
+	// iothub:usermsg()
+	if msg.Method == "USER_DEFINE_TOPIC" {
+		if msg.UserDefineTopic != "" {
+			err = tc.client.Publish(msg.UserDefineTopic, 1, false, bytes).Error()
+		}
+	}
+	// 子设备
+	// iothub:subdevicemsg()
+	if msg.Method == "SUBDEVICE" {
+		if msg.UserDefineTopic != "" {
+			topic := fmt.Sprintf("$gateway/%s/%s", tc.mainConfig.DeviceName, msg.SubDeviceId)
+			err = tc.client.Publish(topic, 1, false, bytes).Error()
+		}
 	}
 	return 0, err
 }
