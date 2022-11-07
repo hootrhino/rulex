@@ -55,7 +55,7 @@ func (d *modBusRtuDriver) State() typex.DriverState {
 	return d.state
 }
 
-func (d *modBusRtuDriver) Read(data []byte) (int, error) {
+func (d *modBusRtuDriver) Read(cmd int, data []byte) (int, error) {
 	dataMap := map[string]common.RegisterRW{}
 	for _, r := range d.Registers {
 		d.handler.SlaveId = r.SlaverId
@@ -128,7 +128,7 @@ func (d *modBusRtuDriver) Read(data []byte) (int, error) {
 
 }
 
-func (d *modBusRtuDriver) Write(data []byte) (int, error) {
+func (d *modBusRtuDriver) Write(cmd int, data []byte) (int, error) {
 	dataMap := []common.RegisterRW{}
 	if err := json.Unmarshal(data, &dataMap); err != nil {
 		return 0, err

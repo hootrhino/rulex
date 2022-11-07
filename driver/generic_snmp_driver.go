@@ -68,7 +68,7 @@ type _snmp_data struct {
 	PCTotalMemory int
 }
 
-func (sd *snmpDriver) Read(data []byte) (int, error) {
+func (sd *snmpDriver) Read(cmd int, data []byte) (int, error) {
 	bites, err := json.Marshal(_snmp_data{
 		PCHost:        sd.client.Target,
 		PCDescription: sd.systemDescription(),
@@ -80,7 +80,7 @@ func (sd *snmpDriver) Read(data []byte) (int, error) {
 	return len(bites), err
 }
 
-func (sd *snmpDriver) Write(_ []byte) (int, error) {
+func (sd *snmpDriver) Write(cmd int, _ []byte) (int, error) {
 	return 0, nil
 }
 
@@ -96,7 +96,7 @@ func (sd *snmpDriver) Stop() error {
 	return sd.client.Conn.Close()
 }
 
-//----------------------------------------------------------------
+// ----------------------------------------------------------------
 func (sd *snmpDriver) connect() error {
 	err1 := sd.client.Connect()
 	if err1 != nil {

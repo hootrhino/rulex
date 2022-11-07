@@ -30,7 +30,6 @@ type sensor_data struct {
 // |   湿度   |   温度  |
 // ---------------------
 // ** 其中低位保存小数
-//
 type rtu485_THer_Driver struct {
 	state      typex.DriverState
 	handler    *modbus.RTUClientHandler
@@ -72,7 +71,7 @@ func (rtu485 *rtu485_THer_Driver) State() typex.DriverState {
 	return typex.DRIVER_UP
 }
 
-func (rtu485 *rtu485_THer_Driver) Read(data []byte) (int, error) {
+func (rtu485 *rtu485_THer_Driver) Read(cmd int, data []byte) (int, error) {
 	dataMap := map[string]common.RegisterRW{}
 	for _, r := range rtu485.Registers {
 		rtu485.handler.SlaveId = r.SlaverId
@@ -105,12 +104,12 @@ func (rtu485 *rtu485_THer_Driver) Read(data []byte) (int, error) {
 	return len(bytes), nil
 }
 
-func (rtu485 *rtu485_THer_Driver) Write(_ []byte) (int, error) {
+func (rtu485 *rtu485_THer_Driver) Write(cmd int, _ []byte) (int, error) {
 	return 0, nil
 
 }
 
-//---------------------------------------------------
+// ---------------------------------------------------
 func (rtu485 *rtu485_THer_Driver) DriverDetail() typex.DriverDetail {
 	return typex.DriverDetail{
 		Name:        "Temperature And Humidity Sensor Driver",

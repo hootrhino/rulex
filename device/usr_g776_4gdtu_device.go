@@ -15,12 +15,8 @@ import (
 	serial "github.com/wwhai/goserial"
 )
 
-//
-//
 // 这是有人G776型号的4G DTU模块，主要用来TCP远程透传数据, 实际上就是个很普通的串口读写程序
 // 详细文档: https://www.usr.cn/Download/806.html
-//
-//
 type UsrG776DTU struct {
 	typex.XStatus
 	status     typex.DeviceState
@@ -80,7 +76,7 @@ func (uart *UsrG776DTU) Start(cctx typex.CCTX) error {
 	go func(ctx context.Context) {
 		ticker := time.NewTicker(time.Duration(uart.mainConfig.Frequency) * time.Second)
 		buffer := make([]byte, common.T_64KB)
-		uart.driver.Read(buffer) //清理缓存
+		uart.driver.Read(0, buffer) //清理缓存
 		for {
 			<-ticker.C
 			select {
@@ -89,7 +85,7 @@ func (uart *UsrG776DTU) Start(cctx typex.CCTX) error {
 				return
 			default:
 				uart.locker.Lock()
-				n, err := uart.driver.Read(buffer)
+				n, err := uart.driver.Read(0, buffer)
 				uart.locker.Unlock()
 				if err != nil {
 					glogger.GLogger.Error(err)
@@ -108,15 +104,15 @@ func (uart *UsrG776DTU) Start(cctx typex.CCTX) error {
 	return nil
 }
 
-//
 // 从设备里面读数据出来:
-// {
-//     "tag":"data tag",
-//     "value":"value s"
-// }
-func (uart *UsrG776DTU) OnRead(data []byte) (int, error) {
+//
+//	{
+//	    "tag":"data tag",
+//	    "value":"value s"
+//	}
+func (uart *UsrG776DTU) OnRead(cmd int, data []byte) (int, error) {
 	uart.locker.Lock()
-	n, err := uart.driver.Read(data)
+	n, err := uart.driver.Read(cmd, data)
 	uart.locker.Unlock()
 	buffer := make([]byte, n)
 	mapV := map[string]interface{}{
@@ -129,8 +125,8 @@ func (uart *UsrG776DTU) OnRead(data []byte) (int, error) {
 }
 
 // 把数据写入设备
-func (uart *UsrG776DTU) OnWrite(b []byte) (int, error) {
-	return uart.driver.Write(b)
+func (uart *UsrG776DTU) OnWrite(cmd int, b []byte) (int, error) {
+	return uart.driver.Write(cmd, b)
 }
 
 // 设备当前状态

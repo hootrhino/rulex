@@ -1,8 +1,4 @@
-//
-//
 // uart_driver相当于是升级版，这个是最原始的基础驱动
-//
-//
 package driver
 
 import (
@@ -21,9 +17,7 @@ type rawUartDriver struct {
 	device     *typex.Device
 }
 
-//
 // 初始化一个驱动
-//
 func NewRawUartDriver(
 	ctx context.Context,
 	e typex.RuleX,
@@ -38,9 +32,6 @@ func NewRawUartDriver(
 	}
 }
 
-//
-//
-//
 func (a *rawUartDriver) Init(map[string]string) error {
 	a.state = typex.DRIVER_UP
 
@@ -69,13 +60,11 @@ func (a *rawUartDriver) Test() error {
 
 }
 
-//
-func (a *rawUartDriver) Read(b []byte) (int, error) {
+func (a *rawUartDriver) Read(cmd int, b []byte) (int, error) {
 	return a.serialPort.Read(b)
 }
 
-//
-func (a *rawUartDriver) Write(b []byte) (int, error) {
+func (a *rawUartDriver) Write(cmd int, b []byte) (int, error) {
 	return a.serialPort.Write(b)
 }
 func (a *rawUartDriver) DriverDetail() typex.DriverDetail {

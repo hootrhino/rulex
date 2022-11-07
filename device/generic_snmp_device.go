@@ -76,7 +76,7 @@ func (sd *genericSnmpDevice) Start(cctx typex.CCTX) error {
 	go func(ctx context.Context, Driver typex.XExternalDriver) {
 		ticker := time.NewTicker(time.Duration(sd.mainConfig.Frequency) * time.Second)
 		buffer := make([]byte, common.T_64KB)
-		sd.driver.Read(buffer) //清理缓存
+		sd.driver.Read(0, buffer) //清理缓存
 		for {
 			<-ticker.C
 			select {
@@ -90,7 +90,7 @@ func (sd *genericSnmpDevice) Start(cctx typex.CCTX) error {
 				{
 				}
 			}
-			n, err := Driver.Read(buffer)
+			n, err := Driver.Read(0, buffer)
 			if err != nil {
 				glogger.GLogger.Error(err)
 			} else {
@@ -104,9 +104,9 @@ func (sd *genericSnmpDevice) Start(cctx typex.CCTX) error {
 }
 
 // 从设备里面读数据出来
-func (sd *genericSnmpDevice) OnRead(data []byte) (int, error) {
+func (sd *genericSnmpDevice) OnRead(cmd int, data []byte) (int, error) {
 
-	n, err := sd.driver.Read(data)
+	n, err := sd.driver.Read(cmd, data)
 	if err != nil {
 		glogger.GLogger.Error(err)
 		sd.status = typex.DEV_DOWN
@@ -115,7 +115,7 @@ func (sd *genericSnmpDevice) OnRead(data []byte) (int, error) {
 }
 
 // 把数据写入设备
-func (sd *genericSnmpDevice) OnWrite(_ []byte) (int, error) {
+func (sd *genericSnmpDevice) OnWrite(cmd int, _ []byte) (int, error) {
 	return 0, nil
 }
 

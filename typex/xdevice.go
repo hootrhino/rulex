@@ -80,18 +80,16 @@ type DCAResult struct {
 	Data  string
 }
 
-//
 // 真实工作设备,即具体实现
-//
 type XDevice interface {
 	//  初始化 通常用来获取设备的配置
 	Init(devId string, configMap map[string]interface{}) error
 	// 启动, 设备的工作进程
 	Start(CCTX) error
 	// 从设备里面读数据出来
-	OnRead([]byte) (int, error)
+	OnRead(cmd int, data []byte) (int, error)
 	// 把数据写入设备
-	OnWrite([]byte) (int, error)
+	OnWrite(cmd int, data []byte) (int, error)
 	// 设备当前状态
 	Status() DeviceState
 	// 停止设备

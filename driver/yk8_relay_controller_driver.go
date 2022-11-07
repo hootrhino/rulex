@@ -70,7 +70,7 @@ type yk08sw struct {
 * 读出来的是个JSON, 记录了8个开关的状态
 *
  */
-func (yk8 *YK8RelayControllerDriver) Read(data []byte) (int, error) {
+func (yk8 *YK8RelayControllerDriver) Read(cmd int, data []byte) (int, error) {
 	dataMap := map[string]common.RegisterRW{}
 	for _, r := range yk8.Registers {
 		yk8.handler.SlaveId = r.SlaverId
@@ -107,10 +107,8 @@ func (yk8 *YK8RelayControllerDriver) Read(data []byte) (int, error) {
 	return len(bytes), nil
 }
 
-//
 // 写入数据
-//
-func (yk8 *YK8RelayControllerDriver) Write(data []byte) (int, error) {
+func (yk8 *YK8RelayControllerDriver) Write(cmd int, data []byte) (int, error) {
 	dataMap := []common.RegisterRW{}
 	if err := json.Unmarshal(data, &dataMap); err != nil {
 		return 0, err
@@ -129,7 +127,7 @@ func (yk8 *YK8RelayControllerDriver) Write(data []byte) (int, error) {
 	return 0, nil
 }
 
-//---------------------------------------------------
+// ---------------------------------------------------
 func (yk8 *YK8RelayControllerDriver) DriverDetail() typex.DriverDetail {
 	return typex.DriverDetail{
 		Name:        "YK-08-RELAY CONTROLLER",

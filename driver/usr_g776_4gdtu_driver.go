@@ -16,9 +16,7 @@ type UsrG776Driver struct {
 	device     *typex.Device
 }
 
-//
 // 初始化一个驱动
-//
 func NewUsrG776Driver(
 	ctx context.Context,
 	e typex.RuleX,
@@ -33,9 +31,6 @@ func NewUsrG776Driver(
 	}
 }
 
-//
-//
-//
 func (d *UsrG776Driver) Init(map[string]string) error {
 	d.state = typex.DRIVER_UP
 
@@ -64,14 +59,12 @@ func (d *UsrG776Driver) Test() error {
 
 }
 
-//
-func (d *UsrG776Driver) Read(b []byte) (int, error) {
+func (d *UsrG776Driver) Read(cmd int, b []byte) (int, error) {
 
 	return d.serialPort.Read(b)
 }
 
-//
-func (d *UsrG776Driver) Write(b []byte) (int, error) {
+func (d *UsrG776Driver) Write(cmd int, b []byte) (int, error) {
 	return d.serialPort.Write(b)
 }
 func (d *UsrG776Driver) DriverDetail() typex.DriverDetail {
