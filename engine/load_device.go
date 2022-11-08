@@ -236,7 +236,7 @@ func checkDeviceDriverState(abstractDevice typex.XDevice) {
 	// 只有资源启动状态才拉起驱动
 	if abstractDevice.Status() == typex.DEV_UP {
 		// 必须资源启动, 驱动才有重启意义
-		if abstractDevice.Driver().State() == typex.DRIVER_STOP {
+		if abstractDevice.Driver().State() == typex.DRIVER_DOWN {
 			glogger.GLogger.Warn("Driver stopped:", abstractDevice.Driver().DriverDetail().Name)
 			// 只需要把资源给拉闸, 就会触发重启
 			abstractDevice.Stop()
