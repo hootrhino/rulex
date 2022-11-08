@@ -154,8 +154,8 @@ func checkSourceDriverState(source typex.XSource) {
 	// 只有资源启动状态才拉起驱动
 	if source.Status() == typex.SOURCE_UP {
 		// 必须资源启动, 驱动才有重启意义
-		if source.Driver().State() == typex.DRIVER_STOP {
-			glogger.GLogger.Warn("Driver stopped:", source.Driver().DriverDetail().Name)
+		if source.Driver().State() == typex.DRIVER_DOWN {
+			glogger.GLogger.Warn("Driver down:", source.Driver().DriverDetail().Name)
 			// 只需要把资源给拉闸, 就会触发重启
 			source.Stop()
 		}
