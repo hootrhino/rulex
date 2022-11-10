@@ -13,7 +13,6 @@ import (
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
 	serial "github.com/wwhai/goserial"
-
 )
 
 type genericUartDevice struct {
@@ -75,7 +74,7 @@ func (uart *genericUartDevice) Start(cctx typex.CCTX) error {
 	go func(ctx context.Context) {
 		ticker := time.NewTicker(time.Duration(uart.mainConfig.Frequency) * time.Second)
 		buffer := make([]byte, common.T_64KB)
-		uart.driver.Read(buffer) //清理缓存
+		uart.driver.Read(0, buffer) //清理缓存
 		for {
 			<-ticker.C
 			select {
@@ -84,7 +83,7 @@ func (uart *genericUartDevice) Start(cctx typex.CCTX) error {
 				return
 			default:
 				uart.locker.Lock()
-				n, err := uart.driver.Read(buffer)
+				n, err := uart.driver.Read(0, buffer)
 				uart.locker.Unlock()
 				if err != nil {
 					glogger.GLogger.Error(err)
@@ -103,15 +102,15 @@ func (uart *genericUartDevice) Start(cctx typex.CCTX) error {
 	return nil
 }
 
-//
 // 从设备里面读数据出来:
-// {
-//     "tag":"data tag",
-//     "value":"value s"
-// }
-func (uart *genericUartDevice) OnRead(data []byte) (int, error) {
+//
+//	{
+//	    "tag":"data tag",
+//	    "value":"value s"
+//	}
+func (uart *genericUartDevice) OnRead(cmd int, data []byte) (int, error) {
 	uart.locker.Lock()
-	n, err := uart.driver.Read(data)
+	n, err := uart.driver.Read(0, data)
 	uart.locker.Unlock()
 	buffer := make([]byte, n)
 	mapV := map[string]interface{}{
@@ -124,8 +123,8 @@ func (uart *genericUartDevice) OnRead(data []byte) (int, error) {
 }
 
 // 把数据写入设备
-func (uart *genericUartDevice) OnWrite(b []byte) (int, error) {
-	return uart.driver.Write(b)
+func (uart *genericUartDevice) OnWrite(cmd int, b []byte) (int, error) {
+	return uart.driver.Write(0, b)
 }
 
 // 设备当前状态
@@ -163,9 +162,9 @@ func (uart *genericUartDevice) Driver() typex.XExternalDriver {
 	return uart.driver
 }
 
-//--------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------
 //
-//--------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------
 func contains(s []string, e string) bool {
 	for _, a := range s {
 		if a == e {

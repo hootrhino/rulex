@@ -7,10 +7,10 @@ package driver
 import (
 	"encoding/json"
 
-	"github.com/wwhai/gomodbus"
 	"github.com/i4de/rulex/common"
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
+	"github.com/wwhai/gomodbus"
 )
 
 type tss200_v_0_2_Driver struct {
@@ -63,7 +63,7 @@ type _sensor_data struct {
 	ECO2 float32 `json:"eco2"` //系数: 0.001
 }
 
-func (tss *tss200_v_0_2_Driver) Read(data []byte) (int, error) {
+func (tss *tss200_v_0_2_Driver) Read(cmd int, data []byte) (int, error) {
 	// 获取全部传感器数据：
 	// |地址码|功能码|寄存器地址|寄存器长度|校验码|校验码
 	// |XX    |03   |17       | 长度     |CRC  |  CRC
@@ -106,11 +106,11 @@ func (tss *tss200_v_0_2_Driver) Read(data []byte) (int, error) {
 	copy(data, bytes)
 	return len(bytes), nil
 }
-func (tss *tss200_v_0_2_Driver) Write(_ []byte) (int, error) {
+func (tss *tss200_v_0_2_Driver) Write(cmd int, _ []byte) (int, error) {
 	return 0, nil
 }
 
-//---------------------------------------------------
+// ---------------------------------------------------
 func (tss *tss200_v_0_2_Driver) DriverDetail() typex.DriverDetail {
 	return typex.DriverDetail{
 		Name:        "TC-S200",

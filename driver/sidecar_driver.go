@@ -68,7 +68,7 @@ func (sc *SideCarDriver) State() typex.DriverState {
 * 读取
 *
  */
-func (sc *SideCarDriver) Read(data []byte) (int, error) {
+func (sc *SideCarDriver) Read(cmd int, data []byte) (int, error) {
 	response, err := sc.client.Read(context.Background(), &sidecar.ReadRequest{})
 	if err != nil {
 		glogger.GLogger.Error(err)
@@ -83,7 +83,7 @@ func (sc *SideCarDriver) Read(data []byte) (int, error) {
 * 写入
 *
  */
-func (sc *SideCarDriver) Write(data []byte) (int, error) {
+func (sc *SideCarDriver) Write(cmd int, data []byte) (int, error) {
 	response, err := sc.client.Write(context.Background(), &sidecar.WriteRequest{
 		Data: data,
 	})
@@ -94,7 +94,7 @@ func (sc *SideCarDriver) Write(data []byte) (int, error) {
 	return int(response.Code), nil
 }
 
-//---------------------------------------------------
+// ---------------------------------------------------
 func (sc *SideCarDriver) DriverDetail() typex.DriverDetail {
 	return typex.DriverDetail{
 		Name:        "SIDECAR-DRIVER",
@@ -112,9 +112,9 @@ func (sc *SideCarDriver) Stop() error {
 	return nil
 }
 
-//----------------------------------------------------------------------
+// ----------------------------------------------------------------------
 // 私有函数
-//----------------------------------------------------------------------
+// ----------------------------------------------------------------------
 func (sc *SideCarDriver) t() error {
 	_, err := sc.client.Status(context.Background(), &sidecar.Request{})
 	if err != nil {

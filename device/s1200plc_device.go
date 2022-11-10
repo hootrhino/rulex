@@ -40,7 +40,7 @@ func NewS1200plc(e typex.RuleX) typex.XDevice {
 	return s1200
 }
 
-//  初始化
+// 初始化
 func (s1200 *s1200plc) Init(devId string, configMap map[string]interface{}) error {
 	s1200.PointId = devId
 	if err := utils.BindSourceConfig(configMap, &s1200.mainConfig); err != nil {
@@ -81,7 +81,7 @@ func (s1200 *s1200plc) Start(cctx typex.CCTX) error {
 		ticker := time.NewTicker(time.Duration(*s1200.mainConfig.ReadFrequency) * time.Second)
 		// 数据缓冲区,最大4KB
 		dataBuffer := make([]byte, common.T_4KB)
-		s1200.driver.Read(dataBuffer) //清理缓存
+		s1200.driver.Read(0, dataBuffer) //清理缓存
 		for {
 			<-ticker.C
 			select {
@@ -100,7 +100,7 @@ func (s1200 *s1200plc) Start(cctx typex.CCTX) error {
 				return
 			}
 			s1200.lock.Lock()
-			n, err := s1200.driver.Read(dataBuffer)
+			n, err := s1200.driver.Read(0, dataBuffer)
 			s1200.lock.Unlock()
 			if err != nil {
 				glogger.GLogger.Error(err)
@@ -120,29 +120,30 @@ func (s1200 *s1200plc) Start(cctx typex.CCTX) error {
 }
 
 // 从设备里面读数据出来
-func (s1200 *s1200plc) OnRead(data []byte) (int, error) {
-	return s1200.driver.Read(data)
+func (s1200 *s1200plc) OnRead(cmd int, data []byte) (int, error) {
+	return s1200.driver.Read(cmd, data)
 }
 
 // 把数据写入设备
 //
 // db.Address:int, db.Start:int, db.Size:int, rData[]
 // [
-//     {
-//         "tag":"V",
-//         "address":1,
-//         "start":1,
-//         "size":1,
-//         "value":"AAECAwQ="
-//     }
-// ]
 //
-func (s1200 *s1200plc) OnWrite(data []byte) (int, error) {
+//	{
+//	    "tag":"V",
+//	    "address":1,
+//	    "start":1,
+//	    "size":1,
+//	    "value":"AAECAwQ="
+//	}
+//
+// ]
+func (s1200 *s1200plc) OnWrite(cmd int, data []byte) (int, error) {
 	blocks := []common.S1200BlockValue{}
 	if err := json.Unmarshal(data, &blocks); err != nil {
 		return 0, err
 	}
-	return s1200.driver.Write(data)
+	return s1200.driver.Write(cmd, data)
 }
 
 // 设备当前状态

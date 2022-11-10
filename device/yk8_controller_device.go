@@ -95,7 +95,7 @@ func (yk8 *YK8Controller) Start(cctx typex.CCTX) error {
 	go func(ctx context.Context, Driver typex.XExternalDriver) {
 		ticker := time.NewTicker(time.Duration(yk8.mainConfig.Frequency) * time.Second)
 		buffer := make([]byte, common.T_64KB)
-		yk8.driver.Read(buffer) //清理缓存
+		yk8.driver.Read(0, buffer) //清理缓存
 		for {
 			<-ticker.C
 			select {
@@ -110,7 +110,7 @@ func (yk8 *YK8Controller) Start(cctx typex.CCTX) error {
 				}
 			}
 			yk8.locker.Lock()
-			n, err := Driver.Read(buffer)
+			n, err := Driver.Read(0, buffer)
 			yk8.locker.Unlock()
 			if err != nil {
 				glogger.GLogger.Error(err)
@@ -124,9 +124,9 @@ func (yk8 *YK8Controller) Start(cctx typex.CCTX) error {
 }
 
 // 从设备里面读数据出来
-func (yk8 *YK8Controller) OnRead(data []byte) (int, error) {
+func (yk8 *YK8Controller) OnRead(cmd int, data []byte) (int, error) {
 
-	n, err := yk8.driver.Read(data)
+	n, err := yk8.driver.Read(cmd, data)
 	if err != nil {
 		glogger.GLogger.Error(err)
 		yk8.status = typex.DEV_DOWN
@@ -135,8 +135,8 @@ func (yk8 *YK8Controller) OnRead(data []byte) (int, error) {
 }
 
 // 把数据写入设备
-func (yk8 *YK8Controller) OnWrite(b []byte) (int, error) {
-	return yk8.driver.Write(b)
+func (yk8 *YK8Controller) OnWrite(cmd int, b []byte) (int, error) {
+	return yk8.driver.Write(cmd, b)
 }
 
 // 设备当前状态

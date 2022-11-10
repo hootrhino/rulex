@@ -22,7 +22,7 @@ func ReadDevice(rx typex.RuleX) func(*lua.LState) int {
 		devUUID := l.ToString(2)
 		Device := rx.GetDevice(devUUID)
 		if Device != nil {
-			n, err := Device.Device.OnRead(deviceReadBuffer)
+			n, err := Device.Device.OnRead(0, deviceReadBuffer)
 			if err != nil {
 				glogger.GLogger.Error(err)
 				l.Push(lua.LNil)
@@ -50,7 +50,7 @@ func WriteDevice(rx typex.RuleX) func(*lua.LState) int {
 		data := l.ToString(3)
 		Device := rx.GetDevice(devUUID)
 		if Device != nil {
-			n, err := Device.Device.OnWrite([]byte(data))
+			n, err := Device.Device.OnWrite(0,[]byte(data))
 			if err != nil {
 				glogger.GLogger.Error(err)
 				l.Push(lua.LNil)
