@@ -4,7 +4,7 @@ package typex
 type SourceState int
 
 const (
-	SOURCE_DOWN  SourceState = 0
+	SOURCE_DOWN  SourceState = 0 // 此状态需要重启
 	SOURCE_UP    SourceState = 1
 	SOURCE_PAUSE SourceState = 2
 	SOURCE_STOP  SourceState = 3
@@ -18,7 +18,7 @@ type DriverState int
 const (
 	DRIVER_STOP DriverState = 0
 	DRIVER_UP   DriverState = 1
-	DRIVER_DOWN DriverState = 2
+	DRIVER_DOWN DriverState = 2 // 此状态需要重启
 )
 
 //
