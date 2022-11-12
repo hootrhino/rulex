@@ -17,12 +17,16 @@ import (
 	lua "github.com/yuin/gopher-lua"
 )
 
-//
 // 提取的 Key, 最长不能超过32个字母
-//
 var pattern = `[a-zA-Z0-9]{1,32}:[1-9]+`
 var regexper *regexp.Regexp = regexp.MustCompile(pattern)
 
+/*
+*
+* 二进制匹匹配, [<|> K1:LEN1 K2:LEN2... ]返回一个K-V table
+* 其中K是字符串, V是二进制字符串
+*
+ */
 func MatchBinary(rx typex.RuleX) func(*lua.LState) int {
 	return func(state *lua.LState) int {
 		expr := state.ToString(2)
@@ -131,7 +135,7 @@ func ByteToInt64(rx typex.RuleX) func(*lua.LState) int {
 	}
 }
 
-///
+// /
 func ByteToInt(b []byte, order binary.ByteOrder) uint64 {
 	var err error
 	// uint8
@@ -261,9 +265,7 @@ func Endian(endian byte) binary.ByteOrder {
 	return binary.LittleEndian
 }
 
-//
 // 字节空位补位0
-//
 func append0Prefix(n int) string {
 	if (n % 8) == 7 {
 		return "0"
