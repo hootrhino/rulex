@@ -9,6 +9,13 @@ import (
 
 var private_lua_logger *LogWriter
 var private_local_logger *LogWriter
+var private_remote_logger *UdpLogger
+
+type LogMsg struct {
+	Sn      string `json:"sn"`
+	Uid     string `json:"uid"`
+	Content string `json:"content"`
+}
 
 /*
 *

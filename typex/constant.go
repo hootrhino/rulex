@@ -16,8 +16,11 @@ const (
 type DriverState int
 
 const (
+	// STOP 状态一般用来直接停止一个资源，监听器不需要重启
 	DRIVER_STOP DriverState = 0
-	DRIVER_UP   DriverState = 1
+	// UP 工作态
+	DRIVER_UP DriverState = 1
+	// DOWN 状态是某个资源挂了，属于工作意外，需要重启
 	DRIVER_DOWN DriverState = 2
 )
 
@@ -64,6 +67,8 @@ const (
 	// TENCENT_IOT_HUB 自定义简单协议
 	//
 	TENCENT_IOT_HUB InEndType = "TENCENT_IOT_HUB"
+	// 通用IotHUB
+	GENERIC_IOT_HUB InEndType = "GENERIC_IOT_HUB"
 	//
 	// Ithings 平台
 	//
