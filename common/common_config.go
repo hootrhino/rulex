@@ -31,10 +31,13 @@ type MqttConfig struct {
 *
  */
 type GenericUartConfig struct {
-	Tag       string `json:"tag" validate:"required" title:"数据Tag" info:"给数据打标签"`
-	Uart      string `json:"uart" validate:"required" title:"串口路径" info:"本地系统的串口路径"`
-	BaudRate  int    `json:"baudRate" validate:"required" title:"波特率" info:"串口通信波特率"`
-	DataBits  int    `json:"dataBits" validate:"required" title:"数据位" info:"串口通信数据位"`
+	Tag      string `json:"tag" validate:"required" title:"数据Tag" info:"给数据打标签"`
+	Uart     string `json:"uart" validate:"required" title:"串口路径" info:"本地系统的串口路径"`
+	BaudRate int    `json:"baudRate" validate:"required" title:"波特率" info:"串口通信波特率"`
+	DataBits int    `json:"dataBits" validate:"required" title:"数据位" info:"串口通信数据位"`
+	// Weather allow AutoRequest?
+	AutoRequest bool `json:"autoRequest" title:"启动轮询" info:""`
+	// Request Frequency, default 5 second
 	Frequency int64  `json:"frequency" validate:"required" title:"采集频率" info:""`
 	Timeout   int    `json:"timeout" validate:"required" title:"连接超时" info:""`
 	Parity    string `json:"parity" validate:"required" title:"奇偶校验" info:"奇偶校验"`
@@ -55,5 +58,8 @@ type GenericSnmpConfig struct {
 	Transport string `json:"transport" validate:"required" title:"Transport" info:"Transport"`
 	// Community is an SNMP Community string.
 	Community string `json:"community" validate:"required" title:"Community" info:"Community"`
-	Frequency int64  `json:"frequency" validate:"required" title:"采集频率" info:""`
+	// Weather allow AutoRequest?
+	AutoRequest bool `json:"autoRequest" title:"启动轮询" info:""`
+	// Request Frequency, default 5 second
+	Frequency int64 `json:"frequency" validate:"required" title:"采集频率" info:""`
 }

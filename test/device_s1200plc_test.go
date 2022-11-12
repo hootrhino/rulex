@@ -12,24 +12,24 @@ import (
 	"github.com/i4de/rulex/typex"
 )
 
-// {
-//     "host":"127.0.0.1",
-//     "port":1800,
-//     "rack":0,
-//     "slot":1,
-//     "model":"S1200",
-//     "timeout":5,
-//     "idleTimeout":5,
-//     "readFrequency":5,
-//     "blocks":[
-//         {
-//             "tag":"V1",
-//             "address":1,
-//             "start":1,
-//             "size":10
-//         }
-//     ]
-// }
+//	{
+//	    "host":"127.0.0.1",
+//	    "port":1800,
+//	    "rack":0,
+//	    "slot":1,
+//	    "model":"S1200",
+//	    "timeout":5,
+//	    "idleTimeout":5,
+//	    "readFrequency":5,
+//	    "blocks":[
+//	        {
+//	            "tag":"V1",
+//	            "address":1,
+//	            "start":1,
+//	            "size":10
+//	        }
+//	    ]
+//	}
 func Test_gen_config(t *testing.T) {
 	port := 1800
 	Rack := 0
@@ -38,14 +38,14 @@ func Test_gen_config(t *testing.T) {
 	IdleTimeout := 5
 	ReadFrequency := 5
 	c := common.S1200Config{
-		Host:          "127.0.0.1",
-		Port:          &port,
-		Rack:          &Rack,
-		Slot:          &Slot,
-		Model:         "S1200",
-		Timeout:       &Timeout,
-		IdleTimeout:   &IdleTimeout,
-		ReadFrequency: &ReadFrequency,
+		Host:        "127.0.0.1",
+		Port:        &port,
+		Rack:        &Rack,
+		Slot:        &Slot,
+		Model:       "S1200",
+		Timeout:     &Timeout,
+		IdleTimeout: &IdleTimeout,
+		Frequency:   int64(ReadFrequency),
 		Blocks: []common.S1200Block{
 			{
 				Tag:     "V1",

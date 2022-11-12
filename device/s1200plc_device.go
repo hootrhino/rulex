@@ -78,7 +78,7 @@ func (s1200 *s1200plc) Start(cctx typex.CCTX) error {
 	s1200.driver = driver.NewS1200Driver(s1200.Details(), s1200.RuleEngine, s1200.client, s1200.block)
 
 	go func(ctx context.Context) {
-		ticker := time.NewTicker(time.Duration(*s1200.mainConfig.ReadFrequency) * time.Second)
+		ticker := time.NewTicker(time.Duration(s1200.mainConfig.Frequency) * time.Second)
 		// 数据缓冲区,最大4KB
 		dataBuffer := make([]byte, common.T_4KB)
 		s1200.driver.Read(0, dataBuffer) //清理缓存
