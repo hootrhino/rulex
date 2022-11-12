@@ -17,9 +17,7 @@ import (
 // Abstract device
 //--------------------------------------------------------------------------------------------------
 
-//
 // 获取设备
-//
 func (e *RuleEngine) GetDevice(id string) *typex.Device {
 	v, ok := e.Devices.Load(id)
 	if ok {
@@ -30,24 +28,18 @@ func (e *RuleEngine) GetDevice(id string) *typex.Device {
 
 }
 
-//
 // 保存设备
-//
 func (e *RuleEngine) SaveDevice(dev *typex.Device) {
 	e.Devices.Store(dev.UUID, dev)
 }
 
-//
 // 获取所有外挂设备
-//
 func (e *RuleEngine) AllDevices() *sync.Map {
 	return e.Devices
 
 }
 
-//
 // 删除设备
-//
 func (e *RuleEngine) RemoveDevice(uuid string) {
 	if dev := e.GetDevice(uuid); dev != nil {
 		glogger.GLogger.Infof("Device [%v] ready to stop", uuid)
@@ -68,9 +60,7 @@ func (e *RuleEngine) LoadUserDevice(abstractDevice typex.XDevice, deviceInfo *ty
 	return startDevices(abstractDevice, deviceInfo, e)
 }
 
-//
 // 加载内置设备
-//
 func (e *RuleEngine) LoadBuiltinDevice(deviceInfo *typex.Device) error {
 	return e.LoadDevice(deviceInfo)
 }
@@ -130,8 +120,8 @@ func startDevices(abstractDevice typex.XDevice, deviceInfo *typex.Device, e *Rul
 		e.RemoveDevice(deviceInfo.UUID)
 		return err
 	}
-	ticker := time.NewTicker(time.Duration(time.Second * 5))
 	go func(ctx context.Context) {
+		ticker := time.NewTicker(time.Duration(time.Second * 5))
 		// 5 seconds
 	TICKER:
 		<-ticker.C
@@ -160,9 +150,6 @@ func startDevices(abstractDevice typex.XDevice, deviceInfo *typex.Device, e *Rul
 	return nil
 }
 
-//
-//
-//
 func startDevice(abstractDevice typex.XDevice, e *RuleEngine) error {
 	ctx, cancelCTX := typex.NewCCTX()
 	if err := abstractDevice.Start(typex.CCTX{Ctx: ctx, CancelCTX: cancelCTX}); err != nil {

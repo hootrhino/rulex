@@ -52,12 +52,11 @@ func (e *RuleEngine) LoadOutEnd(out *typex.OutEnd) error {
 	return errors.New("unsupported target type:" + out.Type.String())
 }
 
-//
 // Start output target
 //
 // Target life cycle:
-//     Register -> Start -> running/restart cycle
 //
+//	Register -> Start -> running/restart cycle
 func startTarget(target typex.XTarget, out *typex.OutEnd, e typex.RuleX) error {
 	//
 	// 先注册, 如果出问题了直接删除就行
@@ -86,9 +85,9 @@ func startTarget(target typex.XTarget, out *typex.OutEnd, e typex.RuleX) error {
 	// Set sources to inend
 	out.Target = target
 	//
-	ticker := time.NewTicker(time.Duration(time.Second * 5))
 	tryIfRestartTarget(target, e, out.UUID)
 	go func(ctx context.Context) {
+		ticker := time.NewTicker(time.Duration(time.Second * 5))
 
 		// 5 seconds
 		//
@@ -119,9 +118,7 @@ func startTarget(target typex.XTarget, out *typex.OutEnd, e typex.RuleX) error {
 	return nil
 }
 
-//
 // 监测状态, 如果挂了重启
-//
 func tryIfRestartTarget(target typex.XTarget, e typex.RuleX, id string) {
 	if target.Status() == typex.SOURCE_STOP {
 		return

@@ -103,8 +103,8 @@ func startSources(source typex.XSource, in *typex.InEnd, e *RuleEngine) error {
 		e.RemoveInEnd(in.UUID)
 		return err
 	}
-	ticker := time.NewTicker(time.Duration(time.Second * 5))
 	go func(ctx context.Context) {
+		ticker := time.NewTicker(time.Duration(time.Second * 5))
 		// 5 seconds
 	TICKER:
 		<-ticker.C
@@ -164,9 +164,7 @@ func checkSourceDriverState(source typex.XSource) {
 
 }
 
-//
 // test SourceState
-//
 func tryIfRestartSource(source typex.XSource, e *RuleEngine) {
 	checkSourceDriverState(source)
 	if source.Status() == typex.SOURCE_STOP {
@@ -190,9 +188,6 @@ func tryIfRestartSource(source typex.XSource, e *RuleEngine) {
 	}
 }
 
-//
-//
-//
 func startSource(source typex.XSource, e *RuleEngine) error {
 	//----------------------------------
 	// 检查资源 如果是启动的，先给停了

@@ -72,7 +72,10 @@ func (sd *genericSnmpDevice) Start(cctx typex.CCTX) error {
 	//---------------------------------------------------------------------------------
 	// Start
 	//---------------------------------------------------------------------------------
-	sd.status = typex.DEV_UP
+	if !sd.mainConfig.AutoRequest {
+		sd.status = typex.DEV_UP
+		return nil
+	}
 	go func(ctx context.Context, Driver typex.XExternalDriver) {
 		ticker := time.NewTicker(time.Duration(sd.mainConfig.Frequency) * time.Second)
 		buffer := make([]byte, common.T_64KB)
@@ -100,6 +103,7 @@ func (sd *genericSnmpDevice) Start(cctx typex.CCTX) error {
 		}
 
 	}(sd.Ctx, sd.driver)
+	sd.status = typex.DEV_UP
 	return nil
 }
 
