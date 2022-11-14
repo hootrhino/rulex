@@ -89,7 +89,10 @@ func (ther *rtu485_ther) Start(cctx typex.CCTX) error {
 	//---------------------------------------------------------------------------------
 	// Start
 	//---------------------------------------------------------------------------------
-	ther.status = typex.DEV_UP
+	if !ther.mainConfig.AutoRequest {
+		ther.status = typex.DEV_UP
+		return nil
+	}
 	go func(ctx context.Context, Driver typex.XExternalDriver) {
 		ticker := time.NewTicker(time.Duration(ther.mainConfig.Frequency) * time.Second)
 		buffer := make([]byte, common.T_64KB)
@@ -118,6 +121,7 @@ func (ther *rtu485_ther) Start(cctx typex.CCTX) error {
 		}
 
 	}(ther.Ctx, ther.driver)
+	ther.status = typex.DEV_UP
 	return nil
 }
 

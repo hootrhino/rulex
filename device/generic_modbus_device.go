@@ -145,8 +145,10 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 	//---------------------------------------------------------------------------------
 	// Start
 	//---------------------------------------------------------------------------------
-	mdev.status = typex.DEV_UP
-
+	if !mdev.mainConfig.AutoRequest {
+		mdev.status = typex.DEV_UP
+		return nil
+	}
 	go func(ctx context.Context, Driver typex.XExternalDriver) {
 		ticker := time.NewTicker(time.Duration(5) * time.Second)
 		buffer := make([]byte, common.T_64KB)
@@ -174,6 +176,7 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 		}
 
 	}(mdev.Ctx, mdev.driver)
+	mdev.status = typex.DEV_UP
 	return nil
 }
 

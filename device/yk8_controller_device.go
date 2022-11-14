@@ -90,8 +90,10 @@ func (yk8 *YK8Controller) Start(cctx typex.CCTX) error {
 	client := modbus.NewClient(yk8.rtuHandler)
 	yk8.driver = driver.NewYK8RelayControllerDriver(yk8.Details(),
 		yk8.RuleEngine, yk8.mainConfig.Registers, yk8.rtuHandler, client)
-	yk8.status = typex.DEV_UP
-
+	if !yk8.mainConfig.AutoRequest {
+		yk8.status = typex.DEV_UP
+		return nil
+	}
 	go func(ctx context.Context, Driver typex.XExternalDriver) {
 		ticker := time.NewTicker(time.Duration(yk8.mainConfig.Frequency) * time.Second)
 		buffer := make([]byte, common.T_64KB)
@@ -120,6 +122,7 @@ func (yk8 *YK8Controller) Start(cctx typex.CCTX) error {
 		}
 
 	}(yk8.Ctx, yk8.driver)
+	yk8.status = typex.DEV_UP
 	return nil
 }
 

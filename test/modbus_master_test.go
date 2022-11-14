@@ -13,9 +13,13 @@ type registerParam struct {
 }
 
 type ModBusConfig struct {
-	Mode           string          `json:"mode" title:"工作模式" info:"可以在 RTU/TCP 两个模式之间切换"`
-	Timeout        int             `json:"timeout" validate:"required" title:"连接超时" info:""`
-	SlaverId       byte            `json:"slaverId" validate:"required" title:"TCP端口" info:""`
+	Mode     string `json:"mode" title:"工作模式" info:"可以在 RTU/TCP 两个模式之间切换"`
+	Timeout  int    `json:"timeout" validate:"required" title:"连接超时" info:""`
+	SlaverId byte   `json:"slaverId" validate:"required" title:"TCP端口" info:""`
+	//
+	// Weather allow AutoRequest?
+	AutoRequest bool `json:"autoRequest" title:"启动轮询" info:""`
+	// Request Frequency, default 5 second
 	Frequency      int64           `json:"frequency" validate:"required" title:"采集频率" info:""`
 	Config         interface{}     `json:"config" validate:"required" title:"工作模式配置" info:""`
 	RegisterParams []registerParam `json:"registerParams" validate:"required" title:"寄存器配置" info:""`
@@ -29,9 +33,6 @@ type RtuConfig struct {
 	StopBits int    `json:"stopBits" validate:"required" title:"停止位" info:"串口通信停止位"`
 }
 
-//
-//
-//
 type TcpConfig struct {
 	Ip   string `json:"ip" validate:"required" title:"IP地址" info:""`
 	Port int    `json:"port" validate:"required" title:"端口" info:""`

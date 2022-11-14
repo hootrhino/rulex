@@ -1,34 +1,25 @@
 package common
 
 type ModBusConfig struct {
-	Mode      string       `json:"mode" title:"工作模式" info:"RTU/TCP"`
-	Timeout   int          `json:"timeout" validate:"required" title:"连接超时" info:""`
+	Mode    string `json:"mode" title:"工作模式" info:"RTU/TCP"`
+	Timeout int    `json:"timeout" validate:"required" title:"连接超时" info:""`
+	// Weather allow AutoRequest?
+	AutoRequest bool `json:"autoRequest" title:"启动轮询" info:""`
+	// Request Frequency, default 5 second
 	Frequency int64        `json:"frequency" validate:"required" title:"采集频率" info:""`
 	Config    interface{}  `json:"config" validate:"required" title:"工作模式" info:""`
 	Registers []RegisterRW `json:"registers" validate:"required" title:"寄存器配置" info:""`
 }
 
 const (
-	//-------------------------------------------
-	// 	Code |  Register Type
-	//-------|------------------------------------
-	// 	1	 |	Read Coil
-	// 	2	 |	Read Discrete Input
-	// 	3	 |	Read Holding Registers
-	// 	4	 |	Read Input Registers
-	// 	5	 |	Write Single Coil
-	// 	6	 |	Write Single Holding Register
-	// 	15	 |	Write Multiple Coils
-	// 	16	 |	Write Multiple Holding Registers
-	//-------------------------------------------
-	READ_COIL                        = 1
-	READ_DISCRETE_INPUT              = 2
-	READ_HOLDING_REGISTERS           = 3
-	READ_INPUT_REGISTERS             = 4
-	WRITE_SINGLE_COIL                = 5
-	WRITE_SINGLE_HOLDING_REGISTER    = 6
-	WRITE_MULTIPLE_COILS             = 15
-	WRITE_MULTIPLE_HOLDING_REGISTERS = 16
+	READ_COIL                        = 1  //  Read Coil
+	READ_DISCRETE_INPUT              = 2  //  Read Discrete Input
+	READ_HOLDING_REGISTERS           = 3  //  Read Holding Registers
+	READ_INPUT_REGISTERS             = 4  //  Read Input Registers
+	WRITE_SINGLE_COIL                = 5  //  Write Single Coil
+	WRITE_SINGLE_HOLDING_REGISTER    = 6  //  Write Single Holding Register
+	WRITE_MULTIPLE_COILS             = 15 //  Write Multiple Coils
+	WRITE_MULTIPLE_HOLDING_REGISTERS = 16 //  Write Multiple Holding Registers
 )
 
 /*
@@ -61,10 +52,10 @@ type Registers struct {
 type RegisterRW struct {
 	Tag      string `json:"tag" validate:"required" title:"数据Tag" info:""`         // Function
 	Function int    `json:"function" validate:"required" title:"Modbus功能" info:""` // Function
-	SlaverId byte   `json:"slaverId" validate:"required" title:"从机ID" info:""`
-	Address  uint16 `json:"address" validate:"required" title:"地址" info:""`  // Address
-	Quantity uint16 `json:"quantity" validate:"required" title:"数量" info:""` // Quantity
-	Value    string `json:"value" title:"值" info:"本地系统的串口路径"`                // Quantity
+	SlaverId byte   `json:"slaverId" validate:"required" title:"从机ID" info:""`     // 从机ID
+	Address  uint16 `json:"address" validate:"required" title:"地址" info:""`        // Address
+	Quantity uint16 `json:"quantity" validate:"required" title:"数量" info:""`       // Quantity
+	Value    string `json:"value" title:"值" info:"本地系统的串口路径"`                      // Value
 }
 
 //
@@ -73,7 +64,7 @@ type RegisterRW struct {
 // DataBits = 8
 // Parity = "N"
 // StopBits = 1
-// SlaveId = 1	
+// SlaveId = 1
 // Timeout = 5 * time.Second
 //
 type RTUConfig struct {
@@ -83,4 +74,3 @@ type RTUConfig struct {
 	Parity   string `json:"parity" validate:"required" title:"奇偶校验" info:"奇偶校验"`
 	StopBits int    `json:"stopBits" validate:"required" title:"停止位" info:"串口通信停止位"`
 }
-

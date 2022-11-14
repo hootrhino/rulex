@@ -71,6 +71,10 @@ func (uart *genericUartDevice) Start(cctx typex.CCTX) error {
 		return err
 	}
 	uart.driver = driver.NewRawUartDriver(uart.Ctx, uart.RuleEngine, uart.Details(), serialPort)
+	if !uart.mainConfig.AutoRequest {
+		uart.status = typex.DEV_UP
+		return nil
+	}
 	go func(ctx context.Context) {
 		ticker := time.NewTicker(time.Duration(uart.mainConfig.Frequency) * time.Second)
 		buffer := make([]byte, common.T_64KB)
@@ -99,6 +103,7 @@ func (uart *genericUartDevice) Start(cctx typex.CCTX) error {
 		}
 
 	}(uart.Ctx)
+	uart.status = typex.DEV_UP
 	return nil
 }
 

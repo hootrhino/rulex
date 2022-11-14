@@ -92,8 +92,10 @@ func (tss *tss200V2) Start(cctx typex.CCTX) error {
 	client := modbus.NewClient(tss.rtuHandler)
 	tss.driver = driver.NewTSS200Driver(tss.Details(),
 		tss.RuleEngine, tss.mainConfig.Registers, tss.rtuHandler, client)
-	tss.status = typex.DEV_UP
-
+	if !tss.mainConfig.AutoRequest {
+		tss.status = typex.DEV_UP
+		return nil
+	}
 	go func(ctx context.Context, Driver typex.XExternalDriver) {
 		ticker := time.NewTicker(time.Duration(tss.mainConfig.Frequency) * time.Second)
 		defer ticker.Stop()
@@ -123,6 +125,7 @@ func (tss *tss200V2) Start(cctx typex.CCTX) error {
 		}
 
 	}(tss.Ctx, tss.driver)
+	tss.status = typex.DEV_UP
 	return nil
 }
 
