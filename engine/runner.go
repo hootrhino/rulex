@@ -21,6 +21,12 @@ func RunRulex(iniPath string) {
 	glogger.StartNewRealTimeLogger(core.GlobalConfig.LogLevel)
 	glogger.StartGLogger(mainConfig.EnableConsole, core.GlobalConfig.LogPath)
 	glogger.StartLuaLogger(core.GlobalConfig.LuaLogPath)
+	glogger.StartRemoteLogger(
+		core.GlobalConfig.RemoteLoggerSn,
+		core.GlobalConfig.RemoteLoggerUid,
+		core.GlobalConfig.RemoteLoggerIp,
+		core.GlobalConfig.RemoteLoggerPort,
+	)
 	//
 	core.StartStore(core.GlobalConfig.MaxQueueSize)
 	core.SetLogLevel()
@@ -64,7 +70,12 @@ func RunRulex(iniPath string) {
 		if err := json.Unmarshal([]byte(mOutEnd.Config), &config); err != nil {
 			glogger.GLogger.Error(err)
 		}
-		newOutEnd := typex.NewOutEnd(typex.TargetType(mOutEnd.Type), mOutEnd.Name, mOutEnd.Description, config)
+		newOutEnd := typex.NewOutEnd(
+			typex.TargetType(mOutEnd.Type),
+			mOutEnd.Name,
+			mOutEnd.Description,
+			config,
+		)
 		newOutEnd.UUID = mOutEnd.UUID // Important !!!!!!!!
 		if err := engine.LoadOutEnd(newOutEnd); err != nil {
 			glogger.GLogger.Error("OutEnd load failed:", err)
@@ -76,7 +87,13 @@ func RunRulex(iniPath string) {
 		if err := json.Unmarshal([]byte(mDevice.Config), &config); err != nil {
 			glogger.GLogger.Error(err)
 		}
-		newDevice := typex.NewDevice(typex.DeviceType(mDevice.Type), mDevice.Name, mDevice.Description, mDevice.ActionScript, config)
+		newDevice := typex.NewDevice(
+			typex.DeviceType(mDevice.Type),
+			mDevice.Name,
+			mDevice.Description,
+			mDevice.ActionScript,
+			config,
+		)
 		newDevice.UUID = mDevice.UUID // Important !!!!!!!!
 		if err := engine.LoadDevice(newDevice); err != nil {
 			glogger.GLogger.Error("Device load failed:", err)

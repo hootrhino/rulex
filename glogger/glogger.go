@@ -7,15 +7,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-var private_lua_logger *LogWriter
 var private_local_logger *LogWriter
-var private_remote_logger *UdpLogger
-
-type LogMsg struct {
-	Sn      string `json:"sn"`
-	Uid     string `json:"uid"`
-	Content string `json:"content"`
-}
 
 /*
 *
@@ -26,7 +18,7 @@ type LogMsg struct {
 var GLogger *logrus.Logger = logrus.New()
 
 func StartGLogger(EnableConsole bool, path string) {
-	private_local_logger = NewLogWriter("./"+time.Now().Format("2006-01-02_15-04-05-")+path, 1000)
+	private_local_logger = NewLogWriter("./" + time.Now().Format("2006-01-02_15-04-05-") + path)
 	GLogger.Formatter = new(logrus.JSONFormatter)
 	GLogger.SetReportCaller(true)
 	GLogger.Formatter.(*logrus.JSONFormatter).PrettyPrint = true
@@ -39,25 +31,7 @@ func StartGLogger(EnableConsole bool, path string) {
 
 /*
 *
-* StartLuaLogger
-*
- */
-func StartLuaLogger(path string) {
-	private_lua_logger = NewLogWriter("./"+time.Now().Format("2006-01-02_15-04-05-")+path, 1000)
-}
-
-/*
-*
-* LUA 脚本的日志接口
-*
- */
-func Log(b []byte) {
-	private_lua_logger.Write(b)
-}
-
-/*
-*
-* 关闭日志
+* 关闭日志记录器
 *
  */
 func Close() error {
@@ -65,6 +39,9 @@ func Close() error {
 		return err
 	}
 	if err := private_lua_logger.Close(); err != nil {
+		return err
+	}
+	if err := private_remote_logger.Close(); err != nil {
 		return err
 	}
 	return nil
