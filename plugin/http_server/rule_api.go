@@ -10,9 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-//
 // Get all rules
-//
 func Rules(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 
 	uuid, _ := c.GetQuery("uuid")
@@ -29,9 +27,7 @@ func Rules(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	}
 }
 
-//
 // Create rule
-//
 func CreateRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	type Form struct {
 		UUID        string   `json:"uuid"` // 如果空串就是新建，非空就是更新
@@ -126,9 +122,7 @@ func CreateRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	}
 }
 
-//
 // Delete rule by UUID
-//
 func DeleteRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
 	_, err0 := hh.GetMRule(uuid)
@@ -186,7 +180,7 @@ func ValidateLuaSyntax(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 * 测试脚本执行效果
 *
  */
-func TestLuaCallback(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+func TestSourceCallback(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid") // InEnd
 	data, _ := c.GetQuery("data") // Data
 	_, err0 := hh.GetMRule(uuid)
@@ -202,6 +196,7 @@ func TestLuaCallback(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	_, err1 := e.WorkInEnd((value).(*typex.InEnd), data)
 	if err1 != nil {
 		c.JSON(200, Error400(err1))
+		return
 	}
 	c.JSON(200, Ok())
 }
@@ -224,6 +219,26 @@ func TestOutEndCallback(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		c.JSON(200, Error((fmt.Sprintf("'OutEnd' not exists: %v", uuid))))
 		return
 	}
-	e.PushOutQueue((value).(*typex.OutEnd), data)
-	c.JSON(200, Ok())
+	c.JSON(200, OkWithData(e.PushOutQueue((value).(*typex.OutEnd), data)))
+}
+
+/*
+*
+* 测试 Device 的结果
+*
+ */
+func TestDeviceCallback(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+	uuid, _ := c.GetQuery("uuid") // Device
+	data, _ := c.GetQuery("data") // Data, Read or write
+	_, err0 := hh.GetMRule(uuid)
+	if err0 != nil {
+		c.JSON(200, Error400(err0))
+		return
+	}
+	value, ok := e.AllDevices().Load(uuid)
+	if !ok {
+		c.JSON(200, Error((fmt.Sprintf("'Device' not exists: %v", uuid))))
+		return
+	}
+	c.JSON(200, OkWithData(e.PushDeviceQueue((value).(*typex.Device), data)))
 }
