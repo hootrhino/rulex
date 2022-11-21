@@ -12,6 +12,21 @@ type HostConfig struct {
 
 /*
 *
+* IP 地址
+*
+ */
+type IpConfig struct {
+	Timeout int `json:"timeout" validate:"required" title:"连接超时" info:""`
+	// Weather allow AutoRequest?
+	AutoRequest bool `json:"autoRequest" title:"启动轮询" info:""`
+	// Request Frequency, default 5 second
+	Frequency int64    `json:"frequency" validate:"required" title:"采集频率" info:""`
+	// ["127.0.0.1", "127.0.0.2", "127.0.0.3"]
+	Hosts     []string `json:"hosts" validate:"required" title:"服务地址" info:""`
+}
+
+/*
+*
 * MQTT 连接配置
 *
  */

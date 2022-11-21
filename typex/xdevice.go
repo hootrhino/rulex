@@ -33,6 +33,7 @@ const (
 	GENERIC_UART   DeviceType = "GENERIC_UART"   // 通用串口
 	GENERIC_SNMP   DeviceType = "GENERIC_SNMP"   // 通用GENERIC_SNMP
 	USER_G776      DeviceType = "USER_G776"      // USER_G776
+	ICMP_SENDER    DeviceType = "ICMP_SENDER"    // ICMP_SENDER
 )
 
 // 设备元数据

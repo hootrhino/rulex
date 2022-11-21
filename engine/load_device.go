@@ -89,6 +89,9 @@ func (e *RuleEngine) LoadDevice(deviceInfo *typex.Device) error {
 	if deviceInfo.Type == typex.USER_G776 {
 		return startDevices(device.NewUsrG776DTU(e), deviceInfo, e)
 	}
+	if deviceInfo.Type == typex.ICMP_SENDER {
+		return startDevices(device.NewIcmpSender(e), deviceInfo, e)
+	}
 	return fmt.Errorf("unsupported Device type:%s", deviceInfo.Type)
 
 }
