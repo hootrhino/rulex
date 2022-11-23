@@ -3,10 +3,12 @@
 function Success()
     --
 end
+
 -- Failed
 function Failed(error)
     print(error)
 end
+
 -- 属性下发以后，格式如下:
 -- data =
 -- {
@@ -25,7 +27,7 @@ end
 --     }
 -- }
 -- Actions
-Actions = {function(data)
+Actions = { function(data)
     local dataT, err = rulexlib:J2T(data)
     -- 兼容多种平台
     if dataT['method'] == 'control' or dataT['method'] == 'property' then
@@ -40,13 +42,13 @@ Actions = {function(data)
             [7] = params['sw2'],
             [8] = params['sw1']
         }
-        local n, err = rulexlib:WriteDevice('YK8Device1', rulexlib:T2J({{
+        local n, err = rulexlib:WriteDevice('YK8Device1', 0, rulexlib:T2J({ {
             ['function'] = 15,
             ['slaverId'] = 3,
             ['address'] = 0,
             ['quantity'] = 1,
             ['value'] = rulexlib:T2Str(cmd)
-        }}))
+        } }))
         if (err) then
             rulexlib:Throw(err)
         end
@@ -62,4 +64,4 @@ Actions = {function(data)
         end
     end
     return true, data
-end}
+end }

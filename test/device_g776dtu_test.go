@@ -50,7 +50,7 @@ func Test_g7776_Device(t *testing.T) {
 		Actions = {
 		function(data)
 			print("received: ",data)
-			local n1, err = rulexlib:WriteDevice("GUART1", "GUART1 data")
+			local n1, err = rulexlib:WriteDevice("GUART1", 0, "GUART1 data")
 			print("write size: ",n1, "error: ",err)
 			return true, data
 		end

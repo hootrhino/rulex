@@ -90,7 +90,7 @@ Actions = {
 	if dataT['method'] == 'action' then
 		local actionId = dataT['actionId']
 		if actionId == 'get_state' then
-			local readData, err = rulexlib:ReadDevice(device)
+			local readData, err = rulexlib:ReadDevice(0, device)
 			if (err ~= nil) then
 				print('ReadDevice data from device error:', err)
 				return false, data
@@ -114,7 +114,7 @@ Actions = {
 	if dataT['method'] == 'property' then
 		local schemaParams = rulexlib:J2T(dataT['data'])
 		print('schemaParams:', schemaParams)
-		local n1, err = rulexlib:WriteDevice(device, rulexlib:T2J({{
+		local n1, err = rulexlib:WriteDevice(device, 0, rulexlib:T2J({{
 			['function'] = 15,
 			['slaverId'] = 3,
 			['address'] = 0,
