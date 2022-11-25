@@ -18,7 +18,7 @@ func Test_ithings(t *testing.T) {
 	if err := engine.LoadPlugin("plugin.http_server", httpserver.NewHttpApiServer()); err != nil {
 		t.Fatal("HttpServer load failed:", err)
 	}
-	ithingsIothub := typex.NewInEnd(typex.TENCENT_IOT_HUB,
+	ithingsIothub := typex.NewInEnd(typex.ITHINGS_IOT_HUB,
 		"MQTT", "MQTT", map[string]interface{}{
 			"host":       "106.15.225.172",
 			"port":       1883,
@@ -54,6 +54,6 @@ func Test_ithings(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	time.Sleep(20 * time.Second)
+	time.Sleep(30 * time.Second)
 	engine.Stop()
 }
