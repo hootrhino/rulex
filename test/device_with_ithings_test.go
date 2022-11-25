@@ -30,7 +30,7 @@ func Test_ithings(t *testing.T) {
 		})
 	ithingsIothub.UUID = "ithingsIothub"
 	if err := engine.LoadInEnd(ithingsIothub); err != nil {
-		t.Fatal("mqttOutEnd load failed:", err)
+		t.Fatal("ithingsIothub load failed:", err)
 	}
 
 	callback :=
