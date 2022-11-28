@@ -40,6 +40,10 @@ func NewGenericUartDevice(e typex.RuleX) typex.XDevice {
 //  初始化
 func (uart *genericUartDevice) Init(devId string, configMap map[string]interface{}) error {
 	uart.PointId = devId
+	// 检查配置
+	if uart.mainConfig.Decollator == "" {
+		uart.mainConfig.Decollator = "\n"
+	}
 	if err := utils.BindSourceConfig(configMap, &uart.mainConfig); err != nil {
 		glogger.GLogger.Error(err)
 		return err
@@ -75,10 +79,15 @@ func (uart *genericUartDevice) Start(cctx typex.CCTX) error {
 		uart.status = typex.DEV_UP
 		return nil
 	}
+	// 是否开启按照频率自动获取数据
+	if !uart.mainConfig.AutoRequest {
+		goto END
+	}
 	go func(ctx context.Context) {
 		ticker := time.NewTicker(time.Duration(uart.mainConfig.Frequency) * time.Second)
-		buffer := make([]byte, common.T_64KB)
-		uart.driver.Read(0, buffer) //清理缓存
+		buffer := make([]byte, common.T_64KB) // 默认缓冲区64KB, 应该够了
+		offset := 0
+		uart.driver.Read(0, buffer[offset:]) //清理缓存
 		for {
 			<-ticker.C
 			select {
@@ -86,23 +95,35 @@ func (uart *genericUartDevice) Start(cctx typex.CCTX) error {
 				ticker.Stop()
 				return
 			default:
-				uart.locker.Lock()
-				n, err := uart.driver.Read(0, buffer)
-				uart.locker.Unlock()
-				if err != nil {
-					glogger.GLogger.Error(err)
+				{
+				}
+			}
+			uart.locker.Lock()
+			n, err := uart.driver.Read(0, buffer[offset:])
+			uart.locker.Unlock()
+			if err != nil {
+				glogger.GLogger.Error(err)
+				continue
+			}
+			// 检查是否读到了协议结束符号, 只要发现结束符就提交, 移动指针
+			for i := 0; i < n; i++ {
+				if buffer[i] == uart.mainConfig.Decollator[0] {
+					mapV := map[string]string{
+						"tag":   uart.mainConfig.Tag,
+						"value": string(buffer[:n]),
+					}
+					bytes, _ := json.Marshal(mapV)
+					uart.RuleEngine.WorkDevice(uart.Details(), string(bytes))
+					offset = 0
+					continue
+				} else {
+					offset += n
 					continue
 				}
-				mapV := map[string]interface{}{
-					"tag":   uart.mainConfig.Tag,
-					"value": string(buffer[:n]),
-				}
-				bytes, _ := json.Marshal(mapV)
-				uart.RuleEngine.WorkDevice(uart.Details(), string(bytes))
 			}
 		}
-
 	}(uart.Ctx)
+END:
 	uart.status = typex.DEV_UP
 	return nil
 }
