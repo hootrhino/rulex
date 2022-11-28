@@ -51,7 +51,7 @@ func Test_UART_Device(t *testing.T) {
 		`
 		Actions = {
 		function(data)
-			print(data)
+			print('----> ',data)
 			return true, data
 		end
 	}
