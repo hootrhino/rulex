@@ -13,7 +13,6 @@ import (
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
-//
 type mqttInEndSource struct {
 	typex.XStatus
 	client     mqtt.Client
@@ -95,9 +94,9 @@ func (mm *mqttInEndSource) DataModels() []typex.XDataModel {
 }
 
 func (mm *mqttInEndSource) Stop() {
-	mm.client.Disconnect(0)
-	mm.CancelCTX()
 	mm.status = typex.SOURCE_STOP
+	mm.CancelCTX()
+	mm.client.Disconnect(0)
 }
 func (mm *mqttInEndSource) Reload() {
 
@@ -129,23 +128,17 @@ func (*mqttInEndSource) Configs() *typex.XConfig {
 	return core.GenInConfig(typex.MQTT, "MQTT", common.MqttConfig{})
 }
 
-//
 // 拓扑
-//
 func (*mqttInEndSource) Topology() []typex.TopologyPoint {
 	return []typex.TopologyPoint{}
 }
 
-//
 // 来自外面的数据
-//
 func (*mqttInEndSource) DownStream([]byte) (int, error) {
 	return 0, nil
 }
 
-//
 // 上行数据
-//
 func (*mqttInEndSource) UpStream([]byte) (int, error) {
 	return 0, nil
 }

@@ -152,11 +152,12 @@ func (tss *tss200V2) Status() typex.DeviceState {
 
 // 停止设备
 func (tss *tss200V2) Stop() {
+	tss.status = typex.DEV_STOP
+	tss.CancelCTX()
 	if tss.rtuHandler != nil {
 		tss.rtuHandler.Close()
 	}
-	tss.CancelCTX()
-	tss.status = typex.DEV_STOP
+
 }
 
 // 设备属性，是一系列属性描述

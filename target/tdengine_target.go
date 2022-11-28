@@ -140,8 +140,8 @@ func (td *tdEngineTarget) Topology() []typex.TopologyPoint {
 
 // 停止资源, 用来释放资源
 func (td *tdEngineTarget) Stop() {
-	td.CancelCTX()
 	td.status = typex.SOURCE_STOP
+	td.CancelCTX()
 }
 
 func post(client http.Client,

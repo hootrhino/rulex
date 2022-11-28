@@ -148,10 +148,12 @@ func (ther *rtu485_ther) Status() typex.DeviceState {
 
 // 停止设备
 func (ther *rtu485_ther) Stop() {
+	ther.status = typex.DEV_STOP
+	ther.CancelCTX()
 	if ther.rtuHandler != nil {
 		ther.rtuHandler.Close()
 	}
-	ther.CancelCTX()
+
 }
 
 // 设备属性，是一系列属性描述

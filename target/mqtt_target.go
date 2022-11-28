@@ -16,7 +16,6 @@ import (
 
 //
 
-//
 type mqttOutEndTarget struct {
 	typex.XStatus
 	client     mqtt.Client
@@ -78,12 +77,11 @@ func (mm *mqttOutEndTarget) DataModels() []typex.XDataModel {
 }
 
 func (mm *mqttOutEndTarget) Stop() {
+	mm.status = typex.SOURCE_DOWN
+	mm.CancelCTX()
 	if mm.client != nil {
 		mm.client.Disconnect(0)
 	}
-	mm.CancelCTX()
-	mm.status = typex.SOURCE_DOWN
-
 }
 func (mm *mqttOutEndTarget) Reload() {
 
@@ -109,9 +107,6 @@ func (mm *mqttOutEndTarget) Details() *typex.OutEnd {
 	return mm.RuleEngine.GetOutEnd(mm.PointId)
 }
 
-//
-//
-//
 func (mm *mqttOutEndTarget) To(data interface{}) (interface{}, error) {
 	if mm.client != nil {
 		return mm.client.Publish(mm.mainConfig.PubTopic, 1, false, data).Error(), nil

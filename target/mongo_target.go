@@ -15,7 +15,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-//
 type mongoTarget struct {
 	typex.XStatus
 	client     *mongo.Client
@@ -92,10 +91,9 @@ func (m *mongoTarget) Status() typex.SourceState {
 }
 
 func (m *mongoTarget) Stop() {
-	m.client.Disconnect(m.Ctx)
-	glogger.GLogger.Info("mongoTarget Stop success")
-	m.CancelCTX()
 	m.status = typex.SOURCE_STOP
+	m.CancelCTX()
+	m.client.Disconnect(m.Ctx)
 }
 
 func (m *mongoTarget) To(data interface{}) (interface{}, error) {

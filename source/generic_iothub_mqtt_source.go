@@ -11,15 +11,14 @@ import (
 	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
-
 )
 
-// {
-//     "method":"${method}_reply",
-//     "requestId":"20a4ccfd-d308",
-//     "code": 0,
-//     "status":"some message"
-// }
+//	{
+//	    "method":"${method}_reply",
+//	    "requestId":"20a4ccfd-d308",
+//	    "code": 0,
+//	    "status":"some message"
+//	}
 const (
 	// 属性下发称之为控制指令
 	METHOD_CONTROL       string = "control"
@@ -61,9 +60,6 @@ type tencentUpMsg struct {
 	SubDeviceId     string `json:"subDeviceId,omitempty"`     // 网关子设备ID
 }
 
-//
-//
-//
 type tencentIothubSource struct {
 	typex.XStatus
 	client     mqtt.Client
@@ -144,9 +140,9 @@ func (tc *tencentIothubSource) DataModels() []typex.XDataModel {
 }
 
 func (tc *tencentIothubSource) Stop() {
-	tc.client.Disconnect(0)
-	tc.CancelCTX()
 	tc.status = typex.SOURCE_STOP
+	tc.CancelCTX()
+	tc.client.Disconnect(0)
 }
 func (tc *tencentIothubSource) Reload() {
 
@@ -178,9 +174,7 @@ func (*tencentIothubSource) Configs() *typex.XConfig {
 	return core.GenInConfig(typex.TENCENT_IOT_HUB, "腾讯云IOTHUB接入支持", common.TencentMqttConfig{})
 }
 
-//
 // 拓扑
-//
 func (*tencentIothubSource) Topology() []typex.TopologyPoint {
 	return []typex.TopologyPoint{}
 }
@@ -229,9 +223,7 @@ func (tc *tencentIothubSource) DownStream(bytes []byte) (int, error) {
 	return 0, err
 }
 
-//
 // 上行数据
-//
 func (*tencentIothubSource) UpStream([]byte) (int, error) {
 	return 0, nil
 }

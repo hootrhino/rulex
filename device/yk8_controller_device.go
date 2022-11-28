@@ -149,11 +149,12 @@ func (yk8 *YK8Controller) Status() typex.DeviceState {
 
 // 停止设备
 func (yk8 *YK8Controller) Stop() {
+	yk8.status = typex.DEV_STOP
+	yk8.CancelCTX()
 	if yk8.rtuHandler != nil {
 		yk8.rtuHandler.Close()
 	}
-	yk8.CancelCTX()
-	yk8.status = typex.DEV_STOP
+
 }
 
 // 设备属性，是一系列属性描述

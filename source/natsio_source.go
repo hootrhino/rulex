@@ -102,6 +102,8 @@ func (nt *natsSource) Details() *typex.InEnd {
 //--------------------------------------------------------
 
 func (nt *natsSource) Stop() {
+	nt.status = typex.SOURCE_STOP
+	nt.CancelCTX()
 	if nt.natsConnector != nil {
 		if nt.natsConnector.IsConnected() {
 			err := nt.natsConnector.Drain()
@@ -113,8 +115,7 @@ func (nt *natsSource) Stop() {
 			nt.natsConnector = nil
 		}
 	}
-	nt.CancelCTX()
-	nt.status = typex.SOURCE_STOP
+
 }
 func (nt *natsSource) Configs() *typex.XConfig {
 	return core.GenInConfig(typex.NATS_SERVER, "NATS_SERVER", common.NatsConfig{})
@@ -127,28 +128,22 @@ func (nt *natsSource) Driver() typex.XExternalDriver {
 	return nil
 }
 
-//
 // 拓扑
-//
 func (*natsSource) Topology() []typex.TopologyPoint {
 	return []typex.TopologyPoint{}
 }
 
-//
 // 来自外面的数据
-//
 func (*natsSource) DownStream([]byte) (int, error) {
 	return 0, nil
 }
 
-//
 // 上行数据
-//
 func (*natsSource) UpStream([]byte) (int, error) {
 	return 0, nil
 }
 
-//--------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------
 func (nt *natsSource) subscribeNats() {
 	_, err := nt.natsConnector.Subscribe(nt.mainConfig.Topic, func(msg *nats.Msg) {
 		if nt.natsConnector != nil {

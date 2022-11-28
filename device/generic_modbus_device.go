@@ -203,14 +203,15 @@ func (mdev *generic_modbus_device) Status() typex.DeviceState {
 
 // 停止设备
 func (mdev *generic_modbus_device) Stop() {
+	mdev.status = typex.DEV_STOP
+	mdev.CancelCTX()
 	if mdev.tcpHandler != nil {
 		mdev.tcpHandler.Close()
 	}
 	if mdev.rtuHandler != nil {
 		mdev.rtuHandler.Close()
 	}
-	mdev.CancelCTX()
-	mdev.status = typex.DEV_STOP
+
 }
 
 // 设备属性，是一系列属性描述

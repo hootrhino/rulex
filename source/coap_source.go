@@ -80,8 +80,8 @@ func (cc *coAPInEndSource) Start(cctx typex.CCTX) error {
 
 //
 func (cc *coAPInEndSource) Stop() {
-	cc.CancelCTX()
 	cc.status = typex.SOURCE_STOP
+	cc.CancelCTX()
 
 }
 
