@@ -1,7 +1,6 @@
 package device
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"sync"
@@ -14,6 +13,10 @@ import (
 	"github.com/i4de/rulex/utils"
 	serial "github.com/wwhai/goserial"
 )
+
+// 全局缓冲
+var _ReadBuffer []byte = make([]byte, common.T_64KB) // 默认缓冲区64KB, 应该够了
+var _ReadBufferOffset int = 0
 
 type genericUartDevice struct {
 	typex.XStatus
@@ -71,38 +74,6 @@ func (uart *genericUartDevice) Start(cctx typex.CCTX) error {
 		return err
 	}
 	uart.driver = driver.NewRawUartDriver(uart.Ctx, uart.RuleEngine, uart.Details(), serialPort)
-	if !uart.mainConfig.AutoRequest {
-		uart.status = typex.DEV_UP
-		return nil
-	}
-	go func(ctx context.Context) {
-		ticker := time.NewTicker(time.Duration(uart.mainConfig.Frequency) * time.Second)
-		buffer := make([]byte, common.T_64KB)
-		uart.driver.Read(0, buffer) //清理缓存
-		for {
-			<-ticker.C
-			select {
-			case <-ctx.Done():
-				ticker.Stop()
-				return
-			default:
-				uart.locker.Lock()
-				n, err := uart.driver.Read(0, buffer)
-				uart.locker.Unlock()
-				if err != nil {
-					glogger.GLogger.Error(err)
-					continue
-				}
-				mapV := map[string]interface{}{
-					"tag":   uart.mainConfig.Tag,
-					"value": string(buffer[:n]),
-				}
-				bytes, _ := json.Marshal(mapV)
-				uart.RuleEngine.WorkDevice(uart.Details(), string(bytes))
-			}
-		}
-
-	}(uart.Ctx)
 	uart.status = typex.DEV_UP
 	return nil
 }
@@ -114,17 +85,33 @@ func (uart *genericUartDevice) Start(cctx typex.CCTX) error {
 //	    "value":"value s"
 //	}
 func (uart *genericUartDevice) OnRead(cmd int, data []byte) (int, error) {
+
+	uart.driver.Read(0, _ReadBuffer[_ReadBufferOffset:]) //清理缓存
 	uart.locker.Lock()
-	n, err := uart.driver.Read(0, data)
+	n, err := uart.driver.Read(0, _ReadBuffer[_ReadBufferOffset:])
 	uart.locker.Unlock()
-	buffer := make([]byte, n)
-	mapV := map[string]interface{}{
-		"tag":   uart.mainConfig.Tag,
-		"value": string(buffer[:n]),
+	if err != nil {
+		glogger.GLogger.Error(err)
+		return 0, err
 	}
-	bytes, _ := json.Marshal(mapV)
-	copy(data, bytes)
-	return n, err
+	// 检查是否读到了协议结束符号, 只要发现结束符就提交, 移动指针
+	for i := 0; i < n; i++ {
+		if _ReadBuffer[i] == uart.mainConfig.Decollator[0] {
+			mapV := map[string]string{
+				"tag":   uart.mainConfig.Tag,
+				"value": string(_ReadBuffer[:n]),
+			}
+			bytes, _ := json.Marshal(mapV)
+			uart.RuleEngine.WorkDevice(uart.Details(), string(bytes))
+			copy(data, bytes)
+			_ReadBufferOffset = 0
+			continue
+		} else {
+			_ReadBufferOffset += n
+			continue
+		}
+	}
+	return 0, nil
 }
 
 // 把数据写入设备

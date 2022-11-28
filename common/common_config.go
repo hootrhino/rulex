@@ -20,9 +20,9 @@ type IpConfig struct {
 	// Weather allow AutoRequest?
 	AutoRequest bool `json:"autoRequest" title:"启动轮询" info:""`
 	// Request Frequency, default 5 second
-	Frequency int64    `json:"frequency" validate:"required" title:"采集频率" info:""`
+	Frequency int64 `json:"frequency" validate:"required" title:"采集频率" info:""`
 	// ["127.0.0.1", "127.0.0.2", "127.0.0.3"]
-	Hosts     []string `json:"hosts" validate:"required" title:"服务地址" info:""`
+	Hosts []string `json:"hosts" validate:"required" title:"服务地址" info:""`
 }
 
 /*
@@ -50,6 +50,8 @@ type GenericUartConfig struct {
 	Uart     string `json:"uart" validate:"required" title:"串口路径" info:"本地系统的串口路径"`
 	BaudRate int    `json:"baudRate" validate:"required" title:"波特率" info:"串口通信波特率"`
 	DataBits int    `json:"dataBits" validate:"required" title:"数据位" info:"串口通信数据位"`
+	// 结束符, 默认是 '\n'；但是可以自己定义
+	Decollator string `json:"decollator" title:"协议分隔符" info:""`
 	// Weather allow AutoRequest?
 	AutoRequest bool `json:"autoRequest" title:"启动轮询" info:""`
 	// Request Frequency, default 5 second
