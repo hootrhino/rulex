@@ -67,6 +67,9 @@ type tencentIothubSource struct {
 	status     typex.SourceState
 }
 
+func NewGenericIothubSource(e typex.RuleX) typex.XSource {
+	return NewTencentIothubSource(e)
+}
 func NewTencentIothubSource(e typex.RuleX) typex.XSource {
 	m := new(tencentIothubSource)
 	m.RuleEngine = e
