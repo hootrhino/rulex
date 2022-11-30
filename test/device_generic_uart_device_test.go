@@ -27,14 +27,14 @@ func Test_UART_Device(t *testing.T) {
 		"UART", "UART", "UART", map[string]interface{}{
 			"autoRequest": true,
 			"decollator":  "\n",
-			"baudRate":    9600,
+			"baudRate":    115200,
 			"dataBits":    8,
 			"frequency":   5,
 			"parity":      "N",
 			"stopBits":    1,
 			"tag":         "tag1",
 			"timeout":     5,
-			"uart":        "COM4",
+			"uart":        "COM6",
 		})
 	GUART.UUID = "GUART1"
 	if err := engine.LoadDevice(GUART); err != nil {

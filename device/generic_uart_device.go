@@ -70,6 +70,7 @@ func (uart *genericUartDevice) Start(cctx typex.CCTX) error {
 		glogger.GLogger.Error("rawUartDriver start failed:", err)
 		return err
 	}
+	uart.driver = driver.NewRawUartDriver(uart.Ctx, uart.RuleEngine, uart.Details(), serialPort)
 	if !uart.mainConfig.AutoRequest {
 		goto END
 	}
@@ -103,7 +104,7 @@ func (uart *genericUartDevice) Start(cctx typex.CCTX) error {
 				if Byte == Decollator {
 					mapV := map[string]string{
 						"tag":   uart.mainConfig.Tag,
-						"value": string(buffer[:len]),
+						"value": string(buffer[:offset]),
 					}
 					bytes, _ := json.Marshal(mapV)
 					uart.RuleEngine.WorkDevice(uart.Details(), string(bytes))
