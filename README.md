@@ -149,13 +149,13 @@ make **
 
 ## 支持的平台
 
-| 平台    | 架构   | 编译测试 |
-| ------- | ------ | -------- |
-| Linux   | X86-64 | 通过     |
-| ARM64   | ARM-64 | 通过     |
-| ARM32   | ARM-32 | 通过     |
-| MacOS   | X86-64 | 通过     |
-| 其他    | 未知   | 未知     |
+| 平台  | 架构   | 编译测试 |
+| ----- | ------ | -------- |
+| Linux | X86-64 | 通过     |
+| ARM64 | ARM-64 | 通过     |
+| ARM32 | ARM-32 | 通过     |
+| MacOS | X86-64 | 通过     |
+| 其他  | 未知   | 未知     |
 
 ## 规则引擎
 
@@ -250,8 +250,8 @@ Actions = {
 ## 社区
 
 - QQ群：608382561
-- 微信：nilyouth( 加好友后进群, 别忘了来个小星星, 暗号：RULEX )
 - 文档: <a href="https://rulex.pages.dev">[点我查看详细文档]</a>
+- 微信：nilyouth( 加好友后进群, 别忘了来个小星星, 暗号：RULEX )
   <div style="text-align:center">
     <img src="./README_RES/wx.jpg" width="150px" />
   </div>
