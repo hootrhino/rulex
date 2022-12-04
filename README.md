@@ -247,16 +247,14 @@ Actions = {
 
 ## 详细文档
 
-`<a href="https://rulex.pages.dev">`[点我查看详细文档]`</a>`
-
 ## 社区
 
 - QQ群：608382561
 - 微信：nilyouth( 加好友后进群, 别忘了来个小星星, 暗号：RULEX )
-
+- 文档: <a href="https://rulex.pages.dev">[点我查看详细文档]</a>
   <div style="text-align:center">
     <img src="./README_RES/wx.jpg" width="150px" />
-    </div>
+  </div>
 - 博客1：https://wwhai.gitee.io
 - 博客2：https://wwhai.github.io
 
