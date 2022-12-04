@@ -260,6 +260,18 @@ Actions = {
 - 博客1：https://wwhai.gitee.io
 - 博客2：https://wwhai.github.io
 
-## Star
+## 贡献者
+鸣谢各位给RULEX贡献代码的大佬。
 
+### RULEX
+<a href="https://github.com/i4de/rulex/graphs/contributors">
+  <img src="https://contributors-img.web.app/image?repo=i4de/rulex" />
+</a>
+
+### RULEX Other
+<a href="https://github.com/i4de/rulex-dashboard/graphs/contributors">
+  <img src="https://contributors-img.web.app/image?repo=i4de/rulex-dashboard" />
+</a>
+
+## Star
 <img src="https://starchart.cc/i4de/rulex.svg">
