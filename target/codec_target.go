@@ -29,16 +29,12 @@ func NewCodecTarget(rx typex.RuleX) typex.XTarget {
 	return ct
 }
 
-//
 // 测试资源是否可用
-//
 func (ct *codecTarget) Test(outEndId string) bool {
 	return true
 }
 
-//
 // 用来初始化传递资源配置
-//
 func (ct *codecTarget) Init(outEndId string, configMap map[string]interface{}) error {
 	ct.PointId = outEndId
 	//
@@ -49,9 +45,7 @@ func (ct *codecTarget) Init(outEndId string, configMap map[string]interface{}) e
 	return nil
 }
 
-//
 // 启动资源
-//
 func (ct *codecTarget) Start(cctx typex.CCTX) error {
 	ct.Ctx = cctx.Ctx
 	ct.CancelCTX = cctx.CancelCTX
@@ -68,55 +62,40 @@ func (ct *codecTarget) Start(cctx typex.CCTX) error {
 
 }
 
-//
 // 资源是否被启用
-//
 func (ct *codecTarget) Enabled() bool {
 	return true
 }
 
-//
 // 重载: 比如可以在重启的时候把某些数据保存起来
-//
 func (ct *codecTarget) Reload() {
 
 }
 
-//
 // 挂起资源, 用来做暂停资源使用
-//
 func (ct *codecTarget) Pause() {
 
 }
 
-//
 // 获取资源状态
-//
 func (ct *codecTarget) Status() typex.SourceState {
 	return ct.status
 
 }
 
-//
 // 获取资源绑定的的详情
-//
 func (ct *codecTarget) Details() *typex.OutEnd {
 	out := ct.RuleEngine.GetOutEnd(ct.PointId)
 	return out
 
 }
 
-//
-//
-//
 func (ct *codecTarget) Configs() *typex.XConfig {
 	return core.GenOutConfig(typex.GRPC_CODEC_TARGET, "GRPC_CODEC_TARGET", common.GrpcConfig{})
 
 }
 
-//
 // 数据出口
-//
 func (ct *codecTarget) To(data interface{}) (interface{}, error) {
 	dataRequest := &rulexrpc.CodecRequest{
 		Value: []byte(data.(string)),
@@ -135,10 +114,9 @@ func (ct *codecTarget) To(data interface{}) (interface{}, error) {
 	return response.GetData(), nil
 }
 
-//
 // 停止资源, 用来释放资源
-//
 func (ct *codecTarget) Stop() {
-	ct.rpcConnection.Close()
 	ct.status = typex.SOURCE_STOP
+	ct.CancelCTX()
+	ct.rpcConnection.Close()
 }

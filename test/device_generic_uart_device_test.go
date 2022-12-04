@@ -19,22 +19,22 @@ func Test_UART_Device(t *testing.T) {
 	engine := RunTestEngine()
 	engine.Start()
 
-	// HttpApiServer loaded default
 	if err := engine.LoadPlugin("plugin.http_server", httpserver.NewHttpApiServer()); err != nil {
 		t.Fatal("HttpServer load failed:", err)
 	}
 
-	// YK8 Inend
 	GUART := typex.NewDevice(typex.GENERIC_UART,
 		"UART", "UART", "UART", map[string]interface{}{
-			"baudRate":  9600,
-			"dataBits":  8,
-			"frequency": 5,
-			"parity":    "N",
-			"stopBits":  1,
-			"tag":       "tag1",
-			"timeout":   5,
-			"uart":      "COM2",
+			"autoRequest": true,
+			"decollator":  "\n",
+			"baudRate":    115200,
+			"dataBits":    8,
+			"frequency":   5,
+			"parity":      "N",
+			"stopBits":    1,
+			"tag":         "tag1",
+			"timeout":     5,
+			"uart":        "COM6",
 		})
 	GUART.UUID = "GUART1"
 	if err := engine.LoadDevice(GUART); err != nil {
@@ -51,7 +51,7 @@ func Test_UART_Device(t *testing.T) {
 		`
 		Actions = {
 		function(data)
-			print(data)
+			print('----> ',data)
 			return true, data
 		end
 	}

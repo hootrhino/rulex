@@ -14,7 +14,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-//
 type httpInEndSource struct {
 	typex.XStatus
 	engine     *gin.Engine
@@ -40,7 +39,6 @@ func (hh *httpInEndSource) Init(inEndId string, configMap map[string]interface{}
 	return nil
 }
 
-//
 func (hh *httpInEndSource) Start(cctx typex.CCTX) error {
 	hh.Ctx = cctx.Ctx
 	hh.CancelCTX = cctx.CancelCTX
@@ -77,15 +75,13 @@ func (hh *httpInEndSource) Start(cctx typex.CCTX) error {
 	return nil
 }
 
-//
 func (mm *httpInEndSource) DataModels() []typex.XDataModel {
 	return mm.XDataModels
 }
 
-//
 func (hh *httpInEndSource) Stop() {
-	hh.CancelCTX()
 	hh.status = typex.SOURCE_STOP
+	hh.CancelCTX()
 }
 func (hh *httpInEndSource) Reload() {
 
@@ -112,23 +108,17 @@ func (*httpInEndSource) Driver() typex.XExternalDriver {
 	return nil
 }
 
-//
 // 拓扑
-//
 func (*httpInEndSource) Topology() []typex.TopologyPoint {
 	return []typex.TopologyPoint{}
 }
 
-//
 // 来自外面的数据
-//
 func (*httpInEndSource) DownStream([]byte) (int, error) {
 	return 0, nil
 }
 
-//
 // 上行数据
-//
 func (*httpInEndSource) UpStream([]byte) (int, error) {
 	return 0, nil
 }

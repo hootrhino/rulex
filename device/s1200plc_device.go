@@ -160,8 +160,8 @@ func (s1200 *s1200plc) Status() typex.DeviceState {
 
 // 停止设备
 func (s1200 *s1200plc) Stop() {
-	s1200.CancelCTX()
 	s1200.status = typex.DEV_STOP
+	s1200.CancelCTX()
 }
 
 // 设备属性，是一系列属性描述

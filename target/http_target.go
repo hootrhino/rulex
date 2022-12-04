@@ -64,8 +64,8 @@ func (ht *HTTPTarget) To(data interface{}) (interface{}, error) {
 	return r, err
 }
 
-//
 func (ht *HTTPTarget) Stop() {
+	ht.status = typex.SOURCE_STOP
 	ht.CancelCTX()
 }
 func (ht *HTTPTarget) Details() *typex.OutEnd {

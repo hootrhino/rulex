@@ -77,9 +77,9 @@ func (nt *natsTarget) Details() *typex.OutEnd {
 	return nt.RuleEngine.GetOutEnd(nt.PointId)
 }
 
-//--------------------------------------------------------
+// --------------------------------------------------------
 // To: 数据出口
-//--------------------------------------------------------
+// --------------------------------------------------------
 func (nt *natsTarget) To(data interface{}) (interface{}, error) {
 	if nt.natsConnector != nil {
 		return nil, nt.natsConnector.Publish(nt.mainConfig.Topic, []byte((data.(string))))
@@ -88,6 +88,8 @@ func (nt *natsTarget) To(data interface{}) (interface{}, error) {
 }
 
 func (nt *natsTarget) Stop() {
+	nt.status = typex.SOURCE_STOP
+	nt.CancelCTX()
 	if nt.natsConnector != nil {
 		if nt.natsConnector.IsConnected() {
 			nt.natsConnector.Drain()
@@ -95,8 +97,7 @@ func (nt *natsTarget) Stop() {
 			nt.natsConnector = nil
 		}
 	}
-	nt.CancelCTX()
-	nt.status = typex.SOURCE_STOP
+
 }
 
 /*

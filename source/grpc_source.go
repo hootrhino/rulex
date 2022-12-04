@@ -24,9 +24,7 @@ type RulexRpcServer struct {
 	rulexrpc.UnimplementedRulexRpcServer
 }
 
-//
 // Source interface
-//
 type grpcInEndSource struct {
 	typex.XStatus
 	rulexServer *RulexRpcServer
@@ -35,7 +33,6 @@ type grpcInEndSource struct {
 	status      typex.SourceState
 }
 
-//
 func NewGrpcInEndSource(e typex.RuleX) typex.XSource {
 	g := grpcInEndSource{}
 	g.RuleEngine = e
@@ -56,7 +53,6 @@ func (g *grpcInEndSource) Init(inEndId string, configMap map[string]interface{})
 	return nil
 }
 
-//
 func (g *grpcInEndSource) Start(cctx typex.CCTX) error {
 	g.Ctx = cctx.Ctx
 	g.CancelCTX = cctx.CancelCTX
@@ -80,18 +76,17 @@ func (g *grpcInEndSource) Start(cctx typex.CCTX) error {
 	return nil
 }
 
-//
 func (g *grpcInEndSource) DataModels() []typex.XDataModel {
 	return g.XDataModels
 }
 
-//
 func (g *grpcInEndSource) Stop() {
+	g.status = typex.SOURCE_STOP
+	g.CancelCTX()
+
 	if g.rpcServer != nil {
 		g.rpcServer.Stop()
 	}
-	g.CancelCTX()
-	g.status = typex.SOURCE_STOP
 
 }
 func (g *grpcInEndSource) Reload() {
@@ -123,7 +118,6 @@ func (*grpcInEndSource) Configs() *typex.XConfig {
 	return core.GenInConfig(typex.GRPC, "GRPC", common.GrpcConfig{})
 }
 
-//
 func (r *RulexRpcServer) Work(ctx context.Context, in *rulexrpc.Data) (*rulexrpc.Response, error) {
 	ok, err := r.grpcInEndSource.RuleEngine.WorkInEnd(
 		r.grpcInEndSource.RuleEngine.GetInEnd(r.grpcInEndSource.PointId),
@@ -143,23 +137,17 @@ func (r *RulexRpcServer) Work(ctx context.Context, in *rulexrpc.Data) (*rulexrpc
 
 }
 
-//
 // 拓扑
-//
 func (*grpcInEndSource) Topology() []typex.TopologyPoint {
 	return []typex.TopologyPoint{}
 }
 
-//
 // 来自外面的数据
-//
 func (*grpcInEndSource) DownStream([]byte) (int, error) {
 	return 0, nil
 }
 
-//
 // 上行数据
-//
 func (*grpcInEndSource) UpStream([]byte) (int, error) {
 	return 0, nil
 }

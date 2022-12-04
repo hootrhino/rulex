@@ -107,7 +107,7 @@ func (sender *IcmpSender) Status() typex.DeviceState {
 
 // 停止设备
 func (sender *IcmpSender) Stop() {
-
+	sender.status = typex.DEV_STOP
 	sender.CancelCTX()
 }
 
@@ -136,9 +136,9 @@ func (sender *IcmpSender) OnDCACall(UUID string, Command string, Args interface{
 	return typex.DCAResult{}
 }
 
-//--------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------
 // private
-//--------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------
 func Pingq(ip string, timeout time.Duration) (time.Duration, error) {
 	const IcmpLen = 8
 	msg := [32]byte{

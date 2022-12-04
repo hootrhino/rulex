@@ -141,11 +141,12 @@ func (uart *UsrG776DTU) Status() typex.DeviceState {
 
 // 停止设备
 func (uart *UsrG776DTU) Stop() {
+	uart.status = typex.DEV_STOP
+	uart.CancelCTX()
 	if uart.driver != nil {
 		uart.driver.Stop()
 	}
-	uart.CancelCTX()
-	uart.status = typex.DEV_STOP
+
 }
 
 // 设备属性，是一系列属性描述

@@ -51,9 +51,6 @@ type ithingsUpMsg struct {
 	SubDeviceId     string `json:"subDeviceId,omitempty"`     // 网关子设备ID
 }
 
-//
-//
-//
 type ithings struct {
 	typex.XStatus
 	client     mqtt.Client
@@ -133,9 +130,9 @@ func (tc *ithings) DataModels() []typex.XDataModel {
 }
 
 func (tc *ithings) Stop() {
-	tc.client.Disconnect(0)
-	tc.CancelCTX()
 	tc.status = typex.SOURCE_STOP
+	tc.CancelCTX()
+	tc.client.Disconnect(0)
 }
 func (tc *ithings) Reload() {
 
@@ -167,9 +164,7 @@ func (*ithings) Configs() *typex.XConfig {
 	return core.GenInConfig(typex.ITHINGS_IOT_HUB, "ITHINGS IOTHUB接入支持", common.IThingsMqttConfig{})
 }
 
-//
 // 拓扑
-//
 func (*ithings) Topology() []typex.TopologyPoint {
 	return []typex.TopologyPoint{}
 }
@@ -206,9 +201,7 @@ func (tc *ithings) DownStream(bytes []byte) (int, error) {
 	return 0, nil
 }
 
-//
 // 上行数据
-//
 func (*ithings) UpStream([]byte) (int, error) {
 	return 0, nil
 }

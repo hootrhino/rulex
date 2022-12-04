@@ -110,14 +110,15 @@ func (u *udpSource) Status() typex.SourceState {
 }
 
 func (u *udpSource) Stop() {
+	u.status = typex.SOURCE_STOP
+	u.CancelCTX()
 	if u.uDPConn != nil {
 		err := u.uDPConn.Close()
 		if err != nil {
 			glogger.GLogger.Error(err)
 		}
 	}
-	u.CancelCTX()
-	u.status = typex.SOURCE_STOP
+
 }
 func (*udpSource) Driver() typex.XExternalDriver {
 	return nil
@@ -126,23 +127,17 @@ func (*udpSource) Configs() *typex.XConfig {
 	return core.GenInConfig(typex.RULEX_UDP, "RULEX_UDP", common.RULEXUdpConfig{})
 }
 
-//
 // 拓扑
-//
 func (*udpSource) Topology() []typex.TopologyPoint {
 	return []typex.TopologyPoint{}
 }
 
-//
 // 来自外面的数据
-//
 func (*udpSource) DownStream([]byte) (int, error) {
 	return 0, nil
 }
 
-//
 // 上行数据
-//
 func (*udpSource) UpStream([]byte) (int, error) {
 	return 0, nil
 }
