@@ -40,6 +40,10 @@ func NewGenericUartDevice(e typex.RuleX) typex.XDevice {
 //  初始化
 func (uart *genericUartDevice) Init(devId string, configMap map[string]interface{}) error {
 	uart.PointId = devId
+	// 检查配置
+	if uart.mainConfig.Decollator == "" {
+		uart.mainConfig.Decollator = "\n"
+	}
 	if err := utils.BindSourceConfig(configMap, &uart.mainConfig); err != nil {
 		glogger.GLogger.Error(err)
 		return err
@@ -71,6 +75,10 @@ func (uart *genericUartDevice) Start(cctx typex.CCTX) error {
 		return err
 	}
 	uart.driver = driver.NewRawUartDriver(uart.Ctx, uart.RuleEngine, uart.Details(), serialPort)
+	if !uart.mainConfig.AutoRequest {
+		goto END
+	}
+	// 是否开启按照频率自动获取数据
 	if !uart.mainConfig.AutoRequest {
 		goto END
 	}
