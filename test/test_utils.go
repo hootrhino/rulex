@@ -4,9 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	httpserver "github.com/i4de/rulex/plugin/http_server"
 	"io"
 	"net/http"
 	"os"
+	"testing"
 	"time"
 
 	"github.com/i4de/rulex/core"
@@ -104,4 +106,32 @@ func MKDir(dirName string) error {
 		return nil
 	}
 	return err
+}
+
+/*
+*
+* 删除之前的文件
+*
+ */
+func RmUnitTestDbFile(t *testing.T) {
+	path, _ := os.Getwd()
+	err := os.RemoveAll(path + "/unitest.db")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+}
+
+/*
+*
+* 启动一个测试服
+*
+ */
+func StartTestServer(t *testing.T) {
+	engine := RunTestEngine()
+	engine.Start()
+	// HttpApiServer loaded default
+	if err := engine.LoadPlugin("plugin.http_server", httpserver.NewHttpApiServer()); err != nil {
+		t.Fatal(err)
+	}
 }
