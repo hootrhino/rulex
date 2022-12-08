@@ -30,7 +30,7 @@ echo "Generate Version Susseccfully"
 #######################################################################
 ## Gen banner
 #######################################################################
-cat >./utils/banner.txt <<EOF
+cat >./utils/banner.b <<EOF
 
 |
 |* Welcome to RULEX framework world <'_'>

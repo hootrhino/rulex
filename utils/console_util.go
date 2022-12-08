@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-//go:embed banner.txt
+//go:embed banner.b
 var banner string
 
 //
