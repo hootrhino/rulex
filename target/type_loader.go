@@ -6,7 +6,7 @@ import (
 	"github.com/i4de/rulex/typex"
 )
 
-var TM typex.TargetRegistry = core.NewTargetTypeManager()
+var TM typex.TargetRegistry
 
 /*
 *
@@ -16,6 +16,7 @@ var TM typex.TargetRegistry = core.NewTargetTypeManager()
  */
 
 func LoadTt() {
+	TM = core.NewTargetTypeManager()
 	TM.Register(typex.HTTP_TARGET, core.GenOutConfig(typex.HTTP_TARGET, "About HTTP_TARGET", common.HTTPConfig{}))
 	TM.Register(typex.MONGO_SINGLE, core.GenOutConfig(typex.MONGO_SINGLE, "About MONGO_SINGLE", common.MongoConfig{}))
 	TM.Register(typex.MQTT_TARGET, core.GenOutConfig(typex.MQTT_TARGET, "About MQTT_TARGET", common.MqttConfig{}))

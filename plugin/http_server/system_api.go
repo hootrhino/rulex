@@ -4,6 +4,7 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/i4de/rulex/device"
 	"github.com/i4de/rulex/source"
 	"github.com/i4de/rulex/statistics"
 	"github.com/i4de/rulex/target"
@@ -148,6 +149,21 @@ func TType(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		c.JSON(200, OkWithData(target.TM.All()))
 	} else {
 		c.JSON(200, OkWithData(target.TM.Find(typex.TargetType(Type))))
+	}
+
+}
+
+/*
+*
+* 设备配置
+*
+ */
+func DType(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+	Type, _ := c.GetQuery("type")
+	if Type == "" {
+		c.JSON(200, OkWithData(device.DM.All()))
+	} else {
+		c.JSON(200, OkWithData(device.DM.Find(typex.DeviceType(Type))))
 	}
 
 }

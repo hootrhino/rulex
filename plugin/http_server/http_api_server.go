@@ -9,7 +9,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/i4de/rulex/device"
 	"github.com/i4de/rulex/glogger"
+	"github.com/i4de/rulex/source"
+	"github.com/i4de/rulex/target"
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
 
@@ -186,6 +189,7 @@ func (hh *HttpApiServer) Start(r typex.RuleX) error {
 	//
 	hh.ginEngine.GET(url("rType"), hh.addRoute(RType))
 	hh.ginEngine.GET(url("tType"), hh.addRoute(TType))
+	hh.ginEngine.GET(url("dType"), hh.addRoute(DType))
 	//
 	// 串口列表
 	//
@@ -201,11 +205,16 @@ func (hh *HttpApiServer) Start(r typex.RuleX) error {
 	hh.ginEngine.POST(url("devices"), hh.addRoute(CreateDevice))
 	hh.ginEngine.PUT(url("devices"), hh.addRoute(UpdateDevice))
 	hh.ginEngine.DELETE(url("devices"), hh.addRoute(DeleteDevice))
+
 	// 外挂管理
 	hh.ginEngine.GET(url("goods"), hh.addRoute(Goods))
 	hh.ginEngine.POST(url("goods"), hh.addRoute(CreateGoods))
 	hh.ginEngine.PUT(url("goods"), hh.addRoute(UpdateGoods))
 	hh.ginEngine.DELETE(url("goods"), hh.addRoute(DeleteGoods))
+	// 加载资源类型
+	source.LoadSt()
+	target.LoadTt()
+	device.LoadDt()
 	glogger.GLogger.Infof("Http server started on http://0.0.0.0:%v", hh.Port)
 	return nil
 }

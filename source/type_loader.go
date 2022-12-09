@@ -16,6 +16,7 @@ var SM typex.SourceRegistry = core.NewSourceTypeManager()
  */
 
 func LoadSt() {
+	SM = core.NewSourceTypeManager()
 	SM.Register(typex.COAP, core.GenInConfig(typex.COAP, "About COAP", common.HostConfig{}))
 	SM.Register(typex.GRPC, core.GenInConfig(typex.GRPC, "About GRPC", common.GrpcConfig{}))
 	SM.Register(typex.HTTP, core.GenInConfig(typex.HTTP, "About HTTP", common.HostConfig{}))

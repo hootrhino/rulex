@@ -10,9 +10,7 @@ import (
 	"github.com/i4de/rulex/core"
 	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/sidecar"
-	"github.com/i4de/rulex/source"
 	"github.com/i4de/rulex/statistics"
-	"github.com/i4de/rulex/target"
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
 	"github.com/shirou/gopsutil/v3/disk"
@@ -48,8 +46,6 @@ func NewRuleEngine(config typex.RulexConfig) typex.RuleX {
 
 func (e *RuleEngine) Start() *typex.RulexConfig {
 	typex.StartQueue(core.GlobalConfig.MaxQueueSize)
-	source.LoadSt()
-	target.LoadTt()
 	return e.Config
 }
 
