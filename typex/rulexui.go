@@ -1,4 +1,4 @@
-package core
+package typex
 
 import (
 	"fmt"
@@ -6,14 +6,10 @@ import (
 	"strings"
 
 	"github.com/i4de/rulex/glogger"
-	"github.com/i4de/rulex/typex"
-
 	"github.com/iancoleman/strcase"
 )
 
-//
 // 空串
-//
 const EMPTY_STRING string = ""
 
 /*
@@ -134,7 +130,7 @@ END:
 *
  */
 
-func GenInConfig(Type typex.InEndType, helpTip string, config interface{}) *typex.XConfig {
+func GenInConfig(Type InEndType, helpTip string, config interface{}) *XConfig {
 	c, err := renderConfig(Type.String(), helpTip, config)
 	if err != nil {
 		glogger.GLogger.Error(err)
@@ -142,7 +138,7 @@ func GenInConfig(Type typex.InEndType, helpTip string, config interface{}) *type
 	}
 	return c
 }
-func GenOutConfig(Type typex.TargetType, helpTip string, config interface{}) *typex.XConfig {
+func GenOutConfig(Type TargetType, helpTip string, config interface{}) *XConfig {
 	c, err := renderConfig(Type.String(), helpTip, config)
 	if err != nil {
 		glogger.GLogger.Error(err)
@@ -151,15 +147,15 @@ func GenOutConfig(Type typex.TargetType, helpTip string, config interface{}) *ty
 	return c
 
 }
-func RenderInConfig(Type typex.InEndType, helpTip string, config interface{}) (*typex.XConfig, error) {
+func RenderInConfig(Type InEndType, helpTip string, config interface{}) (*XConfig, error) {
 	return renderConfig(Type.String(), helpTip, config)
 }
-func RenderOutConfig(Type typex.TargetType, helpTip string, config interface{}) (*typex.XConfig, error) {
+func RenderOutConfig(Type TargetType, helpTip string, config interface{}) (*XConfig, error) {
 	return renderConfig(Type.String(), helpTip, config)
 
 }
 
-func renderConfig(Type string, helpTip string, config interface{}) (*typex.XConfig, error) {
+func renderConfig(Type string, helpTip string, config interface{}) (*XConfig, error) {
 	var err error
 	typee := reflect.TypeOf(config)
 	views := make([]interface{}, 0)
@@ -181,7 +177,7 @@ func renderConfig(Type string, helpTip string, config interface{}) (*typex.XConf
 		Hidden := tag.Get("hidden")
 		Placeholder := tag.Get("placeholder")
 		//
-		xcfg := typex.XConfig{}
+		xcfg := XConfig{}
 		// 数字输入
 		if (filedType == "int") ||
 			(filedType == "int64") ||
@@ -294,5 +290,5 @@ func renderConfig(Type string, helpTip string, config interface{}) (*typex.XConf
 
 	}
 END:
-	return &typex.XConfig{Type: Type, Views: views, HelpTip: helpTip}, err
+	return &XConfig{Type: Type, Views: views, HelpTip: helpTip}, err
 }

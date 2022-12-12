@@ -17,9 +17,9 @@ var TM typex.TargetRegistry
 
 func LoadTt() {
 	TM = core.NewTargetTypeManager()
-	TM.Register(typex.HTTP_TARGET, core.GenOutConfig(typex.HTTP_TARGET, "About HTTP_TARGET", common.HTTPConfig{}))
-	TM.Register(typex.MONGO_SINGLE, core.GenOutConfig(typex.MONGO_SINGLE, "About MONGO_SINGLE", common.MongoConfig{}))
-	TM.Register(typex.MQTT_TARGET, core.GenOutConfig(typex.MQTT_TARGET, "About MQTT_TARGET", common.MqttConfig{}))
-	TM.Register(typex.NATS_TARGET, core.GenOutConfig(typex.NATS_TARGET, "About NATS_TARGET", common.NatsConfig{}))
-	TM.Register(typex.TDENGINE_TARGET, core.GenOutConfig(typex.TDENGINE_TARGET, "About TDENGINE_TARGET", common.TDEngineConfig{}))
+	TM.Register(typex.HTTP_TARGET, typex.GenOutConfig(typex.HTTP_TARGET, "About HTTP_TARGET", common.HTTPConfig{}))
+	TM.Register(typex.MONGO_SINGLE, typex.GenOutConfig(typex.MONGO_SINGLE, "About MONGO_SINGLE", common.MongoConfig{}))
+	TM.Register(typex.MQTT_TARGET, typex.GenOutConfig(typex.MQTT_TARGET, "About MQTT_TARGET", common.MqttConfig{}))
+	TM.Register(typex.NATS_TARGET, typex.GenOutConfig(typex.NATS_TARGET, "About NATS_TARGET", common.NatsConfig{}))
+	TM.Register(typex.TDENGINE_TARGET, typex.GenOutConfig(typex.TDENGINE_TARGET, "About TDENGINE_TARGET", common.TDEngineConfig{}))
 }

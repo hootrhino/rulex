@@ -6,7 +6,6 @@ import (
 	"net"
 
 	"github.com/i4de/rulex/common"
-	"github.com/i4de/rulex/core"
 	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/rulexrpc"
 	"github.com/i4de/rulex/typex"
@@ -115,7 +114,7 @@ func (*grpcInEndSource) Driver() typex.XExternalDriver {
 	return nil
 }
 func (*grpcInEndSource) Configs() *typex.XConfig {
-	return core.GenInConfig(typex.GRPC, "GRPC", common.GrpcConfig{})
+	return typex.GenInConfig(typex.GRPC, "GRPC", common.GrpcConfig{})
 }
 
 func (r *RulexRpcServer) Work(ctx context.Context, in *rulexrpc.Data) (*rulexrpc.Response, error) {

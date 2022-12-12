@@ -5,7 +5,6 @@ import (
 	"net"
 
 	"github.com/i4de/rulex/common"
-	"github.com/i4de/rulex/core"
 	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
@@ -124,7 +123,7 @@ func (*udpSource) Driver() typex.XExternalDriver {
 	return nil
 }
 func (*udpSource) Configs() *typex.XConfig {
-	return core.GenInConfig(typex.RULEX_UDP, "RULEX_UDP", common.RULEXUdpConfig{})
+	return typex.GenInConfig(typex.RULEX_UDP, "RULEX_UDP", common.RULEXUdpConfig{})
 }
 
 // 拓扑

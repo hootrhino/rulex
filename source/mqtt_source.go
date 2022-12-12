@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/i4de/rulex/common"
-	"github.com/i4de/rulex/core"
 	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
@@ -125,7 +124,7 @@ func (*mqttInEndSource) Driver() typex.XExternalDriver {
 	return nil
 }
 func (*mqttInEndSource) Configs() *typex.XConfig {
-	return core.GenInConfig(typex.MQTT, "MQTT", common.MqttConfig{})
+	return typex.GenInConfig(typex.MQTT, "MQTT", common.MqttConfig{})
 }
 
 // 拓扑

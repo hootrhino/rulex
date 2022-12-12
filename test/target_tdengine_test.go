@@ -8,8 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/i4de/rulex/common"
-	"github.com/i4de/rulex/core"
+	"github.com/i4de/rulex/common" 
 	httpserver "github.com/i4de/rulex/plugin/http_server"
 	"github.com/i4de/rulex/rulexrpc"
 	"github.com/i4de/rulex/typex"
@@ -33,7 +32,7 @@ func Test_gen_td_config(t *testing.T) {
 	t.Log(string(b))
 }
 func Test_gen_tdEngineConfig(t *testing.T) {
-	c, err := core.RenderOutConfig(typex.TDENGINE_TARGET, "TDENGINE", common.TDEngineConfig{})
+	c, err := typex.RenderOutConfig(typex.TDENGINE_TARGET, "TDENGINE", common.TDEngineConfig{})
 	if err != nil {
 		t.Fatal(err)
 	}

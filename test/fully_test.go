@@ -135,7 +135,7 @@ func TestFullyRun(t *testing.T) {
 				return true, data
 			end,
 			function(data)
-			    rulexlib:log(rulexlib:Time())
+			print(rulexlib:Time())
 				return true, data
 			end
 		}`,

@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/i4de/rulex/common"
-	"github.com/i4de/rulex/core"
 	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
@@ -118,7 +117,7 @@ func (nt *natsSource) Stop() {
 
 }
 func (nt *natsSource) Configs() *typex.XConfig {
-	return core.GenInConfig(typex.NATS_SERVER, "NATS_SERVER", common.NatsConfig{})
+	return typex.GenInConfig(typex.NATS_SERVER, "NATS_SERVER", common.NatsConfig{})
 }
 
 func (nt *natsSource) DataModels() []typex.XDataModel {

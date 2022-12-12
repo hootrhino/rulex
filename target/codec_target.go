@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/i4de/rulex/common"
-	"github.com/i4de/rulex/core"
 	"github.com/i4de/rulex/rulexrpc"
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
@@ -91,7 +90,7 @@ func (ct *codecTarget) Details() *typex.OutEnd {
 }
 
 func (ct *codecTarget) Configs() *typex.XConfig {
-	return core.GenOutConfig(typex.GRPC_CODEC_TARGET, "GRPC_CODEC_TARGET", common.GrpcConfig{})
+	return typex.GenOutConfig(typex.GRPC_CODEC_TARGET, "GRPC_CODEC_TARGET", common.GrpcConfig{})
 
 }
 

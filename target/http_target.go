@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/i4de/rulex/common"
-	"github.com/i4de/rulex/core"
 	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
@@ -78,5 +77,5 @@ func (ht *HTTPTarget) Details() *typex.OutEnd {
 *
  */
 func (*HTTPTarget) Configs() *typex.XConfig {
-	return core.GenOutConfig(typex.HTTP_TARGET, "HTTP_TARGET", common.HTTPConfig{})
+	return typex.GenOutConfig(typex.HTTP_TARGET, "HTTP_TARGET", common.HTTPConfig{})
 }

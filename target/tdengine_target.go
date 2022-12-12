@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/i4de/rulex/common"
-	"github.com/i4de/rulex/core"
 	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
@@ -222,5 +221,5 @@ func (td *tdEngineTarget) To(data interface{}) (interface{}, error) {
 *
  */
 func (*tdEngineTarget) Configs() *typex.XConfig {
-	return core.GenOutConfig(typex.TDENGINE_TARGET, "TDENGINE_TARGET", common.TDEngineConfig{})
+	return typex.GenOutConfig(typex.TDENGINE_TARGET, "TDENGINE_TARGET", common.TDEngineConfig{})
 }

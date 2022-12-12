@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/go-playground/assert/v2"
-	"github.com/i4de/rulex/core"
+
 	"github.com/i4de/rulex/typex"
 )
 
@@ -21,7 +21,7 @@ func Test_RenderConfig(t *testing.T) {
 		File string  `json:"file" validate:"required" title:"File" info:"File" file:"uploadfile"`
 	}
 
-	xcfgs, err := core.RenderInConfig(typex.MQTT, "MQTT", __config{})
+	xcfgs, err := typex.RenderInConfig(typex.MQTT, "MQTT", __config{})
 	if err != nil {
 		t.Fatal(err)
 	} else {

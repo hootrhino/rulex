@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/i4de/rulex/common"
-	"github.com/i4de/rulex/core"
 	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
@@ -29,7 +28,7 @@ func NewHttpInEndSource(e typex.RuleX) typex.XSource {
 	return &h
 }
 func (*httpInEndSource) Configs() *typex.XConfig {
-	return core.GenInConfig(typex.HTTP, "HTTP", common.HTTPConfig{})
+	return typex.GenInConfig(typex.HTTP, "HTTP", common.HTTPConfig{})
 }
 func (hh *httpInEndSource) Init(inEndId string, configMap map[string]interface{}) error {
 	hh.PointId = inEndId

@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/i4de/rulex/common"
-	"github.com/i4de/rulex/core"
 	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
@@ -114,5 +113,5 @@ func (m *mongoTarget) Details() *typex.OutEnd {
 *
  */
 func (*mongoTarget) Configs() *typex.XConfig {
-	return core.GenOutConfig(typex.MONGO_SINGLE, "MONGO_SINGLE", common.MongoConfig{})
+	return typex.GenOutConfig(typex.MONGO_SINGLE, "MONGO_SINGLE", common.MongoConfig{})
 }

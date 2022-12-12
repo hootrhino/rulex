@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/i4de/rulex/common"
-	"github.com/i4de/rulex/core"
 	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
@@ -18,7 +17,6 @@ import (
 	"github.com/plgd-dev/go-coap/v2/mux"
 )
 
-//
 type coAPInEndSource struct {
 	typex.XStatus
 	router     *mux.Router
@@ -78,7 +76,6 @@ func (cc *coAPInEndSource) Start(cctx typex.CCTX) error {
 	return nil
 }
 
-//
 func (cc *coAPInEndSource) Stop() {
 	cc.status = typex.SOURCE_STOP
 	cc.CancelCTX()
@@ -113,26 +110,20 @@ func (cc *coAPInEndSource) Driver() typex.XExternalDriver {
 }
 
 func (*coAPInEndSource) Configs() *typex.XConfig {
-	return core.GenInConfig(typex.COAP, "COAP", common.HostConfig{})
+	return typex.GenInConfig(typex.COAP, "COAP", common.HostConfig{})
 }
 
-//
 // 拓扑
-//
 func (*coAPInEndSource) Topology() []typex.TopologyPoint {
 	return []typex.TopologyPoint{}
 }
 
-//
 // 来自外面的数据
-//
 func (*coAPInEndSource) DownStream([]byte) (int, error) {
 	return 0, nil
 }
 
-//
 // 上行数据
-//
 func (*coAPInEndSource) UpStream([]byte) (int, error) {
 	return 0, nil
 }

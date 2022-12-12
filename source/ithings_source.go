@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"github.com/i4de/rulex/common"
-	"github.com/i4de/rulex/core"
 	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
@@ -161,7 +160,7 @@ func (*ithings) Driver() typex.XExternalDriver {
 	return nil
 }
 func (*ithings) Configs() *typex.XConfig {
-	return core.GenInConfig(typex.ITHINGS_IOT_HUB, "ITHINGS IOTHUB接入支持", common.IThingsMqttConfig{})
+	return typex.GenInConfig(typex.ITHINGS_IOT_HUB, "ITHINGS IOTHUB接入支持", common.IThingsMqttConfig{})
 }
 
 // 拓扑

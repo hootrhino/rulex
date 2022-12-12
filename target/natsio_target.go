@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/i4de/rulex/common"
-	"github.com/i4de/rulex/core"
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
 
@@ -106,5 +105,5 @@ func (nt *natsTarget) Stop() {
 *
  */
 func (*natsTarget) Configs() *typex.XConfig {
-	return core.GenOutConfig(typex.NATS_TARGET, "NATS_TARGET", common.NatsConfig{})
+	return typex.GenOutConfig(typex.NATS_TARGET, "NATS_TARGET", common.NatsConfig{})
 }

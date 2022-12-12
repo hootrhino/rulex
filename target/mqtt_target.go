@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/i4de/rulex/common"
-	"github.com/i4de/rulex/core"
 	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
@@ -120,5 +119,5 @@ func (mm *mqttOutEndTarget) To(data interface{}) (interface{}, error) {
 *
  */
 func (*mqttOutEndTarget) Configs() *typex.XConfig {
-	return core.GenOutConfig(typex.MQTT_TARGET, "MQTT", common.MqttConfig{})
+	return typex.GenOutConfig(typex.MQTT_TARGET, "MQTT", common.MqttConfig{})
 }
