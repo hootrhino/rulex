@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"math"
 	"regexp"
 	"strconv"
 	"strings"
@@ -411,6 +412,11 @@ func ReverseString(text string) string {
 	return string(textRunes)
 }
 
+/*
+*
+* 字节逆序
+*
+ */
 func reverse(runes []rune, length int) {
 	for i, j := 0, length-1; i < length/2; i, j = i+1, j-1 {
 		runes[i], runes[j] = runes[j], runes[i]
@@ -458,10 +464,40 @@ func HsubToN(rx typex.RuleX) func(*lua.LState) int {
 	}
 }
 
+/*
+*
+* 十六进制字符串转数字
+*
+ */
 func HexToNumber(s string) (int64, error) {
 	iv, err := strconv.ParseInt(s, 16, len(s)*8)
 	if err != nil {
 		return 0, err
 	}
 	return iv, nil
+}
+
+/*
+*
+* 二进制转浮点数，参考资料：
+* https://blog.51cto.com/u_12512821/2363818
+* https://www.ruanyifeng.com/blog/2010/06/ieee_floating-point_representation.html
+*
+ */
+
+func BinToFloat32(rx typex.RuleX) func(*lua.LState) int {
+	return func(l *lua.LState) int {
+		bin := l.ToString(2)
+		bits := binary.BigEndian.Uint32([]byte(bin))
+		l.Push(lua.LNumber(math.Float32frombits(bits)))
+		return 1
+	}
+}
+func BinToFloat64(rx typex.RuleX) func(*lua.LState) int {
+	return func(l *lua.LState) int {
+		bin := l.ToString(2)
+		bits := binary.BigEndian.Uint64([]byte(bin))
+		l.Push(lua.LNumber(math.Float64frombits(bits)))
+		return 1
+	}
 }
