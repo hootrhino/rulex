@@ -40,6 +40,37 @@ func bToMb(b uint64) uint64 {
 	return b / 1024 / 1024
 }
 
+// 计算资源数据
+func source_count(e typex.RuleX) map[string]int {
+	allInEnd := e.AllInEnd()
+	allOutEnd := e.AllOutEnd()
+	allRule := e.AllRule()
+	plugins := e.AllPlugins()
+	var c1, c2, c3, c4 int
+	allInEnd.Range(func(key, value interface{}) bool {
+		c1 += 1
+		return true
+	})
+	allOutEnd.Range(func(key, value interface{}) bool {
+		c2 += 1
+		return true
+	})
+	allRule.Range(func(key, value interface{}) bool {
+		c3 += 1
+		return true
+	})
+	plugins.Range(func(key, value interface{}) bool {
+		c4 += 1
+		return true
+	})
+	return map[string]int{
+		"inends":  c1,
+		"outends": c2,
+		"rules":   c3,
+		"plugins": c4,
+	}
+}
+
 // Get system infomation
 func System(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	cpuPercent, _ := cpu.Percent(5*time.Millisecond, true)
@@ -48,15 +79,20 @@ func System(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	// For info on each, see: https://golang.org/pkg/runtime/#MemStats
 	var m runtime.MemStats
 	runtime.ReadMemStats(&m)
-	c.JSON(200, OkWithData(gin.H{
+	hardWareInfo := map[string]interface{}{
 		"version":     e.Version().Version,
 		"diskInfo":    int(diskInfo.UsedPercent),
-		"system":      bToMb(m.Sys),
-		"alloc":       bToMb(m.Alloc),
-		"total":       bToMb(m.TotalAlloc),
+		"systemMem":   bToMb(m.Sys),
+		"allocMem":    bToMb(m.Alloc),
+		"totalMem":    bToMb(m.TotalAlloc),
 		"cpuPercent":  calculateCpuPercent(cpuPercent),
 		"osArch":      runtime.GOOS + "-" + runtime.GOARCH,
 		"startedTime": StartedTime,
+	}
+	c.JSON(200, OkWithData(gin.H{
+		"hardWareInfo": hardWareInfo,
+		"statistic":    statistics.AllStatistics(),
+		"sourceCount":  source_count(e),
 	}))
 }
 
