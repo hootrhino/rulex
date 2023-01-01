@@ -60,19 +60,19 @@ func Test_Generic_modbus_device(t *testing.T) {
 		`
 		Actions = {
 			function(data)
-			    print(data)
+			    print("RawData --->",data)
 			    local nodeT = rulexlib:J2T(data)
 				local dataT = nodeT['node1']
-				print('ByteToBitString(dataT.value) ---> ', rulexlib:B2BS(dataT['value']))
-				local finalData = rulexlib:MB(">a1:8 b2:8 c3:8 d4:8", dataT['value'], false)
-				local a1 = rulexlib:B2I64('>', rulexlib:BS2B(finalData["a1"]))
-				local b2 = rulexlib:B2I64('>', rulexlib:BS2B(finalData["b2"]))
-				local c3 = rulexlib:B2I64('>', rulexlib:BS2B(finalData["c3"]))
-				local d4 = rulexlib:B2I64('>', rulexlib:BS2B(finalData["d4"]))
-				print('a1 --> ', finalData["a1"], ' --> ', a1)
-				print('b2 --> ', finalData["b2"], ' --> ', b2)
-				print('c3 --> ', finalData["c3"], ' --> ', c3)
-				print('d4 --> ', finalData["d4"], ' --> ', d4)
+				local rawbin, error = rulexlib:B64S2B(dataT['value'])
+				local matchedData = rulexlib:MB(">a1:8 b2:8 c3:8 d4:8", rawbin, false)
+				local a1 = rulexlib:B2I64('>', rulexlib:BS2B(matchedData["a1"]))
+				local b2 = rulexlib:B2I64('>', rulexlib:BS2B(matchedData["b2"]))
+				local c3 = rulexlib:B2I64('>', rulexlib:BS2B(matchedData["c3"]))
+				local d4 = rulexlib:B2I64('>', rulexlib:BS2B(matchedData["d4"]))
+				print('a1 --> ', matchedData["a1"], ' --> ', a1)
+				print('b2 --> ', matchedData["b2"], ' --> ', b2)
+				print('c3 --> ', matchedData["c3"], ' --> ', c3)
+				print('d4 --> ', matchedData["d4"], ' --> ', d4)
 				return true, data
 			end
 		}`,

@@ -25,6 +25,7 @@ func LoadBuildInLuaLib(e typex.RuleX, r *typex.Rule) {
 	r.AddLib(e, "rulexlib", "B2BS", rulexlib.ByteToBitString(e))
 	r.AddLib(e, "rulexlib", "Bit", rulexlib.GetABitOnByte(e))
 	r.AddLib(e, "rulexlib", "B2I64", rulexlib.ByteToInt64(e))
+	r.AddLib(e, "rulexlib", "B64S2B", rulexlib.B64S2B(e))
 	r.AddLib(e, "rulexlib", "BS2B", rulexlib.BitStringToBytes(e))
 	r.AddLib(e, "rulexlib", "HToN", rulexlib.HToN(e))
 	r.AddLib(e, "rulexlib", "HsubToN", rulexlib.HsubToN(e))

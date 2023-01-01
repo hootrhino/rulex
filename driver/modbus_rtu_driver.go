@@ -70,7 +70,7 @@ func (d *modBusRtuDriver) Read(cmd int, data []byte) (int, error) {
 				SlaverId: r.SlaverId,
 				Address:  r.Address,
 				Quantity: r.Quantity,
-				Value:    string(results),
+				Value:    results,
 			}
 			dataMap[r.Tag] = value
 		}
@@ -85,7 +85,7 @@ func (d *modBusRtuDriver) Read(cmd int, data []byte) (int, error) {
 				SlaverId: r.SlaverId,
 				Address:  r.Address,
 				Quantity: r.Quantity,
-				Value:    string(results),
+				Value:    results,
 			}
 			dataMap[r.Tag] = value
 
@@ -101,7 +101,7 @@ func (d *modBusRtuDriver) Read(cmd int, data []byte) (int, error) {
 				SlaverId: r.SlaverId,
 				Address:  r.Address,
 				Quantity: r.Quantity,
-				Value:    string(results),
+				Value:    results,
 			}
 			dataMap[r.Tag] = value
 		}
@@ -116,7 +116,7 @@ func (d *modBusRtuDriver) Read(cmd int, data []byte) (int, error) {
 				SlaverId: r.SlaverId,
 				Address:  r.Address,
 				Quantity: r.Quantity,
-				Value:    string(results),
+				Value:    results,
 			}
 			dataMap[r.Tag] = value
 		}

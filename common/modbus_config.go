@@ -55,7 +55,7 @@ type RegisterRW struct {
 	SlaverId byte   `json:"slaverId" validate:"required" title:"从机ID" info:""`     // 从机ID
 	Address  uint16 `json:"address" validate:"required" title:"地址" info:""`        // Address
 	Quantity uint16 `json:"quantity" validate:"required" title:"数量" info:""`       // Quantity
-	Value    string `json:"value" title:"值" info:"本地系统的串口路径"`                      // Value
+	Value    []byte `json:"value" title:"值" info:"本地系统的串口路径"`                      // Value
 }
 
 //

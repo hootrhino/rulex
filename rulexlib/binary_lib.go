@@ -2,6 +2,7 @@ package rulexlib
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/binary"
 	"encoding/hex"
 	"errors"
@@ -498,6 +499,25 @@ func BinToFloat64(rx typex.RuleX) func(*lua.LState) int {
 		bin := l.ToString(2)
 		bits := binary.BigEndian.Uint64([]byte(bin))
 		l.Push(lua.LNumber(math.Float64frombits(bits)))
+		return 1
+	}
+}
+
+/*
+*
+* Base64 to byte: 用来处理golang的JSON转换byte[]问题
+*
+ */
+func B64S2B(rx typex.RuleX) func(*lua.LState) int {
+	return func(l *lua.LState) int {
+		b64s := l.ToString(2)
+		bss, err := base64.StdEncoding.DecodeString(b64s)
+		if err != nil {
+			l.Push(lua.LString(err.Error()))
+		} else {
+			l.Push(lua.LNil)
+			l.Push(lua.LString(bss))
+		}
 		return 1
 	}
 }

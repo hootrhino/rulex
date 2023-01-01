@@ -96,7 +96,7 @@ func (yk8 *YK8RelayControllerDriver) Read(cmd int, data []byte) (int, error) {
 				SlaverId: r.SlaverId,
 				Address:  r.Address,
 				Quantity: r.Quantity,
-				Value:    string(bytes),
+				Value:    bytes,
 			}
 			dataMap[r.Tag] = value
 		}
@@ -115,7 +115,7 @@ func (yk8 *YK8RelayControllerDriver) Write(cmd int, data []byte) (int, error) {
 	}
 	for _, r := range dataMap {
 		yk8.handler.SlaveId = r.SlaverId
-		bytes, err0 := common.BitStringToBytes(r.Value)
+		bytes, err0 := common.BitStringToBytes(string(r.Value))
 		if err0 != nil {
 			return 0, err0
 		}

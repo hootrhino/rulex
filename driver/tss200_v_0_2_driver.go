@@ -97,7 +97,7 @@ func (tss *tss200_v_0_2_Driver) Read(cmd int, data []byte) (int, error) {
 				SlaverId: r.SlaverId,
 				Address:  r.Address,
 				Quantity: r.Quantity,
-				Value:    string(bytes),
+				Value:    bytes,
 			}
 			dataMap[r.Tag] = value
 		}
