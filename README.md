@@ -182,14 +182,6 @@ Actions = {
 ### 数据筛选
 
 ```lua
-function Success()
-    -- do some things
-end
-
-function Failed(error)
-    -- do some things
-end
-
 Actions = {
     function(data)
         print("return => ", rulexlib:JqSelect(".[] | select(.hum < 20)", data))
@@ -201,14 +193,6 @@ Actions = {
 ### 数据中转
 
 ```lua
-function Success()
-    -- do some things
-end
-
-function Failed(error)
-    -- do some things
-end
-
 Actions = {
     function(data)
         -- 持久化到 MongoDb:
@@ -225,14 +209,6 @@ Actions = {
 ### 云端计算
 
 ```lua
-function Success()
-    -- do some things
-end
-
-function Failed(error)
-    -- do some things
-end
-
 Actions = {
     function(data)
         -- PyTorch 训练数据:
@@ -244,8 +220,7 @@ Actions = {
     end
 }
 ```
-
-## 详细文档
+> 如果您阅读过 RULEX 的源码，你会发现里面有很多很愚蠢的设计（比如对资源的状态管理、类型硬编码设计等），因为特殊历史原因导致了其设计上有一些很糟粕的地方，如有建议请不吝赐教，一起让这个框架更加优秀！同时未来随着版本的迭代，很多低级问题会逐步被重构完善。
 
 ## 社区
 
