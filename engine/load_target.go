@@ -23,10 +23,11 @@ func (e *RuleEngine) LoadUserOutEnd(target typex.XTarget, out *typex.OutEnd) err
 
 /*
 *
-* 加载内建输出资源
+* 加载内建输出资源（这里其实是个很弱智的设计，当时1年前【2021年6月】的时候，当时准备支持的只有串口，
+* 时至今日越来越多，这种硬编码已经不符合优雅的技术设计理念，因此后期需要重构这块。
+* 可选方案有：1 用一个Map去统一全局管理；2 用动态库的形式去扩展。未来某个版本会更新，敬请期待）
 *
  */
-
 func (e *RuleEngine) LoadBuiltinOutEnd(out *typex.OutEnd) error {
 	return e.LoadOutEnd(out)
 }
