@@ -22,8 +22,8 @@ func Test_Generic_modbus_device(t *testing.T) {
 	}
 	GMODBUS := typex.NewDevice(typex.GENERIC_MODBUS,
 		"GENERIC_MODBUS", "GENERIC_MODBUS", "", map[string]interface{}{
-			"mode": "TCP",
-			// "mode":      "RTU",
+			// "mode": "TCP",
+			"mode":      "RTU",
 			"autoRequest": true,
 			"timeout":     10,
 			"frequency":   5,
@@ -42,7 +42,7 @@ func Test_Generic_modbus_device(t *testing.T) {
 					"function": 3,
 					"slaverId": 1,
 					"address":  0,
-					"quantity": 4,
+					"quantity": 2,
 				},
 			},
 		})
@@ -63,12 +63,16 @@ func Test_Generic_modbus_device(t *testing.T) {
 			    print(data)
 			    local nodeT = rulexlib:J2T(data)
 				local dataT = nodeT['node1']
-				print('dataT.value ---> ',dataT['value'])
+				print('ByteToBitString(dataT.value) ---> ', rulexlib:B2BS(dataT['value']))
 				local finalData = rulexlib:MB(">a1:8 b2:8 c3:8 d4:8", dataT['value'], false)
-				print('a1 --> ', finalData['a1'])
-				print('b2 --> ', finalData['b2'])
-				print('c3 --> ', finalData['c3'])
-				print('d4 --> ', finalData['d4'])
+				local a1 = rulexlib:B2I64('>', rulexlib:BS2B(finalData["a1"]))
+				local b2 = rulexlib:B2I64('>', rulexlib:BS2B(finalData["b2"]))
+				local c3 = rulexlib:B2I64('>', rulexlib:BS2B(finalData["c3"]))
+				local d4 = rulexlib:B2I64('>', rulexlib:BS2B(finalData["d4"]))
+				print('a1 --> ', finalData["a1"], ' --> ', a1)
+				print('b2 --> ', finalData["b2"], ' --> ', b2)
+				print('c3 --> ', finalData["c3"], ' --> ', c3)
+				print('d4 --> ', finalData["d4"], ' --> ', d4)
 				return true, data
 			end
 		}`,

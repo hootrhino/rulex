@@ -67,6 +67,12 @@ func RunTestEngine() typex.RuleX {
 	glogger.StartNewRealTimeLogger(core.GlobalConfig.LogLevel)
 	glogger.StartGLogger(mainConfig.EnableConsole, core.GlobalConfig.LogPath)
 	glogger.StartLuaLogger(core.GlobalConfig.LuaLogPath)
+	glogger.StartRemoteLogger(
+		core.GlobalConfig.RemoteLoggerSn,
+		core.GlobalConfig.RemoteLoggerUid,
+		core.GlobalConfig.RemoteLoggerIp,
+		core.GlobalConfig.RemoteLoggerPort,
+	)
 	//
 	core.StartStore(core.GlobalConfig.MaxQueueSize)
 	core.SetLogLevel()
