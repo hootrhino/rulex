@@ -513,11 +513,12 @@ func B64S2B(rx typex.RuleX) func(*lua.LState) int {
 		b64s := l.ToString(2)
 		bss, err := base64.StdEncoding.DecodeString(b64s)
 		if err != nil {
+			l.Push(lua.LNil)
 			l.Push(lua.LString(err.Error()))
 		} else {
-			l.Push(lua.LNil)
 			l.Push(lua.LString(bss))
+			l.Push(lua.LNil)
 		}
-		return 1
+		return 2
 	}
 }
