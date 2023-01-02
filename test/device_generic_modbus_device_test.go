@@ -1,8 +1,10 @@
 package test
 
 import (
+	"context"
 	"github.com/i4de/rulex/glogger"
 	httpserver "github.com/i4de/rulex/plugin/http_server"
+	mbserver "github.com/tbrandon/mbserver"
 
 	"testing"
 	"time"
@@ -10,7 +12,10 @@ import (
 	"github.com/i4de/rulex/typex"
 )
 
-func Test_Generic_modbus_device(t *testing.T) {
+func Test_Generic_modbus_device_tcp_mode(t *testing.T) {
+	//
+	start_modbus_slaver_emu(t)
+	//
 	engine := RunTestEngine()
 	engine.Start()
 
@@ -22,8 +27,8 @@ func Test_Generic_modbus_device(t *testing.T) {
 	}
 	GMODBUS := typex.NewDevice(typex.GENERIC_MODBUS,
 		"GENERIC_MODBUS", "GENERIC_MODBUS", "", map[string]interface{}{
-			// "mode": "TCP",
-			"mode":      "RTU",
+			"mode": "TCP",
+			// "mode":        "RTU",
 			"autoRequest": true,
 			"timeout":     10,
 			"frequency":   5,
@@ -85,4 +90,30 @@ func Test_Generic_modbus_device(t *testing.T) {
 
 	time.Sleep(25 * time.Second)
 	engine.Stop()
+}
+
+/*
+*
+* 启动一个用来单元测试的Modbus TCP模拟器
+*
+ */
+func start_modbus_slaver_emu(t *testing.T) {
+	server := mbserver.NewServer()
+	go func(ctx context.Context) {
+		select {
+		case <-ctx.Done():
+			return
+		default:
+			{
+
+			}
+
+		}
+		server.ListenTCP("0.0.0.0:1502")
+		server.Debug = true
+		// 模拟两个数： 37.5, 180.25
+		server.HoldingRegisters = []uint16{0x2505, 0xB419} // 模拟数据
+		//
+		t.Log("Modbus Server started: 0.0.0.0:1502")
+	}(context.Background())
 }

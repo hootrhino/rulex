@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"errors"
 	"os"
 	"os/exec"
 	"runtime"
