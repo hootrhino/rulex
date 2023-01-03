@@ -71,7 +71,11 @@ func source_count(e typex.RuleX) map[string]int {
 	}
 }
 
-// Get system infomation
+/*
+*
+* 获取系统指标
+*
+ */
 func System(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	cpuPercent, _ := cpu.Percent(5*time.Millisecond, true)
 	parts, _ := disk.Partitions(true)
