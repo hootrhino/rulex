@@ -19,6 +19,7 @@ type udpSource struct {
 
 func NewUdpInEndSource(e typex.RuleX) *udpSource {
 	u := udpSource{}
+	u.mainConfig = common.RULEXUdpConfig{}
 	u.RuleEngine = e
 	return &u
 }

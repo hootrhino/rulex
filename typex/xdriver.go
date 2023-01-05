@@ -7,6 +7,7 @@ package typex
 // 2. MODBUS TCP模式外挂了很多继电器,来自云端的 PLC 控制指令先到网关, 然后网关决定推送到哪个外挂
 //
 type DriverDetail struct {
+	UUID        string `json:"uuid" binding:"required"`
 	Name        string `json:"name" binding:"required"`
 	Type        string `json:"type" binding:"required"`
 	Description string `json:"description" binding:"required"`

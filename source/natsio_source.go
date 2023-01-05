@@ -31,7 +31,7 @@ func (nt *natsSource) Start(cctx typex.CCTX) error {
 
 	nc, err := nats.Connect(fmt.Sprintf("%s:%v", nt.mainConfig.Host, nt.mainConfig.Port),
 		func(o *nats.Options) error {
-			o.User = nt.mainConfig.User
+			o.User = nt.mainConfig.Username
 			o.Password = nt.mainConfig.Password
 			o.Name = "rulex-nats-source"
 			o.AllowReconnect = true

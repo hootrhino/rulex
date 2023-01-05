@@ -21,6 +21,7 @@ type natsTarget struct {
 func NewNatsTarget(e typex.RuleX) typex.XTarget {
 	nt := &natsTarget{}
 	nt.RuleEngine = e
+	nt.mainConfig=common.NatsConfig{}
 	return nt
 }
 func (nt *natsTarget) Init(outEndId string, configMap map[string]interface{}) error {
@@ -35,7 +36,7 @@ func (nt *natsTarget) Start(cctx typex.CCTX) error {
 	nt.CancelCTX = cctx.CancelCTX
 
 	nc, err := nats.Connect(fmt.Sprintf("%s:%v", nt.mainConfig.Host, nt.mainConfig.Port), func(o *nats.Options) error {
-		o.User = nt.mainConfig.User
+		o.User = nt.mainConfig.Username
 		o.Password = nt.mainConfig.Password
 		return nil
 	})

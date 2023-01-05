@@ -20,6 +20,7 @@ type XPlugin interface {
 }
 
 type XPluginMetaInfo struct {
+	UUID     string `json:"uuid"`
 	Name     string `json:"name"`
 	Version  string `json:"version"`
 	Homepage string `json:"homepage"`

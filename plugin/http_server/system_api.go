@@ -1,6 +1,7 @@
 package httpserver
 
 import (
+	"fmt"
 	"runtime"
 	"time"
 
@@ -30,8 +31,12 @@ func Ping(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 func Plugins(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	data := []interface{}{}
 	plugins := e.AllPlugins()
+	id := 0
 	plugins.Range(func(key, value interface{}) bool {
-		data = append(data, value.(typex.XPlugin).PluginMetaInfo())
+		pi := value.(typex.XPlugin).PluginMetaInfo()
+		pi.UUID = fmt.Sprintf("PLUGIN:%v", id)
+		id++
+		data = append(data, pi)
 		return true
 	})
 	c.JSON(200, OkWithData(data))
@@ -112,15 +117,24 @@ func SnapshotDump(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 // Get all Drivers
 func Drivers(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	data := []interface{}{}
+	id := 0
 	e.AllInEnd().Range(func(key, value interface{}) bool {
-		if value.(*typex.InEnd).Source.Driver() != nil {
-			data = append(data, value.(*typex.InEnd).Source.Driver().DriverDetail())
+		drivers := value.(*typex.InEnd).Source.Driver()
+		if drivers != nil {
+			dd := drivers.DriverDetail()
+			dd.UUID = fmt.Sprintf("DRIVER:%v", id)
+			id++
+			data = append(data, dd)
 		}
 		return true
 	})
 	e.AllDevices().Range(func(key, value interface{}) bool {
-		if value.(*typex.Device).Device.Driver() != nil {
-			data = append(data, value.(*typex.Device).Device.Driver().DriverDetail())
+		drivers := value.(*typex.Device).Device.Driver()
+		if drivers != nil {
+			dd := drivers.DriverDetail()
+			dd.UUID = fmt.Sprintf("DRIVER:%v", id)
+			id++
+			data = append(data, dd)
 		}
 		return true
 	})

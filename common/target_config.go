@@ -55,7 +55,7 @@ type GrpcConfig struct {
  */
 
 type NatsConfig struct {
-	User     string `json:"user" validate:"required" title:"用户" info:""`
+	Username string `json:"username" validate:"required" title:"用户" info:""`
 	Password string `json:"password" validate:"required" title:"密码" info:""`
 	Host     string `json:"host" validate:"required" title:"地址" info:""`
 	Port     int    `json:"port" validate:"required" title:"端口" info:""`
