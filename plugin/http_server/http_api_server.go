@@ -147,6 +147,7 @@ func (hh *HttpApiServer) Start(r typex.RuleX) error {
 	// Create InEnd
 	//
 	hh.ginEngine.POST(url("inends"), hh.addRoute(CreateInend))
+	hh.ginEngine.PUT(url("inends"), hh.addRoute(CreateInend))
 	//
 	// 配置表
 	//
@@ -159,6 +160,7 @@ func (hh *HttpApiServer) Start(r typex.RuleX) error {
 	// Create OutEnd
 	//
 	hh.ginEngine.POST(url("outends"), hh.addRoute(CreateOutEnd))
+	hh.ginEngine.PUT(url("outends"), hh.addRoute(CreateOutEnd))
 	//
 	// Create rule
 	//

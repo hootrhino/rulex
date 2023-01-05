@@ -109,6 +109,68 @@ func CreateInend(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 
 }
 
+/*
+*
+* 更新输入资源
+*
+ */
+func UpdateInend(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+	type Form struct {
+		UUID        string                 `json:"uuid"` // 如果空串就是新建，非空就是更新
+		Type        string                 `json:"type" binding:"required"`
+		Name        string                 `json:"name" binding:"required"`
+		Description string                 `json:"description"`
+		Config      map[string]interface{} `json:"config" binding:"required"`
+		DataModels  []typex.XDataModel     `json:"dataModels"`
+	}
+	form := Form{}
+
+	if err0 := c.ShouldBindJSON(&form); err0 != nil {
+		c.JSON(200, Error400(err0))
+		return
+	}
+	configJson, err1 := json.Marshal(form.Config)
+	if err1 != nil {
+		c.JSON(200, Error400(err1))
+		return
+	}
+	var dataModelsMap = linkedhashmap.New()
+	for _, v := range form.DataModels {
+		dataModelsMap.Put(v.Name, v)
+	}
+	dataModelsJson, err2 := dataModelsMap.ToJSON()
+	if err1 != nil {
+		c.JSON(200, Error400(err2))
+		return
+	}
+	var uuid *string = new(string)
+
+	inend := e.GetInEnd(form.UUID)
+	if inend != nil {
+		inend.Source.Reload() //重启接口
+		inend.SetState(typex.SOURCE_DOWN)
+		hh.DeleteMInEnd(inend.UUID)
+		if err := hh.InsertMInEnd(&MInEnd{
+			UUID:        form.UUID,
+			Type:        form.Type,
+			Name:        form.Name,
+			Description: form.Description,
+			Config:      string(configJson),
+			XDataModels: string(dataModelsJson),
+		}); err != nil {
+			c.JSON(200, Error400(err))
+			return
+		}
+		uuid = &form.UUID
+	}
+
+	if err := hh.LoadNewestInEnd(*uuid); err != nil {
+		c.JSON(200, Error400(err))
+		return
+	}
+	c.JSON(200, Ok())
+}
+
 //
 // Delete inend by UUID
 //
