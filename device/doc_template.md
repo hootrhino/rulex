@@ -13,42 +13,55 @@ TC-S200 系列空气质量监测仪内置 PM2.5、TVOC、甲醛、CO2，温湿�
 ```json
 {
 	"host":       "127.0.0.1",
-	"port":       1883,
-	"clientId":   "RULEX-001",
-	"username":   "RULEX-001",
-	"password":   "RULEX-001",
-	"productId":  "RULEX-001",
-	"deviceName": "RULEX-001",
+	"port":       1883
 }
 ```
 
 ## 数据
 
 ### 读
+#### 1. CMD
 
+| 值  | 含义 |
+| --- | ---- |
+| 0   | 开门 |
+| 1   | 关门 |
+
+#### 1. Args
+
+| 值      | 含义 |
+| ------- | ---- |
+| "OPEN"  | 开门 |
+| "CLOSE" | 关门 |
+
+#### 3. 数据样例
 ```json
 {
 	"host":       "127.0.0.1",
-	"port":       1883,
-	"clientId":   "RULEX-001",
-	"username":   "RULEX-001",
-	"password":   "RULEX-001",
-	"productId":  "RULEX-001",
-	"deviceName": "RULEX-001",
+	"port":       1883
 }
 ```
 
 ### 写
+#### 1. CMD
 
+| 值  | 含义 |
+| --- | ---- |
+| 0   | 开门 |
+| 1   | 关门 |
+
+#### 2. Args
+
+| 值      | 含义 |
+| ------- | ---- |
+| "OPEN"  | 开门 |
+| "CLOSE" | 关门 |
+
+#### 3. 数据样例
 ```json
 {
 	"host":       "127.0.0.1",
-	"port":       1883,
-	"clientId":   "RULEX-001",
-	"username":   "RULEX-001",
-	"password":   "RULEX-001",
-	"productId":  "RULEX-001",
-	"deviceName": "RULEX-001",
+	"port":       1883
 }
 ```
 
@@ -65,9 +78,13 @@ function Failed(error)
 end
 
 -- Actions
-Actions =
-    {
+Actions = {
     function(data)
+        local _, err = rulexlib:WriteDevice(device, rulexlib:T2J({ cmd = "open"}))
+        if (err ~= nil) then
+            log('WriteDevice open err: ', err)
+            return false, data
+        end
         return true, data
     end
 }
