@@ -43,7 +43,9 @@ func (e *RuleEngine) AllDevices() *sync.Map {
 func (e *RuleEngine) RemoveDevice(uuid string) {
 	if dev := e.GetDevice(uuid); dev != nil {
 		glogger.GLogger.Infof("Device [%v] ready to stop", uuid)
-		dev.Device.Stop()
+		if dev.Device != nil {
+			dev.Device.Stop()
+		}
 		glogger.GLogger.Infof("Device [%v] has been stopped", uuid)
 		e.Devices.Delete(uuid)
 		dev = nil
@@ -71,7 +73,7 @@ func (e *RuleEngine) LoadBuiltinDevice(deviceInfo *typex.Device) error {
 * 已经不符合优雅的技术设计理念，因此后期需要重构这块。可选方案有：1 用一个Map去统一全局管理；2 用动态库的形式去扩展。未来
 * 某个版本会更新，敬请期待）
 *
-*/
+ */
 func (e *RuleEngine) LoadDevice(deviceInfo *typex.Device) error {
 	if deviceInfo.Type == typex.TSS200V02 {
 		return startDevices(device.NewTS200Sensor(e), deviceInfo, e)

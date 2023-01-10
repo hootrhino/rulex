@@ -37,6 +37,8 @@ type YK8Controller struct {
 func NewYK8Controller(e typex.RuleX) typex.XDevice {
 	yk8 := new(YK8Controller)
 	yk8.locker = &sync.Mutex{}
+	yk8.mainConfig = common.ModBusConfig{}
+	yk8.rtuConfig = common.RTUConfig{}
 	yk8.RuleEngine = e
 	return yk8
 }
