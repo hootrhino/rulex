@@ -5,10 +5,11 @@ import (
 	"embed"
 	"io/fs"
 	"net/http"
+	"path"
 	"strconv"
-	"strings"
 	"time"
 
+	"github.com/gin-contrib/static"
 	"github.com/i4de/rulex/device"
 	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/source"
@@ -80,11 +81,6 @@ func (hh *HttpApiServer) Init(config *ini.Section) error {
 //
 func (hh *HttpApiServer) Start(r typex.RuleX) error {
 	hh.ruleEngine = r
-	hh.ginEngine.GET("/", hh.addRoute(func(c *gin.Context, has *HttpApiServer, rx typex.RuleX) {
-		c.Request.URL.Path = "/static/"
-		hh.ginEngine.HandleContext(c)
-	}))
-
 	//
 	// Get all plugins
 	//
@@ -243,27 +239,26 @@ func (hh *HttpApiServer) PluginMetaInfo() typex.XPluginMetaInfo {
 //go:embed  www/*
 var files embed.FS
 
-type customFS struct {
-	efs fs.FS
+type WWWFS struct {
+	http.FileSystem
 }
 
-// Open 实现fs接口
-func (c *customFS) Open(name string) (fs.File, error) {
-	if strings.Contains(name, "/") {
-		name = "static/" + name
-	}
-	return c.efs.Open(name)
+func (f WWWFS) Exists(prefix string, filepath string) bool {
+	_, err := f.Open(path.Join(prefix, filepath))
+	return err == nil
+}
 
+func wwwRoot(dir string) static.ServeFileSystem {
+	if sub, err := fs.Sub(files, path.Join("www", dir)); err == nil {
+		return WWWFS{http.FS(sub)}
+	}
+	return nil
 }
 
 func configHttpServer(hh *HttpApiServer) {
 	hh.ginEngine.Use(hh.Authorize())
 	hh.ginEngine.Use(Cros())
-	www, err := fs.Sub(files, "www")
-
-	if err == nil {
-		hh.ginEngine.StaticFS("static", http.FS(&customFS{www}))
-	}
+	hh.ginEngine.Use(static.Serve("/", wwwRoot("")))
 
 	if hh.dbPath == "" {
 		hh.InitDb(_DEFAULT_DB_PATH)
