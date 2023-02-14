@@ -20,3 +20,4 @@ _release*
 _build*
 lua-log*
 *.txt
+plugin/http_server/www/*
