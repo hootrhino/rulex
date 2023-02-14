@@ -3,6 +3,7 @@ package driver
 import (
 	"encoding/binary"
 	"encoding/json"
+	"time"
 
 	"github.com/i4de/rulex/common"
 	"github.com/i4de/rulex/typex"
@@ -121,6 +122,8 @@ func (d *modBusRtuDriver) Read(cmd int, data []byte) (int, error) {
 			dataMap[r.Tag] = value
 		}
 
+		// 设置一个间隔时间防止低级CPU黏包等
+		time.Sleep(time.Duration(cmd) * time.Microsecond)
 	}
 	bytes, _ := json.Marshal(dataMap)
 	copy(data, bytes)

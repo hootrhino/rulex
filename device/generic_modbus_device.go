@@ -100,6 +100,10 @@ func (mdev *generic_modbus_device) Init(devId string, configMap map[string]inter
 			return errs
 		}
 	}
+	// 轮询请求时间，如果没有指定，默认10ms, 注意单位: ms
+	if mdev.mainConfig.WaitTime == 0 {
+		mdev.mainConfig.WaitTime = 10
+	}
 
 	return nil
 }
@@ -166,7 +170,7 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 				}
 			}
 			mdev.locker.Lock()
-			n, err := Driver.Read(0, buffer)
+			n, err := Driver.Read(mdev.mainConfig.WaitTime, buffer)
 			mdev.locker.Unlock()
 			if err != nil {
 				glogger.GLogger.Error(err)
