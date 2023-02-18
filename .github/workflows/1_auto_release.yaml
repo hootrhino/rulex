@@ -29,12 +29,9 @@ jobs:
           chmod +x ./release_pkg.sh
           make
           bash ./release_pkg.sh
-
-      # - name: 上传发布包
-      #   uses: svenstaro/upload-release-action@v2
+      # - name: 发布版本
+      #   uses: elgohr/Github-Release-Action@v4
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
       #   with:
-      #     repo_token: ${{ secrets.GITHUB_TOKEN }}
-      #     file: _build/_release/rulex-*.zip
-      #     tag: ${{ github.ref }}
-      #     overwrite: true
-      #     file_glob: true
+      #     title: ReleaseMessage

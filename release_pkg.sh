@@ -58,7 +58,7 @@ build_arm32linux() {
 
 #------------------------------------------
 cross_compile() {
-    ARCHS=("x64windows" "x86linux" "x64linux" "arm64linux" "arm32linux")
+    ARCHS=("x64windows" "x64linux" "arm64linux" "arm32linux")
     if [ ! -d "./_release/" ]; then
         mkdir -p ./_release/
     else
@@ -66,37 +66,37 @@ cross_compile() {
         mkdir -p ./_release/
     fi
     for arch in ${ARCHS[@]}; do
-        echo "Compile target => ["$arch"]"
+        echo -e "\033[34m [★] Compile target =>\033[43;34m ["$arch"]. \033[0m"
         if [[ "${arch}" == "x64windows" ]]; then
             # sudo apt install gcc-mingw-w64-x86-64 -y
             build_x64windows $arch
             make_zip $arch
-            echo "Compile target => ["$arch"] Ok."
+            echo -e "\033[33m [√] Compile target => ["$arch"] Ok. \033[0m"
         fi
         if [[ "${arch}" == "x86linux" ]]; then
             build_x86linux $arch
             make_zip $arch
-            echo "Compile target => ["$arch"] Ok."
+            echo -e "\033[33m [√] Compile target => ["$arch"] Ok. \033[0m"
 
         fi
         if [[ "${arch}" == "x64linux" ]]; then
             build_x64linux $arch
             make_zip $arch
-            echo "Compile target => ["$arch"] Ok."
+            echo -e "\033[33m [√] Compile target => ["$arch"] Ok. \033[0m"
 
         fi
         if [[ "${arch}" == "arm64linux" ]]; then
             # sudo apt install gcc-arm-linux-gnueabi -y
             build_arm64linux $arch
             make_zip $arch
-            echo "Compile target => ["$arch"] Ok."
+            echo -e "\033[33m [√] Compile target => ["$arch"] Ok. \033[0m"
 
         fi
         if [[ "${arch}" == "arm32linux" ]]; then
             # sudo apt install gcc-arm-linux-gnueabi -y
             build_arm32linux $arch
             make_zip $arch
-            echo "Compile target => ["$arch"] Ok."
+            echo -e "\033[33m [√] Compile target => ["$arch"] Ok. \033[0m"
 
         fi
     done
@@ -143,12 +143,12 @@ init_env() {
 check_cmd() {
     DEPS=("git" "jq" "gcc" "make")
     for dep in ${DEPS[@]}; do
-        echo ">>> Check dependcy command: $dep"
+        echo -e "\033[34m [*] Check dependcy command: $dep. \033[0m"
         if ! [ -x "$(command -v $dep)" ]; then
-            echo "||| Error: $dep is not installed."
+            echo -e "\033[31m |x| Error: $dep is not installed. \033[0m"
             exit 1
         else
-            echo ">>> $dep has been installed."
+            echo -e "\033[32m [√] $dep has been installed. \033[0m"
         fi
     done
 
@@ -160,6 +160,6 @@ check_cmd
 init_env
 cp -r $(ls | egrep -v '^_build$') ./_build/
 cd ./_build/
-fetch_dashboard
+# fetch_dashboard
 cross_compile
 gen_changelog
