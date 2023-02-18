@@ -1,7 +1,6 @@
 package target
 
 import (
-	"github.com/i4de/rulex/common"
 	"github.com/i4de/rulex/core"
 	"github.com/i4de/rulex/typex"
 )
@@ -17,9 +16,9 @@ var TM typex.TargetRegistry
 
 func LoadTt() {
 	TM = core.NewTargetTypeManager()
-	TM.Register(typex.HTTP_TARGET, typex.GenOutConfig(typex.HTTP_TARGET, "About HTTP_TARGET", common.HTTPConfig{}))
-	TM.Register(typex.MONGO_SINGLE, typex.GenOutConfig(typex.MONGO_SINGLE, "About MONGO_SINGLE", common.MongoConfig{}))
-	TM.Register(typex.MQTT_TARGET, typex.GenOutConfig(typex.MQTT_TARGET, "About MQTT_TARGET", common.MqttConfig{}))
-	TM.Register(typex.NATS_TARGET, typex.GenOutConfig(typex.NATS_TARGET, "About NATS_TARGET", common.NatsConfig{}))
-	TM.Register(typex.TDENGINE_TARGET, typex.GenOutConfig(typex.TDENGINE_TARGET, "About TDENGINE_TARGET", common.TDEngineConfig{}))
+	TM.Register(typex.HTTP_TARGET, &typex.XConfig{})
+	TM.Register(typex.MONGO_SINGLE, &typex.XConfig{})
+	TM.Register(typex.MQTT_TARGET, &typex.XConfig{})
+	TM.Register(typex.NATS_TARGET, &typex.XConfig{})
+	TM.Register(typex.TDENGINE_TARGET, &typex.XConfig{})
 }

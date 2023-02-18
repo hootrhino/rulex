@@ -114,7 +114,7 @@ func (*grpcInEndSource) Driver() typex.XExternalDriver {
 	return nil
 }
 func (*grpcInEndSource) Configs() *typex.XConfig {
-	return typex.GenInConfig(typex.GRPC, "GRPC", common.GrpcConfig{})
+	return &typex.XConfig{}
 }
 
 func (r *RulexRpcServer) Work(ctx context.Context, in *rulexrpc.Data) (*rulexrpc.Response, error) {

@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/i4de/rulex/glogger"
-	"github.com/i4de/rulex/target"
 	"github.com/i4de/rulex/typex"
 )
 
@@ -23,32 +22,14 @@ func (e *RuleEngine) LoadUserOutEnd(target typex.XTarget, out *typex.OutEnd) err
 
 /*
 *
-* 加载内建输出资源（这里其实是个很弱智的设计，当时1年前【2021年6月】的时候，当时准备支持的只有串口，
-* 时至今日越来越多，这种硬编码已经不符合优雅的技术设计理念，因此后期需要重构这块。
-* 可选方案有：1 用一个Map去统一全局管理；2 用动态库的形式去扩展。未来某个版本会更新，敬请期待）
-*
+* 加载内建输出资源
  */
 func (e *RuleEngine) LoadBuiltinOutEnd(out *typex.OutEnd) error {
 	return e.LoadOutEnd(out)
 }
 func (e *RuleEngine) LoadOutEnd(out *typex.OutEnd) error {
-	if out.Type == typex.MONGO_SINGLE {
-		return startTarget(target.NewMongoTarget(e), out, e)
-	}
-	if out.Type == typex.MQTT_TARGET {
-		return startTarget(target.NewMqttTarget(e), out, e)
-	}
-	if out.Type == typex.NATS_TARGET {
-		return startTarget(target.NewNatsTarget(e), out, e)
-	}
-	if out.Type == typex.HTTP_TARGET {
-		return startTarget(target.NewHTTPTarget(e), out, e)
-	}
-	if out.Type == typex.TDENGINE_TARGET {
-		return startTarget(target.NewTdEngineTarget(e), out, e)
-	}
-	if out.Type == typex.GRPC_CODEC_TARGET {
-		return startTarget(target.NewCodecTarget(e), out, e)
+	if config := e.TargetTypeManager.Find(out.Type); config != nil {
+		return startTarget(config.Target, out, e)
 	}
 	return errors.New("unsupported target type:" + out.Type.String())
 }

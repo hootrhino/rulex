@@ -8,7 +8,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/i4de/rulex/device"
 	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 )
@@ -69,38 +68,12 @@ func (e *RuleEngine) LoadBuiltinDevice(deviceInfo *typex.Device) error {
 
 /*
 *
-* 加载设备（这里其实是个很弱智的设计，当时1年前【2021年6月】的时候，当时准备支持的只有串口，时至今日越来越多，这种硬编码
-* 已经不符合优雅的技术设计理念，因此后期需要重构这块。可选方案有：1 用一个Map去统一全局管理；2 用动态库的形式去扩展。未来
-* 某个版本会更新，敬请期待）
+* 加载设备
 *
  */
 func (e *RuleEngine) LoadDevice(deviceInfo *typex.Device) error {
-	if deviceInfo.Type == typex.TSS200V02 {
-		return startDevices(device.NewTS200Sensor(e), deviceInfo, e)
-	}
-	if deviceInfo.Type == typex.YK08_RELAY {
-		return startDevices(device.NewYK8Controller(e), deviceInfo, e)
-	}
-	if deviceInfo.Type == typex.RTU485_THER {
-		return startDevices(device.NewRtu485Ther(e), deviceInfo, e)
-	}
-	if deviceInfo.Type == typex.S1200PLC {
-		return startDevices(device.NewS1200plc(e), deviceInfo, e)
-	}
-	if deviceInfo.Type == typex.GENERIC_MODBUS {
-		return startDevices(device.NewGenericModbusDevice(e), deviceInfo, e)
-	}
-	if deviceInfo.Type == typex.GENERIC_UART {
-		return startDevices(device.NewGenericUartDevice(e), deviceInfo, e)
-	}
-	if deviceInfo.Type == typex.GENERIC_SNMP {
-		return startDevices(device.NewGenericSnmpDevice(e), deviceInfo, e)
-	}
-	if deviceInfo.Type == typex.USER_G776 {
-		return startDevices(device.NewUsrG776DTU(e), deviceInfo, e)
-	}
-	if deviceInfo.Type == typex.ICMP_SENDER {
-		return startDevices(device.NewIcmpSender(e), deviceInfo, e)
+	if config := e.DeviceTypeManager.Find(deviceInfo.Type); config != nil {
+		return startDevices(config.Device, deviceInfo, e)
 	}
 	return fmt.Errorf("unsupported Device type:%s", deviceInfo.Type)
 

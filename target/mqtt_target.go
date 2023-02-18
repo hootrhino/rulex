@@ -119,5 +119,5 @@ func (mm *mqttOutEndTarget) To(data interface{}) (interface{}, error) {
 *
  */
 func (*mqttOutEndTarget) Configs() *typex.XConfig {
-	return typex.GenOutConfig(typex.MQTT_TARGET, "MQTT", common.MqttConfig{})
+	return &typex.XConfig{}
 }

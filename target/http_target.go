@@ -77,5 +77,5 @@ func (ht *HTTPTarget) Details() *typex.OutEnd {
 *
  */
 func (*HTTPTarget) Configs() *typex.XConfig {
-	return typex.GenOutConfig(typex.HTTP_TARGET, "HTTP_TARGET", common.HTTPConfig{})
+	return &typex.XConfig{}
 }

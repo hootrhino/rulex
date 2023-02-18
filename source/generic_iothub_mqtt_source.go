@@ -173,7 +173,7 @@ func (*tencentIothubSource) Driver() typex.XExternalDriver {
 	return nil
 }
 func (*tencentIothubSource) Configs() *typex.XConfig {
-	return typex.GenInConfig(typex.TENCENT_IOT_HUB, "腾讯云IOTHUB接入支持", common.TencentMqttConfig{})
+	return &typex.XConfig{}
 }
 
 // 拓扑

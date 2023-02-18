@@ -160,7 +160,7 @@ func (*ithings) Driver() typex.XExternalDriver {
 	return nil
 }
 func (*ithings) Configs() *typex.XConfig {
-	return typex.GenInConfig(typex.ITHINGS_IOT_HUB, "ITHINGS IOTHUB接入支持", common.IThingsMqttConfig{})
+	return &typex.XConfig{}
 }
 
 // 拓扑

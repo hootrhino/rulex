@@ -106,5 +106,5 @@ func (nt *natsTarget) Stop() {
 *
  */
 func (*natsTarget) Configs() *typex.XConfig {
-	return typex.GenOutConfig(typex.NATS_TARGET, "NATS_TARGET", common.NatsConfig{})
+	return &typex.XConfig{}
 }

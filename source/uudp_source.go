@@ -124,7 +124,7 @@ func (*udpSource) Driver() typex.XExternalDriver {
 	return nil
 }
 func (*udpSource) Configs() *typex.XConfig {
-	return typex.GenInConfig(typex.RULEX_UDP, "RULEX_UDP", common.RULEXUdpConfig{})
+	return &typex.XConfig{}
 }
 
 // 拓扑

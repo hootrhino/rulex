@@ -110,7 +110,7 @@ func (cc *coAPInEndSource) Driver() typex.XExternalDriver {
 }
 
 func (*coAPInEndSource) Configs() *typex.XConfig {
-	return typex.GenInConfig(typex.COAP, "COAP", common.HostConfig{})
+	return &typex.XConfig{}
 }
 
 // 拓扑

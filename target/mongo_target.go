@@ -113,5 +113,5 @@ func (m *mongoTarget) Details() *typex.OutEnd {
 *
  */
 func (*mongoTarget) Configs() *typex.XConfig {
-	return typex.GenOutConfig(typex.MONGO_SINGLE, "MONGO_SINGLE", common.MongoConfig{})
+	return &typex.XConfig{}
 }

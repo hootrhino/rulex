@@ -90,7 +90,7 @@ func (ct *codecTarget) Details() *typex.OutEnd {
 }
 
 func (ct *codecTarget) Configs() *typex.XConfig {
-	return typex.GenOutConfig(typex.GRPC_CODEC_TARGET, "GRPC_CODEC_TARGET", common.GrpcConfig{})
+	return &typex.XConfig{}
 
 }
 

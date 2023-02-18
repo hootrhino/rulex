@@ -39,13 +39,13 @@ type XDataModel struct {
 //
 //
 // 创建资源的时候需要一个通用配置类
-// XConfig 可认为是接收参数的Form
-// 前端可以拿来渲染界面(from v0.0.2)
 //
 //
 
 type XConfig struct {
-	Type    string        `json:"type"`    // 类型
-	HelpTip string        `json:"helpTip"` // 关于这个配置的简介和帮助信息
-	Views   []interface{} `json:"view"`    // 枚举，一般用来实现Select
+	Type   string  `json:"type"` // 类型
+	Device XDevice `json:"-"`
+	Source XSource `json:"-"`
+	Target XTarget `json:"-"`
+	Engine RuleX   `json:"-"`
 }

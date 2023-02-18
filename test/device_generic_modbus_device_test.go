@@ -69,7 +69,6 @@ func Test_Generic_modbus_device_tcp_mode(t *testing.T) {
 				local nodeT = rulexlib:J2T(data)
 				local dataT = nodeT['node1']
 				local rawbin, error = rulexlib:B64S2B(dataT['value'])
-				print("B64S2B error --->", rawbin, error)
 				local matchedData = rulexlib:MB(">a1:8 b2:8 c3:8 d4:8", rawbin, false)
 				local a1 = rulexlib:B2I64('>', rulexlib:BS2B(matchedData["a1"]))
 				local b2 = rulexlib:B2I64('>', rulexlib:BS2B(matchedData["b2"]))

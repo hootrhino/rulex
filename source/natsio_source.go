@@ -117,7 +117,7 @@ func (nt *natsSource) Stop() {
 
 }
 func (nt *natsSource) Configs() *typex.XConfig {
-	return typex.GenInConfig(typex.NATS_SERVER, "NATS_SERVER", common.NatsConfig{})
+	return &typex.XConfig{}
 }
 
 func (nt *natsSource) DataModels() []typex.XDataModel {

@@ -28,7 +28,7 @@ func NewHttpInEndSource(e typex.RuleX) typex.XSource {
 	return &h
 }
 func (*httpInEndSource) Configs() *typex.XConfig {
-	return typex.GenInConfig(typex.HTTP, "HTTP", common.HTTPConfig{})
+	return &typex.XConfig{}
 }
 func (hh *httpInEndSource) Init(inEndId string, configMap map[string]interface{}) error {
 	hh.PointId = inEndId

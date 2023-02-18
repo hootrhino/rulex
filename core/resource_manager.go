@@ -2,27 +2,27 @@ package core
 
 import "github.com/i4de/rulex/typex"
 
-type sourceTypeManager struct {
+type SourceTypeManager struct {
 	// K: 资源类型
 	// V: 伪构造函数
 	registry map[typex.InEndType]*typex.XConfig
 }
 
 func NewSourceTypeManager() typex.SourceRegistry {
-	return &sourceTypeManager{
+	return &SourceTypeManager{
 		registry: map[typex.InEndType]*typex.XConfig{},
 	}
 
 }
-func (rm *sourceTypeManager) Register(name typex.InEndType, f *typex.XConfig) {
+func (rm *SourceTypeManager) Register(name typex.InEndType, f *typex.XConfig) {
 	rm.registry[name] = f
 }
 
-func (rm *sourceTypeManager) Find(name typex.InEndType) *typex.XConfig {
+func (rm *SourceTypeManager) Find(name typex.InEndType) *typex.XConfig {
 
 	return rm.registry[name]
 }
-func (rm *sourceTypeManager) All() []*typex.XConfig {
+func (rm *SourceTypeManager) All() []*typex.XConfig {
 	data := make([]*typex.XConfig, 0)
 	for _, v := range rm.registry {
 		data = append(data, v)

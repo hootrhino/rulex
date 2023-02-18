@@ -8,9 +8,12 @@ import (
 	"sync"
 
 	"github.com/i4de/rulex/core"
+	"github.com/i4de/rulex/device"
 	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/sidecar"
+	"github.com/i4de/rulex/source"
 	"github.com/i4de/rulex/statistics"
+	"github.com/i4de/rulex/target"
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
 	"github.com/shirou/gopsutil/v3/disk"
@@ -19,33 +22,42 @@ import (
 
 // 规则引擎
 type RuleEngine struct {
-	SideCar sidecar.SideCar    `json:"-"`
-	Hooks   *sync.Map          `json:"hooks"`
-	Rules   *sync.Map          `json:"rules"`
-	Plugins *sync.Map          `json:"plugins"`
-	InEnds  *sync.Map          `json:"inends"`
-	OutEnds *sync.Map          `json:"outends"`
-	Drivers *sync.Map          `json:"drivers"`
-	Devices *sync.Map          `json:"devices"`
-	Config  *typex.RulexConfig `json:"config"`
+	SideCar           sidecar.SideCar      `json:"-"`
+	Hooks             *sync.Map            `json:"hooks"`
+	Rules             *sync.Map            `json:"rules"`
+	Plugins           *sync.Map            `json:"plugins"`
+	InEnds            *sync.Map            `json:"inends"`
+	OutEnds           *sync.Map            `json:"outends"`
+	Drivers           *sync.Map            `json:"drivers"`
+	Devices           *sync.Map            `json:"devices"`
+	Config            *typex.RulexConfig   `json:"config"`
+	DeviceTypeManager typex.DeviceRegistry `json:"-"`
+	SourceTypeManager typex.SourceRegistry `json:"-"`
+	TargetTypeManager typex.TargetRegistry `json:"-"`
 }
 
 func NewRuleEngine(config typex.RulexConfig) typex.RuleX {
 	return &RuleEngine{
-		SideCar: sidecar.NewSideCarManager(typex.GCTX),
-		Plugins: &sync.Map{},
-		Hooks:   &sync.Map{},
-		Rules:   &sync.Map{},
-		InEnds:  &sync.Map{},
-		OutEnds: &sync.Map{},
-		Drivers: &sync.Map{},
-		Devices: &sync.Map{},
-		Config:  &config,
+		SideCar:           sidecar.NewSideCarManager(typex.GCTX),
+		DeviceTypeManager: core.NewDeviceTypeManager(),
+		SourceTypeManager: core.NewSourceTypeManager(),
+		TargetTypeManager: core.NewTargetTypeManager(),
+		Plugins:           &sync.Map{},
+		Hooks:             &sync.Map{},
+		Rules:             &sync.Map{},
+		InEnds:            &sync.Map{},
+		OutEnds:           &sync.Map{},
+		Drivers:           &sync.Map{},
+		Devices:           &sync.Map{},
+		Config:            &config,
 	}
 }
 
 func (e *RuleEngine) Start() *typex.RulexConfig {
 	typex.StartQueue(core.GlobalConfig.MaxQueueSize)
+	e.InitDeviceTypeManager()
+	e.InitSourceTypeManager()
+	e.InitTargetTypeManager()
 	return e.Config
 }
 
@@ -516,4 +528,175 @@ func (e *RuleEngine) RestartDevice(uuid string) error {
 		return nil
 	}
 	return errors.New("Device:" + uuid + "not exists")
+}
+
+/*
+*
+* 初始化设备管理器
+*
+ */
+func (e *RuleEngine) InitDeviceTypeManager() error {
+	e.DeviceTypeManager.Register(typex.TSS200V02,
+		&typex.XConfig{
+			Engine: e,
+			Device: device.NewTS200Sensor(e),
+		},
+	)
+	e.DeviceTypeManager.Register(typex.YK08_RELAY,
+		&typex.XConfig{
+			Engine: e,
+			Device: device.NewYK8Controller(e),
+		},
+	)
+	e.DeviceTypeManager.Register(typex.RTU485_THER,
+		&typex.XConfig{
+			Engine: e,
+			Device: device.NewRtu485Ther(e),
+		},
+	)
+	e.DeviceTypeManager.Register(typex.S1200PLC,
+		&typex.XConfig{
+			Engine: e,
+			Device: device.NewS1200plc(e),
+		},
+	)
+	e.DeviceTypeManager.Register(typex.GENERIC_MODBUS,
+		&typex.XConfig{
+			Engine: e,
+			Device: device.NewGenericModbusDevice(e),
+		},
+	)
+	e.DeviceTypeManager.Register(typex.GENERIC_UART,
+		&typex.XConfig{
+			Engine: e,
+			Device: device.NewGenericUartDevice(e),
+		},
+	)
+	e.DeviceTypeManager.Register(typex.GENERIC_SNMP,
+		&typex.XConfig{
+			Engine: e,
+			Device: device.NewGenericSnmpDevice(e),
+		},
+	)
+	e.DeviceTypeManager.Register(typex.USER_G776,
+		&typex.XConfig{
+			Engine: e,
+			Device: device.NewUsrG776DTU(e),
+		},
+	)
+	e.DeviceTypeManager.Register(typex.ICMP_SENDER,
+		&typex.XConfig{
+			Engine: e,
+			Device: device.NewIcmpSender(e),
+		},
+	)
+	return nil
+}
+
+/*
+*
+* 初始化输入资源管理器
+*
+ */
+func (e *RuleEngine) InitSourceTypeManager() error {
+	e.SourceTypeManager.Register(typex.MQTT,
+		&typex.XConfig{
+			Engine: e,
+			Source: source.NewMqttInEndSource(e),
+		},
+	)
+	e.SourceTypeManager.Register(typex.HTTP,
+		&typex.XConfig{
+			Engine: e,
+			Source: source.NewHttpInEndSource(e),
+		},
+	)
+	e.SourceTypeManager.Register(typex.COAP,
+		&typex.XConfig{
+			Engine: e,
+			Source: source.NewCoAPInEndSource(e),
+		},
+	)
+	e.SourceTypeManager.Register(typex.GRPC,
+		&typex.XConfig{
+			Engine: e,
+			Source: source.NewGrpcInEndSource(e),
+		},
+	)
+	e.SourceTypeManager.Register(typex.NATS_SERVER,
+		&typex.XConfig{
+			Engine: e,
+			Source: source.NewNatsSource(e),
+		},
+	)
+	e.SourceTypeManager.Register(typex.RULEX_UDP,
+		&typex.XConfig{
+			Engine: e,
+			Source: source.NewUdpInEndSource(e),
+		},
+	)
+	e.SourceTypeManager.Register(typex.TENCENT_IOT_HUB,
+		&typex.XConfig{
+			Engine: e,
+			Source: source.NewTencentIothubSource(e),
+		},
+	)
+	e.SourceTypeManager.Register(typex.GENERIC_IOT_HUB,
+		&typex.XConfig{
+			Engine: e,
+			Source: source.NewGenericIothubSource(e),
+		},
+	)
+	e.SourceTypeManager.Register(typex.ITHINGS_IOT_HUB,
+		&typex.XConfig{
+			Engine: e,
+			Source: source.NewIThingsSource(e),
+		},
+	)
+	return nil
+}
+
+/*
+*
+* 初始化输出资源管理器
+*
+ */
+func (e *RuleEngine) InitTargetTypeManager() error {
+	e.TargetTypeManager.Register(typex.MONGO_SINGLE,
+		&typex.XConfig{
+			Engine: e,
+			Target: target.NewMongoTarget(e),
+		},
+	)
+	e.TargetTypeManager.Register(typex.MQTT_TARGET,
+		&typex.XConfig{
+			Engine: e,
+			Target: target.NewMqttTarget(e),
+		},
+	)
+	e.TargetTypeManager.Register(typex.NATS_TARGET,
+		&typex.XConfig{
+			Engine: e,
+			Target: target.NewNatsTarget(e),
+		},
+	)
+	e.TargetTypeManager.Register(typex.HTTP_TARGET,
+		&typex.XConfig{
+			Engine: e,
+			Target: target.NewHTTPTarget(e),
+		},
+	)
+	e.TargetTypeManager.Register(typex.TDENGINE_TARGET,
+		&typex.XConfig{
+			Engine: e,
+			Target: target.NewTdEngineTarget(e),
+		},
+	)
+	e.TargetTypeManager.Register(typex.GRPC_CODEC_TARGET,
+		&typex.XConfig{
+			Engine: e,
+			Target: target.NewCodecTarget(e),
+		},
+	)
+	return nil
 }

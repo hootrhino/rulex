@@ -221,5 +221,5 @@ func (td *tdEngineTarget) To(data interface{}) (interface{}, error) {
 *
  */
 func (*tdEngineTarget) Configs() *typex.XConfig {
-	return typex.GenOutConfig(typex.TDENGINE_TARGET, "TDENGINE_TARGET", common.TDEngineConfig{})
+	return &typex.XConfig{}
 }

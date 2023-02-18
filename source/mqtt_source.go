@@ -124,7 +124,7 @@ func (*mqttInEndSource) Driver() typex.XExternalDriver {
 	return nil
 }
 func (*mqttInEndSource) Configs() *typex.XConfig {
-	return typex.GenInConfig(typex.MQTT, "MQTT", common.MqttConfig{})
+	return &typex.XConfig{}
 }
 
 // 拓扑

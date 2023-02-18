@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/i4de/rulex/glogger"
-	"github.com/i4de/rulex/source"
 	"github.com/i4de/rulex/typex"
 )
 
@@ -32,38 +31,13 @@ func (e *RuleEngine) LoadBuiltInEnd(in *typex.InEnd) error {
 
 /*
 *
-* TODO: 0.3.0重构此处，换成 SourceRegistry 形式
+* 加载输入资源
 *
  */
 func (e *RuleEngine) LoadInEnd(in *typex.InEnd) error {
-	if in.Type == typex.MQTT {
-		return startSources(source.NewMqttInEndSource(e), in, e)
+	if config := e.SourceTypeManager.Find(in.Type); config != nil {
+		return startSources(config.Source, in, e)
 	}
-	if in.Type == typex.HTTP {
-		return startSources(source.NewHttpInEndSource(e), in, e)
-	}
-	if in.Type == typex.COAP {
-		return startSources(source.NewCoAPInEndSource(e), in, e)
-	}
-	if in.Type == typex.GRPC {
-		return startSources(source.NewGrpcInEndSource(e), in, e)
-	}
-	if in.Type == typex.NATS_SERVER {
-		return startSources(source.NewNatsSource(e), in, e)
-	}
-	if in.Type == typex.RULEX_UDP {
-		return startSources(source.NewUdpInEndSource(e), in, e)
-	}
-	if in.Type == typex.TENCENT_IOT_HUB {
-		return startSources(source.NewTencentIothubSource(e), in, e)
-	}
-	if in.Type == typex.GENERIC_IOT_HUB {
-		return startSources(source.NewGenericIothubSource(e), in, e)
-	}
-	if in.Type == typex.ITHINGS_IOT_HUB {
-		return startSources(source.NewIThingsSource(e), in, e)
-	}
-
 	return fmt.Errorf("unsupported InEnd type:%s", in.Type)
 }
 
