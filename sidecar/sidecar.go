@@ -131,6 +131,11 @@ func NewSideCarManager(ctx context.Context) SideCar {
 func (scm *SidecarManager) Fork(goods Goods) error {
 	glogger.GLogger.Infof("fork goods process, (uuid = %v, addr = %v, args = %v)", goods.UUID, goods.Addr, goods.Args)
 	cmd := exec.Command(goods.Addr, goods.Args...)
+	// TODO: 分别实现 Linux 和 Windows下的进程参数
+	// SysProcAttr-linux.go
+	// SysProcAttr-windows.go
+	cmd.SysProcAttr = &syscall.SysProcAttr{}
+
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -167,9 +172,7 @@ func (scm *SidecarManager) Save(goodsProcess *GoodsProcess) {
 	scm.goodsProcessMap.Store(goodsProcess.uuid, goodsProcess)
 }
 
-//
 // 从内存里删除, 删除后记得停止挂件, 通常外部配置表也要删除, 比如Sqlite
-//
 func (scm *SidecarManager) Remove(uuid string) {
 	v, ok := scm.goodsProcessMap.Load(uuid)
 	if ok {
@@ -178,9 +181,7 @@ func (scm *SidecarManager) Remove(uuid string) {
 	}
 }
 
-//
 // 停止外挂运行时管理器, 这个要是停了基本上就是程序结束了
-//
 func (scm *SidecarManager) Stop() {
 	scm.goodsProcessMap.Range(func(key, value interface{}) bool {
 		(value.(*GoodsProcess)).Stop()
@@ -189,9 +190,7 @@ func (scm *SidecarManager) Stop() {
 	scm = nil
 }
 
-//
 // cmd.Wait() 会阻塞, 但是当控制的子进程停止的时候会继续执行, 因此可以在defer里面释放资源
-//
 func (scm *SidecarManager) run(wg *sync.WaitGroup, goodsProcess *GoodsProcess) error {
 	defer func() {
 		goodsProcess.cancel()
