@@ -16,9 +16,7 @@ xx:
 
 .PHONY: windows
 windows:
-	SET GOOS=windows
-	SET CGO_ENABLED=1
-	go build -ldflags "-s -w" -o ${APP}.exe
+	GOOS=windows CGO_ENABLED=1 go build -ldflags "-s -w" -o ${APP}.exe
 
 .PHONY: arm32
 arm32:
@@ -29,6 +27,24 @@ arm32:
 arm64:
 	CGO_ENABLED=1 GOOS=linux GOARCH=arm64 CC=aarch64-linux-gnu-gcc\
 	    go build -ldflags "-s -w -linkmode external -extldflags -static" -o ${APP}-arm64
+
+.PHONY: mips
+mips:
+	# sudo apt-get install gcc-mips-linux-gnu
+	GOOS=linux GOARCH=mips CGO_ENABLED=1 CC=mips-linux-gnu-gcc\
+	    go build -ldflags "-s -w -linkmode external -extldflags -static" -o ${APP}-mips
+
+.PHONY: mips64
+mips64:
+	# sudo apt-get install gcc-mips-linux-gnu
+	GOOS=linux GOARCH=mips64 CGO_ENABLED=1 CC=mips-linux-gnu-gcc\
+	    go build -ldflags "-s -w -linkmode external -extldflags -static" -o ${APP}-mips64
+
+.PHONY: mipsel
+mipsle:
+	# sudo apt-get install gcc-mipsel-linux-gnu
+	GOOS=linux GOARCH=mipsle CGO_ENABLED=1 GOMIPS=softfloat CC=mipsel-linux-gnu-gcc\
+	    go build -ldflags "-s -w -linkmode external -extldflags -static" -o ${APP}-mipsle
 
 .PHONY: run
 run:
