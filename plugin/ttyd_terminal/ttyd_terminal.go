@@ -53,6 +53,11 @@ func (tty *WebTTYPlugin) Init(config *ini.Section) error {
 	return nil
 }
 
+/*
+*
+* 这里拉起来一个 ttyd 进程，默认运行 bash
+*
+ */
 func (tty *WebTTYPlugin) Start(typex.RuleX) error {
 	tty.ttydCmd = exec.CommandContext(typex.GCTX,
 		"ttyd", "-p", fmt.Sprintf("%d", tty.mainConfig.ListenPort),
