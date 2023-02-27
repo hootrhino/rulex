@@ -9,6 +9,17 @@
    这是个简单的 Mqtt 服务器，可以用来做测试，实际性能没有测过，不过应该还行，10000以下的设备没啥问题， 默认端口是:`2883`
 ## 开发
 开发的时候，需要把配置加进`rulex.ini`，然后在init接口中可以拿到配置，转换成具体的配置即可:
+- ini file
+
+```ini
+[plugin.ttyd]
+enable = false
+#
+# Server port
+#
+listen_port = 7681
+```
+- Config struct
 ```go
 // 配置结构体定义
 type _serverConfig struct {
@@ -16,8 +27,12 @@ type _serverConfig struct {
 	Host   string `ini:"host"`
 	Port   int    `ini:"port"`
 }
+```
+- Init
+```go
 // ....
 // 初始化的时候转换
+//
 func (s *MqttServer) Init(config *ini.Section) error {
     var mainConfig _serverConfig
     if err := utils.InIMapToStruct(config, &mainConfig); err != nil {
@@ -28,4 +43,14 @@ func (s *MqttServer) Init(config *ini.Section) error {
     return nil
 }
 
+```
+- Load
+```go
+//
+// Load
+//
+ttyd := ttyterminal.NewWebTTYPlugin()
+if err := engine.LoadPlugin("plugin.ttyd", ttyd); err != nil {
+	t.Fatal(err)
+}
 ```
