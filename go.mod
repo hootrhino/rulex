@@ -1,6 +1,6 @@
 module github.com/i4de/rulex
 
-go 1.17
+go 1.18
 
 require (
 	github.com/DrmagicE/gmqtt v0.4.1
@@ -19,7 +19,6 @@ require (
 	github.com/gopcua/opcua v0.3.5
 	github.com/gorilla/websocket v1.5.0
 	github.com/gosnmp/gosnmp v1.35.0
-	github.com/iancoleman/strcase v0.2.0
 	github.com/itchyny/gojq v0.12.9
 	github.com/makiuchi-d/gozxing v0.1.1
 	github.com/mattn/go-sqlite3 v1.14.15
@@ -53,7 +52,6 @@ require (
 )
 
 require (
-	github.com/766b/go-outliner v0.0.0-20180511142203-fc6edecdadd7 // indirect
 	github.com/goburrow/modbus v0.1.0 // indirect
 	github.com/goburrow/serial v0.1.0 // indirect
 )

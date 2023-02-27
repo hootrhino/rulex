@@ -21,3 +21,4 @@ _build*
 lua-log*
 *.txt
 plugin/http_server/www/*
+dist/
