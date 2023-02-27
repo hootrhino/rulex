@@ -6,7 +6,7 @@ import (
 )
 
 func NewLogWriter(filepath string) *LogWriter {
-	logFile, err := os.OpenFile(filepath, os.O_WRONLY|os.O_CREATE, 0777)
+	logFile, err := os.OpenFile(filepath, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0777)
 	if err != nil {
 		GLogger.Fatalf("Fail to read log file: %v", err)
 		os.Exit(1)

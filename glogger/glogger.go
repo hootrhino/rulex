@@ -18,7 +18,7 @@ var private_local_logger *LogWriter
 var GLogger *logrus.Logger = logrus.New()
 
 func StartGLogger(EnableConsole bool, path string) {
-	private_local_logger = NewLogWriter("./" + time.Now().Format("2006-01-02_15-04-05-") + path)
+	private_local_logger = NewLogWriter("./" + time.Now().Format("2006-01-02-") + path)
 	GLogger.Formatter = new(logrus.JSONFormatter)
 	GLogger.SetReportCaller(true)
 	// GLogger.Formatter.(*logrus.JSONFormatter).PrettyPrint = true

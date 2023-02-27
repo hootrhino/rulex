@@ -10,7 +10,7 @@ var private_lua_logger *LogWriter
 *
  */
 func StartLuaLogger(path string) {
-	private_lua_logger = NewLogWriter("./" + time.Now().Format("2006-01-02_15-04-05-") + path)
+	private_lua_logger = NewLogWriter("./" + time.Now().Format("2006-01-02-") + path)
 }
 
 /*
