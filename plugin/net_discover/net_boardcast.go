@@ -1,6 +1,7 @@
 package netdiscover
 
 import (
+	"context"
 	"net"
 	"sync/atomic"
 	"time"
@@ -38,9 +39,17 @@ func (dm *NetDiscover) Init(config *ini.Section) error {
 
 func (dm *NetDiscover) Start(typex.RuleX) error {
 	// 超时管理器
-	go func() {
+	go func(ctx context.Context) {
 		for {
-			time.Sleep(5 * time.Second)
+			select {
+			case <-ctx.Done():
+				{
+					return
+				}
+			default:
+				{
+				}
+			}
 			for _, nb := range dm.Neighbors {
 				if nb.Timeout == 0 {
 					// Delete node
@@ -48,10 +57,12 @@ func (dm *NetDiscover) Start(typex.RuleX) error {
 				}
 				atomic.AddInt32(&nb.Timeout, -1)
 			}
+			time.Sleep(5 * time.Second)
 
 		}
-	}()
-	go func() {
+	}(context.Background())
+	go func(ctx context.Context) {
+
 		listener, err := net.ListenUDP("udp", &net.UDPAddr{
 			IP:   net.IPv4zero,
 			Port: 1994,
@@ -62,6 +73,15 @@ func (dm *NetDiscover) Start(typex.RuleX) error {
 		}
 		data := make([]byte, 1024)
 		for {
+			select {
+			case <-ctx.Done():
+				{
+					return
+				}
+			default:
+				{
+				}
+			}
 			n, remoteAddr, err := listener.ReadFromUDP(data)
 			if err != nil {
 				glogger.GLogger.Infof("read remote: %s, err: %s", remoteAddr.String(), err)
@@ -81,7 +101,7 @@ func (dm *NetDiscover) Start(typex.RuleX) error {
 			}
 
 		}
-	}()
+	}(context.Background())
 	return nil
 }
 func (dm *NetDiscover) Stop() error {
@@ -99,11 +119,12 @@ func (hh *NetDiscover) PluginMetaInfo() typex.XPluginMetaInfo {
 		License:  "MIT",
 	}
 }
+
 /*
 *
 * 服务调用接口
 *
  */
- func (cs *NetDiscover) Service(arg typex.ServiceArg) error {
+func (cs *NetDiscover) Service(arg typex.ServiceArg) error {
 	return nil
 }
