@@ -96,3 +96,12 @@ func (hh *WebTTYPlugin) PluginMetaInfo() typex.XPluginMetaInfo {
 		License:  "MIT",
 	}
 }
+
+/*
+*
+* 服务调用接口
+*
+ */
+func (cs *WebTTYPlugin) Service(arg typex.ServiceArg) error {
+	return nil
+}

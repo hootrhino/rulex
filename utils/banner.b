@@ -1,7 +1,7 @@
 
 |
 |* Welcome to RULEX framework world <'_'>
-|* Version: v0.4.2-92af0ab00eba4c9
-|* Build at: 2023-02-27 16:47:13
+|* Version: V0.4.2-c314f2aa4ccf93c
+|* Build at: 2023-02-28 10:43:18
 |* Document: https://rulex.pages.dev
 |

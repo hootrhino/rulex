@@ -58,9 +58,9 @@ func (sf *cs104Server) ASDUHandler(asdu.Connect, *asdu.ASDU) error {
 	return nil
 }
 
-//---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
 //
-//---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
 func (cs *cs104Server) Init(config *ini.Section) error {
 	cs.server = cs104.NewServer(&cs104Server{})
 	var mainConfig _serverConfig
@@ -98,4 +98,13 @@ func (cs *cs104Server) PluginMetaInfo() typex.XPluginMetaInfo {
 		Email:    "cnwwhai@gmail.com",
 		License:  "MIT",
 	}
+}
+
+/*
+*
+* 服务调用接口
+*
+ */
+func (cs *cs104Server) Service(arg typex.ServiceArg) error {
+	return nil
 }

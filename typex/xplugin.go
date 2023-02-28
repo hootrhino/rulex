@@ -10,15 +10,19 @@ import "gopkg.in/ini.v1"
 //
 
 //
-// External Plugin
+// 插件的服务参数
 //
-type XPlugin interface {
-	Init(*ini.Section) error // 参数为外部配置
-	Start(RuleX) error
-	Stop() error
-	PluginMetaInfo() XPluginMetaInfo
+type ServiceArg struct {
+	UUID string      `json:"uuid"` // 插件UUID
+	Name string      `json:"name"` // 服务名
+	Args interface{} `json:"args"` // 参数
 }
 
+/*
+*
+* 插件的元信息
+*
+ */
 type XPluginMetaInfo struct {
 	UUID     string `json:"uuid"`
 	Name     string `json:"name"`
@@ -28,4 +32,17 @@ type XPluginMetaInfo struct {
 	Author   string `json:"author"`
 	Email    string `json:"email"`
 	License  string `json:"license"`
+}
+
+/*
+*
+* 插件: 用来增强RULEX的外部功能，本色不属于RULEX
+*
+ */
+type XPlugin interface {
+	Init(*ini.Section) error // 参数为外部配置
+	Start(RuleX) error
+	Service(ServiceArg) error // 对外提供一些服务
+	Stop() error
+	PluginMetaInfo() XPluginMetaInfo
 }

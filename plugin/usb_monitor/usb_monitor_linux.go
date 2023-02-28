@@ -12,7 +12,6 @@ import (
 	"github.com/i4de/rulex/typex"
 	"golang.org/x/sys/unix"
 	"gopkg.in/ini.v1"
-
 )
 
 const banner string = `
@@ -174,4 +173,13 @@ func (usbm *usbMonitor) PluginMetaInfo() typex.XPluginMetaInfo {
 		Email:    "cnwwhai@gmail.com",
 		License:  "MIT",
 	}
+}
+
+/*
+*
+* 服务调用接口
+*
+ */
+func (cs *usbMonitor) Service(arg typex.ServiceArg) error {
+	return nil
 }

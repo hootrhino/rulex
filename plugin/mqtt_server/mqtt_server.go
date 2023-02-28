@@ -104,3 +104,12 @@ func (s *MqttServer) PluginMetaInfo() typex.XPluginMetaInfo {
 		License:  "MIT",
 	}
 }
+
+/*
+*
+* 服务调用接口
+*
+ */
+func (cs *MqttServer) Service(arg typex.ServiceArg) error {
+	return nil
+}

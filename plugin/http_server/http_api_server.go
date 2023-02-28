@@ -49,7 +49,6 @@ func NewHttpApiServer() *HttpApiServer {
 	return &HttpApiServer{}
 }
 
-//
 func (hh *HttpApiServer) Init(config *ini.Section) error {
 	gin.SetMode(gin.ReleaseMode)
 	hh.ginEngine = gin.New()
@@ -76,9 +75,7 @@ func (hh *HttpApiServer) Init(config *ini.Section) error {
 	return nil
 }
 
-//
 // HttpApiServer Start
-//
 func (hh *HttpApiServer) Start(r typex.RuleX) error {
 	hh.ruleEngine = r
 	//
@@ -236,6 +233,15 @@ func (hh *HttpApiServer) PluginMetaInfo() typex.XPluginMetaInfo {
 	}
 }
 
+/*
+*
+* 服务调用接口
+*
+ */
+func (cs *HttpApiServer) Service(arg typex.ServiceArg) error {
+	return nil
+}
+//--------------------------------------------------------------------------------
 //go:embed  www/*
 var files embed.FS
 

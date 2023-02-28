@@ -99,3 +99,11 @@ func (hh *NetDiscover) PluginMetaInfo() typex.XPluginMetaInfo {
 		License:  "MIT",
 	}
 }
+/*
+*
+* 服务调用接口
+*
+ */
+ func (cs *NetDiscover) Service(arg typex.ServiceArg) error {
+	return nil
+}
