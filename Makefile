@@ -10,9 +10,10 @@ build:
 	CGO_ENABLED=1 GOOS=linux
 	go build -v -ldflags "-s -w" -o ${APP}
 
-.PHONY: xx
-xx:
-	make build
+.PHONY: x64linux
+x64linux:
+	CGO_ENABLED=1 GOOS=linux GOARCH=amd64 CC=gcc\
+	    go build -ldflags "-s -w -linkmode external -extldflags -static" -o ${APP}-x64linux
 
 .PHONY: windows
 windows:

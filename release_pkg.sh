@@ -9,15 +9,15 @@ create_pkg() {
     echo "Create package: ${rulex-$1-${VERSION}}"
     if [ "$1" == "x64windows" ]; then
         zip -r _release/rulex-$1-${VERSION}.zip \
-        ./rulex-$1.exe \
+        ./rulex.exe \
         ./conf/rulex.ini
-        rm -rf ./rulex-$1.exe
+        rm -rf ./rulex.exe
     else
         zip -r _release/rulex-$1-${VERSION}.zip \
-        ./rulex-$1 \
+        ./rulex-* \
         ./script/crulex.sh \
         ./conf/rulex.ini
-        rm -rf ./rulex-$1
+        rm -rf ./rulex-*
     fi
 
 }
@@ -39,7 +39,7 @@ build_x64windows() {
 }
 
 build_x64linux() {
-    make xx
+    make x64linux
 }
 
 build_arm64linux() {
@@ -59,7 +59,7 @@ build_mips32linux() {
 }
 #------------------------------------------
 cross_compile() {
-    ARCHS=("x64windows" "x64linux" "arm64linux" "arm32linux" "mips32" "mips64")
+    ARCHS=("x64windows" "x64linux" "arm64linux" "arm32linux")
     if [ ! -d "./_release/" ]; then
         mkdir -p ./_release/
     else
@@ -99,16 +99,6 @@ cross_compile() {
             make_zip $arch
             echo -e "\033[33m [√] Compile target => ["$arch"] Ok. \033[0m"
         fi
-        # if [[ "${arch}" == "mips32" ]]; then
-        #     build_mips32linux $arch
-        #     make_zip $arch
-        #     echo -e "\033[33m [√] Compile target => ["$arch"] Ok. \033[0m"
-        # fi
-        # if [[ "${arch}" == "mips64" ]]; then
-        #     build_mips64linux $arch
-        #     make_zip $arch
-        #     echo -e "\033[33m [√] Compile target => ["$arch"] Ok. \033[0m"
-        # fi
     done
 }
 
