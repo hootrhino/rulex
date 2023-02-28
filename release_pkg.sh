@@ -9,14 +9,14 @@ create_pkg() {
     echo "Create package: ${rulex-$1-${VERSION}}"
     if [ "$1" == "x64windows" ]; then
         zip -r _release/rulex-$1-${VERSION}.zip \
-            ./rulex-$1.exe \
-            ./conf/rulex.ini
+        ./rulex-$1.exe \
+        ./conf/rulex.ini
         rm -rf ./rulex-$1.exe
     else
         zip -r _release/rulex-$1-${VERSION}.zip \
-            ./rulex-$1 \
-            ./script/crulex.sh \
-            ./conf/rulex.ini
+        ./rulex-$1 \
+        ./script/crulex.sh \
+        ./conf/rulex.ini
         rm -rf ./rulex-$1
     fi
 
@@ -35,30 +35,31 @@ make_zip() {
 
 #
 build_x64windows() {
-    CGO_ENABLED=1 GOOS=windows GOARCH=amd64 CC=x86_64-w64-mingw32-gcc \
-        go build -ldflags "-s -w" -o rulex-$1.exe main.go
+    make windows
 }
-build_x86linux() {
-    CGO_ENABLED=1 GOOS=linux GO386=softfloat \
-        go build -ldflags "-s -w" -o rulex-$1 main.go
-}
+
 build_x64linux() {
-    CGO_ENABLED=1 GOOS=linux GOARCH=amd64 \
-        go build -ldflags "-s -w" -o rulex-$1 main.go
+    make xx
 }
 
 build_arm64linux() {
-    CGO_ENABLED=1 GOOS=linux GOARCH=arm64 CC=aarch64-linux-gnu-gcc \
-        go build -ldflags "-s -w" -o rulex-$1 main.go
-}
-build_arm32linux() {
-    CGO_ENABLED=1 GOARM=7 GOOS=linux GOARCH=arm CC=arm-linux-gnueabi-gcc \
-        go build -ldflags "-s -w -linkmode external -extldflags -static" -o rulex-$1 main.go
+    make arm64
 }
 
+build_arm32linux() {
+    make arm32
+}
+
+build_mips64linux() {
+    make mips64
+}
+
+build_mips32linux() {
+    make mips32
+}
 #------------------------------------------
 cross_compile() {
-    ARCHS=("x64windows" "x64linux" "arm64linux" "arm32linux")
+    ARCHS=("x64windows" "x64linux" "arm64linux" "arm32linux" "mips32" "mips64")
     if [ ! -d "./_release/" ]; then
         mkdir -p ./_release/
     else
@@ -97,8 +98,17 @@ cross_compile() {
             build_arm32linux $arch
             make_zip $arch
             echo -e "\033[33m [√] Compile target => ["$arch"] Ok. \033[0m"
-
         fi
+        # if [[ "${arch}" == "mips32" ]]; then
+        #     build_mips32linux $arch
+        #     make_zip $arch
+        #     echo -e "\033[33m [√] Compile target => ["$arch"] Ok. \033[0m"
+        # fi
+        # if [[ "${arch}" == "mips64" ]]; then
+        #     build_mips64linux $arch
+        #     make_zip $arch
+        #     echo -e "\033[33m [√] Compile target => ["$arch"] Ok. \033[0m"
+        # fi
     done
 }
 
@@ -118,11 +128,10 @@ gen_changelog() {
     PreviewVersion=$(git describe --tags --abbrev=0 $(git rev-list --tags --skip=1 --max-count=1))
     CurrentVersion=$(git describe --tags --abbrev=0)
     echo "----------------------------------------------------------------"
-    echo "|  Change log between [${PreviewVersion}] <--> [${CurrentVersion}]"
+    echo -e "\033[34m [★] Change log between\033[44;34m ["${PreviewVersion}"] <--> [${CurrentVersion}]. \033[0m"
     echo "----------------------------------------------------------------"
     ChangeLog=$(git log ${PreviewVersion}..${CurrentVersion} --oneline --decorate --color)
     printf "${ChangeLog}\n"
-
 }
 
 #
