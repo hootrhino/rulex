@@ -134,7 +134,7 @@ func (scm *SidecarManager) Fork(goods Goods) error {
 	// TODO: 分别实现 Linux 和 Windows下的进程参数
 	// SysProcAttr-linux.go
 	// SysProcAttr-windows.go
-	cmd.SysProcAttr = &syscall.SysProcAttr{}
+	cmd.SysProcAttr = NewSysProcAttr() 
 
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
