@@ -78,6 +78,11 @@ func LoadBuildInLuaLib(e typex.RuleX, r *typex.Rule) {
 	// 设备操作
 	//------------------------------------------------------------------------
 	r.AddLib(e, "device", "DCACall", rulexlib.DCACall(e))
+	//------------------------------------------------------------------------
+	// 十六进制编码处理
+	//------------------------------------------------------------------------
+	r.AddLib(e, "hex", "Bytes2Hexs", rulexlib.Bytes2Hexs(e))
+	r.AddLib(e, "hex", "Hexs2Bytes", rulexlib.Hexs2Bytes(e))
 
 }
 

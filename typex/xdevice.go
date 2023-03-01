@@ -25,15 +25,17 @@ type DeviceType string
 
 // 支持的设备类型
 const (
-	TSS200V02      DeviceType = "TSS200V02"      // Multi params Sensor
-	RTU485_THER    DeviceType = "RTU485_THER"    // RS485 Sensor
-	YK08_RELAY     DeviceType = "YK08_RELAY"     // YK8 RS485 Relay
-	S1200PLC       DeviceType = "S1200PLC"       // SIMENS-S71200
-	GENERIC_MODBUS DeviceType = "GENERIC_MODBUS" // 通用Modbus
-	GENERIC_UART   DeviceType = "GENERIC_UART"   // 通用串口
-	GENERIC_SNMP   DeviceType = "GENERIC_SNMP"   // SNMP 支持
-	USER_G776      DeviceType = "USER_G776"      // 有人 G776 4G模组
-	ICMP_SENDER    DeviceType = "ICMP_SENDER"    // ICMP_SENDER
+	TSS200V02        DeviceType = "TSS200V02"        // Multi params Sensor
+	RTU485_THER      DeviceType = "RTU485_THER"      // RS485 Sensor
+	YK08_RELAY       DeviceType = "YK08_RELAY"       // YK8 RS485 Relay
+	S1200PLC         DeviceType = "S1200PLC"         // SIEMENS-S71200
+	GENERIC_MODBUS   DeviceType = "GENERIC_MODBUS"   // 通用Modbus
+	GENERIC_UART     DeviceType = "GENERIC_UART"     // 通用串口
+	GENERIC_SNMP     DeviceType = "GENERIC_SNMP"     // SNMP 支持
+	USER_G776        DeviceType = "USER_G776"        // 有人 G776 4G模组
+	ICMP_SENDER      DeviceType = "ICMP_SENDER"      // ICMP_SENDER
+	GENERIC_PROTOCOL DeviceType = "GENERIC_PROTOCOL" // 通用自定义协议处理器
+
 )
 
 // 设备元数据

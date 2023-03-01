@@ -590,6 +590,12 @@ func (e *RuleEngine) InitDeviceTypeManager() error {
 			Device: device.NewIcmpSender(e),
 		},
 	)
+	e.DeviceTypeManager.Register(typex.GENERIC_PROTOCOL,
+		&typex.XConfig{
+			Engine: e,
+			Device: device.NewCustomProtocolDevice(e),
+		},
+	)
 	return nil
 }
 
