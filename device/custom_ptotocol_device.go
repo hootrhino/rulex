@@ -8,7 +8,6 @@ import (
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
 	serial "github.com/wwhai/goserial"
-	"net"
 	"sync"
 	"time"
 )
@@ -39,9 +38,9 @@ type _ProtocolArg struct {
 	Out string `json:"out" validate:"required"`
 }
 type _Protocol struct {
-	Name        string `json:"name" validate:"required"`
-	Description string `json:"description"`
-	ProtocolArg _ProtocolArg
+	Name        string       `json:"name" validate:"required"`
+	Description string       `json:"description"`
+	ProtocolArg _ProtocolArg `json:"protocol" validate:"required"`
 }
 
 /*
@@ -59,8 +58,8 @@ type CustomProtocolDevice struct {
 	status     typex.DeviceState
 	RuleEngine typex.RuleX
 	serialPort serial.Port  // 现阶段暂时支持串口
-	tcpConn    *net.TCPConn // rawtcp 以后支持
-	udpConn    *net.UDPConn // rawudp 以后支持
+	// tcpConn    *net.TCPConn // rawtcp 以后支持
+	// udpConn    *net.UDPConn // rawudp 以后支持
 	mainConfig _CustomProtocolConfig
 	locker     sync.Locker
 	errorCount int // 记录最大容错数，默认5次，出错超过5此就重启
