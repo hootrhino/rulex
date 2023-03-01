@@ -128,6 +128,7 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 		}
 		mdev.serialPort = serialPort
 		mdev.status = typex.DEV_UP
+		return nil
 	}
 
 	return fmt.Errorf("unsupported transport:%s", mdev.mainConfig.CommonConfig.Transport)

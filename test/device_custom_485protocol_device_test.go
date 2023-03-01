@@ -38,11 +38,11 @@ func TestCustomProtocolDevice(t *testing.T) {
 				"timeout":     10,
 			},
 			"uartConfig": map[string]interface{}{
-				"baudRate": 9600,
+				"baudRate": 115200,
 				"dataBits": 8,
 				"parity":   "N",
 				"stopBits": 1,
-				"uart":     "COM4",
+				"uart":     "/dev/pts/5",
 			},
 			"deviceConfig": map[string]interface{}{
 				"get_uuid": map[string]interface{}{
