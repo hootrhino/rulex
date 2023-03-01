@@ -88,7 +88,8 @@ func TestCustomProtocolDevice(t *testing.T) {
 		Actions = {
 		function(data)
 			print("received ======> : ",data)
-			local n1, err = rulexlib:WriteDevice("dev1", 0, "get_uuid")
+			local n, err = rulexlib:WriteDevice("dev1", 0, "get_uuid")
+			print("WriteDevice <====== : ", n, err )
 			return true, data
 		end
 	}

@@ -168,8 +168,6 @@ func (mdev *CustomProtocolDevice) OnWrite(_ int, data []byte) (int, error) {
 			return 0, err2
 		}
 		mdev.locker.Unlock()
-		// 判断返回值, 把返回值给加工成大写Hex格式
-		copy(data, []byte(fmt.Sprintf("%X", result[:n]))) // 把结果返回
 		return n, nil
 	}
 	return 0, errors.New("unknown command:" + string(data))
