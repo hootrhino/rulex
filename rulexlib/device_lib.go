@@ -10,8 +10,8 @@ import (
 
 /*
 *
-* 读: rulexlib:ReadDevice(ID) -> data, err
-* 写: rulexlib:WriteDevice(ID, []byte{}) -> data, err
+* 读: rulexlib:ReadDevice(ID, cmd, buffer) -> data, err
+* 写: rulexlib:WriteDevice(ID, cmd, []byte{}) -> data, err
 *
  */
 
@@ -31,7 +31,11 @@ func ReadDevice(rx typex.RuleX) func(*lua.LState) int {
 				l.Push(lua.LString(err.Error()))
 				return 2
 			}
-			l.Push(lua.LString(deviceReadBuffer[:n]))
+			table := lua.LTable{}
+			for i, v := range deviceReadBuffer[:n] {
+				table.RawSetInt(i, lua.LNumber(v))
+			}
+			l.Push(&table)
 			l.Push(lua.LNil)
 			return 2
 		}

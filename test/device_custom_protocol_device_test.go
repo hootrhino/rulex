@@ -62,9 +62,23 @@ func TestCustomProtocolDevice(t *testing.T) {
 				"uart":     "COM5",
 			},
 			"deviceConfig": map[string]interface{}{
+				"1": map[string]interface{}{
+					"name":        "get_uuid",
+					"rw":          1,
+					"description": "获取UUID",
+					"bufferSize":  4,    // byte
+					"timeout":     1000, // micro second
+					"protocol": map[string]interface{}{
+						"in":  "AABBCCDDEEFF",
+						"out": "112233445566",
+					},
+				},
 				"get_uuid": map[string]interface{}{
 					"name":        "get_uuid",
+					"rw":          2,
 					"description": "获取UUID",
+					"bufferSize":  4,    // byte
+					"timeout":     1000, // micro second
 					"protocol": map[string]interface{}{
 						"in":  "AABBCCDDEEFF",
 						"out": "112233445566",
@@ -87,9 +101,13 @@ func TestCustomProtocolDevice(t *testing.T) {
 		`
 		Actions = {
 		function(data)
-			print("received ======> : ",data)
-			local n, err = rulexlib:WriteDevice("dev1", 0, "get_uuid")
-			print("WriteDevice <====== : ", n, err )
+			print("Received Inend Data ======> : ",data)
+			-- local n, err = rulexlib:WriteDevice("dev1", 0, "get_uuid")
+			-- print("WriteDevice <======> : ", n, err )
+			local data1, err = rulexlib:ReadDevice("dev1", 1)
+			for index, value in pairs(data1) do
+			    print("ReadDevice ======> ",index, value)
+		    end
 			return true, data
 		end
 	}

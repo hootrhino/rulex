@@ -2,6 +2,7 @@
 -- Success
 function Success()
 end
+
 -- Failed
 function Failed(error)
     print("Error:", error)
@@ -9,7 +10,7 @@ end
 
 -- Actions
 Actions =
-    {
+{
     --        ┌───────────────────────────────────────────────┐
     -- data = |00 00 00 01|00 00 00 01|00 00 00 01|00 00 00 01|
     --        └───────────────────────────────────────────────┘
@@ -26,3 +27,4 @@ Actions =
         return true, data
     end
 }
+

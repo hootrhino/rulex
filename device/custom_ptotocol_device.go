@@ -1,23 +1,25 @@
 package device
 
 import (
+	"context"
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"sync"
+	"time"
+
 	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
 	serial "github.com/wwhai/goserial"
-	"sync"
-	"time"
 )
 
 // 传输形式：
 // `rawtcp`, `rawudp`, `rs485rawserial`, `rs485rawtcp`
-const rawtcp string = "rawtcp"
-const rawudp string = "rawudp"
-const rs485rawserial string = "rs485rawserial"
-const rs485rawtcp string = "rs485rawtcp"
+// const rawtcp string = "rawtcp"
+// const rawudp string = "rawudp"
+// const rs485rawserial string = "rs485rawserial"
+// const rs485rawtcp string = "rs485rawtcp"
 
 type _CommonConfig struct {
 	Frequency   int    `json:"frequency" validate:"required"`
@@ -34,13 +36,16 @@ type _UartConfig struct {
 	StopBits int    `json:"stopBits" validate:"required"`
 }
 type _ProtocolArg struct {
-	In  string `json:"in" validate:"required"`
-	Out string `json:"out" validate:"required"`
+	In  string `json:"in" validate:"required"` // 十六进制字符串
+	Out string `json:"out"`                    // 十六进制字符串
 }
 type _Protocol struct {
 	Name        string       `json:"name" validate:"required"`
 	Description string       `json:"description"`
-	ProtocolArg _ProtocolArg `json:"protocol" validate:"required"`
+	RW          int          `json:"rw" validate:"required"`         // 1:RO 2:WO 3:RW
+	BufferSize  int          `json:"bufferSize" validate:"required"` // 缓冲区大小
+	Timeout     int          `json:"timeout" validate:"required"`    // 指令的等待时间, 在 Timeout 范围读 BufferSize 个字节, 否则就直接失败
+	ProtocolArg _ProtocolArg `json:"protocol" validate:"required"`   // 参数
 }
 
 /*
@@ -57,7 +62,7 @@ type CustomProtocolDevice struct {
 	typex.XStatus
 	status     typex.DeviceState
 	RuleEngine typex.RuleX
-	serialPort serial.Port  // 现阶段暂时支持串口
+	serialPort serial.Port // 现阶段暂时支持串口
 	// tcpConn    *net.TCPConn // rawtcp 以后支持
 	// udpConn    *net.UDPConn // rawudp 以后支持
 	mainConfig _CustomProtocolConfig
@@ -69,7 +74,11 @@ func NewCustomProtocolDevice(e typex.RuleX) typex.XDevice {
 	mdev := new(CustomProtocolDevice)
 	mdev.RuleEngine = e
 	mdev.locker = &sync.Mutex{}
-	mdev.mainConfig = _CustomProtocolConfig{}
+	mdev.mainConfig = _CustomProtocolConfig{
+		CommonConfig: _CommonConfig{},
+		UartConfig:   _UartConfig{},
+		DeviceConfig: map[string]_Protocol{},
+	}
 	mdev.status = typex.DEV_DOWN
 	mdev.errorCount = 0
 	return mdev
@@ -96,10 +105,12 @@ func (mdev *CustomProtocolDevice) Init(devId string, configMap map[string]interf
 			glogger.GLogger.Error(errMsg)
 			return fmt.Errorf(errMsg)
 		}
-		if _, err := hex.DecodeString(v.ProtocolArg.Out); err != nil {
-			errMsg := fmt.Sprintf("hex.DecodeString(ProtocolArg.Out) failed:%s", v.ProtocolArg.Out)
-			glogger.GLogger.Error(errMsg)
-			return fmt.Errorf(errMsg)
+		if v.ProtocolArg.Out != "" {
+			if _, err := hex.DecodeString(v.ProtocolArg.Out); err != nil {
+				errMsg := fmt.Sprintf("hex.DecodeString(ProtocolArg.Out) failed:%s", v.ProtocolArg.Out)
+				glogger.GLogger.Error(errMsg)
+				return fmt.Errorf(errMsg)
+			}
 		}
 
 	}
@@ -135,8 +146,55 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 
 // 从设备里面读数据出来
 func (mdev *CustomProtocolDevice) OnRead(cmd int, data []byte) (int, error) {
+	pp, ok := mdev.mainConfig.DeviceConfig[fmt.Sprintf("%d", cmd)]
+	if ok {
+		hexs, err0 := hex.DecodeString(pp.ProtocolArg.In)
+		if err0 != nil {
+			glogger.GLogger.Error(err0)
+			mdev.errorCount++
+			return 0, err0
+		}
+		mdev.locker.Lock()
+		// Send
+		if _, err1 := mdev.serialPort.Write(hexs); err1 != nil {
+			glogger.GLogger.Error(err1)
+			mdev.errorCount++
+			return 0, err1
+		}
+		// 同步等待60毫秒
+		// time.Sleep(time.Duration(pp.Timeout) * time.Microsecond)
+		result := [50]byte{}
+		ctx, _ := context.WithTimeout(typex.GCTX, time.Duration(pp.Timeout)*time.Microsecond)
+		for {
+			select {
+			case <-ctx.Done():
+				{
+					return 0, errors.New("read timeout")
+				}
+			default:
+				pos := 0
+				for i := 0; i < pp.BufferSize; i++ {
+					n, err2 := mdev.serialPort.Read(result[pos : pos+1])
+					if err2 != nil {
+						glogger.GLogger.Error(n, err2)
+						mdev.errorCount++
+						pos = i
+						i = pos
+						continue
+					}
+					pos++
+				}
+				goto RETURN
+			}
+		}
+	RETURN:
+		mdev.locker.Unlock()
+		// 返回结果
+		copy(data, result[:pp.BufferSize])
+		return pp.BufferSize, nil
+	}
+	return 0, errors.New("unknown read command")
 
-	return 0, nil
 }
 
 // 把数据写入设备
@@ -158,19 +216,10 @@ func (mdev *CustomProtocolDevice) OnWrite(_ int, data []byte) (int, error) {
 			mdev.errorCount++
 			return 0, err1
 		}
-		// 同步等待60毫秒
-		time.Sleep(60 * time.Microsecond)
-		result := [50]byte{}
-		n, err2 := mdev.serialPort.Read(result[:])
-		if err2 != nil {
-			glogger.GLogger.Error(err2)
-			mdev.errorCount++
-			return 0, err2
-		}
 		mdev.locker.Unlock()
-		return n, nil
+		return 0, nil
 	}
-	return 0, errors.New("unknown command:" + string(data))
+	return 0, errors.New("unknown write command")
 }
 
 // 设备当前状态
