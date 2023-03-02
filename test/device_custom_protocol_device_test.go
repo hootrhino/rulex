@@ -63,25 +63,19 @@ func TestCustomProtocolDevice(t *testing.T) {
 			},
 			"deviceConfig": map[string]interface{}{
 				"1": map[string]interface{}{
-					"name":        "get_uuid",
-					"rw":          1,
-					"description": "获取UUID",
-					"bufferSize":  4,    // byte
-					"timeout":     1000, // micro second
+					"name":           "get_uuid",
+					"rw":             1,
+					"description":    "获取UUID",
+					"bufferSize":     4,       // 期望返回几个字节
+					"timeout":        1000,    // 串口读写超时
+					"checksum":       "CRC16", // 校验算法
+					"checksumBegin":  1,       // 校验起点
+					"checksumEnd":    2,       // 校验结束点
+					"autoRequest":    false,   // 是否开启轮询
+					"autoRequestGap": 600,     // 轮询间隔
 					"protocol": map[string]interface{}{
-						"in":  "AABBCCDDEEFF",
-						"out": "112233445566",
-					},
-				},
-				"get_uuid": map[string]interface{}{
-					"name":        "get_uuid",
-					"rw":          2,
-					"description": "获取UUID",
-					"bufferSize":  4,    // byte
-					"timeout":     1000, // micro second
-					"protocol": map[string]interface{}{
-						"in":  "AABBCCDDEEFF",
-						"out": "112233445566",
+						"in":  "FFFFFF014CB2AA55",
+						"out": "FFFFFF014CB2AA55",
 					},
 				},
 			},
