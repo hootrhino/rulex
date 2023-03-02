@@ -42,17 +42,24 @@ type _ProtocolArg struct {
 	Out string `json:"out"`                    // 十六进制字符串
 }
 type _Protocol struct {
-	Name           string `json:"name" validate:"required"`
-	Description    string `json:"description"`
-	RW             int    `json:"rw" validate:"required"`         // 1:RO 2:WO 3:RW
-	BufferSize     int    `json:"bufferSize" validate:"required"` // 缓冲区大小
-	Timeout        int    `json:"timeout" validate:"required"`    // 指令的等待时间, 在 Timeout 范围读 BufferSize 个字节, 否则就直接失败
-	Checksum       string // 校验算法，目前暂时支持: CRC16, XOR
-	ChecksumBegin  uint   // 校验算法起始位置
-	ChecksumEnd    uint   // 校验算法结束位置
-	AutoRequest    bool   // 是否开启轮询
-	AutoRequestGap uint   // 轮询间隔
-	//------------------------------
+	Name        string `json:"name" validate:"required"`
+	Description string `json:"description"`
+	RW          int    `json:"rw" validate:"required"`         // 1:RO 2:WO 3:RW
+	BufferSize  int    `json:"bufferSize" validate:"required"` // 缓冲区大小
+	Timeout     int    `json:"timeout" validate:"required"`    // 指令的等待时间, 在 Timeout 范围读 BufferSize 个字节, 否则就直接失败
+	//---------------------------------------------------------------------
+	// 下面都是校验算法相关配置:
+	// -- 例如对[Byte1,Byte2,Byte3,Byte4,Byte5,Byte6,Byte7]用XOR算法比对
+	//    从第一个开始，第五个结束[Byte1,Byte2,Byte3,Byte4,Byte5], 比对值位置在第六个[Byte6]
+	// 伪代码：XOR(Byte[ChecksumBegin:ChecksumEnd]) == Byte[ChecksumValuePos]
+	//---------------------------------------------------------------------
+	Checksum         string // 校验算法，目前暂时支持: CRC16, XOR
+	ChecksumValuePos string // 校验值比对位
+	ChecksumBegin    uint   // 校验算法起始位置
+	ChecksumEnd      uint   // 校验算法结束位置
+	AutoRequest      bool   // 是否开启轮询
+	AutoRequestGap   uint   // 轮询间隔
+	//---------------------------------------------------------------------
 	ProtocolArg _ProtocolArg `json:"protocol" validate:"required"` // 参数
 }
 
