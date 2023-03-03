@@ -184,7 +184,7 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 						continue
 					}
 					// 协议等待响应时间毫秒
-					time.Sleep(time.Duration(p.AutoRequestGap) * time.Microsecond)
+					time.Sleep(time.Duration(p.AutoRequestGap) * time.Millisecond)
 					result := [100]byte{} // 全局buf, 默认是100字节, 应该能覆盖绝大多数报文了
 					_, err2 := io.ReadAtLeast(mdev.serialPort, result[:p.BufferSize], p.BufferSize)
 					if err2 != nil {
@@ -209,7 +209,7 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 					mdev.RuleEngine.WorkDevice(mdev.Details(),
 						hex.EncodeToString(result[:p.BufferSize]))
 				}
-				time.Sleep(time.Duration(mdev.mainConfig.CommonConfig.WaitTime) * time.Microsecond)
+				time.Sleep(time.Duration(mdev.mainConfig.CommonConfig.WaitTime) * time.Millisecond)
 			}
 		}(mdev.Ctx, mdev.mainConfig.DeviceConfig)
 		mdev.status = typex.DEV_UP
@@ -240,7 +240,7 @@ func (mdev *CustomProtocolDevice) OnRead(cmd int, data []byte) (int, error) {
 			return 0, err1
 		}
 		result := [50]byte{}
-		ctx, _ := context.WithTimeout(typex.GCTX, time.Duration(pp.Timeout)*time.Microsecond)
+		ctx, _ := context.WithTimeout(typex.GCTX, time.Duration(pp.Timeout)*time.Millisecond)
 		for {
 			select {
 			case <-ctx.Done():
