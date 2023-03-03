@@ -6,37 +6,44 @@
 
 ```json
 {
-    "name": "GENERIC_PROTOCOL",
-    "type": "GENERIC_PROTOCOL",
-    "description": "GENERIC_PROTOCOL",
-    "config": {
-        "commonConfig": {
-            "frequency": 5,
-            "autoRequest": true,
-            "transport": "rs485rawserial",
-            "waitTime": 10,
-            "timeout": 10
-        },
-        "uartConfig": {
-            "baudRate": 9600,
-            "dataBits": 8,
-            "ip": "127.0.0.1",
-            "parity": "N",
-            "port": 502,
-            "stopBits": 1,
-            "uart": "COM4"
-        },
-        "deviceConfig": {
-            "get_uuid": {
-                "name": "get_uuid",
-                "description": "获取UUID",
-                "protocol": {
-                    "in": "FFFFFF014CB2AA55",
-                    "out": "FA0101CE34AA55"
-                }
-            }
-        }
-    }
+    "name": "GENERIC_PROTOCOL",
+    "type": "GENERIC_PROTOCOL",
+    "description": "GENERIC_PROTOCOL",
+    "config": {
+        "commonConfig": {
+            "autoRequest": true,
+            "frequency": 5,
+            "timeout": 10,
+            "transport": "rs485rawserial",
+            "waitTime": 10
+        },
+        "deviceConfig": {
+            "1": {
+                "autoRequest": true,
+                "autoRequestGap": 5000,
+                "bufferSize": 7,
+                "checksum": "CRC16",
+                "checksumBegin": 1,
+                "checksumEnd": 2,
+                "checksumValuePos": 7,
+                "description": "获取UUID",
+                "name": "get_uuid",
+                "protocol": {
+                    "in": "FFFFFF014CB2AA55",
+                    "out": "FFFFFF014CB2AA55"
+                },
+                "rw": 1,
+                "timeout": 1000
+            }
+        },
+        "uartConfig": {
+            "baudRate": 9600,
+            "dataBits": 8,
+            "parity": "N",
+            "stopBits": 1,
+            "uart": "COM3"
+        }
+    }
 }
 ```
 

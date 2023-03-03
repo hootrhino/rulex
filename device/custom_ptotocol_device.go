@@ -24,13 +24,11 @@ import (
 // const rs485rawtcp string = "rs485rawtcp"
 
 type _CommonConfig struct {
-	Frequency   int    `json:"frequency" validate:"required"`
-	AutoRequest bool   `json:"autoRequest" validate:"required"`
-	Transport   string `json:"transport" validate:"required"`
-	WaitTime    int    `json:"waitTime" validate:"required"`
-	Timeout     int    `json:"timeout" validate:"required"`
+	Transport string `json:"transport" validate:"required"` // 传输协议
+	WaitTime  int    `json:"waitTime" validate:"required"`  // 单个轮询间隔
 }
 type _UartConfig struct {
+	Timeout  int    `json:"timeout" validate:"required"`
 	Uart     string `json:"uart" validate:"required"`
 	BaudRate int    `json:"baudRate" validate:"required"`
 	DataBits int    `json:"dataBits" validate:"required"`
@@ -144,97 +142,69 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 			DataBits: mdev.mainConfig.UartConfig.DataBits,
 			Parity:   mdev.mainConfig.UartConfig.Parity,
 			StopBits: mdev.mainConfig.UartConfig.StopBits,
-			Timeout:  time.Duration(mdev.mainConfig.CommonConfig.Timeout) * time.Second,
+			Timeout:  time.Duration(mdev.mainConfig.UartConfig.Timeout) * time.Second,
 		}
 		serialPort, err := serial.Open(&config)
 		if err != nil {
 			glogger.GLogger.Error("serialPort start failed:", err)
 			return err
 		}
-		for _, pp := range mdev.mainConfig.DeviceConfig {
-			if pp.AutoRequest {
-				npp := pp
-				go func(ctx context.Context, npp _Protocol) {
-					for {
-						select {
-						case <-ctx.Done():
-							return
-						default:
-							{
-							}
-						}
-						//
-						hexs, err0 := hex.DecodeString(npp.ProtocolArg.In)
-						if err0 != nil {
-							glogger.GLogger.Error(err0)
-							mdev.errorCount++
-							continue
-						}
-						// 将指令写进去
-						mdev.locker.Lock()
-						if core.GlobalConfig.AppDebugMode {
-							log.Println("[AppDebugMode] Write data:", hexs)
-						}
-						if _, err1 := mdev.serialPort.Write(hexs); err1 != nil {
-							glogger.GLogger.Error(err1)
-							mdev.errorCount++
-							continue
-						}
-						mdev.locker.Unlock()
-						result := [1024]byte{} // 全局buf, 默认是1kb, 应该能覆盖绝大多数报文了
-						// ctx, cancel := context.WithTimeout(typex.GCTX, time.Duration(npp.Timeout)*time.Microsecond)
-						for {
-							select {
-							case <-ctx.Done():
-								{
-									glogger.GLogger.Error("read timeout")
-									goto L1
-								}
-							default:
-								// 协议的超时时间, 比如60ms
-								time.Sleep(time.Duration(mdev.mainConfig.CommonConfig.WaitTime) * time.Microsecond)
-								pos := 0
-								mdev.locker.Lock()
-								for i := 0; i < npp.BufferSize; i++ {
-									n, err2 := mdev.serialPort.Read(result[pos : pos+1])
-									if err2 != nil {
-										glogger.GLogger.Error(n, err2)
-										mdev.errorCount++
-										pos = i // 当某一次读取失败了会尝试重新读取, 尝试次数为 errorCount上限
-										i = pos
-										continue
-									}
-									pos++
-								}
-								mdev.locker.Unlock()
-								goto L0
-							}
-						L0:
-							if core.GlobalConfig.AppDebugMode {
-								log.Println("[AppDebugMode] Read data:", result[:npp.BufferSize])
-							}
-							if npp.Checksum == "CRC16" {
-								// 检查字节
-								// check-crc()
-								glogger.GLogger.Debug("启用了CRC16校验法, 但是暂时没有实现，这里默认校验完成")
-							}
-							if npp.Checksum == "XOR" {
-								// 检查字节
-								// check-xor()
-								glogger.GLogger.Debug("启用了XOR校验法, 但是暂时没有实现，这里默认校验完成")
-							}
-							// 返回给lua参数是十六进制大写字符串
-							mdev.RuleEngine.WorkDevice(mdev.Details(),
-								hex.EncodeToString(result[:npp.BufferSize]))
-							goto L1
-						}
-					L1:
-						//-----------
-						time.Sleep(time.Duration(npp.AutoRequestGap) * time.Microsecond)
+		// 起一个线程去判断是否要轮询
+		go func(ctx context.Context, pp map[string]_Protocol) {
+			for {
+				select {
+				case <-ctx.Done():
+					return
+				default:
+					{
 					}
-				}(mdev.Ctx, npp)
+				}
+				//----------------------------------------------------------------------------------
+				for _, p := range pp {
+					hexs, err0 := hex.DecodeString(p.ProtocolArg.In)
+					if err0 != nil {
+						glogger.GLogger.Error(err0)
+						mdev.errorCount++
+						continue
+					}
+					mdev.locker.Lock()
+					if core.GlobalConfig.AppDebugMode {
+						log.Println("[AppDebugMode] Write data:", hexs)
+					}
+					if _, err1 := mdev.serialPort.Write(hexs); err1 != nil {
+						glogger.GLogger.Error(err1)
+						mdev.errorCount++
+						continue
+					}
+					mdev.locker.Unlock()
+					// 协议等待响应时间毫秒
+					time.Sleep(time.Duration(p.AutoRequestGap) * time.Microsecond)
+					result := [100]byte{} // 全局buf, 默认是100字节, 应该能覆盖绝大多数报文了
+					n, err2 := mdev.serialPort.Read(result[:p.BufferSize])
+					if err2 != nil {
+						glogger.GLogger.Error(n, err2)
+						mdev.errorCount++
+					}
+					if core.GlobalConfig.AppDebugMode {
+						log.Println("[AppDebugMode] Read data:", result[:p.BufferSize])
+					}
+					if p.Checksum == "CRC16" {
+						// 检查字节
+						// check-crc()
+						glogger.GLogger.Debug("启用了CRC16校验法, 但是暂时没有实现，这里默认校验完成")
+					}
+					if p.Checksum == "XOR" {
+						// 检查字节
+						// check-xor()
+						glogger.GLogger.Debug("启用了XOR校验法, 但是暂时没有实现，这里默认校验完成")
+					}
+					// 返回给lua参数是十六进制大写字符串
+					mdev.RuleEngine.WorkDevice(mdev.Details(),
+						hex.EncodeToString(result[:p.BufferSize]))
+				}
+				time.Sleep(time.Duration(mdev.mainConfig.CommonConfig.WaitTime) * time.Microsecond)
 			}
-		}
+		}(mdev.Ctx, mdev.mainConfig.DeviceConfig)
 		mdev.serialPort = serialPort
 		mdev.status = typex.DEV_UP
 		return nil
