@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
-	serial "github.com/wwhai/goserial"
+	serial "github.com/tarm/serial"
 	"testing"
 	"time"
 
@@ -133,35 +133,40 @@ func TestCustomProtocolDevice(t *testing.T) {
 // go test -timeout 30s -run ^Test_SerialPortRW github.com/i4de/rulex/test -v -count=1
 func Test_SerialPortRW(t *testing.T) {
 	config := serial.Config{
-		Address:  "COM1",
-		BaudRate: 9600,
-		DataBits: 8,
-		Parity:   "N",
+		Name:     "COM15",
+		Baud:     9600,
+		Size:     8,
+		Parity:   'N',
 		StopBits: 1,
-		Timeout:  1 * time.Second,
 	}
-	serialPort, err := serial.Open(&config)
+	serialPort, err := serial.OpenPort(&config)
 	if err != nil {
 		t.Fatal(err)
 	}
-	cmd1 := "FFFFFF014CB2AA55"
-	result := []byte{}
-	n, _ := serialPort.Write([]byte(cmd1))
-	serialPort.Read(result[:n])
-	t.Log("serialPort.Read 1:", result)
-	serialPort.Write([]byte(cmd1))
-	serialPort.Read(result[:n])
-	t.Log("serialPort.Read 2:", result)
-	serialPort.Write([]byte(cmd1))
-	serialPort.Read(result[:n])
-	t.Log("serialPort.Read 3:", result)
-	serialPort.Write([]byte(cmd1))
-	serialPort.Read(result[:n])
-	t.Log("serialPort.Read 4:", result)
-	serialPort.Write([]byte(cmd1))
-	serialPort.Read(result[:n])
-	t.Log("serialPort.Read 5:", result)
-	serialPort.Write([]byte(cmd1))
-	serialPort.Read(result[:n])
-	t.Log("serialPort.Read 6:", result)
+
+	bytes, _ := hex.DecodeString("FFFFFF014CB2AA55")
+	result := [7]byte{}
+	serialPort.Write((bytes))
+	// time.Sleep(time.Microsecond * 60)
+	n1, _ := serialPort.Read(result[:])
+	t.Log("serialPort.Read 1:", n1, result[:n1])
+	serialPort.Write((bytes))
+	// time.Sleep(time.Microsecond * 60)
+	n2, _ := serialPort.Read(result[:])
+	t.Log("serialPort.Read 2:", n2, result[:n2])
+	serialPort.Write((bytes))
+	// time.Sleep(time.Microsecond * 60)
+	n3, _ := serialPort.Read(result[:])
+	t.Log("serialPort.Read 3:", n3, result[:n3])
+	serialPort.Write((bytes))
+	// time.Sleep(time.Microsecond * 60)
+	n4, _ := serialPort.Read(result[:])
+	t.Log("serialPort.Read 4:", n4, result[:n4])
+	serialPort.Write((bytes))
+	// time.Sleep(time.Microsecond * 60)
+	n5, _ := serialPort.Read(result[:])
+	t.Log("serialPort.Read 5:", n5, result[:n5])
+	serialPort.Write((bytes))
+	n6, _ := serialPort.Read(result[:])
+	t.Log("serialPort.Read 6:", n6, result[:n6])
 }
