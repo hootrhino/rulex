@@ -182,15 +182,16 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 					time.Sleep(time.Duration(p.AutoRequestGap) * time.Microsecond)
 					result := [100]byte{} // 全局buf, 默认是100字节, 应该能覆盖绝大多数报文了
 					validPacket := false
+					ctxTimeout, cancel := context.WithTimeout(typex.GCTX, time.Duration(p.Timeout)*time.Microsecond)
 					wg1 := sync.WaitGroup{}
 					wg1.Add(1)
-					ctxTimeout, cancel := context.WithTimeout(typex.GCTX, time.Duration(p.Timeout)*time.Microsecond)
 					go func(ctxTimeout context.Context) {
+						defer wg1.Done()
 						for {
 							select {
 							case <-ctxTimeout.Done():
 								{
-									wg1.Done()
+									validPacket = false
 									return
 								}
 							default:
@@ -205,12 +206,12 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 									pos++
 								}
 								validPacket = true
-								wg1.Done()
+								return
 							}
 						}
 					}(ctxTimeout)
-					wg1.Wait()
 					cancel()
+					wg1.Wait()
 					if !validPacket {
 						glogger.GLogger.Error("invalidPacket: ", validPacket)
 						continue
