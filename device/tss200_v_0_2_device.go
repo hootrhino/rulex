@@ -156,6 +156,7 @@ func (tss *tss200V2) Stop() {
 	tss.CancelCTX()
 	if tss.rtuHandler != nil {
 		tss.rtuHandler.Close()
+		tss.rtuHandler = nil
 	}
 
 }

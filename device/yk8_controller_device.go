@@ -155,6 +155,7 @@ func (yk8 *YK8Controller) Stop() {
 	yk8.CancelCTX()
 	if yk8.rtuHandler != nil {
 		yk8.rtuHandler.Close()
+		yk8.rtuHandler = nil
 	}
 
 }

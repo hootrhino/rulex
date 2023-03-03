@@ -85,6 +85,7 @@ func (g *grpcInEndSource) Stop() {
 
 	if g.rpcServer != nil {
 		g.rpcServer.Stop()
+		g.rpcServer = nil
 	}
 
 }

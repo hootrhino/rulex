@@ -92,7 +92,10 @@ func (m *mongoTarget) Status() typex.SourceState {
 func (m *mongoTarget) Stop() {
 	m.status = typex.SOURCE_STOP
 	m.CancelCTX()
-	m.client.Disconnect(m.Ctx)
+	if m.client != nil {
+		m.client.Disconnect(m.Ctx)
+		m.client = nil
+	}
 }
 
 func (m *mongoTarget) To(data interface{}) (interface{}, error) {

@@ -144,7 +144,11 @@ func (tc *tencentIothubSource) DataModels() []typex.XDataModel {
 func (tc *tencentIothubSource) Stop() {
 	tc.status = typex.SOURCE_STOP
 	tc.CancelCTX()
-	tc.client.Disconnect(0)
+	if tc.client != nil {
+		tc.client.Disconnect(0)
+		tc.client = nil
+	}
+
 }
 func (tc *tencentIothubSource) Reload() {
 

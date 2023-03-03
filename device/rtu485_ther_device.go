@@ -152,6 +152,7 @@ func (ther *rtu485_ther) Stop() {
 	ther.CancelCTX()
 	if ther.rtuHandler != nil {
 		ther.rtuHandler.Close()
+		ther.rtuHandler = nil
 	}
 
 }

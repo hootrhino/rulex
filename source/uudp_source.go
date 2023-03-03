@@ -117,6 +117,7 @@ func (u *udpSource) Stop() {
 		if err != nil {
 			glogger.GLogger.Error(err)
 		}
+		u.uDPConn = nil
 	}
 
 }

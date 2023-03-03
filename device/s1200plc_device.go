@@ -162,6 +162,9 @@ func (s1200 *s1200plc) Status() typex.DeviceState {
 func (s1200 *s1200plc) Stop() {
 	s1200.status = typex.DEV_STOP
 	s1200.CancelCTX()
+	if s1200.driver != nil {
+		s1200.driver = nil
+	}
 }
 
 // 设备属性，是一系列属性描述

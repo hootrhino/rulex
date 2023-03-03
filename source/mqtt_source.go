@@ -96,6 +96,10 @@ func (mm *mqttInEndSource) Stop() {
 	mm.status = typex.SOURCE_STOP
 	mm.CancelCTX()
 	mm.client.Disconnect(0)
+	if mm.client != nil {
+		mm.client.Disconnect(0)
+		mm.client = nil
+	}
 }
 func (mm *mqttInEndSource) Reload() {
 

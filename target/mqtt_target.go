@@ -80,6 +80,7 @@ func (mm *mqttOutEndTarget) Stop() {
 	mm.CancelCTX()
 	if mm.client != nil {
 		mm.client.Disconnect(0)
+		mm.client = nil
 	}
 }
 func (mm *mqttOutEndTarget) Reload() {

@@ -134,6 +134,7 @@ func (sd *genericSnmpDevice) Stop() {
 	sd.CancelCTX()
 	if sd.driver != nil {
 		sd.driver.Stop()
+		sd.driver = nil
 	}
 }
 

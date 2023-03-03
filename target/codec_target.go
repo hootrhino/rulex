@@ -117,5 +117,9 @@ func (ct *codecTarget) To(data interface{}) (interface{}, error) {
 func (ct *codecTarget) Stop() {
 	ct.status = typex.SOURCE_STOP
 	ct.CancelCTX()
-	ct.rpcConnection.Close()
+	if ct.rpcConnection != nil {
+		ct.rpcConnection.Close()
+		ct.rpcConnection = nil
+	}
+
 }

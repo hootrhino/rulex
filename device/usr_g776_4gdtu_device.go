@@ -145,6 +145,7 @@ func (uart *UsrG776DTU) Stop() {
 	uart.CancelCTX()
 	if uart.driver != nil {
 		uart.driver.Stop()
+		uart.driver = nil
 	}
 
 }
