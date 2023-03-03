@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"sync"
 	"time"
@@ -13,7 +14,7 @@ import (
 	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
-	serial "github.com/wwhai/goserial"
+	serial "github.com/tarm/serial"
 )
 
 // 传输形式：
@@ -75,7 +76,7 @@ type CustomProtocolDevice struct {
 	typex.XStatus
 	status     typex.DeviceState
 	RuleEngine typex.RuleX
-	serialPort serial.Port // 现阶段暂时支持串口
+	serialPort *serial.Port // 现阶段暂时支持串口
 	// tcpConn    *net.TCPConn // rawtcp 以后支持
 	// udpConn    *net.UDPConn // rawudp 以后支持
 	mainConfig _CustomProtocolConfig
@@ -98,7 +99,7 @@ func NewCustomProtocolDevice(e typex.RuleX) typex.XDevice {
 
 }
 
-//  初始化
+// 初始化
 func (mdev *CustomProtocolDevice) Init(devId string, configMap map[string]interface{}) error {
 	mdev.PointId = devId
 	if err := utils.BindSourceConfig(configMap, &mdev.mainConfig); err != nil {
@@ -137,14 +138,13 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 	// 现阶段暂时只支持RS485串口, 以后有需求再支持TCP、UDP
 	if mdev.mainConfig.CommonConfig.Transport == "rs485rawserial" {
 		config := serial.Config{
-			Address:  mdev.mainConfig.UartConfig.Uart,
-			BaudRate: mdev.mainConfig.UartConfig.BaudRate,
-			DataBits: mdev.mainConfig.UartConfig.DataBits,
-			Parity:   mdev.mainConfig.UartConfig.Parity,
-			StopBits: mdev.mainConfig.UartConfig.StopBits,
-			Timeout:  time.Duration(mdev.mainConfig.UartConfig.Timeout) * time.Second,
+			Name:     mdev.mainConfig.UartConfig.Uart,
+			Baud:     mdev.mainConfig.UartConfig.BaudRate,
+			Size:     byte(mdev.mainConfig.UartConfig.DataBits),
+			Parity:   serial.Parity(mdev.mainConfig.UartConfig.Parity[0]),
+			StopBits: serial.StopBits(mdev.mainConfig.UartConfig.StopBits),
 		}
-		serialPort, err := serial.Open(&config)
+		serialPort, err := serial.OpenPort(&config)
 		if err != nil {
 			glogger.GLogger.Error("serialPort start failed:", err)
 			return err
@@ -181,37 +181,9 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 					// 协议等待响应时间毫秒
 					time.Sleep(time.Duration(p.AutoRequestGap) * time.Microsecond)
 					result := [100]byte{} // 全局buf, 默认是100字节, 应该能覆盖绝大多数报文了
-					validPacket := false
-					ctxTimeout, cancel := context.WithTimeout(typex.GCTX, time.Duration(p.Timeout)*time.Microsecond)
-					wg1 := sync.WaitGroup{}
-					wg1.Add(1)
-					go func(ctxTimeout context.Context) {
-						defer wg1.Done()
-						for {
-							select {
-							case <-ctxTimeout.Done():
-								{
-									return
-								}
-							default:
-								pos := 0
-								for i := 0; i < p.BufferSize; i++ {
-									_, err2 := mdev.serialPort.Read(result[pos : pos+1])
-									if err2 != nil {
-										glogger.GLogger.Error("mdev.serialPort.Read error: ", err2)
-										break
-									}
-									pos++
-								}
-								validPacket = true
-								return
-							}
-						}
-					}(ctxTimeout)
-					wg1.Wait()
-					cancel()
-					if !validPacket {
-						glogger.GLogger.Error("invalidPacket: ", validPacket)
+					_, err2 := io.ReadAtLeast(mdev.serialPort, result[:p.BufferSize], p.BufferSize)
+					if err2 != nil {
+						glogger.GLogger.Error("mdev.serialPort.ReadAtLeast error: ", err2)
 						continue
 					}
 
