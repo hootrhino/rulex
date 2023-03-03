@@ -181,8 +181,10 @@ func tryIfRestartDevice(abstractDevice typex.XDevice, e *RuleEngine, devId strin
 	// 此处本质上是个同步过程
 	if abstractDevice.Status() == typex.DEV_DOWN {
 		abstractDevice.Details().State = typex.DEV_DOWN
-		glogger.GLogger.Warnf("Device %v %v down. try to restart it", abstractDevice.Details().UUID, abstractDevice.Details().Name)
+		glogger.GLogger.Warnf("Device %v %v down. try to restart it",
+			abstractDevice.Details().UUID, abstractDevice.Details().Name)
 		abstractDevice.Stop()
+		abstractDevice = nil // 释放资源
 		runtime.Gosched()
 		runtime.GC()
 		startDevice(abstractDevice, e)

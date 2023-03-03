@@ -149,6 +149,7 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 			glogger.GLogger.Error("serialPort start failed:", err)
 			return err
 		}
+		mdev.serialPort = serialPort
 		// 起一个线程去判断是否要轮询
 		go func(ctx context.Context, pp map[string]_Protocol) {
 			for {
@@ -207,7 +208,6 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 				time.Sleep(time.Duration(mdev.mainConfig.CommonConfig.WaitTime) * time.Microsecond)
 			}
 		}(mdev.Ctx, mdev.mainConfig.DeviceConfig)
-		mdev.serialPort = serialPort
 		mdev.status = typex.DEV_UP
 		return nil
 	}
@@ -308,11 +308,11 @@ func (mdev *CustomProtocolDevice) Status() typex.DeviceState {
 // 停止设备
 func (mdev *CustomProtocolDevice) Stop() {
 	mdev.status = typex.DEV_STOP
+	mdev.CancelCTX()
 	if mdev.serialPort != nil {
 		mdev.serialPort.Close()
+		mdev.serialPort = nil
 	}
-	mdev.CancelCTX()
-
 }
 
 // 设备属性，是一系列属性描述
