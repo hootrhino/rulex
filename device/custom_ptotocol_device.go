@@ -161,6 +161,9 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 				}
 				//----------------------------------------------------------------------------------
 				for _, p := range pp {
+					if !p.AutoRequest {
+						continue
+					}
 					hexs, err0 := hex.DecodeString(p.ProtocolArg.In)
 					if err0 != nil {
 						glogger.GLogger.Error(err0)
@@ -172,7 +175,7 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 						log.Println("[AppDebugMode] Write data:", hexs)
 					}
 					if _, err1 := mdev.serialPort.Write(hexs); err1 != nil {
-						glogger.GLogger.Error(err1)
+						glogger.GLogger.Error("mdev.serialPort.Write error: ", err1)
 						mdev.errorCount++
 						continue
 					}
@@ -182,9 +185,16 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 					result := [100]byte{} // 全局buf, 默认是100字节, 应该能覆盖绝大多数报文了
 					n, err2 := mdev.serialPort.Read(result[:p.BufferSize])
 					if err2 != nil {
-						glogger.GLogger.Error(n, err2)
+						glogger.GLogger.Error("mdev.serialPort.Read error: ", err2)
 						mdev.errorCount++
+						continue
 					}
+					if n != p.BufferSize {
+						glogger.GLogger.Error("read Size is not enough: ", n)
+						mdev.errorCount++
+						continue
+					}
+
 					if core.GlobalConfig.AppDebugMode {
 						log.Println("[AppDebugMode] Read data:", result[:p.BufferSize])
 					}
