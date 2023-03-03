@@ -306,6 +306,9 @@ func (mdev *CustomProtocolDevice) Status() typex.DeviceState {
 // 停止设备
 func (mdev *CustomProtocolDevice) Stop() {
 	mdev.status = typex.DEV_STOP
+	if mdev.serialPort != nil {
+		mdev.serialPort.Close()
+	}
 	mdev.CancelCTX()
 
 }
