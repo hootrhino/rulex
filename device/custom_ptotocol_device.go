@@ -170,7 +170,6 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 						mdev.errorCount++
 						continue
 					}
-					mdev.locker.Lock()
 					if core.GlobalConfig.AppDebugMode {
 						log.Println("[AppDebugMode] Write data:", hexs)
 					}
@@ -179,19 +178,41 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 						mdev.errorCount++
 						continue
 					}
-					mdev.locker.Unlock()
 					// 协议等待响应时间毫秒
 					time.Sleep(time.Duration(p.AutoRequestGap) * time.Microsecond)
 					result := [100]byte{} // 全局buf, 默认是100字节, 应该能覆盖绝大多数报文了
-					n, err2 := mdev.serialPort.Read(result[:p.BufferSize])
-					if err2 != nil {
-						glogger.GLogger.Error("mdev.serialPort.Read error: ", err2)
-						mdev.errorCount++
-						continue
-					}
-					if n != p.BufferSize {
-						glogger.GLogger.Error("read Size is not enough: ", n)
-						mdev.errorCount++
+					validPacket := false
+					wg1 := sync.WaitGroup{}
+					wg1.Add(1)
+					ctxTimeout, cancel := context.WithTimeout(typex.GCTX, time.Duration(p.Timeout)*time.Microsecond)
+					go func(ctxTimeout context.Context) {
+						for {
+							select {
+							case <-ctxTimeout.Done():
+								{
+									wg1.Done()
+									return
+								}
+							default:
+								pos := 0
+								for i := 0; i < p.BufferSize; i++ {
+									_, err2 := mdev.serialPort.Read(result[pos : pos+1])
+									if err2 != nil {
+										pos = i
+										i = pos
+										continue
+									}
+									pos++
+								}
+								validPacket = true
+								wg1.Done()
+							}
+						}
+					}(ctxTimeout)
+					wg1.Wait()
+					cancel()
+					if !validPacket {
+						glogger.GLogger.Error("invalidPacket: ", validPacket)
 						continue
 					}
 
