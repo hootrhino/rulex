@@ -198,9 +198,8 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 								for i := 0; i < p.BufferSize; i++ {
 									_, err2 := mdev.serialPort.Read(result[pos : pos+1])
 									if err2 != nil {
-										pos = i // 把出错的位置记下来
-										i = pos // 下次从出错处重新开始
-										continue
+										glogger.GLogger.Error("mdev.serialPort.Read error: ", err2)
+										break
 									}
 									pos++
 								}

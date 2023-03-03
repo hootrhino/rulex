@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
+	serial "github.com/wwhai/goserial"
 	"testing"
 	"time"
 
@@ -127,4 +128,40 @@ func TestCustomProtocolDevice(t *testing.T) {
 	t.Log(resp)
 	time.Sleep(20 * time.Second)
 	engine.Stop()
+}
+
+// go test -timeout 30s -run ^Test_SerialPortRW github.com/i4de/rulex/test -v -count=1
+func Test_SerialPortRW(t *testing.T) {
+	config := serial.Config{
+		Address:  "COM1",
+		BaudRate: 9600,
+		DataBits: 8,
+		Parity:   "N",
+		StopBits: 1,
+		Timeout:  1 * time.Second,
+	}
+	serialPort, err := serial.Open(&config)
+	if err != nil {
+		t.Fatal(err)
+	}
+	cmd1 := "FFFFFF014CB2AA55"
+	result := []byte{}
+	n, _ := serialPort.Write([]byte(cmd1))
+	serialPort.Read(result[:n])
+	t.Log("serialPort.Read 1:", result)
+	serialPort.Write([]byte(cmd1))
+	serialPort.Read(result[:n])
+	t.Log("serialPort.Read 2:", result)
+	serialPort.Write([]byte(cmd1))
+	serialPort.Read(result[:n])
+	t.Log("serialPort.Read 3:", result)
+	serialPort.Write([]byte(cmd1))
+	serialPort.Read(result[:n])
+	t.Log("serialPort.Read 4:", result)
+	serialPort.Write([]byte(cmd1))
+	serialPort.Read(result[:n])
+	t.Log("serialPort.Read 5:", result)
+	serialPort.Write([]byte(cmd1))
+	serialPort.Read(result[:n])
+	t.Log("serialPort.Read 6:", result)
 }
