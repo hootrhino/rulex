@@ -54,7 +54,7 @@ type _Protocol struct {
 	// 伪代码：XOR(Byte[ChecksumBegin:ChecksumEnd]) == Byte[ChecksumValuePos]
 	//---------------------------------------------------------------------
 	Checksum         string // 校验算法，目前暂时支持: CRC16, XOR
-	ChecksumValuePos string // 校验值比对位
+	ChecksumValuePos uint   // 校验值比对位
 	ChecksumBegin    uint   // 校验算法起始位置
 	ChecksumEnd      uint   // 校验算法结束位置
 	AutoRequest      bool   // 是否开启轮询
