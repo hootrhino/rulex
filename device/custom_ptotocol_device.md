@@ -11,11 +11,16 @@
     "description": "GENERIC_PROTOCOL",
     "config": {
         "commonConfig": {
-            "autoRequest": true,
-            "frequency": 5,
-            "timeout": 10,
             "transport": "rs485rawserial",
             "waitTime": 10
+        },
+        "uartConfig": {
+            "timeout": 10,
+            "baudRate": 9600,
+            "dataBits": 8,
+            "parity": "N",
+            "stopBits": 1,
+            "uart": "COM3"
         },
         "deviceConfig": {
             "1": {
@@ -35,13 +40,6 @@
                 "rw": 1,
                 "timeout": 1000
             }
-        },
-        "uartConfig": {
-            "baudRate": 9600,
-            "dataBits": 8,
-            "parity": "N",
-            "stopBits": 1,
-            "uart": "COM3"
         }
     }
 }
