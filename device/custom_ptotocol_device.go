@@ -191,7 +191,6 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 							select {
 							case <-ctxTimeout.Done():
 								{
-									validPacket = false
 									return
 								}
 							default:
@@ -199,8 +198,8 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 								for i := 0; i < p.BufferSize; i++ {
 									_, err2 := mdev.serialPort.Read(result[pos : pos+1])
 									if err2 != nil {
-										pos = i
-										i = pos
+										pos = i // 把出错的位置记下来
+										i = pos // 下次从出错处重新开始
 										continue
 									}
 									pos++
@@ -210,8 +209,8 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 							}
 						}
 					}(ctxTimeout)
-					cancel()
 					wg1.Wait()
+					cancel()
 					if !validPacket {
 						glogger.GLogger.Error("invalidPacket: ", validPacket)
 						continue
