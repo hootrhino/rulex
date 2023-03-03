@@ -180,6 +180,7 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 							mdev.errorCount++
 							continue
 						}
+						mdev.locker.Unlock()
 						result := [1024]byte{} // 全局buf, 默认是1kb, 应该能覆盖绝大多数报文了
 						// ctx, cancel := context.WithTimeout(typex.GCTX, time.Duration(npp.Timeout)*time.Microsecond)
 						for {
@@ -193,6 +194,7 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 								// 协议的超时时间, 比如60ms
 								time.Sleep(time.Duration(mdev.mainConfig.CommonConfig.WaitTime) * time.Microsecond)
 								pos := 0
+								mdev.locker.Lock()
 								for i := 0; i < npp.BufferSize; i++ {
 									n, err2 := mdev.serialPort.Read(result[pos : pos+1])
 									if err2 != nil {
@@ -204,6 +206,7 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 									}
 									pos++
 								}
+								mdev.locker.Unlock()
 								goto L0
 							}
 						L0:
@@ -227,7 +230,6 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 						}
 					L1:
 						//-----------
-						mdev.locker.Unlock()
 						time.Sleep(time.Duration(npp.AutoRequestGap) * time.Microsecond)
 					}
 				}(mdev.Ctx, npp)

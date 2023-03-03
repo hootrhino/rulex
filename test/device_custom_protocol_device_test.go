@@ -59,7 +59,7 @@ func TestCustomProtocolDevice(t *testing.T) {
 				"dataBits": 8,
 				"parity":   "N",
 				"stopBits": 1,
-				"uart":     "COM5",
+				"uart":     "COM3",
 			},
 			"deviceConfig": map[string]interface{}{
 				"1": map[string]interface{}{
@@ -72,7 +72,7 @@ func TestCustomProtocolDevice(t *testing.T) {
 					"checksumValuePos": 7,       // 校验比对位置
 					"checksumBegin":    1,       // 校验起点
 					"checksumEnd":      2,       // 校验结束点
-					"autoRequest":      false,   // 是否开启轮询
+					"autoRequest":      true,    // 是否开启轮询
 					"autoRequestGap":   600,     // 轮询间隔
 					"protocol": map[string]interface{}{
 						"in":  "FFFFFF014CB2AA55",
@@ -90,19 +90,19 @@ func TestCustomProtocolDevice(t *testing.T) {
 		"uuid",
 		"test",
 		"test",
-		[]string{grpcInend.UUID},
 		[]string{},
+		[]string{dev1.UUID},
 		`function Success() print("[LUA Success Callback]=> OK") end`,
 		`
 		Actions = {
 		function(data)
-			print("Received Inend Data ======> : ",data)
+			   print("Received Inend Data ======> : ",data)
 			-- local n, err = rulexlib:WriteDevice("dev1", 0, "get_uuid")
 			-- print("WriteDevice <======> : ", n, err )
-			local data1, err = rulexlib:ReadDevice("dev1", 1)
-			for index, value in pairs(data1) do
-			    print("ReadDevice ======> ",index, value)
-		    end
+			-- local data1, err = rulexlib:ReadDevice("dev1", 1)
+			-- for index, value in pairs(data1) do
+			--     print("ReadDevice ======> ",index, value)
+			-- end
 			return true, data
 		end
 	}
