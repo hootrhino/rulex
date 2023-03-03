@@ -174,6 +174,10 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 					if core.GlobalConfig.AppDebugMode {
 						log.Println("[AppDebugMode] Write data:", hexs)
 					}
+					if mdev.serialPort == nil {
+						mdev.status = typex.DEV_DOWN
+						return
+					}
 					if _, err1 := mdev.serialPort.Write(hexs); err1 != nil {
 						glogger.GLogger.Error("mdev.serialPort.Write error: ", err1)
 						mdev.errorCount++
