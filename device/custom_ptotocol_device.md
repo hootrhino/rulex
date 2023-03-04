@@ -6,42 +6,42 @@
 
 ```json
 {
-    "name": "GENERIC_PROTOCOL",
-    "type": "GENERIC_PROTOCOL",
-    "description": "GENERIC_PROTOCOL",
-    "config": {
-        "commonConfig": {
-            "transport": "rs485rawserial",
-            "waitTime": 10
-        },
-        "uartConfig": {
-            "timeout": 10,
-            "baudRate": 9600,
-            "dataBits": 8,
-            "parity": "N",
-            "stopBits": 1,
-            "uart": "COM3"
-        },
-        "deviceConfig": {
-            "1": {
-                "autoRequest": true,
-                "autoRequestGap": 5000,
-                "bufferSize": 7,
-                "checksum": "CRC16",
-                "checksumBegin": 1,
-                "checksumEnd": 2,
-                "checksumValuePos": 7,
-                "description": "获取UUID",
-                "name": "get_uuid",
-                "protocol": {
-                    "in": "FFFFFF014CB2AA55",
-                    "out": "FFFFFF014CB2AA55"
-                },
-                "rw": 1,
-                "timeout": 1000
-            }
-        }
-    }
+    "name": "GENERIC_PROTOCOL",
+    "type": "GENERIC_PROTOCOL",
+    "description": "GENERIC_PROTOCOL",
+    "config": {
+        "commonConfig": {
+            "transport": "rs485rawserial",
+            "waitTime": 10
+        },
+        "uartConfig": {
+            "timeout": 10,
+            "baudRate": 9600,
+            "dataBits": 8,
+            "parity": "N",
+            "stopBits": 1,
+            "uart": "COM3"
+        },
+        "deviceConfig": {
+            "1": {
+                "autoRequest": true,
+                "autoRequestGap": 5000,
+                "bufferSize": 7,
+                "checksum": "CRC16",
+                "checksumBegin": 1,
+                "checksumEnd": 2,
+                "checksumValuePos": 7,
+                "description": "获取UUID",
+                "name": "get_uuid",
+                "protocol": {
+                    "in": "FFFFFF014CB2AA55",
+                    "out": "FFFFFF014CB2AA55"
+                },
+                "rw": 1,
+                "timeout": 1000
+            }
+        }
+    }
 }
 ```
 
