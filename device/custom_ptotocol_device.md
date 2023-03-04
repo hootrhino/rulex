@@ -57,13 +57,24 @@
 实际上观察一下样例 JSON 就知道怎么配置了。
 
 ## 常用函数
-- Bytes2Hexs: 字节转成16进制字符串
+下面列出一些常用的函数:
+
+- hex:Bytes2Hexs: 字节转成16进制字符串
   ```lua
      local s, err = hex:Bytes2Hexs({1,2,3})
      -- s 是lua的字符串: 'FFFFFF014CB2AA55'
   ```
-- Hexs2Bytes: 16进制字符串转成字节
+- hex:Hexs2Bytes: 16进制字符串转成字节
   ```lua
      local b, err = hex:Hexs2Bytes('FFFFFF014CB2AA55')
      -- b 是一个table: {0 = 0, 1 = 1}
+  ```
+- eekit:GPIOSet: 控制GPIO
+  ```lua
+     local err = eekit:GPIOSet(6, 1)
+  ```
+- eekit:GPIOGet 16进制字符串转成字节
+  ```lua
+     local value, err = eekit:GPIOGet(6)
+     -- value 的值为 0 或者 1
   ```
