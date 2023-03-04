@@ -83,6 +83,11 @@ func LoadBuildInLuaLib(e typex.RuleX, r *typex.Rule) {
 	//------------------------------------------------------------------------
 	r.AddLib(e, "hex", "Bytes2Hexs", rulexlib.Bytes2Hexs(e))
 	r.AddLib(e, "hex", "Hexs2Bytes", rulexlib.Hexs2Bytes(e))
+	//------------------------------------------------------------------------
+	// 注册GPIO操作函数到LUA运行时
+	//------------------------------------------------------------------------
+	r.AddLib(e, "eekit", "GPIOGet", rulexlib.EEKIT_GPIOGet(e))
+	r.AddLib(e, "eekit", "GPIOSet", rulexlib.EEKIT_GPIOSet(e))
 
 }
 
