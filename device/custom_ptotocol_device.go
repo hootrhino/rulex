@@ -3,6 +3,7 @@ package device
 import (
 	"context"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -224,8 +225,15 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 							int(result[:p.BufferSize][p.ChecksumValuePos]))
 						if ok {
 							// 返回给lua参数是十六进制大写字符串
-							mdev.RuleEngine.WorkDevice(mdev.Details(),
-								hex.EncodeToString(result[:p.BufferSize]))
+							if ok {
+								dataMap := map[string]string{
+									"name":  p.Name,
+									"value": hex.EncodeToString(result[:p.BufferSize]),
+								}
+								bytes, _ := json.Marshal(dataMap)
+								// 返回给lua参数是十六进制大写字符串
+								mdev.RuleEngine.WorkDevice(mdev.Details(), string(bytes))
+							}
 						}
 					}
 					if p.CheckAlgorithm == "XOR" || p.CheckAlgorithm == "xor" {
@@ -234,9 +242,13 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 						ok := mdev.checkXOR(result[:p.BufferSize],
 							int(result[:p.BufferSize][p.ChecksumValuePos]))
 						if ok {
+							dataMap := map[string]string{
+								"name":  p.Name,
+								"value": hex.EncodeToString(result[:p.BufferSize]),
+							}
+							bytes, _ := json.Marshal(dataMap)
 							// 返回给lua参数是十六进制大写字符串
-							mdev.RuleEngine.WorkDevice(mdev.Details(),
-								hex.EncodeToString(result[:p.BufferSize]))
+							mdev.RuleEngine.WorkDevice(mdev.Details(), string(bytes))
 						}
 					}
 
