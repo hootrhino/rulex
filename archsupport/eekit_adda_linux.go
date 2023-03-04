@@ -82,7 +82,7 @@ explain:set gpio
 Pin: gpio pin
 Value:gpio level 1 is high 0 is low
 */
-func EEKIT_GPIOSet(value, pin int) (bool, error) {
+func EEKIT_GPIOSet(pin, value, int) (bool, error) {
 	cmd := fmt.Sprintf("echo %d > /sys/class/gpio/gpio%d/value", value, pin)
 	_, err := exec.Command("sh", "-c", cmd).Output()
 	if err != nil {
