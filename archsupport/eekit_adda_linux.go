@@ -107,12 +107,12 @@ func EEKIT_GPIOGet(pin int) (int, error) {
 		return -1, err
 	}
 	if len(Value) < 1 {
-		return -1, errors.New("invalid value")
+		return -1, errors.New("invalid length")
 	}
-	if Value[0] == 0 {
+	if Value[0] == '0' {
 		return 0, nil
 	}
-	if Value[0] == 1 {
+	if Value[0] == '1' {
 		return 1, nil
 	}
 	return -1, errors.New("invalid value")
