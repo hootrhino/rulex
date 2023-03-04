@@ -4,8 +4,6 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
-	"io"
-	"syscall"
 	"testing"
 	"time"
 
@@ -142,7 +140,6 @@ func Test_SerialPortRW(t *testing.T) {
 		Parity:   'N',
 		StopBits: 1,
 	}
-	syscall.Read()
 	serialPort, err := serial.OpenPort(&config)
 	if err != nil {
 		t.Fatal(err)
@@ -173,7 +170,4 @@ func Test_SerialPortRW(t *testing.T) {
 	serialPort.Write((bytes))
 	n6, _ := serialPort.Read(result[:])
 	t.Log("serialPort.Read 6:", n6, result[:n6])
-}
-func readInExpectTime() {
-io.ReadAtLeast()
 }
