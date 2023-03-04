@@ -52,12 +52,12 @@ type _Protocol struct {
 	//    从第一个开始，第五个结束[Byte1,Byte2,Byte3,Byte4,Byte5], 比对值位置在第六个[Byte6]
 	// 伪代码：XOR(Byte[ChecksumBegin:ChecksumEnd]) == Byte[ChecksumValuePos]
 	//---------------------------------------------------------------------
-	Checksum         string // 校验算法，目前暂时支持: CRC16, XOR
-	ChecksumValuePos uint   // 校验值比对位
-	ChecksumBegin    uint   // 校验算法起始位置
-	ChecksumEnd      uint   // 校验算法结束位置
-	AutoRequest      bool   // 是否开启轮询
-	AutoRequestGap   uint   // 轮询间隔
+	CheckAlgorithm   string `json:"checkAlgorithm" validate:"required"`   // 校验算法，目前暂时支持: CRC16, XOR
+	ChecksumValuePos uint   `json:"checksumValuePos" validate:"required"` // 校验值比对位
+	ChecksumBegin    uint   `json:"checksumBegin" validate:"required"`    // 校验算法起始位置
+	ChecksumEnd      uint   `json:"checksumEnd" validate:"required"`      // 校验算法结束位置
+	AutoRequest      bool   `json:"autoRequest" validate:"required"`      // 是否开启轮询
+	AutoRequestGap   uint   `json:"autoRequestGap" validate:"required"`   // 轮询间隔
 	//---------------------------------------------------------------------
 	ProtocolArg _ProtocolArg `json:"protocol" validate:"required"` // 参数
 }
@@ -110,21 +110,43 @@ func (mdev *CustomProtocolDevice) Init(devId string, configMap map[string]interf
 	}
 	if !contains([]string{`rawtcp`, `rawudp`, `rs485rawserial`, `rs485rawtcp`},
 		mdev.mainConfig.CommonConfig.Transport) {
-		return errors.New("parity value only one of 'rawtcp','rawudp','rs485rawserial','rs485rawserial'")
+		return errors.New("option only one of 'rawtcp','rawudp','rs485rawserial','rs485rawserial'")
 	}
 	// parse hex format
 	for _, v := range mdev.mainConfig.DeviceConfig {
+		// 检查指令是否符合十六进制
 		if _, err := hex.DecodeString(v.ProtocolArg.In); err != nil {
-			errMsg := fmt.Sprintf("hex.DecodeString(ProtocolArg.In) failed:%s", v.ProtocolArg.In)
+			errMsg := fmt.Sprintf("invalid hex format:%s", v.ProtocolArg.In)
 			glogger.GLogger.Error(errMsg)
 			return fmt.Errorf(errMsg)
 		}
 		if v.ProtocolArg.Out != "" {
 			if _, err := hex.DecodeString(v.ProtocolArg.Out); err != nil {
-				errMsg := fmt.Sprintf("hex.DecodeString(ProtocolArg.Out) failed:%s", v.ProtocolArg.Out)
+				errMsg := fmt.Sprintf("invalid hex format:%s", v.ProtocolArg.Out)
 				glogger.GLogger.Error(errMsg)
 				return fmt.Errorf(errMsg)
 			}
+		}
+		// 目前暂时就先支持这几个算法
+		if !contains([]string{"XOR", "xor", "CRC16", "crc16", "CRC32", "crc32"}, v.CheckAlgorithm) {
+			return errors.New("unsupported check algorithm")
+		}
+		//------------------------------------------------------------------------------------------
+		// 校验参数检查
+		//------------------------------------------------------------------------------------------
+		// 1. 检查区间是否越界
+		if v.ChecksumBegin+v.ChecksumEnd > uint(v.BufferSize) {
+			errMsg := fmt.Sprintf("check size [%d] out of buffer range:%v",
+				v.ChecksumEnd, v.BufferSize)
+			glogger.GLogger.Error(errMsg)
+			return fmt.Errorf(errMsg)
+		}
+		// 2. 校验位是否超出缓冲长度
+		if v.ChecksumValuePos > uint(v.BufferSize) {
+			errMsg := fmt.Sprintf("checksum position [%d] out of buffer range:%v",
+				v.ChecksumEnd, v.BufferSize)
+			glogger.GLogger.Error(errMsg)
+			return fmt.Errorf(errMsg)
 		}
 
 	}
@@ -195,19 +217,29 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 					if core.GlobalConfig.AppDebugMode {
 						log.Println("[AppDebugMode] Read data:", result[:p.BufferSize])
 					}
-					if p.Checksum == "CRC16" {
-						// 检查字节
-						// check-crc()
-						glogger.GLogger.Debug("启用了CRC16校验法, 但是暂时没有实现，这里默认校验完成")
+					if p.CheckAlgorithm == "CRC16" || p.CheckAlgorithm == "crc16" {
+						glogger.GLogger.Debug("checkCRC:", result[:p.BufferSize],
+							int(result[:p.BufferSize][p.ChecksumValuePos]))
+						ok := mdev.checkCRC(result[:p.BufferSize],
+							int(result[:p.BufferSize][p.ChecksumValuePos]))
+						if ok {
+							// 返回给lua参数是十六进制大写字符串
+							mdev.RuleEngine.WorkDevice(mdev.Details(),
+								hex.EncodeToString(result[:p.BufferSize]))
+						}
 					}
-					if p.Checksum == "XOR" {
-						// 检查字节
-						// check-xor()
-						glogger.GLogger.Debug("启用了XOR校验法, 但是暂时没有实现，这里默认校验完成")
+					if p.CheckAlgorithm == "XOR" || p.CheckAlgorithm == "xor" {
+						glogger.GLogger.Debug("checkXOR:", result[:p.BufferSize],
+							int(result[:p.BufferSize][p.ChecksumValuePos]))
+						ok := mdev.checkXOR(result[:p.BufferSize],
+							int(result[:p.BufferSize][p.ChecksumValuePos]))
+						if ok {
+							// 返回给lua参数是十六进制大写字符串
+							mdev.RuleEngine.WorkDevice(mdev.Details(),
+								hex.EncodeToString(result[:p.BufferSize]))
+						}
 					}
-					// 返回给lua参数是十六进制大写字符串
-					mdev.RuleEngine.WorkDevice(mdev.Details(),
-						hex.EncodeToString(result[:p.BufferSize]))
+
 				}
 				time.Sleep(time.Duration(mdev.mainConfig.CommonConfig.WaitTime) * time.Millisecond)
 			}
@@ -340,4 +372,15 @@ func (mdev *CustomProtocolDevice) Driver() typex.XExternalDriver {
 }
 func (mdev *CustomProtocolDevice) OnDCACall(UUID string, Command string, Args interface{}) typex.DCAResult {
 	return typex.DCAResult{}
+}
+
+// --------------------------------------------------------------------------------------------------
+// 内部函数
+// --------------------------------------------------------------------------------------------------
+func (mdev *CustomProtocolDevice) checkXOR(b []byte, v int) bool {
+	return utils.XOR(b) == v
+}
+func (mdev *CustomProtocolDevice) checkCRC(b []byte, v int) bool {
+
+	return int(utils.CRC16(b)) == v
 }
