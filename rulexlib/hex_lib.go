@@ -21,8 +21,8 @@ func Hexs2Bytes(rx typex.RuleX) func(*lua.LState) int {
 			l.Push(lua.LString(e.Error()))
 		} else {
 			table := lua.LTable{}
-			for i, v := range s {
-				table.RawSetInt(i, lua.LNumber(v))
+			for _, v := range s {
+				table.Append(lua.LNumber(v))
 			}
 			l.Push(&table)
 			l.Push(lua.LNil)

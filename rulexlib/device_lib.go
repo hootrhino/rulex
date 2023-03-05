@@ -32,8 +32,8 @@ func ReadDevice(rx typex.RuleX) func(*lua.LState) int {
 				return 2
 			}
 			table := lua.LTable{}
-			for i, v := range deviceReadBuffer[:n] {
-				table.RawSetInt(i, lua.LNumber(v))
+			for _, v := range deviceReadBuffer[:n] {
+				table.Append(lua.LNumber(v))
 			}
 			l.Push(&table)
 			l.Push(lua.LNil)
