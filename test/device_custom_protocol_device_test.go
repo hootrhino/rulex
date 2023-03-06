@@ -12,6 +12,7 @@ import (
 	httpserver "github.com/i4de/rulex/plugin/http_server"
 	"github.com/i4de/rulex/rulexrpc"
 	"github.com/i4de/rulex/typex"
+	"github.com/i4de/rulex/utils"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -24,6 +25,19 @@ func TestHexEncoding(t *testing.T) {
 	t.Log(fmt.Sprintf("%X", hexs) == s)
 	t.Log(fmt.Sprintf("%x", hexs) == s)
 	t.Log(hex.DecodeString(s))
+}
+
+// go test -timeout 30s -run ^TestCheckSUM github.com/i4de/rulex/test -v -count=1
+
+func TestCheckSUM(t *testing.T) {
+	hexs := [8]byte{0xFF, 0xFF, 0xFF, 0x01, 0x4C, 0xB2, 0xAA, 0x55}
+	for i, v := range hexs {
+		t.Logf("%d %d %X", i, v, v)
+	}
+	checksumBegin := 0    // 校验起点
+	checksumEnd := 7      // 校验结束点
+	checksumValuePos := 6 // 校验比对位置
+	t.Log(utils.XOR(hexs[checksumBegin:checksumEnd]) == int(hexs[checksumValuePos]))
 }
 
 // go test -timeout 30s -run ^TestCustomProtocolDevice github.com/i4de/rulex/test -v -count=1
