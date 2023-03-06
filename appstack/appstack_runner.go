@@ -50,12 +50,14 @@ func NewApplication(uuid, Name, Version, Filepath string) *Application {
 *
  */
 type AppStack struct {
+	RuleEngine   typex.RuleX
 	Applications map[string]*Application
 }
 
-func NewAppStack() *AppStack {
+func NewAppStack(rulex typex.RuleX) *AppStack {
 	as := new(AppStack)
 	as.Applications = map[string]*Application{}
+	as.RuleEngine = rulex
 	return as
 }
 
@@ -107,17 +109,30 @@ func (as *AppStack) LoadApp(app *Application) error {
 	if AppMain.Type() != lua.LTFunction {
 		return fmt.Errorf("'Main' must be function(arg)")
 	}
-
-	// 加载到内存里
-	fMain := *AppMain.(*lua.LFunction)
+	// 释放语法验证阶段的临时虚拟机
+	tempVm.Close()
+	tempVm = nil
+	//----------------------------------------------------------------------------------------------
+	app.vm.DoString(string(bytes))
+	// 检查函数入口
+	AppMainVM := app.vm.GetGlobal("Main")
+	if AppMainVM == nil {
+		return fmt.Errorf("'Main' field not exists")
+	}
+	if AppMainVM.Type() != lua.LTFunction {
+		return fmt.Errorf("'Main' must be function(arg)")
+	}
+	// 抽取main
+	fMain := *AppMainVM.(*lua.LFunction)
 	app.luaMainFunc = &fMain
+	// 加载库
+	app.loadAppLib(as.RuleEngine)
 	if err := as.startApp(app); err != nil {
 		return err
 	}
+	// 加载到内存里
 	as.Applications[app.UUID] = app
-	//
-	tempVm.Close()
-	tempVm = nil
+
 	return nil
 }
 
@@ -132,12 +147,15 @@ func (as *AppStack) startApp(app *Application) error {
 	app.ctx = ctx
 	app.cancel = cancel
 	go func(ctx context.Context) {
+		defer func() {
+			glogger.GLogger.Debug("app exit:", app.UUID)
+		}()
 		app.vm.SetContext(ctx)
 		err := app.vm.CallByParam(lua.P{
 			Fn:      app.luaMainFunc, // 回调函数
 			NRet:    1,               // 一个返回值
 			Protect: true,            // 受保护
-		})
+		}, lua.LBool(false))
 		if err != nil {
 			glogger.GLogger.Error("startApp error:", err)
 			return
