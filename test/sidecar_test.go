@@ -3,12 +3,12 @@ package test
 import (
 	"runtime"
 
-	"github.com/i4de/rulex/glogger"
-	httpserver "github.com/i4de/rulex/plugin/http_server"
-	"github.com/i4de/rulex/sidecar"
-
 	"testing"
 	"time"
+
+	"github.com/i4de/rulex/glogger"
+	httpserver "github.com/i4de/rulex/plugin/http_server"
+	"github.com/i4de/rulex/typex"
 )
 
 /*
@@ -21,7 +21,6 @@ func Test_Sidecar_load(t *testing.T) {
 	engine := RunTestEngine()
 	engine.Start()
 
-
 	hh := httpserver.NewHttpApiServer()
 	// HttpApiServer loaded default
 	if err := engine.LoadPlugin("plugin.http_server", hh); err != nil {
@@ -31,7 +30,7 @@ func Test_Sidecar_load(t *testing.T) {
 	if runtime.GOOS == "windows" {
 		path += ".exe"
 	}
-	if err := engine.LoadGoods(sidecar.Goods{
+	if err := engine.LoadGoods(typex.Goods{
 		UUID:        "grpc_driver_hello_go",
 		Addr:        path,
 		Description: "grpc_driver_hello_go",
