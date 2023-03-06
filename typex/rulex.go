@@ -2,13 +2,9 @@ package typex
 
 import (
 	"sync"
-
-	"github.com/i4de/rulex/sidecar"
 )
 
-//
 // Global config
-//
 type Extlib struct {
 	Value []string `ini:"extlibs,,allowshadow" json:"extlibs"`
 }
@@ -30,9 +26,7 @@ type RulexConfig struct {
 	Extlibs               Extlib `ini:"extlibs,,allowshadow" json:"extlibs"`
 }
 
-//
 // RuleX interface
-//
 type RuleX interface {
 	//
 	// 启动规则引擎
@@ -167,12 +161,12 @@ type RuleX interface {
 	//
 	// 取一个进程
 	//
-	PickUpProcess(uuid string) *sidecar.GoodsProcess
+	PickUpProcess(uuid string) *GoodsProcess
 
 	//
 	// 加载外部驱动
 	//
-	LoadGoods(goods sidecar.Goods) error
+	LoadGoods(goods Goods) error
 	//
 	// 删除外部驱动
 	//
@@ -184,7 +178,7 @@ type RuleX interface {
 	//
 	// 获取某个外部驱动
 	//
-	GetGoods(uuid string) *sidecar.Goods
+	GetGoods(uuid string) *Goods
 	//
 	// 重启源
 	//
@@ -197,15 +191,20 @@ type RuleX interface {
 	// 重启设备
 	//
 	RestartDevice(uuid string) error
+	//----------------------------------------
+	// App
+	//----------------------------------------
+	AllApp() []*Application
+	GetApp(uuid string) *Application
+	StopApp(uuid string) error
+	RemoveApp(uuid string) error
 }
 
-//
 // 拓扑接入点，比如 modbus 检测点等
 // UUID: gyh9uo7uh7o67u
 // Name: ModbusMeter001
 // Alive: true
 // Tag: modbus
-//
 type TopologyPoint struct {
 	UUID   string `json:"uuid"`
 	Parent string `json:"parent"`

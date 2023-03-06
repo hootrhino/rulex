@@ -7,6 +7,7 @@ import (
 	"runtime"
 	"sync"
 
+	"github.com/i4de/rulex/appstack"
 	"github.com/i4de/rulex/core"
 	"github.com/i4de/rulex/device"
 	"github.com/i4de/rulex/glogger"
@@ -22,7 +23,8 @@ import (
 
 // 规则引擎
 type RuleEngine struct {
-	SideCar           sidecar.SideCar      `json:"-"`
+	SideCar           typex.SideCar        `json:"-"`
+	AppStack          *appstack.AppStack   `json:"-"`
 	Hooks             *sync.Map            `json:"hooks"`
 	Rules             *sync.Map            `json:"rules"`
 	Plugins           *sync.Map            `json:"plugins"`
@@ -37,8 +39,7 @@ type RuleEngine struct {
 }
 
 func NewRuleEngine(config typex.RulexConfig) typex.RuleX {
-	return &RuleEngine{
-		SideCar:           sidecar.NewSideCarManager(typex.GCTX),
+	re := &RuleEngine{
 		DeviceTypeManager: core.NewDeviceTypeManager(),
 		SourceTypeManager: core.NewSourceTypeManager(),
 		TargetTypeManager: core.NewTargetTypeManager(),
@@ -51,6 +52,11 @@ func NewRuleEngine(config typex.RulexConfig) typex.RuleX {
 		Devices:           &sync.Map{},
 		Config:            &config,
 	}
+	// sidecar
+	re.SideCar = sidecar.NewSideCarManager(re)
+	// lua appstack manager
+	re.AppStack = appstack.NewAppStack(re)
+	return re
 }
 
 func (e *RuleEngine) Start() *typex.RulexConfig {
@@ -187,10 +193,10 @@ func (e *RuleEngine) Stop() {
 	})
 	// 外挂停了
 	e.AllGoods().Range(func(key, value interface{}) bool {
-		goodsProcess := value.(*sidecar.GoodsProcess)
-		glogger.GLogger.Info("Stop Goods Process:", goodsProcess.UUID())
+		goodsProcess := value.(*typex.GoodsProcess)
+		glogger.GLogger.Info("Stop Goods Process:", goodsProcess.Uuid)
 		goodsProcess.Stop()
-		glogger.GLogger.Info("Stop Goods Process:", goodsProcess.UUID(), " Successfully")
+		glogger.GLogger.Info("Stop Goods Process:", goodsProcess.Uuid, " Successfully")
 		return true
 	})
 	glogger.GLogger.Info("Stop Rulex successfully")
@@ -447,7 +453,7 @@ func (e *RuleEngine) SnapshotDump() string {
 * 加载外部程序
 *
  */
-func (e *RuleEngine) LoadGoods(goods sidecar.Goods) error {
+func (e *RuleEngine) LoadGoods(goods typex.Goods) error {
 	return e.SideCar.Fork(goods)
 }
 
@@ -466,19 +472,19 @@ func (e *RuleEngine) AllGoods() *sync.Map {
 }
 
 // 获取某个外部驱动信息
-func (e *RuleEngine) GetGoods(uuid string) *sidecar.Goods {
+func (e *RuleEngine) GetGoods(uuid string) *typex.Goods {
 	goodsProcess := e.SideCar.Get(uuid)
-	goods := sidecar.Goods{
-		UUID:        goodsProcess.UUID(),
-		Addr:        goodsProcess.Addr(),
-		Description: goodsProcess.Description(),
-		Args:        goodsProcess.Args(),
+	goods := typex.Goods{
+		UUID:        goodsProcess.Uuid,
+		Addr:        goodsProcess.Addr,
+		Description: goodsProcess.Description,
+		Args:        goodsProcess.Args,
 	}
 	return &goods
 }
 
 // 取一个进程
-func (e *RuleEngine) PickUpProcess(uuid string) *sidecar.GoodsProcess {
+func (e *RuleEngine) PickUpProcess(uuid string) *typex.GoodsProcess {
 	return e.SideCar.Get(uuid)
 }
 

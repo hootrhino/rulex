@@ -85,3 +85,16 @@ type MGoods struct {
 	Description string     `gorm:"not null"`
 	Args        stringList `gorm:"not null"`
 }
+
+/*
+*
+* LUA应用
+*
+ */
+type MApp struct {
+	RulexModel
+	UUID     string `gorm:"not null"` // 名称
+	Name     string `gorm:"not null"` // 名称
+	Version  string `gorm:"not null"` // 版本号
+	Filepath string `gorm:"not null"` // 文件路径, 是相对于main的apps目录
+}

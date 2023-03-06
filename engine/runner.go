@@ -9,13 +9,10 @@ import (
 	"github.com/i4de/rulex/core"
 	"github.com/i4de/rulex/glogger"
 	httpserver "github.com/i4de/rulex/plugin/http_server"
-	"github.com/i4de/rulex/sidecar"
 	"github.com/i4de/rulex/typex"
 )
 
-//
 // 启动 Rulex
-//
 func RunRulex(iniPath string) {
 	mainConfig := core.InitGlobalConfig(iniPath)
 	glogger.StartNewRealTimeLogger(core.GlobalConfig.LogLevel)
@@ -101,7 +98,7 @@ func RunRulex(iniPath string) {
 	}
 	// 加载外挂
 	for _, mGoods := range httpServer.AllGoods() {
-		newGoods := sidecar.Goods{
+		newGoods := typex.Goods{
 			UUID:        mGoods.UUID,
 			Addr:        mGoods.Addr,
 			Description: mGoods.Description,

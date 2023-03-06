@@ -10,54 +10,20 @@ import (
 	lua "github.com/yuin/gopher-lua"
 )
 
-// lua 虚拟机的参数
-const _VM_Registry_Size int = 1024 * 1024    // 默认堆栈大小
-const _VM_Registry_MaxSize int = 1024 * 1024 // 默认最大堆栈
-const _VM_Registry_GrowStep int = 32         // 默认CPU消耗
-
-/*
-*
-* 轻量级应用
-*
- */
-type Application struct {
-	UUID        string             `json:"uuid"`     // 名称
-	Name        string             `json:"name"`     // 名称
-	Version     string             `json:"version"`  // 版本号
-	Filepath    string             `json:"filepath"` // 文件路径, 是相对于main的apps目录
-	luaMainFunc *lua.LFunction     `json:"-"`
-	vm          *lua.LState        `json:"-"` // lua 环境
-	ctx         context.Context    `json:"-"`
-	cancel      context.CancelFunc `json:"-"`
-}
-
-func NewApplication(uuid, Name, Version, Filepath string) *Application {
-	app := new(Application)
-	app.Name = Name
-	app.Version = Version
-	app.Filepath = Filepath
-	app.vm = lua.NewState(lua.Options{
-		RegistrySize:     _VM_Registry_Size,
-		RegistryMaxSize:  _VM_Registry_MaxSize,
-		RegistryGrowStep: _VM_Registry_GrowStep,
-	})
-	return app
-}
-
 /*
 *
 * 管理器
 *
  */
 type AppStack struct {
-	RuleEngine   typex.RuleX
-	Applications map[string]*Application
+	re           typex.RuleX
+	Applications map[string]*typex.Application
 }
 
-func NewAppStack(rulex typex.RuleX) *AppStack {
+func NewAppStack(re typex.RuleX) *AppStack {
 	as := new(AppStack)
-	as.Applications = map[string]*Application{}
-	as.RuleEngine = rulex
+	as.re = re
+	as.Applications = map[string]*typex.Application{}
 	return as
 }
 
@@ -66,7 +32,7 @@ func NewAppStack(rulex typex.RuleX) *AppStack {
 * 加载本地文件到lua虚拟机
 *
  */
-func (as *AppStack) LoadApp(app *Application) error {
+func (as *AppStack) LoadApp(app *typex.Application) error {
 
 	// 临时校验语法
 	tempVm := lua.NewState()
@@ -113,9 +79,9 @@ func (as *AppStack) LoadApp(app *Application) error {
 	tempVm.Close()
 	tempVm = nil
 	//----------------------------------------------------------------------------------------------
-	app.vm.DoString(string(bytes))
+	app.VM().DoString(string(bytes))
 	// 检查函数入口
-	AppMainVM := app.vm.GetGlobal("Main")
+	AppMainVM := app.VM().GetGlobal("Main")
 	if AppMainVM == nil {
 		return fmt.Errorf("'Main' field not exists")
 	}
@@ -124,9 +90,9 @@ func (as *AppStack) LoadApp(app *Application) error {
 	}
 	// 抽取main
 	fMain := *AppMainVM.(*lua.LFunction)
-	app.luaMainFunc = &fMain
+	app.SetMainFunc(&fMain)
 	// 加载库
-	app.loadAppLib(as.RuleEngine)
+	LoadAppLib(app, as.re)
 	if err := as.startApp(app); err != nil {
 		return err
 	}
@@ -141,26 +107,25 @@ func (as *AppStack) LoadApp(app *Application) error {
 * 启动 function Main(args) --do-some-thing-- return 0 end
 *
  */
-func (as *AppStack) startApp(app *Application) error {
+func (as *AppStack) startApp(app *typex.Application) error {
 	// args := lua.LBool(false) // Main的参数，未来准备扩展
 	ctx, cancel := context.WithCancel(typex.GCTX)
-	app.ctx = ctx
-	app.cancel = cancel
+	app.SetCnC(ctx, cancel)
 	go func(ctx context.Context) {
 		defer func() {
 			glogger.GLogger.Debug("app exit:", app.UUID)
 		}()
-		app.vm.SetContext(ctx)
-		err := app.vm.CallByParam(lua.P{
-			Fn:      app.luaMainFunc, // 回调函数
-			NRet:    1,               // 一个返回值
-			Protect: true,            // 受保护
+		app.VM().SetContext(ctx)
+		err := app.VM().CallByParam(lua.P{
+			Fn:      app.GetMainFunc(), // 回调函数
+			NRet:    1,                 // 一个返回值
+			Protect: true,              // 受保护
 		}, lua.LBool(false))
 		if err != nil {
 			glogger.GLogger.Error("startApp error:", err)
 			return
 		}
-	}(app.ctx)
+	}(ctx)
 
 	return nil
 }
@@ -172,10 +137,15 @@ func (as *AppStack) startApp(app *Application) error {
  */
 func (as *AppStack) RemoveApp(uuid string) error {
 	if app, ok := as.Applications[uuid]; ok {
-		app.cancel()
-		app.vm.Close()
+		app.Release()
 		delete(as.Applications, uuid)
-		app.vm = nil
+	}
+	return nil
+}
+func (as *AppStack) StopApp(uuid string) error {
+	if app, ok := as.Applications[uuid]; ok {
+		app.Release()
+		app.AppState = 0
 	}
 	return nil
 }
@@ -185,12 +155,18 @@ func (as *AppStack) RemoveApp(uuid string) error {
 * 更新应用信息
 *
  */
-func (as *AppStack) UpdateApp(app *Application) error {
+func (as *AppStack) UpdateApp(app *typex.Application) error {
 	if _, ok := as.Applications[app.UUID]; ok {
 		as.Applications[app.UUID] = app
 	}
 	return fmt.Errorf("update failed, app not exists:%s", app.UUID)
 
+}
+func (as *AppStack) GetApp(uuid string) *typex.Application {
+	if app, ok := as.Applications[uuid]; ok {
+		return app
+	}
+	return nil
 }
 
 /*
@@ -198,18 +174,16 @@ func (as *AppStack) UpdateApp(app *Application) error {
 * 获取列表
 *
  */
-func (as *AppStack) ListApp() []Application {
-	apps := []Application{}
+func (as *AppStack) ListApp() []*typex.Application {
+	apps := []*typex.Application{}
 	for _, v := range as.Applications {
-		apps = append(apps, *v)
+		apps = append(apps, v)
 	}
 	return apps
 }
 
 func (as *AppStack) Stop() {
 	for _, app := range as.Applications {
-		app.cancel()
-		app.vm.Close()
-		app.vm = nil
+		app.Release()
 	}
 }
