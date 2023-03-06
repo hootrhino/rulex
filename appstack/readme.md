@@ -18,7 +18,7 @@ AppNAME = "test_demo"
 -- 版本信息,必须符合 x.y.z 格式
 AppVERSION = "1.0.0"
 -- 关于这个应用的一些描述信息
-AppDESCTIPTION = "A demo app"
+AppDESCRIPTION = "A demo app"
 -- 必须包含 APPMain(arg) 函数作为 app 启动点
 function Main(arg)
 	while true do
@@ -33,3 +33,6 @@ function Main(arg)
 end
 
 ```
+
+## 内部原理
+首先用户在编辑器里面写一段 lua 代码，然后 rulex 会加载这段 lua 代码执行。代码最终被保存在本地。

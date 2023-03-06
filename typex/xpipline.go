@@ -8,15 +8,14 @@ import (
 )
 
 // RunPipline
-//  Run lua as pipline
 //
+//	Run lua as pipline
 func RunPipline(vm *lua.LState, funcs map[string]*lua.LFunction, arg lua.LValue) (lua.LValue, error) {
 	// start 1
 	acc := 1
 	return pipLine(vm, acc, funcs, arg)
 }
 
-//
 func pipLine(vm *lua.LState, acc int, funcs map[string]*lua.LFunction, arg lua.LValue) (lua.LValue, error) {
 	if acc == len(funcs) {
 		values, err0 := callLuaFunc(vm, funcs[strconv.Itoa(acc)], arg)
@@ -48,22 +47,17 @@ func pipLine(vm *lua.LState, acc int, funcs map[string]*lua.LFunction, arg lua.L
 
 }
 
-//
 // validate lua callback
-//
 func validate(values []lua.LValue, f func() (lua.LValue, error)) (lua.LValue, error) {
 	// Lua call back must have 2 args!!!
 	if len(values) != 2 {
-		return nil, errors.New("'Action' callback must have 2 arguments:[bool, T]")
+		return nil, errors.New("'Action' callback must have 2 return value:[bool, T]")
 	} else {
 		return f()
 	}
 }
 
-//
-//
 // 执行lua函数的接口, 后期可以用这个接口来实现运行 lua 微服务
-//
 func Execute(vm *lua.LState, k string, args ...lua.LValue) (interface{}, error) {
 	callable := vm.GetGlobal(k)
 	if callable.Type() == lua.LTFunction {
