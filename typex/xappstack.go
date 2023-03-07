@@ -18,11 +18,12 @@ type AppState int
 *
  */
 type Application struct {
-	UUID        string             `json:"uuid"`     // 名称
-	Name        string             `json:"name"`     // 名称
-	Version     string             `json:"version"`  // 版本号
-	AppState    AppState           `json:"appState"` // 状态: 1 运行中, 0 停止
-	Filepath    string             `json:"filepath"` // 文件路径, 是相对于main的apps目录
+	UUID        string             `json:"uuid"`      // 名称
+	Name        string             `json:"name"`      // 名称
+	Version     string             `json:"version"`   // 版本号
+	AutoStart   bool               `json:"autoStart"` // 自动启动
+	AppState    AppState           `json:"appState"`  // 状态: 1 运行中, 0 停止
+	Filepath    string             `json:"filepath"`  // 文件路径, 是相对于main的apps目录
 	luaMainFunc *lua.LFunction     `json:"-"`
 	vm          *lua.LState        `json:"-"` // lua 环境
 	ctx         context.Context    `json:"-"`
@@ -32,6 +33,7 @@ type Application struct {
 func NewApplication(uuid, Name, Version, Filepath string) *Application {
 	app := new(Application)
 	app.Name = Name
+	app.UUID = uuid
 	app.Version = Version
 	app.Filepath = Filepath
 	app.vm = lua.NewState(lua.Options{
@@ -60,10 +62,15 @@ func (app *Application) GetMainFunc() *lua.LFunction {
 func (app *Application) VM() *lua.LState {
 	return app.vm
 }
-func (app *Application) Release() {
+
+/*
+*
+* 释放资源，
+*
+ */
+func (app *Application) Stop() {
 	app.cancel()
 	app.vm.Close()
-	app.vm = nil
 }
 
 /*
@@ -74,10 +81,13 @@ func (app *Application) Release() {
 type XAppStack interface {
 	GetRuleX() RuleX
 	ListApp() []*Application
+	// 把配置里的应用信息加载到内存里
 	LoadApp(app *Application) error
 	GetApp(uuid string) *Application
 	RemoveApp(uuid string) error
-	UpdateApp(app *Application) error
+	UpdateApp(app Application) error
+	// 启动一个停止的进程
+	StartApp(uuid string) error
 	StopApp(uuid string) error
 	Stop()
 }

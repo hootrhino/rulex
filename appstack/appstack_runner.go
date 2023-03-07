@@ -17,68 +17,27 @@ import (
  */
 type AppStack struct {
 	re           typex.RuleX
-	Applications map[string]*typex.Application
+	applications map[string]*typex.Application
 }
 
 func NewAppStack(re typex.RuleX) typex.XAppStack {
 	as := new(AppStack)
 	as.re = re
-	as.Applications = map[string]*typex.Application{}
+	as.applications = map[string]*typex.Application{}
 	return as
 }
 
 /*
 *
-* 加载本地文件到lua虚拟机
+* 加载本地文件到lua虚拟机, 但是并不执行
 *
  */
 func (as *AppStack) LoadApp(app *typex.Application) error {
-
-	// 临时校验语法
-	tempVm := lua.NewState()
-	bytes, err := os.ReadFile("./apps/" + app.Filepath)
+	bytes, err := os.ReadFile(app.Filepath)
 	if err != nil {
 		return err
 	}
-	if err := tempVm.DoString(string(bytes)); err != nil {
-		return err
-	}
-	// 检查名称
-	AppNAME := tempVm.GetGlobal("AppNAME")
-	if AppNAME == nil {
-		return fmt.Errorf("'AppNAME' field not exists")
-	}
-	if AppNAME.Type() != lua.LTString {
-		return fmt.Errorf("'AppNAME' must be string")
-	}
-	// 检查类型
-	AppVERSION := tempVm.GetGlobal("AppVERSION")
-	if AppVERSION == nil {
-		return fmt.Errorf("'AppVERSION' field not exists")
-	}
-	if AppVERSION.Type() != lua.LTString {
-		return fmt.Errorf("'AppVERSION' must be string")
-	}
-	// 检查描述信息
-	AppDESCRIPTION := tempVm.GetGlobal("AppDESCRIPTION")
-	if AppDESCRIPTION == nil {
-		if AppDESCRIPTION.Type() != lua.LTString {
-			return fmt.Errorf("'AppDESCRIPTION' must be string")
-		}
-	}
-
-	// 检查函数入口
-	AppMain := tempVm.GetGlobal("Main")
-	if AppMain == nil {
-		return fmt.Errorf("'Main' field not exists")
-	}
-	if AppMain.Type() != lua.LTFunction {
-		return fmt.Errorf("'Main' must be function(arg)")
-	}
-	// 释放语法验证阶段的临时虚拟机
-	tempVm.Close()
-	tempVm = nil
-	//----------------------------------------------------------------------------------------------
+	// 重新读
 	app.VM().DoString(string(bytes))
 	// 检查函数入口
 	AppMainVM := app.VM().GetGlobal("Main")
@@ -93,29 +52,32 @@ func (as *AppStack) LoadApp(app *typex.Application) error {
 	app.SetMainFunc(&fMain)
 	// 加载库
 	LoadAppLib(app, as.re)
-	if err := as.startApp(app); err != nil {
-		return err
-	}
 	// 加载到内存里
-	as.Applications[app.UUID] = app
-
+	as.applications[app.UUID] = app
 	return nil
 }
 
 /*
-*
+* 此时才是真正的启动入口:
 * 启动 function Main(args) --do-some-thing-- return 0 end
 *
  */
-func (as *AppStack) startApp(app *typex.Application) error {
+func (as *AppStack) StartApp(uuid string) error {
+	app, ok := as.applications[uuid]
+	if !ok {
+		return fmt.Errorf("app not exists:%s", uuid)
+	}
 	// args := lua.LBool(false) // Main的参数，未来准备扩展
 	ctx, cancel := context.WithCancel(typex.GCTX)
 	app.SetCnC(ctx, cancel)
 	go func(ctx context.Context) {
 		defer func() {
+			app.AppState = 0
 			glogger.GLogger.Debug("app exit:", app.UUID)
 		}()
 		app.VM().SetContext(ctx)
+		glogger.GLogger.Info("ready to run app:", app.UUID)
+		app.AppState = 1
 		err := app.VM().CallByParam(lua.P{
 			Fn:      app.GetMainFunc(), // 回调函数
 			NRet:    1,                 // 一个返回值
@@ -126,27 +88,36 @@ func (as *AppStack) startApp(app *typex.Application) error {
 			return
 		}
 	}(ctx)
+	glogger.GLogger.Info("app started:", app.UUID)
+	return nil
+}
+
+/*
+*
+* 从内存里面删除APP
+*
+ */
+func (as *AppStack) RemoveApp(uuid string) error {
+	if app, ok := as.applications[uuid]; ok {
+		app.Stop()
+		delete(as.applications, uuid)
+	}
+	glogger.GLogger.Info("app removed:", uuid)
 
 	return nil
 }
 
 /*
 *
-* 删除APP
+* 停止应用并不删除应用, 将其进程结束，状态置0
 *
  */
-func (as *AppStack) RemoveApp(uuid string) error {
-	if app, ok := as.Applications[uuid]; ok {
-		app.Release()
-		delete(as.Applications, uuid)
-	}
-	return nil
-}
 func (as *AppStack) StopApp(uuid string) error {
-	if app, ok := as.Applications[uuid]; ok {
-		app.Release()
+	if app, ok := as.applications[uuid]; ok {
+		app.Stop()
 		app.AppState = 0
 	}
+	glogger.GLogger.Info("app stopped:", uuid)
 	return nil
 }
 
@@ -155,15 +126,18 @@ func (as *AppStack) StopApp(uuid string) error {
 * 更新应用信息
 *
  */
-func (as *AppStack) UpdateApp(app *typex.Application) error {
-	if _, ok := as.Applications[app.UUID]; ok {
-		as.Applications[app.UUID] = app
+func (as *AppStack) UpdateApp(app typex.Application) error {
+	if oldApp, ok := as.applications[app.UUID]; ok {
+		oldApp.Name = app.Name
+		oldApp.Version = app.Version
+		glogger.GLogger.Info("app updated:", app.UUID)
+		return nil
 	}
 	return fmt.Errorf("update failed, app not exists:%s", app.UUID)
 
 }
 func (as *AppStack) GetApp(uuid string) *typex.Application {
-	if app, ok := as.Applications[uuid]; ok {
+	if app, ok := as.applications[uuid]; ok {
 		return app
 	}
 	return nil
@@ -176,16 +150,19 @@ func (as *AppStack) GetApp(uuid string) *typex.Application {
  */
 func (as *AppStack) ListApp() []*typex.Application {
 	apps := []*typex.Application{}
-	for _, v := range as.Applications {
+	for _, v := range as.applications {
 		apps = append(apps, v)
 	}
 	return apps
 }
 
 func (as *AppStack) Stop() {
-	for _, app := range as.Applications {
-		app.Release()
+	for _, app := range as.applications {
+		app.Stop()
+		glogger.GLogger.Info("app stopped:", app.UUID)
 	}
+	glogger.GLogger.Info("appstack stopped")
+
 }
 func (as *AppStack) GetRuleX() typex.RuleX {
 	return as.re

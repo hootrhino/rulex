@@ -93,8 +93,9 @@ type MGoods struct {
  */
 type MApp struct {
 	RulexModel
-	UUID     string `gorm:"not null"` // 名称
-	Name     string `gorm:"not null"` // 名称
-	Version  string `gorm:"not null"` // 版本号
-	Filepath string `gorm:"not null"` // 文件路径, 是相对于main的apps目录
+	UUID      string `gorm:"not null"` // 名称
+	Name      string `gorm:"not null"` // 名称
+	Version   string `gorm:"not null"` // 版本号
+	AutoStart bool   `gorm:"not null"` // 允许启动
+	Filepath  string `gorm:"not null"` // 文件路径, 是相对于main的apps目录
 }

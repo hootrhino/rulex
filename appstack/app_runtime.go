@@ -1,10 +1,62 @@
 package appstack
 
 import (
+	"fmt"
+
 	"github.com/i4de/rulex/rulexlib"
 	"github.com/i4de/rulex/typex"
 	lua "github.com/yuin/gopher-lua"
 )
+
+// 临时校验语法
+func ValidateLuaSyntax(bytes []byte) error {
+	// 把虚拟机参数全部设置为0是为了防止误操作产生垃圾数据
+	tempVm := lua.NewState(lua.Options{
+		SkipOpenLibs:     true,
+		RegistrySize:     0,
+		RegistryMaxSize:  0,
+		RegistryGrowStep: 0,
+	})
+	if err := tempVm.DoString(string(bytes)); err != nil {
+		return err
+	}
+	// 检查名称
+	AppNAME := tempVm.GetGlobal("AppNAME")
+	if AppNAME == nil {
+		return fmt.Errorf("'AppNAME' field not exists")
+	}
+	if AppNAME.Type() != lua.LTString {
+		return fmt.Errorf("'AppNAME' must be string")
+	}
+	// 检查类型
+	AppVERSION := tempVm.GetGlobal("AppVERSION")
+	if AppVERSION == nil {
+		return fmt.Errorf("'AppVERSION' field not exists")
+	}
+	if AppVERSION.Type() != lua.LTString {
+		return fmt.Errorf("'AppVERSION' must be string")
+	}
+	// 检查描述信息
+	AppDESCRIPTION := tempVm.GetGlobal("AppDESCRIPTION")
+	if AppDESCRIPTION == nil {
+		if AppDESCRIPTION.Type() != lua.LTString {
+			return fmt.Errorf("'AppDESCRIPTION' must be string")
+		}
+	}
+
+	// 检查函数入口
+	AppMain := tempVm.GetGlobal("Main")
+	if AppMain == nil {
+		return fmt.Errorf("'Main' field not exists")
+	}
+	if AppMain.Type() != lua.LTFunction {
+		return fmt.Errorf("'Main' must be function(arg)")
+	}
+	// 释放语法验证阶段的临时虚拟机
+	tempVm.Close()
+	tempVm = nil
+	return nil
+}
 
 /*
 *

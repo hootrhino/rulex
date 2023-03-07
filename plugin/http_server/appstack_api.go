@@ -1,41 +1,261 @@
 package httpserver
 
 import (
+	"fmt"
+	"os"
+	"regexp"
+
 	"github.com/gin-gonic/gin"
+	"github.com/i4de/rulex/appstack"
 	"github.com/i4de/rulex/typex"
+	"github.com/i4de/rulex/utils"
 )
+
+/*
+*
+* 返回给前端的
+*
+ */
+type web_data_app struct {
+	UUID      string `json:"uuid"`      // 名称
+	Name      string `json:"name"`      // 名称
+	Version   string `json:"version"`   // 版本号
+	AutoStart bool   `json:"autoStart"` // 自动启动
+	AppState  int    `json:"appState"`  // 状态: 1 运行中, 0 停止
+	Filepath  string `json:"filepath"`  // 文件路径, 是相对于main的apps目录
+}
 
 // 列表
 func Apps(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
+	// 从配置拿App
 	if uuid == "" {
-		c.JSON(200, OkWithData(e.AllApp()))
+		result := []web_data_app{}
+		for _, app := range hs.AllApp() {
+			web_data := web_data_app{
+				UUID:      app.UUID,
+				Name:      app.Name,
+				Version:   app.Version,
+				AutoStart: app.AutoStart,
+				AppState: func() int {
+					if a := e.GetApp(app.UUID); a != nil {
+						return int(a.AppState)
+					}
+					return 0
+				}(),
+				Filepath: app.Filepath,
+			}
+			result = append(result, web_data)
+		}
+		c.JSON(200, OkWithData(result))
 		return
 	}
 	c.JSON(200, OkWithData(e.GetApp(uuid)))
 
 }
 
-// 新建
+/*
+*
+* 直接新建一个文件，文件名为 UUID.lua
+*
+ */
+const semVerRegexExpr = `^(0|[1-9]+[0-9]*)\.(0|[1-9]+[0-9]*)\.(0|[1-9]+[0-9]*)(-(0|[1-9A-Za-z-][0-9A-Za-z-]*)(\.[0-9A-Za-z-]+)*)?(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$`
+const luaTemplate = `
+AppNAME = "%s"
+AppVERSION = "%s"
+AppDESCRIPTION = "%s"
+--
+-- Main
+--
+%s
+`
+const defaultLuaMain = `
+function Main(arg)
+	print("Hello World")
+	return 0
+end
+`
+
 func CreateApp(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
-	c.JSON(200, OkWithData("ok"))
+	type Form struct {
+		Name        string `json:"name"`    // 名称
+		Version     string `json:"version"` // 版本号
+		Description string `json:"description"`
+	}
+	form := Form{}
+	if err := c.ShouldBindJSON(&form); err != nil {
+		c.JSON(200, Error400(err))
+		return
+	}
+	match, _ := regexp.Match(semVerRegexExpr, []byte(form.Version))
+	if !match {
+		c.JSON(200, Error400(fmt.Errorf("version not match server style:%s", form.Version)))
+		return
+	}
+	_, errStat := os.Stat("./apps/")
+	if os.IsNotExist(errStat) {
+		err := os.Mkdir("./apps/", 0777)
+		if err != nil {
+			c.JSON(200, Error400(err))
+			return
+		}
+	}
+	newUUID := utils.AppUuid()
+	// 开始在 ./apps目录下 新建文件
+	path := "./apps/" + newUUID + ".lua"
+	_, err := os.Create(path)
+	if err != nil {
+		c.JSON(200, Error400(err))
+		return
+	}
+	err1 := os.WriteFile(path, []byte(fmt.Sprintf(luaTemplate, form.Name,
+		form.Version, form.Description, defaultLuaMain)), 0777)
+	if err1 != nil {
+		c.JSON(200, Error400(err1))
+		return
+	}
+	if err := hs.InsertApp(&MApp{
+		UUID:     newUUID,
+		Name:     form.Name,
+		Version:  form.Version,
+		Filepath: path,
+	}); err != nil {
+		c.JSON(200, Error400(err))
+		return
+	}
+	c.JSON(200, OkWithData("app create successfully"))
 }
 
-// 更新
+/*
+*
+* Update app
+*
+ */
 func UpdateApp(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
-	c.JSON(200, OkWithData("ok"))
+	type Form struct {
+		UUID        string `json:"uuid"`        // uuid
+		Name        string `json:"name"`        // 名称
+		Version     string `json:"version"`     // 版本号
+		AutoStart   bool   `json:"autoStart"`   // 自动启动
+		LuaSource   string `json:"luaSource"`   // lua 源码
+		Description string `json:"description"` // 描述文本
+
+	}
+	form := Form{}
+	if err := c.ShouldBindJSON(&form); err != nil {
+		c.JSON(200, Error400(err))
+		return
+	}
+	// 校验版本号
+	match, _ := regexp.Match(semVerRegexExpr, []byte(form.Version))
+	if !match {
+		c.JSON(200, Error400(fmt.Errorf("version not match server style:%s", form.Version)))
+		return
+	}
+	// 校验语法
+	if err1 := appstack.ValidateLuaSyntax([]byte(form.LuaSource)); err1 != nil {
+		c.JSON(200, Error400(err1))
+		return
+	}
+
+	if err := hs.UpdateApp(form.UUID, &MApp{
+		Name:    form.Name,
+		Version: form.Version,
+	}); err != nil {
+		c.JSON(200, Error400(err))
+		return
+	}
+	// 最后把文件内容改变了
+	path := "./apps/" + form.UUID + ".lua"
+	err1 := os.WriteFile(path, []byte(form.LuaSource), 0644)
+	if err1 != nil {
+		c.JSON(200, Error400(err1))
+		return
+	}
+	c.JSON(200, OkWithData("app update successfully"))
+}
+
+/*
+*
+* 启动应用: 用来从数据库里面启动, 有2种情况：
+* 1 停止了的, 就需要重启一下
+* 2 还未被加载进来的（刚新建），先load后start
+ */
+func StartApp(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
+	uuid, _ := c.GetQuery("uuid")
+	// 检查数据库
+	mApp, err := hs.GetAppWithUUID(uuid)
+	if err != nil {
+		c.JSON(200, Error400(err))
+		return
+	}
+	// 如果内存里面有, 判断状态
+	if app := e.GetApp(uuid); app != nil {
+		// 已经启动了就不能再启动
+		if app.AppState == 1 {
+			c.JSON(200, Error400(fmt.Errorf("app is running now:%s", uuid)))
+		}
+		if app.AppState == 0 {
+			if err := e.StartApp(uuid); err != nil {
+				c.JSON(200, Error400(err))
+			}
+			c.JSON(200, OkWithData("app start successfully:"+uuid))
+		}
+		return
+	}
+	// 如果内存里面没有，尝试从配置加载
+
+	if err := e.LoadApp(typex.NewApplication(
+		mApp.UUID, mApp.Name, mApp.Version, mApp.Filepath)); err != nil {
+		c.JSON(200, Error400(err))
+		return
+	}
+	if err := e.StartApp(uuid); err != nil {
+		c.JSON(200, Error400(err))
+		return
+	}
+	c.JSON(200, OkWithData("app start successfully:"+uuid))
 }
 
 // 停止
 func StopApp(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
-	c.JSON(200, e.StopApp(uuid))
+	if app := e.GetApp(uuid); app != nil {
+		if app.AppState == 0 {
+			c.JSON(200, Error400(fmt.Errorf("app is stopping now:%s", uuid)))
+		}
+		if app.AppState == 1 {
+			c.JSON(200, OkWithData(e.StopApp(uuid)))
+		}
+		return
+	}
+	c.JSON(200, Error400(fmt.Errorf("app not exists:%s", uuid)))
 }
 
 // 删除
 func RemoveApp(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
-	c.JSON(200, e.RemoveApp(uuid))
+	// 先把正在运行的给停了
+
+	if app := e.GetApp(uuid); app != nil {
+		app.Stop()
+	}
+	// 内存给清理了
+	if err := e.RemoveApp(uuid); err != nil {
+		c.JSON(200, Error400(err))
+		return
+	}
+	// Sqlite 配置也给删了
+	if err := hs.DeleteApp(uuid); err != nil {
+		c.JSON(200, Error400(err))
+		return
+	}
+	// lua的文件也删了
+	if err := os.Remove("./apps/" + uuid + ".lua"); err != nil {
+		c.JSON(200, Error400(err))
+		return
+	}
+	c.JSON(200, OkWithData(fmt.Errorf("remove app successfully:%s", uuid)))
 }
 
 //-------------------------------------------------------------------------------------
@@ -64,17 +284,17 @@ func (s *HttpApiServer) DeleteApp(uuid string) error {
 }
 
 // 创建App
-func (s *HttpApiServer) InsertApp(goods *MApp) error {
-	return s.sqliteDb.Table("m_goods").Create(goods).Error
+func (s *HttpApiServer) InsertApp(app *MApp) error {
+	return s.sqliteDb.Create(app).Error
 }
 
 // 更新App
-func (s *HttpApiServer) UpdateApp(uuid string, goods *MApp) error {
+func (s *HttpApiServer) UpdateApp(uuid string, app *MApp) error {
 	m := MApp{}
 	if err := s.sqliteDb.Where("uuid=?", uuid).First(&m).Error; err != nil {
 		return err
 	} else {
-		s.sqliteDb.Model(m).Updates(*goods)
+		s.sqliteDb.Model(m).Updates(*app)
 		return nil
 	}
 }

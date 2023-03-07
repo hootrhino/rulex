@@ -195,7 +195,9 @@ type RuleX interface {
 	// App
 	//----------------------------------------
 	AllApp() []*Application
+	LoadApp(*Application) error
 	GetApp(uuid string) *Application
+	StartApp(uuid string) error
 	StopApp(uuid string) error
 	RemoveApp(uuid string) error
 }

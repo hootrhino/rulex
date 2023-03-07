@@ -210,6 +210,16 @@ func (hh *HttpApiServer) Start(r typex.RuleX) error {
 	source.LoadSt()
 	target.LoadTt()
 	device.LoadDt()
+	//----------------------------------------------------------------------------------------------
+	// APP
+	//----------------------------------------------------------------------------------------------
+	hh.ginEngine.GET(url("app"), hh.addRoute(Apps))
+	hh.ginEngine.POST(url("app"), hh.addRoute(CreateApp))
+	hh.ginEngine.PUT(url("app"), hh.addRoute(UpdateApp))
+	hh.ginEngine.DELETE(url("app"), hh.addRoute(RemoveApp))
+	hh.ginEngine.PUT(url("app/start"), hh.addRoute(StartApp))
+	hh.ginEngine.PUT(url("app/stop"), hh.addRoute(StopApp))
+
 	glogger.GLogger.Infof("Http server started on http://0.0.0.0:%v", hh.Port)
 	return nil
 }
@@ -241,7 +251,9 @@ func (hh *HttpApiServer) PluginMetaInfo() typex.XPluginMetaInfo {
 func (cs *HttpApiServer) Service(arg typex.ServiceArg) error {
 	return nil
 }
-//--------------------------------------------------------------------------------
+
+// --------------------------------------------------------------------------------
+//
 //go:embed  www/*
 var files embed.FS
 
