@@ -109,6 +109,27 @@ func RunRulex(iniPath string) {
 		}
 	}
 	//
+	// APP stack
+	//
+	for _, mApp := range httpServer.AllApp() {
+		app := typex.NewApplication(
+			mApp.UUID,
+			mApp.Name,
+			mApp.Version,
+			mApp.Filepath,
+		)
+		if err := engine.LoadApp(app); err != nil {
+			glogger.GLogger.Error(err)
+			continue
+		}
+		if mApp.AutoStart {
+			glogger.GLogger.Debug("App autoStart allowed:", app.UUID, app.Version, app.Name)
+			if err1 := engine.StartApp(app.UUID); err1 != nil {
+				glogger.GLogger.Error("App autoStart failed:", err1)
+			}
+		}
+	}
+	//
 	// 规则最后加载
 	//
 	for _, mRule := range httpServer.AllMRules() {

@@ -7,13 +7,14 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/i4de/rulex/appstack"
+	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
 )
 
 /*
 *
-* 返回给前端的
+* 其实这个结构体扮演的角色VO层
 *
  */
 type web_data_app struct {
@@ -78,9 +79,10 @@ end
 
 func CreateApp(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 	type Form struct {
-		Name        string `json:"name"`    // 名称
-		Version     string `json:"version"` // 版本号
-		Description string `json:"description"`
+		Name        string `json:"name"`        // 名称
+		Version     string `json:"version"`     // 版本号
+		AutoStart   bool   `json:"autoStart"`   // 自动启动
+		Description string `json:"description"` // 描述文本
 	}
 	form := Form{}
 	if err := c.ShouldBindJSON(&form); err != nil {
@@ -115,15 +117,30 @@ func CreateApp(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 		return
 	}
 	if err := hs.InsertApp(&MApp{
-		UUID:     newUUID,
-		Name:     form.Name,
-		Version:  form.Version,
-		Filepath: path,
+		UUID:      newUUID,
+		Name:      form.Name,
+		Version:   form.Version,
+		Filepath:  path,
+		AutoStart: form.AutoStart,
 	}); err != nil {
 		c.JSON(200, Error400(err))
 		return
 	}
-	c.JSON(200, OkWithData("app create successfully"))
+	// 立即加载
+	if err := e.LoadApp(typex.NewApplication(
+		newUUID, form.Name, form.Version, path)); err != nil {
+		glogger.GLogger.Error("App Load failed:", err)
+		c.JSON(200, Error400(err))
+		return
+	}
+	// 自启动立即运行
+	if form.AutoStart {
+		glogger.GLogger.Debug("App autoStart allowed:", newUUID, form.Version, form.Name)
+		if err2 := e.StartApp(newUUID); err2 != nil {
+			glogger.GLogger.Error("App autoStart failed:", err2)
+		}
+	}
+	c.JSON(200, OkWithData("App create successfully"))
 }
 
 /*
@@ -158,9 +175,11 @@ func UpdateApp(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 		return
 	}
 
-	if err := hs.UpdateApp(form.UUID, &MApp{
-		Name:    form.Name,
-		Version: form.Version,
+	if err := hs.UpdateApp(&MApp{
+		UUID:      form.UUID,
+		Name:      form.Name,
+		Version:   form.Version,
+		AutoStart: form.AutoStart,
 	}); err != nil {
 		c.JSON(200, Error400(err))
 		return
@@ -172,7 +191,14 @@ func UpdateApp(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 		c.JSON(200, Error400(err1))
 		return
 	}
-	c.JSON(200, OkWithData("app update successfully"))
+	//
+	if form.AutoStart {
+		glogger.GLogger.Debug("App autoStart allowed:", form.UUID, form.Version, form.Name)
+		if err2 := e.StartApp(form.UUID); err2 != nil {
+			glogger.GLogger.Error("App autoStart failedF:", err2)
+		}
+	}
+	c.JSON(200, OkWithData("App update successfully:"+form.UUID))
 }
 
 /*
@@ -191,6 +217,7 @@ func StartApp(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 	}
 	// 如果内存里面有, 判断状态
 	if app := e.GetApp(uuid); app != nil {
+		glogger.GLogger.Debug("Already loaded, will try to start:", uuid)
 		// 已经启动了就不能再启动
 		if app.AppState == 1 {
 			c.JSON(200, Error400(fmt.Errorf("app is running now:%s", uuid)))
@@ -199,22 +226,23 @@ func StartApp(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 			if err := e.StartApp(uuid); err != nil {
 				c.JSON(200, Error400(err))
 			}
-			c.JSON(200, OkWithData("app start successfully:"+uuid))
+			c.JSON(200, OkWithData("App start successfully:"+uuid))
 		}
 		return
 	}
 	// 如果内存里面没有，尝试从配置加载
-
+	glogger.GLogger.Debug("No loaded, will try to load:", uuid)
 	if err := e.LoadApp(typex.NewApplication(
 		mApp.UUID, mApp.Name, mApp.Version, mApp.Filepath)); err != nil {
 		c.JSON(200, Error400(err))
 		return
 	}
+	glogger.GLogger.Debug("App loaded, will try to start:", uuid)
 	if err := e.StartApp(uuid); err != nil {
 		c.JSON(200, Error400(err))
 		return
 	}
-	c.JSON(200, OkWithData("app start successfully:"+uuid))
+	c.JSON(200, OkWithData("App start successfully:"+uuid))
 }
 
 // 停止
@@ -236,7 +264,6 @@ func StopApp(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 func RemoveApp(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
 	// 先把正在运行的给停了
-
 	if app := e.GetApp(uuid); app != nil {
 		app.Stop()
 	}
@@ -256,45 +283,4 @@ func RemoveApp(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 		return
 	}
 	c.JSON(200, OkWithData(fmt.Errorf("remove app successfully:%s", uuid)))
-}
-
-//-------------------------------------------------------------------------------------
-// App Dao
-//-------------------------------------------------------------------------------------
-
-// 获取App列表
-func (s *HttpApiServer) AllApp() []MApp {
-	m := []MApp{}
-	s.sqliteDb.Find(&m)
-	return m
-
-}
-func (s *HttpApiServer) GetAppWithUUID(uuid string) (*MApp, error) {
-	m := MApp{}
-	if err := s.sqliteDb.Where("uuid=?", uuid).First(&m).Error; err != nil {
-		return nil, err
-	} else {
-		return &m, nil
-	}
-}
-
-// 删除App
-func (s *HttpApiServer) DeleteApp(uuid string) error {
-	return s.sqliteDb.Where("uuid=?", uuid).Delete(&MApp{}).Error
-}
-
-// 创建App
-func (s *HttpApiServer) InsertApp(app *MApp) error {
-	return s.sqliteDb.Create(app).Error
-}
-
-// 更新App
-func (s *HttpApiServer) UpdateApp(uuid string, app *MApp) error {
-	m := MApp{}
-	if err := s.sqliteDb.Where("uuid=?", uuid).First(&m).Error; err != nil {
-		return err
-	} else {
-		s.sqliteDb.Model(m).Updates(*app)
-		return nil
-	}
 }

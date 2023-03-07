@@ -4,14 +4,15 @@ import (
 	"fmt"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/yuin/gopher-lua"
 )
 
-//global
+// global
 var luaVM *lua.LState
 
-//init
+// init
 func init() {
 	luaVM = lua.NewState()
 }
@@ -29,10 +30,10 @@ end
 function Actions()
     return {
         function (data)
-            
+
         end,
         function (data)
-            
+
         end
     }
 end
@@ -153,4 +154,26 @@ func TestCF(t *testing.T) {
 			fmt.Println(err2.Error())
 		}
 	}
+}
+
+//
+
+func Test_loop_close(t *testing.T) {
+	var s1 = `
+		function f()
+			while true do
+			print("Hello World")
+			end
+		end
+		f()
+	`
+	var luaVM = lua.NewState()
+	go func() {
+		err1 := luaVM.DoString(s1)
+		if err1 != nil {
+			panic(err1)
+		}
+	}()
+	time.Sleep(3 * time.Second)
+	luaVM.Close()
 }

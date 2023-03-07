@@ -1,6 +1,7 @@
 package engine
 
 import (
+	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 )
 
@@ -16,15 +17,31 @@ func (e *RuleEngine) GetApp(uuid string) *typex.Application {
 	return e.AppStack.GetApp(uuid)
 }
 func (e *RuleEngine) StopApp(uuid string) error {
-	return e.AppStack.StopApp(uuid)
+	if err := e.AppStack.StopApp(uuid); err != nil {
+		glogger.GLogger.Error(err)
+		return err
+	}
+	return nil
 }
 func (e *RuleEngine) RemoveApp(uuid string) error {
-	return e.AppStack.RemoveApp(uuid)
+	if err := e.AppStack.RemoveApp(uuid); err != nil {
+		glogger.GLogger.Error(err)
+		return err
+	}
+	return nil
 }
 func (e *RuleEngine) LoadApp(app *typex.Application) error {
-	return e.AppStack.LoadApp(app)
+	if err := e.AppStack.LoadApp(app); err != nil {
+		glogger.GLogger.Error(err)
+		return err
+	}
+	return nil
 }
 
 func (e *RuleEngine) StartApp(uuid string) error {
-	return e.AppStack.StartApp(uuid)
+	if err := e.AppStack.StartApp(uuid); err != nil {
+		glogger.GLogger.Error(err)
+		return err
+	}
+	return nil
 }

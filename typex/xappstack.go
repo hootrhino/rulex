@@ -2,6 +2,7 @@ package typex
 
 import (
 	"context"
+	"fmt"
 
 	lua "github.com/yuin/gopher-lua"
 )
@@ -69,8 +70,13 @@ func (app *Application) VM() *lua.LState {
 *
  */
 func (app *Application) Stop() {
-	app.cancel()
+	defer func() {
+		if err := recover(); err != nil {
+			fmt.Println(err)
+		}
+	}()
 	app.vm.Close()
+	app.cancel()
 }
 
 /*

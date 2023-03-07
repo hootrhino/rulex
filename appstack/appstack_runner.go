@@ -71,24 +71,31 @@ func (as *AppStack) StartApp(uuid string) error {
 	ctx, cancel := context.WithCancel(typex.GCTX)
 	app.SetCnC(ctx, cancel)
 	go func(ctx context.Context) {
+		appId := app.UUID
 		defer func() {
 			app.AppState = 0
-			glogger.GLogger.Debug("app exit:", app.UUID)
+			glogger.GLogger.Debug("App exit:", appId)
 		}()
 		app.VM().SetContext(ctx)
-		glogger.GLogger.Info("ready to run app:", app.UUID)
+		glogger.GLogger.Debug("Ready to run app:", app.UUID, app.Name, app.Version)
 		app.AppState = 1
 		err := app.VM().CallByParam(lua.P{
-			Fn:      app.GetMainFunc(), // 回调函数
-			NRet:    1,                 // 一个返回值
-			Protect: true,              // 受保护
+			Fn:      app.GetMainFunc(),
+			NRet:    1,                 
+			Protect: true,              // If ``Protect`` is false,
+			                            // GopherLua will panic instead of returning an ``error`` value.
+			Handler: &lua.LFunction{
+				GFunction: func(*lua.LState) int {
+					return 0
+				},
+			},
 		}, lua.LBool(false))
 		if err != nil {
-			glogger.GLogger.Error("startApp error:", err)
+			glogger.GLogger.Error("app.VM().CallByParam error:", err)
 			return
 		}
 	}(ctx)
-	glogger.GLogger.Info("app started:", app.UUID)
+	glogger.GLogger.Info("App started:", app.UUID)
 	return nil
 }
 
@@ -102,8 +109,7 @@ func (as *AppStack) RemoveApp(uuid string) error {
 		app.Stop()
 		delete(as.applications, uuid)
 	}
-	glogger.GLogger.Info("app removed:", uuid)
-
+	glogger.GLogger.Info("App removed:", uuid)
 	return nil
 }
 
@@ -117,7 +123,7 @@ func (as *AppStack) StopApp(uuid string) error {
 		app.Stop()
 		app.AppState = 0
 	}
-	glogger.GLogger.Info("app stopped:", uuid)
+	glogger.GLogger.Info("App stopped:", uuid)
 	return nil
 }
 
@@ -130,7 +136,7 @@ func (as *AppStack) UpdateApp(app typex.Application) error {
 	if oldApp, ok := as.applications[app.UUID]; ok {
 		oldApp.Name = app.Name
 		oldApp.Version = app.Version
-		glogger.GLogger.Info("app updated:", app.UUID)
+		glogger.GLogger.Info("App updated:", app.UUID)
 		return nil
 	}
 	return fmt.Errorf("update failed, app not exists:%s", app.UUID)
@@ -158,10 +164,11 @@ func (as *AppStack) ListApp() []*typex.Application {
 
 func (as *AppStack) Stop() {
 	for _, app := range as.applications {
+		glogger.GLogger.Info("Stop App:", app.UUID)
 		app.Stop()
-		glogger.GLogger.Info("app stopped:", app.UUID)
+		glogger.GLogger.Info("Stop App:", app.UUID, " Successfully")
 	}
-	glogger.GLogger.Info("appstack stopped")
+	glogger.GLogger.Info("Appstack stopped")
 
 }
 func (as *AppStack) GetRuleX() typex.RuleX {

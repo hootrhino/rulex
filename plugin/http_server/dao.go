@@ -323,3 +323,40 @@ func (s *HttpApiServer) UpdateGoods(uuid string, goods *MGoods) error {
 		return nil
 	}
 }
+
+//-------------------------------------------------------------------------------------
+// App Dao
+//-------------------------------------------------------------------------------------
+
+// 获取App列表
+func (s *HttpApiServer) AllApp() []MApp {
+	m := []MApp{}
+	s.sqliteDb.Find(&m)
+	return m
+
+}
+func (s *HttpApiServer) GetAppWithUUID(uuid string) (*MApp, error) {
+	m := MApp{}
+	if err := s.sqliteDb.Where("uuid=?", uuid).First(&m).Error; err != nil {
+		return nil, err
+	} else {
+		return &m, nil
+	}
+}
+
+// 删除App
+func (s *HttpApiServer) DeleteApp(uuid string) error {
+	return s.sqliteDb.Where("uuid=?", uuid).Delete(&MApp{}).Error
+}
+
+// 创建App
+func (s *HttpApiServer) InsertApp(app *MApp) error {
+	return s.sqliteDb.Create(app).Error
+}
+
+// 更新App
+func (s *HttpApiServer) UpdateApp(app *MApp) error {
+	m := MApp{}
+	return s.sqliteDb.Model(m).Updates(*app).Error
+
+}

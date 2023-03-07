@@ -151,7 +151,7 @@ func (e *RuleEngine) GetConfig() *typex.RulexConfig {
 
 // Stop
 func (e *RuleEngine) Stop() {
-	glogger.GLogger.Info("Ready to stop rulex")
+	glogger.GLogger.Info("[*] Ready to stop rulex")
 	e.InEnds.Range(func(key, value interface{}) bool {
 		inEnd := value.(*typex.InEnd)
 		if inEnd.Source != nil {
@@ -192,14 +192,10 @@ func (e *RuleEngine) Stop() {
 		return true
 	})
 	// 外挂停了
-	e.AllGoods().Range(func(key, value interface{}) bool {
-		goodsProcess := value.(*typex.GoodsProcess)
-		glogger.GLogger.Info("Stop Goods Process:", goodsProcess.Uuid)
-		goodsProcess.Stop()
-		glogger.GLogger.Info("Stop Goods Process:", goodsProcess.Uuid, " Successfully")
-		return true
-	})
-	glogger.GLogger.Info("Stop Rulex successfully")
+	e.Trailer.Stop()
+	// 所有的APP停了
+	e.AppStack.Stop()
+	glogger.GLogger.Info("[√] Stop Rulex successfully")
 	if err := glogger.Close(); err != nil {
 		fmt.Println("Close logger error: ", err)
 	}
