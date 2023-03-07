@@ -20,7 +20,7 @@ type AppStack struct {
 	Applications map[string]*typex.Application
 }
 
-func NewAppStack(re typex.RuleX) *AppStack {
+func NewAppStack(re typex.RuleX) typex.XAppStack {
 	as := new(AppStack)
 	as.re = re
 	as.Applications = map[string]*typex.Application{}
@@ -186,4 +186,7 @@ func (as *AppStack) Stop() {
 	for _, app := range as.Applications {
 		app.Release()
 	}
+}
+func (as *AppStack) GetRuleX() typex.RuleX {
+	return as.re
 }

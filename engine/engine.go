@@ -24,7 +24,7 @@ import (
 // 规则引擎
 type RuleEngine struct {
 	SideCar           typex.SideCar        `json:"-"`
-	AppStack          *appstack.AppStack   `json:"-"`
+	AppStack          typex.XAppStack      `json:"-"`
 	Hooks             *sync.Map            `json:"hooks"`
 	Rules             *sync.Map            `json:"rules"`
 	Plugins           *sync.Map            `json:"plugins"`

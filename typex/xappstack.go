@@ -65,3 +65,19 @@ func (app *Application) Release() {
 	app.vm.Close()
 	app.vm = nil
 }
+
+/*
+*
+* APP Stack 管理器
+*
+ */
+type XAppStack interface {
+	GetRuleX() RuleX
+	ListApp() []*Application
+	LoadApp(app *Application) error
+	GetApp(uuid string) *Application
+	RemoveApp(uuid string) error
+	UpdateApp(app *Application) error
+	StopApp(uuid string) error
+	Stop()
+}
