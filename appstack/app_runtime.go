@@ -12,7 +12,7 @@ import (
 *  - Global: 命名空间
 *   - funcName: 函数名称
  */
-func AddAppLib(app *typex.Application,
+func addAppLib(app *typex.Application,
 	rx typex.RuleX, Global string, funcName string,
 	f func(l *lua.LState) int) {
 	rulexTb := app.VM().G.Global
@@ -30,80 +30,80 @@ func AddAppLib(app *typex.Application,
  */
 func LoadAppLib(app *typex.Application, e typex.RuleX) {
 	// 消息转发
-	AddAppLib(app, e, "applib", "DataToHttp", rulexlib.DataToHttp(e))
-	AddAppLib(app, e, "applib", "DataToMqtt", rulexlib.DataToMqtt(e))
+	addAppLib(app, e, "applib", "DataToHttp", rulexlib.DataToHttp(e))
+	addAppLib(app, e, "applib", "DataToMqtt", rulexlib.DataToMqtt(e))
 	// JQ
-	AddAppLib(app, e, "applib", "JqSelect", rulexlib.JqSelect(e))
-	AddAppLib(app, e, "applib", "JQ", rulexlib.JqSelect(e))
+	addAppLib(app, e, "applib", "JqSelect", rulexlib.JqSelect(e))
+	addAppLib(app, e, "applib", "JQ", rulexlib.JqSelect(e))
 	// 日志
-	AddAppLib(app, e, "applib", "log", rulexlib.Log(e))
+	addAppLib(app, e, "applib", "log", rulexlib.Log(e))
 	// 二进制操作
-	AddAppLib(app, e, "applib", "MB", rulexlib.MatchBinary(e))
-	AddAppLib(app, e, "applib", "B2BS", rulexlib.ByteToBitString(e))
-	AddAppLib(app, e, "applib", "Bit", rulexlib.GetABitOnByte(e))
-	AddAppLib(app, e, "applib", "B2I64", rulexlib.ByteToInt64(e))
-	AddAppLib(app, e, "applib", "B64S2B", rulexlib.B64S2B(e))
-	AddAppLib(app, e, "applib", "BS2B", rulexlib.BitStringToBytes(e))
-	AddAppLib(app, e, "applib", "HToN", rulexlib.HToN(e))
-	AddAppLib(app, e, "applib", "HsubToN", rulexlib.HsubToN(e))
+	addAppLib(app, e, "applib", "MB", rulexlib.MatchBinary(e))
+	addAppLib(app, e, "applib", "B2BS", rulexlib.ByteToBitString(e))
+	addAppLib(app, e, "applib", "Bit", rulexlib.GetABitOnByte(e))
+	addAppLib(app, e, "applib", "B2I64", rulexlib.ByteToInt64(e))
+	addAppLib(app, e, "applib", "B64S2B", rulexlib.B64S2B(e))
+	addAppLib(app, e, "applib", "BS2B", rulexlib.BitStringToBytes(e))
+	addAppLib(app, e, "applib", "HToN", rulexlib.HToN(e))
+	addAppLib(app, e, "applib", "HsubToN", rulexlib.HsubToN(e))
 	// 浮点数处理
-	AddAppLib(app, e, "applib", "Bin2F32", rulexlib.BinToFloat32(e))
-	AddAppLib(app, e, "applib", "Bin2F64", rulexlib.BinToFloat64(e))
+	addAppLib(app, e, "applib", "Bin2F32", rulexlib.BinToFloat32(e))
+	addAppLib(app, e, "applib", "Bin2F64", rulexlib.BinToFloat64(e))
 	// URL处理
-	AddAppLib(app, e, "applib", "UrlBuild", rulexlib.UrlBuild(e))
-	AddAppLib(app, e, "applib", "UrlBuildQS", rulexlib.UrlBuildQS(e))
-	AddAppLib(app, e, "applib", "UrlParse", rulexlib.UrlParse(e))
-	AddAppLib(app, e, "applib", "UrlResolve", rulexlib.UrlResolve(e))
+	addAppLib(app, e, "applib", "UrlBuild", rulexlib.UrlBuild(e))
+	addAppLib(app, e, "applib", "UrlBuildQS", rulexlib.UrlBuildQS(e))
+	addAppLib(app, e, "applib", "UrlParse", rulexlib.UrlParse(e))
+	addAppLib(app, e, "applib", "UrlResolve", rulexlib.UrlResolve(e))
 	// 数据持久化
-	AddAppLib(app, e, "applib", "DataToTdEngine", rulexlib.DataToTdEngine(e))
-	AddAppLib(app, e, "applib", "DataToMongo", rulexlib.DataToMongo(e))
+	addAppLib(app, e, "applib", "DataToTdEngine", rulexlib.DataToTdEngine(e))
+	addAppLib(app, e, "applib", "DataToMongo", rulexlib.DataToMongo(e))
 	// 时间库
-	AddAppLib(app, e, "applib", "Time", rulexlib.Time(e))
-	AddAppLib(app, e, "applib", "TsUnix", rulexlib.TsUnix(e))
-	AddAppLib(app, e, "applib", "TsUnixNano", rulexlib.TsUnixNano(e))
-	AddAppLib(app, e, "applib", "NtpTime", rulexlib.NtpTime(e))
+	addAppLib(app, e, "applib", "Time", rulexlib.Time(e))
+	addAppLib(app, e, "applib", "TsUnix", rulexlib.TsUnix(e))
+	addAppLib(app, e, "applib", "TsUnixNano", rulexlib.TsUnixNano(e))
+	addAppLib(app, e, "applib", "NtpTime", rulexlib.NtpTime(e))
 	// 缓存器库
-	AddAppLib(app, e, "applib", "VSet", rulexlib.StoreSet(e))
-	AddAppLib(app, e, "applib", "VGet", rulexlib.StoreGet(e))
-	AddAppLib(app, e, "applib", "VDel", rulexlib.StoreDelete(e))
+	addAppLib(app, e, "applib", "VSet", rulexlib.StoreSet(e))
+	addAppLib(app, e, "applib", "VGet", rulexlib.StoreGet(e))
+	addAppLib(app, e, "applib", "VDel", rulexlib.StoreDelete(e))
 	// JSON
-	AddAppLib(app, e, "applib", "T2J", rulexlib.JSONE(e)) // Lua Table -> JSON
-	AddAppLib(app, e, "applib", "J2T", rulexlib.JSOND(e)) // JSON -> Lua Table
+	addAppLib(app, e, "applib", "T2J", rulexlib.JSONE(e)) // Lua Table -> JSON
+	addAppLib(app, e, "applib", "J2T", rulexlib.JSOND(e)) // JSON -> Lua Table
 	// Get Rule ID
-	AddAppLib(app, e, "applib", "RUUID", rulexlib.SelfRuleUUID(e, app.UUID))
+	addAppLib(app, e, "applib", "RUUID", rulexlib.SelfRuleUUID(e, app.UUID))
 	// Codec
-	AddAppLib(app, e, "applib", "RPCENC", rulexlib.RPCEncode(e))
-	AddAppLib(app, e, "applib", "RPCDEC", rulexlib.RPCDecode(e))
+	addAppLib(app, e, "applib", "RPCENC", rulexlib.RPCEncode(e))
+	addAppLib(app, e, "applib", "RPCDEC", rulexlib.RPCDecode(e))
 	// Device R/W
-	AddAppLib(app, e, "applib", "ReadDevice", rulexlib.ReadDevice(e))
-	AddAppLib(app, e, "applib", "WriteDevice", rulexlib.WriteDevice(e))
+	addAppLib(app, e, "applib", "ReadDevice", rulexlib.ReadDevice(e))
+	addAppLib(app, e, "applib", "WriteDevice", rulexlib.WriteDevice(e))
 	// Source R/W
-	AddAppLib(app, e, "applib", "ReadSource", rulexlib.ReadSource(e))
-	AddAppLib(app, e, "applib", "WriteSource", rulexlib.WriteSource(e))
+	addAppLib(app, e, "applib", "ReadSource", rulexlib.ReadSource(e))
+	addAppLib(app, e, "applib", "WriteSource", rulexlib.WriteSource(e))
 	// String
-	AddAppLib(app, e, "applib", "T2Str", rulexlib.T2Str(e))
-	AddAppLib(app, e, "applib", "Throw", rulexlib.Throw(e))
+	addAppLib(app, e, "applib", "T2Str", rulexlib.T2Str(e))
+	addAppLib(app, e, "applib", "Throw", rulexlib.Throw(e))
 	//------------------------------------------------------------------------
 	// IotHUB 库, 主要是为了适配iothub的回复消息， 注意：这个规范是w3c的
 	// https://www.w3.org/TR/wot-thing-description
 	//------------------------------------------------------------------------
-	AddAppLib(app, e, "iothub", "PropertySuccess", rulexlib.PropertyReplySuccess(e))
-	AddAppLib(app, e, "iothub", "PropertyFailed", rulexlib.PropertyReplyFailed(e))
-	AddAppLib(app, e, "iothub", "ActionSuccess", rulexlib.ActionReplySuccess(e))
-	AddAppLib(app, e, "iothub", "ActionFailed", rulexlib.ActionReplyFailed(e))
+	addAppLib(app, e, "iothub", "PropertySuccess", rulexlib.PropertyReplySuccess(e))
+	addAppLib(app, e, "iothub", "PropertyFailed", rulexlib.PropertyReplyFailed(e))
+	addAppLib(app, e, "iothub", "ActionSuccess", rulexlib.ActionReplySuccess(e))
+	addAppLib(app, e, "iothub", "ActionFailed", rulexlib.ActionReplyFailed(e))
 	//------------------------------------------------------------------------
 	// 设备操作
 	//------------------------------------------------------------------------
-	AddAppLib(app, e, "device", "DCACall", rulexlib.DCACall(e))
+	addAppLib(app, e, "device", "DCACall", rulexlib.DCACall(e))
 	//------------------------------------------------------------------------
 	// 十六进制编码处理
 	//------------------------------------------------------------------------
-	AddAppLib(app, e, "hex", "Bytes2Hexs", rulexlib.Bytes2Hexs(e))
-	AddAppLib(app, e, "hex", "Hexs2Bytes", rulexlib.Hexs2Bytes(e))
+	addAppLib(app, e, "hex", "Bytes2Hexs", rulexlib.Bytes2Hexs(e))
+	addAppLib(app, e, "hex", "Hexs2Bytes", rulexlib.Hexs2Bytes(e))
 	//------------------------------------------------------------------------
 	// 注册GPIO操作函数到LUA运行时
 	//------------------------------------------------------------------------
-	AddAppLib(app, e, "eekit", "GPIOGet", rulexlib.EEKIT_GPIOGet(e))
-	AddAppLib(app, e, "eekit", "GPIOSet", rulexlib.EEKIT_GPIOSet(e))
+	addAppLib(app, e, "eekit", "GPIOGet", rulexlib.EEKIT_GPIOGet(e))
+	addAppLib(app, e, "eekit", "GPIOSet", rulexlib.EEKIT_GPIOSet(e))
 
 }
