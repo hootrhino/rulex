@@ -7,13 +7,12 @@ import (
 	"sync"
 )
 
-type SideCar interface {
+type XTrailer interface {
 	Fork(Goods) error
 	Get(addr string) *GoodsProcess
 	Save(*GoodsProcess)
 	Remove(uuid string)
 	AllGoods() *sync.Map
-	SetRulex(RuleX)
 	Stop()
 }
 

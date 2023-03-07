@@ -1,7 +1,7 @@
-package sidecar
+package trailer
 
 //
-// Sidecar就是拖车,带着小车一起跑,比喻了SideCar实际上是个进程管理器
+// Trailer就是拖车,带着小车一起跑,比喻了Trailer实际上是个进程管理器
 //                                ____
 //      ______         ______     |   \
 //     /|_||_\`.__    /|_||_\`.__ | |_ \---
@@ -25,28 +25,21 @@ import (
 )
 
 //--------------------------------------------------------------------------------------------------
-// SideCar 接口
+// Trailer 接口
 //--------------------------------------------------------------------------------------------------
 
-//--------------------------------------------------------------------------------------------------
-// SideCar
-//--------------------------------------------------------------------------------------------------
-
-type SidecarManager struct {
+type TrailerManager struct {
 	ctx             context.Context
 	re              typex.RuleX
 	goodsProcessMap *sync.Map // Key: UUID, Value: GoodsProcess
 }
 
-func NewSideCarManager(re typex.RuleX) typex.SideCar {
-	return &SidecarManager{
+func NewTrailerManager(re typex.RuleX) typex.XTrailer {
+	return &TrailerManager{
 		ctx:             typex.GCTX,
 		re:              re,
 		goodsProcessMap: &sync.Map{},
 	}
-}
-func (scm SidecarManager) SetRulex(re typex.RuleX) {
-	scm.re = re
 }
 
 /*
@@ -54,14 +47,10 @@ func (scm SidecarManager) SetRulex(re typex.RuleX) {
 * 执行外
 *
  */
-func (scm *SidecarManager) Fork(goods typex.Goods) error {
+func (scm *TrailerManager) Fork(goods typex.Goods) error {
 	glogger.GLogger.Infof("fork goods process, (uuid = %v, addr = %v, args = %v)", goods.UUID, goods.Addr, goods.Args)
 	Cmd := exec.Command(goods.Addr, goods.Args...)
-	// TODO: 分别实现 Linux 和 Windows下的进程参数
-	// SysProcAttr-linux.go
-	// SysProcAttr-windows.go
 	Cmd.SysProcAttr = NewSysProcAttr()
-
 	Cmd.Stdin = os.Stdin
 	Cmd.Stdout = os.Stdout
 	Cmd.Stderr = os.Stderr
@@ -85,7 +74,7 @@ func (scm *SidecarManager) Fork(goods typex.Goods) error {
 }
 
 // 获取某个外挂
-func (scm *SidecarManager) Get(uuid string) *typex.GoodsProcess {
+func (scm *TrailerManager) Get(uuid string) *typex.GoodsProcess {
 	v, ok := scm.goodsProcessMap.Load(uuid)
 	if ok {
 		return v.(*typex.GoodsProcess)
@@ -94,12 +83,12 @@ func (scm *SidecarManager) Get(uuid string) *typex.GoodsProcess {
 }
 
 // 保存进内存
-func (scm *SidecarManager) Save(goodsProcess *typex.GoodsProcess) {
+func (scm *TrailerManager) Save(goodsProcess *typex.GoodsProcess) {
 	scm.goodsProcessMap.Store(goodsProcess.Uuid, goodsProcess)
 }
 
 // 从内存里删除, 删除后记得停止挂件, 通常外部配置表也要删除, 比如Sqlite
-func (scm *SidecarManager) Remove(uuid string) {
+func (scm *TrailerManager) Remove(uuid string) {
 	v, ok := scm.goodsProcessMap.Load(uuid)
 	if ok {
 		(v.(*typex.GoodsProcess)).Stop()
@@ -108,7 +97,7 @@ func (scm *SidecarManager) Remove(uuid string) {
 }
 
 // 停止外挂运行时管理器, 这个要是停了基本上就是程序结束了
-func (scm *SidecarManager) Stop() {
+func (scm *TrailerManager) Stop() {
 	scm.goodsProcessMap.Range(func(key, value interface{}) bool {
 		(value.(*typex.GoodsProcess)).Stop()
 		return true
@@ -117,7 +106,7 @@ func (scm *SidecarManager) Stop() {
 }
 
 // Cmd.Wait() 会阻塞, 但是当控制的子进程停止的时候会继续执行, 因此可以在defer里面释放资源
-func (scm *SidecarManager) run(wg *sync.WaitGroup, goodsProcess *typex.GoodsProcess) error {
+func (scm *TrailerManager) run(wg *sync.WaitGroup, goodsProcess *typex.GoodsProcess) error {
 	defer func() {
 		goodsProcess.Cancel()
 	}()
@@ -143,7 +132,7 @@ func (scm *SidecarManager) run(wg *sync.WaitGroup, goodsProcess *typex.GoodsProc
 }
 
 // 探针
-func (scm *SidecarManager) probe(wg *sync.WaitGroup, goodsProcess *typex.GoodsProcess) {
+func (scm *TrailerManager) probe(wg *sync.WaitGroup, goodsProcess *typex.GoodsProcess) {
 	defer func() {
 	}()
 	wg.Done()
@@ -191,6 +180,6 @@ func (scm *SidecarManager) probe(wg *sync.WaitGroup, goodsProcess *typex.GoodsPr
 * 返回外挂MAP
 *
  */
-func (scm *SidecarManager) AllGoods() *sync.Map {
+func (scm *TrailerManager) AllGoods() *sync.Map {
 	return scm.goodsProcessMap
 }

@@ -13,11 +13,11 @@ import (
 
 /*
 *
-* 测试Sidecar的时候比较麻烦，首先建议编译好测试代码
+* 测试Trailer的时候比较麻烦，首先建议编译好测试代码
 * 建议试试这个脚本: test\script\clone.sh
 *
  */
-func Test_Sidecar_load(t *testing.T) {
+func Test_Trailer_load(t *testing.T) {
 	engine := RunTestEngine()
 	engine.Start()
 

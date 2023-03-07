@@ -5,29 +5,29 @@ import (
 	"context"
 
 	"github.com/i4de/rulex/glogger"
-	"github.com/i4de/rulex/sidecar"
+	"github.com/i4de/rulex/trailer"
 	"github.com/i4de/rulex/typex"
 
 	"google.golang.org/grpc"
 )
 
-type SideCarDriver struct {
+type TrailerDriver struct {
 	state      typex.DriverState
 	RuleEngine typex.RuleX
-	client     sidecar.SidecarClient
+	client     trailer.TrailerClient
 	config     map[string]string
 }
 
-func NewSideCarDriver(e typex.RuleX, grpcConn *grpc.ClientConn) typex.XExternalDriver {
-	sideCarDriver := &SideCarDriver{
+func NewTrailerDriver(e typex.RuleX, grpcConn *grpc.ClientConn) typex.XExternalDriver {
+	TrailerDriver := &TrailerDriver{
 		state:      typex.DRIVER_STOP,
 		RuleEngine: e,
-		client:     sidecar.NewSidecarClient(grpcConn),
+		client:     trailer.NewTrailerClient(grpcConn),
 	}
-	return sideCarDriver
+	return TrailerDriver
 
 }
-func (sc *SideCarDriver) Test() error {
+func (sc *TrailerDriver) Test() error {
 	if err := sc.t(); err != nil {
 		glogger.GLogger.Error(err)
 		return err
@@ -35,9 +35,9 @@ func (sc *SideCarDriver) Test() error {
 	return nil
 }
 
-func (sc *SideCarDriver) Init(config map[string]string) error {
+func (sc *TrailerDriver) Init(config map[string]string) error {
 	sc.config = config
-	_, err := sc.client.Init(context.Background(), &sidecar.Config{
+	_, err := sc.client.Init(context.Background(), &trailer.Config{
 		Kv: sc.config,
 	})
 	if err != nil {
@@ -47,8 +47,8 @@ func (sc *SideCarDriver) Init(config map[string]string) error {
 	return nil
 }
 
-func (sc *SideCarDriver) Work() error {
-	_, err := sc.client.Start(context.Background(), &sidecar.Request{})
+func (sc *TrailerDriver) Work() error {
+	_, err := sc.client.Start(context.Background(), &trailer.Request{})
 	if err != nil {
 		glogger.GLogger.Error(err)
 		return err
@@ -56,7 +56,7 @@ func (sc *SideCarDriver) Work() error {
 	return nil
 }
 
-func (sc *SideCarDriver) State() typex.DriverState {
+func (sc *TrailerDriver) State() typex.DriverState {
 	if sc.t() != nil {
 		return typex.DRIVER_STOP
 	}
@@ -68,8 +68,8 @@ func (sc *SideCarDriver) State() typex.DriverState {
 * 读取
 *
  */
-func (sc *SideCarDriver) Read(cmd int, data []byte) (int, error) {
-	response, err := sc.client.Read(context.Background(), &sidecar.ReadRequest{})
+func (sc *TrailerDriver) Read(cmd int, data []byte) (int, error) {
+	response, err := sc.client.Read(context.Background(), &trailer.ReadRequest{})
 	if err != nil {
 		glogger.GLogger.Error(err)
 		return 0, err
@@ -83,8 +83,8 @@ func (sc *SideCarDriver) Read(cmd int, data []byte) (int, error) {
 * 写入
 *
  */
-func (sc *SideCarDriver) Write(cmd int, data []byte) (int, error) {
-	response, err := sc.client.Write(context.Background(), &sidecar.WriteRequest{
+func (sc *TrailerDriver) Write(cmd int, data []byte) (int, error) {
+	response, err := sc.client.Write(context.Background(), &trailer.WriteRequest{
 		Data: data,
 	})
 	if err != nil {
@@ -95,16 +95,16 @@ func (sc *SideCarDriver) Write(cmd int, data []byte) (int, error) {
 }
 
 // ---------------------------------------------------
-func (sc *SideCarDriver) DriverDetail() typex.DriverDetail {
+func (sc *TrailerDriver) DriverDetail() typex.DriverDetail {
 	return typex.DriverDetail{
-		Name:        "SIDECAR-DRIVER",
-		Type:        "SIDECAR",
-		Description: "SIDECAR 通用GRPC协议驱动",
+		Name:        "Trailer-DRIVER",
+		Type:        "Trailer",
+		Description: "Trailer 通用GRPC协议驱动",
 	}
 }
 
-func (sc *SideCarDriver) Stop() error {
-	_, err := sc.client.Stop(context.Background(), &sidecar.Request{})
+func (sc *TrailerDriver) Stop() error {
+	_, err := sc.client.Stop(context.Background(), &trailer.Request{})
 	if err != nil {
 		glogger.GLogger.Error(err)
 		return err
@@ -115,8 +115,8 @@ func (sc *SideCarDriver) Stop() error {
 // ----------------------------------------------------------------------
 // 私有函数
 // ----------------------------------------------------------------------
-func (sc *SideCarDriver) t() error {
-	_, err := sc.client.Status(context.Background(), &sidecar.Request{})
+func (sc *TrailerDriver) t() error {
+	_, err := sc.client.Status(context.Background(), &trailer.Request{})
 	if err != nil {
 		glogger.GLogger.Error(err)
 		return err

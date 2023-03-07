@@ -11,10 +11,10 @@ import (
 	"github.com/i4de/rulex/core"
 	"github.com/i4de/rulex/device"
 	"github.com/i4de/rulex/glogger"
-	"github.com/i4de/rulex/sidecar"
 	"github.com/i4de/rulex/source"
 	"github.com/i4de/rulex/statistics"
 	"github.com/i4de/rulex/target"
+	"github.com/i4de/rulex/trailer"
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
 	"github.com/shirou/gopsutil/v3/disk"
@@ -23,7 +23,7 @@ import (
 
 // 规则引擎
 type RuleEngine struct {
-	SideCar           typex.SideCar        `json:"-"`
+	Trailer           typex.XTrailer       `json:"-"`
 	AppStack          typex.XAppStack      `json:"-"`
 	Hooks             *sync.Map            `json:"hooks"`
 	Rules             *sync.Map            `json:"rules"`
@@ -52,8 +52,8 @@ func NewRuleEngine(config typex.RulexConfig) typex.RuleX {
 		Devices:           &sync.Map{},
 		Config:            &config,
 	}
-	// sidecar
-	re.SideCar = sidecar.NewSideCarManager(re)
+	// trailer
+	re.Trailer = trailer.NewTrailerManager(re)
 	// lua appstack manager
 	re.AppStack = appstack.NewAppStack(re)
 	return re
@@ -454,13 +454,13 @@ func (e *RuleEngine) SnapshotDump() string {
 *
  */
 func (e *RuleEngine) LoadGoods(goods typex.Goods) error {
-	return e.SideCar.Fork(goods)
+	return e.Trailer.Fork(goods)
 }
 
 // 删除外部驱动
 func (e *RuleEngine) RemoveGoods(uuid string) error {
 	if e.GetGoods(uuid) != nil {
-		e.SideCar.Remove(uuid)
+		e.Trailer.Remove(uuid)
 		return nil
 	}
 	return fmt.Errorf("goods %v not exists", uuid)
@@ -468,12 +468,12 @@ func (e *RuleEngine) RemoveGoods(uuid string) error {
 
 // 所有外部驱动
 func (e *RuleEngine) AllGoods() *sync.Map {
-	return e.SideCar.AllGoods()
+	return e.Trailer.AllGoods()
 }
 
 // 获取某个外部驱动信息
 func (e *RuleEngine) GetGoods(uuid string) *typex.Goods {
-	goodsProcess := e.SideCar.Get(uuid)
+	goodsProcess := e.Trailer.Get(uuid)
 	goods := typex.Goods{
 		UUID:        goodsProcess.Uuid,
 		Addr:        goodsProcess.Addr,
@@ -485,7 +485,7 @@ func (e *RuleEngine) GetGoods(uuid string) *typex.Goods {
 
 // 取一个进程
 func (e *RuleEngine) PickUpProcess(uuid string) *typex.GoodsProcess {
-	return e.SideCar.Get(uuid)
+	return e.Trailer.Get(uuid)
 }
 
 // 重启源

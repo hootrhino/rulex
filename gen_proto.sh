@@ -5,9 +5,9 @@ export GOPATH=$HOME/go
 export GOBIN=$GOPATH/bin
 export PATH=$PATH:$GOROOT:$GOPATH:$GOBIN
 # Install protoc
-go get -u google.golang.org/grpc
-go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
-go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.1
+# go get -u google.golang.org/grpc
+# go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+# go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.1
 # RulexRpc
 echo ">>> Generate RulexRpc Proto"
 protoc -I ./rulexrpc --go_out=./rulexrpc --go_opt paths=source_relative \
@@ -27,9 +27,9 @@ protoc -I ./rulexrpc --go_out ./rulexrpc --go_opt paths=source_relative \
     --go-grpc_out=./rulexrpc --go-grpc_opt paths=source_relative \
     ./rulexrpc/xcodec.proto
 echo ">>> Generate Codec Proto OK."
-# SideCar
-echo ">>> Generate SideCar Proto."
-protoc -I ./sidecar --go_out ./sidecar --go_opt paths=source_relative \
-    --go-grpc_out=./sidecar --go-grpc_opt paths=source_relative \
-    ./sidecar/sidecar.proto
-echo ">>> Generate SideCar Proto OK."
+# Trailer
+echo ">>> Generate Trailer Proto."
+protoc -I ./trailer --go_out ./trailer --go_opt paths=source_relative \
+    --go-grpc_out=./trailer --go-grpc_opt paths=source_relative \
+    ./trailer/trailer.proto
+echo ">>> Generate Trailer Proto OK."
