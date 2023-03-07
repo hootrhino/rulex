@@ -26,9 +26,7 @@ func ExecuteFailed(vm *lua.LState, arg lua.LValue) (interface{}, error) {
 	return typex.Execute(vm, FAILED_KEY, arg)
 }
 
-//
 // 执行 Actions 里面的回调函数
-//
 func ExecuteActions(rule *typex.Rule, arg lua.LValue) (lua.LValue, error) {
 	// 原始 lua 数据结构
 	luaOriginTable := rule.VM.GetGlobal(ACTIONS_KEY)
@@ -62,27 +60,33 @@ func ExecuteActions(rule *typex.Rule, arg lua.LValue) (lua.LValue, error) {
 
 // VerifyCallback Verify Lua Syntax
 func VerifyCallback(r *typex.Rule) error {
-	vm := r.VM
-	if err := vm.DoString(r.Success); err != nil {
+	tempVm := lua.NewState(lua.Options{
+		SkipOpenLibs:     true,
+		RegistrySize:     0,
+		RegistryMaxSize:  0,
+		RegistryGrowStep: 0,
+	})
+
+	if err := tempVm.DoString(r.Success); err != nil {
 		return err
 	}
-	if vm.GetGlobal(SUCCESS_KEY).Type() != lua.LTFunction {
+	if tempVm.GetGlobal(SUCCESS_KEY).Type() != lua.LTFunction {
 		return errors.New("'Success' callback function missed")
 	}
 
-	if err := vm.DoString(r.Failed); err != nil {
+	if err := tempVm.DoString(r.Failed); err != nil {
 		return err
 	}
-	if vm.GetGlobal(FAILED_KEY).Type() != lua.LTFunction {
+	if tempVm.GetGlobal(FAILED_KEY).Type() != lua.LTFunction {
 		return errors.New("'Failed' callback function missed")
 	}
-	if err := vm.DoString(r.Actions); err != nil {
+	if err := tempVm.DoString(r.Actions); err != nil {
 		return err
 	}
 	//
 	// validate lua syntax
 	//
-	actionsTable := vm.GetGlobal(ACTIONS_KEY)
+	actionsTable := tempVm.GetGlobal(ACTIONS_KEY)
 	if actionsTable != nil && actionsTable.Type() == lua.LTTable {
 		valid := true
 		actionsTable.(*lua.LTable).ForEach(func(idx, f lua.LValue) {
@@ -99,5 +103,12 @@ func VerifyCallback(r *typex.Rule) error {
 	} else {
 		return errors.New("'Actions' must be a functions table")
 	}
+	// 释放语法验证阶段的临时虚拟机
+	tempVm.Close()
+	tempVm = nil
+	// 交给规则脚本
+	r.VM.DoString(r.Success)
+	r.VM.DoString(r.Actions)
+	r.VM.DoString(r.Failed)
 	return nil
 }
