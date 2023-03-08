@@ -72,7 +72,7 @@ AppDESCRIPTION = "%s"
 `
 const defaultLuaMain = `
 function Main(arg)
-	print("Hello World")
+	print("Hello World:",  applib:Time())
 	return 0
 end
 `

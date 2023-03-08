@@ -9,6 +9,7 @@ package archsupport
 import (
 	"errors"
 	"fmt"
+	"log"
 	"os/exec"
 )
 
@@ -67,13 +68,13 @@ func _EEKIT_GPIOInit(Pin string, EnDir string) {
 	cmd := fmt.Sprintf("echo %s > /sys/class/gpio/export", Pin)
 	_, err := exec.Command("sh", "-c", cmd).Output()
 	if err != nil {
-		fmt.Println(err.Error())
+		log.Println(err)
 	}
 	//gpio set direction
 	cmd = fmt.Sprintf("echo %s > /sys/class/gpio/gpio%s/direction", EnDir, Pin)
 	_, err = exec.Command("sh", "-c", cmd).Output()
 	if err != nil {
-		fmt.Println(err.Error())
+		log.Println(err)
 	}
 }
 
@@ -86,7 +87,7 @@ func EEKIT_GPIOSet(pin, value int) (bool, error) {
 	cmd := fmt.Sprintf("echo %d > /sys/class/gpio/gpio%d/value", value, pin)
 	_, err := exec.Command("sh", "-c", cmd).Output()
 	if err != nil {
-		fmt.Println(err.Error())
+		log.Println(err)
 	}
 	v, e := EEKIT_GPIOGet(pin)
 	if e != nil {

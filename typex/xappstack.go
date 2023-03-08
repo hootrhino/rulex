@@ -76,10 +76,10 @@ func (app *Application) Stop() {
 			log.Println("[gopher-lua] app stop:", app.UUID, ", with recover error: ", err)
 		}
 	}()
-	app.vm.DoString(`function __1() end __1()`)
-	app.vm.Pop(0)
+	app.vm.DoString(`function __() end __()`)
+	app.vm.SetTop(0)
 	app.cancel()
-	// app.vm.Close()
+	// app.vm.Close() // app.vm.Close 会导致panic, 但是本次用了巧妙的手段来实现结束进程
 }
 
 /*

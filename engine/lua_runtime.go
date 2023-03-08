@@ -86,8 +86,12 @@ func LoadBuildInLuaLib(e typex.RuleX, r *typex.Rule) {
 	//------------------------------------------------------------------------
 	// 注册GPIO操作函数到LUA运行时
 	//------------------------------------------------------------------------
+	// EEKIT
 	r.AddLib(e, "eekit", "GPIOGet", rulexlib.EEKIT_GPIOGet(e))
 	r.AddLib(e, "eekit", "GPIOSet", rulexlib.EEKIT_GPIOSet(e))
+	// 树莓派4B
+	r.AddLib(e, "raspi4b", "GPIOGet", rulexlib.RASPI4_GPIOGet(e))
+	r.AddLib(e, "raspi4b", "GPIOSet", rulexlib.RASPI4_GPIOSet(e))
 
 }
 

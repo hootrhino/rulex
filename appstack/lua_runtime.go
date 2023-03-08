@@ -155,7 +155,10 @@ func LoadAppLib(app *typex.Application, e typex.RuleX) {
 	//------------------------------------------------------------------------
 	// 注册GPIO操作函数到LUA运行时
 	//------------------------------------------------------------------------
+	// EEKIT
 	addAppLib(app, e, "eekit", "GPIOGet", rulexlib.EEKIT_GPIOGet(e))
 	addAppLib(app, e, "eekit", "GPIOSet", rulexlib.EEKIT_GPIOSet(e))
-
+	// 树莓派4B
+	addAppLib(app, e, "raspi4b", "GPIOGet", rulexlib.RASPI4_GPIOGet(e))
+	addAppLib(app, e, "raspi4b", "GPIOSet", rulexlib.RASPI4_GPIOSet(e))
 }

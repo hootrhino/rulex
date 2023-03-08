@@ -6,9 +6,9 @@ package archsupport
 *
  */
 
-func EEKIT_GPIOSet(pin, value int) (bool, error) {
+func RASPI4_GPIOSet(pin, value int) (bool, error) {
 	return false, nil
 }
-func EEKIT_GPIOGet(pin int) (int, error) {
+func RASPI4_GPIOGet(pin int) (int, error) {
 	return 0, nil
 }
