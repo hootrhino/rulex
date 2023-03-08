@@ -1,12 +1,15 @@
 package test
 
 import (
+	"bufio"
 	"fmt"
+	"os"
 	"reflect"
 	"testing"
 	"time"
 
 	"github.com/yuin/gopher-lua"
+	parse "github.com/yuin/gopher-lua/parse"
 )
 
 // global
@@ -176,6 +179,74 @@ func Test_loop_close(t *testing.T) {
 	}()
 	time.Sleep(2 * time.Second)
 	luaVM.Close()
-	luaVM.po
 	time.Sleep(3 * time.Second)
+}
+
+// CompileLua reads the passed lua file from disk and compiles it.
+func CompileLua(filePath string) (*lua.FunctionProto, error) {
+	file, err := os.Open(filePath)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+	reader := bufio.NewReader(file)
+	chunk, err := parse.Parse(reader, filePath)
+	if err != nil {
+		return nil, err
+	}
+	proto, err := lua.Compile(chunk, filePath)
+	if err != nil {
+		return nil, err
+	}
+	return proto, nil
+}
+
+// DoCompiledFile takes a FunctionProto, as returned by CompileLua, and runs it in the LState. It is equivalent
+// to calling DoFile on the LState with the original source file.
+func DoCompiledFile(L *lua.LState, proto *lua.FunctionProto) error {
+	lfunc := L.NewFunctionFromProto(proto)
+	L.Push(lfunc)
+	return L.PCall(0, lua.MultRet, nil)
+}
+
+// Example shows how to share the compiled byte code from a lua script between multiple VMs.
+func TestCompileLua(t *testing.T) {
+	codeToShare, _ := CompileLua("lua/_exit.lua")
+	t.Log(codeToShare.Code)
+	// a := lua.NewState()
+	// b := lua.NewState()
+	// c := lua.NewState()
+	// DoCompiledFile(a, codeToShare)
+	// DoCompiledFile(b, codeToShare)
+	// DoCompiledFile(c, codeToShare)
+}
+
+func Test_Stack_order(t *testing.T) {
+	var s1 = `
+	    A=1
+		B=2
+		function __f1()
+		end
+		function __f2()
+		end
+		function __f3()
+		end
+	`
+	var luaVM = lua.NewState()
+
+	err1 := luaVM.DoString(s1)
+	if err1 != nil {
+		panic(err1)
+	}
+	luaVM.G.Global.ForEach(func(l1, l2 lua.LValue) {
+
+		if l2.Type() == lua.LTFunction {
+			if l1.String()[:3] == "__f" {
+				fc := l2.(*lua.LFunction)
+				t.Log(fc.Proto)
+			}
+
+		}
+	})
+	luaVM.Close()
 }

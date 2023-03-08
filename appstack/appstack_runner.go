@@ -81,9 +81,9 @@ func (as *AppStack) StartApp(uuid string) error {
 		app.AppState = 1
 		err := app.VM().CallByParam(lua.P{
 			Fn:      app.GetMainFunc(),
-			NRet:    1,                 
-			Protect: true,              // If ``Protect`` is false,
-			                            // GopherLua will panic instead of returning an ``error`` value.
+			NRet:    1,
+			Protect: true, // If ``Protect`` is false,
+			// GopherLua will panic instead of returning an ``error`` value.
 			Handler: &lua.LFunction{
 				GFunction: func(*lua.LState) int {
 					return 0

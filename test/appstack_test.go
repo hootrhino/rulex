@@ -14,11 +14,11 @@ func Test_appStack(t *testing.T) {
 	engine.Start()
 	as := appstack.NewAppStack(engine)
 	err := as.LoadApp(typex.NewApplication("test-uuid-1", "test-name",
-		"1.0.1", "helloworld_1.0.0.lua"))
+		"1.0.1", "./apps/hello_world.lua"))
 	if err != nil {
 		t.Fatal(err)
 	}
 	t.Log(as)
-	time.Sleep(30 * time.Second)
+	time.Sleep(10 * time.Second)
 	engine.Stop()
 }

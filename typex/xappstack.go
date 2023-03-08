@@ -2,7 +2,7 @@ package typex
 
 import (
 	"context"
-	"fmt"
+	"log"
 
 	lua "github.com/yuin/gopher-lua"
 )
@@ -67,16 +67,29 @@ func (app *Application) VM() *lua.LState {
 /*
 *
 * 释放资源，这里是个问题，因为多线程突然 vm.Close 中断lua虚拟机的时候，会引发panic
-* 这里是个野路子办法，直接把进程给救活，实际上到这里已经挂了。
+* 这里是个野路子办法，直接把进程给救活，实际上到这里已经挂了。已经给作者提了Issue，等他后期解决
+* https://github.com/yuin/gopher-lua/discussions/430
  */
 func (app *Application) Stop() {
 	defer func() {
 		if err := recover(); err != nil {
-			fmt.Println("app stop:", app.UUID, ", with recover error: ", err)
+			log.Println("[gopher-lua] app stop:", app.UUID, ", with recover error: ", err)
 		}
 	}()
+	t1 := app.vm.GetTop()
+	log.Println(t1)
+	app.vm.DoString(`function __1() end __1()`)
+	t2 := app.vm.GetTop()
+	log.Println(t2)
+	app.vm.DoString(`function __2() end __2()`)
+	t3 := app.vm.GetTop()
+	log.Println(t3)
+	app.vm.Pop(0)
+	app.cancel()
 	app.vm.Close()
 	app.cancel()
+	app.vm.GetTop()
+
 }
 
 /*

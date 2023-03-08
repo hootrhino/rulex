@@ -22,3 +22,4 @@ lua-log*
 *.txt
 plugin/http_server/www/*
 dist/
+apps/*.lua
