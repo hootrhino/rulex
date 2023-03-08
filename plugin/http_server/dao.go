@@ -357,6 +357,10 @@ func (s *HttpApiServer) InsertApp(app *MApp) error {
 // 更新App
 func (s *HttpApiServer) UpdateApp(app *MApp) error {
 	m := MApp{}
-	return s.sqliteDb.Model(m).Updates(*app).Error
-
+	if err := s.sqliteDb.Where("uuid=?", app.UUID).First(&m).Error; err != nil {
+		return err
+	} else {
+		s.sqliteDb.Model(m).Updates(*app)
+		return nil
+	}
 }

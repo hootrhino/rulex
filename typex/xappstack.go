@@ -66,13 +66,13 @@ func (app *Application) VM() *lua.LState {
 
 /*
 *
-* 释放资源，
-*
+* 释放资源，这里是个问题，因为多线程突然 vm.Close 中断lua虚拟机的时候，会引发panic
+* 这里是个野路子办法，直接把进程给救活，实际上到这里已经挂了。
  */
 func (app *Application) Stop() {
 	defer func() {
 		if err := recover(); err != nil {
-			fmt.Println(err)
+			fmt.Println("app stop:", app.UUID, ", with recover error: ", err)
 		}
 	}()
 	app.vm.Close()

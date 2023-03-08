@@ -174,6 +174,8 @@ func Test_loop_close(t *testing.T) {
 			panic(err1)
 		}
 	}()
-	time.Sleep(3 * time.Second)
+	time.Sleep(2 * time.Second)
 	luaVM.Close()
+	luaVM.po
+	time.Sleep(3 * time.Second)
 }
