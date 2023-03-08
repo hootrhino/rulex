@@ -122,7 +122,7 @@ func RunRulex(iniPath string) {
 			glogger.GLogger.Error(err)
 			continue
 		}
-		if mApp.AutoStart {
+		if *mApp.AutoStart {
 			glogger.GLogger.Debug("App autoStart allowed:", app.UUID, app.Version, app.Name)
 			if err1 := engine.StartApp(app.UUID); err1 != nil {
 				glogger.GLogger.Error("App autoStart failed:", err1)

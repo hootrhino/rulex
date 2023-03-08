@@ -77,7 +77,7 @@ func (as *AppStack) StartApp(uuid string) error {
 			glogger.GLogger.Debug("App exit:", appId)
 		}()
 		app.VM().SetContext(ctx)
-		glogger.GLogger.Debug("Ready to run app:", app.UUID, app.Name, app.Version)
+		glogger.GLogger.Debugf("Ready to run app:%s-%s-%s", app.UUID, app.Name, app.Version)
 		app.AppState = 1
 		err := app.VM().CallByParam(lua.P{
 			Fn:      app.GetMainFunc(),

@@ -76,20 +76,10 @@ func (app *Application) Stop() {
 			log.Println("[gopher-lua] app stop:", app.UUID, ", with recover error: ", err)
 		}
 	}()
-	t1 := app.vm.GetTop()
-	log.Println(t1)
 	app.vm.DoString(`function __1() end __1()`)
-	t2 := app.vm.GetTop()
-	log.Println(t2)
-	app.vm.DoString(`function __2() end __2()`)
-	t3 := app.vm.GetTop()
-	log.Println(t3)
 	app.vm.Pop(0)
 	app.cancel()
-	app.vm.Close()
-	app.cancel()
-	app.vm.GetTop()
-
+	// app.vm.Close()
 }
 
 /*

@@ -37,7 +37,7 @@ func Apps(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 				UUID:      app.UUID,
 				Name:      app.Name,
 				Version:   app.Version,
-				AutoStart: app.AutoStart,
+				AutoStart: *app.AutoStart,
 				AppState: func() int {
 					if a := e.GetApp(app.UUID); a != nil {
 						return int(a.AppState)
@@ -121,7 +121,7 @@ func CreateApp(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 		Name:      form.Name,
 		Version:   form.Version,
 		Filepath:  path,
-		AutoStart: form.AutoStart,
+		AutoStart: &form.AutoStart,
 	}); err != nil {
 		c.JSON(200, Error400(err))
 		return
@@ -135,7 +135,7 @@ func CreateApp(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 	}
 	// 自启动立即运行
 	if form.AutoStart {
-		glogger.GLogger.Debug("App autoStart allowed:", newUUID, form.Version, form.Name)
+		glogger.GLogger.Debugf("App autoStart allowed:%s-%s-%s", newUUID, form.Version, form.Name)
 		if err2 := e.StartApp(newUUID); err2 != nil {
 			glogger.GLogger.Error("App autoStart failed:", err2)
 		}
@@ -179,7 +179,7 @@ func UpdateApp(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 		UUID:      form.UUID,
 		Name:      form.Name,
 		Version:   form.Version,
-		AutoStart: form.AutoStart,
+		AutoStart: &form.AutoStart,
 	}); err != nil {
 		c.JSON(200, Error400(err))
 		return
@@ -193,7 +193,7 @@ func UpdateApp(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 	}
 	//
 	if form.AutoStart {
-		glogger.GLogger.Debug("App autoStart allowed:", form.UUID, form.Version, form.Name)
+		glogger.GLogger.Debugf("App autoStart allowed:%s-%s-%s", form.UUID, form.Version, form.Name)
 		if err2 := e.StartApp(form.UUID); err2 != nil {
 			glogger.GLogger.Error("App autoStart failedF:", err2)
 		}
