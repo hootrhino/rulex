@@ -3,6 +3,9 @@ AppVERSION = "1.0.0"
 AppDESCRIPTION = "A demo app"
 
 function Main(arg)
-	print("Message From Main:", AppNAME, AppVERSION, AppDESCRIPTION, applib:Time())
+	for i = 1, 10, 1 do
+		print("Hello App:", AppNAME, AppVERSION, AppDESCRIPTION, applib:Time())
+		applib:Sleep(1000)
+	end
 	return 0
 end

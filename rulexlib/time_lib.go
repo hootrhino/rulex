@@ -25,6 +25,19 @@ func TsUnix(rx typex.RuleX) func(l *lua.LState) int {
 
 /*
 *
+* 等待毫秒
+*
+ */
+func Sleep(rx typex.RuleX) func(l *lua.LState) int {
+	return func(l *lua.LState) int {
+		ts := l.ToNumber(2)
+		time.Sleep(time.Millisecond * time.Duration(ts))
+		return 0
+	}
+}
+
+/*
+*
 * Unix 纳秒时间戳
 *
  */

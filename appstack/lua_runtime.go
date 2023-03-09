@@ -77,7 +77,7 @@ func addAppLib(app *typex.Application,
 
 /*
 *
-* 加载app库函数
+* 加载app库函数, 注意这里的库函数和规则引擎的并不是完全一样的，有一些差别
 *
  */
 func LoadAppLib(app *typex.Application, e typex.RuleX) {
@@ -114,6 +114,7 @@ func LoadAppLib(app *typex.Application, e typex.RuleX) {
 	addAppLib(app, e, "applib", "TsUnix", rulexlib.TsUnix(e))
 	addAppLib(app, e, "applib", "TsUnixNano", rulexlib.TsUnixNano(e))
 	addAppLib(app, e, "applib", "NtpTime", rulexlib.NtpTime(e))
+	addAppLib(app, e, "applib", "Sleep", rulexlib.Sleep(e))
 	// 缓存器库
 	addAppLib(app, e, "applib", "VSet", rulexlib.StoreSet(e))
 	addAppLib(app, e, "applib", "VGet", rulexlib.StoreGet(e))
@@ -121,8 +122,7 @@ func LoadAppLib(app *typex.Application, e typex.RuleX) {
 	// JSON
 	addAppLib(app, e, "applib", "T2J", rulexlib.JSONE(e)) // Lua Table -> JSON
 	addAppLib(app, e, "applib", "J2T", rulexlib.JSOND(e)) // JSON -> Lua Table
-	// Get Rule ID
-	addAppLib(app, e, "applib", "RUUID", rulexlib.SelfRuleUUID(e, app.UUID))
+
 	// Codec
 	addAppLib(app, e, "applib", "RPCENC", rulexlib.RPCEncode(e))
 	addAppLib(app, e, "applib", "RPCDEC", rulexlib.RPCDecode(e))
