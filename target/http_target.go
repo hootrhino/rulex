@@ -38,6 +38,7 @@ func (ht *HTTPTarget) Start(cctx typex.CCTX) error {
 	ht.Ctx = cctx.Ctx
 	ht.CancelCTX = cctx.CancelCTX
 	ht.client = http.Client{}
+	ht.status = typex.SOURCE_UP
 	glogger.GLogger.Info("HTTPTarget started")
 	return nil
 }

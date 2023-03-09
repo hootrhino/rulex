@@ -36,3 +36,23 @@ end
 
 ## 内部原理
 首先用户在编辑器里面写一段 lua 代码，然后 rulex 会加载这段 lua 代码执行。代码最终被保存在本地。
+
+## 示例
+下面展示一个数据推送到 HTTP Server 的案例
+```lua
+AppNAME = "test_demo"
+AppVERSION = "1.0.0"
+AppDESCRIPTION = "A demo app"
+
+function Main(arg)
+	for i = 1, 10, 1 do
+		local err = applib:DataToHttp('OUTaaabbd23d1094c81af2874ce4ad1af55', applib:T2J({
+			temp = i,
+			humi = 13.45
+		}))
+		print("err =>", err)
+		applib:Sleep(1000)
+	end
+	return 0
+end
+```
