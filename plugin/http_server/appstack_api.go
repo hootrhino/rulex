@@ -245,17 +245,22 @@ func StartApp(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 	c.JSON(200, OkWithData("App start successfully:"+uuid))
 }
 
-// 停止
+// 停止, 但是不删除，仅仅是把虚拟机进程给杀死
 func StopApp(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
 	if app := e.GetApp(uuid); app != nil {
 		if app.AppState == 0 {
 			c.JSON(200, Error400(fmt.Errorf("app is stopping now:%s", uuid)))
+			return
 		}
 		if app.AppState == 1 {
-			c.JSON(200, OkWithData(e.StopApp(uuid)))
+			if err := e.StopApp(uuid); err != nil {
+				c.JSON(200, OkWithData(err))
+				return
+			}
+			c.JSON(200, OkWithData("app stopped:%s"+uuid))
+			return
 		}
-		return
 	}
 	c.JSON(200, Error400(fmt.Errorf("app not exists:%s", uuid)))
 }
