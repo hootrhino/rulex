@@ -24,6 +24,7 @@ type web_data_app struct {
 	AutoStart bool   `json:"autoStart"` // 自动启动
 	AppState  int    `json:"appState"`  // 状态: 1 运行中, 0 停止
 	Filepath  string `json:"filepath"`  // 文件路径, 是相对于main的apps目录
+	LuaSource string `json:"luaSource"`
 }
 
 // 列表
@@ -51,7 +52,34 @@ func Apps(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 		c.JSON(200, OkWithData(result))
 		return
 	}
-	c.JSON(200, OkWithData(e.GetApp(uuid)))
+	// uuid
+	appInfo, err1 := hs.GetAppWithUUID(uuid)
+	if err1 != nil {
+		c.JSON(200, Error400(err1))
+		return
+	}
+	web_data := web_data_app{
+		UUID:      appInfo.UUID,
+		Name:      appInfo.Name,
+		Version:   appInfo.Version,
+		AutoStart: *appInfo.AutoStart,
+		AppState: func() int {
+			if a := e.GetApp(appInfo.UUID); a != nil {
+				return int(a.AppState)
+			}
+			return 0
+		}(),
+		Filepath: appInfo.Filepath,
+		LuaSource: func() string {
+			path := "./apps/" + appInfo.UUID + ".lua"
+			bytes, err := os.ReadFile(path)
+			if err != nil {
+				return err.Error()
+			}
+			return string(bytes)
+		}(),
+	}
+	c.JSON(200, OkWithData(web_data))
 
 }
 
@@ -270,7 +298,7 @@ func RemoveApp(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
 	// 先把正在运行的给停了
 	if app := e.GetApp(uuid); app != nil {
-		app.Stop()
+		app.Remove()
 	}
 	// 内存给清理了
 	if err := e.RemoveApp(uuid); err != nil {

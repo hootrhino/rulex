@@ -106,8 +106,8 @@ func (as *AppStack) StartApp(uuid string) error {
  */
 func (as *AppStack) RemoveApp(uuid string) error {
 	if app, ok := as.applications[uuid]; ok {
-		app.Stop()
 		delete(as.applications, uuid)
+		app.Remove()
 	}
 	glogger.GLogger.Info("App removed:", uuid)
 	return nil
@@ -120,8 +120,8 @@ func (as *AppStack) RemoveApp(uuid string) error {
  */
 func (as *AppStack) StopApp(uuid string) error {
 	if app, ok := as.applications[uuid]; ok {
-		app.Stop()
 		app.AppState = 0
+		app.Stop()
 	}
 	glogger.GLogger.Info("App stopped:", uuid)
 	return nil
