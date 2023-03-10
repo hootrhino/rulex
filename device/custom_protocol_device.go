@@ -129,7 +129,8 @@ func (mdev *CustomProtocolDevice) Init(devId string, configMap map[string]interf
 			}
 		}
 		// 目前暂时就先支持这几个算法
-		if !contains([]string{"XOR", "xor", "CRC16", "crc16", "CRC32", "crc32"}, v.CheckAlgorithm) {
+		if !contains([]string{"XOR", "xor", "CRC16", "crc16",
+			"CRC32", "crc32", "NONECHECK"}, v.CheckAlgorithm) {
 			return errors.New("unsupported check algorithm")
 		}
 		//------------------------------------------------------------------------------------------
@@ -175,6 +176,7 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 		mdev.serialPort = serialPort
 		// 起一个线程去判断是否要轮询
 		go func(ctx context.Context, pp map[string]_Protocol) {
+			result := [100]byte{} // 全局buf, 默认是100字节, 应该能覆盖绝大多数报文了
 			for {
 				select {
 				case <-ctx.Done():
@@ -208,50 +210,42 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 					}
 					// 协议等待响应时间毫秒
 					time.Sleep(time.Duration(p.AutoRequestGap) * time.Millisecond)
-					result := [100]byte{} // 全局buf, 默认是100字节, 应该能覆盖绝大多数报文了
-					_, err2 := io.ReadAtLeast(mdev.serialPort, result[:p.BufferSize], p.BufferSize)
-					if err2 != nil {
-						glogger.GLogger.Error("mdev.serialPort.ReadAtLeast error: ", err2)
+					if _, err2 := io.ReadAtLeast(mdev.serialPort, result[:p.BufferSize],
+						p.BufferSize); err2 != nil {
+						glogger.GLogger.Error("serialPort.ReadAtLeast error: ", err2)
 						continue
 					}
-
 					if core.GlobalConfig.AppDebugMode {
+						log.Println("[AppDebugMode] Write data:", p.ProtocolArg.In)
 						log.Println("[AppDebugMode] Read data:", result[:p.BufferSize])
 					}
+					dataMap := map[string]string{}
+					checkOk := false
 					if p.CheckAlgorithm == "CRC16" || p.CheckAlgorithm == "crc16" {
 						glogger.GLogger.Debug("checkCRC:", result[:p.BufferSize],
 							int(result[:p.BufferSize][p.ChecksumValuePos]))
-						ok := mdev.checkCRC(result[:p.BufferSize],
+						checkOk = mdev.checkCRC(result[:p.BufferSize],
 							int(result[:p.BufferSize][p.ChecksumValuePos]))
-						if ok {
-							// 返回给lua参数是十六进制大写字符串
-							if ok {
-								dataMap := map[string]string{
-									"name":  p.Name,
-									"value": hex.EncodeToString(result[:p.BufferSize]),
-								}
-								bytes, _ := json.Marshal(dataMap)
-								// 返回给lua参数是十六进制大写字符串
-								mdev.RuleEngine.WorkDevice(mdev.Details(), string(bytes))
-							}
-						}
+
 					}
 					if p.CheckAlgorithm == "XOR" || p.CheckAlgorithm == "xor" {
 						glogger.GLogger.Debug("checkXOR:", result[:p.BufferSize],
 							int(result[:p.BufferSize][p.ChecksumValuePos]))
-						ok := mdev.checkXOR(result[:p.BufferSize],
+						checkOk = mdev.checkXOR(result[:p.BufferSize],
 							int(result[:p.BufferSize][p.ChecksumValuePos]))
-						if ok {
-							dataMap := map[string]string{
-								"name":  p.Name,
-								"value": hex.EncodeToString(result[:p.BufferSize]),
-							}
-							bytes, _ := json.Marshal(dataMap)
-							// 返回给lua参数是十六进制大写字符串
-							mdev.RuleEngine.WorkDevice(mdev.Details(), string(bytes))
-						}
 					}
-
+					// NOCHECK: 不校验
+					if p.CheckAlgorithm == "NOCHECK" {
+						checkOk = true
+					}
+					if checkOk {
+						// 返回给lua参数是十六进制大写字符串
+						dataMap["name"] = p.Name
+						dataMap["value"] = hex.EncodeToString(result[:p.BufferSize])
+						bytes, _ := json.Marshal(dataMap)
+						// 返回是十六进制大写字符串
+						mdev.RuleEngine.WorkDevice(mdev.Details(), string(bytes))
+					}
 				}
 				time.Sleep(time.Duration(mdev.mainConfig.CommonConfig.WaitTime) * time.Millisecond)
 			}
@@ -263,58 +257,62 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 	return fmt.Errorf("unsupported transport:%s", mdev.mainConfig.CommonConfig.Transport)
 }
 
-// 从设备里面读数据出来
+/*
+*
+* 数据读出来，对数据结构有要求, 其中Key必须是个数字或者数字字符串, 例如 1 or "1"
+*
+ */
 func (mdev *CustomProtocolDevice) OnRead(cmd int, data []byte) (int, error) {
-	pp, ok := mdev.mainConfig.DeviceConfig[fmt.Sprintf("%d", cmd)]
-	if ok {
-		hexs, err0 := hex.DecodeString(pp.ProtocolArg.In)
-		if err0 != nil {
-			glogger.GLogger.Error(err0)
-			mdev.errorCount++
-			return 0, err0
-		}
-		mdev.locker.Lock()
-		// Send
-		if core.GlobalConfig.AppDebugMode {
-			log.Println("[AppDebugMode] Write data:", hexs)
-		}
-		if _, err1 := mdev.serialPort.Write(hexs); err1 != nil {
-			glogger.GLogger.Error(err1)
+	// 拿到命令的索引
+	p, exists := mdev.mainConfig.DeviceConfig[fmt.Sprintf("%d", cmd)]
+	if exists {
+		if _, err1 := mdev.serialPort.Write([]byte(p.ProtocolArg.In)); err1 != nil {
+			glogger.GLogger.Error("serialPort.Write error: ", err1)
 			mdev.errorCount++
 			return 0, err1
 		}
-		result := [50]byte{}
-		ctx, _ := context.WithTimeout(typex.GCTX, time.Duration(pp.Timeout)*time.Millisecond)
-		for {
-			select {
-			case <-ctx.Done():
-				{
-					return 0, errors.New("read timeout")
-				}
-			default:
-				pos := 0
-				for i := 0; i < pp.BufferSize; i++ {
-					n, err2 := mdev.serialPort.Read(result[pos : pos+1])
-					if err2 != nil {
-						glogger.GLogger.Error(n, err2)
-						mdev.errorCount++
-						pos = i
-						i = pos
-						continue
-					}
-					pos++
-				}
-				goto RETURN
-			}
+		// 协议等待响应时间毫秒
+		time.Sleep(time.Duration(p.AutoRequestGap) * time.Millisecond)
+		result := [100]byte{} // 全局buf, 默认是100字节, 应该能覆盖绝大多数报文了
+
+		if _, err2 := io.ReadAtLeast(mdev.serialPort, result[:p.BufferSize],
+			p.BufferSize); err2 != nil {
+			glogger.GLogger.Error("serialPort.ReadAtLeast error: ", err2)
+			return 0, err2
 		}
-	RETURN:
-		mdev.locker.Unlock()
+
 		if core.GlobalConfig.AppDebugMode {
-			log.Println("[AppDebugMode] Read data:", result[:pp.BufferSize])
+			log.Println("[AppDebugMode] Write data:", p.ProtocolArg.In)
+			log.Println("[AppDebugMode] Read data:", result[:p.BufferSize])
 		}
-		// 返回结果
-		copy(data, result[:pp.BufferSize])
-		return pp.BufferSize, nil
+		// 返回值
+		dataMap := map[string]string{}
+		checkOk := false
+		if p.CheckAlgorithm == "CRC16" || p.CheckAlgorithm == "crc16" {
+			glogger.GLogger.Debug("checkCRC:", result[:p.BufferSize],
+				int(result[:p.BufferSize][p.ChecksumValuePos]))
+			checkOk = mdev.checkCRC(result[:p.BufferSize],
+				int(result[:p.BufferSize][p.ChecksumValuePos]))
+		}
+		//
+		if p.CheckAlgorithm == "XOR" || p.CheckAlgorithm == "xor" {
+			glogger.GLogger.Debug("checkCRC:", result[:p.BufferSize],
+				int(result[:p.BufferSize][p.ChecksumValuePos]))
+			checkOk = mdev.checkCRC(result[:p.BufferSize],
+				int(result[:p.BufferSize][p.ChecksumValuePos]))
+		}
+		// NOCHECK: 不校验
+		if p.CheckAlgorithm == "NOCHECK" {
+			checkOk = true
+		}
+		if checkOk {
+			// 返回给lua参数是十六进制大写字符串
+			dataMap["name"] = p.Name
+			dataMap["value"] = hex.EncodeToString(result[:p.BufferSize])
+			bytes, _ := json.Marshal(dataMap)
+			// 返回是十六进制大写字符串
+			copy(data, bytes)
+		}
 	}
 	return 0, errors.New("unknown read command")
 
@@ -324,9 +322,9 @@ func (mdev *CustomProtocolDevice) OnRead(cmd int, data []byte) (int, error) {
 // 根据第二个参数来找配置进去的自定义协议, 必须进来一个可识别的指令
 // 其中cmd常为0,为无意义参数
 func (mdev *CustomProtocolDevice) OnWrite(_ int, data []byte) (int, error) {
-	pp, ok := mdev.mainConfig.DeviceConfig[string(data)]
+	p, ok := mdev.mainConfig.DeviceConfig[string(data)]
 	if ok {
-		hexs, err0 := hex.DecodeString(pp.ProtocolArg.In)
+		hexs, err0 := hex.DecodeString(p.ProtocolArg.In)
 		if err0 != nil {
 			glogger.GLogger.Error(err0)
 			mdev.errorCount++
