@@ -125,6 +125,7 @@ func (mdev *CustomProtocolDevice) Init(devId string, configMap map[string]interf
 			if _, err := hex.DecodeString(v.ProtocolArg.Out); err != nil {
 				errMsg := fmt.Sprintf("invalid hex format:%s", v.ProtocolArg.Out)
 				glogger.GLogger.Error(errMsg)
+
 				return fmt.Errorf(errMsg)
 			}
 		}
@@ -266,20 +267,31 @@ func (mdev *CustomProtocolDevice) OnRead(cmd int, data []byte) (int, error) {
 	// 拿到命令的索引
 	p, exists := mdev.mainConfig.DeviceConfig[fmt.Sprintf("%d", cmd)]
 	if exists {
-		if _, err1 := mdev.serialPort.Write([]byte(p.ProtocolArg.In)); err1 != nil {
+		mdev.locker.Lock()
+		hexs, err0 := hex.DecodeString(p.ProtocolArg.In)
+		if err0 != nil {
+			glogger.GLogger.Error(err0)
+			mdev.errorCount++
+			return 0, err0
+		}
+		if _, err1 := mdev.serialPort.Write(hexs); err1 != nil {
 			glogger.GLogger.Error("serialPort.Write error: ", err1)
 			mdev.errorCount++
 			return 0, err1
 		}
+		mdev.locker.Unlock()
+
 		// 协议等待响应时间毫秒
 		time.Sleep(time.Duration(p.AutoRequestGap) * time.Millisecond)
 		result := [100]byte{} // 全局buf, 默认是100字节, 应该能覆盖绝大多数报文了
+		mdev.locker.Lock()
 
 		if _, err2 := io.ReadAtLeast(mdev.serialPort, result[:p.BufferSize],
 			p.BufferSize); err2 != nil {
 			glogger.GLogger.Error("serialPort.ReadAtLeast error: ", err2)
 			return 0, err2
 		}
+		mdev.locker.Unlock()
 
 		if core.GlobalConfig.AppDebugMode {
 			log.Println("[AppDebugMode] Write data:", p.ProtocolArg.In)
@@ -301,8 +313,8 @@ func (mdev *CustomProtocolDevice) OnRead(cmd int, data []byte) (int, error) {
 			checkOk = mdev.checkCRC(result[:p.BufferSize],
 				int(result[:p.BufferSize][p.ChecksumValuePos]))
 		}
-		// NOCHECK: 不校验
-		if p.CheckAlgorithm == "NOCHECK" {
+		// NONECHECK: 不校验
+		if p.CheckAlgorithm == "NONECHECK" {
 			checkOk = true
 		}
 		if checkOk {
@@ -312,6 +324,7 @@ func (mdev *CustomProtocolDevice) OnRead(cmd int, data []byte) (int, error) {
 			bytes, _ := json.Marshal(dataMap)
 			// 返回是十六进制大写字符串
 			copy(data, bytes)
+			return len(bytes), nil
 		}
 	}
 	return 0, errors.New("unknown read command")
