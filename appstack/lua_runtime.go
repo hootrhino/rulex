@@ -135,6 +135,7 @@ func LoadAppLib(app *typex.Application, e typex.RuleX) {
 	addAppLib(app, e, "applib", "WriteSource", rulexlib.WriteSource(e))
 	// String
 	addAppLib(app, e, "applib", "T2Str", rulexlib.T2Str(e))
+	addAppLib(app, e, "applib", "Bin2Str", rulexlib.Bin2Str(e))
 	addAppLib(app, e, "applib", "Throw", rulexlib.Throw(e))
 	//------------------------------------------------------------------------
 	// IotHUB 库, 主要是为了适配iothub的回复消息， 注意：这个规范是w3c的
