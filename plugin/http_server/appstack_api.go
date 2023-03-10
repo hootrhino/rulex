@@ -157,18 +157,18 @@ func CreateApp(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 	// 立即加载
 	if err := e.LoadApp(typex.NewApplication(
 		newUUID, form.Name, form.Version, path)); err != nil {
-		glogger.GLogger.Error("App Load failed:", err)
+		glogger.GLogger.Error("app Load failed:", err)
 		c.JSON(200, Error400(err))
 		return
 	}
 	// 自启动立即运行
 	if form.AutoStart {
-		glogger.GLogger.Debugf("App autoStart allowed:%s-%s-%s", newUUID, form.Version, form.Name)
+		glogger.GLogger.Debugf("app autoStart allowed:%s-%s-%s", newUUID, form.Version, form.Name)
 		if err2 := e.StartApp(newUUID); err2 != nil {
-			glogger.GLogger.Error("App autoStart failed:", err2)
+			glogger.GLogger.Error("app autoStart failed:", err2)
 		}
 	}
-	c.JSON(200, OkWithData("App create successfully"))
+	c.JSON(200, OkWithData("app create successfully"))
 }
 
 /*
@@ -219,14 +219,31 @@ func UpdateApp(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 		c.JSON(200, Error400(err1))
 		return
 	}
+	// 如果内存里面有, 先把内存里的清理了
+	if app := e.GetApp(form.UUID); app != nil {
+		glogger.GLogger.Debug("Already loaded, will try to stop:", form.UUID)
+		// 已经启动了就不能再启动
+		if app.AppState == 1 {
+			e.StopApp(form.UUID)
+		}
+		e.RemoveApp(app.UUID)
+	}
 	//
 	if form.AutoStart {
-		glogger.GLogger.Debugf("App autoStart allowed:%s-%s-%s", form.UUID, form.Version, form.Name)
+		glogger.GLogger.Debugf("app autoStart allowed:%s-%s-%s", form.UUID, form.Version, form.Name)
+		// 必须先load后start
+		if err := e.LoadApp(typex.NewApplication(
+			form.UUID, form.Name, form.Version, path)); err != nil {
+			c.JSON(200, Error400(err))
+			return
+		}
 		if err2 := e.StartApp(form.UUID); err2 != nil {
-			glogger.GLogger.Error("App autoStart failedF:", err2)
+			glogger.GLogger.Error("app autoStart failed:", err2)
+			c.JSON(200, Error400(err2))
+			return
 		}
 	}
-	c.JSON(200, OkWithData("App update successfully:"+form.UUID))
+	c.JSON(200, OkWithData("app update successfully:"+form.UUID))
 }
 
 /*
@@ -254,7 +271,7 @@ func StartApp(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 			if err := e.StartApp(uuid); err != nil {
 				c.JSON(200, Error400(err))
 			}
-			c.JSON(200, OkWithData("App start successfully:"+uuid))
+			c.JSON(200, OkWithData("app start successfully:"+uuid))
 		}
 		return
 	}
@@ -265,12 +282,12 @@ func StartApp(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 		c.JSON(200, Error400(err))
 		return
 	}
-	glogger.GLogger.Debug("App loaded, will try to start:", uuid)
+	glogger.GLogger.Debug("app loaded, will try to start:", uuid)
 	if err := e.StartApp(uuid); err != nil {
 		c.JSON(200, Error400(err))
 		return
 	}
-	c.JSON(200, OkWithData("App start successfully:"+uuid))
+	c.JSON(200, OkWithData("app start successfully:"+uuid))
 }
 
 // 停止, 但是不删除，仅仅是把虚拟机进程给杀死
