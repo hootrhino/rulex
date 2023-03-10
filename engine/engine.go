@@ -706,5 +706,11 @@ func (e *RuleEngine) InitTargetTypeManager() error {
 			Target: target.NewCodecTarget(e),
 		},
 	)
+	e.TargetTypeManager.Register(typex.UDP_TARGET,
+		&typex.XConfig{
+			Engine: e,
+			Target: target.NewUdpTarget(e),
+		},
+	)
 	return nil
 }

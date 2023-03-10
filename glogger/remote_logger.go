@@ -32,7 +32,7 @@ func (lw *UdpLogger) Write(b []byte) (n int, err error) {
 		Port: lw.udpPort,
 	})
 	if err != nil {
-		return 0, nil
+		return 0, err
 	}
 	defer socket.Close()
 	socket.Write(b)

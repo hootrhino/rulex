@@ -15,6 +15,7 @@ func LoadBuildInLuaLib(e typex.RuleX, r *typex.Rule) {
 	// 消息转发
 	r.AddLib(e, "rulexlib", "DataToHttp", rulexlib.DataToHttp(e))
 	r.AddLib(e, "rulexlib", "DataToMqtt", rulexlib.DataToMqtt(e))
+	r.AddLib(e, "rulexlib", "DataToUdp", rulexlib.DataToUdp(e))
 	// JQ
 	r.AddLib(e, "rulexlib", "JqSelect", rulexlib.JqSelect(e))
 	r.AddLib(e, "rulexlib", "JQ", rulexlib.JqSelect(e))

@@ -105,6 +105,8 @@ const (
 	TDENGINE_TARGET TargetType = "TDENGINE"
 	//
 	GRPC_CODEC_TARGET TargetType = "GRPC_CODEC_TARGET"
+	//
+	UDP_TARGET TargetType = "UDP_TARGET"
 )
 
 /*
