@@ -242,7 +242,8 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 					if checkOk {
 						// 返回给lua参数是十六进制大写字符串
 						dataMap["name"] = p.Name
-						dataMap["value"] = hex.EncodeToString(result[:p.BufferSize])
+						dataMap["in"] = p.ProtocolArg.In
+						dataMap["out"] = hex.EncodeToString(result[:p.BufferSize])
 						bytes, _ := json.Marshal(dataMap)
 						// 返回是十六进制大写字符串
 						mdev.RuleEngine.WorkDevice(mdev.Details(), string(bytes))
@@ -320,7 +321,8 @@ func (mdev *CustomProtocolDevice) OnRead(cmd int, data []byte) (int, error) {
 		if checkOk {
 			// 返回给lua参数是十六进制大写字符串
 			dataMap["name"] = p.Name
-			dataMap["value"] = hex.EncodeToString(result[:p.BufferSize])
+			dataMap["in"] = p.ProtocolArg.In
+			dataMap["out"] = hex.EncodeToString(result[:p.BufferSize])
 			bytes, _ := json.Marshal(dataMap)
 			// 返回是十六进制大写字符串
 			copy(data, bytes)
