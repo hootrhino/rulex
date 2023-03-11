@@ -14,149 +14,35 @@
 ## 快速开始
 
 ### HelloWorld
-先看下面demo，顺便来开发你的第一个网关：
+下面展示一个最简单的设备数据转发案例：
 ```go
-package main
+AppNAME = 'UdpServerTest'
+AppVERSION = '0.0.1'
 
-import (
-	"os"
-	"os/signal"
-	"syscall"
+function Main(arg)
+    for i = 1, 10, 1 do
+        local data = { temp = 20.15 , humi = 34}
+        local err = applib:DataToUdp('UdpServer', applib:T2J(data))
+        applib:Sleep(100)
+    end
+    return 0
+end
 
-	"github.com/i4de/rulex/core"
-	"github.com/i4de/rulex/engine"
-	"github.com/i4de/rulex/glogger"
-	httpserver "github.com/i4de/rulex/plugin/http_server"
 
-	"github.com/i4de/rulex/typex"
-)
-
-/*
-*
-* Test 485 sensor gateway
-*
- */
-func main() {
-	mainConfig := core.InitGlobalConfig("rulex.ini")
-	glogger.StartGLogger(true, core.GlobalConfig.LogPath)
-	glogger.StartLuaLogger(core.GlobalConfig.LuaLogPath)
-	core.StartStore(core.GlobalConfig.MaxQueueSize)
-	core.SetLogLevel()
-	core.SetPerformance()
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, syscall.SIGINT, syscall.SIGABRT, syscall.SIGTERM)
-	engine := engine.NewRuleEngine(mainConfig)
-	engine.Start()
-
-	hh := httpserver.NewHttpApiServer()
-
-	// HttpApiServer loaded default
-	if err := engine.LoadPlugin("plugin.http_server", hh); err != nil {
-		glogger.GLogger.Fatal("Rule load failed:", err)
-	}
-	// RTU485_THER Inend
-	RTU485Device := typex.NewDevice("RTU485_THER",
-		"温湿度采集器", "温湿度采集器", "", map[string]interface{}{
-			"slaverIds": []uint8{1, 2},
-			"timeout":   5,
-			"frequency": 5,
-			"config": map[string]interface{}{
-				"uart":     "/dev/ttyUSB0",
-				"dataBits": 8,
-				"parity":   "N",
-				"stopBits": 1,
-				"baudRate": 4800,
-			},
-			"registers": []map[string]interface{}{
-				{
-					"tag":      "node1",
-					"function": 3,
-					"slaverId": 1,
-					"address":  0,
-					"quantity": 2,
-				},
-				{
-					"tag":      "node2",
-					"function": 3,
-					"slaverId": 2,
-					"address":  0,
-					"quantity": 2,
-				},
-			},
-		})
-	RTU485Device.UUID = "RTU485Device1"
-	if err := engine.LoadDevice(RTU485Device); err != nil {
-		glogger.GLogger.Error("RTU485Device load failed:", err)
-	}
-	mqttOutEnd := typex.NewOutEnd(
-		"MQTT",
-		"MQTT桥接",
-		"MQTT桥接", map[string]interface{}{
-			"Host":     "127.0.0.1",
-			"Port":     1883,
-			"ClientId": "test-485-thgw1",
-			"Username": "test-485-thgw1",
-			"Password": "test-485-thgw1",
-			"PubTopic": "MQTT/upstream/test-485-thgw1",
-			"SubTopic": "MQTT/downstream/test-485-thgw1",
-		},
-	)
-	mqttOutEnd.UUID = "mqttOutEnd-MQTT"
-	if err := engine.LoadOutEnd(mqttOutEnd); err != nil {
-		glogger.GLogger.Fatal("mqttOutEnd load failed:", err)
-	}
-	rule := typex.NewRule(engine,
-		"uuid",
-		"数据推送至MQTT",
-		"数据推送至MQTT",
-		[]string{},
-		[]string{RTU485Device.UUID}, // 数据来自网关设备,所以这里需要配置设备ID
-		`function Success() print("[LUA Success Callback]=> OK") end`,
-		`
-Actions = {function(data)
-	for tag, v in pairs(rulexlib:J2T(data)) do
-		local ts = rulexlib:TsUnixNano()
-		local value = rulexlib:J2T(v['value'])
-		value['tag']= tag;
-		local jsont = {
-			method = 'report',
-			requestId = ts,
-			timestamp = ts,
-			params = value
-		}
-		print('mqttOutEnd-MQTT', rulexlib:T2J(jsont))
-		rulexlib:DataToMqtt('mqttOutEnd-MQTT', rulexlib:T2J(jsont))
-	end
-	return true, data
-end}
-`,
-		`function Failed(error) print("[LUA Failed Callback]", error) end`)
-	if err := engine.LoadRule(rule); err != nil {
-		glogger.GLogger.Fatal(err)
-	}
-	s := <-c
-	glogger.GLogger.Warn("Received stop signal:", s)
-	engine.Stop()
-	os.Exit(0)
-}
 ```
-上面是一个完整的温湿度传感器数据操作的demo，其主要实现了modbus两个寄存器读写，然后数据上mqtt服务器。如果你觉得麻烦，你可以试试我提前准备好的模板项目:
-```sh
-git clone https://github.com/wwhai/rulex-base-template.git
-cd rulex-base-template
-make **
-```
-当然这仅仅是个模板，你可以随便扩充其功能。
+这个 DEMO 展示了如何把一个简单的数据推到 UDP 服务器端
+
 
 ## 支持的平台
 
-| 平台  | 架构   | 编译测试 |
-| ----- | ------ | -------- |
-| Linux | X86-64 | 通过     |
-| ARM64 | ARM-64 | 通过     |
-| ARM32 | ARM-32 | 通过     |
-| MacOS | X86-64 | 通过     |
-| 其他  | 未知   | 未知     |
+| 架构   | 操作系统             | 测试 |
+| ------ | -------------------- | ---- |
+| X86-64 | X86-64-Linux\Windows | 通过 |
+| ARM64  | ARM-64-Linux         | 通过 |
+| ARM32  | ARM-32-Linux         | 通过 |
+| Mips   | Arm-Mips-Linux       | 通过 |
+
+除此之外，还可以在 Armbian、OpenWrt 等小众平台上编译成功。
 
 ## 规则引擎
 

@@ -90,6 +90,10 @@ func Apps(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
  */
 const semVerRegexExpr = `^(0|[1-9]+[0-9]*)\.(0|[1-9]+[0-9]*)\.(0|[1-9]+[0-9]*)(-(0|[1-9A-Za-z-][0-9A-Za-z-]*)(\.[0-9A-Za-z-]+)*)?(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$`
 const luaTemplate = `
+--
+-- App use lua syntax, goto https://rulex.pages.dev for more document
+-- APPID: %s
+--
 AppNAME = "%s"
 AppVERSION = "%s"
 AppDESCRIPTION = "%s"
@@ -138,8 +142,8 @@ func CreateApp(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 		c.JSON(200, Error400(err))
 		return
 	}
-	err1 := os.WriteFile(path, []byte(fmt.Sprintf(luaTemplate, form.Name,
-		form.Version, form.Description, defaultLuaMain)), 0777)
+	err1 := os.WriteFile(path, []byte(fmt.Sprintf(luaTemplate,
+		newUUID, form.Name, form.Version, form.Description, defaultLuaMain)), 0777)
 	if err1 != nil {
 		c.JSON(200, Error400(err1))
 		return
