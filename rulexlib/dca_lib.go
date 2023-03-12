@@ -1,7 +1,6 @@
 package rulexlib
 
 import (
-	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 	lua "github.com/yuin/gopher-lua"
 )
@@ -18,7 +17,7 @@ func DCACall(rx typex.RuleX) func(*lua.LState) int {
 		// 参数必须是个Table: [arg0, arg1, arg2.....]
 		LuaTArgs := l.ToTable(4)
 		Device := rx.GetDevice(UUID)
-		glogger.GLogger.Infof("DCACall => %s:%s(%v)", UUID, Command, LuaTArgs)
+		// glogger.GLogger.Infof("DCACall => %s:%s(%v)", UUID, Command, LuaTArgs)
 		CallArgs := []interface{}{}
 		LuaTArgs.ForEach(func(k, v lua.LValue) {
 			CallArgs = append(CallArgs, v)

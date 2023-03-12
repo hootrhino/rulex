@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"reflect"
 	"sync"
 	"time"
 
@@ -333,28 +334,28 @@ func (mdev *CustomProtocolDevice) OnRead(cmd int, data []byte) (int, error) {
 
 }
 
+/*
+*
+* 写进来的数据格式 参考@Protocol
+*
+ */
+type writeProtocol struct {
+	Name             string `json:"name" validate:"required"`
+	BufferSize       int    `json:"bufferSize" validate:"required"`
+	TimeGap          int    `json:"timeGap" validate:"required"`
+	CheckAlgorithm   string `json:"checkAlgorithm" validate:"required"`
+	ChecksumValuePos uint   `json:"checksumValuePos" validate:"required"`
+	ChecksumBegin    uint   `json:"checksumBegin" validate:"required"`
+	ChecksumEnd      uint   `json:"checksumEnd" validate:"required"`
+	In               string `json:"in" validate:"required"`
+	Out              string `json:"out"`
+}
+
 // 把数据写入设备
 // 根据第二个参数来找配置进去的自定义协议, 必须进来一个可识别的指令
 // 其中cmd常为0,为无意义参数
 func (mdev *CustomProtocolDevice) OnWrite(_ int, data []byte) (int, error) {
-	p, ok := mdev.mainConfig.DeviceConfig[string(data)]
-	if ok {
-		hexs, err0 := hex.DecodeString(p.ProtocolArg.In)
-		if err0 != nil {
-			glogger.GLogger.Error(err0)
-			mdev.errorCount++
-			return 0, err0
-		}
-		mdev.locker.Lock()
-		// Send
-		if _, err1 := mdev.serialPort.Write(hexs); err1 != nil {
-			glogger.GLogger.Error(err1)
-			mdev.errorCount++
-			return 0, err1
-		}
-		mdev.locker.Unlock()
-		return 0, nil
-	}
+
 	return 0, errors.New("unknown write command")
 }
 
@@ -395,7 +396,81 @@ func (mdev *CustomProtocolDevice) SetState(status typex.DeviceState) {
 func (mdev *CustomProtocolDevice) Driver() typex.XExternalDriver {
 	return nil
 }
-func (mdev *CustomProtocolDevice) OnDCACall(UUID string, Command string, Args interface{}) typex.DCAResult {
+
+/*
+*
+* 设备服务调用，一般第三个参数为请求 body 传空
+*
+ */
+func (mdev *CustomProtocolDevice) OnDCACall(_ string, Command string,
+	Args interface{}) typex.DCAResult {
+	T := reflect.TypeOf(Args)
+	dcaResult := typex.DCAResult{Error: nil, Data: ""}
+	if T.Name() != "[]interface{}" {
+		dcaResult.Error = fmt.Errorf("error type:%s", T.Name())
+		return dcaResult
+
+	}
+	wp := writeProtocol{CheckAlgorithm: "NONECHECK", TimeGap: 60}
+	if err := json.Unmarshal([]byte((Args.([]string))[0]), &wp); err != nil {
+		dcaResult.Error = err
+		return dcaResult
+	}
+	mdev.locker.Lock()
+	if _, err := mdev.serialPort.Write([]byte(wp.In)); err != nil {
+		glogger.GLogger.Error("serialPort.Write error: ", err)
+		mdev.errorCount++
+		dcaResult.Error = err
+		return dcaResult
+	}
+	mdev.locker.Unlock()
+	time.Sleep(time.Duration(wp.TimeGap) * time.Millisecond)
+	result := [100]byte{}
+	//
+	mdev.locker.Lock()
+	if _, err := io.ReadAtLeast(mdev.serialPort, result[:wp.BufferSize],
+		wp.BufferSize); err != nil {
+		glogger.GLogger.Error("serialPort.ReadAtLeast error: ", err)
+		dcaResult.Error = err
+		return dcaResult
+	}
+	mdev.locker.Unlock()
+	//
+	if core.GlobalConfig.AppDebugMode {
+		log.Println("[AppDebugMode] Write data:", wp.In)
+		log.Println("[AppDebugMode] Read data:", result[:wp.BufferSize])
+	}
+	// 返回值
+	dataMap := map[string]string{}
+	checkOk := false
+	if wp.CheckAlgorithm == "CRC16" || wp.CheckAlgorithm == "crc16" {
+		glogger.GLogger.Debug("checkCRC:", result[:wp.BufferSize],
+			int(result[:wp.BufferSize][wp.ChecksumValuePos]))
+		checkOk = mdev.checkCRC(result[:wp.BufferSize],
+			int(result[:wp.BufferSize][wp.ChecksumValuePos]))
+	}
+	//
+	if wp.CheckAlgorithm == "XOR" || wp.CheckAlgorithm == "xor" {
+		glogger.GLogger.Debug("checkCRC:", result[:wp.BufferSize],
+			int(result[:wp.BufferSize][wp.ChecksumValuePos]))
+		checkOk = mdev.checkCRC(result[:wp.BufferSize],
+			int(result[:wp.BufferSize][wp.ChecksumValuePos]))
+	}
+	// NONECHECK: 不校验
+	if wp.CheckAlgorithm == "NONECHECK" {
+		checkOk = true
+	}
+	if checkOk {
+		// 返回给lua参数是十六进制大写字符串
+		dataMap["name"] = wp.Name
+		dataMap["in"] = wp.In
+		dataMap["out"] = hex.EncodeToString(result[:wp.BufferSize])
+		bytes, _ := json.Marshal(dataMap)
+		dcaResult.Data = string(bytes)
+		return dcaResult
+	} else {
+		dcaResult.Error = fmt.Errorf("check failed")
+	}
 	return typex.DCAResult{}
 }
 
