@@ -10,6 +10,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"os"
 	"os/exec"
 )
 
@@ -40,9 +41,10 @@ const (
 )
 
 func init() {
-	// init 是go的特殊函数，在各自的模块里面初始化自己需要的资源
-	// 这里初始化GPIO的初态
-	_EEKIT_GPIOAllInit()
+	env := os.Getenv("ARCHSUPPORT")
+	if env == "EEKITH3" {
+		_EEKIT_GPIOAllInit()
+	}
 }
 
 /*
@@ -68,14 +70,14 @@ func _EEKIT_GPIOInit(Pin string, EnDir string) {
 	cmd := fmt.Sprintf("echo %s > /sys/class/gpio/export", Pin)
 	_, err := exec.Command("sh", "-c", cmd).Output()
 	if err != nil {
-		log.Println("[EEKIT_GPIOInit] error",err)
+		log.Println("[EEKIT_GPIOInit] error", err)
 		return
 	}
 	//gpio set direction
 	cmd = fmt.Sprintf("echo %s > /sys/class/gpio/gpio%s/direction", EnDir, Pin)
 	_, err = exec.Command("sh", "-c", cmd).Output()
 	if err != nil {
-		log.Println("[EEKIT_GPIOInit] error",err)
+		log.Println("[EEKIT_GPIOInit] error", err)
 	}
 }
 
@@ -88,7 +90,7 @@ func EEKIT_GPIOSet(pin, value int) (bool, error) {
 	cmd := fmt.Sprintf("echo %d > /sys/class/gpio/gpio%d/value", value, pin)
 	_, err := exec.Command("sh", "-c", cmd).Output()
 	if err != nil {
-		log.Println("[EEKIT_GPIOSet] error",err)
+		log.Println("[EEKIT_GPIOSet] error", err)
 		return false, err
 	}
 	v, e := EEKIT_GPIOGet(pin)
