@@ -79,11 +79,21 @@
      local value, err = eekit:GPIOGet(6)
      -- value 的值为 0 或者 1
   ```
-- applib:GPIOGet 提取十六进制
+- applib:MatchHex 提取十六进制
   ```lua
      -- 第一个参数为提取表达式
      -- 格式为: "name1:[start, end];name2:[start, end]···"
-     local MatchHexS = rulexlib:MatchHex("name1:[1,3];name2:[4,5]", "FFFFFF014CB2AA55")
+  AppNAME = 'applib:MatchHex'
+  AppVERSION = '0.0.1'
+  function Main(arg)
+      -- 十六进制提取器
+      local MatchHexS = applib:MatchHex("age:[1,3];sex:[4,5]", "FFFFFF014CB2AA55")
+      for key, value in pairs(MatchHexS) do
+          print('applib:MatchHex', key, value)
+      end
+      return 0
+  end
+
   ```
 - applib:MB 二进制匹匹配, 返回值为二进制的字符串表示法
   ```lua
