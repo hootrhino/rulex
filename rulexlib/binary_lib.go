@@ -21,7 +21,7 @@ import (
 
 // 提取的 Key, 最长不能超过32个字母
 var pattern = `[a-zA-Z0-9]{1,32}:[1-9]+`
-var regexper *regexp.Regexp = regexp.MustCompile(pattern)
+var regExpr *regexp.Regexp = regexp.MustCompile(pattern)
 
 /*
 *
@@ -34,10 +34,28 @@ func MatchBinary(rx typex.RuleX) func(*lua.LState) int {
 		expr := state.ToString(2)
 		data := state.ToString(3)
 		returnMore := state.ToBool(4)
-		// glogger.GLogger.Debug(expr, data, returnMore)
 		t := lua.LTable{}
 		for _, kl := range Match(expr, []byte(data), returnMore) {
 			t.RawSetString(kl.K, lua.LString(kl.BS))
+		}
+		state.Push(&t)
+		return 1
+	}
+}
+
+/*
+*
+* 二进制串转成十六进制串
+*
+ */
+func MatchBinaryHex(rx typex.RuleX) func(*lua.LState) int {
+	return func(state *lua.LState) int {
+		expr := state.ToString(2)
+		data := state.ToString(3)
+		returnMore := state.ToBool(4)
+		t := lua.LTable{}
+		for _, kl := range Match(expr, []byte(data), returnMore) {
+			t.RawSetString(kl.K, lua.LString(kl.ToHexString()))
 		}
 		state.Push(&t)
 		return 1
@@ -109,6 +127,14 @@ type Kl struct {
 
 func (k Kl) String() string {
 	return fmt.Sprintf("KL@ K: %v,L: %v,BS: %v", k.K, k.L, k.BS)
+}
+func (k Kl) ToHexString() string {
+	b, _ := bitStringToBytes(k.BS)
+	return fmt.Sprintf("%X", b)
+}
+func (k Kl) ToByte() []byte {
+	b, _ := bitStringToBytes(k.BS)
+	return b
 }
 
 // Example data: 12345678
@@ -334,7 +360,7 @@ func append0(cursor int, bfs string, returnMore bool, result *[]Kl) {
 	}
 }
 func buildResult(returnMore bool, cursor int, bfs string, expression string, result *[]Kl) {
-	for _, v := range regexper.FindAllString(expression, -1) {
+	for _, v := range regExpr.FindAllString(expression, -1) {
 		k_l := strings.Split(v, ":")
 		k := k_l[0]
 		if l, err1 := strconv.Atoi(k_l[1]); err1 == nil {
