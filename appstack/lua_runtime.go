@@ -92,6 +92,7 @@ func LoadAppLib(app *typex.Application, e typex.RuleX) {
 	addAppLib(app, e, "applib", "log", rulexlib.Log(e))
 	// 二进制操作
 	addAppLib(app, e, "applib", "MB", rulexlib.MatchBinary(e))
+	addAppLib(app, e, "applib", "MBHex", rulexlib.MatchBinaryHex(e))
 	addAppLib(app, e, "applib", "B2BS", rulexlib.ByteToBitString(e))
 	addAppLib(app, e, "applib", "Bit", rulexlib.GetABitOnByte(e))
 	addAppLib(app, e, "applib", "B2I64", rulexlib.ByteToInt64(e))

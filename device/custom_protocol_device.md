@@ -50,6 +50,7 @@
 - name: 协议的名称, 通常代表某个设备的功能，比如读数据，开关之类的
 - description: 协议的一些备注信息
 - transport: 传输形式，目前支持 `rawtcp`, `rawudp`, `rs485rawserial`, `rs485rawtcp`
+- algorithm：校验算法，支持 `XOR`,`CRC16`,`NONECHECK`, 默认为不认证，即`NONECHECK`
 - protocol: 协议本体
     - in: 请求参数, 用大写十六进制表示法，否则会解析失败, 例如：FFFFFF014CB2AA55
     - out: 返回参数, 用大写十六进制表示法，否则会解析失败, 例如：FFFFFF014CB2AA55， 这个参数一般不参与业务，主要用来做个demo对比用。
@@ -77,4 +78,24 @@
   ```lua
      local value, err = eekit:GPIOGet(6)
      -- value 的值为 0 或者 1
+  ```
+- applib:GPIOGet 提取十六进制
+  ```lua
+     -- 第一个参数为提取表达式
+     -- 格式为: "name1:[start, end];name2:[start, end]···"
+     local MatchHexS = rulexlib:MatchHex("name1:[1,3];name2:[4,5]", "FFFFFF014CB2AA55")
+  ```
+- applib:MB 二进制匹匹配, 返回值为二进制的字符串表示法
+  ```lua
+     -- 第一个参数为提取表达式
+     -- 格式为: [<|> K1:LEN1 K2:LEN2... ], 返回一个K-V table
+		local V6 = rulexlib:T2J(rulexlib:MB("<a:5 b:3 c:1", "aab", false))
+
+  ```
+- applib:MBHex 二进制匹匹配, 返回值为二进制的十六进制表示法
+  ```lua
+     -- 第一个参数为提取表达式
+     -- 格式为: [<|> K1:LEN1 K2:LEN2... ], 返回一个K-V table
+		local V6 = rulexlib:T2J(rulexlib:MBHex("<a:5 b:3 c:1", "aab", false))
+
   ```

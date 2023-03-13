@@ -23,6 +23,7 @@ func LoadBuildInLuaLib(e typex.RuleX, r *typex.Rule) {
 	r.AddLib(e, "rulexlib", "log", rulexlib.Log(e))
 	// 二进制操作
 	r.AddLib(e, "rulexlib", "MB", rulexlib.MatchBinary(e))
+	r.AddLib(e, "rulexlib", "MBHex", rulexlib.MatchBinaryHex(e))
 	r.AddLib(e, "rulexlib", "B2BS", rulexlib.ByteToBitString(e))
 	r.AddLib(e, "rulexlib", "Bit", rulexlib.GetABitOnByte(e))
 	r.AddLib(e, "rulexlib", "B2I64", rulexlib.ByteToInt64(e))
