@@ -37,31 +37,15 @@ func (s *HttpApiServer) InitDb(dbPath string) {
 	}
 	// 注册数据库配置表
 	// 这么写看起来是很难受, 但是这玩意就是go的哲学啊(大道至简？？？)
-	if err := s.sqliteDb.AutoMigrate(&MInEnd{}); err != nil {
-		glogger.GLogger.Fatal(err)
-		os.Exit(1)
-	}
-	if err := s.sqliteDb.AutoMigrate(&MOutEnd{}); err != nil {
-		glogger.GLogger.Fatal(err)
-		os.Exit(1)
-	}
-	if err := s.sqliteDb.AutoMigrate(&MRule{}); err != nil {
-		glogger.GLogger.Fatal(err)
-		os.Exit(1)
-	}
-	if err := s.sqliteDb.AutoMigrate(&MUser{}); err != nil {
-		glogger.GLogger.Fatal(err)
-		os.Exit(1)
-	}
-	if err := s.sqliteDb.AutoMigrate(&MDevice{}); err != nil {
-		glogger.GLogger.Fatal(err)
-		os.Exit(1)
-	}
-	if err := s.sqliteDb.AutoMigrate(&MGoods{}); err != nil {
-		glogger.GLogger.Fatal(err)
-		os.Exit(1)
-	}
-	if err := s.sqliteDb.AutoMigrate(&MApp{}); err != nil {
+	if err := s.sqliteDb.AutoMigrate(
+		&MInEnd{},
+		&MOutEnd{},
+		&MRule{},
+		&MUser{},
+		&MDevice{},
+		&MGoods{},
+		&MApp{},
+	); err != nil {
 		glogger.GLogger.Fatal(err)
 		os.Exit(1)
 	}
