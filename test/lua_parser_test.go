@@ -1,4 +1,4 @@
-package lua_test
+package test
 
 import (
 	"context"
@@ -8,6 +8,7 @@ import (
 	"github.com/smacker/go-tree-sitter/lua"
 	"github.com/stretchr/testify/assert"
 )
+// go test -timeout 30s -run ^TestLuaGrammar github.com/i4de/rulex/test -v -count=1
 
 func TestLuaGrammar(t *testing.T) {
 	assert := assert.New(t)
