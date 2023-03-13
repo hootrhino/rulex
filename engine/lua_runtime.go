@@ -30,6 +30,7 @@ func LoadBuildInLuaLib(e typex.RuleX, r *typex.Rule) {
 	r.AddLib(e, "rulexlib", "BS2B", rulexlib.BitStringToBytes(e))
 	r.AddLib(e, "rulexlib", "HToN", rulexlib.HToN(e))
 	r.AddLib(e, "rulexlib", "HsubToN", rulexlib.HsubToN(e))
+	r.AddLib(e, "rulexlib", "MatchHex", rulexlib.MatchHex(e))
 	// 浮点数处理
 	r.AddLib(e, "rulexlib", "Bin2F32", rulexlib.BinToFloat32(e))
 	r.AddLib(e, "rulexlib", "Bin2F64", rulexlib.BinToFloat64(e))

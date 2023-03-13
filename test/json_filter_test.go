@@ -27,6 +27,14 @@ func TestJsonFilter(t *testing.T) {
 
 }
 
+func SelectMap(acc int, in map[string]interface{}) map[string]interface{} {
+	if acc == len(in) {
+		return map[string]interface{}{}
+	}
+	// in 给剔除已经筛选好的
+	return SelectMap(acc+1, in)
+}
+
 /*
 *
 * 用 filterCondition 去 in 里面拿数据

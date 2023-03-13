@@ -113,14 +113,8 @@ func TestCustomProtocolDevice(t *testing.T) {
 		Actions = {
 		function(data)
 			   print("Received Inend Data ======> : ",data)
-			-- local n, err = rulexlib:WriteDevice("dev1", 0, "get_uuid")
-			-- print("WriteDevice <======> : ", n, err )
-			-- local data1, err = rulexlib:ReadDevice("dev1", 1)
-			-- for index, value in pairs(data1) do
-			--     print("ReadDevice ======> ",index, value)
-			-- end
 			return true, data
-		end
+		end,
 	}
 `,
 		`function Failed(error) print("[LUA Failed Callback]", error) end`)

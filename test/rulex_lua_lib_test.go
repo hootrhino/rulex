@@ -14,11 +14,13 @@ import (
 func Test_rulex_base_lib(t *testing.T) {
 	engine := RunTestEngine()
 	engine.Start()
+
 	// Grpc Inend
-	grpcInend := typex.NewInEnd("GRPC", "Rulex Grpc InEnd", "Rulex Grpc InEnd", map[string]interface{}{
-		"host": "127.0.0.1",
-		"port": 2581,
-	})
+	grpcInend := typex.NewInEnd("GRPC", "Rulex Grpc InEnd",
+		"Rulex Grpc InEnd", map[string]interface{}{
+			"host": "127.0.0.1",
+			"port": 2581,
+		})
 	if err := engine.LoadInEnd(grpcInend); err != nil {
 		t.Error("grpcInend load failed:", err)
 	}
@@ -38,10 +40,14 @@ func Test_rulex_base_lib(t *testing.T) {
 			print("[rulexlib:Time()] ==>", rulexlib:Time())
 			print("[rulexlib:TsUnix()] ==>", rulexlib:TsUnix())
 			print("[rulexlib:TsUnixNano()] ==>", rulexlib:TsUnixNano())
-			rulexlib:VSet('k', 'v')
-			print("[rulexlib:VGet(k)] ==>", rulexlib:VGet('k'))
-			Hello()
-			rulexlib:Throw('this is test Throw')
+			local MatchHexS = rulexlib:MatchHex("age:[1,3];sex:[4,5]", "FFFFFF014CB2AA55")
+			for key, value in pairs(MatchHexS) do
+			    print('rulexlib:MatchHex', key, value)
+		    end
+			-- rulexlib:VSet('k', 'v')
+			-- print("[rulexlib:VGet(k)] ==>", rulexlib:VGet('k'))
+			-- Hello()
+			-- rulexlib:Throw('this is test Throw')
 			return true, data
 		end,
 		function(data)
