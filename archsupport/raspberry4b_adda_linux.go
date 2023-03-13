@@ -56,13 +56,14 @@ func _RASPI4B_GPIOInit(Pin string, EnDir string) {
 	cmd := fmt.Sprintf("echo %s > /sys/class/gpio/export", Pin)
 	_, err := exec.Command("sh", "-c", cmd).Output()
 	if err != nil {
-		log.Println(err)
+		log.Println("[RASPI4B_GPIOInit] error",err)
+		return
 	}
 	// gpio set direction
 	cmd = fmt.Sprintf("echo %s > /sys/class/gpio/gpio%s/direction", EnDir, Pin)
 	_, err = exec.Command("sh", "-c", cmd).Output()
 	if err != nil {
-		log.Println(err)
+		log.Println("[RASPI4B_GPIOInit] error",err)
 	}
 }
 
@@ -70,7 +71,8 @@ func RASPI4_GPIOSet(pin, value int) (bool, error) {
 	cmd := fmt.Sprintf("echo %d > /sys/class/gpio/gpio%d/value", value, pin)
 	_, err := exec.Command("sh", "-c", cmd).Output()
 	if err != nil {
-		log.Println(err)
+		log.Println("[RASPI4_GPIOSet] error",err)
+		return false, err
 	}
 	v, e := RASPI4_GPIOGet(pin)
 	if e != nil {
