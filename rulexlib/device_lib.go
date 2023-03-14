@@ -21,10 +21,10 @@ func ReadDevice(rx typex.RuleX) func(*lua.LState) int {
 	return func(l *lua.LState) int {
 		// read(uuid,cmd)
 		devUUID := l.ToString(2)
-		cmd := l.ToInt(3)
+		cmd := l.ToString(3)
 		Device := rx.GetDevice(devUUID)
 		if Device != nil {
-			n, err := Device.Device.OnRead(cmd, deviceReadBuffer)
+			n, err := Device.Device.OnRead([]byte(cmd), deviceReadBuffer)
 			if err != nil {
 				glogger.GLogger.Error(err)
 				l.Push(lua.LNil)
@@ -54,11 +54,11 @@ func WriteDevice(rx typex.RuleX) func(*lua.LState) int {
 	return func(l *lua.LState) int {
 		// write(uuid,cmd,data)
 		devUUID := l.ToString(2)
-		cmd := l.ToInt(3)
+		cmd := l.ToString(3)
 		data := l.ToString(4)
 		Device := rx.GetDevice(devUUID)
 		if Device != nil {
-			n, err := Device.Device.OnWrite(cmd, []byte(data))
+			n, err := Device.Device.OnWrite([]byte(cmd), []byte(data))
 			if err != nil {
 				glogger.GLogger.Error(err)
 				l.Push(lua.LNil)

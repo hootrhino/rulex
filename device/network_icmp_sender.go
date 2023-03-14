@@ -90,13 +90,13 @@ func (sender *IcmpSender) Start(cctx typex.CCTX) error {
 }
 
 // 从设备里面读数据出来
-func (sender *IcmpSender) OnRead(cmd int, data []byte) (int, error) {
+func (sender *IcmpSender) OnRead(cmd []byte, data []byte) (int, error) {
 
 	return 0, nil
 }
 
 // 把数据写入设备
-func (sender *IcmpSender) OnWrite(cmd int, _ []byte) (int, error) {
+func (sender *IcmpSender) OnWrite(cmd []byte, _ []byte) (int, error) {
 	return 0, nil
 }
 

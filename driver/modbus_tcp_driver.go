@@ -56,7 +56,7 @@ func (d *modBusTCPDriver) State() typex.DriverState {
 	return d.state
 }
 
-func (d *modBusTCPDriver) Read(cmd int, data []byte) (int, error) {
+func (d *modBusTCPDriver) Read(cmd []byte, data []byte) (int, error) {
 	dataMap := map[string]common.RegisterRW{}
 	for _, r := range d.Registers {
 		d.handler.SlaveId = r.SlaverId
@@ -122,7 +122,7 @@ func (d *modBusTCPDriver) Read(cmd int, data []byte) (int, error) {
 			dataMap[r.Tag] = value
 		}
 		// 设置一个间隔时间防止低级CPU黏包等
-		time.Sleep(time.Duration(cmd) * time.Microsecond)
+		time.Sleep(time.Duration(100) * time.Millisecond)
 	}
 	bytes, _ := json.Marshal(dataMap)
 	copy(data, bytes)
@@ -130,7 +130,7 @@ func (d *modBusTCPDriver) Read(cmd int, data []byte) (int, error) {
 
 }
 
-func (d *modBusTCPDriver) Write(cmd int, data []byte) (int, error) {
+func (d *modBusTCPDriver) Write(cmd []byte, data []byte) (int, error) {
 	dataMap := []common.RegisterRW{}
 	if err := json.Unmarshal(data, &dataMap); err != nil {
 		return 0, err

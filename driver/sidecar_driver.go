@@ -68,7 +68,7 @@ func (sc *TrailerDriver) State() typex.DriverState {
 * 读取
 *
  */
-func (sc *TrailerDriver) Read(cmd int, data []byte) (int, error) {
+func (sc *TrailerDriver) Read(cmd []byte, data []byte) (int, error) {
 	response, err := sc.client.Read(context.Background(), &trailer.ReadRequest{})
 	if err != nil {
 		glogger.GLogger.Error(err)
@@ -83,7 +83,7 @@ func (sc *TrailerDriver) Read(cmd int, data []byte) (int, error) {
 * 写入
 *
  */
-func (sc *TrailerDriver) Write(cmd int, data []byte) (int, error) {
+func (sc *TrailerDriver) Write(cmd []byte, data []byte) (int, error) {
 	response, err := sc.client.Write(context.Background(), &trailer.WriteRequest{
 		Data: data,
 	})

@@ -12,6 +12,6 @@ type Version struct {
 
 var DefaultVersion = Version{
 	Version:   `v0.4.4`,
-	ReleaseTime: "2023-03-14 16:22:07",
+	ReleaseTime: "2023-03-14 16:54:25",
 }
 

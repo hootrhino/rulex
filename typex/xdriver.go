@@ -21,8 +21,8 @@ type XExternalDriver interface {
 	Init(map[string]string) error
 	Work() error
 	State() DriverState
-	Read(cmd int, data []byte) (int, error)
-	Write(cmd int, data []byte) (int, error)
+	Read(cmd []byte, data []byte) (int, error)
+	Write(cmd []byte, data []byte) (int, error)
 	DriverDetail() DriverDetail
 	Stop() error
 }

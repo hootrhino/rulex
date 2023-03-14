@@ -59,12 +59,12 @@ func (d *UsrG776Driver) Test() error {
 
 }
 
-func (d *UsrG776Driver) Read(cmd int, b []byte) (int, error) {
+func (d *UsrG776Driver) Read(cmd []byte, b []byte) (int, error) {
 
 	return d.serialPort.Read(b)
 }
 
-func (d *UsrG776Driver) Write(cmd int, b []byte) (int, error) {
+func (d *UsrG776Driver) Write(cmd []byte, b []byte) (int, error) {
 	return d.serialPort.Write(b)
 }
 func (d *UsrG776Driver) DriverDetail() typex.DriverDetail {

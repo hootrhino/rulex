@@ -60,11 +60,11 @@ func (a *rawUartDriver) Test() error {
 
 }
 
-func (a *rawUartDriver) Read(cmd int, b []byte) (int, error) {
+func (a *rawUartDriver) Read(cmd []byte, b []byte) (int, error) {
 	return a.serialPort.Read(b)
 }
 
-func (a *rawUartDriver) Write(cmd int, b []byte) (int, error) {
+func (a *rawUartDriver) Write(cmd []byte, b []byte) (int, error) {
 	return a.serialPort.Write(b)
 }
 func (a *rawUartDriver) DriverDetail() typex.DriverDetail {

@@ -7,7 +7,7 @@ import (
 
 	"github.com/i4de/rulex/common"
 	"github.com/i4de/rulex/typex"
-	"github.com/wwhai/gomodbus"
+	modbus "github.com/wwhai/gomodbus"
 )
 
 /*
@@ -56,7 +56,7 @@ func (d *modBusRtuDriver) State() typex.DriverState {
 	return d.state
 }
 
-func (d *modBusRtuDriver) Read(cmd int, data []byte) (int, error) {
+func (d *modBusRtuDriver) Read(cmd []byte, data []byte) (int, error) {
 	dataMap := map[string]common.RegisterRW{}
 	for _, r := range d.Registers {
 		d.handler.SlaveId = r.SlaverId
@@ -123,7 +123,7 @@ func (d *modBusRtuDriver) Read(cmd int, data []byte) (int, error) {
 		}
 
 		// 设置一个间隔时间防止低级CPU黏包等
-		time.Sleep(time.Duration(cmd) * time.Microsecond)
+		time.Sleep(time.Duration(100) * time.Millisecond)
 	}
 	bytes, _ := json.Marshal(dataMap)
 	copy(data, bytes)
@@ -131,7 +131,7 @@ func (d *modBusRtuDriver) Read(cmd int, data []byte) (int, error) {
 
 }
 
-func (d *modBusRtuDriver) Write(cmd int, data []byte) (int, error) {
+func (d *modBusRtuDriver) Write(cmd []byte, data []byte) (int, error) {
 	dataMap := []common.RegisterRW{}
 	if err := json.Unmarshal(data, &dataMap); err != nil {
 		return 0, err

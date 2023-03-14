@@ -65,7 +65,7 @@ func (s1200 *siemens_s1200_driver) State() typex.DriverState {
 
 // 字节格式:[dbNumber1, start1, size1, dbNumber2, start2, size2]
 // 读: db --> dbNumber, start, size, buffer[]
-func (s1200 *siemens_s1200_driver) Read(cmd int, data []byte) (int, error) {
+func (s1200 *siemens_s1200_driver) Read(cmd []byte, data []byte) (int, error) {
 	values := []common.S1200BlockValue{}
 	for _, db := range s1200.dbs {
 		rData := []byte{}
@@ -98,7 +98,7 @@ func (s1200 *siemens_s1200_driver) Read(cmd int, data []byte) (int, error) {
 //	}
 //
 // ]
-func (s1200 *siemens_s1200_driver) Write(cmd int, data []byte) (int, error) {
+func (s1200 *siemens_s1200_driver) Write(cmd []byte, data []byte) (int, error) {
 	blocks := []common.S1200BlockValue{}
 	if err := json.Unmarshal(data, &blocks); err != nil {
 		return 0, err

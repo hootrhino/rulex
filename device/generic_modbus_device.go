@@ -156,7 +156,7 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 	go func(ctx context.Context, Driver typex.XExternalDriver) {
 		ticker := time.NewTicker(time.Duration(5) * time.Second)
 		buffer := make([]byte, common.T_64KB)
-		// mdev.driver.Read(0, buffer) //清理缓存
+		// mdev.driver.Read([]byte{}, buffer) //清理缓存
 		for {
 			<-ticker.C
 			select {
@@ -170,7 +170,7 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 				}
 			}
 			mdev.locker.Lock()
-			n, err := Driver.Read(mdev.mainConfig.WaitTime, buffer)
+			n, err := Driver.Read([]byte{}, buffer)
 			mdev.locker.Unlock()
 			if err != nil {
 				glogger.GLogger.Error(err)
@@ -185,9 +185,9 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 }
 
 // 从设备里面读数据出来
-func (mdev *generic_modbus_device) OnRead(cmd int, data []byte) (int, error) {
+func (mdev *generic_modbus_device) OnRead(cmd []byte, data []byte) (int, error) {
 
-	n, err := mdev.driver.Read(0, data)
+	n, err := mdev.driver.Read(cmd, data)
 	if err != nil {
 		glogger.GLogger.Error(err)
 		mdev.status = typex.DEV_DOWN
@@ -196,7 +196,7 @@ func (mdev *generic_modbus_device) OnRead(cmd int, data []byte) (int, error) {
 }
 
 // 把数据写入设备
-func (mdev *generic_modbus_device) OnWrite(cmd int, _ []byte) (int, error) {
+func (mdev *generic_modbus_device) OnWrite(cmd []byte, _ []byte) (int, error) {
 	return 0, nil
 }
 

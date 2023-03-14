@@ -275,7 +275,7 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 * 数据读出来，对数据结构有要求, 其中Key必须是个数字或者数字字符串, 例如 1 or "1"
 *
  */
-func (mdev *CustomProtocolDevice) OnRead(cmd int, data []byte) (int, error) {
+func (mdev *CustomProtocolDevice) OnRead(cmd []byte, data []byte) (int, error) {
 	// 拿到命令的索引
 	p, exists := mdev.mainConfig.DeviceConfig[fmt.Sprintf("%d", cmd)]
 	if exists {
@@ -374,7 +374,7 @@ type writeProtocol struct {
 // 把数据写入设备
 // 根据第二个参数来找配置进去的自定义协议, 必须进来一个可识别的指令
 // 其中cmd常为0,为无意义参数
-func (mdev *CustomProtocolDevice) OnWrite(_ int, data []byte) (int, error) {
+func (mdev *CustomProtocolDevice) OnWrite(_ []byte, data []byte) (int, error) {
 
 	return 0, errors.New("unknown write command")
 }

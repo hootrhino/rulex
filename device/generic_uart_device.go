@@ -85,7 +85,7 @@ func (uart *genericUartDevice) Start(cctx typex.CCTX) error {
 	go func(ctx context.Context) {
 		buffer := make([]byte, common.T_64KB) // 默认缓冲区64KB, 应该够了
 		offset := 0
-		// uart.driver.Read(0, buffer[offset:]) //清理缓存
+		// uart.driver.Read([]byte{}, buffer[offset:]) //清理缓存
 		for {
 			select {
 			case <-ctx.Done():
@@ -95,7 +95,7 @@ func (uart *genericUartDevice) Start(cctx typex.CCTX) error {
 				}
 			}
 			uart.locker.Lock()
-			len, err := uart.driver.Read(0, buffer[offset:])
+			len, err := uart.driver.Read([]byte{}, buffer[offset:])
 			uart.locker.Unlock()
 			if err != nil {
 				glogger.GLogger.Error(err)
@@ -141,11 +141,11 @@ END:
 var _ReadBuffer []byte = make([]byte, common.T_64KB) // 默认缓冲区64KB, 应该够了
 var _ReadBufferOffset int = 0
 
-func (uart *genericUartDevice) OnRead(cmd int, data []byte) (int, error) {
+func (uart *genericUartDevice) OnRead(cmd []byte, data []byte) (int, error) {
 
-	uart.driver.Read(0, _ReadBuffer[_ReadBufferOffset:]) //清理缓存
+	uart.driver.Read([]byte{}, _ReadBuffer[_ReadBufferOffset:]) //清理缓存
 	uart.locker.Lock()
-	n, err := uart.driver.Read(0, _ReadBuffer[_ReadBufferOffset:])
+	n, err := uart.driver.Read([]byte{}, _ReadBuffer[_ReadBufferOffset:])
 	uart.locker.Unlock()
 	if err != nil {
 		glogger.GLogger.Error(err)
@@ -172,8 +172,8 @@ func (uart *genericUartDevice) OnRead(cmd int, data []byte) (int, error) {
 }
 
 // 把数据写入设备
-func (uart *genericUartDevice) OnWrite(cmd int, b []byte) (int, error) {
-	return uart.driver.Write(0, b)
+func (uart *genericUartDevice) OnWrite(cmd []byte, b []byte) (int, error) {
+	return uart.driver.Write(cmd, b)
 }
 
 // 设备当前状态
