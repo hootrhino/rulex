@@ -187,6 +187,10 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 					{
 					}
 				}
+				if mdev.serialPort == nil {
+					mdev.status = typex.DEV_DOWN
+					return
+				}
 				//----------------------------------------------------------------------------------
 				for _, p := range pp {
 					if !p.AutoRequest {
@@ -201,10 +205,7 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 					if core.GlobalConfig.AppDebugMode {
 						log.Println("[AppDebugMode] Write data:", hexs)
 					}
-					if mdev.serialPort == nil {
-						mdev.status = typex.DEV_DOWN
-						return
-					}
+
 					if _, err1 := mdev.serialPort.Write(hexs); err1 != nil {
 						glogger.GLogger.Error("mdev.serialPort.Write error: ", err1)
 						mdev.errorCount++
@@ -215,6 +216,7 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 					if _, err2 := io.ReadAtLeast(mdev.serialPort, result[:p.BufferSize],
 						p.BufferSize); err2 != nil {
 						glogger.GLogger.Error("serialPort.ReadAtLeast error: ", err2)
+						mdev.errorCount++
 						continue
 					}
 					if core.GlobalConfig.AppDebugMode {
@@ -248,6 +250,15 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 						bytes, _ := json.Marshal(dataMap)
 						// 返回是十六进制大写字符串
 						mdev.RuleEngine.WorkDevice(mdev.Details(), string(bytes))
+					} else {
+						msg := "checkSum error, Algorithm:%s; Begin:%v; End:%v; CheckPos:%v;"
+						glogger.GLogger.Error(msg,
+							p.CheckAlgorithm,
+							p.ChecksumBegin,
+							p.ChecksumEnd,
+							p.ChecksumValuePos)
+
+						mdev.errorCount++
 					}
 				}
 				time.Sleep(time.Duration(mdev.mainConfig.CommonConfig.WaitTime) * time.Millisecond)
@@ -291,6 +302,7 @@ func (mdev *CustomProtocolDevice) OnRead(cmd int, data []byte) (int, error) {
 		if _, err2 := io.ReadAtLeast(mdev.serialPort, result[:p.BufferSize],
 			p.BufferSize); err2 != nil {
 			glogger.GLogger.Error("serialPort.ReadAtLeast error: ", err2)
+			mdev.errorCount++
 			return 0, err2
 		}
 		mdev.locker.Unlock()
@@ -328,6 +340,15 @@ func (mdev *CustomProtocolDevice) OnRead(cmd int, data []byte) (int, error) {
 			// 返回是十六进制大写字符串
 			copy(data, bytes)
 			return len(bytes), nil
+		} else {
+			msg := "checkSum error, Algorithm:%s; Begin:%v; End:%v; CheckPos:%v;"
+			glogger.GLogger.Error(msg,
+				p.CheckAlgorithm,
+				p.ChecksumBegin,
+				p.ChecksumEnd,
+				p.ChecksumValuePos)
+
+			mdev.errorCount++
 		}
 	}
 	return 0, errors.New("unknown read command")
