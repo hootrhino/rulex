@@ -236,8 +236,8 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 						checkOk = mdev.checkXOR(result[:p.BufferSize],
 							int(result[:p.BufferSize][p.ChecksumValuePos]))
 					}
-					// NOCHECK: 不校验
-					if p.CheckAlgorithm == "NOCHECK" {
+					// NONECHECK: 不校验
+					if p.CheckAlgorithm == "NONECHECK" {
 						checkOk = true
 					}
 					if checkOk {

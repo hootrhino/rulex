@@ -1,7 +1,13 @@
 package rulexlib
 
 import (
+	"encoding/binary"
 	"encoding/hex"
+	"fmt"
+	"math"
+	"regexp"
+	"strconv"
+	"strings"
 
 	"github.com/i4de/rulex/typex"
 	lua "github.com/yuin/gopher-lua"
@@ -43,4 +49,100 @@ func Bytes2Hexs(rx typex.RuleX) func(*lua.LState) int {
 		l.Push(lua.LNil)
 		return 2
 	}
+}
+
+/*
+*---------------------------------------------------------------------------
+* 十六进制字符串匹配: MatchHex("FFFFFF014CB2AA55", "age:[1,232];sex:[4,5]")
+*---------------------------------------------------------------------------
+ */
+func MatchHex(rx typex.RuleX) func(*lua.LState) int {
+	return func(l *lua.LState) int {
+		exprS := l.ToString(2)
+		hexS := l.ToString(3)
+		mhs := MatchHexLib(exprS, hexS)
+		ntb := lua.LTable{}
+		for _, v := range mhs {
+			ntb.RawSetString(v.Name, lua.LString(v.ToHexString()))
+		}
+		l.Push(&ntb)
+		return 1
+	}
+}
+
+type HexSegment struct {
+	Name  string
+	Value []byte
+}
+
+func (sgm HexSegment) ToHexString() string {
+	return fmt.Sprintf("%X", sgm.Value)
+}
+
+func (sgm HexSegment) ToInt64() uint64 {
+	return binary.BigEndian.Uint64(sgm.Value)
+}
+
+func (sgm HexSegment) ToFloat32() float32 {
+	bits := binary.BigEndian.Uint32([]byte(sgm.Value))
+	return math.Float32frombits(bits)
+}
+
+func (sgm HexSegment) ToFloat64() float64 {
+	bits := binary.BigEndian.Uint64([]byte(sgm.Value))
+	return math.Float64frombits(bits)
+}
+
+// 全局正则表达式编译器, 这是已经验证过的正则表达式，所以一定编译成功，故不检查error
+var regexMatcher, _ = regexp.Compile(`[a-zA-Z0-9]+:\[[0-9]+,[0-9]+\]`)
+
+/*
+*
+* 匹配十六进制字符
+*
+ */
+func MatchHexLib(regExpr, hexStr string) []HexSegment {
+	match := regexMatcher.FindAllString(regExpr, -1)
+	if len(match) == 0 {
+		return nil
+	}
+	var segments []HexSegment
+	for _, item := range match {
+		splits := strings.Split(item, ":")
+		if len(splits) != 2 {
+			return nil
+		}
+
+		name := splits[0]
+		start, end := extIndex(splits[1])
+		subHex := extHex(hexStr, start, end)
+		value, _ := hex.DecodeString(subHex)
+
+		segments = append(segments, HexSegment{name, value})
+	}
+	return segments
+}
+
+func extIndex(str string) (start, end int) {
+	indexStr := strings.TrimSuffix(strings.TrimPrefix(str, "["), "]")
+	split := strings.Split(indexStr, ",")
+	if len(split) != 2 {
+		return -1, -1
+	}
+	start, err := strconv.Atoi(split[0])
+	if err != nil {
+		return -1, -1
+	}
+	end, err2 := strconv.Atoi(split[1])
+	if err2 != nil {
+		return -1, -1
+	}
+	return start, end
+}
+
+func extHex(hexStr string, start, end int) string {
+	if start < 0 || end < 0 || start > end || end*2 > len(hexStr) {
+		return ""
+	}
+	return hexStr[start*2 : (end+1)*2]
 }
