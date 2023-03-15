@@ -96,7 +96,7 @@ func (ther *rtu485_ther) Start(cctx typex.CCTX) error {
 	go func(ctx context.Context, Driver typex.XExternalDriver) {
 		ticker := time.NewTicker(time.Duration(ther.mainConfig.Frequency) * time.Second)
 		buffer := make([]byte, common.T_64KB)
-		ther.driver.Read(0, buffer) //清理缓存
+		ther.driver.Read([]byte{}, buffer) //清理缓存
 		for {
 			<-ticker.C
 			select {
@@ -111,7 +111,7 @@ func (ther *rtu485_ther) Start(cctx typex.CCTX) error {
 				}
 			}
 			ther.locker.Lock()
-			n, err := Driver.Read(0, buffer)
+			n, err := Driver.Read([]byte{}, buffer)
 			ther.locker.Unlock()
 			if err != nil {
 				glogger.GLogger.Error(err)
@@ -126,7 +126,7 @@ func (ther *rtu485_ther) Start(cctx typex.CCTX) error {
 }
 
 // 从设备里面读数据出来
-func (ther *rtu485_ther) OnRead(cmd int, data []byte) (int, error) {
+func (ther *rtu485_ther) OnRead(cmd []byte, data []byte) (int, error) {
 
 	n, err := ther.driver.Read(cmd, data)
 	if err != nil {
@@ -137,7 +137,7 @@ func (ther *rtu485_ther) OnRead(cmd int, data []byte) (int, error) {
 }
 
 // 把数据写入设备
-func (ther *rtu485_ther) OnWrite(cmd int, _ []byte) (int, error) {
+func (ther *rtu485_ther) OnWrite(cmd []byte, _ []byte) (int, error) {
 	return 0, nil
 }
 

@@ -71,7 +71,7 @@ func (rtu485 *rtu485_THer_Driver) State() typex.DriverState {
 	return typex.DRIVER_UP
 }
 
-func (rtu485 *rtu485_THer_Driver) Read(cmd int, data []byte) (int, error) {
+func (rtu485 *rtu485_THer_Driver) Read(cmd []byte, data []byte) (int, error) {
 	dataMap := map[string]common.RegisterRW{}
 	for _, r := range rtu485.Registers {
 		rtu485.handler.SlaveId = r.SlaverId
@@ -104,7 +104,7 @@ func (rtu485 *rtu485_THer_Driver) Read(cmd int, data []byte) (int, error) {
 	return len(bytes), nil
 }
 
-func (rtu485 *rtu485_THer_Driver) Write(cmd int, _ []byte) (int, error) {
+func (rtu485 *rtu485_THer_Driver) Write(cmd []byte, _ []byte) (int, error) {
 	return 0, nil
 
 }

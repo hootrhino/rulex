@@ -84,7 +84,7 @@ func (s1200 *s1200plc) Start(cctx typex.CCTX) error {
 		ticker := time.NewTicker(time.Duration(s1200.mainConfig.Frequency) * time.Second)
 		// 数据缓冲区,最大4KB
 		dataBuffer := make([]byte, common.T_4KB)
-		s1200.driver.Read(0, dataBuffer) //清理缓存
+		s1200.driver.Read([]byte{}, dataBuffer) //清理缓存
 		for {
 			<-ticker.C
 			select {
@@ -103,7 +103,7 @@ func (s1200 *s1200plc) Start(cctx typex.CCTX) error {
 				return
 			}
 			s1200.lock.Lock()
-			n, err := s1200.driver.Read(0, dataBuffer)
+			n, err := s1200.driver.Read([]byte{}, dataBuffer)
 			s1200.lock.Unlock()
 			if err != nil {
 				glogger.GLogger.Error(err)
@@ -123,7 +123,7 @@ func (s1200 *s1200plc) Start(cctx typex.CCTX) error {
 }
 
 // 从设备里面读数据出来
-func (s1200 *s1200plc) OnRead(cmd int, data []byte) (int, error) {
+func (s1200 *s1200plc) OnRead(cmd []byte, data []byte) (int, error) {
 	return s1200.driver.Read(cmd, data)
 }
 
@@ -141,7 +141,7 @@ func (s1200 *s1200plc) OnRead(cmd int, data []byte) (int, error) {
 //	}
 //
 // ]
-func (s1200 *s1200plc) OnWrite(cmd int, data []byte) (int, error) {
+func (s1200 *s1200plc) OnWrite(cmd []byte, data []byte) (int, error) {
 	blocks := []common.S1200BlockValue{}
 	if err := json.Unmarshal(data, &blocks); err != nil {
 		return 0, err

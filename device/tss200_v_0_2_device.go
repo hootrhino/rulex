@@ -100,7 +100,7 @@ func (tss *tss200V2) Start(cctx typex.CCTX) error {
 		ticker := time.NewTicker(time.Duration(tss.mainConfig.Frequency) * time.Second)
 		defer ticker.Stop()
 		buffer := make([]byte, common.T_64KB)
-		tss.driver.Read(0, buffer) //清理缓存
+		tss.driver.Read([]byte{}, buffer) //清理缓存
 		for {
 			<-ticker.C
 			select {
@@ -115,7 +115,7 @@ func (tss *tss200V2) Start(cctx typex.CCTX) error {
 				}
 			}
 			tss.locker.Lock()
-			n, err := Driver.Read(0, buffer)
+			n, err := Driver.Read([]byte{}, buffer)
 			tss.locker.Unlock()
 			if err != nil {
 				glogger.GLogger.Error(err)
@@ -130,7 +130,7 @@ func (tss *tss200V2) Start(cctx typex.CCTX) error {
 }
 
 // 从设备里面读数据出来
-func (tss *tss200V2) OnRead(cmd int, data []byte) (int, error) {
+func (tss *tss200V2) OnRead(cmd []byte, data []byte) (int, error) {
 
 	n, err := tss.driver.Read(cmd, data)
 	if err != nil {
@@ -141,7 +141,7 @@ func (tss *tss200V2) OnRead(cmd int, data []byte) (int, error) {
 }
 
 // 把数据写入设备
-func (tss *tss200V2) OnWrite(cmd int, b []byte) (int, error) {
+func (tss *tss200V2) OnWrite(cmd []byte, b []byte) (int, error) {
 	return tss.driver.Write(cmd, b)
 }
 

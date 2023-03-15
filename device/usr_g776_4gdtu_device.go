@@ -80,7 +80,7 @@ func (uart *UsrG776DTU) Start(cctx typex.CCTX) error {
 	go func(ctx context.Context) {
 		ticker := time.NewTicker(time.Duration(uart.mainConfig.Frequency) * time.Second)
 		buffer := make([]byte, common.T_64KB)
-		uart.driver.Read(0, buffer) //清理缓存
+		uart.driver.Read([]byte{}, buffer) //清理缓存
 		for {
 			<-ticker.C
 			select {
@@ -89,7 +89,7 @@ func (uart *UsrG776DTU) Start(cctx typex.CCTX) error {
 				return
 			default:
 				uart.locker.Lock()
-				n, err := uart.driver.Read(0, buffer)
+				n, err := uart.driver.Read([]byte{}, buffer)
 				uart.locker.Unlock()
 				if err != nil {
 					glogger.GLogger.Error(err)
@@ -115,7 +115,7 @@ func (uart *UsrG776DTU) Start(cctx typex.CCTX) error {
 //	    "tag":"data tag",
 //	    "value":"value s"
 //	}
-func (uart *UsrG776DTU) OnRead(cmd int, data []byte) (int, error) {
+func (uart *UsrG776DTU) OnRead(cmd []byte, data []byte) (int, error) {
 	uart.locker.Lock()
 	n, err := uart.driver.Read(cmd, data)
 	uart.locker.Unlock()
@@ -130,7 +130,7 @@ func (uart *UsrG776DTU) OnRead(cmd int, data []byte) (int, error) {
 }
 
 // 把数据写入设备
-func (uart *UsrG776DTU) OnWrite(cmd int, b []byte) (int, error) {
+func (uart *UsrG776DTU) OnWrite(cmd []byte, b []byte) (int, error) {
 	return uart.driver.Write(cmd, b)
 }
 
