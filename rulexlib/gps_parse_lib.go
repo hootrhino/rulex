@@ -5,13 +5,14 @@ import (
 	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 
-	lua "github.com/yuin/gopher-lua"
+	lua "github.com/i4de/gopher-lua"
 )
+
 /*
 *
 * 解析GPS数据："$GPRMC,220516,A,5133.82,N,00042.24,W,173.8,231.8,130694,004.2,W*70"
 *
-*/
+ */
 func ParseGPS(rx typex.RuleX) func(*lua.LState) int {
 	return func(l *lua.LState) int {
 		sentence := l.ToString(2)

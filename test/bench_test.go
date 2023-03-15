@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/yuin/gopher-lua"
+	lua "github.com/i4de/gopher-lua"
 )
 
 func TestRunLuaBench(t *testing.T) {

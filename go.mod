@@ -18,6 +18,7 @@ require (
 	github.com/gopcua/opcua v0.3.5
 	github.com/gorilla/websocket v1.5.0
 	github.com/gosnmp/gosnmp v1.35.0
+	github.com/i4de/gopher-lua v1.0.1
 	github.com/itchyny/gojq v0.12.9
 	github.com/makiuchi-d/gozxing v0.1.1
 	github.com/mattn/go-sqlite3 v1.14.15
@@ -39,7 +40,6 @@ require (
 	github.com/wwhai/gomodbus v0.2.2
 	github.com/wwhai/goserial v0.2.0
 	github.com/wwhai/ntp v0.3.0
-	github.com/yuin/gopher-lua v0.0.0-20220504180219-658193537a64
 	go.bug.st/serial v1.4.0
 	go.mongodb.org/mongo-driver v1.10.3
 	go.uber.org/zap v1.15.0

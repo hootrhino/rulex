@@ -3,13 +3,14 @@ package rulexlib
 import (
 	"github.com/i4de/rulex/typex"
 
-	lua "github.com/yuin/gopher-lua"
+	lua "github.com/i4de/gopher-lua"
 )
+
 /*
 *
 * 数据转发到HTTP：local err: = rulexlib:DataToHttp(uuid, data)
 *
-*/
+ */
 func DataToHttp(rx typex.RuleX) func(*lua.LState) int {
 	return func(l *lua.LState) int {
 		id := l.ToString(2)
