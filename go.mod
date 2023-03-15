@@ -18,7 +18,7 @@ require (
 	github.com/gopcua/opcua v0.3.5
 	github.com/gorilla/websocket v1.5.0
 	github.com/gosnmp/gosnmp v1.35.0
-	github.com/i4de/gopher-lua v1.0.1
+	github.com/i4de/gopher-lua v1.0.2
 	github.com/itchyny/gojq v0.12.9
 	github.com/makiuchi-d/gozxing v0.1.1
 	github.com/mattn/go-sqlite3 v1.14.15
