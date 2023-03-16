@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"log"
 	"sync"
 	"time"
@@ -206,20 +205,24 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 					if core.GlobalConfig.AppDebugMode {
 						log.Println("[AppDebugMode] Write data:", hexs)
 					}
-
+					mdev.locker.Lock()
 					if _, err1 := mdev.serialPort.Write(hexs); err1 != nil {
 						glogger.GLogger.Error("mdev.serialPort.Write error: ", err1)
 						mdev.errorCount++
 						continue
 					}
+					mdev.locker.Unlock()
 					// 协议等待响应时间毫秒
 					time.Sleep(time.Duration(p.AutoRequestGap) * time.Millisecond)
-					if _, err2 := io.ReadAtLeast(mdev.serialPort, result[:p.BufferSize],
+					mdev.locker.Lock()
+					ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+					if _, err2 := utils.ReadAtLeast(ctx, cancel, mdev.serialPort, result[:p.BufferSize],
 						p.BufferSize); err2 != nil {
 						glogger.GLogger.Error("serialPort.ReadAtLeast error: ", err2)
 						mdev.errorCount++
 						continue
 					}
+					mdev.locker.Unlock()
 					if core.GlobalConfig.AppDebugMode {
 						log.Println("[AppDebugMode] Write data:", p.ProtocolArg.In)
 						log.Println("[AppDebugMode] Read data:", result[:p.BufferSize])
@@ -304,7 +307,8 @@ func (mdev *CustomProtocolDevice) OnRead(cmd []byte, data []byte) (int, error) {
 		result := [100]byte{} // 全局buf, 默认是100字节, 应该能覆盖绝大多数报文了
 		mdev.locker.Lock()
 
-		if _, err2 := io.ReadAtLeast(mdev.serialPort, result[:p.BufferSize],
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		if _, err2 := utils.ReadAtLeast(ctx, cancel, mdev.serialPort, result[:p.BufferSize],
 			p.BufferSize); err2 != nil {
 			glogger.GLogger.Error("serialPort.ReadAtLeast error: ", err2)
 			mdev.errorCount++
