@@ -4,12 +4,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	httpserver "github.com/i4de/rulex/plugin/http_server"
 	"io"
 	"net/http"
 	"os"
 	"testing"
 	"time"
+
+	httpserver "github.com/i4de/rulex/plugin/http_server"
 
 	"github.com/i4de/rulex/core"
 	"github.com/i4de/rulex/engine"
@@ -76,7 +77,7 @@ func RunTestEngine() typex.RuleX {
 	//
 	core.StartStore(core.GlobalConfig.MaxQueueSize)
 	core.SetLogLevel()
-	core.SetPerformance()
+	core.SetDebugMode()
 	// engine
 	engine := engine.NewRuleEngine(mainConfig)
 	return engine

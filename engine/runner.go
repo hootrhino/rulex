@@ -15,19 +15,25 @@ import (
 // 启动 Rulex
 func RunRulex(iniPath string) {
 	mainConfig := core.InitGlobalConfig(iniPath)
-	glogger.StartNewRealTimeLogger(core.GlobalConfig.LogLevel)
-	glogger.StartGLogger(mainConfig.EnableConsole, core.GlobalConfig.LogPath)
-	glogger.StartLuaLogger(core.GlobalConfig.LuaLogPath)
-	glogger.StartRemoteLogger(
-		core.GlobalConfig.RemoteLoggerSn,
-		core.GlobalConfig.RemoteLoggerUid,
-		core.GlobalConfig.RemoteLoggerIp,
-		core.GlobalConfig.RemoteLoggerPort,
+	//----------------------------------------------------------------------------------------------
+	// Init logger
+	//----------------------------------------------------------------------------------------------
+	glogger.StartGLogger(
+		core.GlobalConfig.LogLevel,
+		mainConfig.EnableConsole,
+		mainConfig.AppDebugMode,
+		core.GlobalConfig.LogPath,
+		mainConfig.AppId, mainConfig.AppName,
 	)
-	//
+	glogger.StartNewRealTimeLogger(core.GlobalConfig.LogLevel)
+	glogger.StartLuaLogger(core.GlobalConfig.LuaLogPath)
+	//----------------------------------------------------------------------------------------------
+	// Init Component
+	//----------------------------------------------------------------------------------------------
 	core.StartStore(core.GlobalConfig.MaxQueueSize)
-	core.SetLogLevel()
-	core.SetPerformance()
+	core.SetDebugMode(mainConfig.EnablePProf)
+	core.SetGomaxProcs(mainConfig.GomaxProcs)
+	//
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, syscall.SIGINT, syscall.SIGABRT, syscall.SIGTERM)
 	engine := NewRuleEngine(mainConfig)
