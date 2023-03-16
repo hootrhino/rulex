@@ -62,8 +62,8 @@ func (tty *WebTTYPlugin) Start(typex.RuleX) error {
 	tty.ttydCmd = exec.CommandContext(typex.GCTX,
 		"ttyd", "-p", fmt.Sprintf("%d", tty.mainConfig.ListenPort),
 		"-o", "-6", "bash")
-	tty.ttydCmd.Stdout = glogger.GLogger.Out
-	tty.ttydCmd.Stderr = glogger.GLogger.Out
+	// tty.ttydCmd.Stdout = glogger.GLogger.Out
+	// tty.ttydCmd.Stderr = glogger.GLogger.Out
 	if err1 := tty.ttydCmd.Start(); err1 != nil {
 		glogger.GLogger.Info("cmd.Start error: %v", err1)
 		return err1
