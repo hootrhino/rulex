@@ -6,8 +6,8 @@ import (
 	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 
+	lua "github.com/i4de/gopher-lua"
 	"github.com/itchyny/gojq"
-	lua "github.com/yuin/gopher-lua"
 )
 
 func JqSelect(rx typex.RuleX) func(*lua.LState) int {

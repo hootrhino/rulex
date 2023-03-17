@@ -1,7 +1,7 @@
 package typex
 
 import (
-	lua "github.com/yuin/gopher-lua"
+	lua "github.com/i4de/gopher-lua"
 )
 
 type RuleStatus int
@@ -10,16 +10,13 @@ const _VM_Registry_Size int = 1024 * 1024    // 默认堆栈大小
 const _VM_Registry_MaxSize int = 1024 * 1024 // 默认最大堆栈
 const _VM_Registry_GrowStep int = 32         // 默认CPU消耗
 
-//
-//  规则状态：
-//  0: 停止
-//  1: 运行中
+// 规则状态：
+// 0: 停止
+// 1: 运行中
 const RULE_STOP RuleStatus = 0
 const RULE_RUNNING RuleStatus = 1
 
-//
 // 规则描述
-//
 type Rule struct {
 	Id          string      `json:"id"`
 	UUID        string      `json:"uuid"`
@@ -34,9 +31,7 @@ type Rule struct {
 	VM          *lua.LState `json:"-"`
 }
 
-//
 // New
-//
 func NewRule(e RuleX,
 	uuid string,
 	name string,

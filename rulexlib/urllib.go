@@ -9,7 +9,7 @@ import (
 
 	"github.com/i4de/rulex/typex"
 
-	lua "github.com/yuin/gopher-lua"
+	lua "github.com/i4de/gopher-lua"
 )
 
 var rBracket *regexp.Regexp
@@ -53,9 +53,9 @@ func UrlResolve(rx typex.RuleX) func(*lua.LState) int {
 	return resolve
 }
 
-//------------------------------------------------------------
+// ------------------------------------------------------------
 // 内部函数
-//------------------------------------------------------------
+// ------------------------------------------------------------
 func parse(L *lua.LState) int {
 	parsed := L.NewTable()
 

@@ -9,6 +9,8 @@ type Extlib struct {
 	Value []string `ini:"extlibs,,allowshadow" json:"extlibs"`
 }
 type RulexConfig struct {
+	AppName string `ini:"app_name" json:"appName"`
+	AppId   string `ini:"app_id" json:"appId"`
 	MaxQueueSize          int    `ini:"max_queue_size" json:"maxQueueSize"`
 	SourceRestartInterval int    `ini:"resource_restart_interval" json:"sourceRestartInterval"`
 	GomaxProcs            int    `ini:"gomax_procs" json:"gomaxProcs"`

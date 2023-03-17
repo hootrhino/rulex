@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 
+	lua "github.com/i4de/gopher-lua"
 	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
-	lua "github.com/yuin/gopher-lua"
 )
 
 func DataToMqtt(rx typex.RuleX) func(*lua.LState) int {

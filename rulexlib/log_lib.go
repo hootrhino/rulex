@@ -3,9 +3,9 @@ package rulexlib
 import (
 	"time"
 
+	lua "github.com/i4de/gopher-lua"
 	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
-	lua "github.com/yuin/gopher-lua"
 )
 
 func Log(rx typex.RuleX) func(*lua.LState) int {

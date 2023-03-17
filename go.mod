@@ -6,7 +6,6 @@ require (
 	github.com/DrmagicE/gmqtt v0.4.1
 	github.com/Kowiste/ProfinetServer v0.0.0-20200929093941-9c422ae1f008
 	github.com/adrianmo/go-nmea v1.7.0
-	github.com/cjoudrey/gluaurl v0.0.0-20161028222611-31cbb9bef199
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/eclipse/paho.mqtt.golang v1.4.1
 	github.com/emirpasic/gods v1.18.1
@@ -19,6 +18,7 @@ require (
 	github.com/gopcua/opcua v0.3.5
 	github.com/gorilla/websocket v1.5.0
 	github.com/gosnmp/gosnmp v1.35.0
+	github.com/i4de/gopher-lua v1.0.2
 	github.com/itchyny/gojq v0.12.9
 	github.com/makiuchi-d/gozxing v0.1.1
 	github.com/mattn/go-sqlite3 v1.14.15
@@ -32,15 +32,12 @@ require (
 	github.com/robinson/gos7 v0.0.0-20211020181838-a2b780484319
 	github.com/shirou/gopsutil/v3 v3.22.9
 	github.com/sirupsen/logrus v1.9.0
-	github.com/smacker/go-tree-sitter v0.0.0-20230226123037-c459dbde1464
-	github.com/stretchr/testify v1.8.0
 	github.com/suapapa/go_eddystone v1.3.1
 	github.com/thinkgos/go-iecp5 v1.2.1
 	github.com/urfave/cli/v2 v2.19.1
 	github.com/wwhai/gomodbus v0.2.2
 	github.com/wwhai/goserial v0.2.0
 	github.com/wwhai/ntp v0.3.0
-	github.com/yuin/gopher-lua v0.0.0-20220504180219-658193537a64
 	go.bug.st/serial v1.4.0
 	go.mongodb.org/mongo-driver v1.10.3
 	go.uber.org/zap v1.15.0
@@ -54,11 +51,8 @@ require (
 )
 
 require (
-	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/goburrow/modbus v0.1.0 // indirect
 	github.com/goburrow/serial v0.1.0 // indirect
-	github.com/pmezard/go-difflib v1.0.0 // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
 require (

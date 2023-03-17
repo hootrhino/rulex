@@ -7,6 +7,7 @@ import (
 	"runtime"
 	"sync"
 
+	lua "github.com/i4de/gopher-lua"
 	"github.com/i4de/rulex/appstack"
 	"github.com/i4de/rulex/core"
 	"github.com/i4de/rulex/device"
@@ -18,7 +19,6 @@ import (
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
 	"github.com/shirou/gopsutil/v3/disk"
-	lua "github.com/yuin/gopher-lua"
 )
 
 // 规则引擎

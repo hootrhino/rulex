@@ -4,7 +4,7 @@ import (
 	"github.com/i4de/rulex/core"
 	"github.com/i4de/rulex/typex"
 
-	lua "github.com/yuin/gopher-lua"
+	lua "github.com/i4de/gopher-lua"
 )
 
 func StoreSet(rx typex.RuleX) func(l *lua.LState) int {

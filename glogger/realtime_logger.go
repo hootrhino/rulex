@@ -87,7 +87,7 @@ func StartNewRealTimeLogger(s string) *RealTimeLogger {
 		},
 		Clients: make(map[string]*websocket.Conn),
 	}
-	GLogger.AddHook(NewWSLogHook(s))
+	Logrus.AddHook(NewWSLogHook(s))
 	return private_GRealtimeLogger
 }
 
