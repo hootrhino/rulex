@@ -1,6 +1,6 @@
 package typex
 
-import lua "github.com/yuin/gopher-lua"
+import lua "github.com/i4de/gopher-lua"
 
 //
 // XLib: 库函数接口; TODO: V0.1.2废弃

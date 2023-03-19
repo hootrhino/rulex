@@ -3,9 +3,9 @@ package appstack
 import (
 	"fmt"
 
+	lua "github.com/i4de/gopher-lua"
 	"github.com/i4de/rulex/rulexlib"
 	"github.com/i4de/rulex/typex"
-	lua "github.com/yuin/gopher-lua"
 )
 
 // 临时校验语法

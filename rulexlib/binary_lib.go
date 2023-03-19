@@ -16,7 +16,7 @@ import (
 	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 
-	lua "github.com/yuin/gopher-lua"
+	lua "github.com/i4de/gopher-lua"
 )
 
 // 提取的 Key, 最长不能超过32个字母

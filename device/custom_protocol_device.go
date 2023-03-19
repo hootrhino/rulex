@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"log"
 	"sync"
 	"time"
@@ -28,6 +27,7 @@ import (
 type _CommonConfig struct {
 	Transport string `json:"transport" validate:"required"` // 传输协议
 	WaitTime  int    `json:"waitTime" validate:"required"`  // 单个轮询间隔
+	RetryTime int    `json:"retryTime" validate:"required"` // 几次以后重启,0 表示不重启
 }
 type _UartConfig struct {
 	Timeout  int    `json:"timeout" validate:"required"`
@@ -53,12 +53,13 @@ type _Protocol struct {
 	//    从第一个开始，第五个结束[Byte1,Byte2,Byte3,Byte4,Byte5], 比对值位置在第六个[Byte6]
 	// 伪代码：XOR(Byte[ChecksumBegin:ChecksumEnd]) == Byte[ChecksumValuePos]
 	//---------------------------------------------------------------------
-	CheckAlgorithm   string `json:"checkAlgorithm" validate:"required"`   // 校验算法，目前暂时支持: CRC16, XOR
-	ChecksumValuePos uint   `json:"checksumValuePos" validate:"required"` // 校验值比对位
-	ChecksumBegin    uint   `json:"checksumBegin" validate:"required"`    // 校验算法起始位置
-	ChecksumEnd      uint   `json:"checksumEnd" validate:"required"`      // 校验算法结束位置
-	AutoRequest      bool   `json:"autoRequest" validate:"required"`      // 是否开启轮询
-	AutoRequestGap   uint   `json:"autoRequestGap" validate:"required"`   // 轮询间隔
+	CheckAlgorithm   string `json:"checkAlgorithm" validate:"required" default:"NONECHECK"` // 校验算法，目前暂时支持: CRC16, XOR
+	ChecksumValuePos uint   `json:"checksumValuePos" validate:"required"`                   // 校验值比对位
+	ChecksumBegin    uint   `json:"checksumBegin" validate:"required"`                      // 校验算法起始位置
+	ChecksumEnd      uint   `json:"checksumEnd" validate:"required"`                        // 校验算法结束位置
+	OnCheckError     string `json:"onCheckError" default:"IGNORE"`                          // 当指令操作失败时动作: IGNORE, LOG
+	AutoRequest      bool   `json:"autoRequest" validate:"required"`                        // 是否开启轮询
+	AutoRequestGap   uint   `json:"autoRequestGap" validate:"required"`                     // 轮询间隔
 	//---------------------------------------------------------------------
 	ProtocolArg _ProtocolArg `json:"protocol" validate:"required"` // 参数
 }
@@ -204,20 +205,24 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 					if core.GlobalConfig.AppDebugMode {
 						log.Println("[AppDebugMode] Write data:", hexs)
 					}
-
+					mdev.locker.Lock()
 					if _, err1 := mdev.serialPort.Write(hexs); err1 != nil {
 						glogger.GLogger.Error("mdev.serialPort.Write error: ", err1)
 						mdev.errorCount++
 						continue
 					}
+					mdev.locker.Unlock()
 					// 协议等待响应时间毫秒
 					time.Sleep(time.Duration(p.AutoRequestGap) * time.Millisecond)
-					if _, err2 := io.ReadAtLeast(mdev.serialPort, result[:p.BufferSize],
+					mdev.locker.Lock()
+					ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+					if _, err2 := utils.ReadAtLeast(ctx, cancel, mdev.serialPort, result[:p.BufferSize],
 						p.BufferSize); err2 != nil {
 						glogger.GLogger.Error("serialPort.ReadAtLeast error: ", err2)
 						mdev.errorCount++
 						continue
 					}
+					mdev.locker.Unlock()
 					if core.GlobalConfig.AppDebugMode {
 						log.Println("[AppDebugMode] Write data:", p.ProtocolArg.In)
 						log.Println("[AppDebugMode] Read data:", result[:p.BufferSize])
@@ -250,14 +255,18 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 						// 返回是十六进制大写字符串
 						mdev.RuleEngine.WorkDevice(mdev.Details(), string(bytes))
 					} else {
-						msg := "checkSum error, Algorithm:%s; Begin:%v; End:%v; CheckPos:%v;"
-						glogger.GLogger.Error(msg,
-							p.CheckAlgorithm,
-							p.ChecksumBegin,
-							p.ChecksumEnd,
-							p.ChecksumValuePos)
-
-						mdev.errorCount++
+						if p.OnCheckError == "IGNORE" {
+							// Do Nothing
+						}
+						if p.OnCheckError == "LOG" {
+							msg := "checkSum error, Algorithm:%s; Begin:%v; End:%v; CheckPos:%v;"
+							glogger.GLogger.Error(msg,
+								p.CheckAlgorithm,
+								p.ChecksumBegin,
+								p.ChecksumEnd,
+								p.ChecksumValuePos)
+							mdev.errorCount++
+						}
 					}
 				}
 				time.Sleep(time.Duration(mdev.mainConfig.CommonConfig.WaitTime) * time.Millisecond)
@@ -277,7 +286,7 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
  */
 func (mdev *CustomProtocolDevice) OnRead(cmd []byte, data []byte) (int, error) {
 	// 拿到命令的索引
-	p, exists := mdev.mainConfig.DeviceConfig[fmt.Sprintf("%d", cmd)]
+	p, exists := mdev.mainConfig.DeviceConfig[string(cmd)]
 	if exists {
 		mdev.locker.Lock()
 		hexs, err0 := hex.DecodeString(p.ProtocolArg.In)
@@ -298,7 +307,8 @@ func (mdev *CustomProtocolDevice) OnRead(cmd []byte, data []byte) (int, error) {
 		result := [100]byte{} // 全局buf, 默认是100字节, 应该能覆盖绝大多数报文了
 		mdev.locker.Lock()
 
-		if _, err2 := io.ReadAtLeast(mdev.serialPort, result[:p.BufferSize],
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		if _, err2 := utils.ReadAtLeast(ctx, cancel, mdev.serialPort, result[:p.BufferSize],
 			p.BufferSize); err2 != nil {
 			glogger.GLogger.Error("serialPort.ReadAtLeast error: ", err2)
 			mdev.errorCount++
@@ -340,14 +350,21 @@ func (mdev *CustomProtocolDevice) OnRead(cmd []byte, data []byte) (int, error) {
 			copy(data, bytes)
 			return len(bytes), nil
 		} else {
-			msg := "checkSum error, Algorithm:%s; Begin:%v; End:%v; CheckPos:%v;"
-			glogger.GLogger.Error(msg,
-				p.CheckAlgorithm,
-				p.ChecksumBegin,
-				p.ChecksumEnd,
-				p.ChecksumValuePos)
+			if p.OnCheckError == "IGNORE" {
+				// Do Nothing
+				return 0, nil
+			}
+			if p.OnCheckError == "LOG" {
+				msg := "checkSum error, Algorithm:%s; Begin:%v; End:%v; CheckPos:%v;"
+				glogger.GLogger.Error(msg,
+					p.CheckAlgorithm,
+					p.ChecksumBegin,
+					p.ChecksumEnd,
+					p.ChecksumValuePos)
+				mdev.errorCount++
+				return 0, errors.New(msg)
+			}
 
-			mdev.errorCount++
 		}
 	}
 	return 0, errors.New("unknown read command")
@@ -359,17 +376,6 @@ func (mdev *CustomProtocolDevice) OnRead(cmd []byte, data []byte) (int, error) {
 * 写进来的数据格式 参考@Protocol
 *
  */
-type writeProtocol struct {
-	Name             string `json:"name" validate:"required"`
-	BufferSize       int    `json:"bufferSize" validate:"required"`
-	TimeGap          int    `json:"timeGap" validate:"required"`
-	CheckAlgorithm   string `json:"checkAlgorithm" validate:"required"`
-	ChecksumValuePos uint   `json:"checksumValuePos" validate:"required"`
-	ChecksumBegin    uint   `json:"checksumBegin" validate:"required"`
-	ChecksumEnd      uint   `json:"checksumEnd" validate:"required"`
-	In               string `json:"in" validate:"required"`
-	Out              string `json:"out"`
-}
 
 // 把数据写入设备
 // 根据第二个参数来找配置进去的自定义协议, 必须进来一个可识别的指令
@@ -381,8 +387,13 @@ func (mdev *CustomProtocolDevice) OnWrite(_ []byte, data []byte) (int, error) {
 
 // 设备当前状态
 func (mdev *CustomProtocolDevice) Status() typex.DeviceState {
-	if mdev.errorCount >= 5 {
-		mdev.status = typex.DEV_DOWN
+	if mdev.mainConfig.CommonConfig.RetryTime == 0 {
+		mdev.status = typex.DEV_UP
+	}
+	if mdev.mainConfig.CommonConfig.RetryTime > 0 {
+		if mdev.errorCount >= mdev.mainConfig.CommonConfig.RetryTime {
+			mdev.status = typex.DEV_DOWN
+		}
 	}
 	return mdev.status
 }

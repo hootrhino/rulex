@@ -8,7 +8,7 @@ import (
 
 	"github.com/wwhai/ntp"
 
-	lua "github.com/yuin/gopher-lua"
+	lua "github.com/i4de/gopher-lua"
 )
 
 /*

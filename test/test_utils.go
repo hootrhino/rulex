@@ -4,12 +4,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	httpserver "github.com/i4de/rulex/plugin/http_server"
 	"io"
 	"net/http"
 	"os"
 	"testing"
 	"time"
+
+	httpserver "github.com/i4de/rulex/plugin/http_server"
 
 	"github.com/i4de/rulex/core"
 	"github.com/i4de/rulex/engine"
@@ -64,19 +65,21 @@ func HttpGet(api string) string {
  */
 func RunTestEngine() typex.RuleX {
 	mainConfig := core.InitGlobalConfig("conf/rulex.ini")
-	glogger.StartNewRealTimeLogger(core.GlobalConfig.LogLevel)
-	glogger.StartGLogger(mainConfig.EnableConsole, core.GlobalConfig.LogPath)
-	glogger.StartLuaLogger(core.GlobalConfig.LuaLogPath)
-	glogger.StartRemoteLogger(
-		core.GlobalConfig.RemoteLoggerSn,
-		core.GlobalConfig.RemoteLoggerUid,
-		core.GlobalConfig.RemoteLoggerIp,
-		core.GlobalConfig.RemoteLoggerPort,
+	glogger.StartGLogger(
+		core.GlobalConfig.LogLevel,
+		mainConfig.EnableConsole,
+		mainConfig.AppDebugMode,
+		core.GlobalConfig.LogPath,
+		mainConfig.AppId, mainConfig.AppName,
 	)
-	//
+	glogger.StartNewRealTimeLogger(core.GlobalConfig.LogLevel)
+	glogger.StartLuaLogger(core.GlobalConfig.LuaLogPath)
+	//----------------------------------------------------------------------------------------------
+	// Init Component
+	//----------------------------------------------------------------------------------------------
 	core.StartStore(core.GlobalConfig.MaxQueueSize)
-	core.SetLogLevel()
-	core.SetPerformance()
+	core.SetDebugMode(mainConfig.EnablePProf)
+	core.SetGomaxProcs(mainConfig.GomaxProcs)
 	// engine
 	engine := engine.NewRuleEngine(mainConfig)
 	return engine
