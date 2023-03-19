@@ -93,18 +93,18 @@
 
 #### 3. 数据样例
 ```json
-[
-    {
-        "tag" :"t1",
-        "function" :3,
-        "slaverId" :1,
-        "address" :0,
-        "quantity" :1,
-        "value" : 100
+{
+    "d1":{
+        "tag":"d1",
+        "function":3,
+        "slaverId":1,
+        "address":0,
+        "quantity":6,
+        "value":"0117011d0127011a0110010e"
     }
-]
+}
 ```
-
+- value: 十六进制字符串
 ## 案例
 
 ```lua

@@ -32,8 +32,6 @@ require (
 	github.com/robinson/gos7 v0.0.0-20211020181838-a2b780484319
 	github.com/shirou/gopsutil/v3 v3.22.9
 	github.com/sirupsen/logrus v1.9.0
-	github.com/smacker/go-tree-sitter v0.0.0-20230226123037-c459dbde1464
-	github.com/stretchr/testify v1.8.0
 	github.com/suapapa/go_eddystone v1.3.1
 	github.com/thinkgos/go-iecp5 v1.2.1
 	github.com/urfave/cli/v2 v2.19.1
@@ -54,11 +52,8 @@ require (
 )
 
 require (
-	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/goburrow/modbus v0.1.0 // indirect
 	github.com/goburrow/serial v0.1.0 // indirect
-	github.com/pmezard/go-difflib v1.0.0 // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
 require (

@@ -91,7 +91,7 @@ func (rtu485 *rtu485_THer_Driver) Read(cmd []byte, data []byte) (int, error) {
 				SlaverId: r.SlaverId,
 				Address:  r.Address,
 				Quantity: r.Quantity,
-				Value:    bytes,
+				Value:    string(bytes),
 			}
 			dataMap[r.Tag] = value
 			if err != nil {
