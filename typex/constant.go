@@ -103,10 +103,12 @@ const (
 	// TDENGINE
 	//
 	TDENGINE_TARGET TargetType = "TDENGINE"
-	//
+	// GRPC
 	GRPC_CODEC_TARGET TargetType = "GRPC_CODEC_TARGET"
-	//
+	// UDP Server
 	UDP_TARGET TargetType = "UDP_TARGET"
+	// SQLITE
+	SQLITE_TARGET TargetType = "SQLITE_TARGET"
 )
 
 /*
