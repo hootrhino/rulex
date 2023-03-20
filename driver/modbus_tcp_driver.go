@@ -2,6 +2,7 @@ package driver
 
 import (
 	"encoding/binary"
+	"encoding/hex"
 	"encoding/json"
 	"time"
 
@@ -71,7 +72,7 @@ func (d *modBusTCPDriver) Read(cmd []byte, data []byte) (int, error) {
 				SlaverId: r.SlaverId,
 				Address:  r.Address,
 				Quantity: r.Quantity,
-				Value:    results,
+				Value:    (hex.EncodeToString(results)),
 			}
 			dataMap[r.Tag] = value
 		}
@@ -86,7 +87,7 @@ func (d *modBusTCPDriver) Read(cmd []byte, data []byte) (int, error) {
 				SlaverId: r.SlaverId,
 				Address:  r.Address,
 				Quantity: r.Quantity,
-				Value:    results,
+				Value:    (hex.EncodeToString(results)),
 			}
 			dataMap[r.Tag] = value
 
@@ -102,7 +103,7 @@ func (d *modBusTCPDriver) Read(cmd []byte, data []byte) (int, error) {
 				SlaverId: r.SlaverId,
 				Address:  r.Address,
 				Quantity: r.Quantity,
-				Value:    results,
+				Value:    (hex.EncodeToString(results)),
 			}
 			dataMap[r.Tag] = value
 		}
@@ -117,7 +118,7 @@ func (d *modBusTCPDriver) Read(cmd []byte, data []byte) (int, error) {
 				SlaverId: r.SlaverId,
 				Address:  r.Address,
 				Quantity: r.Quantity,
-				Value:    results,
+				Value:    (hex.EncodeToString(results)),
 			}
 			dataMap[r.Tag] = value
 		}

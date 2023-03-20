@@ -712,5 +712,11 @@ func (e *RuleEngine) InitTargetTypeManager() error {
 			Target: target.NewUdpTarget(e),
 		},
 	)
+	e.TargetTypeManager.Register(typex.SQLITE_TARGET,
+		&typex.XConfig{
+			Engine: e,
+			Target: target.NewSqliteTarget(e),
+		},
+	)
 	return nil
 }

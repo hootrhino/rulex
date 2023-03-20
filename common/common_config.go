@@ -80,3 +80,18 @@ type GenericSnmpConfig struct {
 	// Request Frequency, default 5 second
 	Frequency int64 `json:"frequency" validate:"required" title:"采集频率" info:""`
 }
+
+/*
+*
+* Sqlite 配置
+*
+ */
+type SqliteConfig struct {
+	// 本地数据库名称
+	DbName string `json:"dbName" validate:"required"`
+	// 数据表名
+	CreateTbSql string `json:"createTbSql" validate:"required"`
+	// 插入语句, 变量用 ？ 替代，会被替换成实际值
+	// Eg: insert into db1.tb1 value(v1, v2, v3)
+	InsertSql string `json:"insertSql" validate:"required"`
+}

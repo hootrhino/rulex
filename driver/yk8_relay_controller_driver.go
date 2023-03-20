@@ -96,7 +96,7 @@ func (yk8 *YK8RelayControllerDriver) Read(cmd []byte, data []byte) (int, error) 
 				SlaverId: r.SlaverId,
 				Address:  r.Address,
 				Quantity: r.Quantity,
-				Value:    bytes,
+				Value:    string(bytes),
 			}
 			dataMap[r.Tag] = value
 		}

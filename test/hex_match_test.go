@@ -8,12 +8,17 @@ import (
 
 // 性能测试
 func BenchmarkRegex(b *testing.B) {
-	segments := rulexlib.MatchHexLib("age:[1,3];sex:[4,5]", "FFFFFF014CB2AA55")
+	segments := rulexlib.MatchHexLib("A0:[0,1];A1:[1,2]",
+		"0117011d0127011a0110010e")
 	b.Logf("%+v", segments)
 }
 
 func TestRegex(t *testing.T) {
-	segments := rulexlib.MatchHexLib("age:[1,3];sex:[4,5]", "FFFFFF014CB2AA55")
-
+	// 0117 011d 0127 011a 0110 010e
+	segments := rulexlib.MatchHexLib("A0:[0,1];A1:[1,2]",
+		"0117011d0127011a0110010e")
+	for _, sg := range segments {
+		t.Logf("%+v", sg.ToInt64())
+	}
 	t.Logf("%+v", segments)
 }
