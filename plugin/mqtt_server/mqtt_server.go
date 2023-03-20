@@ -9,17 +9,12 @@ import (
 	mqttServer "github.com/mochi-co/mqtt/server"
 	"github.com/mochi-co/mqtt/server/events"
 	"github.com/mochi-co/mqtt/server/listeners"
+	"github.com/mochi-co/mqtt/server/listeners/auth"
 	"gopkg.in/ini.v1"
 )
 
 const (
 	defaultTransport string = "tcp"
-	banner           string = `
-    __  _______  ____________   _____ __________ _    ____________
-   /  |/  / __ \/_  __/_  __/  / ___// ____/ __ \ |  / / ____/ __ \
-  / /|_/ / / / / / /   / /_____\__ \/ __/ / /_/ / | / / __/ / /_/ /
- / /  / / /_/ / / /   / /_____/__/ / /___/ _, _/| |/ / /___/ _, _/
-/_/  /_/\___\_\/_/   /_/     /____/_____/_/ |_| |___/_____/_/ |_|`
 )
 
 type _serverConfig struct {
@@ -57,7 +52,9 @@ func (s *MqttServer) Start(r typex.RuleX) error {
 	server := mqttServer.New()
 	tcpPort := listeners.NewTCP(defaultTransport, fmt.Sprintf(":%v", s.Port))
 
-	if err := server.AddListener(tcpPort, &listeners.Config{}); err != nil {
+	if err := server.AddListener(tcpPort, &listeners.Config{
+		Auth: &auth.Allow{},
+	}); err != nil {
 		return err
 	}
 	if err := server.Serve(); err != nil {
@@ -67,20 +64,19 @@ func (s *MqttServer) Start(r typex.RuleX) error {
 	s.mqttServer = server
 	s.mqttServer.Events.OnConnect = func(client events.Client, packet events.Packet) {
 		s.clients[client.ID] = &client
-		glogger.GLogger.Infof("Client connected:%s", client.ID)
+		glogger.GLogger.Debugf("Client connected:%s", client.ID)
 	}
 	s.mqttServer.Events.OnDisconnect = func(client events.Client, err error) {
 		if s.clients[client.ID] != nil {
 			delete(s.clients, client.ID)
-			glogger.GLogger.Warnf("Client disconnected:%s", client.ID)
+			glogger.GLogger.Debugf("Client disconnected:%s", client.ID)
 		}
 	}
 	s.mqttServer.Events.OnMessage = func(c events.Client, p events.Packet) (events.Packet, error) {
 
 		return p, nil
 	}
-	fmt.Println(banner)
-	glogger.GLogger.Infof("MqttServer start at [0.0.0.0:%v] successfully", s.Port)
+	glogger.GLogger.Infof("MqttServer start at [%s:%v] successfully", s.Host, s.Port)
 	return nil
 }
 
