@@ -9,6 +9,7 @@ import (
 	"github.com/i4de/rulex/core"
 	"github.com/i4de/rulex/glogger"
 	httpserver "github.com/i4de/rulex/plugin/http_server"
+	mqttserver "github.com/i4de/rulex/plugin/mqtt_server"
 	"github.com/i4de/rulex/typex"
 )
 
@@ -41,6 +42,11 @@ func RunRulex(iniPath string) {
 	// Load Http api Server
 	httpServer := httpserver.NewHttpApiServer()
 	if err := engine.LoadPlugin("plugin.http_server", httpServer); err != nil {
+		glogger.GLogger.Error(err)
+		return
+	}
+	mqttServer := mqttserver.NewMqttServer()
+	if err := engine.LoadPlugin("plugin.mqtt_server", mqttServer); err != nil {
 		glogger.GLogger.Error(err)
 		return
 	}
