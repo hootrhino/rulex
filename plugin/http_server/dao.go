@@ -33,7 +33,8 @@ func (s *HttpApiServer) InitDb(dbPath string) {
 
 	if err != nil {
 		glogger.GLogger.Error(err)
-		os.Exit(1)
+		// Sqlite 创建失败应该是致命错误了, 多半是环境出问题，直接给panic了, 不尝试救活
+		panic(err)
 	}
 	// 注册数据库配置表
 	// 这么写看起来是很难受, 但是这玩意就是go的哲学啊(大道至简？？？)

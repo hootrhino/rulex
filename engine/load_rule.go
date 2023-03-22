@@ -9,13 +9,11 @@ import (
 	"github.com/i4de/rulex/typex"
 )
 
-//
 // LoadRule: 每个规则都绑定了资源(FromSource)或者设备(FromDevice)
 // 使用MAP来记录RULE的绑定关系, KEY是UUID, Value是规则
-//
 func (e *RuleEngine) LoadRule(r *typex.Rule) error {
 	// 前置语法验证
-	if err := core.VerifyCallback(r); err != nil {
+	if err := core.VerifyLuaSyntax(r); err != nil {
 		return err
 	}
 	// 前置自定义库校验
@@ -53,9 +51,7 @@ func (e *RuleEngine) LoadRule(r *typex.Rule) error {
 
 }
 
-//
 // GetRule a rule
-//
 func (e *RuleEngine) GetRule(id string) *typex.Rule {
 	v, ok := (e.Rules).Load(id)
 	if ok {
@@ -65,16 +61,11 @@ func (e *RuleEngine) GetRule(id string) *typex.Rule {
 	}
 }
 
-//
-//
-//
 func (e *RuleEngine) SaveRule(r *typex.Rule) {
 	e.Rules.Store(r.UUID, r)
 }
 
-//
 // RemoveRule and inend--rule bindings
-//
 func (e *RuleEngine) RemoveRule(ruleId string) {
 	if rule := e.GetRule(ruleId); rule != nil {
 		// 清空 InEnd 的 bind 资源
@@ -103,9 +94,6 @@ func (e *RuleEngine) RemoveRule(ruleId string) {
 	}
 }
 
-//
-//
-//
 func (e *RuleEngine) AllRule() *sync.Map {
 	return e.Rules
 }

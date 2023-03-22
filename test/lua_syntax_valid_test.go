@@ -40,7 +40,7 @@ func TestLuaSyntax1(t *testing.T) {
 		}`,
 		`function Failed(error) print("[LUA Failed]==========================> OK", error) end`,
 	)
-	err := core.VerifyCallback(rule)
+	err := core.VerifyLuaSyntax(rule)
 	t.Log(err)
 }
 func TestLuaSyntax2(t *testing.T) {
@@ -76,6 +76,6 @@ func TestLuaSyntax2(t *testing.T) {
 		}`,
 		`function Failed(error) print("[LUA Failed]==========================> OK", error) end`,
 	)
-	err := core.VerifyCallback(rule)
+	err := core.VerifyLuaSyntax(rule)
 	t.Log(err)
 }

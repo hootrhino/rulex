@@ -1,6 +1,8 @@
 package typex
 
 import (
+	"github.com/antonmedv/expr"
+	"github.com/antonmedv/expr/vm"
 	lua "github.com/i4de/gopher-lua"
 )
 
@@ -18,17 +20,71 @@ const RULE_RUNNING RuleStatus = 1
 
 // 规则描述
 type Rule struct {
-	Id          string      `json:"id"`
-	UUID        string      `json:"uuid"`
-	Status      RuleStatus  `json:"status"`
-	Name        string      `json:"name"`
-	FromSource  []string    `json:"fromSource"` // 来自数据源
-	FromDevice  []string    `json:"fromDevice"` // 来自设备
-	Actions     string      `json:"actions"`
+	Id         string     `json:"id"`
+	UUID       string     `json:"uuid"`
+	Type       string     `json:"type"` // 脚本类型，目前支持"lua"和"expr"两种
+	Status     RuleStatus `json:"status"`
+	Name       string     `json:"name"`
+	FromSource []string   `json:"fromSource"` // 来自数据源
+	FromDevice []string   `json:"fromDevice"` // 来自设备
+	Actions    string     `json:"actions"`
+	// 0.5 新增功能：支持另一种脚本来筛选数据:https://github.com/antonmedv/expr
+	// 该字段只有在Type=="expr"的时候有效
+	Expression  string      `json:"expression"` // Expr脚本
 	Success     string      `json:"success"`
 	Failed      string      `json:"failed"`
 	Description string      `json:"description"`
-	VM          *lua.LState `json:"-"`
+	LuaVM       *lua.LState `json:"-"` // Lua VM
+	ExprVM      *vm.Program `json:"-"` // Expr Vm
+}
+
+func NewExprRule(e RuleX,
+	uuid string,
+	name string,
+	Type string,
+	Expression string,
+	description string,
+	fromSource []string,
+	fromDevice []string,
+	success string,
+	actions string,
+	failed string) *Rule {
+	rule := NewRule(e,
+		uuid,
+		name,
+		description,
+		fromSource,
+		fromDevice,
+		success,
+		actions,
+		failed)
+	rule.Type = "expr"
+	program, err := expr.Compile(Expression, expr.Env(map[string]interface{}{}))
+	if err != nil {
+		panic(err)
+	}
+	rule.ExprVM = program
+	return rule
+}
+func NewLuaRule(e RuleX,
+	uuid string,
+	name string,
+	description string,
+	fromSource []string,
+	fromDevice []string,
+	success string,
+	actions string,
+	failed string) *Rule {
+	rule := NewRule(e,
+		uuid,
+		name,
+		description,
+		fromSource,
+		fromDevice,
+		success,
+		actions,
+		failed)
+	return rule
 }
 
 // New
@@ -44,6 +100,7 @@ func NewRule(e RuleX,
 	return &Rule{
 		UUID:        uuid,
 		Name:        name,
+		Type:        "lua", // 默认执行lua脚本
 		Description: description,
 		FromSource:  fromSource,
 		FromDevice:  fromDevice,
@@ -51,21 +108,12 @@ func NewRule(e RuleX,
 		Actions:     actions,
 		Success:     success,
 		Failed:      failed,
-		VM: lua.NewState(lua.Options{
+		LuaVM: lua.NewState(lua.Options{
 			RegistrySize:     _VM_Registry_Size,
 			RegistryMaxSize:  _VM_Registry_MaxSize,
 			RegistryGrowStep: _VM_Registry_GrowStep,
 		}),
 	}
-}
-
-/*
-*
-* 配置LUA虚拟机
-*
- */
-func (r *Rule) SetVM(o lua.Options) {
-	r.VM.Options = o
 }
 
 /*
@@ -76,7 +124,7 @@ func (r *Rule) SetVM(o lua.Options) {
 * - 默认加载到 _G 环境里
  */
 func (r *Rule) LoadExternLuaLib(path string) error {
-	return r.VM.DoFile(path)
+	return r.LuaVM.DoFile(path)
 }
 
 /*
@@ -85,10 +133,11 @@ func (r *Rule) LoadExternLuaLib(path string) error {
 *  - Global: 命名空间
 *   - funcName: 函数名称
  */
-func (r *Rule) AddLib(rx RuleX, Global string, funcName string, f func(l *lua.LState) int) {
-	rulexTb := r.VM.G.Global
-	r.VM.SetGlobal(Global, rulexTb)
-	loadLib(rulexTb, r.VM, funcName, f)
+func (r *Rule) AddLib(rx RuleX, Global string, funcName string,
+	f func(l *lua.LState) int) {
+	rulexTb := r.LuaVM.G.Global
+	r.LuaVM.SetGlobal(Global, rulexTb)
+	loadLib(rulexTb, r.LuaVM, funcName, f)
 }
 
 func loadLib(
