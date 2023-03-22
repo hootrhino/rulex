@@ -56,6 +56,7 @@ require (
 )
 
 require (
+	github.com/antonmedv/expr v1.12.5
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/bluele/gcache v0.0.2
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect

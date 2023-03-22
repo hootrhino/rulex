@@ -3,10 +3,10 @@ package core
 import (
 	"errors"
 
+	"github.com/antonmedv/expr"
+	lua "github.com/i4de/gopher-lua"
 	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
-
-	lua "github.com/i4de/gopher-lua"
 )
 
 const (
@@ -26,10 +26,24 @@ func ExecuteFailed(vm *lua.LState, arg lua.LValue) (interface{}, error) {
 	return typex.Execute(vm, FAILED_KEY, arg)
 }
 
-// 执行 Actions 里面的回调函数
+/*
+*
+* Execute Expression
+* https://expr.medv.io/docs/Getting-Started
+*
+ */
+func ExecuteExpression(rule *typex.Rule, env map[string]interface{}) (interface{}, error) {
+	return expr.Run(rule.ExprVM, env)
+}
+
+/*
+*
+* Execute Lua Callback
+*
+ */
 func ExecuteActions(rule *typex.Rule, arg lua.LValue) (lua.LValue, error) {
 	// 原始 lua 数据结构
-	luaOriginTable := rule.VM.GetGlobal(ACTIONS_KEY)
+	luaOriginTable := rule.LuaVM.GetGlobal(ACTIONS_KEY)
 	if luaOriginTable != nil && luaOriginTable.Type() == lua.LTTable {
 		// 断言成包含回调的 table
 		funcsTable := luaOriginTable.(*lua.LTable)
@@ -47,7 +61,7 @@ func ExecuteActions(rule *typex.Rule, arg lua.LValue) (lua.LValue, error) {
 			return nil, err
 		}
 		if rule.Status != typex.RULE_STOP {
-			return typex.RunPipline(rule.VM, funcs, arg)
+			return typex.RunPipline(rule.LuaVM, funcs, arg)
 		}
 		// if stopped, log warning information
 		glogger.GLogger.Warn("Rule has stopped:" + rule.UUID)
@@ -58,8 +72,8 @@ func ExecuteActions(rule *typex.Rule, arg lua.LValue) (lua.LValue, error) {
 	}
 }
 
-// VerifyCallback Verify Lua Syntax
-func VerifyCallback(r *typex.Rule) error {
+// VerifyLuaSyntax Verify Lua Syntax
+func VerifyLuaSyntax(r *typex.Rule) error {
 	tempVm := lua.NewState(lua.Options{
 		SkipOpenLibs:     true,
 		RegistrySize:     0,
@@ -107,8 +121,22 @@ func VerifyCallback(r *typex.Rule) error {
 	tempVm.Close()
 	tempVm = nil
 	// 交给规则脚本
-	r.VM.DoString(r.Success)
-	r.VM.DoString(r.Actions)
-	r.VM.DoString(r.Failed)
+	r.LuaVM.DoString(r.Success)
+	r.LuaVM.DoString(r.Actions)
+	r.LuaVM.DoString(r.Failed)
+	return nil
+}
+
+/*
+*
+* 验证expr表达式的语法
+*
+ */
+func VerifyExprSyntax(r *typex.Rule) error {
+	env := map[string]interface{}{}
+	_, err := expr.Compile(r.Expression, expr.Env(env))
+	if err != nil {
+		return err
+	}
 	return nil
 }

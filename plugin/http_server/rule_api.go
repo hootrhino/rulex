@@ -34,6 +34,8 @@ func CreateRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		FromSource  []string `json:"fromSource" binding:"required"`
 		FromDevice  []string `json:"fromDevice" binding:"required"`
 		Name        string   `json:"name" binding:"required"`
+		Type        string   `json:"type" binding:"required"`
+		Expression  string   `json:"expression"`
 		Description string   `json:"description"`
 		Actions     string   `json:"actions"`
 		Success     string   `json:"success"`
@@ -43,6 +45,10 @@ func CreateRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 
 	if err := c.ShouldBindJSON(&form); err != nil {
 		c.JSON(200, Error400(err))
+		return
+	}
+	if utils.SContains([]string{"lua", "expr"}, form.Type) {
+		c.JSON(200, Error(`rule type must one of 'lua' or 'expr':`+form.Type))
 		return
 	}
 	lenSources := len(form.FromSource)
@@ -67,34 +73,25 @@ func CreateRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		}
 	}
 	// tmpRule 是一个一次性的临时rule，用来验证规则，这么做主要是为了防止真实Lua Vm 被污染
-	tmpRule := typex.NewRule(nil,
-		"tmpRule",
-		"tmpRule",
-		"tmpRule",
-		[]string{},
-		[]string{},
-		form.Success,
-		form.Actions,
-		form.Failed)
-
-	if err := core.VerifyCallback(tmpRule); err != nil {
-		c.JSON(200, Error400(err))
-		return
-	}
-	// 如果是更新操作, 先删除规则
-	if form.UUID != "" {
-		//  DELETE FROM `m_rules` WHERE uuid="UUID"
-		if err1 := hh.DeleteMRule(form.UUID); err1 != nil {
-			c.JSON(200, Error400(err1))
+	tmpRule := typex.NewRule(nil, "_", "_", "_", []string{}, []string{},
+		form.Success, form.Actions, form.Failed)
+	if form.Type == "lua" {
+		if err := core.VerifyLuaSyntax(tmpRule); err != nil {
+			c.JSON(200, Error400(err))
 			return
-		} else {
-			e.RemoveRule(form.UUID)
+		}
+	}
+	if form.Type == "expr" {
+		if err := core.VerifyExprSyntax(tmpRule); err != nil {
+			c.JSON(200, Error400(err))
+			return
 		}
 	}
 	//
 	mRule := &MRule{
-		UUID:        utils.MakeUUID("RULE"),
 		Name:        form.Name,
+		Type:        form.Type,
+		Expression:  form.Expression,
 		Description: form.Description,
 		FromSource:  form.FromSource,
 		FromDevice:  form.FromDevice,
@@ -102,24 +99,65 @@ func CreateRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		Failed:      form.Failed,
 		Actions:     form.Actions,
 	}
-	if err := hh.InsertMRule(mRule); err != nil {
-		c.JSON(200, Error400(err))
-		return
+	// 更新操作
+	if form.UUID != "" {
+		mRule.UUID = form.UUID
+		if err := hh.UpdateMRule(form.UUID, mRule); err != nil {
+			c.JSON(200, Error400(err))
+			return
+		}
 	}
-	rule := typex.NewRule(hh.ruleEngine,
-		mRule.UUID,
-		mRule.Name,
-		mRule.Description,
-		mRule.FromSource,
-		mRule.FromDevice,
-		mRule.Success,
-		mRule.Actions,
-		mRule.Failed)
-	if err := e.LoadRule(rule); err != nil {
-		c.JSON(200, Error400(err))
-	} else {
-		c.JSON(200, Ok())
+	// 新建操作
+	if form.UUID == "" {
+		mRule.UUID = utils.RuleUuid()
+		if err := hh.InsertMRule(mRule); err != nil {
+			c.JSON(200, Error400(err))
+			return
+		}
 	}
+
+	if form.Type == "lua" {
+		rule := typex.NewLuaRule(hh.ruleEngine,
+			mRule.UUID,
+			mRule.Name,
+			mRule.Description,
+			mRule.FromSource,
+			mRule.FromDevice,
+			mRule.Success,
+			mRule.Actions,
+			mRule.Failed)
+		e.RemoveRule(rule.UUID)
+		if err := e.LoadRule(rule); err != nil {
+			c.JSON(200, Error400(err))
+			return
+		} else {
+			c.JSON(200, Ok())
+			return
+		}
+	}
+	if form.Type == "expr" {
+		rule := typex.NewExprRule(hh.ruleEngine,
+			mRule.UUID,
+			mRule.Name,
+			mRule.Type,
+			mRule.Expression,
+			mRule.Description,
+			mRule.FromSource,
+			mRule.FromDevice,
+			mRule.Success,
+			mRule.Actions,
+			mRule.Failed)
+		e.RemoveRule(rule.UUID)
+		if err := e.LoadRule(rule); err != nil {
+			c.JSON(200, Error400(err))
+			return
+		} else {
+			c.JSON(200, Ok())
+			return
+		}
+	}
+	c.JSON(200, Error("unsupported type:"+form.Type))
+
 }
 
 // Delete rule by UUID
@@ -132,9 +170,12 @@ func DeleteRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	}
 	if err1 := hh.DeleteMRule(uuid); err1 != nil {
 		c.JSON(200, Error400(err1))
+		return
+
 	} else {
 		e.RemoveRule(uuid)
 		c.JSON(200, Ok())
+		return
 	}
 
 }
@@ -167,7 +208,7 @@ func ValidateLuaSyntax(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		form.Success,
 		form.Actions,
 		form.Failed)
-	if err := core.VerifyCallback(tmpRule); err != nil {
+	if err := core.VerifyLuaSyntax(tmpRule); err != nil {
 		c.JSON(200, Error400(err))
 	} else {
 		c.JSON(200, Ok())

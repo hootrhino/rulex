@@ -217,48 +217,72 @@ func (e *RuleEngine) WorkDevice(Device *typex.Device, data string) (bool, error)
 	return true, nil
 }
 
-// 执行lua脚本
+/*
+*
+* 执行针对资源端的规则脚本
+*
+ */
 func (e *RuleEngine) RunSourceCallbacks(in *typex.InEnd, callbackArgs string) {
 	// 执行来自资源的脚本
 	for _, rule := range in.BindRules {
 		if rule.Status == typex.RULE_RUNNING {
-			_, err := core.ExecuteActions(&rule, lua.LString(callbackArgs))
-			if err != nil {
-				glogger.GLogger.Error("RunLuaCallbacks error:", err)
-				_, err := core.ExecuteFailed(rule.VM, lua.LString(err.Error()))
+			if rule.Type == "expr" {
+				// 0.5 增加expr库
+				// Expr 不执行 lua 的回调脚本
+				// ENV 暂时不加库, 留到后期扩展
+				_, err := core.ExecuteExpression(&rule, map[string]interface{}{})
 				if err != nil {
-					glogger.GLogger.Error(err)
+					glogger.GLogger.Error("RunLuaCallbacks error:", err)
 				}
-			} else {
-				_, err := core.ExecuteSuccess(rule.VM)
+			}
+			if rule.Type == "lua" {
+				_, err := core.ExecuteActions(&rule, lua.LString(callbackArgs))
 				if err != nil {
-					glogger.GLogger.Error(err)
-					return
+					glogger.GLogger.Error("RunLuaCallbacks error:", err)
+					_, err := core.ExecuteFailed(rule.LuaVM, lua.LString(err.Error()))
+					if err != nil {
+						glogger.GLogger.Error(err)
+					}
+				} else {
+					_, err := core.ExecuteSuccess(rule.LuaVM)
+					if err != nil {
+						glogger.GLogger.Error(err)
+						return // lua 是规则链，有短路原则，中途出错会中断
+					}
 				}
 			}
 		}
 	}
 }
 
-// 执行lua脚本
+/*
+*
+* 执行针对设备端的规则脚本
+*
+ */
 func (e *RuleEngine) RunDeviceCallbacks(Device *typex.Device, callbackArgs string) {
-	// 执行来自资源的脚本
 	for _, rule := range Device.BindRules {
 		if rule.Status == typex.RULE_RUNNING {
-			_, err := core.ExecuteActions(&rule, lua.LString(callbackArgs))
-			if err != nil {
-				glogger.GLogger.Error("RunLuaCallbacks error:", err)
-				_, err := core.ExecuteFailed(rule.VM, lua.LString(err.Error()))
+			if rule.Type == "expr" {
+				// 5.0 增加expr的库
+			}
+			if rule.Type == "lua" {
+				_, err := core.ExecuteActions(&rule, lua.LString(callbackArgs))
 				if err != nil {
-					glogger.GLogger.Error(err)
-				}
-			} else {
-				_, err := core.ExecuteSuccess(rule.VM)
-				if err != nil {
-					glogger.GLogger.Error(err)
-					return
+					glogger.GLogger.Error("RunLuaCallbacks error:", err)
+					_, err := core.ExecuteFailed(rule.LuaVM, lua.LString(err.Error()))
+					if err != nil {
+						glogger.GLogger.Error(err)
+					}
+				} else {
+					_, err := core.ExecuteSuccess(rule.LuaVM)
+					if err != nil {
+						glogger.GLogger.Error(err)
+						return
+					}
 				}
 			}
+
 		}
 	}
 }
