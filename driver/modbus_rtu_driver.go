@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"encoding/json"
+	"sync"
 	"time"
 
 	"github.com/i4de/rulex/common"
@@ -23,6 +24,7 @@ type modBusRtuDriver struct {
 	RuleEngine typex.RuleX
 	Registers  []common.RegisterRW
 	device     *typex.Device
+	lock       sync.Mutex
 }
 
 func NewModBusRtuDriver(
@@ -38,6 +40,7 @@ func NewModBusRtuDriver(
 		client:     client,
 		handler:    handler,
 		Registers:  Registers,
+		lock:       sync.Mutex{},
 	}
 
 }
@@ -62,7 +65,9 @@ func (d *modBusRtuDriver) Read(cmd []byte, data []byte) (int, error) {
 	for _, r := range d.Registers {
 		d.handler.SlaveId = r.SlaverId
 		if r.Function == common.READ_COIL {
+			d.lock.Lock()
 			results, err := d.client.ReadCoils(r.Address, r.Quantity)
+			d.lock.Unlock()
 			if err != nil {
 				return 0, err
 			}
@@ -77,7 +82,9 @@ func (d *modBusRtuDriver) Read(cmd []byte, data []byte) (int, error) {
 			dataMap[r.Tag] = value
 		}
 		if r.Function == common.READ_DISCRETE_INPUT {
+			d.lock.Lock()
 			results, err := d.client.ReadDiscreteInputs(r.Address, r.Quantity)
+			d.lock.Unlock()
 			if err != nil {
 				return 0, err
 			}
@@ -93,7 +100,9 @@ func (d *modBusRtuDriver) Read(cmd []byte, data []byte) (int, error) {
 
 		}
 		if r.Function == common.READ_HOLDING_REGISTERS {
+			d.lock.Lock()
 			results, err := d.client.ReadHoldingRegisters(r.Address, r.Quantity)
+			d.lock.Unlock()
 			if err != nil {
 				return 0, err
 			}
@@ -108,7 +117,9 @@ func (d *modBusRtuDriver) Read(cmd []byte, data []byte) (int, error) {
 			dataMap[r.Tag] = value
 		}
 		if r.Function == common.READ_INPUT_REGISTERS {
+			d.lock.Lock()
 			results, err := d.client.ReadInputRegisters(r.Address, r.Quantity)
+			d.lock.Unlock()
 			if err != nil {
 				return 0, err
 			}
@@ -139,25 +150,33 @@ func (d *modBusRtuDriver) Write(cmd []byte, data []byte) (int, error) {
 	}
 	for _, r := range dataMap {
 		if r.Function == common.WRITE_SINGLE_COIL {
+			d.lock.Lock()
 			_, err := d.client.WriteSingleCoil(r.Address, binary.BigEndian.Uint16([]byte(r.Value)[0:2]))
+			d.lock.Unlock()
 			if err != nil {
 				return 0, err
 			}
 		}
 		if r.Function == common.WRITE_MULTIPLE_COILS {
+			d.lock.Lock()
 			_, err := d.client.WriteMultipleCoils(r.Address, r.Quantity, []byte(r.Value))
+			d.lock.Unlock()
 			if err != nil {
 				return 0, err
 			}
 		}
 		if r.Function == common.WRITE_SINGLE_HOLDING_REGISTER {
+			d.lock.Lock()
 			_, err := d.client.WriteSingleRegister(r.Address, binary.BigEndian.Uint16([]byte(r.Value)[0:2]))
+			d.lock.Unlock()
 			if err != nil {
 				return 0, err
 			}
 		}
 		if r.Function == common.WRITE_MULTIPLE_HOLDING_REGISTERS {
+			d.lock.Lock()
 			_, err := d.client.WriteMultipleRegisters(r.Address, r.Quantity, []byte(r.Value))
+			d.lock.Unlock()
 			if err != nil {
 				return 0, err
 			}

@@ -4,6 +4,7 @@ package driver
 import (
 	"context"
 	"errors"
+	"sync"
 
 	"github.com/i4de/rulex/typex"
 	serial "github.com/wwhai/goserial"
@@ -15,6 +16,7 @@ type rawUartDriver struct {
 	ctx        context.Context
 	RuleEngine typex.RuleX
 	device     *typex.Device
+	lock       sync.Mutex
 }
 
 // 初始化一个驱动
@@ -29,6 +31,7 @@ func NewRawUartDriver(
 		ctx:        ctx,
 		serialPort: serialPort,
 		device:     device,
+		lock:       sync.Mutex{},
 	}
 }
 
@@ -39,9 +42,7 @@ func (a *rawUartDriver) Init(map[string]string) error {
 }
 
 func (a *rawUartDriver) Work() error {
-
 	return nil
-
 }
 func (a *rawUartDriver) State() typex.DriverState {
 	return a.state
@@ -55,13 +56,17 @@ func (a *rawUartDriver) Test() error {
 	if a.serialPort == nil {
 		return errors.New("serialPort is nil")
 	}
+	a.lock.Lock()
 	_, err := a.serialPort.Write([]byte("\r\n"))
+	a.lock.Unlock()
 	return err
-
 }
 
 func (a *rawUartDriver) Read(cmd []byte, b []byte) (int, error) {
-	return a.serialPort.Read(b)
+	a.lock.Lock()
+	n, e := a.serialPort.Read(b)
+	a.lock.Unlock()
+	return n, e
 }
 
 func (a *rawUartDriver) Write(cmd []byte, b []byte) (int, error) {

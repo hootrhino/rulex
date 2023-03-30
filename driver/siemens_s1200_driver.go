@@ -2,6 +2,7 @@ package driver
 
 import (
 	"encoding/json"
+	"sync"
 
 	"github.com/i4de/rulex/common"
 	"github.com/i4de/rulex/glogger"
@@ -21,6 +22,7 @@ type siemens_s1200_driver struct {
 	device     *typex.Device
 	RuleEngine typex.RuleX
 	dbs        []common.S1200Block // PLC 的DB块
+	lock       sync.Mutex
 }
 
 func NewS1200Driver(d *typex.Device,
@@ -33,6 +35,7 @@ func NewS1200Driver(d *typex.Device,
 		RuleEngine: e,
 		s7client:   s7client,
 		dbs:        dbs,
+		lock:       sync.Mutex{},
 	}
 }
 
@@ -69,9 +72,12 @@ func (s1200 *siemens_s1200_driver) Read(cmd []byte, data []byte) (int, error) {
 	values := []common.S1200BlockValue{}
 	for _, db := range s1200.dbs {
 		rData := []byte{}
+		s1200.lock.Lock()
 		if err := s1200.s7client.AGReadDB(db.Address, db.Start, db.Size, rData); err != nil {
+			s1200.lock.Unlock()
 			return 0, err
 		}
+		s1200.lock.Unlock()
 		values = append(values, common.S1200BlockValue{
 			Tag:     db.Tag,
 			Address: db.Address,
@@ -105,14 +111,17 @@ func (s1200 *siemens_s1200_driver) Write(cmd []byte, data []byte) (int, error) {
 	}
 	//
 	for _, block := range blocks {
+		s1200.lock.Lock()
 		if err := s1200.s7client.AGWriteDB(
 			block.Address,
 			block.Start,
 			block.Size,
 			block.Value,
 		); err != nil {
+			s1200.lock.Unlock()
 			return 0, err
 		}
+		s1200.lock.Unlock()
 	}
 	return 0, nil
 }

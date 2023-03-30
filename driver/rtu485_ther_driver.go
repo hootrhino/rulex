@@ -6,6 +6,7 @@ package driver
 
 import (
 	"encoding/json"
+	"sync"
 
 	"github.com/i4de/rulex/common"
 	"github.com/i4de/rulex/glogger"
@@ -37,6 +38,7 @@ type rtu485_THer_Driver struct {
 	RuleEngine typex.RuleX
 	Registers  []common.RegisterRW
 	device     *typex.Device
+	lock       sync.Mutex
 }
 
 func NewRtu485THerDriver(d *typex.Device, e typex.RuleX,
@@ -50,6 +52,7 @@ func NewRtu485THerDriver(d *typex.Device, e typex.RuleX,
 		handler:    handler,
 		client:     client,
 		Registers:  registers,
+		lock:       sync.Mutex{},
 	}
 }
 
@@ -75,7 +78,9 @@ func (rtu485 *rtu485_THer_Driver) Read(cmd []byte, data []byte) (int, error) {
 	dataMap := map[string]common.RegisterRW{}
 	for _, r := range rtu485.Registers {
 		rtu485.handler.SlaveId = r.SlaverId
+		rtu485.lock.Lock()
 		results, err := rtu485.client.ReadHoldingRegisters(0x00, 2)
+		rtu485.lock.Unlock()
 		if err != nil {
 			return 0, err
 		}
