@@ -6,6 +6,7 @@ package driver
 
 import (
 	"encoding/json"
+	"sync"
 
 	"github.com/i4de/rulex/common"
 	"github.com/i4de/rulex/typex"
@@ -20,6 +21,7 @@ type tss200_v_0_2_Driver struct {
 	RuleEngine typex.RuleX
 	Registers  []common.RegisterRW
 	device     *typex.Device
+	lock       sync.Mutex
 }
 
 func NewTSS200Driver(d *typex.Device, e typex.RuleX,
@@ -33,6 +35,7 @@ func NewTSS200Driver(d *typex.Device, e typex.RuleX,
 		handler:    handler,
 		client:     client,
 		Registers:  registers,
+		lock:       sync.Mutex{},
 	}
 }
 func (tss *tss200_v_0_2_Driver) Test() error {
@@ -74,7 +77,9 @@ func (tss *tss200_v_0_2_Driver) Read(cmd []byte, data []byte) (int, error) {
 	dataMap := map[string]common.RegisterRW{}
 	for _, r := range tss.Registers {
 		tss.handler.SlaveId = r.SlaverId
+		tss.lock.Lock()
 		result, err := tss.client.ReadHoldingRegisters(17, 9)
+		tss.lock.Unlock()
 		if err != nil {
 			return 0, err
 		}
