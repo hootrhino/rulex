@@ -27,6 +27,7 @@ require (
 	github.com/mochi-co/mqtt v1.2.3
 	github.com/muka/go-bluetooth v0.0.0-20220727115723-affd3a3c4e82
 	github.com/nats-io/nats.go v1.17.0
+	github.com/patrikeh/go-deep v0.0.0-20220129152125-82b8db494fe5
 	github.com/plgd-dev/go-coap/v2 v2.6.0
 	github.com/plgd-dev/kit/v2 v2.0.0-20211006190727-057b33161b90
 	github.com/robinson/gos7 v0.0.0-20211020181838-a2b780484319
