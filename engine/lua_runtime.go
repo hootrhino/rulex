@@ -87,6 +87,13 @@ func LoadBuildInLuaLib(e typex.RuleX, r *typex.Rule) {
 	r.AddLib(e, "hex", "Bytes2Hexs", rulexlib.Bytes2Hexs(e))
 	r.AddLib(e, "hex", "Hexs2Bytes", rulexlib.Hexs2Bytes(e))
 	//------------------------------------------------------------------------
+	// 十六进制字节序处理
+	//------------------------------------------------------------------------
+	r.AddLib(e, "hex", "ABCD", rulexlib.ABCD(e))
+	r.AddLib(e, "hex", "DCBA", rulexlib.DCBA(e))
+	r.AddLib(e, "hex", "BADC", rulexlib.BADC(e))
+	r.AddLib(e, "hex", "CDAB", rulexlib.CDAB(e))
+	//------------------------------------------------------------------------
 	// 注册GPIO操作函数到LUA运行时
 	//------------------------------------------------------------------------
 	// EEKIT

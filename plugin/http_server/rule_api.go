@@ -47,7 +47,7 @@ func CreateRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		c.JSON(200, Error400(err))
 		return
 	}
-	if utils.SContains([]string{"lua", "expr"}, form.Type) {
+	if !utils.SContains([]string{"lua", "expr"}, form.Type) {
 		c.JSON(200, Error(`rule type must one of 'lua' or 'expr':`+form.Type))
 		return
 	}

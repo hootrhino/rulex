@@ -157,6 +157,13 @@ func LoadAppLib(app *typex.Application, e typex.RuleX) {
 	addAppLib(app, e, "hex", "Bytes2Hexs", rulexlib.Bytes2Hexs(e))
 	addAppLib(app, e, "hex", "Hexs2Bytes", rulexlib.Hexs2Bytes(e))
 	//------------------------------------------------------------------------
+	// 十六进制字节序处理
+	//------------------------------------------------------------------------
+	addAppLib(app, e, "hex", "ABCD", rulexlib.ABCD(e))
+	addAppLib(app, e, "hex", "DCBA", rulexlib.DCBA(e))
+	addAppLib(app, e, "hex", "BADC", rulexlib.BADC(e))
+	addAppLib(app, e, "hex", "CDAB", rulexlib.CDAB(e))
+	//------------------------------------------------------------------------
 	// 注册GPIO操作函数到LUA运行时
 	//------------------------------------------------------------------------
 	// EEKIT

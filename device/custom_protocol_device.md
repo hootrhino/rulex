@@ -23,7 +23,7 @@
             "uart": "COM3"
         },
         "deviceConfig": {
-            "1": {
+            "get_uuid": {
                 "autoRequest": true,
                 "autoRequestGap": 5000,
                 "bufferSize": 7,
@@ -34,8 +34,7 @@
                 "description": "获取UUID",
                 "name": "get_uuid",
                 "protocol": {
-                    "in": "FFFFFF014CB2AA55",
-                    "out": "FFFFFF014CB2AA55"
+                    "in": "FFFFFF014CB2AA55"
                 },
                 "rw": 1,
                 "timeout": 1000
@@ -83,17 +82,16 @@
   ```lua
      -- 第一个参数为提取表达式
      -- 格式为: "name1:[start, end];name2:[start, end]···"
-  AppNAME = 'applib:MatchHex'
-  AppVERSION = '0.0.1'
-  function Main(arg)
-      -- 十六进制提取器
-      local MatchHexS = applib:MatchHex("age:[1,3];sex:[4,5]", "FFFFFF014CB2AA55")
-      for key, value in pairs(MatchHexS) do
-          print('applib:MatchHex', key, value)
+      AppNAME = 'applib:MatchHex'
+      AppVERSION = '0.0.1'
+      function Main(arg)
+          -- 十六进制提取器
+          local MatchHexS = applib:MatchHex("age:[1,3];sex:[4,5]", "FFFFFF014CB2AA55")
+          for key, value in pairs(MatchHexS) do
+              print('applib:MatchHex', key, value)
+          end
+          return 0
       end
-      return 0
-  end
-
   ```
 - applib:MB 二进制匹匹配, 返回值为二进制的字符串表示法
   ```lua
@@ -107,5 +105,27 @@
      -- 第一个参数为提取表达式
      -- 格式为: [<|> K1:LEN1 K2:LEN2... ], 返回一个K-V table
 		local V6 = rulexlib:T2J(rulexlib:MBHex("<a:5 b:3 c:1", "aab", false))
+  ```
+- hex:ABCD 十六进制字节序按照 ABCD 顺序调整
+  ```lua
+		local V, err = rulexlib:ABCD("AABBCCDDEEFF")
+    -- V = FFEEDDCCBBAA
+  ```
 
+- hex:DCBA 十六进制字节序按照 DCBA 顺序调整
+  ```lua
+		local V, err = rulexlib:DCBA("FFEEDDCCBBAA")
+    -- V = AABBCCDDEEFF
+  ```
+
+- hex:BADC 十六进制字节序按照 BADC 顺序调整
+  ```lua
+		local V, err = rulexlib:BADC("CDAB12EF")
+    -- V = ABCDEF12
+  ```
+
+- hex:CDAB 十六进制字节序按照 CDAB 顺序调整
+  ```lua
+		local V, err = rulexlib:CDAB("ABCDEF12")
+    -- V = CDAB12EF
   ```
