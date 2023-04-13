@@ -108,6 +108,7 @@ require (
 	github.com/prometheus/procfs v0.0.8 // indirect
 	github.com/rs/xid v1.4.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
+	github.com/shirou/gopsutil v3.21.11+incompatible
 	github.com/tarm/serial v0.0.0-20180830185346-98f6abe2eb07
 	github.com/tbrandon/mbserver v0.0.0-20211210035124-daf3c8c4269f
 	github.com/tklauser/go-sysconf v0.3.10 // indirect
