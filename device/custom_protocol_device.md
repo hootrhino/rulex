@@ -84,7 +84,7 @@
 ## 设备数据读取
 ```lua
 -- get_uuid 就是配置的读指令
-local binary1, err1 = applib:ReadDevice("d679d12654bb7416ca8ac7e52faabed57", "get_uuid")
+local binary1, err1 = applib:ReadDevice("ID12345", "get_uuid")
 if err1 ~= nil then
     print(err1)
 end
@@ -92,7 +92,8 @@ end
 ## 设备数据写入
 ```lua
 -- ctrl1 就是配置的写指令
-local binary1, err1 = applib:WriteDevice("d679d12654bb7416ca8ac7e52faabed57", "ctrl1")
+-- 参数：id, 指令，参数
+local binary1, err1 = applib:WriteDevice("ID12345", "ctrl1", "args")
 if err1 ~= nil then
     print(err1)
 end
