@@ -135,6 +135,7 @@ func (d *modBusRtuDriver) Read(cmd []byte, data []byte) (int, error) {
 		}
 
 		// 设置一个间隔时间防止低级CPU黏包等
+		// TODO 未来通过参数形式传递
 		time.Sleep(time.Duration(100) * time.Millisecond)
 	}
 	bytes, _ := json.Marshal(dataMap)
@@ -198,4 +199,3 @@ func (d *modBusRtuDriver) Stop() error {
 	d = nil
 	return nil
 }
-

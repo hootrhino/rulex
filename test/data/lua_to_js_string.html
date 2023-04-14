@@ -26,13 +26,17 @@
 
 <body>
     <h1>格式化调试工具</h1>
+
+    <p>
+        这个小工具在开发阶段用于生成符合JSON规范的字符串
+    </p>
     <div>
-        <h3>源码</h3>
+        <h3>Lua源码</h3>
         <textarea id="data" name="data" rows="10" cols="100">
 function Main(arg)
     return 0
 end
-        </textarea>
+</textarea>
     </div>
     <div>
         <h3>转换后的字符串</h3>
@@ -46,7 +50,7 @@ end
 
     function gettext() {
         let s = document.getElementById("data").value.toString()
-        document.getElementById("data2").innerHTML = s;
+        document.getElementById("data2").innerHTML = JSON.stringify(s);
     }
 </script>
 

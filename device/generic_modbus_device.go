@@ -77,6 +77,9 @@ func (mdev *generic_modbus_device) Init(devId string, configMap map[string]inter
 	if err := utils.BindSourceConfig(configMap, &mdev.mainConfig); err != nil {
 		return err
 	}
+	if mdev.mainConfig.Timeout > 20 {
+		return errors.New("'timeout' must less than 20 second")
+	}
 	// 检查Tag有没有重复
 	tags := []string{}
 	for _, register := range mdev.mainConfig.Registers {
@@ -100,10 +103,6 @@ func (mdev *generic_modbus_device) Init(devId string, configMap map[string]inter
 			return errs
 		}
 	}
-	// 轮询请求时间，如果没有指定，默认10ms, 注意单位: ms
-	if mdev.mainConfig.WaitTime == 0 {
-		mdev.mainConfig.WaitTime = 10
-	}
 
 	return nil
 }
@@ -119,6 +118,7 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 		mdev.rtuHandler.DataBits = mdev.rtuConfig.DataBits
 		mdev.rtuHandler.Parity = mdev.rtuConfig.Parity
 		mdev.rtuHandler.StopBits = mdev.rtuConfig.StopBits
+		// timeout 最大不能超过20, 不然无意义
 		mdev.rtuHandler.Timeout = time.Duration(mdev.mainConfig.Timeout) * time.Second
 		if core.GlobalConfig.AppDebugMode {
 			mdev.rtuHandler.Logger = golog.New(os.Stdout, "485mdevSource: ", golog.LstdFlags)

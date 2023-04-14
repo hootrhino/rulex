@@ -5,14 +5,15 @@
 
 ```json
 {
-    "name": "GENERIC_MODBUS-NEW",
+    "name": "GENERIC_MODBUS",
     "type": "GENERIC_MODBUS",
+    "actionScript": "",
     "description": "GENERIC_MODBUS",
     "config": {
-        "frequency": 5,
+        "frequency": 100,
         "autoRequest": true,
         "mode": "RTU",
-        "waitTime": 10,
+        "timeout": 5,
         "config": {
             "baudRate": 9600,
             "dataBits": 8,
@@ -20,18 +21,24 @@
             "parity": "N",
             "port": 502,
             "stopBits": 1,
-            "uart": "COM4"
+            "uart": "COM5"
         },
         "registers": [
             {
-                "address": 0,
-                "function": 3,
-                "quantity": 1,
                 "slaverId": 1,
+                "function": 3,
+                "address": 3,
+                "quantity": 3,
                 "tag": "d1"
+            },
+            {
+                "slaverId": 2,
+                "function": 3,
+                "address": 3,
+                "quantity": 3,
+                "tag": "d2"
             }
-        ],
-        "timeout": 10
+        ]
     }
 }
 ```
