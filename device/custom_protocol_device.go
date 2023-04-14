@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"sync"
 	"time"
 
 	"github.com/i4de/rulex/core"
@@ -82,14 +81,12 @@ type CustomProtocolDevice struct {
 	// tcpConn    *net.TCPConn // rawtcp 以后支持
 	// udpConn    *net.UDPConn // rawudp 以后支持
 	mainConfig _CustomProtocolConfig
-	locker     sync.Locker
 	errorCount int // 记录最大容错数，默认5次，出错超过5此就重启
 }
 
 func NewCustomProtocolDevice(e typex.RuleX) typex.XDevice {
 	mdev := new(CustomProtocolDevice)
 	mdev.RuleEngine = e
-	mdev.locker = &sync.Mutex{}
 	mdev.mainConfig = _CustomProtocolConfig{
 		CommonConfig: _CommonConfig{},
 		UartConfig:   _UartConfig{},
@@ -178,7 +175,7 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 		mdev.serialPort = serialPort
 		// 起一个线程去判断是否要轮询
 		go func(ctx context.Context, pp map[string]_Protocol) {
-			result := [100]byte{} // 全局buf, 默认是100字节, 应该能覆盖绝大多数报文了
+
 			for {
 				select {
 				case <-ctx.Done():
@@ -205,16 +202,15 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 					if core.GlobalConfig.AppDebugMode {
 						log.Println("[AppDebugMode] Write data:", hexs)
 					}
-					mdev.locker.Lock()
 					if _, err1 := mdev.serialPort.Write(hexs); err1 != nil {
-						glogger.GLogger.Error("mdev.serialPort.Write error: ", err1)
+						glogger.GLogger.Error("serialPort.Write error: ", err1)
 						mdev.errorCount++
 						continue
 					}
-					mdev.locker.Unlock()
+
 					// 协议等待响应时间毫秒
 					time.Sleep(time.Duration(p.AutoRequestGap) * time.Millisecond)
-					mdev.locker.Lock()
+					result := [100]byte{} // 全局buf, 默认是100字节, 应该能覆盖绝大多数报文了
 					ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 					if _, err2 := utils.ReadAtLeast(ctx, cancel, mdev.serialPort, result[:p.BufferSize],
 						p.BufferSize); err2 != nil {
@@ -222,7 +218,6 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 						mdev.errorCount++
 						continue
 					}
-					mdev.locker.Unlock()
 					if core.GlobalConfig.AppDebugMode {
 						log.Println("[AppDebugMode] Write data:", p.ProtocolArg.In)
 						log.Println("[AppDebugMode] Read data:", result[:p.BufferSize])
@@ -255,9 +250,6 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 						// 返回是十六进制大写字符串
 						mdev.RuleEngine.WorkDevice(mdev.Details(), string(bytes))
 					} else {
-						if p.OnCheckError == "IGNORE" {
-							// Do Nothing
-						}
 						if p.OnCheckError == "LOG" {
 							msg := "checkSum error, Algorithm:%s; Begin:%v; End:%v; CheckPos:%v;"
 							glogger.GLogger.Error(msg,
@@ -288,24 +280,28 @@ func (mdev *CustomProtocolDevice) OnRead(cmd []byte, data []byte) (int, error) {
 	// 拿到命令的索引
 	p, exists := mdev.mainConfig.DeviceConfig[string(cmd)]
 	if exists {
-		mdev.locker.Lock()
+		// 判断是不是读权限
+		if p.RW != 1 {
+			return 0, errors.New("permission deny")
+		}
+
 		hexs, err0 := hex.DecodeString(p.ProtocolArg.In)
 		if err0 != nil {
 			glogger.GLogger.Error(err0)
 			mdev.errorCount++
 			return 0, err0
 		}
-		if _, err1 := mdev.serialPort.Write(hexs); err1 != nil {
+
+		_, err1 := mdev.serialPort.Write(hexs)
+		if err1 != nil {
 			glogger.GLogger.Error("serialPort.Write error: ", err1)
 			mdev.errorCount++
 			return 0, err1
 		}
-		mdev.locker.Unlock()
 
 		// 协议等待响应时间毫秒
 		time.Sleep(time.Duration(p.AutoRequestGap) * time.Millisecond)
 		result := [100]byte{} // 全局buf, 默认是100字节, 应该能覆盖绝大多数报文了
-		mdev.locker.Lock()
 
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		if _, err2 := utils.ReadAtLeast(ctx, cancel, mdev.serialPort, result[:p.BufferSize],
@@ -314,7 +310,6 @@ func (mdev *CustomProtocolDevice) OnRead(cmd []byte, data []byte) (int, error) {
 			mdev.errorCount++
 			return 0, err2
 		}
-		mdev.locker.Unlock()
 
 		if core.GlobalConfig.AppDebugMode {
 			log.Println("[AppDebugMode] Write data:", p.ProtocolArg.In)
@@ -378,11 +373,87 @@ func (mdev *CustomProtocolDevice) OnRead(cmd []byte, data []byte) (int, error) {
  */
 
 // 把数据写入设备
-// 根据第二个参数来找配置进去的自定义协议, 必须进来一个可识别的指令
-// 其中cmd常为0,为无意义参数
-func (mdev *CustomProtocolDevice) OnWrite(_ []byte, data []byte) (int, error) {
+func (mdev *CustomProtocolDevice) OnWrite(cmd []byte, data []byte) (int, error) {
+	// 拿到命令的索引
+	p, exists := mdev.mainConfig.DeviceConfig[string(cmd)]
+	if exists {
+		// 判断是不是写权限
+		if p.RW != 2 {
+			return 0, errors.New("permission deny")
+		}
+		hexs, err0 := hex.DecodeString(p.ProtocolArg.In)
+		if err0 != nil {
+			glogger.GLogger.Error(err0)
+			mdev.errorCount++
+			return 0, err0
+		}
+		if _, err1 := mdev.serialPort.Write(hexs); err1 != nil {
+			glogger.GLogger.Error("serialPort.Write error: ", err1)
+			mdev.errorCount++
+			return 0, err1
+		}
 
-	return 0, errors.New("unknown write command")
+		// 协议等待响应时间毫秒
+		time.Sleep(time.Duration(p.AutoRequestGap) * time.Millisecond)
+		result := [100]byte{} // 全局buf, 默认是100字节, 应该能覆盖绝大多数报文了
+
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		if _, err2 := utils.ReadAtLeast(ctx, cancel, mdev.serialPort, result[:p.BufferSize],
+			p.BufferSize); err2 != nil {
+			glogger.GLogger.Error("serialPort.ReadAtLeast error: ", err2)
+			mdev.errorCount++
+			return 0, err2
+		}
+		if core.GlobalConfig.AppDebugMode {
+			log.Println("[AppDebugMode] Write data:", p.ProtocolArg.In)
+			log.Println("[AppDebugMode] Read data:", result[:p.BufferSize])
+		}
+		// 返回值
+		dataMap := map[string]string{}
+		checkOk := false
+		if p.CheckAlgorithm == "CRC16" || p.CheckAlgorithm == "crc16" {
+			glogger.GLogger.Debug("checkCRC:", result[:p.BufferSize],
+				int(result[:p.BufferSize][p.ChecksumValuePos]))
+			checkOk = mdev.checkCRC(result[:p.BufferSize],
+				int(result[:p.BufferSize][p.ChecksumValuePos]))
+		}
+		if p.CheckAlgorithm == "XOR" || p.CheckAlgorithm == "xor" {
+			glogger.GLogger.Debug("checkCRC:", result[:p.BufferSize],
+				int(result[:p.BufferSize][p.ChecksumValuePos]))
+			checkOk = mdev.checkCRC(result[:p.BufferSize],
+				int(result[:p.BufferSize][p.ChecksumValuePos]))
+		}
+		// NONECHECK: 不校验
+		if p.CheckAlgorithm == "NONECHECK" {
+			checkOk = true
+		}
+		if checkOk {
+			// 返回给lua参数是十六进制大写字符串
+			dataMap["name"] = p.Name
+			dataMap["in"] = p.ProtocolArg.In
+			dataMap["out"] = hex.EncodeToString(result[:p.BufferSize])
+			bytes, _ := json.Marshal(dataMap)
+			// 返回是十六进制大写字符串
+			copy(data, bytes)
+			return len(bytes), nil
+		} else {
+			if p.OnCheckError == "IGNORE" {
+				// Do Nothing
+				return 0, nil
+			}
+			if p.OnCheckError == "LOG" {
+				msg := "checkSum error, Algorithm:%s; Begin:%v; End:%v; CheckPos:%v;"
+				glogger.GLogger.Error(msg,
+					p.CheckAlgorithm,
+					p.ChecksumBegin,
+					p.ChecksumEnd,
+					p.ChecksumValuePos)
+				mdev.errorCount++
+				return 0, errors.New(msg)
+			}
+		}
+	}
+	return 0, errors.New("unknown write command:" + string(cmd))
 }
 
 // 设备当前状态

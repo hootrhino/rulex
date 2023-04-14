@@ -95,8 +95,7 @@ func startDevices(abstractDevice typex.XDevice, deviceInfo *typex.Device, e *Rul
 	}
 	if err := abstractDevice.Init(deviceInfo.UUID, config); err != nil {
 		e.RemoveDevice(deviceInfo.UUID)
-		err1 := fmt.Errorf("device [%v] Init error", deviceInfo.UUID)
-		return err1
+		return err
 	}
 	// Bind
 	deviceInfo.Device = abstractDevice

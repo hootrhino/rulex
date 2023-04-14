@@ -154,7 +154,7 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 		return nil
 	}
 	go func(ctx context.Context, Driver typex.XExternalDriver) {
-		ticker := time.NewTicker(time.Duration(5) * time.Second)
+		ticker := time.NewTicker(time.Duration(mdev.mainConfig.Frequency) * time.Millisecond)
 		buffer := make([]byte, common.T_64KB)
 		// mdev.driver.Read([]byte{}, buffer) //清理缓存
 		for {
