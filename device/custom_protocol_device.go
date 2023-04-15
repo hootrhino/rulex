@@ -221,9 +221,6 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 						mdev.errorCount++
 						continue
 					}
-
-					// 协议等待响应时间毫秒
-					time.Sleep(time.Duration(p.AutoRequestGap) * time.Millisecond)
 					result := [100]byte{} // 全局buf, 默认是100字节, 应该能覆盖绝大多数报文了
 					ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 					if _, err2 := utils.ReadAtLeast(ctx, mdev.serialPort, result[:p.BufferSize],
@@ -233,6 +230,7 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 						cancel()
 						continue
 					}
+					cancel()
 					if core.GlobalConfig.AppDebugMode {
 						log.Println("[AppDebugMode] Write data:", p.ProtocolArg.In)
 						log.Println("[AppDebugMode] Read data:", result[:p.BufferSize])
@@ -314,10 +312,7 @@ func (mdev *CustomProtocolDevice) OnRead(cmd []byte, data []byte) (int, error) {
 			return 0, err1
 		}
 
-		// 协议等待响应时间毫秒
-		time.Sleep(time.Duration(p.AutoRequestGap) * time.Millisecond)
 		result := [100]byte{} // 全局buf, 默认是100字节, 应该能覆盖绝大多数报文了
-
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		if _, err2 := utils.ReadAtLeast(ctx, mdev.serialPort, result[:p.BufferSize],
 			p.BufferSize); err2 != nil {
