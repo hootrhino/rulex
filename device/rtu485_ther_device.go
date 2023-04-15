@@ -94,7 +94,7 @@ func (ther *rtu485_ther) Start(cctx typex.CCTX) error {
 		return nil
 	}
 	go func(ctx context.Context, Driver typex.XExternalDriver) {
-		ticker := time.NewTicker(time.Duration(ther.mainConfig.Frequency) * time.Second)
+		ticker := time.NewTicker(time.Duration(ther.mainConfig.Frequency) * time.Millisecond)
 		buffer := make([]byte, common.T_64KB)
 		ther.driver.Read([]byte{}, buffer) //清理缓存
 		for {

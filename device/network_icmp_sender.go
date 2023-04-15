@@ -49,7 +49,7 @@ func (sender *IcmpSender) Init(devId string, configMap map[string]interface{}) e
 		return nil
 	}
 	go func(ctx context.Context) {
-		ticker := time.NewTicker(time.Duration(sender.mainConfig.Frequency) * time.Second)
+		ticker := time.NewTicker(time.Duration(sender.mainConfig.Frequency) * time.Millisecond)
 		for {
 			<-ticker.C
 			select {

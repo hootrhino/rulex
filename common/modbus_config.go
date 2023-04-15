@@ -3,7 +3,6 @@ package common
 type ModBusConfig struct {
 	Mode     string `json:"mode" title:"工作模式" info:"RTU/TCP"`
 	Timeout  int    `json:"timeout" validate:"required" title:"连接超时" info:""`
-	WaitTime int    `json:"waitTime" title:"轮询等待时间, 默认100ms" info:""`
 	// Weather allow AutoRequest?
 	AutoRequest bool `json:"autoRequest" title:"启动轮询" info:""`
 	// Request Frequency, default 5 second

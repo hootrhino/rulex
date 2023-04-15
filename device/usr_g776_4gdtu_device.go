@@ -78,7 +78,7 @@ func (uart *UsrG776DTU) Start(cctx typex.CCTX) error {
 		return nil
 	}
 	go func(ctx context.Context) {
-		ticker := time.NewTicker(time.Duration(uart.mainConfig.Frequency) * time.Second)
+		ticker := time.NewTicker(time.Duration(uart.mainConfig.Frequency) * time.Millisecond)
 		buffer := make([]byte, common.T_64KB)
 		uart.driver.Read([]byte{}, buffer) //清理缓存
 		for {

@@ -67,7 +67,8 @@ func NewGenericModbusDevice(e typex.RuleX) typex.XDevice {
 	mdev.mainConfig = common.ModBusConfig{}
 	mdev.tcpConfig = common.HostConfig{}
 	mdev.rtuConfig = common.RTUConfig{}
-	mdev.status = typex.DEV_UP
+	mdev.Busy = false
+	mdev.status = typex.DEV_DOWN
 	return mdev
 }
 
@@ -77,8 +78,14 @@ func (mdev *generic_modbus_device) Init(devId string, configMap map[string]inter
 	if err := utils.BindSourceConfig(configMap, &mdev.mainConfig); err != nil {
 		return err
 	}
+	// 超时大雨20秒无意义
 	if mdev.mainConfig.Timeout > 20 {
 		return errors.New("'timeout' must less than 20 second")
+	}
+	// 频率不能太快
+	if mdev.mainConfig.Frequency < 50 {
+		return errors.New("'frequency' must grate than 50 millisecond")
+
 	}
 	// 检查Tag有没有重复
 	tags := []string{}
@@ -156,7 +163,6 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 	go func(ctx context.Context, Driver typex.XExternalDriver) {
 		ticker := time.NewTicker(time.Duration(mdev.mainConfig.Frequency) * time.Millisecond)
 		buffer := make([]byte, common.T_64KB)
-		// mdev.driver.Read([]byte{}, buffer) //清理缓存
 		for {
 			<-ticker.C
 			select {
@@ -169,9 +175,15 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 				{
 				}
 			}
+			if mdev.Busy {
+				continue
+			}
+
+			mdev.Busy = true
 			mdev.locker.Lock()
 			n, err := Driver.Read([]byte{}, buffer)
 			mdev.locker.Unlock()
+			mdev.Busy = false
 			if err != nil {
 				glogger.GLogger.Error(err)
 			} else {

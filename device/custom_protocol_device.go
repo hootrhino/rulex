@@ -25,7 +25,7 @@ import (
 
 type _CommonConfig struct {
 	Transport string `json:"transport" validate:"required"` // 传输协议
-	WaitTime  int    `json:"waitTime" validate:"required"`  // 单个轮询间隔
+	Frequency int64  `json:"frequency" validate:"required" title:"采集频率" info:""`
 	RetryTime int    `json:"retryTime" validate:"required"` // 几次以后重启,0 表示不重启
 }
 type _UartConfig struct {
@@ -92,6 +92,7 @@ func NewCustomProtocolDevice(e typex.RuleX) typex.XDevice {
 		UartConfig:   _UartConfig{},
 		DeviceConfig: map[string]_Protocol{},
 	}
+	mdev.Busy = false
 	mdev.status = typex.DEV_DOWN
 	mdev.errorCount = 0
 	return mdev
@@ -110,6 +111,11 @@ func (mdev *CustomProtocolDevice) Init(devId string, configMap map[string]interf
 	if !contains([]string{`rawtcp`, `rawudp`, `rs485rawserial`, `rs485rawtcp`},
 		mdev.mainConfig.CommonConfig.Transport) {
 		return errors.New("option only one of 'rawtcp','rawudp','rs485rawserial','rs485rawserial'")
+	}
+
+	// 频率不能太快
+	if mdev.mainConfig.CommonConfig.Frequency < 50 {
+		return errors.New("'frequency' must grate than 50 millisecond")
 	}
 	// parse hex format
 	for _, v := range mdev.mainConfig.DeviceConfig {
@@ -175,11 +181,15 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 		mdev.serialPort = serialPort
 		// 起一个线程去判断是否要轮询
 		go func(ctx context.Context, pp map[string]_Protocol) {
-
+			ticker := time.NewTicker(time.Duration(mdev.mainConfig.CommonConfig.Frequency) * time.Millisecond)
 			for {
+				<-ticker.C
 				select {
 				case <-ctx.Done():
-					return
+					{
+						ticker.Stop()
+						return
+					}
 				default:
 					{
 					}
@@ -189,6 +199,10 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 					return
 				}
 				//----------------------------------------------------------------------------------
+				if mdev.Busy {
+					continue
+				}
+				mdev.Busy = true
 				for _, p := range pp {
 					if !p.AutoRequest {
 						continue
@@ -261,7 +275,7 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 						}
 					}
 				}
-				time.Sleep(time.Duration(mdev.mainConfig.CommonConfig.WaitTime) * time.Millisecond)
+				mdev.Busy = false
 			}
 		}(mdev.Ctx, mdev.mainConfig.DeviceConfig)
 		mdev.status = typex.DEV_UP

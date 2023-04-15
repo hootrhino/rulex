@@ -81,7 +81,7 @@ func (s1200 *s1200plc) Start(cctx typex.CCTX) error {
 		return nil
 	}
 	go func(ctx context.Context) {
-		ticker := time.NewTicker(time.Duration(s1200.mainConfig.Frequency) * time.Second)
+		ticker := time.NewTicker(time.Duration(s1200.mainConfig.Frequency) * time.Millisecond)
 		// 数据缓冲区,最大4KB
 		dataBuffer := make([]byte, common.T_4KB)
 		s1200.driver.Read([]byte{}, dataBuffer) //清理缓存

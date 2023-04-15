@@ -97,7 +97,7 @@ func (tss *tss200V2) Start(cctx typex.CCTX) error {
 		return nil
 	}
 	go func(ctx context.Context, Driver typex.XExternalDriver) {
-		ticker := time.NewTicker(time.Duration(tss.mainConfig.Frequency) * time.Second)
+		ticker := time.NewTicker(time.Duration(tss.mainConfig.Frequency) * time.Millisecond)
 		defer ticker.Stop()
 		buffer := make([]byte, common.T_64KB)
 		tss.driver.Read([]byte{}, buffer) //清理缓存

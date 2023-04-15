@@ -14,7 +14,7 @@
         "commonConfig": {
             "transport": "rs485rawserial",
             "retryTime": 5,
-            "waitTime": 60
+            "frequency": 100
         },
         "uartConfig": {
             "timeout": 1000,
