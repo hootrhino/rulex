@@ -226,10 +226,11 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 					time.Sleep(time.Duration(p.AutoRequestGap) * time.Millisecond)
 					result := [100]byte{} // 全局buf, 默认是100字节, 应该能覆盖绝大多数报文了
 					ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-					if _, err2 := utils.ReadAtLeast(ctx, cancel, mdev.serialPort, result[:p.BufferSize],
+					if _, err2 := utils.ReadAtLeast(ctx, mdev.serialPort, result[:p.BufferSize],
 						p.BufferSize); err2 != nil {
 						glogger.GLogger.Error("serialPort.ReadAtLeast error: ", err2)
 						mdev.errorCount++
+						cancel()
 						continue
 					}
 					if core.GlobalConfig.AppDebugMode {
@@ -318,12 +319,14 @@ func (mdev *CustomProtocolDevice) OnRead(cmd []byte, data []byte) (int, error) {
 		result := [100]byte{} // 全局buf, 默认是100字节, 应该能覆盖绝大多数报文了
 
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		if _, err2 := utils.ReadAtLeast(ctx, cancel, mdev.serialPort, result[:p.BufferSize],
+		if _, err2 := utils.ReadAtLeast(ctx, mdev.serialPort, result[:p.BufferSize],
 			p.BufferSize); err2 != nil {
 			glogger.GLogger.Error("serialPort.ReadAtLeast error: ", err2)
 			mdev.errorCount++
+			cancel()
 			return 0, err2
 		}
+		cancel()
 
 		if core.GlobalConfig.AppDebugMode {
 			log.Println("[AppDebugMode] Write data:", p.ProtocolArg.In)
@@ -407,17 +410,16 @@ func (mdev *CustomProtocolDevice) OnWrite(cmd []byte, data []byte) (int, error) 
 			return 0, err1
 		}
 
-		// 协议等待响应时间毫秒
-		time.Sleep(time.Duration(p.AutoRequestGap) * time.Millisecond)
 		result := [100]byte{} // 全局buf, 默认是100字节, 应该能覆盖绝大多数报文了
-
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		if _, err2 := utils.ReadAtLeast(ctx, cancel, mdev.serialPort, result[:p.BufferSize],
+		if _, err2 := utils.ReadAtLeast(ctx, mdev.serialPort, result[:p.BufferSize],
 			p.BufferSize); err2 != nil {
 			glogger.GLogger.Error("serialPort.ReadAtLeast error: ", err2)
 			mdev.errorCount++
+			cancel()
 			return 0, err2
 		}
+		cancel()
 		if core.GlobalConfig.AppDebugMode {
 			log.Println("[AppDebugMode] Write data:", p.ProtocolArg.In)
 			log.Println("[AppDebugMode] Read data:", result[:p.BufferSize])

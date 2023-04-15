@@ -31,8 +31,8 @@ function Main(arg)
             print("UdpData => ", udpDataJson)
             local err4 = applib:DataToUdp(udpServerUUID, udpDataJson)
             print('DataToUdp success? =>', err4 == nil)
+            applib:Sleep(1000)
         end
-        applib:Sleep(1000)
         ::END::
     end
 end

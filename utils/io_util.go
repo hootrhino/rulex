@@ -17,9 +17,7 @@ var errTimeout = errors.New("read Timeout")
 *
  */
 
-func ReadAtLeast(ctx context.Context, cancel context.CancelFunc,
-	r io.Reader, buf []byte, min int) (n int, err error) {
-	defer cancel()
+func ReadAtLeast(ctx context.Context, r io.Reader, buf []byte, min int) (n int, err error) {
 	if len(buf) < min {
 		n = 0
 		err = errShortBuffer
