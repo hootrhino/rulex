@@ -181,3 +181,6 @@ func (ther *rtu485_ther) Driver() typex.XExternalDriver {
 func (ther *rtu485_ther) OnDCACall(UUID string, Command string, Args interface{}) typex.DCAResult {
 	return typex.DCAResult{}
 }
+func (ther *rtu485_ther) OnCtrl(cmd []byte, args []byte) ([]byte, error) {
+	return []byte{}, nil
+}

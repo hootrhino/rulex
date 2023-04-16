@@ -135,6 +135,8 @@ func LoadAppLib(app *typex.Application, e typex.RuleX) {
 	// Device R/W
 	addAppLib(app, e, "applib", "ReadDevice", rulexlib.ReadDevice(e))
 	addAppLib(app, e, "applib", "WriteDevice", rulexlib.WriteDevice(e))
+	// Ctrl Device: request --> response
+	addAppLib(app, e, "applib", "CtrlDevice", rulexlib.CtrlDevice(e))
 	// Source R/W
 	addAppLib(app, e, "applib", "ReadSource", rulexlib.ReadSource(e))
 	addAppLib(app, e, "applib", "WriteSource", rulexlib.WriteSource(e))
@@ -175,4 +177,10 @@ func LoadAppLib(app *typex.Application, e typex.RuleX) {
 	// 树莓派4B
 	addAppLib(app, e, "raspi4b", "GPIOGet", rulexlib.RASPI4_GPIOGet(e))
 	addAppLib(app, e, "raspi4b", "GPIOSet", rulexlib.RASPI4_GPIOSet(e))
+	//------------------------------------------------------------------------
+	// 校验数据
+	//------------------------------------------------------------------------
+	addAppLib(app, e, "misc", "XOR", rulexlib.XOR(e))
+	addAppLib(app, e, "misc", "CRC16", rulexlib.CRC16(e))
+
 }

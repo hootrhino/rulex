@@ -255,3 +255,6 @@ func (mdev *generic_modbus_device) Driver() typex.XExternalDriver {
 func (mdev *generic_modbus_device) OnDCACall(UUID string, Command string, Args interface{}) typex.DCAResult {
 	return typex.DCAResult{}
 }
+func (mdev *generic_modbus_device) OnCtrl(cmd []byte, args []byte) ([]byte, error) {
+	return []byte{}, nil
+}

@@ -93,6 +93,8 @@ type XDevice interface {
 	OnRead(cmd []byte, data []byte) (int, error)
 	// 把数据写入设备, 第一个参数一般作flag用, 也就是常说的指令类型
 	OnWrite(cmd []byte, data []byte) (int, error)
+	// 新特性, 适用于自定义协议读写
+	OnCtrl(cmd []byte, args []byte) ([]byte, error)
 	// 设备当前状态
 	Status() DeviceState
 	// 停止设备, 在这里释放资源,一般是先置状态为STOP,然后CancelContext()

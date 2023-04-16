@@ -185,3 +185,6 @@ func (tss *tss200V2) Driver() typex.XExternalDriver {
 func (tss *tss200V2) OnDCACall(UUID string, Command string, Args interface{}) typex.DCAResult {
 	return typex.DCAResult{}
 }
+func (tss *tss200V2) OnCtrl(cmd []byte, args []byte) ([]byte, error) {
+	return []byte{}, nil
+}

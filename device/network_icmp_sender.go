@@ -135,6 +135,9 @@ func (sender *IcmpSender) Driver() typex.XExternalDriver {
 func (sender *IcmpSender) OnDCACall(UUID string, Command string, Args interface{}) typex.DCAResult {
 	return typex.DCAResult{}
 }
+func (sender *IcmpSender) OnCtrl(cmd []byte, args []byte) ([]byte, error) {
+	return []byte{}, nil
+}
 
 // --------------------------------------------------------------------------------------------------
 // private

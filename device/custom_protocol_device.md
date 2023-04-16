@@ -3,8 +3,8 @@
 假设一个总线上面挂了很多不一样的设备，此时要互相操作，也可以使用该特性。
 
 ## 配置
-一般会有至少一个自定义协议，关键字段是 `deviceConfig` ，下面给出一个 JSON 样例:
-
+协议分静态协议和动态协议，下面是动态协议示例，一般会有至少一个自定义协议，关键字段是 `deviceConfig` ，下面给出一个 JSON 样例:
+### 静态协议
 ```json
 {
     "name": "GENERIC_PROTOCOL",
@@ -22,10 +22,11 @@
             "dataBits": 8,
             "parity": "N",
             "stopBits": 1,
-            "uart": "COM15"
+            "uart": "COM5"
         },
         "deviceConfig": {
             "read": {
+                "type":1,
                 "autoRequest": false,
                 "autoRequestGap": 60,
                 "bufferSize": 9,
@@ -43,6 +44,7 @@
                 }
             },
             "write": {
+                "type":2,
                 "autoRequest": false,
                 "autoRequestGap": 60,
                 "bufferSize": 9,
@@ -63,10 +65,55 @@
     }
 }
 ```
+### 动态协议
+
+```json
+{
+    "name":"GENERIC_PROTOCOL",
+    "type":"GENERIC_PROTOCOL",
+    "description":"GENERIC_PROTOCOL",
+    "config":{
+        "commonConfig":{
+            "transport":"rs485rawserial",
+            "retryTime":5,
+            "frequency":100
+        },
+        "uartConfig":{
+            "timeout":1000,
+            "baudRate":9600,
+            "dataBits":8,
+            "parity":"N",
+            "stopBits":1,
+            "uart":"COM5"
+        },
+        "deviceConfig":{
+            "write":{
+                "type":2,
+                "autoRequest":false,
+                "autoRequestGap":60,
+                "bufferSize":9,
+                "checkAlgorithm":"NONECHECK",
+                "onCheckError":"IGNORE",
+                "checksumBegin":0,
+                "checksumEnd":6,
+                "checksumValuePos":6,
+                "description":"write",
+                "name":"write",
+                "rw":2,
+                "protocol":{
+                    "in":"",
+                    "out":""
+                }
+            }
+        }
+    }
+}
+```
 
 ## 字段：
 
 - name: 协议的名称, 通常代表某个设备的功能，比如读数据，开关之类的
+- type: 1-静态；2-动态, 在动态协议里面必须为2
 - description: 协议的一些备注信息
 - transport: 传输形式，目前支持 `rawtcp`, `rawudp`, `rs485rawserial`, `rs485rawtcp`
 - algorithm：校验算法，支持 `XOR`,`CRC16`,`NONECHECK`, 默认为不认证，即`NONECHECK`

@@ -184,3 +184,6 @@ func (yk8 *YK8Controller) Driver() typex.XExternalDriver {
 func (yk8 *YK8Controller) OnDCACall(UUID string, Command string, Args interface{}) typex.DCAResult {
 	return typex.DCAResult{}
 }
+func (yk8 *YK8Controller) OnCtrl(cmd []byte, args []byte) ([]byte, error) {
+	return []byte{}, nil
+}

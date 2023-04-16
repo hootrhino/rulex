@@ -190,3 +190,6 @@ func (s1200 *s1200plc) Driver() typex.XExternalDriver {
 func (s1200 *s1200plc) OnDCACall(UUID string, Command string, Args interface{}) typex.DCAResult {
 	return typex.DCAResult{}
 }
+func (s1200 *s1200plc) OnCtrl(cmd []byte, args []byte) ([]byte, error) {
+	return []byte{}, nil
+}

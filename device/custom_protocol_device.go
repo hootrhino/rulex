@@ -36,16 +36,20 @@ type _UartConfig struct {
 	Parity   string `json:"parity" validate:"required"`
 	StopBits int    `json:"stopBits" validate:"required"`
 }
+
+// Type=1
 type _ProtocolArg struct {
-	In  string `json:"in" validate:"required"` // 十六进制字符串
-	Out string `json:"out"`                    // 十六进制字符串
+	In  string `json:"in"`  // 十六进制字符串, 只有在静态协议下有用, 动态协议下就是""
+	Out string `json:"out"` // 十六进制字符串, 用来存储返回值
 }
 type _Protocol struct {
-	Name        string `json:"name" validate:"required"`
-	Description string `json:"description"`
-	RW          int    `json:"rw" validate:"required"`         // 1:RO 2:WO 3:RW
-	BufferSize  int    `json:"bufferSize" validate:"required"` // 缓冲区大小
-	Timeout     int    `json:"timeout" validate:"required"`    // 指令的等待时间, 在 Timeout 范围读 BufferSize 个字节, 否则就直接失败
+	Name string `json:"name" validate:"required"` // 名称
+	// 如果是静态的, 就取in参数; 如果是动态的, 则直接取第三个参数
+	Type        int    `json:"type" validate:"required" default:"1"` // 指令类型, 1 静态, 2动态
+	Description string `json:"description"`                          // 描述文本
+	RW          int    `json:"rw" validate:"required"`               // 1:RO 2:WO 3:RW
+	BufferSize  int    `json:"bufferSize" validate:"required"`       // 缓冲区大小
+	Timeout     int    `json:"timeout" validate:"required"`          // 指令的等待时间, 在 Timeout 范围读 BufferSize 个字节, 否则就直接失败
 	//---------------------------------------------------------------------
 	// 下面都是校验算法相关配置:
 	// -- 例如对[Byte1,Byte2,Byte3,Byte4,Byte5,Byte6,Byte7]用XOR算法比对
@@ -57,8 +61,10 @@ type _Protocol struct {
 	ChecksumBegin    uint   `json:"checksumBegin" validate:"required"`                      // 校验算法起始位置
 	ChecksumEnd      uint   `json:"checksumEnd" validate:"required"`                        // 校验算法结束位置
 	OnCheckError     string `json:"onCheckError" default:"IGNORE"`                          // 当指令操作失败时动作: IGNORE, LOG
-	AutoRequest      bool   `json:"autoRequest" validate:"required"`                        // 是否开启轮询
-	AutoRequestGap   uint   `json:"autoRequestGap" validate:"required"`                     // 轮询间隔
+	//
+	AutoRequest bool `json:"autoRequest" validate:"required"` // 是否开启轮询, 开启轮询后, 每次间隔时间为 Frequency 毫秒
+	//---------------------------------------------------------------------
+	// 只有在静态协议(Type=1)下有用
 	//---------------------------------------------------------------------
 	ProtocolArg _ProtocolArg `json:"protocol" validate:"required"` // 参数
 }
@@ -207,6 +213,14 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 					if !p.AutoRequest {
 						continue
 					}
+					// 1: 读
+					if p.RW != 1 {
+						continue
+					}
+					// 只针对静态协议
+					if p.Type != 1 {
+						continue
+					}
 					hexs, err0 := hex.DecodeString(p.ProtocolArg.In)
 					if err0 != nil {
 						glogger.GLogger.Error(err0)
@@ -293,88 +307,90 @@ func (mdev *CustomProtocolDevice) OnRead(cmd []byte, data []byte) (int, error) {
 	// 拿到命令的索引
 	p, exists := mdev.mainConfig.DeviceConfig[string(cmd)]
 	if exists {
-		// 判断是不是读权限
-		if p.RW != 1 {
-			return 0, errors.New("permission deny")
-		}
 
-		hexs, err0 := hex.DecodeString(p.ProtocolArg.In)
-		if err0 != nil {
-			glogger.GLogger.Error(err0)
-			mdev.errorCount++
-			return 0, err0
-		}
-
-		_, err1 := mdev.serialPort.Write(hexs)
-		if err1 != nil {
-			glogger.GLogger.Error("serialPort.Write error: ", err1)
-			mdev.errorCount++
-			return 0, err1
-		}
-
-		result := [100]byte{} // 全局buf, 默认是100字节, 应该能覆盖绝大多数报文了
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		if _, err2 := utils.ReadAtLeast(ctx, mdev.serialPort, result[:p.BufferSize],
-			p.BufferSize); err2 != nil {
-			glogger.GLogger.Error("serialPort.ReadAtLeast error: ", err2)
-			mdev.errorCount++
-			cancel()
-			return 0, err2
-		}
-		cancel()
-
-		if core.GlobalConfig.AppDebugMode {
-			log.Println("[AppDebugMode] Write data:", p.ProtocolArg.In)
-			log.Println("[AppDebugMode] Read data:", result[:p.BufferSize])
-		}
-		// 返回值
-		dataMap := map[string]string{}
-		checkOk := false
-		if p.CheckAlgorithm == "CRC16" || p.CheckAlgorithm == "crc16" {
-			glogger.GLogger.Debug("checkCRC:", result[:p.BufferSize],
-				int(result[:p.BufferSize][p.ChecksumValuePos]))
-			checkOk = mdev.checkCRC(result[:p.BufferSize],
-				int(result[:p.BufferSize][p.ChecksumValuePos]))
-		}
-		//
-		if p.CheckAlgorithm == "XOR" || p.CheckAlgorithm == "xor" {
-			glogger.GLogger.Debug("checkCRC:", result[:p.BufferSize],
-				int(result[:p.BufferSize][p.ChecksumValuePos]))
-			checkOk = mdev.checkCRC(result[:p.BufferSize],
-				int(result[:p.BufferSize][p.ChecksumValuePos]))
-		}
-		// NONECHECK: 不校验
-		if p.CheckAlgorithm == "NONECHECK" {
-			checkOk = true
-		}
-		if checkOk {
-			// 返回给lua参数是十六进制大写字符串
-			dataMap["name"] = p.Name
-			dataMap["in"] = p.ProtocolArg.In
-			dataMap["out"] = hex.EncodeToString(result[:p.BufferSize])
-			bytes, _ := json.Marshal(dataMap)
-			// 返回是十六进制大写字符串
-			copy(data, bytes)
-			return len(bytes), nil
-		} else {
-			if p.OnCheckError == "IGNORE" {
-				// Do Nothing
-				return 0, nil
+		// 静态协议
+		if p.Type == 1 {
+			// 判断是不是读权限
+			if p.RW != 1 {
+				return 0, errors.New("RW permission deny")
 			}
-			if p.OnCheckError == "LOG" {
-				msg := "checkSum error, Algorithm:%s; Begin:%v; End:%v; CheckPos:%v;"
-				glogger.GLogger.Error(msg,
-					p.CheckAlgorithm,
-					p.ChecksumBegin,
-					p.ChecksumEnd,
-					p.ChecksumValuePos)
+			hexs, err0 := hex.DecodeString(p.ProtocolArg.In)
+			if err0 != nil {
+				glogger.GLogger.Error(err0)
 				mdev.errorCount++
-				return 0, errors.New(msg)
+				return 0, err0
 			}
 
+			_, err1 := mdev.serialPort.Write(hexs)
+			if err1 != nil {
+				glogger.GLogger.Error("serialPort.Write error: ", err1)
+				mdev.errorCount++
+				return 0, err1
+			}
+
+			result := [100]byte{} // 全局buf, 默认是100字节, 应该能覆盖绝大多数报文了
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			if _, err2 := utils.ReadAtLeast(ctx, mdev.serialPort, result[:p.BufferSize],
+				p.BufferSize); err2 != nil {
+				glogger.GLogger.Error("serialPort.ReadAtLeast error: ", err2)
+				mdev.errorCount++
+				cancel()
+				return 0, err2
+			}
+			cancel()
+
+			if core.GlobalConfig.AppDebugMode {
+				log.Println("[AppDebugMode] Write data:", p.ProtocolArg.In)
+				log.Println("[AppDebugMode] Read data:", result[:p.BufferSize])
+			}
+			// 返回值
+			dataMap := map[string]string{}
+			checkOk := false
+			if p.CheckAlgorithm == "CRC16" || p.CheckAlgorithm == "crc16" {
+				glogger.GLogger.Debug("checkCRC:", result[:p.BufferSize],
+					int(result[:p.BufferSize][p.ChecksumValuePos]))
+				checkOk = mdev.checkCRC(result[:p.BufferSize],
+					int(result[:p.BufferSize][p.ChecksumValuePos]))
+			}
+			//
+			if p.CheckAlgorithm == "XOR" || p.CheckAlgorithm == "xor" {
+				glogger.GLogger.Debug("checkCRC:", result[:p.BufferSize],
+					int(result[:p.BufferSize][p.ChecksumValuePos]))
+				checkOk = mdev.checkCRC(result[:p.BufferSize],
+					int(result[:p.BufferSize][p.ChecksumValuePos]))
+			}
+			// NONECHECK: 不校验
+			if p.CheckAlgorithm == "NONECHECK" {
+				checkOk = true
+			}
+			if checkOk {
+				// 返回给lua参数是十六进制大写字符串
+				dataMap["name"] = p.Name
+				dataMap["in"] = p.ProtocolArg.In
+				dataMap["out"] = hex.EncodeToString(result[:p.BufferSize])
+				bytes, _ := json.Marshal(dataMap)
+				// 返回是十六进制大写字符串
+				copy(data, bytes)
+				return len(bytes), nil
+			} else {
+				if p.OnCheckError == "IGNORE" {
+					// Do Nothing
+					return 0, nil
+				}
+				if p.OnCheckError == "LOG" {
+					msg := "checkSum error, Algorithm:%s; Begin:%v; End:%v; CheckPos:%v;"
+					glogger.GLogger.Error(msg,
+						p.CheckAlgorithm,
+						p.ChecksumBegin,
+						p.ChecksumEnd,
+						p.ChecksumValuePos)
+					mdev.errorCount++
+					return 0, errors.New(msg)
+				}
+			}
 		}
 	}
-	return 0, errors.New("unknown read command")
+	return 0, errors.New("unknown read command:" + string(cmd))
 
 }
 
@@ -389,82 +405,151 @@ func (mdev *CustomProtocolDevice) OnWrite(cmd []byte, data []byte) (int, error) 
 	// 拿到命令的索引
 	p, exists := mdev.mainConfig.DeviceConfig[string(cmd)]
 	if exists {
-		// 判断是不是写权限
-		if p.RW != 2 {
-			return 0, errors.New("permission deny")
-		}
-		hexs, err0 := hex.DecodeString(p.ProtocolArg.In)
-		if err0 != nil {
-			glogger.GLogger.Error(err0)
-			mdev.errorCount++
-			return 0, err0
-		}
-		if _, err1 := mdev.serialPort.Write(hexs); err1 != nil {
-			glogger.GLogger.Error("serialPort.Write error: ", err1)
-			mdev.errorCount++
-			return 0, err1
+
+		// 静态协议
+		if p.Type == 1 {
+			// 判断是不是读权限
+			if p.RW != 1 {
+				return 0, errors.New("RW permission deny")
+			}
+			hexs, err0 := hex.DecodeString(p.ProtocolArg.In)
+			if err0 != nil {
+				glogger.GLogger.Error(err0)
+				mdev.errorCount++
+				return 0, err0
+			}
+
+			_, err1 := mdev.serialPort.Write(hexs)
+			if err1 != nil {
+				glogger.GLogger.Error("serialPort.Write error: ", err1)
+				mdev.errorCount++
+				return 0, err1
+			}
+
+			result := [100]byte{} // 全局buf, 默认是100字节, 应该能覆盖绝大多数报文了
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			if _, err2 := utils.ReadAtLeast(ctx, mdev.serialPort, result[:p.BufferSize],
+				p.BufferSize); err2 != nil {
+				glogger.GLogger.Error("serialPort.ReadAtLeast error: ", err2)
+				mdev.errorCount++
+				cancel()
+				return 0, err2
+			}
+			cancel()
+
+			if core.GlobalConfig.AppDebugMode {
+				log.Println("[AppDebugMode] Write data:", p.ProtocolArg.In)
+				log.Println("[AppDebugMode] Read data:", result[:p.BufferSize])
+			}
+			// 返回值
+			dataMap := map[string]string{}
+			checkOk := false
+			if p.CheckAlgorithm == "CRC16" || p.CheckAlgorithm == "crc16" {
+				glogger.GLogger.Debug("checkCRC:", result[:p.BufferSize],
+					int(result[:p.BufferSize][p.ChecksumValuePos]))
+				checkOk = mdev.checkCRC(result[:p.BufferSize],
+					int(result[:p.BufferSize][p.ChecksumValuePos]))
+			}
+			//
+			if p.CheckAlgorithm == "XOR" || p.CheckAlgorithm == "xor" {
+				glogger.GLogger.Debug("checkCRC:", result[:p.BufferSize],
+					int(result[:p.BufferSize][p.ChecksumValuePos]))
+				checkOk = mdev.checkCRC(result[:p.BufferSize],
+					int(result[:p.BufferSize][p.ChecksumValuePos]))
+			}
+			// NONECHECK: 不校验
+			if p.CheckAlgorithm == "NONECHECK" {
+				checkOk = true
+			}
+			if checkOk {
+				// 返回给lua参数是十六进制大写字符串
+				dataMap["name"] = p.Name
+				dataMap["in"] = p.ProtocolArg.In
+				dataMap["out"] = hex.EncodeToString(result[:p.BufferSize])
+				bytes, _ := json.Marshal(dataMap)
+				// 返回是十六进制大写字符串
+				copy(data, bytes)
+				return len(bytes), nil
+			} else {
+				if p.OnCheckError == "IGNORE" {
+					// Do Nothing
+					return 0, nil
+				}
+				if p.OnCheckError == "LOG" {
+					msg := "checkSum error, Algorithm:%s; Begin:%v; End:%v; CheckPos:%v;"
+					glogger.GLogger.Error(msg,
+						p.CheckAlgorithm,
+						p.ChecksumBegin,
+						p.ChecksumEnd,
+						p.ChecksumValuePos)
+					mdev.errorCount++
+					return 0, errors.New(msg)
+				}
+
+			}
 		}
 
-		result := [100]byte{} // 全局buf, 默认是100字节, 应该能覆盖绝大多数报文了
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		if _, err2 := utils.ReadAtLeast(ctx, mdev.serialPort, result[:p.BufferSize],
-			p.BufferSize); err2 != nil {
-			glogger.GLogger.Error("serialPort.ReadAtLeast error: ", err2)
-			mdev.errorCount++
-			cancel()
-			return 0, err2
-		}
-		cancel()
-		if core.GlobalConfig.AppDebugMode {
-			log.Println("[AppDebugMode] Write data:", p.ProtocolArg.In)
-			log.Println("[AppDebugMode] Read data:", result[:p.BufferSize])
-		}
-		// 返回值
-		dataMap := map[string]string{}
-		checkOk := false
-		if p.CheckAlgorithm == "CRC16" || p.CheckAlgorithm == "crc16" {
-			glogger.GLogger.Debug("checkCRC:", result[:p.BufferSize],
-				int(result[:p.BufferSize][p.ChecksumValuePos]))
-			checkOk = mdev.checkCRC(result[:p.BufferSize],
-				int(result[:p.BufferSize][p.ChecksumValuePos]))
-		}
-		if p.CheckAlgorithm == "XOR" || p.CheckAlgorithm == "xor" {
-			glogger.GLogger.Debug("checkCRC:", result[:p.BufferSize],
-				int(result[:p.BufferSize][p.ChecksumValuePos]))
-			checkOk = mdev.checkCRC(result[:p.BufferSize],
-				int(result[:p.BufferSize][p.ChecksumValuePos]))
-		}
-		// NONECHECK: 不校验
-		if p.CheckAlgorithm == "NONECHECK" {
-			checkOk = true
-		}
-		if checkOk {
-			// 返回给lua参数是十六进制大写字符串
-			dataMap["name"] = p.Name
-			dataMap["in"] = p.ProtocolArg.In
-			dataMap["out"] = hex.EncodeToString(result[:p.BufferSize])
-			bytes, _ := json.Marshal(dataMap)
-			// 返回是十六进制大写字符串
-			copy(data, bytes)
-			return len(bytes), nil
-		} else {
-			if p.OnCheckError == "IGNORE" {
-				// Do Nothing
-				return 0, nil
-			}
-			if p.OnCheckError == "LOG" {
-				msg := "checkSum error, Algorithm:%s; Begin:%v; End:%v; CheckPos:%v;"
-				glogger.GLogger.Error(msg,
-					p.CheckAlgorithm,
-					p.ChecksumBegin,
-					p.ChecksumEnd,
-					p.ChecksumValuePos)
-				mdev.errorCount++
-				return 0, errors.New(msg)
-			}
-		}
 	}
 	return 0, errors.New("unknown write command:" + string(cmd))
+}
+
+/*
+*
+* 外部指令交互, 常用来实现自定义协议等
+*
+ */
+func (mdev *CustomProtocolDevice) OnCtrl(cmd []byte, args []byte) ([]byte, error) {
+	// 拿到命令的索引
+	p, exists := mdev.mainConfig.DeviceConfig[string(cmd)]
+	if exists {
+		// 动态协议
+		// local err = applib:WriteDevice("UUID", "CMD", hex_string)
+		// local err = applib:ReadDevice("UUID", "CMD")
+		// 如果是动态协议, 不检查RW, 则取第三个参数，然后写入到设备, 第三个参数要求是十六进制字符串
+		//
+		// 实际上当类型为2的时候其他的参数都无意义了
+		//
+		if p.Type == 2 {
+			glogger.GLogger.Debug("Dynamic protocol:", string(args))
+			// 取data参数
+			hexs, err := hex.DecodeString(string(args))
+			if err != nil {
+				glogger.GLogger.Error(err)
+				return nil, err
+			}
+			_, err1 := mdev.serialPort.Write(hexs)
+			if core.GlobalConfig.AppDebugMode {
+				log.Println("[AppDebugMode] Write data:", p.ProtocolArg.In)
+			}
+			if err1 != nil {
+				glogger.GLogger.Error("Dynamic protocol write error: ", err1)
+				mdev.errorCount++
+				return nil, err1
+			}
+
+			result := [100]byte{} // 全局buf, 默认是100字节, 应该能覆盖绝大多数报文了
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			if _, err2 := utils.ReadAtLeast(ctx, mdev.serialPort, result[:p.BufferSize],
+				p.BufferSize); err2 != nil {
+				glogger.GLogger.Error("serialPort.ReadAtLeast error: ", err2)
+				mdev.errorCount++
+				cancel()
+				return nil, err2
+			}
+			cancel()
+			if core.GlobalConfig.AppDebugMode {
+				log.Println("[AppDebugMode] Read data:", result[:p.BufferSize])
+			}
+			// return
+			dataMap := map[string]string{}
+			dataMap["name"] = p.Name
+			dataMap["in"] = string(args)
+			dataMap["out"] = hex.EncodeToString(result[:p.BufferSize])
+			bytes, _ := json.Marshal(dataMap)
+			return (bytes), nil
+		}
+	}
+	return nil, errors.New("unknown write command:" + string(cmd))
 }
 
 // 设备当前状态

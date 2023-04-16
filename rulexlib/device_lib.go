@@ -1,6 +1,7 @@
 package rulexlib
 
 import (
+
 	"github.com/i4de/rulex/common"
 	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
@@ -66,6 +67,36 @@ func WriteDevice(rx typex.RuleX) func(*lua.LState) int {
 				return 2
 			}
 			l.Push(lua.LNumber(n))
+			l.Push(lua.LNil)
+			return 2
+		}
+		l.Push(lua.LNil)
+		l.Push(lua.LString("device not exists:" + devUUID))
+		return 2
+	}
+}
+
+/*
+*
+* 控制操作[2023年4月16日新增, 需求来自总线控制多个不对等设备]
+*
+ */
+func CtrlDevice(rx typex.RuleX) func(*lua.LState) int {
+	return func(l *lua.LState) int {
+		// write(uuid,cmd,data)
+		devUUID := l.ToString(2)
+		cmd := l.ToString(3)
+		data := l.ToString(4)
+		Device := rx.GetDevice(devUUID)
+		if Device != nil {
+			result, err := Device.Device.OnCtrl([]byte(cmd), []byte(data))
+			if err != nil {
+				glogger.GLogger.Error(err)
+				l.Push(lua.LNil)
+				l.Push(lua.LString(err.Error()))
+				return 2
+			}
+			l.Push(lua.LString(string(result)))
 			l.Push(lua.LNil)
 			return 2
 		}

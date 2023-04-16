@@ -162,3 +162,7 @@ func (sd *genericSnmpDevice) Driver() typex.XExternalDriver {
 func (sd *genericSnmpDevice) OnDCACall(UUID string, Command string, Args interface{}) typex.DCAResult {
 	return typex.DCAResult{}
 }
+
+func (sd *genericSnmpDevice) OnCtrl(cmd []byte, args []byte) ([]byte, error) {
+	return []byte{}, nil
+}
