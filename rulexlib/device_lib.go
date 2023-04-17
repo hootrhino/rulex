@@ -1,7 +1,6 @@
 package rulexlib
 
 import (
-
 	"github.com/i4de/rulex/common"
 	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
@@ -32,11 +31,7 @@ func ReadDevice(rx typex.RuleX) func(*lua.LState) int {
 				l.Push(lua.LString(err.Error()))
 				return 2
 			}
-			table := lua.LTable{}
-			for _, v := range deviceReadBuffer[:n] {
-				table.Append(lua.LNumber(v))
-			}
-			l.Push(&table)
+			l.Push(lua.LString(deviceReadBuffer[:n]))
 			l.Push(lua.LNil)
 			return 2
 		}
