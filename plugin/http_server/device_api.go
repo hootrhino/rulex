@@ -8,9 +8,7 @@ import (
 	"gopkg.in/square/go-jose.v2/json"
 )
 
-//
 // 获取设备列表
-//
 func Devices(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
 	if uuid == "" {
@@ -27,9 +25,7 @@ func Devices(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 
 }
 
-//
 // 删除设备
-//
 func DeleteDevice(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
 	_, err := hs.GetDeviceWithUUID(uuid)
@@ -46,9 +42,7 @@ func DeleteDevice(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 
 }
 
-//
 // 创建设备
-//
 func CreateDevice(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 	type Form struct {
 		UUID         string                 `json:"uuid"`
@@ -89,9 +83,7 @@ func CreateDevice(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 
 }
 
-//
 // 更新设备
-//
 func UpdateDevice(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 	type Form struct {
 		UUID         string                 `json:"uuid"`
@@ -112,12 +104,12 @@ func UpdateDevice(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 		return
 	}
 	if form.UUID == "" {
-		c.JSON(200, Error("'uuid'参数缺失"))
+		c.JSON(200, Error("missing 'uuid' fields"))
 		return
 	}
 	Device := e.GetDevice(form.UUID)
 	if Device == nil {
-		c.JSON(200, Error("设备不存在"))
+		c.JSON(200, Error("device not exists:"+form.UUID))
 		return
 	}
 

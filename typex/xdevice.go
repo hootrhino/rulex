@@ -111,3 +111,16 @@ type XDevice interface {
 	// 默认情况下该接口没有用
 	OnDCACall(UUID string, Command string, Args interface{}) DCAResult
 }
+
+/*
+*
+* 子设备网络拓扑[2023-04-17新增]
+*
+ */
+type DeviceTopology struct {
+	Id       string                 // 子设备的ID
+	Name     string                 // 子设备名
+	LinkType int                    // 物理连接方式: 0-ETH 1-WIFI 3-BLE 4 LORA 5 OTHER
+	State    int                    // 状态: 0-Down 1-Working
+	Info     map[string]interface{} // 子设备的一些额外信息
+}

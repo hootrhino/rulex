@@ -68,9 +68,11 @@ type MUser struct {
 // 设备元数据
 type MDevice struct {
 	RulexModel
-	UUID         string `gorm:"not null"`
-	Name         string `gorm:"not null"`
-	Type         string `gorm:"not null"`
+	UUID string `gorm:"not null"`
+	Name string `gorm:"not null"`
+	Type string `gorm:"not null"`
+	//   这个字段本来用于给设备单独新建脚本的，但是目前已经有了规则，所以先留空
+	// 或许以后会用到
 	ActionScript string
 	Config       string
 	Description  string
