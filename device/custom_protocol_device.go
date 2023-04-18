@@ -16,6 +16,9 @@ import (
 	serial "github.com/tarm/serial"
 )
 
+// 读出来的字节缓冲默认大小
+const __DEFAULT_BUFFER_SIZE = 100
+
 // 传输形式：
 // `rawtcp`, `rawudp`, `rs485rawserial`, `rs485rawtcp`
 // const rawtcp string = "rawtcp"
@@ -45,11 +48,13 @@ type _ProtocolArg struct {
 type _Protocol struct {
 	Name string `json:"name" validate:"required"` // 名称
 	// 如果是静态的, 就取in参数; 如果是动态的, 则直接取第三个参数
-	Type        int    `json:"type" validate:"required" default:"1"` // 指令类型, 1 静态, 2动态
+	Type        int    `json:"type" validate:"required" default:"1"` // 指令类型, 1 静态, 2动态, 3 定时读, 4 定时读写
 	Description string `json:"description"`                          // 描述文本
 	RW          int    `json:"rw" validate:"required"`               // 1:RO 2:WO 3:RW
 	BufferSize  int    `json:"bufferSize" validate:"required"`       // 缓冲区大小
 	Timeout     int    `json:"timeout" validate:"required"`          // 指令的等待时间, 在 Timeout 范围读 BufferSize 个字节, 否则就直接失败
+	// [Important!] 该参数用来配合定时协议使用, Type== 3、4 时生效
+	TimeSlice int `json:"timeSlice" validate:"required"` // 定时请求倒计时,单位毫秒，默认为0
 	//---------------------------------------------------------------------
 	// 下面都是校验算法相关配置:
 	// -- 例如对[Byte1,Byte2,Byte3,Byte4,Byte5,Byte6,Byte7]用XOR算法比对
@@ -235,7 +240,7 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 						mdev.errorCount++
 						continue
 					}
-					result := [100]byte{} // 全局buf, 默认是100字节, 应该能覆盖绝大多数报文了
+					result := [__DEFAULT_BUFFER_SIZE]byte{} // 全局buf, 默认是100字节, 应该能覆盖绝大多数报文了
 					ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 					if _, err2 := utils.ReadAtLeast(ctx, mdev.serialPort, result[:p.BufferSize],
 						p.BufferSize); err2 != nil {
@@ -328,7 +333,7 @@ func (mdev *CustomProtocolDevice) OnRead(cmd []byte, data []byte) (int, error) {
 				return 0, err1
 			}
 
-			result := [100]byte{} // 全局buf, 默认是100字节, 应该能覆盖绝大多数报文了
+			result := [__DEFAULT_BUFFER_SIZE]byte{} // 全局buf, 默认是100字节, 应该能覆盖绝大多数报文了
 			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 			if _, err2 := utils.ReadAtLeast(ctx, mdev.serialPort, result[:p.BufferSize],
 				p.BufferSize); err2 != nil {
@@ -426,7 +431,7 @@ func (mdev *CustomProtocolDevice) OnWrite(cmd []byte, data []byte) (int, error) 
 				return 0, err1
 			}
 
-			result := [100]byte{} // 全局buf, 默认是100字节, 应该能覆盖绝大多数报文了
+			result := [__DEFAULT_BUFFER_SIZE]byte{} // 全局buf, 默认是100字节, 应该能覆盖绝大多数报文了
 			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 			if _, err2 := utils.ReadAtLeast(ctx, mdev.serialPort, result[:p.BufferSize],
 				p.BufferSize); err2 != nil {
@@ -527,7 +532,7 @@ func (mdev *CustomProtocolDevice) OnCtrl(cmd []byte, args []byte) ([]byte, error
 				return nil, err1
 			}
 
-			result := [100]byte{} // 全局buf, 默认是100字节, 应该能覆盖绝大多数报文了
+			result := [__DEFAULT_BUFFER_SIZE]byte{} // 全局buf, 默认是100字节, 应该能覆盖绝大多数报文了
 			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 			if _, err2 := utils.ReadAtLeast(ctx, mdev.serialPort, result[:p.BufferSize],
 				p.BufferSize); err2 != nil {
@@ -548,8 +553,32 @@ func (mdev *CustomProtocolDevice) OnCtrl(cmd []byte, args []byte) ([]byte, error
 			bytes, _ := json.Marshal(dataMap)
 			return (bytes), nil
 		}
+		//------------------------------------------------------------------------------------------
+		// 基于时间片的轮询协议
+		//------------------------------------------------------------------------------------------
+		// 时间片只读
+		if p.Type == 3 {
+			glogger.GLogger.Debug("Time slice SliceReceive:", p.TimeSlice)
+			result := [__DEFAULT_BUFFER_SIZE]byte{}
+			count, err := utils.SliceReceive(context.Background(),
+				mdev.serialPort, result[:], time.Duration(p.TimeSlice))
+			return (result[:count]), err
+		}
+		// 时间片读写
+		if p.Type == 4 {
+			glogger.GLogger.Debug("Time slice SliceRequest:", string(args))
+			hexs, err := hex.DecodeString(string(args))
+			if err != nil {
+				glogger.GLogger.Error(err)
+				return nil, err
+			}
+			result := [__DEFAULT_BUFFER_SIZE]byte{}
+			count, err := utils.SliceRequest(context.Background(),
+				mdev.serialPort, hexs, result[:], time.Duration(p.TimeSlice))
+			return (result[:count]), err
+		}
 	}
-	return nil, errors.New("unknown write command:" + string(cmd))
+	return nil, errors.New("unknown ctrl command:" + string(cmd))
 }
 
 // 设备当前状态
