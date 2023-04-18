@@ -566,7 +566,7 @@ func (mdev *CustomProtocolDevice) OnCtrl(cmd []byte, args []byte) ([]byte, error
 			count, err := utils.SliceReceive(ctx,
 				mdev.serialPort, result[:], time.Duration(p.TimeSlice))
 			cancel()
-			return (result[:count]), err
+			return []byte(hex.EncodeToString(result[:count])), err
 		}
 		// 时间片读写
 		if p.Type == 4 {
@@ -581,7 +581,7 @@ func (mdev *CustomProtocolDevice) OnCtrl(cmd []byte, args []byte) ([]byte, error
 			count, err := utils.SliceRequest(ctx,
 				mdev.serialPort, hexs, result[:], time.Duration(p.TimeSlice))
 			cancel()
-			return (result[:count]), err
+			return []byte(hex.EncodeToString(result[:count])), err
 		}
 	}
 	return nil, errors.New("unknown ctrl command:" + string(cmd))
