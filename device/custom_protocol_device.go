@@ -178,11 +178,12 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 	// 现阶段暂时只支持RS485串口, 以后有需求再支持TCP、UDP
 	if mdev.mainConfig.CommonConfig.Transport == "rs485rawserial" {
 		config := serial.Config{
-			Name:     mdev.mainConfig.UartConfig.Uart,
-			Baud:     mdev.mainConfig.UartConfig.BaudRate,
-			Size:     byte(mdev.mainConfig.UartConfig.DataBits),
-			Parity:   serial.Parity(mdev.mainConfig.UartConfig.Parity[0]),
-			StopBits: serial.StopBits(mdev.mainConfig.UartConfig.StopBits),
+			Name:        mdev.mainConfig.UartConfig.Uart,
+			Baud:        mdev.mainConfig.UartConfig.BaudRate,
+			Size:        byte(mdev.mainConfig.UartConfig.DataBits),
+			Parity:      serial.Parity(mdev.mainConfig.UartConfig.Parity[0]),
+			StopBits:    serial.StopBits(mdev.mainConfig.UartConfig.StopBits),
+			ReadTimeout: time.Duration(mdev.mainConfig.UartConfig.Timeout),
 		}
 		serialPort, err := serial.OpenPort(&config)
 		if err != nil {
@@ -560,8 +561,11 @@ func (mdev *CustomProtocolDevice) OnCtrl(cmd []byte, args []byte) ([]byte, error
 		if p.Type == 3 {
 			glogger.GLogger.Debug("Time slice SliceReceive:", p.TimeSlice)
 			result := [__DEFAULT_BUFFER_SIZE]byte{}
-			count, err := utils.SliceReceive(context.Background(),
+			ctx, cancel := context.WithTimeout(context.Background(), time.Duration(p.TimeSlice))
+
+			count, err := utils.SliceReceive(ctx,
 				mdev.serialPort, result[:], time.Duration(p.TimeSlice))
+			cancel()
 			return (result[:count]), err
 		}
 		// 时间片读写
@@ -573,8 +577,10 @@ func (mdev *CustomProtocolDevice) OnCtrl(cmd []byte, args []byte) ([]byte, error
 				return nil, err
 			}
 			result := [__DEFAULT_BUFFER_SIZE]byte{}
-			count, err := utils.SliceRequest(context.Background(),
+			ctx, cancel := context.WithTimeout(context.Background(), time.Duration(p.TimeSlice))
+			count, err := utils.SliceRequest(ctx,
 				mdev.serialPort, hexs, result[:], time.Duration(p.TimeSlice))
+			cancel()
 			return (result[:count]), err
 		}
 	}
