@@ -554,7 +554,8 @@ func (mdev *CustomProtocolDevice) OnCtrl(cmd []byte, args []byte) ([]byte, error
 		if p.Type == 3 {
 			glogger.GLogger.Debug("Time slice SliceReceive:", p.TimeSlice)
 			result := [__DEFAULT_BUFFER_SIZE]byte{}
-			ctx, cancel := context.WithTimeout(context.Background(), time.Duration(mdev.mainConfig.UartConfig.Timeout))
+			ctx, cancel := context.WithTimeout(context.Background(),
+				time.Duration(mdev.mainConfig.UartConfig.Timeout))
 
 			count, err := utils.SliceReceive(ctx,
 				mdev.serialPort, result[:], false, time.Duration(p.TimeSlice))
@@ -575,7 +576,8 @@ func (mdev *CustomProtocolDevice) OnCtrl(cmd []byte, args []byte) ([]byte, error
 				return nil, err
 			}
 			result := [__DEFAULT_BUFFER_SIZE]byte{}
-			ctx, cancel := context.WithTimeout(context.Background(), time.Duration(mdev.mainConfig.UartConfig.Timeout))
+			ctx, cancel := context.WithTimeout(context.Background(),
+				time.Duration(mdev.mainConfig.UartConfig.Timeout))
 			count, err := utils.SliceRequest(ctx,
 				mdev.serialPort, hexs, result[:], false, time.Duration(p.TimeSlice))
 			cancel()
