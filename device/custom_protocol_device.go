@@ -555,10 +555,10 @@ func (mdev *CustomProtocolDevice) OnCtrl(cmd []byte, args []byte) ([]byte, error
 			glogger.GLogger.Debug("Time slice SliceReceive:", p.TimeSlice)
 			result := [__DEFAULT_BUFFER_SIZE]byte{}
 			ctx, cancel := context.WithTimeout(context.Background(),
-				time.Duration(mdev.mainConfig.UartConfig.Timeout))
+				time.Duration(mdev.mainConfig.UartConfig.Timeout)*time.Millisecond)
 
 			count, err := utils.SliceReceive(ctx,
-				mdev.serialPort, result[:], false, time.Duration(p.TimeSlice))
+				mdev.serialPort, result[:], false, time.Duration(p.TimeSlice)*time.Millisecond)
 			cancel()
 			dataMap := map[string]string{}
 			dataMap["name"] = p.Name
@@ -577,9 +577,9 @@ func (mdev *CustomProtocolDevice) OnCtrl(cmd []byte, args []byte) ([]byte, error
 			}
 			result := [__DEFAULT_BUFFER_SIZE]byte{}
 			ctx, cancel := context.WithTimeout(context.Background(),
-				time.Duration(mdev.mainConfig.UartConfig.Timeout))
+				time.Duration(mdev.mainConfig.UartConfig.Timeout)*time.Millisecond)
 			count, err := utils.SliceRequest(ctx,
-				mdev.serialPort, hexs, result[:], false, time.Duration(p.TimeSlice))
+				mdev.serialPort, hexs, result[:], false, time.Duration(p.TimeSlice)*time.Millisecond)
 			cancel()
 			dataMap := map[string]string{}
 			dataMap["name"] = p.Name
