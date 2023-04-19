@@ -159,6 +159,13 @@ func (mdev *CustomProtocolDevice) Init(devId string, configMap map[string]interf
 			glogger.GLogger.Error(errMsg)
 			return fmt.Errorf(errMsg)
 		}
+		//
+		if v.TimeSlice < 3 {
+			return fmt.Errorf("TimeSlice must at range 3-10ms")
+		}
+		if v.TimeSlice > 10 {
+			return fmt.Errorf("TimeSlice must at range 3-10ms")
+		}
 
 	}
 	return nil
