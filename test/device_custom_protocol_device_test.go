@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	serial "github.com/tarm/serial"
+	serial "github.com/wwhai/tarmserial"
 
 	httpserver "github.com/i4de/rulex/plugin/http_server"
 	"github.com/i4de/rulex/rulexrpc"

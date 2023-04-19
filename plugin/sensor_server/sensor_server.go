@@ -7,8 +7,8 @@ import (
 	"net"
 	"time"
 
+	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
-	"github.com/plgd-dev/kit/v2/log"
 	"gopkg.in/ini.v1"
 )
 
@@ -73,7 +73,7 @@ func (hh *SensorServer) startSServer(ctxMain context.Context, cancelMain context
 	var err error
 	listener, err = net.Listen("tcp", formatUrl(hh.tcpPort))
 	if err != nil {
-		log.Fatal("Error listening:", err)
+		glogger.GLogger.Fatal("Error listening:", err)
 		return err
 	}
 	defer listener.Close()
@@ -91,7 +91,7 @@ func (hh *SensorServer) startSServer(ctxMain context.Context, cancelMain context
 		}
 		peerConn, err := listener.Accept()
 		if err != nil {
-			log.Error("Error Listener Accept: ", err)
+			glogger.GLogger.Error("Error Listener Accept: ", err)
 			continue
 		}
 		session := NewSession(peerConn)
@@ -114,18 +114,18 @@ func waitForAuth(ctx context.Context, cancel context.CancelFunc, session Session
 		n, err := session.Transport.Read(buffer[:])
 		session.Transport.SetDeadline(time.Time{})
 		if err != nil {
-			log.Error(err)
+			glogger.GLogger.Error(err)
 			session.Transport.Close()
 			goto END
 		}
 		sn := string(buffer[:n])
-		log.Debug("Sensor ready to auth:", sn)
+		glogger.GLogger.Debug("Sensor ready to auth:", sn)
 		// 这里应该加入认证的逻辑 但是目前默认传ID就表示认证成功
 		if sn != "" {
 			isensor := NewSensor(session)
 			isensor.OnRegister(sn)
 			if err := isensor.OnRegister(sn); err != nil {
-				log.Error(err)
+				glogger.GLogger.Error(err)
 				session.Transport.Close()
 				goto END
 			} else {
@@ -134,7 +134,7 @@ func waitForAuth(ctx context.Context, cancel context.CancelFunc, session Session
 				goto END
 			}
 		} else {
-			log.Error(errors.New("must set sensor sn"))
+			glogger.GLogger.Error(errors.New("must set sensor sn"))
 			session.Transport.Close()
 			goto END
 		}

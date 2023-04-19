@@ -13,7 +13,7 @@ import (
 	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
-	serial "github.com/tarm/serial"
+	serial "github.com/wwhai/tarmserial"
 )
 
 // 读出来的字节缓冲默认大小
@@ -593,7 +593,7 @@ func (mdev *CustomProtocolDevice) OnCtrl(cmd []byte, args []byte) ([]byte, error
 			bytes, _ := json.Marshal(dataMap)
 			return []byte(bytes), err
 		}
-		// 在某个时间片内期望读到的长度
+		// TODO 在某个时间片内期望读到的长度
 		if p.Type == 5 {
 			glogger.GLogger.Debug("Time slice read expected size:", string(args))
 		}
