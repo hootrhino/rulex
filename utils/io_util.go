@@ -49,13 +49,35 @@ func ReadAtLeast(ctx context.Context, r io.Reader, buf []byte, min int) (n int, 
 *
  */
 func SliceRequest(ctx context.Context,
-	iio io.ReadWriter, writeBytes []byte, resultBuffer []byte,
+	iio io.ReadWriter, writeBytes []byte,
+	resultBuffer []byte,
+	showError bool,
 	td time.Duration) (int, error) {
 	_, errW := iio.Write(writeBytes)
 	if errW != nil {
 		return 0, errW
 	}
-	return SliceReceive(ctx, iio, resultBuffer, td)
+	return SliceReceive(ctx, iio, resultBuffer, showError, td)
+}
+
+/*
+*
+* 读取数据的时候，如果出现错误就返回
+*
+ */
+func SliceReceiveWithError(ctx context.Context,
+	iio io.Reader, resultBuffer []byte, td time.Duration) (int, error) {
+	return SliceReceive(ctx, iio, resultBuffer, true, td)
+}
+
+/*
+*
+* 读取数据的时候，如果出现错误则判断是否是串口引起的超时，如果是就忽略
+*
+ */
+func SliceReceiveWithoutError(ctx context.Context,
+	iio io.Reader, resultBuffer []byte, td time.Duration) (int, error) {
+	return SliceReceive(ctx, iio, resultBuffer, false, td)
 }
 
 /*
@@ -64,7 +86,9 @@ func SliceRequest(ctx context.Context,
 *
  */
 func SliceReceive(ctx context.Context,
-	iio io.Reader, resultBuffer []byte, td time.Duration) (int, error) {
+	iio io.Reader, resultBuffer []byte,
+	showError bool,
+	td time.Duration) (int, error) {
 	var peerCount int
 	sliceTimer := time.NewTimer(td)
 	sliceTimer.Stop()
@@ -76,8 +100,14 @@ func SliceReceive(ctx context.Context,
 			return peerCount, nil
 		default:
 			readCount, errR := iio.Read(resultBuffer[peerCount:])
+			// Note:当串口设置超时以后会输出：
+			//    This operation returned because the timeout period expired.
+			// 因此这里需要过滤这个异常, 当出现这个异常信息的时候认为其是正常的
+			//
 			if errR != nil {
-				return peerCount, errR
+				if showError {
+					return peerCount, errR
+				}
 			}
 			if readCount != 0 {
 				sliceTimer.Reset(td)

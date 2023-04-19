@@ -564,7 +564,7 @@ func (mdev *CustomProtocolDevice) OnCtrl(cmd []byte, args []byte) ([]byte, error
 			ctx, cancel := context.WithTimeout(context.Background(), time.Duration(p.TimeSlice))
 
 			count, err := utils.SliceReceive(ctx,
-				mdev.serialPort, result[:], time.Duration(p.TimeSlice))
+				mdev.serialPort, result[:], false, time.Duration(p.TimeSlice))
 			cancel()
 			dataMap := map[string]string{}
 			dataMap["name"] = p.Name
@@ -584,7 +584,7 @@ func (mdev *CustomProtocolDevice) OnCtrl(cmd []byte, args []byte) ([]byte, error
 			result := [__DEFAULT_BUFFER_SIZE]byte{}
 			ctx, cancel := context.WithTimeout(context.Background(), time.Duration(p.TimeSlice))
 			count, err := utils.SliceRequest(ctx,
-				mdev.serialPort, hexs, result[:], time.Duration(p.TimeSlice))
+				mdev.serialPort, hexs, result[:], false, time.Duration(p.TimeSlice))
 			cancel()
 			dataMap := map[string]string{}
 			dataMap["name"] = p.Name
