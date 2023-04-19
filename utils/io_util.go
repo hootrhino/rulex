@@ -66,10 +66,13 @@ func SliceRequest(ctx context.Context,
 func SliceReceive(ctx context.Context,
 	iio io.Reader, resultBuffer []byte, td time.Duration) (int, error) {
 	var peerCount int
-
+	sliceTimer := time.NewTimer(td)
+	sliceTimer.Stop()
 	for {
 		select {
 		case <-ctx.Done():
+			return peerCount, nil
+		case <-sliceTimer.C:
 			return peerCount, nil
 		default:
 			readCount, errR := iio.Read(resultBuffer[peerCount:])
@@ -77,6 +80,7 @@ func SliceReceive(ctx context.Context,
 				return peerCount, errR
 			}
 			if readCount != 0 {
+				sliceTimer.Reset(td)
 				peerCount += readCount
 			}
 		}
