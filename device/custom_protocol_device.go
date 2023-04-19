@@ -9,6 +9,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/i4de/rulex/common"
 	"github.com/i4de/rulex/core"
 	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
@@ -26,26 +27,18 @@ const __DEFAULT_BUFFER_SIZE = 100
 // const rs485rawserial string = "rs485rawserial"
 // const rs485rawtcp string = "rs485rawtcp"
 
-type _CommonConfig struct {
+type _CPDCommonConfig struct {
 	Transport string `json:"transport" validate:"required"` // 传输协议
 	Frequency int64  `json:"frequency" validate:"required" title:"采集频率" info:""`
 	RetryTime int    `json:"retryTime" validate:"required"` // 几次以后重启,0 表示不重启
 }
-type _UartConfig struct {
-	Timeout  int    `json:"timeout" validate:"required"`
-	Uart     string `json:"uart" validate:"required"`
-	BaudRate int    `json:"baudRate" validate:"required"`
-	DataBits int    `json:"dataBits" validate:"required"`
-	Parity   string `json:"parity" validate:"required"`
-	StopBits int    `json:"stopBits" validate:"required"`
-}
 
 // Type=1
-type _ProtocolArg struct {
+type _CPDProtocolArg struct {
 	In  string `json:"in"`  // 十六进制字符串, 只有在静态协议下有用, 动态协议下就是""
 	Out string `json:"out"` // 十六进制字符串, 用来存储返回值
 }
-type _Protocol struct {
+type _CPDProtocol struct {
 	Name string `json:"name" validate:"required"` // 名称
 	// 如果是静态的, 就取in参数; 如果是动态的, 则直接取第三个参数
 	Type        int    `json:"type" validate:"required" default:"1"` // 指令类型, 1 静态, 2动态, 3 定时读, 4 定时读写
@@ -71,7 +64,7 @@ type _Protocol struct {
 	//---------------------------------------------------------------------
 	// 只有在静态协议(Type=1)下有用
 	//---------------------------------------------------------------------
-	ProtocolArg _ProtocolArg `json:"protocol" validate:"required"` // 参数
+	ProtocolArg _CPDProtocolArg `json:"protocol" validate:"required"` // 参数
 }
 
 /*
@@ -80,9 +73,9 @@ type _Protocol struct {
 *
  */
 type _CustomProtocolConfig struct {
-	CommonConfig _CommonConfig        `json:"commonConfig" validate:"required"`
-	UartConfig   _UartConfig          `json:"uartConfig" validate:"required"`
-	DeviceConfig map[string]_Protocol `json:"deviceConfig" validate:"required"`
+	CommonConfig _CPDCommonConfig        `json:"commonConfig" validate:"required"`
+	UartConfig   common.CommonUartConfig `json:"uartConfig" validate:"required"`
+	DeviceConfig map[string]_CPDProtocol `json:"deviceConfig" validate:"required"`
 }
 type CustomProtocolDevice struct {
 	typex.XStatus
@@ -99,9 +92,9 @@ func NewCustomProtocolDevice(e typex.RuleX) typex.XDevice {
 	mdev := new(CustomProtocolDevice)
 	mdev.RuleEngine = e
 	mdev.mainConfig = _CustomProtocolConfig{
-		CommonConfig: _CommonConfig{},
-		UartConfig:   _UartConfig{},
-		DeviceConfig: map[string]_Protocol{},
+		CommonConfig: _CPDCommonConfig{},
+		UartConfig:   common.CommonUartConfig{},
+		DeviceConfig: map[string]_CPDProtocol{},
 	}
 	mdev.Busy = false
 	mdev.status = typex.DEV_DOWN
@@ -192,7 +185,7 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 		}
 		mdev.serialPort = serialPort
 		// 起一个线程去判断是否要轮询
-		go func(ctx context.Context, pp map[string]_Protocol) {
+		go func(ctx context.Context, pp map[string]_CPDProtocol) {
 			ticker := time.NewTicker(time.Duration(mdev.mainConfig.CommonConfig.Frequency) * time.Millisecond)
 			for {
 				<-ticker.C

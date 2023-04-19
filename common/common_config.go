@@ -63,6 +63,20 @@ type GenericUartConfig struct {
 
 /*
 *
+* 4.19重构
+*
+ */
+type CommonUartConfig struct {
+	Timeout  int    `json:"timeout" validate:"required"`
+	Uart     string `json:"uart" validate:"required"`
+	BaudRate int    `json:"baudRate" validate:"required"`
+	DataBits int    `json:"dataBits" validate:"required"`
+	Parity   string `json:"parity" validate:"required"`
+	StopBits int    `json:"stopBits" validate:"required"`
+}
+
+/*
+*
 * SNMP 配置
 *
  */
@@ -75,10 +89,7 @@ type GenericSnmpConfig struct {
 	Transport string `json:"transport" validate:"required" title:"Transport" info:"Transport"`
 	// Community is an SNMP Community string.
 	Community string `json:"community" validate:"required" title:"Community" info:"Community"`
-	// Weather allow AutoRequest?
-	AutoRequest bool `json:"autoRequest" title:"启动轮询" info:""`
-	// Request Frequency, default 5 second
-	Frequency int64 `json:"frequency" validate:"required" title:"采集频率" info:""`
+
 }
 
 /*
