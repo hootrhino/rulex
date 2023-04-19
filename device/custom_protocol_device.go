@@ -566,7 +566,12 @@ func (mdev *CustomProtocolDevice) OnCtrl(cmd []byte, args []byte) ([]byte, error
 			count, err := utils.SliceReceive(ctx,
 				mdev.serialPort, result[:], time.Duration(p.TimeSlice))
 			cancel()
-			return []byte(hex.EncodeToString(result[:count])), err
+			dataMap := map[string]string{}
+			dataMap["name"] = p.Name
+			dataMap["in"] = string(args)
+			dataMap["out"] = hex.EncodeToString(result[:count])
+			bytes, _ := json.Marshal(dataMap)
+			return []byte(bytes), err
 		}
 		// 时间片读写
 		if p.Type == 4 {
@@ -581,7 +586,16 @@ func (mdev *CustomProtocolDevice) OnCtrl(cmd []byte, args []byte) ([]byte, error
 			count, err := utils.SliceRequest(ctx,
 				mdev.serialPort, hexs, result[:], time.Duration(p.TimeSlice))
 			cancel()
-			return []byte(hex.EncodeToString(result[:count])), err
+			dataMap := map[string]string{}
+			dataMap["name"] = p.Name
+			dataMap["in"] = string(args)
+			dataMap["out"] = hex.EncodeToString(result[:count])
+			bytes, _ := json.Marshal(dataMap)
+			return []byte(bytes), err
+		}
+		// 在某个时间片内期望读到的长度
+		if p.Type == 5 {
+			glogger.GLogger.Debug("Time slice read expected size:", string(args))
 		}
 	}
 	return nil, errors.New("unknown ctrl command:" + string(cmd))
