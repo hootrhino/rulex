@@ -575,7 +575,7 @@ func (mdev *CustomProtocolDevice) OnCtrl(cmd []byte, args []byte) ([]byte, error
 				return nil, err
 			}
 			result := [__DEFAULT_BUFFER_SIZE]byte{}
-			ctx, cancel := context.WithTimeout(context.Background(), time.Duration(p.TimeSlice))
+			ctx, cancel := context.WithTimeout(context.Background(), time.Duration(mdev.mainConfig.UartConfig.Timeout))
 			count, err := utils.SliceRequest(ctx,
 				mdev.serialPort, hexs, result[:], false, time.Duration(p.TimeSlice))
 			cancel()

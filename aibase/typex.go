@@ -7,7 +7,7 @@ package aibase
  */
 type Algorithm struct {
 	UUID        string // UUID
-	Type        string // Type: ANN_APP1 RNN_APP2 CNN_APP3 ....
+	Type        string // 模型类型: ANN_APP1 RNN_APP2 CNN_APP3 ....
 	Name        string // 名称
 	State       int    // 0开启;1关闭
 	Document    string // 文档连接
