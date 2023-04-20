@@ -28,9 +28,9 @@ const __DEFAULT_BUFFER_SIZE = 100
 // const rs485rawtcp string = "rs485rawtcp"
 
 type _CPDCommonConfig struct {
-	Transport string `json:"transport" validate:"required"` // 传输协议
-	Frequency int64  `json:"frequency" validate:"required" title:"采集频率" info:""`
-	RetryTime int    `json:"retryTime" validate:"required"` // 几次以后重启,0 表示不重启
+	Transport *string `json:"transport" validate:"required"` // 传输协议
+	Frequency *int64  `json:"frequency" validate:"required" title:"采集频率" info:""`
+	RetryTime *int    `json:"retryTime" validate:"required"` // 几次以后重启,0 表示不重启
 }
 
 // Type=1
@@ -109,16 +109,19 @@ func (mdev *CustomProtocolDevice) Init(devId string, configMap map[string]interf
 	if err := utils.BindSourceConfig(configMap, &mdev.mainConfig); err != nil {
 		return err
 	}
-	if !contains([]string{"N", "E", "O"}, mdev.mainConfig.UartConfig.Parity) {
+	if !utils.SContains([]string{"N", "E", "O"}, mdev.mainConfig.UartConfig.Parity) {
 		return errors.New("parity value only one of 'N','O','E'")
 	}
-	if !contains([]string{`rawtcp`, `rawudp`, `rs485rawserial`, `rs485rawtcp`},
-		mdev.mainConfig.CommonConfig.Transport) {
+	if !utils.SContains([]string{`rawtcp`, `rawudp`, `rs485rawserial`, `rs485rawtcp`},
+		*mdev.mainConfig.CommonConfig.Transport) {
 		return errors.New("option only one of 'rawtcp','rawudp','rs485rawserial','rs485rawserial'")
 	}
-
+	// 默认失败次数为5次
+	if *mdev.mainConfig.CommonConfig.RetryTime <= 0 {
+		*mdev.mainConfig.CommonConfig.RetryTime = 5
+	}
 	// 频率不能太快
-	if mdev.mainConfig.CommonConfig.Frequency < 50 {
+	if *mdev.mainConfig.CommonConfig.Frequency < 50 {
 		return errors.New("'frequency' must grate than 50 millisecond")
 	}
 	// parse hex format
@@ -138,7 +141,7 @@ func (mdev *CustomProtocolDevice) Init(devId string, configMap map[string]interf
 			}
 		}
 		// 目前暂时就先支持这几个算法
-		if !contains([]string{"XOR", "xor", "CRC16", "crc16",
+		if !utils.SContains([]string{"XOR", "xor", "CRC16", "crc16",
 			"CRC32", "crc32", "NONECHECK"}, v.CheckAlgorithm) {
 			return errors.New("unsupported check algorithm")
 		}
@@ -160,11 +163,17 @@ func (mdev *CustomProtocolDevice) Init(devId string, configMap map[string]interf
 			return fmt.Errorf(errMsg)
 		}
 		//
-		if v.TimeSlice < 3 {
-			return fmt.Errorf("TimeSlice must at range 3-10ms")
-		}
-		if v.TimeSlice > 10 {
-			return fmt.Errorf("TimeSlice must at range 3-10ms")
+		// 只有在时间片轮询时才检查参数
+		// 定时器的取包时间范围: [3-10]毫秒
+		//
+		if v.Type == 3 || v.Type == 4 {
+			if v.TimeSlice < 3 {
+				return fmt.Errorf("'timeSlice' field must at range 3-10ms")
+			}
+			if v.TimeSlice > 10 {
+				return fmt.Errorf("'timeSlice' field must at range 3-10ms")
+			}
+
 		}
 
 	}
@@ -176,7 +185,7 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 	mdev.Ctx = cctx.Ctx
 	mdev.CancelCTX = cctx.CancelCTX
 	// 现阶段暂时只支持RS485串口, 以后有需求再支持TCP、UDP
-	if mdev.mainConfig.CommonConfig.Transport == "rs485rawserial" {
+	if *mdev.mainConfig.CommonConfig.Transport == "rs485rawserial" {
 		config := serial.Config{
 			Name:        mdev.mainConfig.UartConfig.Uart,
 			Baud:        mdev.mainConfig.UartConfig.BaudRate,
@@ -193,7 +202,7 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 		mdev.serialPort = serialPort
 		// 起一个线程去判断是否要轮询
 		go func(ctx context.Context, pp map[string]_CPDProtocol) {
-			ticker := time.NewTicker(time.Duration(mdev.mainConfig.CommonConfig.Frequency) * time.Millisecond)
+			ticker := time.NewTicker(time.Duration(*mdev.mainConfig.CommonConfig.Frequency) * time.Millisecond)
 			for {
 				<-ticker.C
 				select {
@@ -605,11 +614,11 @@ func (mdev *CustomProtocolDevice) OnCtrl(cmd []byte, args []byte) ([]byte, error
 
 // 设备当前状态
 func (mdev *CustomProtocolDevice) Status() typex.DeviceState {
-	if mdev.mainConfig.CommonConfig.RetryTime == 0 {
+	if *mdev.mainConfig.CommonConfig.RetryTime == 0 {
 		mdev.status = typex.DEV_UP
 	}
-	if mdev.mainConfig.CommonConfig.RetryTime > 0 {
-		if mdev.errorCount >= mdev.mainConfig.CommonConfig.RetryTime {
+	if *mdev.mainConfig.CommonConfig.RetryTime > 0 {
+		if mdev.errorCount >= *mdev.mainConfig.CommonConfig.RetryTime {
 			mdev.status = typex.DEV_DOWN
 		}
 	}
