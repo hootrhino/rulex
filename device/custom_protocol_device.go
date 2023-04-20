@@ -310,7 +310,7 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 		return nil
 	}
 
-	return fmt.Errorf("unsupported transport:%s", mdev.mainConfig.CommonConfig.Transport)
+	return fmt.Errorf("unsupported transport:%s", *mdev.mainConfig.CommonConfig.Transport)
 }
 
 /*
