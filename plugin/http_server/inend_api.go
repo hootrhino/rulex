@@ -9,9 +9,7 @@ import (
 	"gopkg.in/square/go-jose.v2/json"
 )
 
-//
 // Get all inends
-//
 func InEnds(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
 	if uuid == "" {
@@ -28,9 +26,7 @@ func InEnds(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 
 }
 
-//
 // Create or Update InEnd
-//
 func CreateInend(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	type Form struct {
 		UUID        string                 `json:"uuid"` // 如果空串就是新建，非空就是更新
@@ -171,9 +167,7 @@ func UpdateInend(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	c.JSON(200, Ok())
 }
 
-//
 // Delete inend by UUID
-//
 func DeleteInEnd(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
 	_, err := hh.GetMInEnd(uuid)

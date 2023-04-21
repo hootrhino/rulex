@@ -1,7 +1,7 @@
 package device
 
 import (
-	"context"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"sync"
@@ -15,12 +15,25 @@ import (
 	serial "github.com/wwhai/goserial"
 )
 
+type _GUDCommonConfig struct {
+	Tag         string `json:"tag" validate:"required"`
+	Frequency   int64  `json:"frequency"`
+	AutoRequest bool   `json:"autoRequest"`
+	// 协议报文结束符号
+	Separator string `json:"separator"`
+}
+
+type _GUDConfig struct {
+	CommonConfig _GUDCommonConfig        `json:"CommonConfig" validate:"required"`
+	UartConfig   common.CommonUartConfig `json:"uartConfig" validate:"required"`
+}
+
 type genericUartDevice struct {
 	typex.XStatus
 	status     typex.DeviceState
 	RuleEngine typex.RuleX
 	driver     typex.XExternalDriver
-	mainConfig common.GenericUartConfig
+	mainConfig _GUDConfig
 	locker     sync.Locker
 }
 
@@ -32,7 +45,7 @@ type genericUartDevice struct {
 func NewGenericUartDevice(e typex.RuleX) typex.XDevice {
 	uart := new(genericUartDevice)
 	uart.locker = &sync.Mutex{}
-	uart.mainConfig = common.GenericUartConfig{}
+	uart.mainConfig = _GUDConfig{}
 	uart.RuleEngine = e
 	return uart
 }
@@ -41,14 +54,17 @@ func NewGenericUartDevice(e typex.RuleX) typex.XDevice {
 func (uart *genericUartDevice) Init(devId string, configMap map[string]interface{}) error {
 	uart.PointId = devId
 	// 检查配置
-	if uart.mainConfig.Decollator == "" {
-		uart.mainConfig.Decollator = "\n"
+	if uart.mainConfig.CommonConfig.Separator == "LF" {
+		uart.mainConfig.CommonConfig.Separator = "\n"
+	}
+	if uart.mainConfig.CommonConfig.Separator == "CRLF" {
+		uart.mainConfig.CommonConfig.Separator = "\n\r"
 	}
 	if err := utils.BindSourceConfig(configMap, &uart.mainConfig); err != nil {
 		glogger.GLogger.Error(err)
 		return err
 	}
-	if !contains([]string{"N", "E", "O"}, uart.mainConfig.Parity) {
+	if !utils.SContains([]string{"N", "E", "O"}, uart.mainConfig.UartConfig.Parity) {
 		return errors.New("parity value only one of 'N','O','E'")
 	}
 	return nil
@@ -59,15 +75,13 @@ func (uart *genericUartDevice) Start(cctx typex.CCTX) error {
 	uart.Ctx = cctx.Ctx
 	uart.CancelCTX = cctx.CancelCTX
 
-	// 串口配置固定写法
-	// 下面的参数是传感器固定写法
 	config := serial.Config{
-		Address:  uart.mainConfig.Uart,
-		BaudRate: uart.mainConfig.BaudRate,
-		DataBits: uart.mainConfig.DataBits,
-		Parity:   uart.mainConfig.Parity,
-		StopBits: uart.mainConfig.StopBits,
-		Timeout:  time.Duration(uart.mainConfig.Timeout) * time.Second,
+		Address:  uart.mainConfig.UartConfig.Uart,
+		BaudRate: uart.mainConfig.UartConfig.BaudRate,
+		DataBits: uart.mainConfig.UartConfig.DataBits,
+		Parity:   uart.mainConfig.UartConfig.Parity,
+		StopBits: uart.mainConfig.UartConfig.StopBits,
+		Timeout:  time.Duration(uart.mainConfig.UartConfig.Timeout) * time.Second,
 	}
 	serialPort, err := serial.Open(&config)
 	if err != nil {
@@ -75,57 +89,52 @@ func (uart *genericUartDevice) Start(cctx typex.CCTX) error {
 		return err
 	}
 	uart.driver = driver.NewRawUartDriver(uart.Ctx, uart.RuleEngine, uart.Details(), serialPort)
-	if !uart.mainConfig.AutoRequest {
-		goto END
+	if !uart.mainConfig.CommonConfig.AutoRequest {
+		uart.status = typex.DEV_UP
+		return nil
 	}
-	// 是否开启按照频率自动获取数据
-	if !uart.mainConfig.AutoRequest {
-		goto END
-	}
-	go func(ctx context.Context) {
-		buffer := make([]byte, common.T_64KB) // 默认缓冲区64KB, 应该够了
-		offset := 0
-		// uart.driver.Read([]byte{}, buffer[offset:]) //清理缓存
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			default:
-				{
-				}
-			}
-			uart.locker.Lock()
-			len, err := uart.driver.Read([]byte{}, buffer[offset:])
-			uart.locker.Unlock()
-			if err != nil {
-				glogger.GLogger.Error(err)
-				if uart.status == typex.DEV_STOP {
-					return
-				} else {
-					continue
-				}
-			}
-			// 检查是否读到了协议结束符号, 只要发现结束符就提交, 移动指针
-			for _, Byte := range buffer[offset : offset+len] {
-				// 换行符 == 10
-				Decollator := uart.mainConfig.Decollator[0]
-				if Byte == Decollator {
-					mapV := map[string]string{
-						"tag":   uart.mainConfig.Tag,
-						"value": string(buffer[:offset]),
-					}
-					bytes, _ := json.Marshal(mapV)
-					uart.RuleEngine.WorkDevice(uart.Details(), string(bytes))
-					offset = 0
-					break
-				} else {
-					offset += 1 // 一个一个移动
-				}
-			}
-		}
-	}(uart.Ctx)
-END:
-	uart.driver = driver.NewRawUartDriver(uart.Ctx, uart.RuleEngine, uart.Details(), serialPort)
+
+	// go func(ctx context.Context) {
+	// 	buffer := make([]byte, common.T_64KB) // 默认缓冲区64KB, 应该够了
+	// 	offset := 0
+	// 	for {
+	// 		select {
+	// 		case <-ctx.Done():
+	// 			return
+	// 		default:
+	// 			{
+	// 			}
+	// 		}
+	// 		uart.locker.Lock()
+	// 		len, err := uart.driver.Read([]byte{}, buffer[offset:])
+	// 		uart.locker.Unlock()
+	// 		if err != nil {
+	// 			glogger.GLogger.Error(err)
+	// 			if uart.status == typex.DEV_STOP {
+	// 				return
+	// 			} else {
+	// 				continue
+	// 			}
+	// 		}
+	// 		// 检查是否读到了协议结束符号, 只要发现结束符就提交, 移动指针
+	// 		for _, Byte := range buffer[offset : offset+len] {
+	// 			// 换行符 == 10
+	// 			Separator := uart.mainConfig.CommonConfig.Separator[0]
+	// 			if Byte == Separator {
+	// 				mapV := map[string]string{
+	// 					"tag":   uart.mainConfig.CommonConfig.Tag,
+	// 					"value": string(buffer[:offset]),
+	// 				}
+	// 				bytes, _ := json.Marshal(mapV)
+	// 				uart.RuleEngine.WorkDevice(uart.Details(), string(bytes))
+	// 				offset = 0
+	// 				break
+	// 			} else {
+	// 				offset += 1 // 一个一个移动
+	// 			}
+	// 		}
+	// 	}
+	// }(uart.Ctx)
 	uart.status = typex.DEV_UP
 	return nil
 }
@@ -153,10 +162,10 @@ func (uart *genericUartDevice) OnRead(cmd []byte, data []byte) (int, error) {
 	}
 	// 检查是否读到了协议结束符号, 只要发现结束符就提交, 移动指针
 	for i := 0; i < n; i++ {
-		if _ReadBuffer[i] == uart.mainConfig.Decollator[0] {
+		if _ReadBuffer[i] == uart.mainConfig.CommonConfig.Separator[0] {
 			mapV := map[string]string{
-				"tag":   uart.mainConfig.Tag,
-				"value": string(_ReadBuffer[:n]),
+				"tag":   uart.mainConfig.CommonConfig.Tag,
+				"value": hex.EncodeToString(_ReadBuffer[:n]),
 			}
 			bytes, _ := json.Marshal(mapV)
 			uart.RuleEngine.WorkDevice(uart.Details(), string(bytes))
@@ -216,14 +225,6 @@ func (uart *genericUartDevice) Driver() typex.XExternalDriver {
 // --------------------------------------------------------------------------------------------------
 //
 // --------------------------------------------------------------------------------------------------
-func contains(s []string, e string) bool {
-	for _, a := range s {
-		if a == e {
-			return true
-		}
-	}
-	return false
-}
 
 func (uart *genericUartDevice) OnDCACall(UUID string, Command string, Args interface{}) typex.DCAResult {
 	return typex.DCAResult{}

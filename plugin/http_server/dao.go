@@ -46,6 +46,7 @@ func (s *HttpApiServer) InitDb(dbPath string) {
 		&MDevice{},
 		&MGoods{},
 		&MApp{},
+		&MAiBase{},
 	); err != nil {
 		glogger.GLogger.Fatal(err)
 		os.Exit(1)

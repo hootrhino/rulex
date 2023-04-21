@@ -41,7 +41,7 @@ func DeleteGoods(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		// 数据库和内存都要删除
 		hh.DeleteGoods(goods.UUID)
 		e.RemoveGoods(goods.UUID)
-		c.JSON(200, Error("删除成功"))
+		c.JSON(200, Ok())
 	}
 }
 
