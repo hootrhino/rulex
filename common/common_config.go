@@ -16,7 +16,11 @@ type HostConfig struct {
 *
  */
 type IcmpConfig struct {
+<<<<<<< HEAD
 	Timeout int `json:"timeout" validate:"required" title:"连接超时"`
+=======
+	Timeout int `json:"timeout" validate:"required" title:"连接超时" info:""`
+>>>>>>> 6032bbd3c08f98073e50342b827c43e6d1140b5e
 
 	// ["127.0.0.1", "127.0.0.2", "127.0.0.3"]
 	Hosts []string `json:"hosts" validate:"required" title:"服务地址"`
