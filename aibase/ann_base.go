@@ -52,3 +52,7 @@ func (ann *ANNBaseRuntime) StopAi(uuid string) error {
 func (ann *ANNBaseRuntime) Stop() {
 
 }
+func (ann *ANNBaseRuntime) Infer([][]float64) [][]float64 {
+
+	return [][]float64{}
+}

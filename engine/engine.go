@@ -62,7 +62,9 @@ func NewRuleEngine(config typex.RulexConfig) typex.RuleX {
 	re.AiBaseRuntime = aibase.NewBuildInAiRuntime(re)
 	return re
 }
-
+func (e *RuleEngine) GetAiBase() typex.XAiBase {
+	return e.AiBaseRuntime
+}
 func (e *RuleEngine) Start() *typex.RulexConfig {
 	typex.StartQueue(core.GlobalConfig.MaxQueueSize)
 	e.InitDeviceTypeManager()

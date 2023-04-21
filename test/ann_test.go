@@ -35,21 +35,28 @@ func Test_ANN_wine_demo(t *testing.T) {
 
 	neural := deep.NewNeural(&deep.Config{
 		Inputs:     len(data[0].Input),
-		Layout:     []int{8, 3},
+		Layout:     []int{2, 3},
 		Activation: deep.ActivationSigmoid,
 		Mode:       deep.ModeMultiClass,
 		Weight:     deep.NewNormal(1, 0),
 		Bias:       true,
 	})
-	t.Log(neural.String())
+	// t.Log(neural.String())
 	//trainer := training.NewTrainer(training.NewSGD(0.005, 0.5, 1e-6, true), 50)
 	//trainer := training.NewBatchTrainer(training.NewSGD(0.005, 0.1, 0, true), 50, 300, 16)
 	//trainer := training.NewTrainer(training.NewAdam(0.1, 0, 0, 0), 50)
 	trainer := training.NewBatchTrainer(training.NewAdam(0.1, 0, 0, 0), 50, len(data)/2, 12)
 	//data, heldout := data.Split(0.5)
 	trainer.Train(neural, data, data, 5000)
-	result := neural.Predict([]float64{3, 12.7, 3.55, 2.36, 21.5, 106, 1.7, 1.2, .17, .84, 5, .78, 1.29, 600})
-	t.Log(result)
+	testData1 := []float64{13.05, 1.65, 2.55, 18, 98, 2.45, 2.43, .29, 1.44, 4.25, 1.12, 2.51, 1105}
+	testData2 := []float64{12.16, 1.61, 2.31, 22.8, 90, 1.78, 1.69, .43, 1.56, 2.45, 1.33, 2.26, 495}
+	testData3 := []float64{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+	result1 := neural.Predict(testData1)
+	result2 := neural.Predict(testData2)
+	result3 := neural.Predict(testData3)
+	t.Log(result1)
+	t.Log(result2)
+	t.Log(result3)
 }
 
 func load(path string) (training.Examples, error) {

@@ -9,14 +9,17 @@ type XAiBase interface {
 	UpdateAi(Ai AiBase) error
 	StartAi(uuid string) error
 	StopAi(uuid string) error
+	Infer([][]float64) [][]float64
 	Stop()
 }
 type AiBase struct {
-	UUID        string // 名称
-	Name        string // 名称
-	Type        string // 类型
-	Filepath    string // 文件路径, 是相对于main的aibase目录
-	Description string
+	UUID        string                 // UUID
+	Name        string                 // 名称
+	Type        string                 // 类型
+	Filepath    string                 // 文件路径, 是相对于main的aispace目录
+	Config      map[string]interface{} // 内部配置
+	AiBase      XAiBase                // AI工作模型
+	Description string                 // 描述文字
 }
 
 /*

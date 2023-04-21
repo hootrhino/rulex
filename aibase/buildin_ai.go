@@ -6,6 +6,18 @@ func NewBuildInAiRuntime(re typex.RuleX) typex.XAiBase {
 	ai := new(BuildInAiRuntime)
 	ai.re = re
 	ai.aiBases = make(map[string]*typex.AiBase)
+	ai.LoadAi(&typex.AiBase{
+		UUID:     "MNIST",
+		Name:     "MNIST example",
+		Type:     "BUILDIN", // 内置类型
+		Filepath: "_",
+		Config: map[string]interface{}{
+			"Layer": 10,
+			"Alg":   "ANN",
+		},
+		AiBase:      ai,
+		Description: "Classic ANN MNIST example",
+	})
 	return ai
 }
 
@@ -14,6 +26,7 @@ func NewBuildInAiRuntime(re typex.RuleX) typex.XAiBase {
 * 管理器
 *
  */
+
 type BuildInAiRuntime struct {
 	re      typex.RuleX
 	aiBases map[string]*typex.AiBase
@@ -32,6 +45,7 @@ func (ai *BuildInAiRuntime) ListAi() []*typex.AiBase {
 
 }
 func (ai *BuildInAiRuntime) LoadAi(Ai *typex.AiBase) error {
+	ai.aiBases[Ai.Name] = Ai
 	return nil
 }
 func (ai *BuildInAiRuntime) GetAi(uuid string) *typex.AiBase {
@@ -51,4 +65,8 @@ func (ai *BuildInAiRuntime) StopAi(uuid string) error {
 }
 func (ai *BuildInAiRuntime) Stop() {
 
+}
+func (ai *BuildInAiRuntime) Infer([][]float64) [][]float64 {
+
+	return [][]float64{}
 }

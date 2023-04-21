@@ -51,3 +51,7 @@ func (cnn *CNNBaseRuntime) StopAi(uuid string) error {
 func (cnn *CNNBaseRuntime) Stop() {
 
 }
+func (cnn *CNNBaseRuntime) Infer([][]float64) [][]float64 {
+
+	return [][]float64{}
+}
