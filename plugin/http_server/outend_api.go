@@ -8,9 +8,7 @@ import (
 	"gopkg.in/square/go-jose.v2/json"
 )
 
-//
 // Get all outends
-//
 func OutEnds(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
 	if uuid == "" {
@@ -27,9 +25,7 @@ func OutEnds(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 
 }
 
-//
 // Delete outEnd by UUID
-//
 func DeleteOutEnd(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
 	_, err := hh.GetMOutEnd(uuid)
@@ -46,9 +42,7 @@ func DeleteOutEnd(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 
 }
 
-//
 // Create or Update OutEnd
-//
 func CreateOutEnd(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	type Form struct {
 		UUID        string                 `json:"uuid"` // 如果空串就是新建, 非空就是更新

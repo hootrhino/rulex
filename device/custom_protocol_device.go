@@ -6,11 +6,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/i4de/rulex/common"
-	"github.com/i4de/rulex/core"
 	"github.com/i4de/rulex/glogger"
 	"github.com/i4de/rulex/typex"
 	"github.com/i4de/rulex/utils"
@@ -29,7 +27,7 @@ const __DEFAULT_BUFFER_SIZE = 100
 
 type _CPDCommonConfig struct {
 	Transport *string `json:"transport" validate:"required"` // 传输协议
-	Frequency *int64  `json:"frequency" validate:"required" title:"采集频率" info:""`
+	Frequency *int64  `json:"frequency" validate:"required" title:"采集频率"`
 	RetryTime *int    `json:"retryTime" validate:"required"` // 几次以后重启,0 表示不重启
 }
 
@@ -61,6 +59,13 @@ type _CPDProtocol struct {
 	OnCheckError     string `json:"onCheckError" default:"IGNORE"`                          // 当指令操作失败时动作: IGNORE, LOG
 	//
 	AutoRequest bool `json:"autoRequest" validate:"required"` // 是否开启轮询, 开启轮询后, 每次间隔时间为 Frequency 毫秒
+
+	//---------------------------------------------------------------------
+	// 用来给值增加初始值和权重系数，即: Value = Value *Weight + Offset
+	//---------------------------------------------------------------------
+	Weight    float64 `json:"weight" title:"权重系数"`
+	InitValue float64 `json:"initValue" title:"权重初始值"`
+
 	//---------------------------------------------------------------------
 	// 只有在静态协议(Type=1)下有用
 	//---------------------------------------------------------------------
@@ -242,9 +247,7 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 						mdev.errorCount++
 						continue
 					}
-					if core.GlobalConfig.AppDebugMode {
-						log.Println("[AppDebugMode] Write data:", hexs)
-					}
+					glogger.GLogger.Debug("serialPort.Write:", hexs)
 					if _, err1 := mdev.serialPort.Write(hexs); err1 != nil {
 						glogger.GLogger.Error("serialPort.Write error: ", err1)
 						mdev.errorCount++
@@ -260,30 +263,10 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 						continue
 					}
 					cancel()
-					if core.GlobalConfig.AppDebugMode {
-						log.Println("[AppDebugMode] Write data:", p.ProtocolArg.In)
-						log.Println("[AppDebugMode] Read data:", result[:p.BufferSize])
-					}
-					dataMap := map[string]string{}
-					checkOk := false
-					if p.CheckAlgorithm == "CRC16" || p.CheckAlgorithm == "crc16" {
-						glogger.GLogger.Debug("checkCRC:", result[:p.BufferSize],
-							int(result[:p.BufferSize][p.ChecksumValuePos]))
-						checkOk = mdev.checkCRC(result[:p.BufferSize],
-							int(result[:p.BufferSize][p.ChecksumValuePos]))
+					glogger.GLogger.Debug("serialPort.Read:", hexs)
 
-					}
-					if p.CheckAlgorithm == "XOR" || p.CheckAlgorithm == "xor" {
-						glogger.GLogger.Debug("checkXOR:", result[:p.BufferSize],
-							int(result[:p.BufferSize][p.ChecksumValuePos]))
-						checkOk = mdev.checkXOR(result[:p.BufferSize],
-							int(result[:p.BufferSize][p.ChecksumValuePos]))
-					}
-					// NONECHECK: 不校验
-					if p.CheckAlgorithm == "NONECHECK" {
-						checkOk = true
-					}
-					if checkOk {
+					dataMap := map[string]string{}
+					if mdev.checkHexs(p, result[:]) {
 						// 返回给lua参数是十六进制大写字符串
 						dataMap["name"] = p.Name
 						dataMap["in"] = p.ProtocolArg.In
@@ -337,6 +320,7 @@ func (mdev *CustomProtocolDevice) OnRead(cmd []byte, data []byte) (int, error) {
 			}
 
 			_, err1 := mdev.serialPort.Write(hexs)
+			glogger.GLogger.Debug("serialPort.Write:", hexs)
 			if err1 != nil {
 				glogger.GLogger.Error("serialPort.Write error: ", err1)
 				mdev.errorCount++
@@ -353,32 +337,10 @@ func (mdev *CustomProtocolDevice) OnRead(cmd []byte, data []byte) (int, error) {
 				return 0, err2
 			}
 			cancel()
-
-			if core.GlobalConfig.AppDebugMode {
-				log.Println("[AppDebugMode] Write data:", p.ProtocolArg.In)
-				log.Println("[AppDebugMode] Read data:", result[:p.BufferSize])
-			}
+			glogger.GLogger.Debug("serialPort.Read:", hexs)
 			// 返回值
 			dataMap := map[string]string{}
-			checkOk := false
-			if p.CheckAlgorithm == "CRC16" || p.CheckAlgorithm == "crc16" {
-				glogger.GLogger.Debug("checkCRC:", result[:p.BufferSize],
-					int(result[:p.BufferSize][p.ChecksumValuePos]))
-				checkOk = mdev.checkCRC(result[:p.BufferSize],
-					int(result[:p.BufferSize][p.ChecksumValuePos]))
-			}
-			//
-			if p.CheckAlgorithm == "XOR" || p.CheckAlgorithm == "xor" {
-				glogger.GLogger.Debug("checkCRC:", result[:p.BufferSize],
-					int(result[:p.BufferSize][p.ChecksumValuePos]))
-				checkOk = mdev.checkCRC(result[:p.BufferSize],
-					int(result[:p.BufferSize][p.ChecksumValuePos]))
-			}
-			// NONECHECK: 不校验
-			if p.CheckAlgorithm == "NONECHECK" {
-				checkOk = true
-			}
-			if checkOk {
+			if mdev.checkHexs(p, result[:]) {
 				// 返回给lua参数是十六进制大写字符串
 				dataMap["name"] = p.Name
 				dataMap["in"] = p.ProtocolArg.In
@@ -435,6 +397,7 @@ func (mdev *CustomProtocolDevice) OnWrite(cmd []byte, data []byte) (int, error) 
 			}
 
 			_, err1 := mdev.serialPort.Write(hexs)
+			glogger.GLogger.Debug("serialPort.Write:", hexs)
 			if err1 != nil {
 				glogger.GLogger.Error("serialPort.Write error: ", err1)
 				mdev.errorCount++
@@ -451,32 +414,10 @@ func (mdev *CustomProtocolDevice) OnWrite(cmd []byte, data []byte) (int, error) 
 				return 0, err2
 			}
 			cancel()
-
-			if core.GlobalConfig.AppDebugMode {
-				log.Println("[AppDebugMode] Write data:", p.ProtocolArg.In)
-				log.Println("[AppDebugMode] Read data:", result[:p.BufferSize])
-			}
+			glogger.GLogger.Debug("serialPort.Read:", result[:p.BufferSize])
 			// 返回值
 			dataMap := map[string]string{}
-			checkOk := false
-			if p.CheckAlgorithm == "CRC16" || p.CheckAlgorithm == "crc16" {
-				glogger.GLogger.Debug("checkCRC:", result[:p.BufferSize],
-					int(result[:p.BufferSize][p.ChecksumValuePos]))
-				checkOk = mdev.checkCRC(result[:p.BufferSize],
-					int(result[:p.BufferSize][p.ChecksumValuePos]))
-			}
-			//
-			if p.CheckAlgorithm == "XOR" || p.CheckAlgorithm == "xor" {
-				glogger.GLogger.Debug("checkCRC:", result[:p.BufferSize],
-					int(result[:p.BufferSize][p.ChecksumValuePos]))
-				checkOk = mdev.checkCRC(result[:p.BufferSize],
-					int(result[:p.BufferSize][p.ChecksumValuePos]))
-			}
-			// NONECHECK: 不校验
-			if p.CheckAlgorithm == "NONECHECK" {
-				checkOk = true
-			}
-			if checkOk {
+			if mdev.checkHexs(p, result[:]) {
 				// 返回给lua参数是十六进制大写字符串
 				dataMap["name"] = p.Name
 				dataMap["in"] = p.ProtocolArg.In
@@ -533,9 +474,7 @@ func (mdev *CustomProtocolDevice) OnCtrl(cmd []byte, args []byte) ([]byte, error
 				return nil, err
 			}
 			_, err1 := mdev.serialPort.Write(hexs)
-			if core.GlobalConfig.AppDebugMode {
-				log.Println("[AppDebugMode] Write data:", p.ProtocolArg.In)
-			}
+			glogger.GLogger.Debug("serialPort.Write:", hexs)
 			if err1 != nil {
 				glogger.GLogger.Error("Dynamic protocol write error: ", err1)
 				mdev.errorCount++
@@ -552,9 +491,7 @@ func (mdev *CustomProtocolDevice) OnCtrl(cmd []byte, args []byte) ([]byte, error
 				return nil, err2
 			}
 			cancel()
-			if core.GlobalConfig.AppDebugMode {
-				log.Println("[AppDebugMode] Read data:", result[:p.BufferSize])
-			}
+			glogger.GLogger.Debug("serialPort.Read:", result[:p.BufferSize])
 			// return
 			dataMap := map[string]string{}
 			dataMap["name"] = p.Name
@@ -675,4 +612,31 @@ func (mdev *CustomProtocolDevice) checkXOR(b []byte, v int) bool {
 func (mdev *CustomProtocolDevice) checkCRC(b []byte, v int) bool {
 
 	return int(utils.CRC16(b)) == v
+}
+
+/*
+*
+* Check hex string
+*
+ */
+func (mdev *CustomProtocolDevice) checkHexs(p _CPDProtocol, result []byte) bool {
+	checkOk := false
+	if p.CheckAlgorithm == "CRC16" || p.CheckAlgorithm == "crc16" {
+		glogger.GLogger.Debug("checkCRC:", result[:p.BufferSize],
+			int(result[:p.BufferSize][p.ChecksumValuePos]))
+		checkOk = mdev.checkCRC(result[:p.BufferSize],
+			int(result[:p.BufferSize][p.ChecksumValuePos]))
+	}
+	//
+	if p.CheckAlgorithm == "XOR" || p.CheckAlgorithm == "xor" {
+		glogger.GLogger.Debug("checkCRC:", result[:p.BufferSize],
+			int(result[:p.BufferSize][p.ChecksumValuePos]))
+		checkOk = mdev.checkCRC(result[:p.BufferSize],
+			int(result[:p.BufferSize][p.ChecksumValuePos]))
+	}
+	// NONECHECK: 不校验
+	if p.CheckAlgorithm == "NONECHECK" {
+		checkOk = true
+	}
+	return checkOk
 }

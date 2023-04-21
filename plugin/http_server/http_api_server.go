@@ -3,6 +3,7 @@ package httpserver
 import (
 	"context"
 	"embed"
+	"errors"
 	"io/fs"
 	"net/http"
 	"path"
@@ -49,9 +50,13 @@ func NewHttpApiServer() *HttpApiServer {
 	return &HttpApiServer{}
 }
 
+// HTTP服务器崩了, 重启恢复
+var err1crash = errors.New("http server crash, try to recovery")
+
 func (hh *HttpApiServer) Init(config *ini.Section) error {
 	gin.SetMode(gin.ReleaseMode)
 	hh.ginEngine = gin.New()
+
 	var mainConfig _serverConfig
 	if err := utils.InIMapToStruct(config, &mainConfig); err != nil {
 		return err
@@ -277,7 +282,10 @@ func configHttpServer(hh *HttpApiServer) {
 	hh.ginEngine.Use(hh.Authorize())
 	hh.ginEngine.Use(Cros())
 	hh.ginEngine.Use(static.Serve("/", wwwRoot("")))
-
+	hh.ginEngine.Use(gin.CustomRecovery(func(c *gin.Context, err any) {
+		glogger.GLogger.Error(err)
+		c.JSON(200, Error500(err1crash))
+	}))
 	if hh.dbPath == "" {
 		hh.InitDb(_DEFAULT_DB_PATH)
 	} else {

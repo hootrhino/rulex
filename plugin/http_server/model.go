@@ -104,3 +104,18 @@ type MApp struct {
 	Filepath    string `gorm:"not null"` // 文件路径, 是相对于main的apps目录
 	Description string `gorm:"not null"` // 文件路径, 是相对于main的apps目录
 }
+
+/*
+*
+* 用户上传的AI数据[v0.5.0]
+*
+ */
+type MAiBase struct {
+	RulexModel
+	UUID        string `gorm:"not null"` // 名称
+	Name        string `gorm:"not null"` // 名称
+	Type        string `gorm:"not null"` // 类型
+	Version     string `gorm:"not null"` // 版本号
+	Filepath    string `gorm:"not null"` // 文件路径, 是相对于main的apps目录
+	Description string `gorm:"not null"`
+}

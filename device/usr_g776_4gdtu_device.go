@@ -1,7 +1,7 @@
 package device
 
 import (
-	"context"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"sync"
@@ -22,9 +22,9 @@ import (
  */
 type _G776CommonConfig struct {
 	Tag         string `json:"tag" validate:"required" title:"数据Tag" info:"给数据打标签"`
-	Frequency   int64  `json:"frequency" validate:"required" title:"采集频率" info:""`
-	AutoRequest bool   `json:"autoRequest" title:"启动轮询" info:""`
-	Separator   string `json:"separator" title:"协议分隔符" info:""`
+	Frequency   int64  `json:"frequency" validate:"required" title:"采集频率"`
+	AutoRequest bool   `json:"autoRequest" title:"启动轮询"`
+	Separator   string `json:"separator" title:"协议分隔符"`
 }
 
 type _G776Config struct {
@@ -63,6 +63,12 @@ func (uart *UsrG776DTU) Init(devId string, configMap map[string]interface{}) err
 		glogger.GLogger.Error(err)
 		return err
 	}
+	if uart.mainConfig.CommonConfig.Separator == "LF" {
+		uart.mainConfig.CommonConfig.Separator = "\n"
+	}
+	if uart.mainConfig.CommonConfig.Separator == "CRLF" {
+		uart.mainConfig.CommonConfig.Separator = "\r"
+	}
 	if !utils.SContains([]string{"N", "E", "O"}, uart.mainConfig.UartConfig.Parity) {
 		return errors.New("parity value only one of 'N','O','E'")
 	}
@@ -73,9 +79,6 @@ func (uart *UsrG776DTU) Init(devId string, configMap map[string]interface{}) err
 func (uart *UsrG776DTU) Start(cctx typex.CCTX) error {
 	uart.Ctx = cctx.Ctx
 	uart.CancelCTX = cctx.CancelCTX
-
-	// 串口配置固定写法
-	// 下面的参数是传感器固定写法
 	config := serial.Config{
 		Address:  uart.mainConfig.UartConfig.Uart,
 		BaudRate: uart.mainConfig.UartConfig.BaudRate,
@@ -89,39 +92,7 @@ func (uart *UsrG776DTU) Start(cctx typex.CCTX) error {
 		glogger.GLogger.Error("Serial.Open failed:", err)
 		return err
 	}
-	uart.driver = driver.NewRawUartDriver(uart.Ctx, uart.RuleEngine, uart.Details(), serialPort)
-	if !uart.mainConfig.CommonConfig.AutoRequest {
-		uart.status = typex.DEV_UP
-		return nil
-	}
-	go func(ctx context.Context) {
-		ticker := time.NewTicker(time.Duration(uart.mainConfig.CommonConfig.Frequency) * time.Millisecond)
-		buffer := make([]byte, common.T_64KB)
-		uart.driver.Read([]byte{}, buffer) //清理缓存
-		for {
-			<-ticker.C
-			select {
-			case <-ctx.Done():
-				ticker.Stop()
-				return
-			default:
-				uart.locker.Lock()
-				n, err := uart.driver.Read([]byte{}, buffer)
-				uart.locker.Unlock()
-				if err != nil {
-					glogger.GLogger.Error(err)
-					continue
-				}
-				mapV := map[string]interface{}{
-					"tag":   uart.mainConfig.CommonConfig.Tag,
-					"value": string(buffer[:n]),
-				}
-				bytes, _ := json.Marshal(mapV)
-				uart.RuleEngine.WorkDevice(uart.Details(), string(bytes))
-			}
-		}
-
-	}(uart.Ctx)
+	uart.driver = driver.NewUsrG776Driver(uart.Ctx, uart.RuleEngine, uart.Details(), serialPort)
 	uart.status = typex.DEV_UP
 	return nil
 }
@@ -139,14 +110,18 @@ func (uart *UsrG776DTU) OnRead(cmd []byte, data []byte) (int, error) {
 	buffer := make([]byte, n)
 	mapV := map[string]interface{}{
 		"tag":   uart.mainConfig.CommonConfig.Tag,
-		"value": string(buffer[:n]),
+		"value": hex.EncodeToString(buffer[:n]),
 	}
 	bytes, _ := json.Marshal(mapV)
 	copy(data, bytes)
 	return n, err
 }
 
-// 把数据写入设备
+/*
+*
+* 有人G776-DTU写入串口的数据会被不加修改的透传到上层
+*
+ */
 func (uart *UsrG776DTU) OnWrite(cmd []byte, b []byte) (int, error) {
 	return uart.driver.Write(cmd, b)
 }
