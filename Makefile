@@ -1,5 +1,4 @@
 APP=rulex
-<<<<<<< .merge_file_a20496
 # 获取操作系统信息
 distro=$(shell cat /etc/os-release | grep PRETTY_NAME | cut -d '"' -f 2)
 kernel=$(shell uname -r)
@@ -19,10 +18,6 @@ all:
 	@echo "\e[41m[*] Host   \e[0m: \e[36m ${host} \e[0m"
 	@echo "\e[41m[*] IP     \e[0m: \e[36m ${ip} \e[0m"
 	@echo "\e[41m[*] Disk   \e[0m: \e[36m ${disk} \e[0m"
-=======
-.PHONY: all
-all:
->>>>>>> .merge_file_a16984
 	make build
 
 .PHONY: build

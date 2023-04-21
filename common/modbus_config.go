@@ -68,7 +68,6 @@ type RTUConfig struct {
 }
 type ModBusConfig struct {
 	Mode    string `json:"mode" title:"工作模式" info:"RTU/TCP"`
-<<<<<<< HEAD
 	Timeout int    `json:"timeout" validate:"required" title:"连接超时"`
 	// Weather allow AutoRequest?
 	AutoRequest bool `json:"autoRequest" title:"启动轮询"`
@@ -76,13 +75,4 @@ type ModBusConfig struct {
 	Frequency int64        `json:"frequency" validate:"required" title:"采集频率"`
 	Config    interface{}  `json:"config" validate:"required" title:"工作模式"`
 	Registers []RegisterRW `json:"registers" validate:"required" title:"寄存器配置"`
-=======
-	Timeout int    `json:"timeout" validate:"required" title:"连接超时" info:""`
-	// Weather allow AutoRequest?
-	AutoRequest bool `json:"autoRequest" title:"启动轮询" info:""`
-	// Request Frequency, default 5 second
-	Frequency int64        `json:"frequency" validate:"required" title:"采集频率" info:""`
-	Config    interface{}  `json:"config" validate:"required" title:"工作模式" info:""`
-	Registers []RegisterRW `json:"registers" validate:"required" title:"寄存器配置" info:""`
->>>>>>> 6032bbd3c08f98073e50342b827c43e6d1140b5e
 }

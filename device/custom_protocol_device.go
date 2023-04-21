@@ -27,11 +27,7 @@ const __DEFAULT_BUFFER_SIZE = 100
 
 type _CPDCommonConfig struct {
 	Transport *string `json:"transport" validate:"required"` // 传输协议
-<<<<<<< HEAD
 	Frequency *int64  `json:"frequency" validate:"required" title:"采集频率"`
-=======
-	Frequency *int64  `json:"frequency" validate:"required" title:"采集频率" info:""`
->>>>>>> 6032bbd3c08f98073e50342b827c43e6d1140b5e
 	RetryTime *int    `json:"retryTime" validate:"required"` // 几次以后重启,0 表示不重启
 }
 

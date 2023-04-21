@@ -42,21 +42,14 @@ import (
 //	}
 type _GMODCommonConfig struct {
 	Mode        string `json:"mode" title:"工作模式" info:"RTU/TCP"`
-<<<<<<< HEAD
 	Timeout     int    `json:"timeout" validate:"required" title:"连接超时"`
 	AutoRequest bool   `json:"autoRequest" title:"启动轮询"`
 	Frequency   int64  `json:"frequency" validate:"required" title:"采集频率"`
-=======
-	Timeout     int    `json:"timeout" validate:"required" title:"连接超时" info:""`
-	AutoRequest bool   `json:"autoRequest" title:"启动轮询" info:""`
-	Frequency   int64  `json:"frequency" validate:"required" title:"采集频率" info:""`
->>>>>>> 6032bbd3c08f98073e50342b827c43e6d1140b5e
 }
 type _GMODConfig struct {
 	CommonConfig _GMODCommonConfig       `json:"commonConfig" validate:"required"`
 	RtuConfig    common.CommonUartConfig `json:"rtuConfig" validate:"required"`
 	TcpConfig    common.HostConfig       `json:"tcpConfig" validate:"required"`
-<<<<<<< HEAD
 	Registers    []common.RegisterRW     `json:"registers" validate:"required" title:"寄存器配置"`
 }
 type generic_modbus_device struct {
@@ -68,19 +61,6 @@ type generic_modbus_device struct {
 	tcpHandler    *modbus.TCPClientHandler
 	mainConfig    _GMODConfig
 	locker        sync.Locker
-=======
-	Registers    []common.RegisterRW     `json:"registers" validate:"required" title:"寄存器配置" info:""`
-}
-type generic_modbus_device struct {
-	typex.XStatus``
-	status     typex.DeviceState
-	RuleEngine typex.RuleX
-	driver     typex.XExternalDriver
-	rtuHandler *modbus.RTUClientHandler
-	tcpHandler *modbus.TCPClientHandler
-	mainConfig _GMODConfig
-	locker     sync.Locker
->>>>>>> 6032bbd3c08f98073e50342b827c43e6d1140b5e
 }
 
 /*
