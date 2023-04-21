@@ -13,10 +13,21 @@ import (
 	"github.com/i4de/rulex/utils"
 )
 
+type _IcmpSenderCommonConfig struct {
+	Timeout int `json:"timeout" validate:"required"`
+	// // Weather allow AutoRequest?
+	AutoRequest bool `json:"autoRequest" title:"启动轮询" info:""`
+	// // Request Frequency, default 5 second
+	Frequency int64 `json:"frequency" validate:"required" title:"采集频率" info:""`
+}
+type _IcmpSenderConfig struct {
+	CommonConfig _IcmpSenderCommonConfig `json:"commonConfig" validate:"required"`
+	IcmpConfig   common.IcmpConfig       `json:"icmpConfig" validate:"required"`
+}
 type IcmpSender struct {
 	typex.XStatus
 	status     typex.DeviceState
-	mainConfig common.IpConfig
+	mainConfig _IcmpSenderConfig
 	RuleEngine typex.RuleX
 }
 
@@ -29,7 +40,7 @@ type IcmpSender struct {
 func NewIcmpSender(e typex.RuleX) typex.XDevice {
 	sender := new(IcmpSender)
 	sender.RuleEngine = e
-	sender.mainConfig = common.IpConfig{}
+	sender.mainConfig = _IcmpSenderConfig{}
 	return sender
 }
 
@@ -39,17 +50,17 @@ func (sender *IcmpSender) Init(devId string, configMap map[string]interface{}) e
 	if err := utils.BindSourceConfig(configMap, &sender.mainConfig); err != nil {
 		return err
 	}
-	for _, ip := range sender.mainConfig.Hosts {
+	for _, ip := range sender.mainConfig.IcmpConfig.Hosts {
 		if net.ParseIP(ip) == nil {
 			return errors.New("invalid ip:" + ip)
 		}
 	}
-	if !sender.mainConfig.AutoRequest {
+	if !sender.mainConfig.CommonConfig.AutoRequest {
 		sender.status = typex.DEV_UP
 		return nil
 	}
 	go func(ctx context.Context) {
-		ticker := time.NewTicker(time.Duration(sender.mainConfig.Frequency) * time.Millisecond)
+		ticker := time.NewTicker(time.Duration(sender.mainConfig.CommonConfig.Frequency) * time.Millisecond)
 		for {
 			<-ticker.C
 			select {
@@ -64,8 +75,8 @@ func (sender *IcmpSender) Init(devId string, configMap map[string]interface{}) e
 				}
 			}
 			// 轮询IP地址 然后发送ICMP包
-			for _, ip := range sender.mainConfig.Hosts {
-				t, err := Pingq(ip, time.Duration(sender.mainConfig.Timeout))
+			for _, ip := range sender.mainConfig.IcmpConfig.Hosts {
+				t, err := pingQ(ip, time.Duration(sender.mainConfig.CommonConfig.Timeout))
 				if err != nil {
 					glogger.GLogger.Error(err)
 					continue
@@ -142,7 +153,7 @@ func (sender *IcmpSender) OnCtrl(cmd []byte, args []byte) ([]byte, error) {
 // --------------------------------------------------------------------------------------------------
 // private
 // --------------------------------------------------------------------------------------------------
-func Pingq(ip string, timeout time.Duration) (time.Duration, error) {
+func pingQ(ip string, timeout time.Duration) (time.Duration, error) {
 	const IcmpLen = 8
 	msg := [32]byte{
 		8, 0, 0, 0, 0, 13, 0, 37,

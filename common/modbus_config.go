@@ -1,16 +1,5 @@
 package common
 
-type ModBusConfig struct {
-	Mode     string `json:"mode" title:"工作模式" info:"RTU/TCP"`
-	Timeout  int    `json:"timeout" validate:"required" title:"连接超时" info:""`
-	// Weather allow AutoRequest?
-	AutoRequest bool `json:"autoRequest" title:"启动轮询" info:""`
-	// Request Frequency, default 5 second
-	Frequency int64        `json:"frequency" validate:"required" title:"采集频率" info:""`
-	Config    interface{}  `json:"config" validate:"required" title:"工作模式" info:""`
-	Registers []RegisterRW `json:"registers" validate:"required" title:"寄存器配置" info:""`
-}
-
 const (
 	READ_COIL                        = 1  //  Read Coil
 	READ_DISCRETE_INPUT              = 2  //  Read Discrete Input
@@ -58,7 +47,6 @@ type RegisterRW struct {
 	Value    string `json:"value" title:"值" info:"本地系统的串口路径"`                      // Value
 }
 
-//
 // Uart "/dev/ttyUSB0"
 // BaudRate = 115200
 // DataBits = 8
@@ -66,11 +54,21 @@ type RegisterRW struct {
 // StopBits = 1
 // SlaveId = 1
 // Timeout = 5 * time.Second
-//
+// TODO: 在0.5以后删除这两个结构体
 type RTUConfig struct {
 	Uart     string `json:"uart" validate:"required" title:"串口路径" info:"本地系统的串口路径"`
 	BaudRate int    `json:"baudRate" validate:"required" title:"波特率" info:"串口通信波特率"`
 	DataBits int    `json:"dataBits" validate:"required" title:"数据位" info:"串口通信数据位"`
 	Parity   string `json:"parity" validate:"required" title:"奇偶校验" info:"奇偶校验"`
 	StopBits int    `json:"stopBits" validate:"required" title:"停止位" info:"串口通信停止位"`
+}
+type ModBusConfig struct {
+	Mode    string `json:"mode" title:"工作模式" info:"RTU/TCP"`
+	Timeout int    `json:"timeout" validate:"required" title:"连接超时" info:""`
+	// Weather allow AutoRequest?
+	AutoRequest bool `json:"autoRequest" title:"启动轮询" info:""`
+	// Request Frequency, default 5 second
+	Frequency int64        `json:"frequency" validate:"required" title:"采集频率" info:""`
+	Config    interface{}  `json:"config" validate:"required" title:"工作模式" info:""`
+	Registers []RegisterRW `json:"registers" validate:"required" title:"寄存器配置" info:""`
 }
