@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	lua "github.com/i4de/gopher-lua"
+	"github.com/i4de/rulex/aibase"
 	"github.com/i4de/rulex/appstack"
 	"github.com/i4de/rulex/core"
 	"github.com/i4de/rulex/device"
@@ -23,8 +24,6 @@ import (
 
 // 规则引擎
 type RuleEngine struct {
-	Trailer           typex.XTrailer       `json:"-"`
-	AppStack          typex.XAppStack      `json:"-"`
 	Hooks             *sync.Map            `json:"hooks"`
 	Rules             *sync.Map            `json:"rules"`
 	Plugins           *sync.Map            `json:"plugins"`
@@ -33,6 +32,9 @@ type RuleEngine struct {
 	Drivers           *sync.Map            `json:"drivers"`
 	Devices           *sync.Map            `json:"devices"`
 	Config            *typex.RulexConfig   `json:"config"`
+	Trailer           typex.XTrailer       `json:"-"`
+	AppStack          typex.XAppStack      `json:"-"`
+	AiBaseRuntime     typex.XAiBase        `json:"-"`
 	DeviceTypeManager typex.DeviceRegistry `json:"-"`
 	SourceTypeManager typex.SourceRegistry `json:"-"`
 	TargetTypeManager typex.TargetRegistry `json:"-"`
@@ -56,6 +58,8 @@ func NewRuleEngine(config typex.RulexConfig) typex.RuleX {
 	re.Trailer = trailer.NewTrailerManager(re)
 	// lua appstack manager
 	re.AppStack = appstack.NewAppStack(re)
+	// current only support Internal ai
+	re.AiBaseRuntime = aibase.NewBuildInAiRuntime(re)
 	return re
 }
 

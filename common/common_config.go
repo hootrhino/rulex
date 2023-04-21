@@ -6,8 +6,8 @@ package common
 *
  */
 type HostConfig struct {
-	Host string `json:"host" validate:"required" title:"服务地址" info:""`
-	Port int    `json:"port" validate:"required" title:"服务端口" info:""`
+	Host string `json:"host" validate:"required" title:"服务地址"`
+	Port int    `json:"port" validate:"required" title:"服务端口"`
 }
 
 /*
@@ -16,10 +16,10 @@ type HostConfig struct {
 *
  */
 type IcmpConfig struct {
-	Timeout int `json:"timeout" validate:"required" title:"连接超时" info:""`
+	Timeout int `json:"timeout" validate:"required" title:"连接超时"`
 
 	// ["127.0.0.1", "127.0.0.2", "127.0.0.3"]
-	Hosts []string `json:"hosts" validate:"required" title:"服务地址" info:""`
+	Hosts []string `json:"hosts" validate:"required" title:"服务地址"`
 }
 
 /*
@@ -28,11 +28,11 @@ type IcmpConfig struct {
 *
  */
 type MqttConfig struct {
-	Host     string `json:"host" validate:"required" title:"服务地址" info:""`
-	Port     int    `json:"port" validate:"required" title:"服务端口" info:""`
-	ClientId string `json:"clientId" validate:"required" title:"客户端ID" info:""`
-	Username string `json:"username" validate:"required" title:"连接账户" info:""`
-	Password string `json:"password" validate:"required" title:"连接密码" info:""`
+	Host     string `json:"host" validate:"required" title:"服务地址"`
+	Port     int    `json:"port" validate:"required" title:"服务端口"`
+	ClientId string `json:"clientId" validate:"required" title:"客户端ID"`
+	Username string `json:"username" validate:"required" title:"连接账户"`
+	Password string `json:"password" validate:"required" title:"连接密码"`
 	PubTopic string `json:"pubTopic" title:"上报TOPIC" info:"上报TOPIC"` // 上报数据的 Topic
 	SubTopic string `json:"subTopic" title:"订阅TOPIC" info:"订阅TOPIC"` // 上报数据的 Topic
 }

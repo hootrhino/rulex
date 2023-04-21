@@ -26,6 +26,9 @@ func DeviceUuid() string {
 func AppUuid() string {
 	return MakeUUID("APP")
 }
+func AiBaseUuid() string {
+	return MakeUUID("AIBASE")
+}
 
 // MakeUUID
 func RuleUuid() string {

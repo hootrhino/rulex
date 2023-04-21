@@ -10,13 +10,7 @@ import (
 	"github.com/i4de/rulex/typex"
 )
 
-// {
-//     "PCHost":"127.0.0.1",
-//     "PCDescription":"Hardware: Intel64 Family",
-//     "PCUserName":"wangwh1-868.infore.com",
-//     "PCHardIFaces":[],
-//     "PCTotalMemory":33262700
-// }
+
 func Test_Generic_snmp_device(t *testing.T) {
 	engine := RunTestEngine()
 	engine.Start()
