@@ -17,7 +17,7 @@ import (
 
 // go test -timeout 30s -run ^Test_ANN_wine_demo github.com/i4de/rulex/test -v -count=1
 
-func Test_ANN_wine_demo(t *testing.T) {
+func Test_wine_demo(t *testing.T) {
 
 	rand.Seed(time.Now().UnixNano())
 

@@ -205,7 +205,7 @@ type RuleX interface {
 	//----------------------------------------
 	// AiBase
 	//----------------------------------------
-	GetAiBase() XAiBase
+	GetAiBase() XAiRuntime
 }
 
 // 拓扑接入点，比如 modbus 检测点等

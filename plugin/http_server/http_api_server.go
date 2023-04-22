@@ -224,6 +224,11 @@ func (hh *HttpApiServer) Start(r typex.RuleX) error {
 	hh.ginEngine.DELETE(url("app"), hh.addRoute(RemoveApp))
 	hh.ginEngine.PUT(url("app/start"), hh.addRoute(StartApp))
 	hh.ginEngine.PUT(url("app/stop"), hh.addRoute(StopApp))
+	//----------------------------------------------------------------------------------------------
+	// AI BASE
+	//----------------------------------------------------------------------------------------------
+	hh.ginEngine.GET(url("aibase"), hh.addRoute(AiBase))
+	hh.ginEngine.DELETE(url("aibase"), hh.addRoute(DeleteAiBase))
 
 	glogger.GLogger.Infof("Http server started on http://0.0.0.0:%v", hh.Port)
 	return nil
