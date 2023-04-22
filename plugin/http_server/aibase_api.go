@@ -13,7 +13,15 @@ import (
  */
 func AiBase(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
-	c.JSON(200, OkWithData(uuid))
+	if uuid == "" {
+		c.JSON(200, OkWithData(e.GetAiBase().ListAi()))
+		return
+	}
+	if ai := e.GetAiBase().GetAi(uuid); ai != nil {
+		c.JSON(200, OkWithData(ai))
+		return
+	}
+	c.JSON(200, Error("ai base not found:"+uuid))
 }
 
 /*
@@ -23,7 +31,16 @@ func AiBase(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
  */
 func DeleteAiBase(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
-	c.JSON(200, OkWithData(uuid))
+	if ai := e.GetAiBase().GetAi(uuid); ai != nil {
+		err := e.GetAiBase().RemoveAi(uuid)
+		if err != nil {
+			c.JSON(200, Error400(err))
+			return
+		}
+		c.JSON(200, Ok())
+		return
+	}
+	c.JSON(200, Error("ai base not found:"+uuid))
 }
 
 /*

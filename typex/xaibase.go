@@ -1,34 +1,69 @@
 package typex
 
-type XAiBase interface {
+type AIType string
+
+// 内建类型
+const BUILDIN_MNIST AIType = "BUILDIN_MNIST"
+
+// ANN
+const ANN AIType = "ANN"
+
+// CNN
+const CNN AIType = "CNN"
+
+// RNN
+const RNN AIType = "RNN"
+
+/*
+*
+* AI 应用管理器接口
+*
+ */
+type XAiRuntime interface {
 	GetRuleX() RuleX
-	ListAi() []*AiBase
-	LoadAi(Ai *AiBase) error
-	GetAi(uuid string) *AiBase
+	ListAi() []*AI
+	LoadAi(Ai *AI) error
+	GetAi(uuid string) *AI
 	RemoveAi(uuid string) error
-	UpdateAi(Ai AiBase) error
+	UpdateAi(Ai *AI) error
 	StartAi(uuid string) error
 	StopAi(uuid string) error
-	Infer([][]float64) [][]float64
 	Stop()
-}
-type AiBase struct {
-	UUID        string                 // UUID
-	Name        string                 // 名称
-	Type        string                 // 类型
-	Filepath    string                 // 文件路径, 是相对于main的aispace目录
-	Config      map[string]interface{} // 内部配置
-	AiBase      XAiBase                // AI工作模型
-	Description string                 // 描述文字
 }
 
 /*
 *
-* 生成AI应用
+* AI 应用层接口
 *
  */
-func NewAiBase(UUID, Name, Type, Filepath, Description string) *AiBase {
-	ai := new(AiBase)
+type XAi interface {
+	Start(map[string]interface{}) error
+	Infer([][]float64) [][]float64
+	Stop()
+}
+
+/*
+*
+* 内建AI
+*
+ */
+type AI struct {
+	UUID        string                 `json:"uuid"`        // UUID
+	Name        string                 `json:"name"`        // 名称
+	Type        string                 `json:"type"`        // 类型
+	Filepath    string                 `json:"filepath"`    // 文件路径, 是相对于main的aispace目录
+	Config      map[string]interface{} `json:"config"`      // 内部配置
+	Description string                 `json:"description"` // 描述文字
+	XAI         XAi                    `json:"-"`
+}
+
+/*
+*
+* 生成typex.AI应用
+*
+ */
+func NewAI(UUID, Name, Type, Filepath, Description string) *AI {
+	ai := new(AI)
 	ai.UUID = UUID
 	ai.Name = Name
 	ai.Type = Type
