@@ -1,6 +1,8 @@
 package rulexlib
 
 import (
+	"errors"
+
 	lua "github.com/i4de/gopher-lua"
 	"github.com/i4de/rulex/typex"
 )
@@ -16,37 +18,63 @@ import (
 *   返回值也是一个二维矩阵, 代表预测的结果
 *
  */
+var errType error = errors.New("tensor type error, must be [][]float table")
+
 func Infer(rx typex.RuleX) func(*lua.LState) int {
 	return func(l *lua.LState) int {
 		uuid := l.ToString(2)
-		// input := l.ToTable(3)
+		input := l.ToTable(3)
+		inputTensor := [][]float64{}
+		var err error = nil
+		input.ForEach(func(i, v lua.LValue) {
+			row := []float64{}
+			switch vv := v.(type) {
+			case *lua.LTable:
+				{
+					vv.ForEach(func(ir, vr lua.LValue) {
+						switch vrv := vr.(type) {
+						case lua.LNumber:
+							{
+								row = append(row, float64(vrv))
+							}
+						}
+					})
+				}
+			default:
+				{
+					err = errType
+				}
+			}
+			if err == nil {
+				inputTensor = append(inputTensor, row)
+			}
+		})
 		ai := rx.GetAiBase()
+		if err != nil {
+			l.Push(lua.LNil)                 // data
+			l.Push(lua.LString(err.Error())) //err
+			return 2
+		}
+		InferResult := [][]float64{}
 		if ai != nil {
-			if ai.GetAi(uuid) != nil {
-				ai.Infer([][]float64{
-					{10, 11, 12, 13, 14},
-					{20, 21, 22, 23, 24},
-				})
+			if xai := ai.GetAi(uuid); xai != nil {
+				InferResult = xai.XAI.Infer(inputTensor)
 			}
 		}
-		// 简单示例
-		result := lua.LTable{}
-		row1 := &lua.LTable{}
-		row1.Append(lua.LNumber(10))
-		row1.Append(lua.LNumber(11))
-		row1.Append(lua.LNumber(12))
-		row1.Append(lua.LNumber(13))
-		row1.Append(lua.LNumber(14))
-		row2 := &lua.LTable{}
-		row2.Append(lua.LNumber(20))
-		row2.Append(lua.LNumber(21))
-		row2.Append(lua.LNumber(22))
-		row2.Append(lua.LNumber(23))
-		row2.Append(lua.LNumber(24))
-		result.Append(row1)
-		result.Append(row2)
-		l.Push(&result)  // data
-		l.Push(lua.LNil) //err
+		// {
+		// 	{1,2,3,4,}
+		// 	{1,2,3,4,}
+		// }
+		returnTable := lua.LTable{}
+		for _, row := range InferResult {
+			rowTable := lua.LTable{}
+			for _, col := range row {
+				rowTable.Append(lua.LNumber(col))
+			}
+			returnTable.Append(&rowTable)
+		}
+		l.Push(&returnTable) // data
+		l.Push(lua.LNil)    //err
 		return 2
 	}
 }
