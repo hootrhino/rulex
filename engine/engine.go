@@ -34,7 +34,7 @@ type RuleEngine struct {
 	Config            *typex.RulexConfig   `json:"config"`
 	Trailer           typex.XTrailer       `json:"-"`
 	AppStack          typex.XAppStack      `json:"-"`
-	AiBaseRuntime     typex.XAiBase        `json:"-"`
+	AiBaseRuntime     typex.XAiRuntime     `json:"-"`
 	DeviceTypeManager typex.DeviceRegistry `json:"-"`
 	SourceTypeManager typex.SourceRegistry `json:"-"`
 	TargetTypeManager typex.TargetRegistry `json:"-"`
@@ -59,10 +59,12 @@ func NewRuleEngine(config typex.RulexConfig) typex.RuleX {
 	// lua appstack manager
 	re.AppStack = appstack.NewAppStack(re)
 	// current only support Internal ai
-	re.AiBaseRuntime = aibase.NewBuildInAiRuntime(re)
+	re.AiBaseRuntime = aibase.NewAIRuntime(re)
 	return re
 }
-
+func (e *RuleEngine) GetAiBase() typex.XAiRuntime {
+	return e.AiBaseRuntime
+}
 func (e *RuleEngine) Start() *typex.RulexConfig {
 	typex.StartQueue(core.GlobalConfig.MaxQueueSize)
 	e.InitDeviceTypeManager()

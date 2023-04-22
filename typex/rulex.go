@@ -202,6 +202,10 @@ type RuleX interface {
 	StartApp(uuid string) error
 	StopApp(uuid string) error
 	RemoveApp(uuid string) error
+	//----------------------------------------
+	// AiBase
+	//----------------------------------------
+	GetAiBase() XAiRuntime
 }
 
 // 拓扑接入点，比如 modbus 检测点等
