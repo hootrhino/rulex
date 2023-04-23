@@ -24,7 +24,7 @@ func Test_g7776_Device(t *testing.T) {
 
 	// YK8 Inend
 	GUART := typex.NewDevice(typex.USER_G776,
-		"UART", "UART", "UART", map[string]interface{}{
+		"UART", "UART", map[string]interface{}{
 			"baudRate":  9600,
 			"dataBits":  8,
 			"frequency": 5,

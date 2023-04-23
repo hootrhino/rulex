@@ -27,7 +27,7 @@ func Test_modbus_485_yk8(t *testing.T) {
 
 	// YK8 Inend
 	YK8Device := typex.NewDevice(typex.YK08_RELAY,
-		"继电器", "继电器", "继电器", map[string]interface{}{
+		"继电器", "继电器", map[string]interface{}{
 			"timeout":   5,
 			"frequency": 5,
 			"config": map[string]interface{}{

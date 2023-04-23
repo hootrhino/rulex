@@ -2,11 +2,9 @@ package utils
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"runtime"
-	"time"
 
 	"github.com/i4de/rulex/glogger"
 )
@@ -62,30 +60,17 @@ func toMegaBytes(bytes uint64) float64 {
 func TraceMemStats() {
 	var ms runtime.MemStats
 	runtime.ReadMemStats(&ms)
-	var result = make([]float64, 7)
-	result[0] = float64(ms.HeapObjects)
-	result[1] = toMegaBytes(ms.HeapAlloc)
-	result[2] = toMegaBytes(ms.TotalAlloc)
-	result[3] = toMegaBytes(ms.HeapSys)
-	result[4] = toMegaBytes(ms.HeapIdle)
-	result[5] = toMegaBytes(ms.HeapReleased)
-	result[6] = toMegaBytes(ms.HeapIdle - ms.HeapReleased)
+	var info [7]float64
+	info[0] = float64(ms.HeapObjects)
+	info[1] = toMegaBytes(ms.HeapAlloc)
+	info[2] = toMegaBytes(ms.TotalAlloc)
+	info[3] = toMegaBytes(ms.HeapSys)
+	info[4] = toMegaBytes(ms.HeapIdle)
+	info[5] = toMegaBytes(ms.HeapReleased)
+	info[6] = toMegaBytes(ms.HeapIdle - ms.HeapReleased)
 
-	fmt.Printf("%d\t", time.Now().Unix())
-	for _, v := range result {
-		fmt.Printf("%.2f\t", v)
+	for _, v := range info {
+		fmt.Printf("%v,\t", v)
 	}
-	fmt.Printf("\n")
-	time.Sleep(1 * time.Second)
-}
-
-func TraceMem() {
-	TraceMemStats()
-	var container [200 * 1024 * 1024]byte
-	for i := 0; i < 200*1024*1024; i++ {
-		container[i] = 0
-	}
-	TraceMemStats()
-	container[0] = 0
-	log.Printf("%d", len(container))
+	fmt.Println()
 }

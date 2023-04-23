@@ -22,7 +22,7 @@ func Test_Generic_snmp_device(t *testing.T) {
 		t.Fatal(err)
 	}
 	GENERIC_SNMP := typex.NewDevice(typex.GENERIC_SNMP,
-		"GENERIC_SNMP", "GENERIC_SNMP", "", map[string]interface{}{
+		"GENERIC_SNMP", "GENERIC_SNMP", map[string]interface{}{
 			"timeout":   10,
 			"frequency": 5,
 			"target":    "127.0.0.1",
