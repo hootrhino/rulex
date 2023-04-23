@@ -100,7 +100,6 @@ func RunRulex(iniPath string) {
 			typex.DeviceType(mDevice.Type),
 			mDevice.Name,
 			mDevice.Description,
-			mDevice.ActionScript,
 			config,
 		)
 		newDevice.UUID = mDevice.UUID // Important !!!!!!!!

@@ -27,7 +27,7 @@ func Test_modbus_485_sensor_gateway(t *testing.T) {
 	}
 	// RTU485_THER Inend
 	RTU485Device := typex.NewDevice("RTU485_THER",
-		"温湿度采集器", "温湿度采集器", "", map[string]interface{}{
+		"温湿度采集器", "温湿度采集器", map[string]interface{}{
 			"slaverIds": []uint8{1, 2},
 			"timeout":   5,
 			"frequency": 5,

@@ -62,7 +62,7 @@ func TestCustomProtocolDevice(t *testing.T) {
 	}
 	//
 	dev1 := typex.NewDevice(typex.GENERIC_PROTOCOL,
-		"UART", "UART", "UART", map[string]interface{}{
+		"UART", "UART", map[string]interface{}{
 			"commonConfig": map[string]interface{}{
 				"frequency":   5,
 				"autoRequest": true,

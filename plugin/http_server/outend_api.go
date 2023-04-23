@@ -9,20 +9,32 @@ import (
 )
 
 // Get all outends
-func OutEnds(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+func OutEnds(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
 	if uuid == "" {
-		data := []interface{}{}
-		outEnds := e.AllOutEnd()
-		outEnds.Range(func(key, value interface{}) bool {
-			data = append(data, value)
-			return true
-		})
-		c.JSON(200, OkWithData(data))
+		outends := []*typex.OutEnd{}
+		for _, v := range hs.AllMOutEnd() {
+			var device *typex.OutEnd
+			if device = e.GetOutEnd(v.UUID); device == nil {
+				device.State = typex.SOURCE_STOP
+			}
+			if device != nil {
+				outends = append(outends, device)
+			}
+		}
+		c.JSON(200, OkWithData(outends))
 	} else {
-		c.JSON(200, OkWithData(e.GetOutEnd(uuid)))
+		Model, err := hs.GetMOutEndWithUUID(uuid)
+		if err != nil {
+			c.JSON(200, Error400(err))
+			return
+		}
+		var outend *typex.OutEnd
+		if outend = e.GetOutEnd(Model.UUID); outend == nil {
+			outend.State = typex.SOURCE_STOP
+		}
+		c.JSON(200, OkWithData(outend))
 	}
-
 }
 
 // Delete outEnd by UUID
