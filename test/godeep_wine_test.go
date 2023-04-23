@@ -15,7 +15,7 @@ import (
 	"github.com/patrikeh/go-deep/training"
 )
 
-// go test -timeout 30s -run ^Test_ANN_wine_demo github.com/i4de/rulex/test -v -count=1
+// go test -timeout 30s -run ^Test_wine_demo github.com/i4de/rulex/test -v -count=1
 
 func Test_wine_demo(t *testing.T) {
 
@@ -28,6 +28,7 @@ func Test_wine_demo(t *testing.T) {
 
 	for i := range data {
 		deep.Standardize(data[i].Input)
+		t.Log(data[i].Input[0], data[i].Response)
 	}
 	data.Shuffle()
 
@@ -35,7 +36,7 @@ func Test_wine_demo(t *testing.T) {
 
 	neural := deep.NewNeural(&deep.Config{
 		Inputs:     len(data[0].Input),
-		Layout:     []int{2, 3},
+		Layout:     []int{5, 3},
 		Activation: deep.ActivationSigmoid,
 		Mode:       deep.ModeMultiClass,
 		Weight:     deep.NewNormal(1, 0),
@@ -48,15 +49,20 @@ func Test_wine_demo(t *testing.T) {
 	trainer := training.NewBatchTrainer(training.NewAdam(0.1, 0, 0, 0), 50, len(data)/2, 12)
 	//data, heldout := data.Split(0.5)
 	trainer.Train(neural, data, data, 5000)
-	testData1 := []float64{13.05, 1.65, 2.55, 18, 98, 2.45, 2.43, .29, 1.44, 4.25, 1.12, 2.51, 1105}
-	testData2 := []float64{12.16, 1.61, 2.31, 22.8, 90, 1.78, 1.69, .43, 1.56, 2.45, 1.33, 2.26, 495}
-	testData3 := []float64{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+	testData1 := []float64{14.13, 4.1, 2.74, 24.5, 96, 2.05, .76, .56, 1.35, 9.2, .61, 1.6, 560}
+	testData2 := []float64{14.13, 4.1, 2.74, 24.5, 96, 2.05, .76, .56, 1.35, 9.2, .61, 1.6, 560}
+	testData3 := []float64{14.13, 4.1, 2.74, 24.5, 96, 2.05, .76, .56, 1.35, 9.2, .61, 1.6, 560}
 	result1 := neural.Predict(testData1)
 	result2 := neural.Predict(testData2)
 	result3 := neural.Predict(testData3)
+	// b, _ := neural.Marshal()
+	// t.Log(string(b))
 	t.Log(result1)
 	t.Log(result2)
 	t.Log(result3)
+	t.Log(deep.Sum(result1))
+	t.Log(deep.Sum(result2))
+	t.Log(deep.Sum(result3))
 }
 
 func load(path string) (training.Examples, error) {

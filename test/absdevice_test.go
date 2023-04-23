@@ -17,7 +17,6 @@ func Test_ABS_device1(t *testing.T) {
 		UUID:         "Test1",
 		Name:         "Test1",
 		Type:         "SIMPLE",
-		ActionScript: "******",
 		Description:  "Test1",
 		Config: map[string]interface{}{
 			"K": "V",
@@ -37,7 +36,6 @@ func Test_ABS_device2(t *testing.T) {
 		UUID:         "Test1",
 		Name:         "Test1",
 		Type:         "NO-SUCH",
-		ActionScript: "******",
 		Description:  "Test1",
 		Config: map[string]interface{}{
 			"K": "V",

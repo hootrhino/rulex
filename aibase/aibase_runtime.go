@@ -18,7 +18,13 @@ func NewAIRuntime(re typex.RuleX) typex.XAiRuntime {
 		Type:     "BUILDIN_MNIST",
 		Filepath: "...",
 		Config: map[string]interface{}{
-			"document": "http://yann.lecun.com/exdb/mnist",
+			"alg":         "ANN",
+			"inputs":      10,
+			"layout":      []int{5, 3, 3},
+			"activation:": "Sigmoid",
+			"mode":        "MultiClass",
+			"bias":        true,
+			"document":    "http://yann.lecun.com/exdb/mnist",
 		},
 		Description: "BUILDIN_MNIST",
 	})

@@ -25,7 +25,7 @@ func Test_IcmpSender_Device(t *testing.T) {
 	}
 
 	ICMP_SENDER := typex.NewDevice(typex.ICMP_SENDER,
-		"ICMP_SENDER", "ICMP_SENDER", "ICMP_SENDER", map[string]interface{}{
+		"ICMP_SENDER", "ICMP_SENDER", map[string]interface{}{
 			"autoRequest": true,
 			"timeout":     5,
 			"frequency":   5,
