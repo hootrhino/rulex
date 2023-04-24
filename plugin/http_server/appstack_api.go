@@ -279,8 +279,9 @@ func StartApp(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 		if app.AppState == 0 {
 			if err := e.StartApp(uuid); err != nil {
 				c.JSON(200, Error400(err))
+			} else {
+				c.JSON(200, OkWithData("app start successfully:"+uuid))
 			}
-			c.JSON(200, OkWithData("app start successfully:"+uuid))
 		}
 		return
 	}

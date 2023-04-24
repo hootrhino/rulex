@@ -77,11 +77,7 @@ func (app *Application) Stop() {
 			log.Println("[gopher-lua] app Stop:", app.UUID, ", with recover error: ", err)
 		}
 	}()
-	app.vm.DoString(`function __() end __()`)
-	app.vm.SetTop(-1)
-	app.vm.Dead = true
 	app.cancel()
-	app.vm.Close() // app.vm.Close 会导致panic, 暂时先不处理
 }
 
 /*
@@ -96,6 +92,7 @@ func (app *Application) Remove() {
 		}
 	}()
 	app.Stop()
+	app.vm.Close()
 	app.vm = nil
 	runtime.GC()
 }
