@@ -9,9 +9,9 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/i4de/rulex/glogger"
-	"github.com/i4de/rulex/typex"
-	"github.com/i4de/rulex/utils"
+	"github.com/hootrhino/rulex/glogger"
+	"github.com/hootrhino/rulex/typex"
+	"github.com/hootrhino/rulex/utils"
 	"github.com/shirou/gopsutil/cpu"
 	"github.com/shirou/gopsutil/disk"
 	"gopkg.in/ini.v1"
@@ -171,8 +171,8 @@ func (hh *NetDiscover) PluginMetaInfo() typex.XPluginMetaInfo {
 	return typex.XPluginMetaInfo{
 		Name:     "NetDiscover",
 		Version:  "0.0.1",
-		Homepage: "www.github.com/i4de/rulex",
-		HelpLink: "www.github.com/i4de/rulex",
+		Homepage: "www.github.com/hootrhino/rulex",
+		HelpLink: "www.github.com/hootrhino/rulex",
 		Author:   "wwhai",
 		Email:    "cnwwhai@gmail.com",
 		License:  "MIT",

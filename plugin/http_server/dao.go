@@ -4,8 +4,8 @@ import (
 	"errors"
 	"os"
 
-	"github.com/i4de/rulex/core"
-	"github.com/i4de/rulex/glogger"
+	"github.com/hootrhino/rulex/core"
+	"github.com/hootrhino/rulex/glogger"
 	_ "github.com/mattn/go-sqlite3"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"

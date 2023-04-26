@@ -6,7 +6,7 @@ import (
 	"os/exec"
 	"runtime"
 
-	"github.com/i4de/rulex/glogger"
+	"github.com/hootrhino/rulex/glogger"
 )
 
 /*
@@ -48,7 +48,7 @@ func HostNameI() (string, error) {
 	return "[0.0.0.0]only support unix-like OS", nil
 }
 
-func toMegaBytes(bytes uint64) float64 {
+func BtoMB(bytes uint64) float64 {
 	return float64(bytes) / 1024 / 1024
 }
 
@@ -62,12 +62,12 @@ func TraceMemStats() {
 	runtime.ReadMemStats(&ms)
 	var info [7]float64
 	info[0] = float64(ms.HeapObjects)
-	info[1] = toMegaBytes(ms.HeapAlloc)
-	info[2] = toMegaBytes(ms.TotalAlloc)
-	info[3] = toMegaBytes(ms.HeapSys)
-	info[4] = toMegaBytes(ms.HeapIdle)
-	info[5] = toMegaBytes(ms.HeapReleased)
-	info[6] = toMegaBytes(ms.HeapIdle - ms.HeapReleased)
+	info[1] = BtoMB(ms.HeapAlloc)
+	info[2] = BtoMB(ms.TotalAlloc)
+	info[3] = BtoMB(ms.HeapSys)
+	info[4] = BtoMB(ms.HeapIdle)
+	info[5] = BtoMB(ms.HeapReleased)
+	info[6] = BtoMB(ms.HeapIdle - ms.HeapReleased)
 
 	for _, v := range info {
 		fmt.Printf("%v,\t", v)

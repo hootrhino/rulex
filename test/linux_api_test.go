@@ -11,7 +11,7 @@ package test
 // /*
 // *
 // * 测试UnixAPI
-// * go test -timeout 30s -run ^Test_unix_InotifyInit1$ github.com/i4de/rulex/test -v -count=1
+// * go test -timeout 30s -run ^Test_unix_InotifyInit1$ github.com/hootrhino/rulex/test -v -count=1
 // *
 // */
 // func Test_unix_InotifyInit1(t *testing.T) {

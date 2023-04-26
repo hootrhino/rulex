@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	lua "github.com/i4de/gopher-lua"
-	parse "github.com/i4de/gopher-lua/parse"
+	lua "github.com/hootrhino/gopher-lua"
+	parse "github.com/hootrhino/gopher-lua/parse"
 )
 
 // global

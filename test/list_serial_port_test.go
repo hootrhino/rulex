@@ -3,7 +3,7 @@ package test
 import (
 	"testing"
 
-	"github.com/i4de/rulex/glogger"
+	"github.com/hootrhino/rulex/glogger"
 	"go.bug.st/serial"
 )
 

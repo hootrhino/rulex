@@ -3,11 +3,11 @@ package test
 import (
 	"time"
 
-	httpserver "github.com/i4de/rulex/plugin/http_server"
+	httpserver "github.com/hootrhino/rulex/plugin/http_server"
 
 	"testing"
 
-	"github.com/i4de/rulex/typex"
+	"github.com/hootrhino/rulex/typex"
 )
 
 /*

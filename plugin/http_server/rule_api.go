@@ -3,9 +3,9 @@ package httpserver
 import (
 	"fmt"
 
-	"github.com/i4de/rulex/core"
-	"github.com/i4de/rulex/typex"
-	"github.com/i4de/rulex/utils"
+	"github.com/hootrhino/rulex/core"
+	"github.com/hootrhino/rulex/typex"
+	"github.com/hootrhino/rulex/utils"
 
 	"github.com/gin-gonic/gin"
 )

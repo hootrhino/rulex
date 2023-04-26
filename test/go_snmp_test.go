@@ -10,12 +10,10 @@ import (
 	"testing"
 
 	"github.com/gosnmp/gosnmp"
-	"github.com/i4de/rulex/glogger"
+	"github.com/hootrhino/rulex/glogger"
 )
 
-//
 // https://www.alvestrand.no/objectid/top.html
-//
 type SystemInfo struct {
 	snmpClient *gosnmp.GoSNMP
 }

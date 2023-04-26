@@ -1,8 +1,8 @@
 package target
 
 import (
-	"github.com/i4de/rulex/core"
-	"github.com/i4de/rulex/typex"
+	"github.com/hootrhino/rulex/core"
+	"github.com/hootrhino/rulex/typex"
 )
 
 var TM typex.TargetRegistry

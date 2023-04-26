@@ -9,16 +9,16 @@ import (
 
 	serial "github.com/wwhai/tarmserial"
 
-	httpserver "github.com/i4de/rulex/plugin/http_server"
-	"github.com/i4de/rulex/rulexrpc"
-	"github.com/i4de/rulex/typex"
-	"github.com/i4de/rulex/utils"
+	httpserver "github.com/hootrhino/rulex/plugin/http_server"
+	"github.com/hootrhino/rulex/rulexrpc"
+	"github.com/hootrhino/rulex/typex"
+	"github.com/hootrhino/rulex/utils"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
 
 // FFFFFF014CB2AA55
-// go test -timeout 30s -run ^TestHexEncoding github.com/i4de/rulex/test -v -count=1
+// go test -timeout 30s -run ^TestHexEncoding github.com/hootrhino/rulex/test -v -count=1
 func TestHexEncoding(t *testing.T) {
 	hexs := []byte{255, 255, 255, 1, 76, 178, 170, 85}
 	s := hex.EncodeToString(hexs)
@@ -27,7 +27,7 @@ func TestHexEncoding(t *testing.T) {
 	t.Log(hex.DecodeString(s))
 }
 
-// go test -timeout 30s -run ^TestCheckSUM github.com/i4de/rulex/test -v -count=1
+// go test -timeout 30s -run ^TestCheckSUM github.com/hootrhino/rulex/test -v -count=1
 
 func TestCheckSUM(t *testing.T) {
 	hexs := [8]byte{0xFF, 0xFF, 0xFF, 0x01, 0x4C, 0xB2, 0xAA, 0x55}
@@ -40,7 +40,7 @@ func TestCheckSUM(t *testing.T) {
 	t.Log(utils.XOR(hexs[checksumBegin:checksumEnd]) == int(hexs[checksumValuePos]))
 }
 
-// go test -timeout 30s -run ^TestCustomProtocolDevice github.com/i4de/rulex/test -v -count=1
+// go test -timeout 30s -run ^TestCustomProtocolDevice github.com/hootrhino/rulex/test -v -count=1
 
 func TestCustomProtocolDevice(t *testing.T) {
 	engine := RunTestEngine()
@@ -139,7 +139,7 @@ func TestCustomProtocolDevice(t *testing.T) {
 	engine.Stop()
 }
 
-// go test -timeout 30s -run ^Test_SerialPortRW github.com/i4de/rulex/test -v -count=1
+// go test -timeout 30s -run ^Test_SerialPortRW github.com/hootrhino/rulex/test -v -count=1
 func Test_SerialPortRW(t *testing.T) {
 	config := serial.Config{
 		Name:     "COM15",

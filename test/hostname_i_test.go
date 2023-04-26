@@ -3,10 +3,10 @@ package test
 import (
 	"testing"
 
-	"github.com/i4de/rulex/utils"
+	"github.com/hootrhino/rulex/utils"
 )
 
-// go test -timeout 30s -run ^Test_HostNameI github.com/i4de/rulex/test -v -count=1
+// go test -timeout 30s -run ^Test_HostNameI github.com/hootrhino/rulex/test -v -count=1
 func Test_HostNameI(t *testing.T) {
 	// 172.30.211.225
 	ip, err := utils.HostNameI()

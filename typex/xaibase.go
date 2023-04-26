@@ -3,16 +3,7 @@ package typex
 type AIType string
 
 // 内建类型
-const BUILDIN_MNIST AIType = "BUILDIN_MNIST"
-
-// ANN
-const ANN AIType = "ANN"
-
-// CNN
-const CNN AIType = "CNN"
-
-// RNN
-const RNN AIType = "RNN"
+const BODY_POSE_RECOGNITION AIType = "BODY_POSE_RECOGNITION"
 
 /*
 *
@@ -50,7 +41,8 @@ type XAi interface {
 type AI struct {
 	UUID        string                 `json:"uuid"`        // UUID
 	Name        string                 `json:"name"`        // 名称
-	Type        string                 `json:"type"`        // 类型
+	Type        AIType                 `json:"type"`        // 类型
+	IsBuildIn   bool                   `json:"isBuildIn"`   // 是否内建
 	Filepath    string                 `json:"filepath"`    // 文件路径, 是相对于main的aispace目录
 	Config      map[string]interface{} `json:"config"`      // 内部配置
 	Description string                 `json:"description"` // 描述文字
@@ -66,7 +58,7 @@ func NewAI(UUID, Name, Type, Filepath, Description string) *AI {
 	ai := new(AI)
 	ai.UUID = UUID
 	ai.Name = Name
-	ai.Type = Type
+	ai.Type = AIType(Type)
 	ai.Filepath = Filepath
 	ai.Description = Description
 	return ai

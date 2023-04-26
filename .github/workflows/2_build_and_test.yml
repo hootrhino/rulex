@@ -36,8 +36,8 @@ jobs:
           # -------------------------------------------
           # | every test
           # -------------------------------------------
-          go test -timeout 30s -run ^TestFullyRun$ github.com/i4de/rulex/test -v -count=1
+          go test -timeout 30s -run ^TestFullyRun$ github.com/hootrhino/rulex/test -v -count=1
           #
-          go test -timeout 30s -run ^Test_data_to_tdengine$ github.com/i4de/rulex/test -v -count=1
+          go test -timeout 30s -run ^Test_data_to_tdengine$ github.com/hootrhino/rulex/test -v -count=1
           #
-          go test -timeout 30s -run ^Test_DataToMongo$ github.com/i4de/rulex/test -v -count=1
+          go test -timeout 30s -run ^Test_DataToMongo$ github.com/hootrhino/rulex/test -v -count=1

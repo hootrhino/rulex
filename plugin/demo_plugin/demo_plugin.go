@@ -1,7 +1,7 @@
 package demo_plugin
 
 import (
-	"github.com/i4de/rulex/typex"
+	"github.com/hootrhino/rulex/typex"
 	"gopkg.in/ini.v1"
 )
 
@@ -27,8 +27,8 @@ func (hh *DemoPlugin) PluginMetaInfo() typex.XPluginMetaInfo {
 	return typex.XPluginMetaInfo{
 		Name:     "DemoPlugin",
 		Version:  "0.0.1",
-		Homepage: "www.github.com/i4de/rulex",
-		HelpLink: "www.github.com/i4de/rulex",
+		Homepage: "www.github.com/hootrhino/rulex",
+		HelpLink: "www.github.com/hootrhino/rulex",
 		Author:   "wwhai",
 		Email:    "cnwwhai@gmail.com",
 		License:  "MIT",
@@ -40,6 +40,6 @@ func (hh *DemoPlugin) PluginMetaInfo() typex.XPluginMetaInfo {
 * 服务调用接口
 *
  */
- func (cs *DemoPlugin) Service(arg typex.ServiceArg) error {
+func (cs *DemoPlugin) Service(arg typex.ServiceArg) error {
 	return nil
 }

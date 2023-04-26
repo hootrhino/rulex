@@ -1,9 +1,9 @@
 package engine
 
 import (
-	"github.com/i4de/rulex/core"
-	"github.com/i4de/rulex/rulexlib"
-	"github.com/i4de/rulex/typex"
+	"github.com/hootrhino/rulex/core"
+	"github.com/hootrhino/rulex/rulexlib"
+	"github.com/hootrhino/rulex/typex"
 )
 
 /*

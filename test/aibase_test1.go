@@ -3,17 +3,17 @@ package test
 import (
 	"context"
 
-	"github.com/i4de/rulex/rulexrpc"
+	"github.com/hootrhino/rulex/rulexrpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
 	"testing"
 	"time"
 
-	"github.com/i4de/rulex/typex"
+	"github.com/hootrhino/rulex/typex"
 )
 
-// go test -timeout 30s -run ^Test_AIBASE_ANN_MNIST github.com/i4de/rulex/test -v -count=1
+// go test -timeout 30s -run ^Test_AIBASE_ANN_MNIST github.com/hootrhino/rulex/test -v -count=1
 
 func Test_AIBASE_ANN_MNIST(t *testing.T) {
 	engine := RunTestEngine()

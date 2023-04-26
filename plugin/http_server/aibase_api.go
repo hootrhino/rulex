@@ -1,7 +1,7 @@
 package httpserver
 
 import (
-	"github.com/i4de/rulex/typex"
+	"github.com/hootrhino/rulex/typex"
 
 	"github.com/gin-gonic/gin"
 )

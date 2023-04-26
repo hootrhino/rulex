@@ -7,9 +7,9 @@ import (
 
 	"time"
 
-	"github.com/i4de/rulex/glogger"
-	"github.com/i4de/rulex/typex"
-	"github.com/i4de/rulex/utils"
+	"github.com/hootrhino/rulex/glogger"
+	"github.com/hootrhino/rulex/typex"
+	"github.com/hootrhino/rulex/utils"
 
 	"github.com/thinkgos/go-iecp5/asdu"
 	"github.com/thinkgos/go-iecp5/cs104"
@@ -92,8 +92,8 @@ func (cs *cs104Server) PluginMetaInfo() typex.XPluginMetaInfo {
 	return typex.XPluginMetaInfo{
 		Name:     "IEC104 server Plugin",
 		Version:  "0.0.1",
-		Homepage: "www.github.com/i4de/rulex",
-		HelpLink: "www.github.com/i4de/rulex",
+		Homepage: "www.github.com/hootrhino/rulex",
+		HelpLink: "www.github.com/hootrhino/rulex",
 		Author:   "wwhai",
 		Email:    "cnwwhai@gmail.com",
 		License:  "MIT",

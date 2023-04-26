@@ -1,12 +1,9 @@
 package typex
 
 import (
-	"github.com/i4de/rulex/utils"
+	"github.com/hootrhino/rulex/utils"
 )
 
-//
-//
-//
 type OutEnd struct {
 	UUID        string      `json:"uuid"`
 	State       SourceState `json:"state"`
@@ -22,14 +19,10 @@ func (o *OutEnd) GetState() SourceState {
 	return o.State
 }
 
-//
 func (o *OutEnd) SetState(s SourceState) {
 	o.State = s
 }
 
-//
-//
-//
 func NewOutEnd(t TargetType,
 	n string,
 	d string,
@@ -44,9 +37,6 @@ func NewOutEnd(t TargetType,
 	}
 }
 
-//
-//
-//
 func (out *OutEnd) GetConfig(k string) interface{} {
 	return (out.Config)[k]
 }

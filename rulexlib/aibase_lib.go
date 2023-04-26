@@ -3,8 +3,8 @@ package rulexlib
 import (
 	"errors"
 
-	lua "github.com/i4de/gopher-lua"
-	"github.com/i4de/rulex/typex"
+	lua "github.com/hootrhino/gopher-lua"
+	"github.com/hootrhino/rulex/typex"
 )
 
 /*
@@ -74,7 +74,7 @@ func Infer(rx typex.RuleX) func(*lua.LState) int {
 			returnTable.Append(&rowTable)
 		}
 		l.Push(&returnTable) // data
-		l.Push(lua.LNil)    //err
+		l.Push(lua.LNil)     //err
 		return 2
 	}
 }

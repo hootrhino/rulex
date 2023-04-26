@@ -4,21 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"runtime"
 	"strings"
 
-	"github.com/i4de/rulex/glogger"
-	"github.com/i4de/rulex/typex"
+	"github.com/hootrhino/rulex/glogger"
+	"github.com/hootrhino/rulex/typex"
 	"golang.org/x/sys/unix"
 	"gopkg.in/ini.v1"
 )
-
-const banner string = `
-     __  _           _       ___ ___ _   _
-| | (_  |_) __ |\/| / \ |\ |  |   | / \ |_)
-|_| __) |_)    |  | \_/ | \| _|_  | \_/ | \
-`
 
 /*
 *
@@ -99,7 +92,6 @@ func (usbm *usbMonitor) Start(_ typex.RuleX) error {
 		}
 
 	}(typex.GCTX)
-	fmt.Println(banner)
 	return nil
 }
 func parseType(data []byte, len int) string {
@@ -167,8 +159,8 @@ func (usbm *usbMonitor) PluginMetaInfo() typex.XPluginMetaInfo {
 	return typex.XPluginMetaInfo{
 		Name:     "USB Monitor",
 		Version:  "0.0.1",
-		Homepage: "www.github.com/i4de/rulex",
-		HelpLink: "www.github.com/i4de/rulex",
+		Homepage: "www.github.com/hootrhino/rulex",
+		HelpLink: "www.github.com/hootrhino/rulex",
 		Author:   "wwhai",
 		Email:    "cnwwhai@gmail.com",
 		License:  "MIT",

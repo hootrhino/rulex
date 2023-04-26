@@ -3,7 +3,7 @@ package test
 import (
 	"testing"
 
-	"github.com/i4de/rulex/core"
+	"github.com/hootrhino/rulex/core"
 )
 
 func Test_get_set(t *testing.T) {

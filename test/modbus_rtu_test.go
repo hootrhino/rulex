@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/i4de/rulex/glogger"
+	"github.com/hootrhino/rulex/glogger"
 	modbus "github.com/wwhai/gomodbus"
 )
 
