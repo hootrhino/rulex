@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/adrianmo/go-nmea"
-	"github.com/i4de/rulex/glogger"
+	"github.com/hootrhino/rulex/glogger"
 )
 
 func TestParseGPS(t *testing.T) {

@@ -7,7 +7,7 @@ import (
 	"github.com/gopcua/opcua"
 	"github.com/gopcua/opcua/ua"
 	"github.com/gopcua/opcua/uacp"
-	"github.com/i4de/rulex/glogger"
+	"github.com/hootrhino/rulex/glogger"
 )
 
 func Test_opcua_read(t *testing.T) {

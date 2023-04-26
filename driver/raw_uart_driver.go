@@ -6,7 +6,7 @@ import (
 	"errors"
 	"sync"
 
-	"github.com/i4de/rulex/typex"
+	"github.com/hootrhino/rulex/typex"
 	serial "github.com/wwhai/goserial"
 )
 

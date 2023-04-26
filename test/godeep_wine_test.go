@@ -15,7 +15,7 @@ import (
 	"github.com/patrikeh/go-deep/training"
 )
 
-// go test -timeout 30s -run ^Test_wine_demo github.com/i4de/rulex/test -v -count=1
+// go test -timeout 30s -run ^Test_wine_demo github.com/hootrhino/rulex/test -v -count=1
 
 func Test_wine_demo(t *testing.T) {
 

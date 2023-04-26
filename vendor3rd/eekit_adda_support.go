@@ -1,7 +1,7 @@
 package vendor3rd
 
 import (
-	"github.com/i4de/rulex/archsupport"
+	"github.com/hootrhino/rulex/archsupport"
 )
 
 /*

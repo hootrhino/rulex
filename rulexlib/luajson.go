@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/i4de/rulex/typex"
+	"github.com/hootrhino/rulex/typex"
 
-	lua "github.com/i4de/gopher-lua"
+	lua "github.com/hootrhino/gopher-lua"
 )
 
 /*

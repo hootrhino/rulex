@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/i4de/rulex/glogger"
-	"github.com/i4de/rulex/statistics"
+	"github.com/hootrhino/rulex/glogger"
+	"github.com/hootrhino/rulex/statistics"
 )
 
 var DefaultDataCacheQueue XQueue

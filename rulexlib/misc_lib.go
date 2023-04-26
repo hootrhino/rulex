@@ -3,9 +3,9 @@ package rulexlib
 import (
 	"encoding/hex"
 
-	lua "github.com/i4de/gopher-lua"
-	"github.com/i4de/rulex/typex"
-	"github.com/i4de/rulex/utils"
+	lua "github.com/hootrhino/gopher-lua"
+	"github.com/hootrhino/rulex/typex"
+	"github.com/hootrhino/rulex/utils"
 )
 
 /*

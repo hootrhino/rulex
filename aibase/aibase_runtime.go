@@ -3,8 +3,8 @@ package aibase
 import (
 	"fmt"
 
-	"github.com/i4de/rulex/glogger"
-	"github.com/i4de/rulex/typex"
+	"github.com/hootrhino/rulex/glogger"
+	"github.com/hootrhino/rulex/typex"
 )
 
 func NewAIRuntime(re typex.RuleX) typex.XAiRuntime {
@@ -13,20 +13,20 @@ func NewAIRuntime(re typex.RuleX) typex.XAiRuntime {
 	ai.aiBases = make(map[string]*typex.AI)
 	// 预加载内置模型
 	ai.LoadAi(&typex.AI{
-		UUID:     "BUILDIN_MNIST",
-		Name:     "BUILDIN_MNIST",
-		Type:     "BUILDIN_MNIST",
-		Filepath: "...",
+		UUID:      "BODY_POSE_RECOGNITION",
+		Name:      "人体姿态识别",
+		Type:      typex.BODY_POSE_RECOGNITION,
+		IsBuildIn: true,
+		Filepath:  "...",
 		Config: map[string]interface{}{
-			"alg":         "ANN",
+			"algorithm":   "ANN",
 			"inputs":      10,
 			"layout":      []int{5, 3, 3},
+			"output":      3,
 			"activation:": "Sigmoid",
-			"mode":        "MultiClass",
 			"bias":        true,
-			"document":    "http://yann.lecun.com/exdb/mnist",
 		},
-		Description: "BUILDIN_MNIST",
+		Description: "一个轻量级人体姿态识别模型",
 	})
 	return ai
 }
@@ -53,8 +53,8 @@ func (airt *AIRuntime) ListAi() []*typex.AI {
 	return ll
 }
 func (airt *AIRuntime) LoadAi(Ai *typex.AI) error {
-	if Ai.Type == "BUILDIN_MNIST" {
-		Ai.XAI = NewMnist(airt.re)
+	if Ai.Type == typex.BODY_POSE_RECOGNITION {
+		Ai.XAI = NewBodyPoseRecognition(airt.re)
 		airt.aiBases[Ai.UUID] = Ai
 	}
 	return fmt.Errorf("not support:%s", Ai.Type)
@@ -65,8 +65,8 @@ func (airt *AIRuntime) GetAi(uuid string) *typex.AI {
 func (airt *AIRuntime) RemoveAi(uuid string) error {
 	if v, ok := airt.aiBases[uuid]; ok {
 		// 内建类型不可删除
-		if v.Type == "BUILDIN" {
-			return fmt.Errorf("can not remove 'BUILDIN' aibase")
+		if v.IsBuildIn {
+			return fmt.Errorf("can not remove build-in aibase")
 		}
 		delete(airt.aiBases, uuid)
 		glogger.GLogger.Error("XAI.Start deleted")
@@ -78,7 +78,7 @@ func (airt *AIRuntime) RemoveAi(uuid string) error {
 func (airt *AIRuntime) UpdateAi(Ai *typex.AI) error {
 	if v, ok := airt.aiBases[Ai.UUID]; ok {
 		// 内建类型不可修改
-		if v.Type == "BUILDIN" {
+		if v.IsBuildIn {
 			return fmt.Errorf("can not change 'BUILDIN' aibase")
 		}
 		airt.aiBases[Ai.UUID] = Ai
@@ -91,7 +91,7 @@ func (airt *AIRuntime) UpdateAi(Ai *typex.AI) error {
 func (airt *AIRuntime) StartAi(uuid string) error {
 	if ai, ok := airt.aiBases[uuid]; ok {
 		// 内建类型不可修改
-		if ai.Type == "BUILDIN" {
+		if ai.IsBuildIn {
 			return fmt.Errorf("can not change 'BUILDIN' aibase")
 		}
 		err := ai.XAI.Start(map[string]interface{}{})
@@ -105,7 +105,7 @@ func (airt *AIRuntime) StartAi(uuid string) error {
 func (airt *AIRuntime) StopAi(uuid string) error {
 	if ai, ok := airt.aiBases[uuid]; ok {
 		// 内建类型不可修改
-		if ai.Type == "BUILDIN" {
+		if ai.IsBuildIn {
 			return fmt.Errorf("can not change 'BUILDIN' aibase")
 		}
 		ai.XAI.Stop()

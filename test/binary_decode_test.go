@@ -33,7 +33,7 @@ func DecodeMessage(data []byte) (message, error) {
 	return msg, nil
 }
 
-// go test -timeout 30s -run ^TestOk github.com/i4de/rulex/test -v -count=1
+// go test -timeout 30s -run ^TestOk github.com/hootrhino/rulex/test -v -count=1
 func TestEncodeMessage(t *testing.T) {
 	// 创建一个消息
 	msg := message{

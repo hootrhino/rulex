@@ -1,4 +1,4 @@
-module github.com/i4de/rulex
+module github.com/hootrhino/rulex
 
 go 1.18
 
@@ -21,7 +21,7 @@ require (
 	github.com/gopcua/opcua v0.3.13
 	github.com/gorilla/websocket v1.5.0
 	github.com/gosnmp/gosnmp v1.35.0
-	github.com/i4de/gopher-lua v1.0.2
+	github.com/hootrhino/gopher-lua v1.0.0
 	github.com/itchyny/gojq v0.12.12
 	github.com/makiuchi-d/gozxing v0.1.1
 	github.com/mattn/go-sqlite3 v1.14.16

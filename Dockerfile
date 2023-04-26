@@ -13,7 +13,7 @@ FROM golang:alpine3.9
 LABEL name="RULEX"
 LABEL author="wwhai"
 LABEL email="cnwwhai@gmail.com"
-LABEL homepage="https://github.com/i4de/rulex"
+LABEL homepage="https://github.com/hootrhino/rulex"
 COPY --from=0 /rulex/ /rulex/
 WORKDIR /rulex/
 

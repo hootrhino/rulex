@@ -10,14 +10,14 @@ import (
 	"time"
 
 	"github.com/go-playground/assert/v2"
-	httpserver "github.com/i4de/rulex/plugin/http_server"
+	httpserver "github.com/hootrhino/rulex/plugin/http_server"
 
-	"github.com/i4de/rulex/typex"
+	"github.com/hootrhino/rulex/typex"
 )
 
 var _DataToUdp_luaCase = `function Main(arg) for i = 1, 3, 1 do local err = applib:DataToUdp('UdpServer',applib:T2J({temp = 20,humi = 13.45})) applib:log('result =>',err) applib:Sleep(100) end return 0 end`
 
-// go test -timeout 30s -run ^Test_DataToUdp github.com/i4de/rulex/test -v -count=1
+// go test -timeout 30s -run ^Test_DataToUdp github.com/hootrhino/rulex/test -v -count=1
 
 func Test_DataToUdp(t *testing.T) {
 	RmUnitTestDbFile(t)

@@ -15,7 +15,7 @@ func strlen(s string) int {
 	return ((*ssd)(unsafe.Pointer(&s))).len
 }
 
-// go test -timeout 30s -run ^Test_string_uptr github.com/i4de/rulex/test -v -count=1 -run=none
+// go test -timeout 30s -run ^Test_string_uptr github.com/hootrhino/rulex/test -v -count=1 -run=none
 func Test_string_uptr(t *testing.T) {
 	s := "HELLO_WORLD"
 	sp := unsafe.Pointer(&s)
@@ -38,7 +38,7 @@ func Benchmark_string_len1(b *testing.B) {
 
 }
 
-// go.exe test -benchmem -run=^$ -bench ^Benchmark_string_len$ github.com/i4de/rulex/test -v -cpu=6
+// go.exe test -benchmem -run=^$ -bench ^Benchmark_string_len$ github.com/hootrhino/rulex/test -v -cpu=6
 func Benchmark_string_len2(b *testing.B) {
 	s := ""
 	for i := 0; i < 10*1024; i++ {
@@ -54,7 +54,7 @@ func Benchmark_string_len2(b *testing.B) {
 
 }
 
-// go.exe test -benchmem -run=^$ -bench ^Benchmark_string_lenssd$ github.com/i4de/rulex/test -v -cpu=6
+// go.exe test -benchmem -run=^$ -bench ^Benchmark_string_lenssd$ github.com/hootrhino/rulex/test -v -cpu=6
 func Benchmark_string_len3(b *testing.B) {
 	s := ""
 	for i := 0; i < 10*1024; i++ {

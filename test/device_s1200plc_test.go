@@ -6,10 +6,10 @@ import (
 
 	"testing"
 
-	"github.com/i4de/rulex/common"
+	"github.com/hootrhino/rulex/common"
 
-	"github.com/i4de/rulex/glogger"
-	"github.com/i4de/rulex/typex"
+	"github.com/hootrhino/rulex/glogger"
+	"github.com/hootrhino/rulex/typex"
 )
 
 //	{

@@ -8,9 +8,9 @@ import (
 	"encoding/json"
 	"sync"
 
-	"github.com/i4de/rulex/common"
-	"github.com/i4de/rulex/typex"
-	"github.com/i4de/rulex/utils"
+	"github.com/hootrhino/rulex/common"
+	"github.com/hootrhino/rulex/typex"
+	"github.com/hootrhino/rulex/utils"
 	modbus "github.com/wwhai/gomodbus"
 )
 

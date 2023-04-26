@@ -4,8 +4,8 @@ import (
 	"testing"
 	"time"
 
-	httpserver "github.com/i4de/rulex/plugin/http_server"
-	"github.com/i4de/rulex/typex"
+	httpserver "github.com/hootrhino/rulex/plugin/http_server"
+	"github.com/hootrhino/rulex/typex"
 )
 
 /*

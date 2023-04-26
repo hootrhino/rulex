@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/i4de/rulex/typex"
+	"github.com/hootrhino/rulex/typex"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"

@@ -5,12 +5,12 @@ import (
 	"net"
 	"time"
 
-	netdiscover "github.com/i4de/rulex/plugin/net_discover"
+	netdiscover "github.com/hootrhino/rulex/plugin/net_discover"
 
 	"testing"
 )
 
-// go test -timeout 30s -run ^Test_net_discover github.com/i4de/rulex/test -v -count=1
+// go test -timeout 30s -run ^Test_net_discover github.com/hootrhino/rulex/test -v -count=1
 
 func Test_net_discover(t *testing.T) {
 	engine := RunTestEngine()

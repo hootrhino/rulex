@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/i4de/rulex/rulexrpc"
-	"github.com/i4de/rulex/typex"
+	"github.com/hootrhino/rulex/rulexrpc"
+	"github.com/hootrhino/rulex/typex"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
