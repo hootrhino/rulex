@@ -9,7 +9,6 @@ import (
 	mqttServer "github.com/mochi-co/mqtt/server"
 	"github.com/mochi-co/mqtt/server/events"
 	"github.com/mochi-co/mqtt/server/listeners"
-	"github.com/mochi-co/mqtt/server/listeners/auth"
 	"gopkg.in/ini.v1"
 )
 
