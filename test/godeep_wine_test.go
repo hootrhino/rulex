@@ -5,6 +5,7 @@ import (
 	"encoding/csv"
 	"fmt"
 	"io"
+	"math"
 	"math/rand"
 	"os"
 	"strconv"
@@ -28,7 +29,6 @@ func Test_wine_demo(t *testing.T) {
 
 	for i := range data {
 		deep.Standardize(data[i].Input)
-		t.Log(data[i].Input[0], data[i].Response)
 	}
 	data.Shuffle()
 
@@ -49,15 +49,39 @@ func Test_wine_demo(t *testing.T) {
 	trainer := training.NewBatchTrainer(training.NewAdam(0.1, 0, 0, 0), 50, len(data)/2, 12)
 	//data, heldout := data.Split(0.5)
 	trainer.Train(neural, data, data, 10000)
-	// testData1 := []float64{13.48, 1.81, 2.41, 20.5, 100, 2.7, 2.98, .26, 1.86, 5.1, 1.04, 3.47, 920}
-	// testData2 := []float64{12.37, 1.21, 2.56, 18.1, 98, 2.42, 2.65, .37, 2.08, 4.6, 1.19, 2.3, 678}
-	testData3 := []float64{14.13, 4.1, 2.74, 24.5, 96, 2.05, .76, .56, 1.35, 9.2, .61, 1.6, 560}
-	result1 := neural.Predict(testData3)
-	result2 := neural.Predict(testData3)
+
+	for _, h := range data {
+		result := [3]float64{}
+		for i, v := range neural.Predict(h.Input) {
+			result[i] = math.Round(v)
+		}
+		t.Log("expected", h.Response, "got", result)
+	}
+	testData1 := []float64{13.48, 1.81, 2.41, 20.5, 100, 2.7, 2.98, .26, 1.86, 5.1, 1.04, 3.47, 920}
+	testData2 := []float64{12.37, 1.21, 2.56, 18.1, 98, 2.42, 2.65, .37, 2.08, 4.6, 1.19, 2.3, 678}
+	testData3 := []float64{12.77, 2.39, 2.28, 19.5, 86, 1.39, .51, .48, .64, 9.899999, .57, 1.63, 470}
+	deep.Standardize(testData1)
+	deep.Standardize(testData2)
+	deep.Standardize(testData3)
+	result1 := neural.Predict(testData1)
+	result2 := neural.Predict(testData2)
 	result3 := neural.Predict(testData3)
-	t.Log(result1)
-	t.Log(result2)
-	t.Log(result3)
+	p(result1)
+	p(result2)
+	p(result3)
+	bin, err := neural.Marshal()
+	if err != nil {
+		panic(err)
+	}
+	os.WriteFile("./data/wine_model.json", bin, 0755)
+}
+func p(Input []float64) [3]float64 {
+	result := [3]float64{}
+	for i, v := range Input {
+		result[i] = math.Round(v)
+	}
+	fmt.Println("got", result, ", Input", Input)
+	return result
 }
 func one_hot(val float64) []float64 {
 	// val 1,2,3
