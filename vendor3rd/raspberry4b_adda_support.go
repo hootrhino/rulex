@@ -1,7 +1,7 @@
 package vendor3rd
 
 import (
-	"github.com/hootrhino/rulex/archsupport"
+	archsupport "github.com/hootrhino/rulex/bspsupport"
 )
 
 /*
