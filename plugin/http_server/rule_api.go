@@ -34,14 +34,14 @@ func CreateRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		FromSource  []string `json:"fromSource" binding:"required"`
 		FromDevice  []string `json:"fromDevice" binding:"required"`
 		Name        string   `json:"name" binding:"required"`
-		Type        string   `json:"type" binding:"required"`
+		Type        string   `json:"type"`
 		Expression  string   `json:"expression"`
 		Description string   `json:"description"`
 		Actions     string   `json:"actions"`
 		Success     string   `json:"success"`
 		Failed      string   `json:"failed"`
 	}
-	form := Form{}
+	form := Form{Type: "lua"}
 
 	if err := c.ShouldBindJSON(&form); err != nil {
 		c.JSON(200, Error400(err))
