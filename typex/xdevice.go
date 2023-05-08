@@ -35,6 +35,7 @@ const (
 	USER_G776        DeviceType = "USER_G776"        // 有人 G776 4G模组
 	ICMP_SENDER      DeviceType = "ICMP_SENDER"      // ICMP_SENDER
 	GENERIC_PROTOCOL DeviceType = "GENERIC_PROTOCOL" // 通用自定义协议处理器
+	GENERIC_OPCUA    DeviceType = "GENERIC_OPCUA"    // 通用OPCUA
 
 )
 
@@ -93,8 +94,6 @@ type XDevice interface {
 	OnRead(cmd []byte, data []byte) (int, error)
 	// 把数据写入设备, 第一个参数一般作flag用, 也就是常说的指令类型
 	OnWrite(cmd []byte, data []byte) (int, error)
-	// 新特性, 适用于自定义协议读写
-	OnCtrl(cmd []byte, args []byte) ([]byte, error)
 	// 设备当前状态
 	Status() DeviceState
 	// 停止设备, 在这里释放资源,一般是先置状态为STOP,然后CancelContext()
@@ -110,17 +109,4 @@ type XDevice interface {
 	// 外部调用, 该接口是个高级功能, 准备为了设计分布式部署设备的时候用, 但是相当长时间内都不会开启
 	// 默认情况下该接口没有用
 	OnDCACall(UUID string, Command string, Args interface{}) DCAResult
-}
-
-/*
-*
-* 子设备网络拓扑[2023-04-17新增]
-*
- */
-type DeviceTopology struct {
-	Id       string                 // 子设备的ID
-	Name     string                 // 子设备名
-	LinkType int                    // 物理连接方式: 0-ETH 1-WIFI 3-BLE 4 LORA 5 OTHER
-	State    int                    // 状态: 0-Down 1-Working
-	Info     map[string]interface{} // 子设备的一些额外信息
 }
