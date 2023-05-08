@@ -4,9 +4,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/i4de/rulex/common"
-	"github.com/i4de/rulex/typex"
-	"github.com/i4de/rulex/utils"
+	"github.com/hootrhino/rulex/common"
+	"github.com/hootrhino/rulex/typex"
+	"github.com/hootrhino/rulex/utils"
 
 	"github.com/nats-io/nats.go"
 )
@@ -21,7 +21,7 @@ type natsTarget struct {
 func NewNatsTarget(e typex.RuleX) typex.XTarget {
 	nt := &natsTarget{}
 	nt.RuleEngine = e
-	nt.mainConfig=common.NatsConfig{}
+	nt.mainConfig = common.NatsConfig{}
 	return nt
 }
 func (nt *natsTarget) Init(outEndId string, configMap map[string]interface{}) error {

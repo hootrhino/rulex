@@ -7,12 +7,12 @@ type GenericUartConfig struct {
 	BaudRate int    `json:"baudRate" validate:"required" title:"波特率" info:"串口通信波特率"`
 	DataBits int    `json:"dataBits" validate:"required" title:"数据位" info:"串口通信数据位"`
 	// 结束符, 默认是 '\n'；但是可以自己定义
-	Decollator string `json:"decollator" title:"协议分隔符" info:""`
+	Decollator string `json:"decollator" title:"协议分隔符"`
 	// Weather allow AutoRequest?
-	AutoRequest bool `json:"autoRequest" title:"启动轮询" info:""`
+	AutoRequest bool `json:"autoRequest" title:"启动轮询"`
 	// Request Frequency, default 5 second
-	Frequency int64  `json:"frequency" validate:"required" title:"采集频率" info:""`
-	Timeout   int    `json:"timeout" validate:"required" title:"连接超时" info:""`
+	Frequency int64  `json:"frequency" validate:"required" title:"采集频率"`
+	Timeout   int    `json:"timeout" validate:"required" title:"连接超时"`
 	Parity    string `json:"parity" validate:"required" title:"奇偶校验" info:"奇偶校验"`
 	StopBits  int    `json:"stopBits" validate:"required" title:"停止位" info:"串口通信停止位"`
 }

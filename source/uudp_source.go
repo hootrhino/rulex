@@ -4,10 +4,10 @@ import (
 	"context"
 	"net"
 
-	"github.com/i4de/rulex/common"
-	"github.com/i4de/rulex/glogger"
-	"github.com/i4de/rulex/typex"
-	"github.com/i4de/rulex/utils"
+	"github.com/hootrhino/rulex/common"
+	"github.com/hootrhino/rulex/glogger"
+	"github.com/hootrhino/rulex/typex"
+	"github.com/hootrhino/rulex/utils"
 )
 
 type udpSource struct {
@@ -35,6 +35,9 @@ func (u *udpSource) Start(cctx typex.CCTX) error {
 	}
 	u.status = typex.SOURCE_UP
 	go func(ctx context.Context, u1 *udpSource) {
+		if u.mainConfig.MaxDataLength == 0 {
+			u.mainConfig.MaxDataLength = 4096
+		}
 		data := make([]byte, u.mainConfig.MaxDataLength)
 		for {
 			select {
@@ -106,7 +109,7 @@ func (u *udpSource) Pause() {
 }
 
 func (u *udpSource) Status() typex.SourceState {
-	return u.status
+	return typex.SOURCE_UP
 }
 
 func (u *udpSource) Stop() {

@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-// go test -timeout 30s -run ^TestJsonFilter github.com/i4de/rulex/test -v -count=1
+// go test -timeout 30s -run ^TestJsonFilter github.com/hootrhino/rulex/test -v -count=1
 func TestJsonFilter(t *testing.T) {
 	// SELECT * FROM DATA WHERE a1.value GT(>) 3.14
 	r := Reduce(map[string]interface{}{

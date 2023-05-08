@@ -1,35 +1,47 @@
 package httpserver
 
 import (
-	"github.com/i4de/rulex/typex"
-	"github.com/i4de/rulex/utils"
+	"github.com/hootrhino/rulex/typex"
+	"github.com/hootrhino/rulex/utils"
 
 	"github.com/gin-gonic/gin"
 	"gopkg.in/square/go-jose.v2/json"
 )
 
-//
-// 获取设备列表
-//
+/*
+*
+* 列表先读数据库，然后读内存，合并状态后输出
+*
+ */
 func Devices(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
 	if uuid == "" {
-		data := []interface{}{}
-		Devices := e.AllDevices()
-		Devices.Range(func(key, value interface{}) bool {
-			data = append(data, value)
-			return true
-		})
-		c.JSON(200, OkWithData(data))
+		devices := []*typex.Device{}
+		for _, v := range hs.AllDevices() {
+			var device *typex.Device
+			if device = e.GetDevice(v.UUID); device == nil {
+				device.State = typex.DEV_STOP
+			}
+			if device != nil {
+				devices = append(devices, device)
+			}
+		}
+		c.JSON(200, OkWithData(devices))
 	} else {
-		c.JSON(200, OkWithData(e.GetDevice(uuid)))
+		Model, err := hs.GetDeviceWithUUID(uuid)
+		if err != nil {
+			c.JSON(200, Error400(err))
+			return
+		}
+		var device *typex.Device
+		if device = e.GetDevice(Model.UUID); device == nil {
+			device.State = typex.DEV_STOP
+		}
+		c.JSON(200, OkWithData(device))
 	}
-
 }
 
-//
 // 删除设备
-//
 func DeleteDevice(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
 	_, err := hs.GetDeviceWithUUID(uuid)
@@ -46,9 +58,7 @@ func DeleteDevice(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 
 }
 
-//
 // 创建设备
-//
 func CreateDevice(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 	type Form struct {
 		UUID         string                 `json:"uuid"`
@@ -89,9 +99,7 @@ func CreateDevice(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 
 }
 
-//
 // 更新设备
-//
 func UpdateDevice(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 	type Form struct {
 		UUID         string                 `json:"uuid"`
@@ -112,12 +120,12 @@ func UpdateDevice(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 		return
 	}
 	if form.UUID == "" {
-		c.JSON(200, Error("'uuid'参数缺失"))
+		c.JSON(200, Error("missing 'uuid' fields"))
 		return
 	}
 	Device := e.GetDevice(form.UUID)
 	if Device == nil {
-		c.JSON(200, Error("设备不存在"))
+		c.JSON(200, Error("device not exists:"+form.UUID))
 		return
 	}
 

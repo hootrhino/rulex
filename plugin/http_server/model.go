@@ -68,9 +68,11 @@ type MUser struct {
 // 设备元数据
 type MDevice struct {
 	RulexModel
-	UUID         string `gorm:"not null"`
-	Name         string `gorm:"not null"`
-	Type         string `gorm:"not null"`
+	UUID string `gorm:"not null"`
+	Name string `gorm:"not null"`
+	Type string `gorm:"not null"`
+	//   这个字段本来用于给设备单独新建脚本的，但是目前已经有了规则，所以先留空
+	// 或许以后会用到
 	ActionScript string
 	Config       string
 	Description  string
@@ -95,9 +97,26 @@ type MGoods struct {
  */
 type MApp struct {
 	RulexModel
-	UUID      string `gorm:"not null"` // 名称
-	Name      string `gorm:"not null"` // 名称
-	Version   string `gorm:"not null"` // 版本号
-	AutoStart *bool  `gorm:"not null"` // 允许启动
-	Filepath  string `gorm:"not null"` // 文件路径, 是相对于main的apps目录
+	UUID        string `gorm:"not null"` // 名称
+	Name        string `gorm:"not null"` // 名称
+	Version     string `gorm:"not null"` // 版本号
+	AutoStart   *bool  `gorm:"not null"` // 允许启动
+	Filepath    string `gorm:"not null"` // 文件路径, 是相对于main的apps目录
+	Description string `gorm:"not null"` // 文件路径, 是相对于main的apps目录
+}
+
+/*
+*
+* 用户上传的AI数据[v0.5.0]
+*
+ */
+type MAiBase struct {
+	RulexModel
+	UUID        string `gorm:"not null"` // 名称
+	Name        string `gorm:"not null"` // 名称
+	Type        string `gorm:"not null"` // 类型
+	IsBuildIn   bool   `gorm:"not null"` // 是否内建
+	Version     string `gorm:"not null"` // 版本号
+	Filepath    string `gorm:"not null"` // 文件路径, 是相对于main的apps目录
+	Description string `gorm:"not null"`
 }

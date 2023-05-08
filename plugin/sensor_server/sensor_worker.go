@@ -5,8 +5,8 @@ import (
 
 	"time"
 
-	"github.com/i4de/rulex/common"
-	"github.com/plgd-dev/kit/v2/log"
+	"github.com/hootrhino/rulex/common"
+	"github.com/hootrhino/rulex/glogger"
 )
 
 /*
@@ -41,7 +41,7 @@ func (w *SensorWorker) Run() {
 			if len(w.isensor.Ping()) != 0 {
 				_, err := w.isensor.Session().Transport.Write(w.isensor.Ping())
 				if err != nil {
-					log.Error(err)
+					glogger.GLogger.Error(err)
 					w.isensor.OnError(err)
 					w.isensor.OffLine()
 					return
@@ -52,7 +52,7 @@ func (w *SensorWorker) Run() {
 			n, err := w.isensor.Session().Transport.Read(buffer)
 			w.isensor.Session().Transport.SetDeadline(time.Time{})
 			if err != nil {
-				log.Error(err)
+				glogger.GLogger.Error(err)
 				w.isensor.OnError(err)
 				w.isensor.OffLine()
 				return

@@ -4,9 +4,9 @@ import (
 	"errors"
 	"sync"
 
-	"github.com/i4de/rulex/core"
-	"github.com/i4de/rulex/glogger"
-	"github.com/i4de/rulex/typex"
+	"github.com/hootrhino/rulex/core"
+	"github.com/hootrhino/rulex/glogger"
+	"github.com/hootrhino/rulex/typex"
 )
 
 // LoadRule: 每个规则都绑定了资源(FromSource)或者设备(FromDevice)

@@ -21,7 +21,7 @@ package test
 // 	err = unix.Bind(fd, &unix.SockaddrNetlink{
 // 		Family: unix.AF_NETLINK,
 // 		Groups: 1,
-// 		Pid: 0,
+// 		Pid:    0,
 // 	})
 
 // 	if err == nil {

@@ -14,7 +14,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.17
+          go-version: 1.18
       - name: Linux 构建测试
         run: |
           sudo apt update -y
@@ -36,8 +36,8 @@ jobs:
           # -------------------------------------------
           # | every test
           # -------------------------------------------
-          go test -timeout 30s -run ^TestFullyRun$ github.com/i4de/rulex/test -v -count=1
+          go test -timeout 30s -run ^TestFullyRun$ github.com/hootrhino/rulex/test -v -count=1
           #
-          go test -timeout 30s -run ^Test_data_to_tdengine$ github.com/i4de/rulex/test -v -count=1
+          go test -timeout 30s -run ^Test_data_to_tdengine$ github.com/hootrhino/rulex/test -v -count=1
           #
-          go test -timeout 30s -run ^Test_DataToMongo$ github.com/i4de/rulex/test -v -count=1
+          go test -timeout 30s -run ^Test_DataToMongo$ github.com/hootrhino/rulex/test -v -count=1

@@ -8,11 +8,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/i4de/rulex/common"
-	"github.com/i4de/rulex/driver"
-	"github.com/i4de/rulex/glogger"
-	"github.com/i4de/rulex/typex"
-	"github.com/i4de/rulex/utils"
+	"github.com/hootrhino/rulex/common"
+	"github.com/hootrhino/rulex/driver"
+	"github.com/hootrhino/rulex/glogger"
+	"github.com/hootrhino/rulex/typex"
+	"github.com/hootrhino/rulex/utils"
 	"github.com/robinson/gos7"
 )
 
@@ -81,7 +81,7 @@ func (s1200 *s1200plc) Start(cctx typex.CCTX) error {
 		return nil
 	}
 	go func(ctx context.Context) {
-		ticker := time.NewTicker(time.Duration(s1200.mainConfig.Frequency) * time.Second)
+		ticker := time.NewTicker(time.Duration(s1200.mainConfig.Frequency) * time.Millisecond)
 		// 数据缓冲区,最大4KB
 		dataBuffer := make([]byte, common.T_4KB)
 		s1200.driver.Read([]byte{}, dataBuffer) //清理缓存
@@ -189,4 +189,7 @@ func (s1200 *s1200plc) Driver() typex.XExternalDriver {
 
 func (s1200 *s1200plc) OnDCACall(UUID string, Command string, Args interface{}) typex.DCAResult {
 	return typex.DCAResult{}
+}
+func (s1200 *s1200plc) OnCtrl(cmd []byte, args []byte) ([]byte, error) {
+	return []byte{}, nil
 }

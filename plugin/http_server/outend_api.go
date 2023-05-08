@@ -1,35 +1,43 @@
 package httpserver
 
 import (
-	"github.com/i4de/rulex/typex"
-	"github.com/i4de/rulex/utils"
+	"github.com/hootrhino/rulex/typex"
+	"github.com/hootrhino/rulex/utils"
 
 	"github.com/gin-gonic/gin"
 	"gopkg.in/square/go-jose.v2/json"
 )
 
-//
 // Get all outends
-//
-func OutEnds(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+func OutEnds(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
 	if uuid == "" {
-		data := []interface{}{}
-		outEnds := e.AllOutEnd()
-		outEnds.Range(func(key, value interface{}) bool {
-			data = append(data, value)
-			return true
-		})
-		c.JSON(200, OkWithData(data))
+		outends := []*typex.OutEnd{}
+		for _, v := range hs.AllMOutEnd() {
+			var device *typex.OutEnd
+			if device = e.GetOutEnd(v.UUID); device == nil {
+				device.State = typex.SOURCE_STOP
+			}
+			if device != nil {
+				outends = append(outends, device)
+			}
+		}
+		c.JSON(200, OkWithData(outends))
 	} else {
-		c.JSON(200, OkWithData(e.GetOutEnd(uuid)))
+		Model, err := hs.GetMOutEndWithUUID(uuid)
+		if err != nil {
+			c.JSON(200, Error400(err))
+			return
+		}
+		var outend *typex.OutEnd
+		if outend = e.GetOutEnd(Model.UUID); outend == nil {
+			outend.State = typex.SOURCE_STOP
+		}
+		c.JSON(200, OkWithData(outend))
 	}
-
 }
 
-//
 // Delete outEnd by UUID
-//
 func DeleteOutEnd(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
 	_, err := hh.GetMOutEnd(uuid)
@@ -46,9 +54,7 @@ func DeleteOutEnd(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 
 }
 
-//
 // Create or Update OutEnd
-//
 func CreateOutEnd(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	type Form struct {
 		UUID        string                 `json:"uuid"` // 如果空串就是新建, 非空就是更新

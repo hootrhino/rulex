@@ -3,7 +3,7 @@ package httpserver
 import (
 	"net/http"
 
-	"github.com/i4de/rulex/typex"
+	"github.com/hootrhino/rulex/typex"
 
 	"github.com/gin-gonic/gin"
 )
@@ -42,16 +42,12 @@ func (hh *HttpApiServer) Authorize() gin.HandlerFunc {
 	}
 }
 
-//
-//
-//
 func Cros() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		cros(c)
 	}
 }
 
-//
 func cros(c *gin.Context) {
 	c.Header("Cache-Control", "private, max-age=10")
 	method := c.Request.Method
@@ -72,9 +68,7 @@ func cros(c *gin.Context) {
 	c.Next()
 }
 
-//
 // Add api route
-//
 func (h *HttpApiServer) addRoute(f func(*gin.Context, *HttpApiServer, typex.RuleX)) func(*gin.Context) {
 
 	return func(c *gin.Context) {

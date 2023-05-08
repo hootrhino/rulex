@@ -13,9 +13,15 @@ cat >./typex/version.go <<EOF
 //
 package typex
 
+import "fmt"
+
 type Version struct {
-	Version   string
+	Version     string
 	ReleaseTime string
+}
+
+func (v Version) String() string {
+	return fmt.Sprintf("{\"releaseTime\":\"%s\",\"version\":\"%s\"}", v.ReleaseTime, v.Version)
 }
 
 var DefaultVersion = Version{

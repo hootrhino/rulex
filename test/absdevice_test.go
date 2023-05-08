@@ -1,24 +1,23 @@
 package test
 
 import (
-	"github.com/i4de/rulex/core"
-	"github.com/i4de/rulex/engine"
+	"github.com/hootrhino/rulex/core"
+	"github.com/hootrhino/rulex/engine"
 
 	"testing"
 	"time"
 
-	"github.com/i4de/rulex/typex"
+	"github.com/hootrhino/rulex/typex"
 )
 
 func Test_ABS_device1(t *testing.T) {
 	engine := engine.NewRuleEngine(core.InitGlobalConfig("conf/rulex.ini"))
 	engine.Start()
 	demoDev := &typex.Device{
-		UUID:         "Test1",
-		Name:         "Test1",
-		Type:         "SIMPLE",
-		ActionScript: "******",
-		Description:  "Test1",
+		UUID:        "Test1",
+		Name:        "Test1",
+		Type:        "SIMPLE",
+		Description: "Test1",
 		Config: map[string]interface{}{
 			"K": "V",
 		},
@@ -34,11 +33,10 @@ func Test_ABS_device2(t *testing.T) {
 	engine := engine.NewRuleEngine(core.InitGlobalConfig("conf/rulex.ini"))
 	engine.Start()
 	demoDev := &typex.Device{
-		UUID:         "Test1",
-		Name:         "Test1",
-		Type:         "NO-SUCH",
-		ActionScript: "******",
-		Description:  "Test1",
+		UUID:        "Test1",
+		Name:        "Test1",
+		Type:        "NO-SUCH",
+		Description: "Test1",
 		Config: map[string]interface{}{
 			"K": "V",
 		},

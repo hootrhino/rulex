@@ -5,13 +5,19 @@
 //
 package typex
 
+import "fmt"
+
 type Version struct {
-	Version   string
+	Version     string
 	ReleaseTime string
 }
 
+func (v Version) String() string {
+	return fmt.Sprintf("{\"releaseTime\":\"%s\",\"version\":\"%s\"}", v.ReleaseTime, v.Version)
+}
+
 var DefaultVersion = Version{
-	Version:   `v0.4.4`,
-	ReleaseTime: "2023-03-30 18:03:25",
+	Version:   `v0.4.4-hotfix`,
+	ReleaseTime: "2023-05-05 18:00:50",
 }
 

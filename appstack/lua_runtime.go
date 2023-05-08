@@ -3,9 +3,9 @@ package appstack
 import (
 	"fmt"
 
-	lua "github.com/i4de/gopher-lua"
-	"github.com/i4de/rulex/rulexlib"
-	"github.com/i4de/rulex/typex"
+	lua "github.com/hootrhino/gopher-lua"
+	"github.com/hootrhino/rulex/rulexlib"
+	"github.com/hootrhino/rulex/typex"
 )
 
 // 临时校验语法
@@ -84,6 +84,9 @@ func LoadAppLib(app *typex.Application, e typex.RuleX) {
 	// 消息转发
 	addAppLib(app, e, "applib", "DataToHttp", rulexlib.DataToHttp(e))
 	addAppLib(app, e, "applib", "DataToMqtt", rulexlib.DataToMqtt(e))
+	// DataToIthings 专门为Ithings支持的
+	// vendor: 三方支持命名空间
+	addAppLib(app, e, "vendor", "DataToIthings", rulexlib.DataToMqtt(e))
 	addAppLib(app, e, "applib", "DataToUdp", rulexlib.DataToUdp(e))
 	// JQ
 	addAppLib(app, e, "applib", "JqSelect", rulexlib.JqSelect(e))
@@ -132,6 +135,8 @@ func LoadAppLib(app *typex.Application, e typex.RuleX) {
 	// Device R/W
 	addAppLib(app, e, "applib", "ReadDevice", rulexlib.ReadDevice(e))
 	addAppLib(app, e, "applib", "WriteDevice", rulexlib.WriteDevice(e))
+	// Ctrl Device: request --> response
+	addAppLib(app, e, "applib", "CtrlDevice", rulexlib.CtrlDevice(e))
 	// Source R/W
 	addAppLib(app, e, "applib", "ReadSource", rulexlib.ReadSource(e))
 	addAppLib(app, e, "applib", "WriteSource", rulexlib.WriteSource(e))
@@ -157,6 +162,13 @@ func LoadAppLib(app *typex.Application, e typex.RuleX) {
 	addAppLib(app, e, "hex", "Bytes2Hexs", rulexlib.Bytes2Hexs(e))
 	addAppLib(app, e, "hex", "Hexs2Bytes", rulexlib.Hexs2Bytes(e))
 	//------------------------------------------------------------------------
+	// 十六进制字节序处理
+	//------------------------------------------------------------------------
+	addAppLib(app, e, "hex", "ABCD", rulexlib.ABCD(e))
+	addAppLib(app, e, "hex", "DCBA", rulexlib.DCBA(e))
+	addAppLib(app, e, "hex", "BADC", rulexlib.BADC(e))
+	addAppLib(app, e, "hex", "CDAB", rulexlib.CDAB(e))
+	//------------------------------------------------------------------------
 	// 注册GPIO操作函数到LUA运行时
 	//------------------------------------------------------------------------
 	// EEKIT
@@ -165,4 +177,10 @@ func LoadAppLib(app *typex.Application, e typex.RuleX) {
 	// 树莓派4B
 	addAppLib(app, e, "raspi4b", "GPIOGet", rulexlib.RASPI4_GPIOGet(e))
 	addAppLib(app, e, "raspi4b", "GPIOSet", rulexlib.RASPI4_GPIOSet(e))
+	//------------------------------------------------------------------------
+	// 校验数据
+	//------------------------------------------------------------------------
+	addAppLib(app, e, "misc", "XOR", rulexlib.XOR(e))
+	addAppLib(app, e, "misc", "CRC16", rulexlib.CRC16(e))
+
 }

@@ -3,14 +3,17 @@ package httpserver
 import (
 	"errors"
 
-	"github.com/i4de/rulex/glogger"
-	"github.com/i4de/rulex/typex"
+	"github.com/hootrhino/rulex/glogger"
+	"github.com/hootrhino/rulex/typex"
 	"gopkg.in/square/go-jose.v2/json"
 )
 
-//
+/*
+*
+* 每次资源新建或者更新以后, 需要把内存里的数据清空，把配置里的更新上去
+*
+ */
 // LoadNewestInEnd
-//
 func (hh *HttpApiServer) LoadNewestInEnd(uuid string) error {
 	mInEnd, _ := hh.GetMInEndWithUUID(uuid)
 	if mInEnd == nil {
@@ -29,7 +32,8 @@ func (hh *HttpApiServer) LoadNewestInEnd(uuid string) error {
 	}
 	// 所有的更新都先停止资源,然后再加载
 	hh.ruleEngine.RemoveInEnd(uuid)
-	in := typex.NewInEnd(typex.InEndType(mInEnd.Type), mInEnd.Name, mInEnd.Description, config)
+	in := typex.NewInEnd(typex.InEndType(mInEnd.Type),
+		mInEnd.Name, mInEnd.Description, config)
 	// Important !!!!!!!! in.Id = mInEnd.UUID
 	in.UUID = mInEnd.UUID
 	in.DataModelsMap = dataModelsMap
@@ -42,9 +46,7 @@ func (hh *HttpApiServer) LoadNewestInEnd(uuid string) error {
 
 }
 
-//
 // LoadNewestOutEnd
-//
 func (hh *HttpApiServer) LoadNewestOutEnd(uuid string) error {
 	mOutEnd, _ := hh.GetMOutEndWithUUID(uuid)
 	config := map[string]interface{}{}
@@ -53,7 +55,8 @@ func (hh *HttpApiServer) LoadNewestOutEnd(uuid string) error {
 	}
 	// 所有的更新都先停止资源,然后再加载
 	hh.ruleEngine.RemoveOutEnd(uuid)
-	out := typex.NewOutEnd(typex.TargetType(mOutEnd.Type), mOutEnd.Name, mOutEnd.Description, config)
+	out := typex.NewOutEnd(typex.TargetType(mOutEnd.Type),
+		mOutEnd.Name, mOutEnd.Description, config)
 	// Important !!!!!!!!
 	out.UUID = mOutEnd.UUID
 	if err := hh.ruleEngine.LoadOutEnd(out); err != nil {
@@ -64,9 +67,7 @@ func (hh *HttpApiServer) LoadNewestOutEnd(uuid string) error {
 
 }
 
-//
 // LoadNewestDevice
-//
 func (hh *HttpApiServer) LoadNewestDevice(uuid string) error {
 	mDevice, _ := hh.GetDeviceWithUUID(uuid)
 	config := map[string]interface{}{}
@@ -75,7 +76,8 @@ func (hh *HttpApiServer) LoadNewestDevice(uuid string) error {
 	}
 	// 所有的更新都先停止资源,然后再加载
 	hh.ruleEngine.RemoveDevice(uuid)
-	dev := typex.NewDevice(typex.DeviceType(mDevice.Type), mDevice.Name, mDevice.Description, mDevice.ActionScript, config)
+	dev := typex.NewDevice(typex.DeviceType(mDevice.Type), mDevice.Name,
+		mDevice.Description, config)
 	// Important !!!!!!!!
 	dev.UUID = mDevice.UUID // 本质上是配置和内存的数据映射起来
 	if err := hh.ruleEngine.LoadDevice(dev); err != nil {

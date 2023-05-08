@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/i4de/rulex/typex"
+	"github.com/hootrhino/rulex/typex"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
@@ -16,9 +16,7 @@ const (
 	SECRETKEY = "you-can-not-get-this-secret"
 )
 
-//
 // All Users
-//
 type user struct {
 	Role        string `json:"role"`
 	Username    string `json:"username"`
@@ -37,9 +35,7 @@ func Users(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	c.JSON(200, OkWithData(users))
 }
 
-//
 // CreateUser
-//
 func CreateUser(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	type Form struct {
 		Role        string `json:"role" binding:"required"`
@@ -77,10 +73,8 @@ func md5Hash(str string) string {
 	return hex.EncodeToString(h.Sum(nil))
 }
 
-//
 // Login
 // TODO: 下个版本实现用户基础管理
-//
 func Login(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	type _user struct {
 		Username string `json:"username" binding:"required"`

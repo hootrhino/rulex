@@ -8,12 +8,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/i4de/rulex/common"
-	"github.com/i4de/rulex/core"
-	"github.com/i4de/rulex/driver"
-	"github.com/i4de/rulex/glogger"
-	"github.com/i4de/rulex/typex"
-	"github.com/i4de/rulex/utils"
+	"github.com/hootrhino/rulex/common"
+	"github.com/hootrhino/rulex/core"
+	"github.com/hootrhino/rulex/driver"
+	"github.com/hootrhino/rulex/glogger"
+	"github.com/hootrhino/rulex/typex"
+	"github.com/hootrhino/rulex/utils"
 	"github.com/mitchellh/mapstructure"
 	modbus "github.com/wwhai/gomodbus"
 )
@@ -97,7 +97,7 @@ func (yk8 *YK8Controller) Start(cctx typex.CCTX) error {
 		return nil
 	}
 	go func(ctx context.Context, Driver typex.XExternalDriver) {
-		ticker := time.NewTicker(time.Duration(yk8.mainConfig.Frequency) * time.Second)
+		ticker := time.NewTicker(time.Duration(yk8.mainConfig.Frequency) * time.Millisecond)
 		buffer := make([]byte, common.T_64KB)
 		yk8.driver.Read([]byte{}, buffer) //清理缓存
 		for {
@@ -183,4 +183,7 @@ func (yk8 *YK8Controller) Driver() typex.XExternalDriver {
 
 func (yk8 *YK8Controller) OnDCACall(UUID string, Command string, Args interface{}) typex.DCAResult {
 	return typex.DCAResult{}
+}
+func (yk8 *YK8Controller) OnCtrl(cmd []byte, args []byte) ([]byte, error) {
+	return []byte{}, nil
 }

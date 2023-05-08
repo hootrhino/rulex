@@ -13,7 +13,7 @@ if [ -z "$1" ]; then
 fi
 if [ "$1" == "releases" ]; then
     curl -s -H "Accept: application/vnd.github.v3+json" \
-        https://api.github.com/repos/i4de/rulex/releases |
+        https://api.github.com/repos/hootrhino/rulex/releases |
         jq '[ .[].assets | .[] | .name]'
     exit 1
 fi
@@ -62,7 +62,7 @@ install() {
     init_env
     create_temp_path
     cd ./_temp/
-    URL=https://github.com/i4de/rulex/releases/download/${VERSION}/${RELEASE}-${VERSION}.zip
+    URL=https://github.com/hootrhino/rulex/releases/download/${VERSION}/${RELEASE}-${VERSION}.zip
     echo ">> Download ${RELEASE}-${VERSION} from: ${URL}"
     wget -q --show-progress ${URL}
     unzip -o ${RELEASE}-${VERSION}.zip

@@ -1,12 +1,17 @@
 package core
 
 import (
+	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"runtime"
+	"time"
 
-	"github.com/i4de/rulex/typex"
+	"github.com/hootrhino/rulex/glogger"
+	"github.com/hootrhino/rulex/typex"
+	"github.com/hootrhino/rulex/utils"
 
 	"gopkg.in/ini.v1"
 )
@@ -65,5 +70,32 @@ func SetDebugMode(EnablePProf bool) {
 		runtime.SetBlockProfileRate(1)
 		runtime.SetCPUProfileRate(1)
 		go http.ListenAndServe("0.0.0.0:6060", nil)
+	}
+	if EnablePProf {
+		go func() {
+			readyDebug := false
+			for {
+				select {
+				case <-context.Background().Done():
+					{
+						glogger.GLogger.Info("PProf exited")
+						return
+					}
+				default:
+					{
+						time.Sleep(utils.GiveMeSeconds(3))
+						if !readyDebug {
+							fmt.Printf("HeapObjects,\tHeapAlloc,\tTotalAlloc,\tHeapSys")
+							fmt.Printf(",\tHeapIdle,\tHeapReleased,\tHeapIdle-HeapReleased")
+							fmt.Println()
+						}
+						readyDebug = true
+						utils.TraceMemStats()
+					}
+				}
+			}
+
+		}()
+
 	}
 }

@@ -6,12 +6,22 @@ import (
 	"time"
 
 	"github.com/gosnmp/gosnmp"
-	"github.com/i4de/rulex/common"
-	"github.com/i4de/rulex/driver"
-	"github.com/i4de/rulex/glogger"
-	"github.com/i4de/rulex/typex"
-	"github.com/i4de/rulex/utils"
+	"github.com/hootrhino/rulex/common"
+	"github.com/hootrhino/rulex/driver"
+	"github.com/hootrhino/rulex/glogger"
+	"github.com/hootrhino/rulex/typex"
+	"github.com/hootrhino/rulex/utils"
 )
+
+type _SNMPCommonConfig struct {
+	AutoRequest bool  `json:"autoRequest" title:"启动轮询"`
+	Frequency   int64 `json:"frequency" validate:"required" title:"采集频率"`
+}
+
+type _GSNMPConfig struct {
+	CommonConfig _SNMPCommonConfig        `json:"commonConfig" validate:"required"`
+	SNMPConfig   common.GenericSnmpConfig `json:"snmpConfig" validate:"required"`
+}
 
 type genericSnmpDevice struct {
 	typex.XStatus
@@ -19,7 +29,7 @@ type genericSnmpDevice struct {
 	RuleEngine typex.RuleX
 	driver     typex.XExternalDriver
 	locker     sync.Locker
-	mainConfig common.GenericSnmpConfig
+	mainConfig _GSNMPConfig
 }
 
 // Example: 0x02 0x92 0xFF 0x98
@@ -32,7 +42,7 @@ func NewGenericSnmpDevice(e typex.RuleX) typex.XDevice {
 	sd := new(genericSnmpDevice)
 	sd.RuleEngine = e
 	sd.locker = &sync.Mutex{}
-	sd.mainConfig = common.GenericSnmpConfig{}
+	sd.mainConfig = _GSNMPConfig{}
 	return sd
 }
 
@@ -52,9 +62,9 @@ func (sd *genericSnmpDevice) Start(cctx typex.CCTX) error {
 	//
 	// 串口配置固定写法
 	client := &gosnmp.GoSNMP{
-		Target:             sd.mainConfig.Target,
-		Port:               sd.mainConfig.Port,
-		Community:          sd.mainConfig.Community,
+		Target:             sd.mainConfig.SNMPConfig.Target,
+		Port:               sd.mainConfig.SNMPConfig.Port,
+		Community:          sd.mainConfig.SNMPConfig.Community,
 		Transport:          "udp",
 		Version:            1,
 		Timeout:            time.Duration(5) * time.Second,
@@ -64,7 +74,7 @@ func (sd *genericSnmpDevice) Start(cctx typex.CCTX) error {
 	}
 	err := client.Connect()
 	if err != nil {
-		glogger.GLogger.Error("Connect() err: %v", err)
+		glogger.GLogger.Error("Connect err: %v", err)
 		return err
 	}
 
@@ -72,12 +82,12 @@ func (sd *genericSnmpDevice) Start(cctx typex.CCTX) error {
 	//---------------------------------------------------------------------------------
 	// Start
 	//---------------------------------------------------------------------------------
-	if !sd.mainConfig.AutoRequest {
+	if !sd.mainConfig.CommonConfig.AutoRequest {
 		sd.status = typex.DEV_UP
 		return nil
 	}
 	go func(ctx context.Context, Driver typex.XExternalDriver) {
-		ticker := time.NewTicker(time.Duration(sd.mainConfig.Frequency) * time.Second)
+		ticker := time.NewTicker(time.Duration(sd.mainConfig.CommonConfig.Frequency) * time.Millisecond)
 		buffer := make([]byte, common.T_64KB)
 		sd.driver.Read([]byte{}, buffer) //清理缓存
 		for {
@@ -113,7 +123,7 @@ func (sd *genericSnmpDevice) OnRead(cmd []byte, data []byte) (int, error) {
 	n, err := sd.driver.Read(cmd, data)
 	if err != nil {
 		glogger.GLogger.Error(err)
-		sd.status = typex.DEV_DOWN
+		return n, err
 	}
 	return n, err
 }
@@ -125,17 +135,13 @@ func (sd *genericSnmpDevice) OnWrite(cmd []byte, _ []byte) (int, error) {
 
 // 设备当前状态
 func (sd *genericSnmpDevice) Status() typex.DeviceState {
-	return sd.status
+	return typex.DEV_UP
 }
 
 // 停止设备
 func (sd *genericSnmpDevice) Stop() {
 	sd.status = typex.DEV_STOP
 	sd.CancelCTX()
-	if sd.driver != nil {
-		sd.driver.Stop()
-		sd.driver = nil
-	}
 }
 
 // 设备属性，是一系列属性描述
@@ -161,4 +167,8 @@ func (sd *genericSnmpDevice) Driver() typex.XExternalDriver {
 
 func (sd *genericSnmpDevice) OnDCACall(UUID string, Command string, Args interface{}) typex.DCAResult {
 	return typex.DCAResult{}
+}
+
+func (sd *genericSnmpDevice) OnCtrl(cmd []byte, args []byte) ([]byte, error) {
+	return []byte{}, nil
 }

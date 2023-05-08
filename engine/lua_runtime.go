@@ -1,9 +1,9 @@
 package engine
 
 import (
-	"github.com/i4de/rulex/core"
-	"github.com/i4de/rulex/rulexlib"
-	"github.com/i4de/rulex/typex"
+	"github.com/hootrhino/rulex/core"
+	"github.com/hootrhino/rulex/rulexlib"
+	"github.com/hootrhino/rulex/typex"
 )
 
 /*
@@ -48,6 +48,8 @@ func LoadBuildInLuaLib(e typex.RuleX, r *typex.Rule) {
 	r.AddLib(e, "rulexlib", "TsUnix", rulexlib.TsUnix(e))
 	r.AddLib(e, "rulexlib", "TsUnixNano", rulexlib.TsUnixNano(e))
 	r.AddLib(e, "rulexlib", "NtpTime", rulexlib.NtpTime(e))
+	r.AddLib(e, "rulexlib", "Sleep", rulexlib.Sleep(e))
+
 	// 缓存器库
 	r.AddLib(e, "rulexlib", "VSet", rulexlib.StoreSet(e))
 	r.AddLib(e, "rulexlib", "VGet", rulexlib.StoreGet(e))
@@ -87,6 +89,13 @@ func LoadBuildInLuaLib(e typex.RuleX, r *typex.Rule) {
 	r.AddLib(e, "hex", "Bytes2Hexs", rulexlib.Bytes2Hexs(e))
 	r.AddLib(e, "hex", "Hexs2Bytes", rulexlib.Hexs2Bytes(e))
 	//------------------------------------------------------------------------
+	// 十六进制字节序处理
+	//------------------------------------------------------------------------
+	r.AddLib(e, "hex", "ABCD", rulexlib.ABCD(e))
+	r.AddLib(e, "hex", "DCBA", rulexlib.DCBA(e))
+	r.AddLib(e, "hex", "BADC", rulexlib.BADC(e))
+	r.AddLib(e, "hex", "CDAB", rulexlib.CDAB(e))
+	//------------------------------------------------------------------------
 	// 注册GPIO操作函数到LUA运行时
 	//------------------------------------------------------------------------
 	// EEKIT
@@ -95,6 +104,10 @@ func LoadBuildInLuaLib(e typex.RuleX, r *typex.Rule) {
 	// 树莓派4B
 	r.AddLib(e, "raspi4b", "GPIOGet", rulexlib.RASPI4_GPIOGet(e))
 	r.AddLib(e, "raspi4b", "GPIOSet", rulexlib.RASPI4_GPIOSet(e))
+	//------------------------------------------------------------------------
+	// AI BASE
+	//------------------------------------------------------------------------
+	r.AddLib(e, "aibase", "Infer", rulexlib.Infer(e))
 
 }
 

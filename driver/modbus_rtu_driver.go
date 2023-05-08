@@ -2,13 +2,13 @@ package driver
 
 import (
 	"encoding/binary"
-	"encoding/hex"
 	"encoding/json"
 	"sync"
 	"time"
 
-	"github.com/i4de/rulex/common"
-	"github.com/i4de/rulex/typex"
+	"github.com/hootrhino/rulex/common"
+	"github.com/hootrhino/rulex/glogger"
+	"github.com/hootrhino/rulex/typex"
 	modbus "github.com/wwhai/gomodbus"
 )
 
@@ -69,7 +69,7 @@ func (d *modBusRtuDriver) Read(cmd []byte, data []byte) (int, error) {
 			results, err := d.client.ReadCoils(r.Address, r.Quantity)
 			d.lock.Unlock()
 			if err != nil {
-				return 0, err
+				glogger.GLogger.Error(err)
 			}
 			value := common.RegisterRW{
 				Tag:      r.Tag,
@@ -77,7 +77,7 @@ func (d *modBusRtuDriver) Read(cmd []byte, data []byte) (int, error) {
 				SlaverId: r.SlaverId,
 				Address:  r.Address,
 				Quantity: r.Quantity,
-				Value:    (hex.EncodeToString(results)),
+				Value:    covertEmptyHex(results),
 			}
 			dataMap[r.Tag] = value
 		}
@@ -86,7 +86,7 @@ func (d *modBusRtuDriver) Read(cmd []byte, data []byte) (int, error) {
 			results, err := d.client.ReadDiscreteInputs(r.Address, r.Quantity)
 			d.lock.Unlock()
 			if err != nil {
-				return 0, err
+				glogger.GLogger.Error(err)
 			}
 			value := common.RegisterRW{
 				Tag:      r.Tag,
@@ -94,7 +94,7 @@ func (d *modBusRtuDriver) Read(cmd []byte, data []byte) (int, error) {
 				SlaverId: r.SlaverId,
 				Address:  r.Address,
 				Quantity: r.Quantity,
-				Value:    (hex.EncodeToString(results)),
+				Value:    covertEmptyHex(results),
 			}
 			dataMap[r.Tag] = value
 
@@ -104,7 +104,7 @@ func (d *modBusRtuDriver) Read(cmd []byte, data []byte) (int, error) {
 			results, err := d.client.ReadHoldingRegisters(r.Address, r.Quantity)
 			d.lock.Unlock()
 			if err != nil {
-				return 0, err
+				glogger.GLogger.Error(err)
 			}
 			value := common.RegisterRW{
 				Tag:      r.Tag,
@@ -112,7 +112,7 @@ func (d *modBusRtuDriver) Read(cmd []byte, data []byte) (int, error) {
 				SlaverId: r.SlaverId,
 				Address:  r.Address,
 				Quantity: r.Quantity,
-				Value:    (hex.EncodeToString(results)),
+				Value:    covertEmptyHex(results),
 			}
 			dataMap[r.Tag] = value
 		}
@@ -121,7 +121,7 @@ func (d *modBusRtuDriver) Read(cmd []byte, data []byte) (int, error) {
 			results, err := d.client.ReadInputRegisters(r.Address, r.Quantity)
 			d.lock.Unlock()
 			if err != nil {
-				return 0, err
+				glogger.GLogger.Error(err)
 			}
 			value := common.RegisterRW{
 				Tag:      r.Tag,
@@ -129,12 +129,13 @@ func (d *modBusRtuDriver) Read(cmd []byte, data []byte) (int, error) {
 				SlaverId: r.SlaverId,
 				Address:  r.Address,
 				Quantity: r.Quantity,
-				Value:    (hex.EncodeToString(results)),
+				Value:    covertEmptyHex(results),
 			}
 			dataMap[r.Tag] = value
 		}
 
 		// 设置一个间隔时间防止低级CPU黏包等
+		// TODO 未来通过参数形式传递
 		time.Sleep(time.Duration(100) * time.Millisecond)
 	}
 	bytes, _ := json.Marshal(dataMap)

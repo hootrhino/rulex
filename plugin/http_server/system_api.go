@@ -3,13 +3,14 @@ package httpserver
 import (
 	"fmt"
 	"runtime"
+	"strconv"
 	"time"
 
-	"github.com/i4de/rulex/device"
-	"github.com/i4de/rulex/source"
-	"github.com/i4de/rulex/statistics"
-	"github.com/i4de/rulex/target"
-	"github.com/i4de/rulex/typex"
+	"github.com/hootrhino/rulex/device"
+	"github.com/hootrhino/rulex/source"
+	"github.com/hootrhino/rulex/statistics"
+	"github.com/hootrhino/rulex/target"
+	"github.com/hootrhino/rulex/typex"
 
 	"github.com/gin-gonic/gin"
 	"github.com/shirou/gopsutil/v3/cpu"
@@ -90,7 +91,7 @@ func System(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	runtime.ReadMemStats(&m)
 	hardWareInfo := map[string]interface{}{
 		"version":     e.Version().Version,
-		"diskInfo":    int(diskInfo.UsedPercent),
+		"diskInfo":    calculateDiskInfo(diskInfo),
 		"systemMem":   bToMb(m.Sys),
 		"allocMem":    bToMb(m.Alloc),
 		"totalMem":    bToMb(m.TotalAlloc),
@@ -241,11 +242,18 @@ func StartedAt(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	c.JSON(200, OkWithData(StartedTime))
 }
 
+func calculateDiskInfo(diskInfo *disk.UsageStat) float64 {
+	value, _ := strconv.ParseFloat(fmt.Sprintf("%.2f", diskInfo.UsedPercent), 64)
+	return value
+
+}
+
 // 计算CPU平均使用率
 func calculateCpuPercent(cpus []float64) float64 {
 	var acc float64 = 0
 	for _, v := range cpus {
 		acc += v
 	}
-	return acc / float64(len(cpus))
+	value, _ := strconv.ParseFloat(fmt.Sprintf("%.2f", acc), 64)
+	return value / float64(len(cpus))
 }

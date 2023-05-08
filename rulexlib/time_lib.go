@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/i4de/rulex/typex"
+	"github.com/hootrhino/rulex/typex"
 
 	"github.com/wwhai/ntp"
 
-	lua "github.com/i4de/gopher-lua"
+	lua "github.com/hootrhino/gopher-lua"
 )
 
 /*

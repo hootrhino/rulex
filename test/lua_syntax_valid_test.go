@@ -6,9 +6,9 @@ import (
 	"syscall"
 	"testing"
 
-	"github.com/i4de/rulex/core"
-	"github.com/i4de/rulex/engine"
-	"github.com/i4de/rulex/typex"
+	"github.com/hootrhino/rulex/core"
+	"github.com/hootrhino/rulex/engine"
+	"github.com/hootrhino/rulex/typex"
 )
 
 func TestLuaSyntax1(t *testing.T) {

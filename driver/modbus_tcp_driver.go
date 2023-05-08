@@ -2,12 +2,12 @@ package driver
 
 import (
 	"encoding/binary"
-	"encoding/hex"
 	"encoding/json"
 	"time"
 
-	"github.com/i4de/rulex/common"
-	"github.com/i4de/rulex/typex"
+	"github.com/hootrhino/rulex/common"
+	"github.com/hootrhino/rulex/glogger"
+	"github.com/hootrhino/rulex/typex"
 	modbus "github.com/wwhai/gomodbus"
 )
 
@@ -64,7 +64,7 @@ func (d *modBusTCPDriver) Read(cmd []byte, data []byte) (int, error) {
 		if r.Function == common.READ_COIL {
 			results, err := d.client.ReadCoils(r.Address, r.Quantity)
 			if err != nil {
-				return 0, err
+				glogger.GLogger.Error(err)
 			}
 			value := common.RegisterRW{
 				Tag:      r.Tag,
@@ -72,14 +72,14 @@ func (d *modBusTCPDriver) Read(cmd []byte, data []byte) (int, error) {
 				SlaverId: r.SlaverId,
 				Address:  r.Address,
 				Quantity: r.Quantity,
-				Value:    (hex.EncodeToString(results)),
+				Value:    covertEmptyHex(results),
 			}
 			dataMap[r.Tag] = value
 		}
 		if r.Function == common.READ_DISCRETE_INPUT {
 			results, err := d.client.ReadDiscreteInputs(r.Address, r.Quantity)
 			if err != nil {
-				return 0, err
+				glogger.GLogger.Error(err)
 			}
 			value := common.RegisterRW{
 				Tag:      r.Tag,
@@ -87,7 +87,7 @@ func (d *modBusTCPDriver) Read(cmd []byte, data []byte) (int, error) {
 				SlaverId: r.SlaverId,
 				Address:  r.Address,
 				Quantity: r.Quantity,
-				Value:    (hex.EncodeToString(results)),
+				Value:    covertEmptyHex(results),
 			}
 			dataMap[r.Tag] = value
 
@@ -95,7 +95,7 @@ func (d *modBusTCPDriver) Read(cmd []byte, data []byte) (int, error) {
 		if r.Function == common.READ_HOLDING_REGISTERS {
 			results, err := d.client.ReadHoldingRegisters(r.Address, r.Quantity)
 			if err != nil {
-				return 0, err
+				glogger.GLogger.Error(err)
 			}
 			value := common.RegisterRW{
 				Tag:      r.Tag,
@@ -103,14 +103,14 @@ func (d *modBusTCPDriver) Read(cmd []byte, data []byte) (int, error) {
 				SlaverId: r.SlaverId,
 				Address:  r.Address,
 				Quantity: r.Quantity,
-				Value:    (hex.EncodeToString(results)),
+				Value:    covertEmptyHex(results),
 			}
 			dataMap[r.Tag] = value
 		}
 		if r.Function == common.READ_INPUT_REGISTERS {
 			results, err := d.client.ReadInputRegisters(r.Address, r.Quantity)
 			if err != nil {
-				return 0, err
+				glogger.GLogger.Error(err)
 			}
 			value := common.RegisterRW{
 				Tag:      r.Tag,
@@ -118,7 +118,7 @@ func (d *modBusTCPDriver) Read(cmd []byte, data []byte) (int, error) {
 				SlaverId: r.SlaverId,
 				Address:  r.Address,
 				Quantity: r.Quantity,
-				Value:    (hex.EncodeToString(results)),
+				Value:    covertEmptyHex(results),
 			}
 			dataMap[r.Tag] = value
 		}

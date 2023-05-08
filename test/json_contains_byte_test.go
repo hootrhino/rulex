@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-// go test -timeout 30s -run ^TestOk github.com/i4de/rulex/test -v -count=1
+// go test -timeout 30s -run ^TestOk github.com/hootrhino/rulex/test -v -count=1
 func Test_JSON_contains_byte(t *testing.T) {
 	type _data_ struct {
 		Data  string

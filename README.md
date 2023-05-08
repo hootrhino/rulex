@@ -96,16 +96,25 @@ Actions = {
 ### 云端计算
 
 ```lua
-Actions = {
-    function(data)
-        -- PyTorch 训练数据:
-        cloud:PyTorchTrainCNN(data)
-        -- PyTorch 识别:
-        local V = cloud:PyTorchCNN(data)
-        print(V)
-        return true, data
+function Main(Arg)
+    -- {1,2,3,4,5,6,7,8,9,10}
+    local cutterData, err = applib:ReadDevice('Dev1', 'D1', "count=10")
+    if err ~= nil then
+        error(err)
+        return
     end
-}
+    -- 交给 ID为'AI-001'的AI模型去计算结果
+    -- 输出结果是一个数组，维度取决于模型输出参数
+    -- Result: {1}
+    local Result, err = aibase:Infer('AI-001', cutterData)
+    if err ~= nil then
+        error(err)
+        return
+    end
+    print('Result =>', Result)
+    applib:save(Result)
+    return 0
+end
 ```
 
 ## 社区
@@ -123,14 +132,14 @@ Actions = {
 鸣谢各位给RULEX贡献代码的大佬。
 
 ### RULEX
-<a href="https://github.com/i4de/rulex/graphs/contributors">
-  <img src="https://contributors-img.web.app/image?repo=i4de/rulex" />
+<a href="https://github.com/hootrhino/rulex/graphs/contributors">
+  <img src="https://contributors-img.web.app/image?repo=hootrhino/rulex" />
 </a>
 
 ### RULEX Other
-<a href="https://github.com/i4de/rulex-dashboard/graphs/contributors">
-  <img src="https://contributors-img.web.app/image?repo=i4de/rulex-dashboard" />
+<a href="https://github.com/hootrhino/rulex-dashboard/graphs/contributors">
+  <img src="https://contributors-img.web.app/image?repo=hootrhino/rulex-dashboard" />
 </a>
 
 ## Star
-<img src="https://starchart.cc/i4de/rulex.svg">
+<img src="https://starchart.cc/hootrhino/rulex.svg">

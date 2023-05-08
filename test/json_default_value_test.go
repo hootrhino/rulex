@@ -7,7 +7,7 @@ import (
 
 type _data1 struct {
 	Tag     string `json:"tag" validate:"required" title:"数据Tag" info:"给数据打标签"`
-	EndFlag string `json:"endFlag" validate:"required" title:"采集频率" info:""`
+	EndFlag string `json:"endFlag" validate:"required" title:"采集频率"`
 }
 
 func Test_json_default_value(t *testing.T) {

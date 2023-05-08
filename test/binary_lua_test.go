@@ -5,13 +5,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/i4de/rulex/core"
-	"github.com/i4de/rulex/engine"
-	"github.com/i4de/rulex/glogger"
-	"github.com/i4de/rulex/plugin/demo_plugin"
-	httpserver "github.com/i4de/rulex/plugin/http_server"
-	"github.com/i4de/rulex/rulexrpc"
-	"github.com/i4de/rulex/typex"
+	"github.com/hootrhino/rulex/core"
+	"github.com/hootrhino/rulex/engine"
+	"github.com/hootrhino/rulex/glogger"
+	"github.com/hootrhino/rulex/plugin/demo_plugin"
+	httpserver "github.com/hootrhino/rulex/plugin/http_server"
+	"github.com/hootrhino/rulex/rulexrpc"
+	"github.com/hootrhino/rulex/typex"
 
 	"google.golang.org/grpc"
 )

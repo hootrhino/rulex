@@ -6,11 +6,11 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/i4de/rulex/core"
-	"github.com/i4de/rulex/glogger"
-	httpserver "github.com/i4de/rulex/plugin/http_server"
-	mqttserver "github.com/i4de/rulex/plugin/mqtt_server"
-	"github.com/i4de/rulex/typex"
+	"github.com/hootrhino/rulex/core"
+	"github.com/hootrhino/rulex/glogger"
+	httpserver "github.com/hootrhino/rulex/plugin/http_server"
+	mqttserver "github.com/hootrhino/rulex/plugin/mqtt_server"
+	"github.com/hootrhino/rulex/typex"
 )
 
 // 启动 Rulex
@@ -100,7 +100,6 @@ func RunRulex(iniPath string) {
 			typex.DeviceType(mDevice.Type),
 			mDevice.Name,
 			mDevice.Description,
-			mDevice.ActionScript,
 			config,
 		)
 		newDevice.UUID = mDevice.UUID // Important !!!!!!!!

@@ -6,7 +6,7 @@ function Main(arg)
 
     while true do
         repeat
-            local binary, err1 = applib:ReadDevice(deviceUUID, 1)
+            local binary, err1 = applib:ReadDevice(deviceUUID, "p1")
             if err1 ~= nil then
                 print(1, err1)
                 break

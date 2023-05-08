@@ -6,10 +6,10 @@ import (
 	"regexp"
 
 	"github.com/gin-gonic/gin"
-	"github.com/i4de/rulex/appstack"
-	"github.com/i4de/rulex/glogger"
-	"github.com/i4de/rulex/typex"
-	"github.com/i4de/rulex/utils"
+	"github.com/hootrhino/rulex/appstack"
+	"github.com/hootrhino/rulex/glogger"
+	"github.com/hootrhino/rulex/typex"
+	"github.com/hootrhino/rulex/utils"
 )
 
 /*
@@ -18,13 +18,14 @@ import (
 *
  */
 type web_data_app struct {
-	UUID      string `json:"uuid"`      // 名称
-	Name      string `json:"name"`      // 名称
-	Version   string `json:"version"`   // 版本号
-	AutoStart bool   `json:"autoStart"` // 自动启动
-	AppState  int    `json:"appState"`  // 状态: 1 运行中, 0 停止
-	Filepath  string `json:"filepath"`  // 文件路径, 是相对于main的apps目录
-	LuaSource string `json:"luaSource"`
+	UUID        string `json:"uuid"`      // 名称
+	Name        string `json:"name"`      // 名称
+	Version     string `json:"version"`   // 版本号
+	AutoStart   bool   `json:"autoStart"` // 自动启动
+	AppState    int    `json:"appState"`  // 状态: 1 运行中, 0 停止
+	Filepath    string `json:"filepath"`  // 文件路径, 是相对于main的apps目录
+	LuaSource   string `json:"luaSource"`
+	Description string `json:"description"`
 }
 
 // 列表
@@ -45,7 +46,8 @@ func Apps(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 					}
 					return 0
 				}(),
-				Filepath: app.Filepath,
+				Filepath:    app.Filepath,
+				Description: app.Description,
 			}
 			result = append(result, web_data)
 		}
@@ -69,7 +71,8 @@ func Apps(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 			}
 			return 0
 		}(),
-		Filepath: appInfo.Filepath,
+		Filepath:    appInfo.Filepath,
+		Description: appInfo.Description,
 		LuaSource: func() string {
 			path := "./apps/" + appInfo.UUID + ".lua"
 			bytes, err := os.ReadFile(path)
@@ -149,11 +152,12 @@ func CreateApp(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 		return
 	}
 	if err := hs.InsertApp(&MApp{
-		UUID:      newUUID,
-		Name:      form.Name,
-		Version:   form.Version,
-		Filepath:  path,
-		AutoStart: &form.AutoStart,
+		UUID:        newUUID,
+		Name:        form.Name,
+		Version:     form.Version,
+		Filepath:    path,
+		AutoStart:   &form.AutoStart,
+		Description: form.Description,
 	}); err != nil {
 		c.JSON(200, Error400(err))
 		return
@@ -208,10 +212,11 @@ func UpdateApp(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 	}
 
 	if err := hs.UpdateApp(&MApp{
-		UUID:      form.UUID,
-		Name:      form.Name,
-		Version:   form.Version,
-		AutoStart: &form.AutoStart,
+		UUID:        form.UUID,
+		Name:        form.Name,
+		Version:     form.Version,
+		AutoStart:   &form.AutoStart,
+		Description: form.Description,
 	}); err != nil {
 		c.JSON(200, Error400(err))
 		return
@@ -274,8 +279,9 @@ func StartApp(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 		if app.AppState == 0 {
 			if err := e.StartApp(uuid); err != nil {
 				c.JSON(200, Error400(err))
+			} else {
+				c.JSON(200, OkWithData("app start successfully:"+uuid))
 			}
-			c.JSON(200, OkWithData("app start successfully:"+uuid))
 		}
 		return
 	}

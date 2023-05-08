@@ -25,8 +25,8 @@ type XSource interface {
 我们以一个 `COAP Server` 为例来解释,首先定义一个配置结构体:
 ```go
 type coAPConfig struct {
-	Port       uint16             `json:"port" validate:"required" title:"端口" info:""`
-	DataModels []typex.XDataModel `json:"dataModels" title:"数据模型" info:""`
+	Port       uint16             `json:"port" validate:"required" title:"端口"`
+	DataModels []typex.XDataModel `json:"dataModels" title:"数据模型"`
 }
 ```
 然后在Init里面解析外部配置到资源的配置结构体，相当于是加载配置:

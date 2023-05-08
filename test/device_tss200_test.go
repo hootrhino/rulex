@@ -1,14 +1,13 @@
 package test
 
 import (
-
-	"github.com/i4de/rulex/glogger"
-	httpserver "github.com/i4de/rulex/plugin/http_server"
+	"github.com/hootrhino/rulex/glogger"
+	httpserver "github.com/hootrhino/rulex/plugin/http_server"
 
 	"testing"
 	"time"
 
-	"github.com/i4de/rulex/typex"
+	"github.com/hootrhino/rulex/typex"
 )
 
 func Test_TSS200_ReadData(t *testing.T) {
@@ -22,7 +21,7 @@ func Test_TSS200_ReadData(t *testing.T) {
 	}
 
 	tss200 := typex.NewDevice(typex.TSS200V02,
-		"TSS200V02", "TSS200V02", "", map[string]interface{}{
+		"TSS200V02", "TSS200V02", map[string]interface{}{
 			"mode":      "RTU",
 			"timeout":   10,
 			"frequency": 5,

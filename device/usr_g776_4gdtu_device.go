@@ -1,19 +1,36 @@
 package device
 
 import (
-	"context"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"sync"
 	"time"
 
-	"github.com/i4de/rulex/common"
-	"github.com/i4de/rulex/driver"
-	"github.com/i4de/rulex/glogger"
-	"github.com/i4de/rulex/typex"
-	"github.com/i4de/rulex/utils"
+	"github.com/hootrhino/rulex/common"
+	"github.com/hootrhino/rulex/driver"
+	"github.com/hootrhino/rulex/glogger"
+	"github.com/hootrhino/rulex/typex"
+	"github.com/hootrhino/rulex/utils"
 	serial "github.com/wwhai/goserial"
 )
+
+/*
+*
+* 有人G776串口4G模块
+*
+ */
+type _G776CommonConfig struct {
+	Tag         string `json:"tag" validate:"required" title:"数据Tag" info:"给数据打标签"`
+	Frequency   int64  `json:"frequency" validate:"required" title:"采集频率"`
+	AutoRequest bool   `json:"autoRequest" title:"启动轮询"`
+	Separator   string `json:"separator" title:"协议分隔符"`
+}
+
+type _G776Config struct {
+	CommonConfig _G776CommonConfig       `json:"commonConfig" validate:"required"`
+	UartConfig   common.CommonUartConfig `json:"uartConfig" validate:"required"`
+}
 
 // 这是有人G776型号的4G DTU模块，主要用来TCP远程透传数据, 实际上就是个很普通的串口读写程序
 // 详细文档: https://www.usr.cn/Download/806.html
@@ -22,7 +39,7 @@ type UsrG776DTU struct {
 	status     typex.DeviceState
 	RuleEngine typex.RuleX
 	driver     typex.XExternalDriver
-	mainConfig common.GenericUartConfig
+	mainConfig _G776Config
 	locker     sync.Locker
 }
 
@@ -34,7 +51,7 @@ type UsrG776DTU struct {
 func NewUsrG776DTU(e typex.RuleX) typex.XDevice {
 	uart := new(UsrG776DTU)
 	uart.locker = &sync.Mutex{}
-	uart.mainConfig = common.GenericUartConfig{}
+	uart.mainConfig = _G776Config{}
 	uart.RuleEngine = e
 	return uart
 }
@@ -46,7 +63,13 @@ func (uart *UsrG776DTU) Init(devId string, configMap map[string]interface{}) err
 		glogger.GLogger.Error(err)
 		return err
 	}
-	if !utils.SContains([]string{"N", "E", "O"}, uart.mainConfig.Parity) {
+	if uart.mainConfig.CommonConfig.Separator == "LF" {
+		uart.mainConfig.CommonConfig.Separator = "\n"
+	}
+	if uart.mainConfig.CommonConfig.Separator == "CRLF" {
+		uart.mainConfig.CommonConfig.Separator = "\r"
+	}
+	if !utils.SContains([]string{"N", "E", "O"}, uart.mainConfig.UartConfig.Parity) {
 		return errors.New("parity value only one of 'N','O','E'")
 	}
 	return nil
@@ -56,55 +79,20 @@ func (uart *UsrG776DTU) Init(devId string, configMap map[string]interface{}) err
 func (uart *UsrG776DTU) Start(cctx typex.CCTX) error {
 	uart.Ctx = cctx.Ctx
 	uart.CancelCTX = cctx.CancelCTX
-
-	// 串口配置固定写法
-	// 下面的参数是传感器固定写法
 	config := serial.Config{
-		Address:  uart.mainConfig.Uart,
-		BaudRate: uart.mainConfig.BaudRate,
-		DataBits: uart.mainConfig.DataBits,
-		Parity:   uart.mainConfig.Parity,
-		StopBits: uart.mainConfig.StopBits,
-		Timeout:  time.Duration(uart.mainConfig.Timeout) * time.Second,
+		Address:  uart.mainConfig.UartConfig.Uart,
+		BaudRate: uart.mainConfig.UartConfig.BaudRate,
+		DataBits: uart.mainConfig.UartConfig.DataBits,
+		Parity:   uart.mainConfig.UartConfig.Parity,
+		StopBits: uart.mainConfig.UartConfig.StopBits,
+		Timeout:  time.Duration(uart.mainConfig.UartConfig.Timeout) * time.Second,
 	}
 	serialPort, err := serial.Open(&config)
 	if err != nil {
-		glogger.GLogger.Error("G776Driver start failed:", err)
+		glogger.GLogger.Error("Serial.Open failed:", err)
 		return err
 	}
-	uart.driver = driver.NewRawUartDriver(uart.Ctx, uart.RuleEngine, uart.Details(), serialPort)
-	if !uart.mainConfig.AutoRequest {
-		uart.status = typex.DEV_UP
-		return nil
-	}
-	go func(ctx context.Context) {
-		ticker := time.NewTicker(time.Duration(uart.mainConfig.Frequency) * time.Second)
-		buffer := make([]byte, common.T_64KB)
-		uart.driver.Read([]byte{}, buffer) //清理缓存
-		for {
-			<-ticker.C
-			select {
-			case <-ctx.Done():
-				ticker.Stop()
-				return
-			default:
-				uart.locker.Lock()
-				n, err := uart.driver.Read([]byte{}, buffer)
-				uart.locker.Unlock()
-				if err != nil {
-					glogger.GLogger.Error(err)
-					continue
-				}
-				mapV := map[string]interface{}{
-					"tag":   uart.mainConfig.Tag,
-					"value": string(buffer[:n]),
-				}
-				bytes, _ := json.Marshal(mapV)
-				uart.RuleEngine.WorkDevice(uart.Details(), string(bytes))
-			}
-		}
-
-	}(uart.Ctx)
+	uart.driver = driver.NewUsrG776Driver(uart.Ctx, uart.RuleEngine, uart.Details(), serialPort)
 	uart.status = typex.DEV_UP
 	return nil
 }
@@ -121,15 +109,19 @@ func (uart *UsrG776DTU) OnRead(cmd []byte, data []byte) (int, error) {
 	uart.locker.Unlock()
 	buffer := make([]byte, n)
 	mapV := map[string]interface{}{
-		"tag":   uart.mainConfig.Tag,
-		"value": string(buffer[:n]),
+		"tag":   uart.mainConfig.CommonConfig.Tag,
+		"value": hex.EncodeToString(buffer[:n]),
 	}
 	bytes, _ := json.Marshal(mapV)
 	copy(data, bytes)
 	return n, err
 }
 
-// 把数据写入设备
+/*
+*
+* 有人G776-DTU写入串口的数据会被不加修改的透传到上层
+*
+ */
 func (uart *UsrG776DTU) OnWrite(cmd []byte, b []byte) (int, error) {
 	return uart.driver.Write(cmd, b)
 }
@@ -173,4 +165,7 @@ func (uart *UsrG776DTU) Driver() typex.XExternalDriver {
 
 func (uart *UsrG776DTU) OnDCACall(UUID string, Command string, Args interface{}) typex.DCAResult {
 	return typex.DCAResult{}
+}
+func (uart *UsrG776DTU) OnCtrl(cmd []byte, args []byte) ([]byte, error) {
+	return []byte{}, nil
 }

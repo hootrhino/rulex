@@ -3,9 +3,9 @@ package httpserver
 import (
 	"fmt"
 
-	"github.com/i4de/rulex/core"
-	"github.com/i4de/rulex/typex"
-	"github.com/i4de/rulex/utils"
+	"github.com/hootrhino/rulex/core"
+	"github.com/hootrhino/rulex/typex"
+	"github.com/hootrhino/rulex/utils"
 
 	"github.com/gin-gonic/gin"
 )
@@ -34,20 +34,20 @@ func CreateRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		FromSource  []string `json:"fromSource" binding:"required"`
 		FromDevice  []string `json:"fromDevice" binding:"required"`
 		Name        string   `json:"name" binding:"required"`
-		Type        string   `json:"type" binding:"required"`
+		Type        string   `json:"type"`
 		Expression  string   `json:"expression"`
 		Description string   `json:"description"`
 		Actions     string   `json:"actions"`
 		Success     string   `json:"success"`
 		Failed      string   `json:"failed"`
 	}
-	form := Form{}
+	form := Form{Type: "lua"}
 
 	if err := c.ShouldBindJSON(&form); err != nil {
 		c.JSON(200, Error400(err))
 		return
 	}
-	if utils.SContains([]string{"lua", "expr"}, form.Type) {
+	if !utils.SContains([]string{"lua", "expr"}, form.Type) {
 		c.JSON(200, Error(`rule type must one of 'lua' or 'expr':`+form.Type))
 		return
 	}

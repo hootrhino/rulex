@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/i4de/rulex/utils"
+	"github.com/hootrhino/rulex/utils"
 )
 
-// go test -timeout 30s -run ^TestOk github.com/i4de/rulex/test -v -count=1
+// go test -timeout 30s -run ^TestOk github.com/hootrhino/rulex/test -v -count=1
 func Test_CheckSumCRC16(t *testing.T) {
 	m_data := []byte{0x01, 0x02, 0x03, 0x04}
 	checksum := utils.CRC16(m_data)

@@ -4,7 +4,7 @@ import (
 	"errors"
 	"reflect"
 
-	"github.com/i4de/rulex/glogger"
+	"github.com/hootrhino/rulex/glogger"
 	"gopkg.in/ini.v1"
 )
 
@@ -38,9 +38,7 @@ func GetINISection(iniPath string, s string) *ini.Section {
 	return cfg.Section(s)
 }
 
-//
 // INI转结构体
-//
 func InIMapToStruct(section *ini.Section, s interface{}) error {
 	if reflect.ValueOf(s).Kind() != reflect.Ptr {
 		return errors.New("config must be a pointer")

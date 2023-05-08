@@ -3,8 +3,8 @@ package rulexlib
 import (
 	"errors"
 
-	"github.com/i4de/rulex/glogger"
-	"github.com/i4de/rulex/typex"
+	"github.com/hootrhino/rulex/glogger"
+	"github.com/hootrhino/rulex/typex"
 )
 
 func handleDataFormat(e typex.RuleX, uuid string, incoming string) error {

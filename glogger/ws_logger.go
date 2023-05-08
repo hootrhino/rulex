@@ -9,7 +9,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"github.com/sirupsen/logrus"
-
 )
 
 var private_GRealtimeLogger *RealTimeLogger
@@ -125,7 +124,11 @@ func WsLogger(c *gin.Context) {
 	}
 	private_GRealtimeLogger.Clients[wsConn.RemoteAddr().String()] = wsConn
 	wsConn.WriteMessage(websocket.TextMessage, []byte("Connected"))
-	GLogger.Info("WebSocketTerminal connected:" + wsConn.RemoteAddr().String())
+	GLogger.Info("WebSocket Terminal connected:" + wsConn.RemoteAddr().String())
+	wsConn.SetCloseHandler(func(code int, text string) error {
+		GLogger.Info("wsConn CloseHandler:", wsConn.RemoteAddr().String())
+		return nil
+	})
 	go func(ctx context.Context, wsConn *websocket.Conn) {
 		for {
 			select {
@@ -137,17 +140,14 @@ func WsLogger(c *gin.Context) {
 				{
 				}
 			}
-			// 当前不需要相互交互，单向给Websocket发送日志就行
-			// 因此这里只需要判断下是否掉线即可
-
 			_, _, err := wsConn.ReadMessage()
-			// wsConn.WriteMessage(websocket.PingMessage, []byte{})
+			wsConn.WriteMessage(websocket.PingMessage, []byte{})
 			if err != nil {
+				GLogger.Info("WsConn error:", wsConn.RemoteAddr().String(), ", Error:", err)
 				wsConn.Close()
 				lock.Lock()
 				delete(private_GRealtimeLogger.Clients, wsConn.RemoteAddr().String())
 				lock.Unlock()
-				GLogger.Info("WebSocketTerminal disconnected:" + wsConn.RemoteAddr().String())
 				return
 			}
 

@@ -19,6 +19,5 @@ function Main(arg)
         print(binary2)
         applib:Sleep(1000)
     end
-
     return 0
 end

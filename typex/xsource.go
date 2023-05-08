@@ -2,21 +2,18 @@ package typex
 
 import "context"
 
-//
 // XStatus for source status
-//
 type XStatus struct {
-	PointId     string // Input: Source; Output: Target
-	Enable      bool
-	Ctx         context.Context
-	CancelCTX   context.CancelFunc
-	XDataModels []XDataModel `json:"dataModels" title:"数据模型" info:""`
-	RuleEngine  RuleX
+	PointId     string             // Input: Source; Output: Target
+	Enable      bool               // 是否开启
+	Ctx         context.Context    // context
+	CancelCTX   context.CancelFunc // cancel
+	XDataModels []XDataModel       // 数据模型
+	RuleEngine  RuleX              // rulex
+	Busy        bool               // 是否处于忙碌状态, 防止请求拥挤
 }
 
-//
 // XSource: 终端资源, 比如实际上的 MQTT 客户端
-//
 type XSource interface {
 	//
 	// 测试资源是否可用

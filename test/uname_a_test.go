@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/go-ini/ini"
-	"github.com/i4de/rulex/glogger"
+	"github.com/hootrhino/rulex/glogger"
 )
 
 func ReadOSRelease(configfile string) *ini.File {
