@@ -11,12 +11,12 @@ import (
 	"time"
 
 	"github.com/gin-contrib/static"
-	"github.com/i4de/rulex/device"
-	"github.com/i4de/rulex/glogger"
-	"github.com/i4de/rulex/source"
-	"github.com/i4de/rulex/target"
-	"github.com/i4de/rulex/typex"
-	"github.com/i4de/rulex/utils"
+	"github.com/hootrhino/rulex/device"
+	"github.com/hootrhino/rulex/glogger"
+	"github.com/hootrhino/rulex/source"
+	"github.com/hootrhino/rulex/target"
+	"github.com/hootrhino/rulex/typex"
+	"github.com/hootrhino/rulex/utils"
 
 	"github.com/gin-gonic/gin"
 	"gopkg.in/ini.v1"
@@ -224,6 +224,11 @@ func (hh *HttpApiServer) Start(r typex.RuleX) error {
 	hh.ginEngine.DELETE(url("app"), hh.addRoute(RemoveApp))
 	hh.ginEngine.PUT(url("app/start"), hh.addRoute(StartApp))
 	hh.ginEngine.PUT(url("app/stop"), hh.addRoute(StopApp))
+	//----------------------------------------------------------------------------------------------
+	// AI BASE
+	//----------------------------------------------------------------------------------------------
+	hh.ginEngine.GET(url("aibase"), hh.addRoute(AiBase))
+	hh.ginEngine.DELETE(url("aibase"), hh.addRoute(DeleteAiBase))
 
 	glogger.GLogger.Infof("Http server started on http://0.0.0.0:%v", hh.Port)
 	return nil

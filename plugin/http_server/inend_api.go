@@ -1,8 +1,8 @@
 package httpserver
 
 import (
-	"github.com/i4de/rulex/typex"
-	"github.com/i4de/rulex/utils"
+	"github.com/hootrhino/rulex/typex"
+	"github.com/hootrhino/rulex/utils"
 
 	"github.com/emirpasic/gods/maps/linkedhashmap"
 	"github.com/gin-gonic/gin"
@@ -10,20 +10,32 @@ import (
 )
 
 // Get all inends
-func InEnds(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+func InEnds(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
 	if uuid == "" {
-		data := []interface{}{}
-		allInEnds := e.AllInEnd()
-		allInEnds.Range(func(key, value interface{}) bool {
-			data = append(data, value)
-			return true
-		})
-		c.JSON(200, OkWithData(data))
-		return
+		inEnds := []*typex.InEnd{}
+		for _, v := range hs.AllMInEnd() {
+			var device *typex.InEnd
+			if device = e.GetInEnd(v.UUID); device == nil {
+				device.State = typex.SOURCE_STOP
+			}
+			if device != nil {
+				inEnds = append(inEnds, device)
+			}
+		}
+		c.JSON(200, OkWithData(inEnds))
+	} else {
+		Model, err := hs.GetMInEndWithUUID(uuid)
+		if err != nil {
+			c.JSON(200, Error400(err))
+			return
+		}
+		var inEnd *typex.InEnd
+		if inEnd = e.GetInEnd(Model.UUID); inEnd == nil {
+			inEnd.State = typex.SOURCE_STOP
+		}
+		c.JSON(200, OkWithData(inEnd))
 	}
-	c.JSON(200, OkWithData(e.GetInEnd(uuid)))
-
 }
 
 // Create or Update InEnd

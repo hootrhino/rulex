@@ -13,10 +13,10 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/i4de/rulex/glogger"
-	"github.com/i4de/rulex/typex"
+	"github.com/hootrhino/rulex/glogger"
+	"github.com/hootrhino/rulex/typex"
 
-	lua "github.com/i4de/gopher-lua"
+	lua "github.com/hootrhino/gopher-lua"
 )
 
 // 提取的 Key, 最长不能超过32个字母

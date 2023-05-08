@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/i4de/rulex/glogger"
+	"github.com/hootrhino/rulex/glogger"
 	"github.com/thinkgos/go-iecp5/asdu"
 	"github.com/thinkgos/go-iecp5/cs104"
 )

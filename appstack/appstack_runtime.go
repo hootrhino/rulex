@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"os"
 
-	lua "github.com/i4de/gopher-lua"
-	"github.com/i4de/rulex/glogger"
-	"github.com/i4de/rulex/typex"
+	lua "github.com/hootrhino/gopher-lua"
+	"github.com/hootrhino/rulex/glogger"
+	"github.com/hootrhino/rulex/typex"
 )
 
 /*
@@ -70,11 +70,17 @@ func (as *AppStack) StartApp(uuid string) error {
 	// args := lua.LBool(false) // Main的参数，未来准备扩展
 	ctx, cancel := context.WithCancel(typex.GCTX)
 	app.SetCnC(ctx, cancel)
-	go func(ctx context.Context) {
-		appId := app.UUID
+	go func(ctx context.Context, appId string) {
 		defer func() {
 			app.AppState = 0
 			glogger.GLogger.Debug("App exit:", appId)
+			if err := recover(); err != nil {
+				// buf := make([]byte, 1<<16)
+				// runtime.Stack(buf, true)
+				// fmt.Println(string(buf))
+				glogger.GLogger.Error("App recover:", err)
+			}
+
 		}()
 		app.VM().SetContext(ctx)
 		glogger.GLogger.Debugf("Ready to run app:%s-%s-%s", app.UUID, app.Name, app.Version)
@@ -86,7 +92,7 @@ func (as *AppStack) StartApp(uuid string) error {
 			// GopherLua will panic instead of returning an ``error`` value.
 			Handler: &lua.LFunction{
 				GFunction: func(*lua.LState) int {
-					return 0
+					return 1
 				},
 			},
 		}, lua.LBool(false))
@@ -94,7 +100,8 @@ func (as *AppStack) StartApp(uuid string) error {
 			glogger.GLogger.Error("app.VM().CallByParam error:", err)
 			return
 		}
-	}(ctx)
+		app.AppState = 0
+	}(ctx, app.UUID)
 	glogger.GLogger.Info("App started:", app.UUID)
 	return nil
 }

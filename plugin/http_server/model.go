@@ -115,6 +115,7 @@ type MAiBase struct {
 	UUID        string `gorm:"not null"` // 名称
 	Name        string `gorm:"not null"` // 名称
 	Type        string `gorm:"not null"` // 类型
+	IsBuildIn   bool   `gorm:"not null"` // 是否内建
 	Version     string `gorm:"not null"` // 版本号
 	Filepath    string `gorm:"not null"` // 文件路径, 是相对于main的apps目录
 	Description string `gorm:"not null"`

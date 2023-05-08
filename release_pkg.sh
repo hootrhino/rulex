@@ -1,7 +1,7 @@
 #! /bin/bash
 set -e
 
-RESPOSITORY="https://github.com/i4de"
+RESPOSITORY="https://github.com/hootrhino"
 
 #
 create_pkg() {

@@ -1,11 +1,12 @@
 package utils
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"runtime"
 
-	"github.com/i4de/rulex/glogger"
+	"github.com/hootrhino/rulex/glogger"
 )
 
 /*
@@ -45,4 +46,31 @@ func HostNameI() (string, error) {
 		return string(data), nil
 	}
 	return "[0.0.0.0]only support unix-like OS", nil
+}
+
+func BtoMB(bytes uint64) float64 {
+	return float64(bytes) / 1024 / 1024
+}
+
+/*
+*
+* DEBUG使用
+*
+ */
+func TraceMemStats() {
+	var ms runtime.MemStats
+	runtime.ReadMemStats(&ms)
+	var info [7]float64
+	info[0] = float64(ms.HeapObjects)
+	info[1] = BtoMB(ms.HeapAlloc)
+	info[2] = BtoMB(ms.TotalAlloc)
+	info[3] = BtoMB(ms.HeapSys)
+	info[4] = BtoMB(ms.HeapIdle)
+	info[5] = BtoMB(ms.HeapReleased)
+	info[6] = BtoMB(ms.HeapIdle - ms.HeapReleased)
+
+	for _, v := range info {
+		fmt.Printf("%v,\t", v)
+	}
+	fmt.Println()
 }

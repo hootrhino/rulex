@@ -1,8 +1,7 @@
 package typex
 
-import "github.com/i4de/rulex/utils"
+import "github.com/hootrhino/rulex/utils"
 
-//
 type InEnd struct {
 	//
 	UUID        string          `json:"uuid"`
@@ -21,12 +20,10 @@ func (in *InEnd) GetState() SourceState {
 	return in.State
 }
 
-//
 func (in *InEnd) SetState(s SourceState) {
 	in.State = s
 }
 
-//
 func NewInEnd(Type InEndType,
 	n string,
 	d string,

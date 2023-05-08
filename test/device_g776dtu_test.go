@@ -4,8 +4,8 @@ import (
 	"testing"
 	"time"
 
-	httpserver "github.com/i4de/rulex/plugin/http_server"
-	"github.com/i4de/rulex/typex"
+	httpserver "github.com/hootrhino/rulex/plugin/http_server"
+	"github.com/hootrhino/rulex/typex"
 )
 
 /*
@@ -24,7 +24,7 @@ func Test_g7776_Device(t *testing.T) {
 
 	// YK8 Inend
 	GUART := typex.NewDevice(typex.USER_G776,
-		"UART", "UART", "UART", map[string]interface{}{
+		"UART", "UART", map[string]interface{}{
 			"baudRate":  9600,
 			"dataBits":  8,
 			"frequency": 5,

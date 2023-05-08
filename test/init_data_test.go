@@ -4,16 +4,14 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/i4de/rulex/core"
-	"github.com/i4de/rulex/engine"
-	"github.com/i4de/rulex/glogger"
-	httpserver "github.com/i4de/rulex/plugin/http_server"
-	"github.com/i4de/rulex/typex"
+	"github.com/hootrhino/rulex/core"
+	"github.com/hootrhino/rulex/engine"
+	"github.com/hootrhino/rulex/glogger"
+	httpserver "github.com/hootrhino/rulex/plugin/http_server"
+	"github.com/hootrhino/rulex/typex"
 )
 
-//
 // 初始化一些测试数据
-//
 func TestInitData(t *testing.T) {
 	engine := engine.NewRuleEngine(core.InitGlobalConfig("conf/rulex.ini"))
 	engine.Start()

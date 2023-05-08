@@ -1,4 +1,4 @@
-<a href="https://github.com/i4de/rulex/blob/master/README_cn.md"> 中文文档 </a> | <a href="https://github.com/i4de/rulex/blob/master/README_cn.md"> 英文文档 </a>
+<a href="https://github.com/hootrhino/rulex/blob/master/README_cn.md"> 中文文档 </a> | <a href="https://github.com/hootrhino/rulex/blob/master/README_cn.md"> 英文文档 </a>
 
 # Rulex
 Rulex is a RuLE-LEX framework for edge computing (so called fog-computing), support various data sources and data flows. Rulex is designed to process data streams fast and reliable with IoT southern gateways.
@@ -6,7 +6,7 @@ Rulex is a RuLE-LEX framework for edge computing (so called fog-computing), supp
 ## Quick start
 ### Install Cli tools
 ```bash
-wget https://github.com/i4de/rulex/blob/master/script/crulex.sh
+wget https://github.com/hootrhino/rulex/blob/master/script/crulex.sh
 ```
 ### Select version
 ```bash

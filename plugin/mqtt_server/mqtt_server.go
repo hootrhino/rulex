@@ -3,13 +3,12 @@ package mqttserver
 import (
 	"fmt"
 
-	"github.com/i4de/rulex/glogger"
-	"github.com/i4de/rulex/typex"
-	"github.com/i4de/rulex/utils"
+	"github.com/hootrhino/rulex/glogger"
+	"github.com/hootrhino/rulex/typex"
+	"github.com/hootrhino/rulex/utils"
 	mqttServer "github.com/mochi-co/mqtt/server"
 	"github.com/mochi-co/mqtt/server/events"
 	"github.com/mochi-co/mqtt/server/listeners"
-	"github.com/mochi-co/mqtt/server/listeners/auth"
 	"gopkg.in/ini.v1"
 )
 
@@ -53,7 +52,7 @@ func (s *MqttServer) Start(r typex.RuleX) error {
 	tcpPort := listeners.NewTCP(defaultTransport, fmt.Sprintf(":%v", s.Port))
 
 	if err := server.AddListener(tcpPort, &listeners.Config{
-		Auth: &auth.Allow{},
+		Auth: &AuthController{},
 	}); err != nil {
 		return err
 	}
@@ -93,8 +92,8 @@ func (s *MqttServer) PluginMetaInfo() typex.XPluginMetaInfo {
 	return typex.XPluginMetaInfo{
 		Name:     "Light Weight MqttServer",
 		Version:  "0.0.1",
-		Homepage: "www.github.com/i4de/rulex",
-		HelpLink: "www.github.com/i4de/rulex",
+		Homepage: "www.github.com/hootrhino/rulex",
+		HelpLink: "www.github.com/hootrhino/rulex",
 		Author:   "wwhai",
 		Email:    "cnwwhai@gmail.com",
 		License:  "MIT",
@@ -108,4 +107,19 @@ func (s *MqttServer) PluginMetaInfo() typex.XPluginMetaInfo {
  */
 func (cs *MqttServer) Service(arg typex.ServiceArg) error {
 	return nil
+}
+
+/*
+*
+* 认证器, 目前只做了个简单的认证机制：password=md5(clientid+username)
+*
+ */
+type AuthController struct {
+}
+
+func (*AuthController) Authenticate(user, password []byte) bool {
+	return true
+}
+func (*AuthController) ACL(user []byte, topic string, write bool) bool {
+	return true
 }

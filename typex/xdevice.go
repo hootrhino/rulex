@@ -7,7 +7,7 @@
 package typex
 
 import (
-	"github.com/i4de/rulex/utils"
+	"github.com/hootrhino/rulex/utils"
 )
 
 type DeviceState int
@@ -41,21 +41,19 @@ const (
 
 // 设备元数据
 type Device struct {
-	UUID         string                 `json:"uuid"`         // UUID
-	Name         string                 `json:"name"`         // 设备名称，例如：灯光开关
-	Type         DeviceType             `json:"type"`         // 类型,一般是设备-型号，比如 ARDUINO-R3
-	ActionScript string                 `json:"actionScript"` // 当收到指令的时候响应脚本
-	Description  string                 `json:"description"`  // 设备描述信息
-	BindRules    map[string]Rule        `json:"-"`            // 与之关联的规则
-	State        DeviceState            `json:"state"`        // 状态
-	Config       map[string]interface{} `json:"config"`       // 配置
-	Device       XDevice                `json:"-"`            // 实体设备
+	UUID        string                 `json:"uuid"`        // UUID
+	Name        string                 `json:"name"`        // 设备名称，例如：灯光开关
+	Type        DeviceType             `json:"type"`        // 类型,一般是设备-型号，比如 ARDUINO-R3
+	Description string                 `json:"description"` // 设备描述信息
+	BindRules   map[string]Rule        `json:"-"`           // 与之关联的规则
+	State       DeviceState            `json:"state"`       // 状态
+	Config      map[string]interface{} `json:"config"`      // 配置
+	Device      XDevice                `json:"-"`           // 实体设备
 }
 
 func NewDevice(t DeviceType,
 	name string,
 	description string,
-	actionScript string,
 	config map[string]interface{}) *Device {
 	return &Device{
 		UUID:        utils.DeviceUuid(),

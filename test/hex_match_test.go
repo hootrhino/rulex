@@ -3,7 +3,7 @@ package test
 import (
 	"testing"
 
-	"github.com/i4de/rulex/rulexlib"
+	"github.com/hootrhino/rulex/rulexlib"
 )
 
 // 性能测试

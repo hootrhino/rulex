@@ -4,10 +4,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/i4de/rulex/glogger"
-	httpserver "github.com/i4de/rulex/plugin/http_server"
-	mqttserver "github.com/i4de/rulex/plugin/mqtt_server"
-	"github.com/i4de/rulex/typex"
+	"github.com/hootrhino/rulex/glogger"
+	httpserver "github.com/hootrhino/rulex/plugin/http_server"
+	mqttserver "github.com/hootrhino/rulex/plugin/mqtt_server"
+	"github.com/hootrhino/rulex/typex"
 )
 
 func Test_dac_call_device(t *testing.T) {
@@ -26,7 +26,7 @@ func Test_dac_call_device(t *testing.T) {
 		t.Fatal(err)
 	}
 	GMODBUS := typex.NewDevice(typex.GENERIC_MODBUS,
-		"GENERIC_MODBUS", "GENERIC_MODBUS", "", map[string]interface{}{
+		"GENERIC_MODBUS", "GENERIC_MODBUS", map[string]interface{}{
 			"mode": "TCP",
 			// "mode":      "RTU",
 			"timeout":   10,

@@ -32,5 +32,5 @@ type IThingsMqttConfig struct {
 type RULEXUdpConfig struct {
 	Host          string `json:"host" validate:"required" title:"服务地址"`
 	Port          int    `json:"port" validate:"required" title:"服务端口"`
-	MaxDataLength int    `json:"maxDataLength" validate:"required" title:"最大数据包"`
+	MaxDataLength int    `json:"maxDataLength" title:"最大数据包"`
 }

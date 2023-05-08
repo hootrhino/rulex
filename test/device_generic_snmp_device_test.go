@@ -1,15 +1,14 @@
 package test
 
 import (
-	"github.com/i4de/rulex/glogger"
-	httpserver "github.com/i4de/rulex/plugin/http_server"
+	"github.com/hootrhino/rulex/glogger"
+	httpserver "github.com/hootrhino/rulex/plugin/http_server"
 
 	"testing"
 	"time"
 
-	"github.com/i4de/rulex/typex"
+	"github.com/hootrhino/rulex/typex"
 )
-
 
 func Test_Generic_snmp_device(t *testing.T) {
 	engine := RunTestEngine()
@@ -22,7 +21,7 @@ func Test_Generic_snmp_device(t *testing.T) {
 		t.Fatal(err)
 	}
 	GENERIC_SNMP := typex.NewDevice(typex.GENERIC_SNMP,
-		"GENERIC_SNMP", "GENERIC_SNMP", "", map[string]interface{}{
+		"GENERIC_SNMP", "GENERIC_SNMP", map[string]interface{}{
 			"timeout":   10,
 			"frequency": 5,
 			"target":    "127.0.0.1",

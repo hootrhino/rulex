@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
-	"github.com/i4de/rulex/glogger"
+	"github.com/hootrhino/rulex/glogger"
 )
 
 func Test_WS(t *testing.T) {

@@ -7,8 +7,8 @@ import (
 	"net"
 	"time"
 
-	"github.com/i4de/rulex/glogger"
-	"github.com/i4de/rulex/typex"
+	"github.com/hootrhino/rulex/glogger"
+	"github.com/hootrhino/rulex/typex"
 	"gopkg.in/ini.v1"
 )
 
@@ -44,8 +44,8 @@ func (hh *SensorServer) PluginMetaInfo() typex.XPluginMetaInfo {
 	return typex.XPluginMetaInfo{
 		Name:     "GenericSensorServer",
 		Version:  "0.0.1",
-		Homepage: "www.github.com/i4de/rulex",
-		HelpLink: "www.github.com/i4de/rulex",
+		Homepage: "www.github.com/hootrhino/rulex",
+		HelpLink: "www.github.com/hootrhino/rulex",
 		Author:   "wwhai",
 		Email:    "cnwwhai@gmail.com",
 		License:  "MIT",

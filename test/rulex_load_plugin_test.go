@@ -1,7 +1,7 @@
 package test
 
 import (
-	ttyterminal "github.com/i4de/rulex/plugin/ttyd_terminal"
+	ttyterminal "github.com/hootrhino/rulex/plugin/ttyd_terminal"
 	"testing"
 
 	"time"

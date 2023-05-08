@@ -132,14 +132,14 @@ end
 鸣谢各位给RULEX贡献代码的大佬。
 
 ### RULEX
-<a href="https://github.com/i4de/rulex/graphs/contributors">
-  <img src="https://contributors-img.web.app/image?repo=i4de/rulex" />
+<a href="https://github.com/hootrhino/rulex/graphs/contributors">
+  <img src="https://contributors-img.web.app/image?repo=hootrhino/rulex" />
 </a>
 
 ### RULEX Other
-<a href="https://github.com/i4de/rulex-dashboard/graphs/contributors">
-  <img src="https://contributors-img.web.app/image?repo=i4de/rulex-dashboard" />
+<a href="https://github.com/hootrhino/rulex-dashboard/graphs/contributors">
+  <img src="https://contributors-img.web.app/image?repo=hootrhino/rulex-dashboard" />
 </a>
 
 ## Star
-<img src="https://starchart.cc/i4de/rulex.svg">
+<img src="https://starchart.cc/hootrhino/rulex.svg">

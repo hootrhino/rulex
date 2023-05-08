@@ -8,8 +8,8 @@ package driver
 import (
 	"encoding/json"
 
-	"github.com/i4de/rulex/common"
-	"github.com/i4de/rulex/typex"
+	"github.com/hootrhino/rulex/common"
+	"github.com/hootrhino/rulex/typex"
 	modbus "github.com/wwhai/gomodbus"
 )
 

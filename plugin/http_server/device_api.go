@@ -1,28 +1,44 @@
 package httpserver
 
 import (
-	"github.com/i4de/rulex/typex"
-	"github.com/i4de/rulex/utils"
+	"github.com/hootrhino/rulex/typex"
+	"github.com/hootrhino/rulex/utils"
 
 	"github.com/gin-gonic/gin"
 	"gopkg.in/square/go-jose.v2/json"
 )
 
-// 获取设备列表
+/*
+*
+* 列表先读数据库，然后读内存，合并状态后输出
+*
+ */
 func Devices(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
 	if uuid == "" {
-		data := []interface{}{}
-		Devices := e.AllDevices()
-		Devices.Range(func(key, value interface{}) bool {
-			data = append(data, value)
-			return true
-		})
-		c.JSON(200, OkWithData(data))
+		devices := []*typex.Device{}
+		for _, v := range hs.AllDevices() {
+			var device *typex.Device
+			if device = e.GetDevice(v.UUID); device == nil {
+				device.State = typex.DEV_STOP
+			}
+			if device != nil {
+				devices = append(devices, device)
+			}
+		}
+		c.JSON(200, OkWithData(devices))
 	} else {
-		c.JSON(200, OkWithData(e.GetDevice(uuid)))
+		Model, err := hs.GetDeviceWithUUID(uuid)
+		if err != nil {
+			c.JSON(200, Error400(err))
+			return
+		}
+		var device *typex.Device
+		if device = e.GetDevice(Model.UUID); device == nil {
+			device.State = typex.DEV_STOP
+		}
+		c.JSON(200, OkWithData(device))
 	}
-
 }
 
 // 删除设备

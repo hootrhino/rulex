@@ -5,7 +5,7 @@ import (
 	"log"
 	"runtime"
 
-	lua "github.com/i4de/gopher-lua"
+	lua "github.com/hootrhino/gopher-lua"
 )
 
 // lua 虚拟机的参数
@@ -69,7 +69,7 @@ func (app *Application) VM() *lua.LState {
 *
 * 源码bug，没有等字节码执行结束就直接给释放stack了，问题处在state.go:1391, 已经给作者提了issue，
 * 如果1个月内不解决，准备自己fork一个过来维护.
-* Issue: https://github.com/i4de/gopher-lua/discussions/430
+* Issue: https://github.com/hootrhino/gopher-lua/discussions/430
  */
 func (app *Application) Stop() {
 	defer func() {
@@ -77,11 +77,7 @@ func (app *Application) Stop() {
 			log.Println("[gopher-lua] app Stop:", app.UUID, ", with recover error: ", err)
 		}
 	}()
-	app.vm.DoString(`function __() end __()`)
-	app.vm.SetTop(-1)
-	app.vm.Dead = true
 	app.cancel()
-	app.vm.Close() // app.vm.Close 会导致panic, 暂时先不处理
 }
 
 /*
@@ -96,6 +92,7 @@ func (app *Application) Remove() {
 		}
 	}()
 	app.Stop()
+	app.vm.Close()
 	app.vm = nil
 	runtime.GC()
 }

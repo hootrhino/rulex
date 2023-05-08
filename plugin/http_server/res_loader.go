@@ -3,8 +3,8 @@ package httpserver
 import (
 	"errors"
 
-	"github.com/i4de/rulex/glogger"
-	"github.com/i4de/rulex/typex"
+	"github.com/hootrhino/rulex/glogger"
+	"github.com/hootrhino/rulex/typex"
 	"gopkg.in/square/go-jose.v2/json"
 )
 
@@ -77,7 +77,7 @@ func (hh *HttpApiServer) LoadNewestDevice(uuid string) error {
 	// 所有的更新都先停止资源,然后再加载
 	hh.ruleEngine.RemoveDevice(uuid)
 	dev := typex.NewDevice(typex.DeviceType(mDevice.Type), mDevice.Name,
-		mDevice.Description, mDevice.ActionScript, config)
+		mDevice.Description, config)
 	// Important !!!!!!!!
 	dev.UUID = mDevice.UUID // 本质上是配置和内存的数据映射起来
 	if err := hh.ruleEngine.LoadDevice(dev); err != nil {

@@ -3,7 +3,7 @@ package typex
 import (
 	"github.com/antonmedv/expr"
 	"github.com/antonmedv/expr/vm"
-	lua "github.com/i4de/gopher-lua"
+	lua "github.com/hootrhino/gopher-lua"
 )
 
 type RuleStatus int

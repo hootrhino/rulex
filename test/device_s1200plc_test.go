@@ -6,10 +6,10 @@ import (
 
 	"testing"
 
-	"github.com/i4de/rulex/common"
+	"github.com/hootrhino/rulex/common"
 
-	"github.com/i4de/rulex/glogger"
-	"github.com/i4de/rulex/typex"
+	"github.com/hootrhino/rulex/glogger"
+	"github.com/hootrhino/rulex/typex"
 )
 
 //	{
@@ -100,7 +100,7 @@ func Test_RULEX_WITH_S1200PLC(t *testing.T) {
 	engine.Start()
 
 	S1200PLC := typex.NewDevice(typex.S1200PLC,
-		"PLC工站系统", "PLC工站系统", "", map[string]interface{}{
+		"PLC工站系统", "PLC工站系统", map[string]interface{}{
 			"host":          "127.0.0.1",
 			"port":          1800,
 			"rack":          0,

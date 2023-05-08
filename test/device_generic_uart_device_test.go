@@ -3,11 +3,11 @@ package test
 import (
 	"time"
 
-	httpserver "github.com/i4de/rulex/plugin/http_server"
+	httpserver "github.com/hootrhino/rulex/plugin/http_server"
 
 	"testing"
 
-	"github.com/i4de/rulex/typex"
+	"github.com/hootrhino/rulex/typex"
 )
 
 /*
@@ -24,7 +24,7 @@ func Test_UART_Device(t *testing.T) {
 	}
 
 	GUART := typex.NewDevice(typex.GENERIC_UART,
-		"UART", "UART", "UART", map[string]interface{}{
+		"UART", "UART", map[string]interface{}{
 			"autoRequest": true,
 			"decollator":  "\n",
 			"baudRate":    115200,
