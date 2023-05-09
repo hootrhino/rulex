@@ -79,7 +79,7 @@ func NewGenericModbusDevice(e typex.RuleX) typex.XDevice {
 	mdev.locker = &sync.Mutex{}
 	mdev.mainConfig = _GMODConfig{
 		CommonConfig: _GMODCommonConfig{},
-		TcpConfig:    _GMODHostConfig{},
+		TcpConfig:    _GMODHostConfig{Host: "127.0.0.1", Port: 502},
 		RtuConfig:    common.CommonUartConfig{},
 	}
 	mdev.Busy = false

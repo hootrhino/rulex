@@ -7,10 +7,12 @@ import (
 	"time"
 
 	"github.com/hootrhino/rulex/device"
+	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/source"
 	"github.com/hootrhino/rulex/statistics"
 	"github.com/hootrhino/rulex/target"
 	"github.com/hootrhino/rulex/typex"
+	"github.com/hootrhino/rulex/utils"
 
 	"github.com/gin-gonic/gin"
 	"github.com/shirou/gopsutil/v3/cpu"
@@ -89,6 +91,7 @@ func System(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	// For info on each, see: https://golang.org/pkg/runtime/#MemStats
 	var m runtime.MemStats
 	runtime.ReadMemStats(&m)
+	ip, err := utils.HostNameI()
 	hardWareInfo := map[string]interface{}{
 		"version":     e.Version().Version,
 		"diskInfo":    calculateDiskInfo(diskInfo),
@@ -98,6 +101,13 @@ func System(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		"cpuPercent":  calculateCpuPercent(cpuPercent),
 		"osArch":      runtime.GOOS + "-" + runtime.GOARCH,
 		"startedTime": StartedTime,
+		"ip": func() []string {
+			if err != nil {
+				glogger.GLogger.Error(err)
+				return []string{"127.0.0.1"}
+			}
+			return ip
+		}(),
 	}
 	c.JSON(200, OkWithData(gin.H{
 		"hardWareInfo": hardWareInfo,

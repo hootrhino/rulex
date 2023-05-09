@@ -23,6 +23,7 @@ type web_data_app struct {
 	Version     string `json:"version"`   // 版本号
 	AutoStart   bool   `json:"autoStart"` // 自动启动
 	AppState    int    `json:"appState"`  // 状态: 1 运行中, 0 停止
+	Type        string `json:"type"`      // 默认就是lua, 留个扩展以后可能支持别的
 	Filepath    string `json:"filepath"`  // 文件路径, 是相对于main的apps目录
 	LuaSource   string `json:"luaSource"`
 	Description string `json:"description"`
@@ -40,6 +41,7 @@ func Apps(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 				Name:      app.Name,
 				Version:   app.Version,
 				AutoStart: *app.AutoStart,
+				Type:      "lua",
 				AppState: func() int {
 					if a := e.GetApp(app.UUID); a != nil {
 						return int(a.AppState)
@@ -65,6 +67,7 @@ func Apps(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 		Name:      appInfo.Name,
 		Version:   appInfo.Version,
 		AutoStart: *appInfo.AutoStart,
+		Type:      "lua",
 		AppState: func() int {
 			if a := e.GetApp(appInfo.UUID); a != nil {
 				return int(a.AppState)

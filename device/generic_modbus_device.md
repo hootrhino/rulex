@@ -1,4 +1,5 @@
 ## 简介
+
 通用 Modbus 资源，可以用来实现常见的 modbus 协议寄存器读写等功能。
 
 ## 配置
@@ -46,25 +47,42 @@
 ## 数据
 
 ### 读
+
 #### 1. CMD
+
 无指令，直接读取出来的数据是一个数组:
 
 ```go
-[
-    {
-        tag      string
-        function int
-        slaverId byte
-        address  uint16
-        quantity uint16
-        value    []byte
+{
+    "d1":{
+        "tag":"d1",
+        "weight":0,
+        "initValue":0,
+        "function":3,
+        "slaverId":1,
+        "address":0,
+        "quantity":2,
+        "value":""
+    },
+    "d2":{
+        "tag":"d2",
+        "weight":0,
+        "initValue":0,
+        "function":3,
+        "slaverId":1,
+        "address":0,
+        "quantity":2,
+        "value":""
     }
-]
+}
 ```
+
 #### 2. Args
+
 无参数
 
 #### 3. 数据样例
+
 ```json
 [
     {
@@ -79,6 +97,7 @@
 ```
 
 ### 写
+
 #### 1. CMD
 
 无指令
@@ -99,6 +118,7 @@
 ```
 
 #### 3. 数据样例
+
 ```json
 {
     "d1":{
@@ -111,7 +131,9 @@
     }
 }
 ```
+
 - value: 十六进制字符串
+
 ## 案例
 
 ```lua
@@ -149,9 +171,11 @@ Actions = {
 ```
 
 ## 说明
+
 仅仅是个通用 modbus 处理器。
 
 ## 社区
 
 ### 维护者
+
 - wwhai
