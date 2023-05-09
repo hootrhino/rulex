@@ -66,6 +66,7 @@ type generic_modbus_device struct {
 	tcpHandler    *modbus.TCPClientHandler
 	mainConfig    _GMODConfig
 	locker        sync.Locker
+	retryTimes    int
 }
 
 /*
@@ -82,6 +83,7 @@ func NewGenericModbusDevice(e typex.RuleX) typex.XDevice {
 		TcpConfig:    _GMODHostConfig{Host: "127.0.0.1", Port: 502},
 		RtuConfig:    common.CommonUartConfig{},
 	}
+	mdev.retryTimes = 0
 	mdev.Busy = false
 	mdev.status = typex.DEV_DOWN
 	return mdev
@@ -95,7 +97,7 @@ func (mdev *generic_modbus_device) Init(devId string, configMap map[string]inter
 	}
 	// 超时大雨20秒无意义
 	if mdev.mainConfig.CommonConfig.Timeout > 30 {
-		return errors.New("'timeout' must less than 20 second")
+		return errors.New("'timeout' must less than 30 second")
 	}
 	// 频率不能太快
 	if mdev.mainConfig.CommonConfig.Frequency < 50 {
@@ -163,6 +165,7 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 		return nil
 	}
 	go func(ctx context.Context, Driver typex.XExternalDriver) {
+		mdev.status = typex.DEV_UP
 		ticker := time.NewTicker(time.Duration(mdev.mainConfig.CommonConfig.Frequency) * time.Millisecond)
 		buffer := make([]byte, common.T_64KB)
 		for {
@@ -178,23 +181,32 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 				}
 			}
 			if mdev.Busy {
+				glogger.GLogger.Warn("Modbus device is busing now")
 				continue
 			}
 
+			if mdev.mainConfig.CommonConfig.Mode == "TCP" {
+				if mdev.tcpHandler == nil {
+					continue
+				}
+			}
+			if mdev.mainConfig.CommonConfig.Mode == "RTU" {
+				if mdev.rtuHandler == nil {
+					continue
+				}
+			}
 			mdev.Busy = true
-			mdev.locker.Lock()
 			n, err := Driver.Read([]byte{}, buffer)
-			mdev.locker.Unlock()
 			mdev.Busy = false
 			if err != nil {
 				glogger.GLogger.Error(err)
+				mdev.retryTimes++
 			} else {
 				mdev.RuleEngine.WorkDevice(mdev.Details(), string(buffer[:n]))
 			}
 		}
 
 	}(mdev.Ctx, mdev.driver)
-	mdev.status = typex.DEV_UP
 	return nil
 }
 
@@ -204,35 +216,34 @@ func (mdev *generic_modbus_device) OnRead(cmd []byte, data []byte) (int, error) 
 	n, err := mdev.driver.Read(cmd, data)
 	if err != nil {
 		glogger.GLogger.Error(err)
-		mdev.status = typex.DEV_DOWN
+		mdev.retryTimes++
 	}
 	return n, err
 }
 
 // 把数据写入设备
-func (mdev *generic_modbus_device) OnWrite(cmd []byte, _ []byte) (int, error) {
-	return 0, nil
+func (mdev *generic_modbus_device) OnWrite(cmd []byte, data []byte) (int, error) {
+	if mdev.Busy {
+		return 0, fmt.Errorf("device busing now")
+	}
+	return mdev.driver.Write(cmd, data)
 }
 
 // 设备当前状态
 func (mdev *generic_modbus_device) Status() typex.DeviceState {
-	return mdev.status
+	if mdev.retryTimes > 3 {
+		return typex.DEV_DOWN
+	}
+	return typex.DEV_UP
 }
 
 // 停止设备
 func (mdev *generic_modbus_device) Stop() {
-	mdev.status = typex.DEV_STOP
 	mdev.CancelCTX()
-	if mdev.tcpHandler != nil {
-		mdev.tcpHandler.Close()
-		mdev.tcpHandler = nil
+	mdev.status = typex.DEV_DOWN
+	if mdev.driver != nil {
+		mdev.driver.Stop()
 	}
-	if mdev.rtuHandler != nil {
-		mdev.rtuHandler.Close()
-		mdev.rtuHandler = nil
-
-	}
-
 }
 
 // 设备属性，是一系列属性描述

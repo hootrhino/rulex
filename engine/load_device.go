@@ -2,7 +2,6 @@ package engine
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"runtime"
 	"sync"
@@ -141,44 +140,42 @@ func startDevice(abstractDevice typex.XDevice, e *RuleEngine) error {
 		glogger.GLogger.Error("abstractDevice start error:", err)
 		return err
 	}
-	if abstractDevice.Driver() != nil {
-		if abstractDevice.Driver().State() == typex.DRIVER_UP {
-			abstractDevice.Driver().Stop()
-		}
-	}
 	//----------------------------------
 	// 驱动也要停了, 然后重启
 	//----------------------------------
-	if abstractDevice.Driver() != nil {
-		if abstractDevice.Driver().State() == typex.DRIVER_UP {
-			abstractDevice.Driver().Stop()
-		}
-		// Start driver
-		// TODO: map[string]string{} 未来会被替换成真实的驱动配置
-		// if driverConfig != nil --> Driver().Init(Cfg)
-		//
-		if err := abstractDevice.Driver().Init(map[string]string{}); err != nil {
-			glogger.GLogger.Error("Driver initial error:", err)
-			return errors.New("Driver initial error:" + err.Error())
-		}
-		glogger.GLogger.Infof("Try to start driver: [%v]", abstractDevice.Driver().DriverDetail().Name)
-		if err := abstractDevice.Driver().Work(); err != nil {
-			glogger.GLogger.Error("Driver work error:", err)
-			return errors.New("Driver work error:" + err.Error())
-		}
-		glogger.GLogger.Infof("Driver start successfully: [%v]", abstractDevice.Driver().DriverDetail().Name)
-	}
+
+	// if abstractDevice.Driver() != nil {
+	// 	if abstractDevice.Driver().State() == typex.DRIVER_UP {
+	// 		abstractDevice.Driver().Stop()
+	// 	}
+	// }
+	// Start driver
+	// TODO: map[string]string{} 未来会被替换成真实的驱动配置
+	// if driverConfig != nil --> Driver().Init(Cfg)
+	//
+	// if err := abstractDevice.Driver().Init(map[string]string{}); err != nil {
+	// 	glogger.GLogger.Error("Driver initial error:", err)
+	// 	return errors.New("Driver initial error:" + err.Error())
+	// }
+	// glogger.GLogger.Infof("Try to start driver: [%v]", abstractDevice.Driver().DriverDetail().Name)
+	// if err := abstractDevice.Driver().Work(); err != nil {
+	// 	glogger.GLogger.Error("Driver work error:", err)
+	// 	return errors.New("Driver work error:" + err.Error())
+	// }
+	// glogger.GLogger.Infof("Driver start successfully: [%v]", abstractDevice.Driver().DriverDetail().Name)
+
 	return nil
 }
 
 func tryIfRestartDevice(abstractDevice typex.XDevice, e *RuleEngine, devId string) {
-	if abstractDevice.Status() == typex.DEV_STOP {
+	Status := abstractDevice.Status()
+	if Status == typex.DEV_STOP {
 		return
 	}
-	checkDeviceDriverState(abstractDevice)
+	// checkDeviceDriverState(abstractDevice)
 	// 当内存里面的设备状态已经停止的时候，及时更新数据库里的
 	// 此处本质上是个同步过程
-	if abstractDevice.Status() == typex.DEV_DOWN {
+	if Status == typex.DEV_DOWN {
 		abstractDevice.Details().State = typex.DEV_DOWN
 		glogger.GLogger.Warnf("Device %v %v down. try to restart it",
 			abstractDevice.Details().UUID, abstractDevice.Details().Name)

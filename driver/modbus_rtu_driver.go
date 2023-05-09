@@ -61,12 +61,14 @@ func (d *modBusRtuDriver) State() typex.DriverState {
 }
 
 func (d *modBusRtuDriver) Read(cmd []byte, data []byte) (int, error) {
+	var err error
+	var results []byte
 	dataMap := map[string]common.RegisterRW{}
 	for _, r := range d.Registers {
 		d.handler.SlaveId = r.SlaverId
 		if r.Function == common.READ_COIL {
 			d.lock.Lock()
-			results, err := d.client.ReadCoils(r.Address, r.Quantity)
+			results, err = d.client.ReadCoils(r.Address, r.Quantity)
 			d.lock.Unlock()
 			if err != nil {
 				glogger.GLogger.Error(err)
@@ -83,7 +85,7 @@ func (d *modBusRtuDriver) Read(cmd []byte, data []byte) (int, error) {
 		}
 		if r.Function == common.READ_DISCRETE_INPUT {
 			d.lock.Lock()
-			results, err := d.client.ReadDiscreteInputs(r.Address, r.Quantity)
+			results, err = d.client.ReadDiscreteInputs(r.Address, r.Quantity)
 			d.lock.Unlock()
 			if err != nil {
 				glogger.GLogger.Error(err)
@@ -101,7 +103,7 @@ func (d *modBusRtuDriver) Read(cmd []byte, data []byte) (int, error) {
 		}
 		if r.Function == common.READ_HOLDING_REGISTERS {
 			d.lock.Lock()
-			results, err := d.client.ReadHoldingRegisters(r.Address, r.Quantity)
+			results, err = d.client.ReadHoldingRegisters(r.Address, r.Quantity)
 			d.lock.Unlock()
 			if err != nil {
 				glogger.GLogger.Error(err)
@@ -118,7 +120,7 @@ func (d *modBusRtuDriver) Read(cmd []byte, data []byte) (int, error) {
 		}
 		if r.Function == common.READ_INPUT_REGISTERS {
 			d.lock.Lock()
-			results, err := d.client.ReadInputRegisters(r.Address, r.Quantity)
+			results, err = d.client.ReadInputRegisters(r.Address, r.Quantity)
 			d.lock.Unlock()
 			if err != nil {
 				glogger.GLogger.Error(err)
@@ -140,7 +142,7 @@ func (d *modBusRtuDriver) Read(cmd []byte, data []byte) (int, error) {
 	}
 	bytes, _ := json.Marshal(dataMap)
 	copy(data, bytes)
-	return len(bytes), nil
+	return len(bytes), err
 
 }
 
@@ -196,6 +198,5 @@ func (d *modBusRtuDriver) DriverDetail() typex.DriverDetail {
 
 func (d *modBusRtuDriver) Stop() error {
 	d.handler.Close()
-	d = nil
 	return nil
 }
