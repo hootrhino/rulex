@@ -628,6 +628,12 @@ func (e *RuleEngine) InitDeviceTypeManager() error {
 			Device: device.NewCustomProtocolDevice(e),
 		},
 	)
+	e.DeviceTypeManager.Register(typex.GENERIC_OPCUA,
+		&typex.XConfig{
+			Engine: e,
+			Device: device.NewGenericOpcuaDevice(e),
+		},
+	)
 	return nil
 }
 

@@ -1,12 +1,13 @@
 package test
 
 import (
-	"github.com/i4de/rulex/device"
-	"github.com/i4de/rulex/glogger"
-	httpserver "github.com/i4de/rulex/plugin/http_server"
-	"github.com/i4de/rulex/typex"
 	"testing"
 	"time"
+
+	"github.com/hootrhino/rulex/device"
+	"github.com/hootrhino/rulex/glogger"
+	httpserver "github.com/hootrhino/rulex/plugin/http_server"
+	"github.com/hootrhino/rulex/typex"
 )
 
 func Test_Generic_opcua_device(t *testing.T) {
@@ -20,7 +21,7 @@ func Test_Generic_opcua_device(t *testing.T) {
 		t.Fatal(err)
 	}
 	GENERIC_OPCUA := typex.NewDevice(typex.GENERIC_OPCUA,
-		"GENERIC_OPCUA", "GENERIC_OPCUA", "", map[string]interface{}{
+		"GENERIC_OPCUA", "GENERIC_OPCUA", map[string]interface{}{
 			"commonConfig": map[string]interface{}{
 				"endpoint":  "opc.tcp://NOAH:53530/OPCUA/SimulationServer",
 				"policy":    device.POLICY_BASIC128RSA15,
@@ -32,7 +33,7 @@ func Test_Generic_opcua_device(t *testing.T) {
 				"frequency": 500,
 				"retryTime": 10,
 			},
-			"Opcuanodes": []map[string]interface{}{
+			"opcuaNodes": []map[string]interface{}{
 				{
 					"tag":         "node1",
 					"description": "node 1",
@@ -73,6 +74,6 @@ func Test_Generic_opcua_device(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	time.Sleep(25 * time.Second)
+	time.Sleep(1 * time.Second)
 	engine.Stop()
 }

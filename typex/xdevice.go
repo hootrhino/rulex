@@ -35,6 +35,7 @@ const (
 	USER_G776        DeviceType = "USER_G776"        // 有人 G776 4G模组
 	ICMP_SENDER      DeviceType = "ICMP_SENDER"      // ICMP_SENDER
 	GENERIC_PROTOCOL DeviceType = "GENERIC_PROTOCOL" // 通用自定义协议处理器
+	GENERIC_OPCUA    DeviceType = "GENERIC_OPCUA"    // 通用OPCUA
 
 )
 
