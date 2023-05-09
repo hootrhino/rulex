@@ -17,10 +17,18 @@ func Devices(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
 	if uuid == "" {
 		devices := []*typex.Device{}
-		for _, v := range hs.AllDevices() {
-			var device *typex.Device
-			if device = e.GetDevice(v.UUID); device == nil {
-				device.State = typex.DEV_STOP
+		for _, mdev := range hs.AllDevices() {
+			device := e.GetDevice(mdev.UUID)
+			if device == nil {
+				tDevice := new(typex.Device)
+				tDevice.UUID = mdev.UUID
+				tDevice.Name = mdev.Name
+				tDevice.Type = typex.DeviceType(mdev.Type)
+				tDevice.Description = mdev.Description
+				tDevice.BindRules = map[string]typex.Rule{}
+				tDevice.Config = map[string]interface{}{}
+				tDevice.State = typex.DEV_STOP
+				devices = append(devices, tDevice)
 			}
 			if device != nil {
 				devices = append(devices, device)
@@ -28,14 +36,21 @@ func Devices(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 		}
 		c.JSON(200, OkWithData(devices))
 	} else {
-		Model, err := hs.GetDeviceWithUUID(uuid)
+		mdev, err := hs.GetDeviceWithUUID(uuid)
 		if err != nil {
 			c.JSON(200, Error400(err))
 			return
 		}
-		var device *typex.Device
-		if device = e.GetDevice(Model.UUID); device == nil {
-			device.State = typex.DEV_STOP
+		device := e.GetDevice(mdev.UUID)
+		if device == nil {
+			tDevice := new(typex.Device)
+			tDevice.UUID = mdev.UUID
+			tDevice.Name = mdev.Name
+			tDevice.Type = typex.DeviceType(mdev.Type)
+			tDevice.Description = mdev.Description
+			tDevice.BindRules = map[string]typex.Rule{}
+			tDevice.Config = map[string]interface{}{}
+			tDevice.State = typex.DEV_STOP
 		}
 		c.JSON(200, OkWithData(device))
 	}

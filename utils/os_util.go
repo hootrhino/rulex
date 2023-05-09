@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"runtime"
+	"strings"
 
 	"github.com/hootrhino/rulex/glogger"
 )
@@ -36,16 +37,22 @@ func BToMb(b uint64) uint64 {
 * Get Local IP
 *
  */
-func HostNameI() (string, error) {
+func HostNameI() ([]string, error) {
 	if runtime.GOOS == "linux" {
 		cmd := exec.Command("hostname", "-I")
 		data, err1 := cmd.Output()
 		if err1 != nil {
-			return "", err1
+			return []string{}, err1
 		}
-		return string(data), nil
+		ss := []string{}
+		for _, s := range strings.Split(string(data), " ") {
+			if s != "\n" {
+				ss = append(ss, s)
+			}
+		}
+		return ss, nil
 	}
-	return "[0.0.0.0]only support unix-like OS", nil
+	return []string{}, nil
 }
 
 func BtoMB(bytes uint64) float64 {
