@@ -1,9 +1,8 @@
 package device
 
 import (
-	"encoding/hex"
-	"encoding/json"
 	"errors"
+	"fmt"
 	"sync"
 	"time"
 
@@ -24,7 +23,6 @@ type _G776CommonConfig struct {
 	Tag         string `json:"tag" validate:"required" title:"数据Tag" info:"给数据打标签"`
 	Frequency   int64  `json:"frequency" validate:"required" title:"采集频率"`
 	AutoRequest bool   `json:"autoRequest" title:"启动轮询"`
-	Separator   string `json:"separator" title:"协议分隔符"`
 }
 
 type _G776Config struct {
@@ -63,12 +61,6 @@ func (uart *UsrG776DTU) Init(devId string, configMap map[string]interface{}) err
 		glogger.GLogger.Error(err)
 		return err
 	}
-	if uart.mainConfig.CommonConfig.Separator == "LF" {
-		uart.mainConfig.CommonConfig.Separator = "\n"
-	}
-	if uart.mainConfig.CommonConfig.Separator == "CRLF" {
-		uart.mainConfig.CommonConfig.Separator = "\r"
-	}
 	if !utils.SContains([]string{"N", "E", "O"}, uart.mainConfig.UartConfig.Parity) {
 		return errors.New("parity value only one of 'N','O','E'")
 	}
@@ -97,24 +89,13 @@ func (uart *UsrG776DTU) Start(cctx typex.CCTX) error {
 	return nil
 }
 
-// 从设备里面读数据出来:
-//
-//	{
-//	    "tag":"data tag",
-//	    "value":"value s"
-//	}
+/*
+*
+* 不支持读, 仅仅是个数据透传DTU
+*
+ */
 func (uart *UsrG776DTU) OnRead(cmd []byte, data []byte) (int, error) {
-	uart.locker.Lock()
-	n, err := uart.driver.Read(cmd, data)
-	uart.locker.Unlock()
-	buffer := make([]byte, n)
-	mapV := map[string]interface{}{
-		"tag":   uart.mainConfig.CommonConfig.Tag,
-		"value": hex.EncodeToString(buffer[:n]),
-	}
-	bytes, _ := json.Marshal(mapV)
-	copy(data, bytes)
-	return n, err
+	return 0, fmt.Errorf("UsrG776DTU not support read data")
 }
 
 /*

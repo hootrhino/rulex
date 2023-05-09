@@ -46,10 +46,15 @@ type _GMODCommonConfig struct {
 	AutoRequest bool   `json:"autoRequest" title:"启动轮询"`
 	Frequency   int64  `json:"frequency" validate:"required" title:"采集频率"`
 }
+type _GMODHostConfig struct {
+	Host string `json:"host" title:"服务地址"`
+	Port int    `json:"port" title:"服务端口"`
+}
+
 type _GMODConfig struct {
 	CommonConfig _GMODCommonConfig       `json:"commonConfig" validate:"required"`
 	RtuConfig    common.CommonUartConfig `json:"rtuConfig" validate:"required"`
-	TcpConfig    common.HostConfig       `json:"tcpConfig" validate:"required"`
+	TcpConfig    _GMODHostConfig         `json:"tcpConfig" validate:"required"`
 	Registers    []common.RegisterRW     `json:"registers" validate:"required" title:"寄存器配置"`
 }
 type generic_modbus_device struct {
@@ -74,7 +79,7 @@ func NewGenericModbusDevice(e typex.RuleX) typex.XDevice {
 	mdev.locker = &sync.Mutex{}
 	mdev.mainConfig = _GMODConfig{
 		CommonConfig: _GMODCommonConfig{},
-		TcpConfig:    common.HostConfig{},
+		TcpConfig:    _GMODHostConfig{},
 		RtuConfig:    common.CommonUartConfig{},
 	}
 	mdev.Busy = false
@@ -89,7 +94,7 @@ func (mdev *generic_modbus_device) Init(devId string, configMap map[string]inter
 		return err
 	}
 	// 超时大雨20秒无意义
-	if mdev.mainConfig.CommonConfig.Timeout > 20 {
+	if mdev.mainConfig.CommonConfig.Timeout > 30 {
 		return errors.New("'timeout' must less than 20 second")
 	}
 	// 频率不能太快

@@ -7,24 +7,23 @@ import (
 	"runtime"
 	"sync"
 
-	lua "github.com/i4de/gopher-lua"
-	"github.com/i4de/rulex/appstack"
-	"github.com/i4de/rulex/core"
-	"github.com/i4de/rulex/device"
-	"github.com/i4de/rulex/glogger"
-	"github.com/i4de/rulex/source"
-	"github.com/i4de/rulex/statistics"
-	"github.com/i4de/rulex/target"
-	"github.com/i4de/rulex/trailer"
-	"github.com/i4de/rulex/typex"
-	"github.com/i4de/rulex/utils"
+	lua "github.com/hootrhino/gopher-lua"
+	"github.com/hootrhino/rulex/aibase"
+	"github.com/hootrhino/rulex/appstack"
+	"github.com/hootrhino/rulex/core"
+	"github.com/hootrhino/rulex/device"
+	"github.com/hootrhino/rulex/glogger"
+	"github.com/hootrhino/rulex/source"
+	"github.com/hootrhino/rulex/statistics"
+	"github.com/hootrhino/rulex/target"
+	"github.com/hootrhino/rulex/trailer"
+	"github.com/hootrhino/rulex/typex"
+	"github.com/hootrhino/rulex/utils"
 	"github.com/shirou/gopsutil/v3/disk"
 )
 
 // 规则引擎
 type RuleEngine struct {
-	Trailer           typex.XTrailer       `json:"-"`
-	AppStack          typex.XAppStack      `json:"-"`
 	Hooks             *sync.Map            `json:"hooks"`
 	Rules             *sync.Map            `json:"rules"`
 	Plugins           *sync.Map            `json:"plugins"`
@@ -33,6 +32,9 @@ type RuleEngine struct {
 	Drivers           *sync.Map            `json:"drivers"`
 	Devices           *sync.Map            `json:"devices"`
 	Config            *typex.RulexConfig   `json:"config"`
+	Trailer           typex.XTrailer       `json:"-"`
+	AppStack          typex.XAppStack      `json:"-"`
+	AiBaseRuntime     typex.XAiRuntime     `json:"-"`
 	DeviceTypeManager typex.DeviceRegistry `json:"-"`
 	SourceTypeManager typex.SourceRegistry `json:"-"`
 	TargetTypeManager typex.TargetRegistry `json:"-"`
@@ -56,9 +58,13 @@ func NewRuleEngine(config typex.RulexConfig) typex.RuleX {
 	re.Trailer = trailer.NewTrailerManager(re)
 	// lua appstack manager
 	re.AppStack = appstack.NewAppStack(re)
+	// current only support Internal ai
+	re.AiBaseRuntime = aibase.NewAIRuntime(re)
 	return re
 }
-
+func (e *RuleEngine) GetAiBase() typex.XAiRuntime {
+	return e.AiBaseRuntime
+}
 func (e *RuleEngine) Start() *typex.RulexConfig {
 	typex.StartQueue(core.GlobalConfig.MaxQueueSize)
 	e.InitDeviceTypeManager()
@@ -602,12 +608,6 @@ func (e *RuleEngine) InitDeviceTypeManager() error {
 		&typex.XConfig{
 			Engine: e,
 			Device: device.NewGenericSnmpDevice(e),
-		},
-	)
-	e.DeviceTypeManager.Register(typex.GENERIC_OPCUA,
-		&typex.XConfig{
-			Engine: e,
-			Device: device.NewGenericOpcuaDevice(e),
 		},
 	)
 	e.DeviceTypeManager.Register(typex.USER_G776,
