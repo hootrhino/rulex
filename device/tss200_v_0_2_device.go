@@ -106,8 +106,10 @@ func (tss *tss200V2) Start(cctx typex.CCTX) error {
 			select {
 			case <-ctx.Done():
 				{
-					tss.status = typex.DEV_STOP
 					ticker.Stop()
+					if tss.rtuHandler != nil {
+						tss.rtuHandler.Close()
+					}
 					return
 				}
 			default:
@@ -152,13 +154,8 @@ func (tss *tss200V2) Status() typex.DeviceState {
 
 // 停止设备
 func (tss *tss200V2) Stop() {
-	tss.status = typex.DEV_STOP
+	tss.status = typex.DEV_DOWN
 	tss.CancelCTX()
-	if tss.rtuHandler != nil {
-		tss.rtuHandler.Close()
-		tss.rtuHandler = nil
-	}
-
 }
 
 // 设备属性，是一系列属性描述

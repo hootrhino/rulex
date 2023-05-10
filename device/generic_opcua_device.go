@@ -305,13 +305,11 @@ func (sd *genericOpcuaDevice) Status() typex.DeviceState {
 
 // 停止设备
 func (sd *genericOpcuaDevice) Stop() {
-	sd.status = typex.DEV_STOP
+	sd.status = typex.DEV_DOWN
 	sd.CancelCTX()
 	if sd.driver != nil {
-		sd.driver.Stop()
-		//释放连接
 		sd.client.CloseWithContext(sd.Ctx)
-		sd.driver = nil
+		sd.driver.Stop()
 	}
 }
 

@@ -214,6 +214,9 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 				case <-ctx.Done():
 					{
 						ticker.Stop()
+						if mdev.serialPort != nil {
+							mdev.serialPort.Close()
+						}
 						return
 					}
 				default:
@@ -564,12 +567,9 @@ func (mdev *CustomProtocolDevice) Status() typex.DeviceState {
 
 // 停止设备
 func (mdev *CustomProtocolDevice) Stop() {
-	mdev.status = typex.DEV_STOP
 	mdev.CancelCTX()
-	if mdev.serialPort != nil {
-		mdev.serialPort.Close()
-		mdev.serialPort = nil
-	}
+	mdev.status = typex.DEV_DOWN
+
 }
 
 // 设备属性，是一系列属性描述
