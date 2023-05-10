@@ -292,7 +292,7 @@ func configHttpServer(hh *HttpApiServer) {
 		c.JSON(200, Error500(err1crash))
 	}))
 	hh.ginEngine.NoRoute(func(c *gin.Context) {
-		c.Redirect(200, "/")
+		c.Redirect(302, "/")
 	})
 	if hh.dbPath == "" {
 		hh.InitDb(_DEFAULT_DB_PATH)
