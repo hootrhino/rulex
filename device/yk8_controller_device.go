@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	golog "log"
-	"os"
 	"sync"
 	"time"
 
@@ -80,7 +79,7 @@ func (yk8 *YK8Controller) Start(cctx typex.CCTX) error {
 	yk8.rtuHandler.StopBits = yk8.rtuConfig.StopBits
 	yk8.rtuHandler.Timeout = time.Duration(yk8.mainConfig.Timeout) * time.Second
 	if core.GlobalConfig.AppDebugMode {
-		yk8.rtuHandler.Logger = golog.New(os.Stdout, "YK8-DEVICE: ", golog.LstdFlags)
+		yk8.rtuHandler.Logger = golog.New(glogger.GLogger.Writer(), "YK8-DEVICE: ", golog.LstdFlags)
 	}
 
 	if err := yk8.rtuHandler.Connect(); err != nil {

@@ -65,11 +65,14 @@ func level(ss string) []logrus.Level {
 type RealTimeLogger struct {
 	WsServer websocket.Upgrader
 	Clients  map[string]*websocket.Conn
+	lock     sync.Mutex
 }
 
 func (w *RealTimeLogger) Write(p []byte) (n int, err error) {
 	for _, c := range w.Clients {
+		w.lock.Lock()
 		err := c.WriteMessage(websocket.TextMessage, p)
+		w.lock.Unlock()
 		if err != nil {
 			return 0, err
 		}
@@ -85,6 +88,7 @@ func StartNewRealTimeLogger(s string) *RealTimeLogger {
 			},
 		},
 		Clients: make(map[string]*websocket.Conn),
+		lock:    sync.Mutex{},
 	}
 	Logrus.AddHook(NewWSLogHook(s))
 	return private_GRealtimeLogger
