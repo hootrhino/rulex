@@ -165,6 +165,12 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 		return nil
 	}
 	go func(ctx context.Context, Driver typex.XExternalDriver) {
+		// defer func() {
+		// 	if err := recover(); err != nil {
+		// 		glogger.GLogger.Error("recover: ", err)
+		// 		return
+		// 	}
+		// }()
 		mdev.status = typex.DEV_UP
 		ticker := time.NewTicker(time.Duration(mdev.mainConfig.CommonConfig.Frequency) * time.Millisecond)
 		buffer := make([]byte, common.T_64KB)
@@ -174,6 +180,9 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 			case <-ctx.Done():
 				{
 					ticker.Stop()
+					if mdev.driver != nil {
+						mdev.driver.Stop()
+					}
 					return
 				}
 			default:
@@ -185,16 +194,6 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 				continue
 			}
 
-			if mdev.mainConfig.CommonConfig.Mode == "TCP" {
-				if mdev.tcpHandler == nil {
-					continue
-				}
-			}
-			if mdev.mainConfig.CommonConfig.Mode == "RTU" {
-				if mdev.rtuHandler == nil {
-					continue
-				}
-			}
 			mdev.Busy = true
 			n, err := Driver.Read([]byte{}, buffer)
 			mdev.Busy = false
@@ -241,9 +240,7 @@ func (mdev *generic_modbus_device) Status() typex.DeviceState {
 func (mdev *generic_modbus_device) Stop() {
 	mdev.CancelCTX()
 	mdev.status = typex.DEV_DOWN
-	if mdev.driver != nil {
-		mdev.driver.Stop()
-	}
+
 }
 
 // 设备属性，是一系列属性描述

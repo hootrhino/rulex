@@ -59,6 +59,7 @@ func (ther *rtu485_ther) Init(devId string, configMap map[string]interface{}) er
 	for _, register := range ther.mainConfig.Registers {
 		tags = append(tags, register.Tag)
 	}
+
 	if utils.IsListDuplicated(tags) {
 		return errors.New("tag duplicated")
 	}
@@ -102,8 +103,10 @@ func (ther *rtu485_ther) Start(cctx typex.CCTX) error {
 			select {
 			case <-ctx.Done():
 				{
-					ther.status = typex.DEV_STOP
 					ticker.Stop()
+					if ther.rtuHandler != nil {
+						ther.rtuHandler.Close()
+					}
 					return
 				}
 			default:
@@ -148,12 +151,8 @@ func (ther *rtu485_ther) Status() typex.DeviceState {
 
 // 停止设备
 func (ther *rtu485_ther) Stop() {
-	ther.status = typex.DEV_STOP
+	ther.status = typex.DEV_DOWN
 	ther.CancelCTX()
-	if ther.rtuHandler != nil {
-		ther.rtuHandler.Close()
-		ther.rtuHandler = nil
-	}
 
 }
 

@@ -105,8 +105,10 @@ func (yk8 *YK8Controller) Start(cctx typex.CCTX) error {
 			select {
 			case <-ctx.Done():
 				{
-					yk8.status = typex.DEV_STOP
 					ticker.Stop()
+					if yk8.rtuHandler != nil {
+						yk8.rtuHandler.Close()
+					}
 					return
 				}
 			default:
@@ -151,12 +153,8 @@ func (yk8 *YK8Controller) Status() typex.DeviceState {
 
 // 停止设备
 func (yk8 *YK8Controller) Stop() {
-	yk8.status = typex.DEV_STOP
+	yk8.status = typex.DEV_DOWN
 	yk8.CancelCTX()
-	if yk8.rtuHandler != nil {
-		yk8.rtuHandler.Close()
-		yk8.rtuHandler = nil
-	}
 
 }
 

@@ -155,7 +155,6 @@ func (uart *genericUartDevice) Stop() {
 	if uart.driver != nil {
 		uart.driver.Stop()
 		uart.driver = nil
-
 	}
 }
 
