@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	golog "log"
-	"os"
 	"sync"
 	"time"
 
@@ -132,7 +131,8 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 		// timeout 最大不能超过20, 不然无意义
 		mdev.rtuHandler.Timeout = time.Duration(mdev.mainConfig.CommonConfig.Timeout) * time.Millisecond
 		if core.GlobalConfig.AppDebugMode {
-			mdev.rtuHandler.Logger = golog.New(os.Stdout, "485mdevSource: ", golog.LstdFlags)
+			mdev.rtuHandler.Logger = golog.New(glogger.GLogger.Writer(),
+				"Modbus: ", golog.LstdFlags)
 		}
 
 		if err := mdev.rtuHandler.Connect(); err != nil {
@@ -147,7 +147,7 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 			fmt.Sprintf("%s:%v", mdev.mainConfig.TcpConfig.Host, mdev.mainConfig.TcpConfig.Port),
 		)
 		if core.GlobalConfig.AppDebugMode {
-			mdev.tcpHandler.Logger = golog.New(os.Stdout, "485mdevSource: ", golog.LstdFlags)
+			mdev.tcpHandler.Logger = golog.New(glogger.GLogger.Writer(), "Modbus: ", golog.LstdFlags)
 		}
 
 		if err := mdev.tcpHandler.Connect(); err != nil {
@@ -165,12 +165,7 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 		return nil
 	}
 	go func(ctx context.Context, Driver typex.XExternalDriver) {
-		// defer func() {
-		// 	if err := recover(); err != nil {
-		// 		glogger.GLogger.Error("recover: ", err)
-		// 		return
-		// 	}
-		// }()
+
 		mdev.status = typex.DEV_UP
 		ticker := time.NewTicker(time.Duration(mdev.mainConfig.CommonConfig.Frequency) * time.Millisecond)
 		buffer := make([]byte, common.T_64KB)

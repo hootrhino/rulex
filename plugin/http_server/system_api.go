@@ -108,6 +108,17 @@ func System(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 			}
 			return ip
 		}(),
+		"wsUrl": func() []string {
+			if err != nil {
+				glogger.GLogger.Error(err)
+				return []string{"ws://127.0.0.1:2580/ws"}
+			}
+			ips := []string{}
+			for _, ipp := range ip {
+				ips = append(ips, fmt.Sprintf("ws://%s:2580/ws", ipp))
+			}
+			return ips
+		}(),
 	}
 	c.JSON(200, OkWithData(gin.H{
 		"hardWareInfo": hardWareInfo,

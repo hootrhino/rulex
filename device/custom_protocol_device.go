@@ -101,9 +101,7 @@ func NewCustomProtocolDevice(e typex.RuleX) typex.XDevice {
 		UartConfig:   common.CommonUartConfig{},
 		DeviceConfig: map[string]_CPDProtocol{},
 	}
-	mdev.Busy = false
-	mdev.status = typex.DEV_DOWN
-	mdev.errorCount = 0
+
 	return mdev
 
 }
@@ -182,6 +180,7 @@ func (mdev *CustomProtocolDevice) Init(devId string, configMap map[string]interf
 		}
 
 	}
+
 	return nil
 }
 
@@ -204,6 +203,10 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 			glogger.GLogger.Error("serialPort start failed:", err)
 			return err
 		}
+		mdev.status = typex.DEV_UP
+		// 初始化状态
+		mdev.Busy = false
+		mdev.errorCount = 0
 		mdev.serialPort = serialPort
 		// 起一个线程去判断是否要轮询
 		go func(ctx context.Context, pp map[string]_CPDProtocol) {
@@ -458,6 +461,11 @@ func (mdev *CustomProtocolDevice) OnWrite(cmd []byte, data []byte) (int, error) 
 *
  */
 func (mdev *CustomProtocolDevice) OnCtrl(cmd []byte, args []byte) ([]byte, error) {
+
+	if mdev.Status() != typex.DEV_UP {
+		mdev.errorCount++
+		return nil, errors.New("status invalid")
+	}
 	// 拿到命令的索引
 	p, exists := mdev.mainConfig.DeviceConfig[string(cmd)]
 	if exists {
@@ -508,41 +516,55 @@ func (mdev *CustomProtocolDevice) OnCtrl(cmd []byte, args []byte) ([]byte, error
 		//------------------------------------------------------------------------------------------
 		// 时间片只读
 		if p.Type == 3 {
-			glogger.GLogger.Debug("Time slice SliceReceive:", p.TimeSlice)
-			result := [__DEFAULT_BUFFER_SIZE]byte{}
-			ctx, cancel := context.WithTimeout(context.Background(),
-				time.Duration(mdev.mainConfig.UartConfig.Timeout)*time.Millisecond)
-
-			count, err := utils.SliceReceive(ctx,
-				mdev.serialPort, result[:], false, time.Duration(p.TimeSlice)*time.Millisecond)
-			cancel()
-			dataMap := map[string]string{}
-			dataMap["name"] = p.Name
-			dataMap["in"] = string(args)
-			dataMap["out"] = hex.EncodeToString(result[:count])
-			bytes, _ := json.Marshal(dataMap)
-			return []byte(bytes), err
-		}
-		// 时间片读写
-		if p.Type == 4 {
 			glogger.GLogger.Debug("Time slice SliceRequest:", string(args))
-			hexs, err := hex.DecodeString(string(args))
-			if err != nil {
-				glogger.GLogger.Error(err)
-				return nil, err
+			hexs, err1 := hex.DecodeString(string(args))
+			if err1 != nil {
+				glogger.GLogger.Error(err1)
+				return nil, err1
 			}
 			result := [__DEFAULT_BUFFER_SIZE]byte{}
 			ctx, cancel := context.WithTimeout(context.Background(),
 				time.Duration(mdev.mainConfig.UartConfig.Timeout)*time.Millisecond)
-			count, err := utils.SliceRequest(ctx,
+			count, err2 := utils.SliceRequest(ctx,
 				mdev.serialPort, hexs, result[:], false, time.Duration(p.TimeSlice)*time.Millisecond)
 			cancel()
+			if err2 != nil {
+				glogger.GLogger.Error("Dynamic protocol write error: ", err1)
+				mdev.errorCount++
+				return nil, err2
+			}
 			dataMap := map[string]string{}
 			dataMap["name"] = p.Name
 			dataMap["in"] = string(args)
 			dataMap["out"] = hex.EncodeToString(result[:count])
 			bytes, _ := json.Marshal(dataMap)
-			return []byte(bytes), err
+			return []byte(bytes), nil
+		}
+		// 时间片读写
+		if p.Type == 4 {
+			glogger.GLogger.Debug("Time slice SliceRequest:", string(args))
+			hexs, err1 := hex.DecodeString(string(args))
+			if err1 != nil {
+				glogger.GLogger.Error(err1)
+				return nil, err1
+			}
+			result := [__DEFAULT_BUFFER_SIZE]byte{}
+			ctx, cancel := context.WithTimeout(context.Background(),
+				time.Duration(mdev.mainConfig.UartConfig.Timeout)*time.Millisecond)
+			count, err2 := utils.SliceRequest(ctx,
+				mdev.serialPort, hexs, result[:], false, time.Duration(p.TimeSlice)*time.Millisecond)
+			cancel()
+			if err2 != nil {
+				glogger.GLogger.Error("SliceRequest error: ", err2)
+				mdev.errorCount++
+				return nil, err2
+			}
+			dataMap := map[string]string{}
+			dataMap["name"] = p.Name
+			dataMap["in"] = string(args)
+			dataMap["out"] = hex.EncodeToString(result[:count])
+			bytes, _ := json.Marshal(dataMap)
+			return []byte(bytes), nil
 		}
 		// TODO 在某个时间片内期望读到的长度
 		if p.Type == 5 {
@@ -559,6 +581,7 @@ func (mdev *CustomProtocolDevice) Status() typex.DeviceState {
 	}
 	if *mdev.mainConfig.CommonConfig.RetryTime > 0 {
 		if mdev.errorCount >= *mdev.mainConfig.CommonConfig.RetryTime {
+			mdev.CancelCTX()
 			mdev.status = typex.DEV_DOWN
 		}
 	}
@@ -569,6 +592,7 @@ func (mdev *CustomProtocolDevice) Status() typex.DeviceState {
 func (mdev *CustomProtocolDevice) Stop() {
 	mdev.CancelCTX()
 	mdev.status = typex.DEV_DOWN
+	mdev.serialPort.Close()
 
 }
 
@@ -631,7 +655,7 @@ func (mdev *CustomProtocolDevice) checkHexs(p _CPDProtocol, result []byte) bool 
 	if p.CheckAlgorithm == "XOR" || p.CheckAlgorithm == "xor" {
 		glogger.GLogger.Debug("checkCRC:", result[:p.BufferSize],
 			int(result[:p.BufferSize][p.ChecksumValuePos]))
-		checkOk = mdev.checkCRC(result[:p.BufferSize],
+		checkOk = mdev.checkXOR(result[:p.BufferSize],
 			int(result[:p.BufferSize][p.ChecksumValuePos]))
 	}
 	// NONECHECK: 不校验

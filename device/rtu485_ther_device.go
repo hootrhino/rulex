@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	golog "log"
-	"os"
 	"sync"
 	"time"
 
@@ -79,7 +78,7 @@ func (ther *rtu485_ther) Start(cctx typex.CCTX) error {
 	ther.rtuHandler.StopBits = ther.rtuConfig.StopBits
 	ther.rtuHandler.Timeout = time.Duration(ther.mainConfig.Timeout) * time.Second
 	if core.GlobalConfig.AppDebugMode {
-		ther.rtuHandler.Logger = golog.New(os.Stdout, "485-TEMP-HUMI-DEVICE: ", golog.LstdFlags)
+		ther.rtuHandler.Logger = golog.New(glogger.GLogger.Writer(), "485-TEMP-HUMI-DEVICE: ", golog.LstdFlags)
 	}
 	if err := ther.rtuHandler.Connect(); err != nil {
 		return err

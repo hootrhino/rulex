@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	golog "log"
-	"os"
 	"sync"
 	"time"
 
@@ -80,7 +79,7 @@ func (tss *tss200V2) Start(cctx typex.CCTX) error {
 	tss.rtuHandler.StopBits = tss.rtuConfig.StopBits
 	tss.rtuHandler.Timeout = time.Duration(tss.mainConfig.Timeout) * time.Second
 	if core.GlobalConfig.AppDebugMode {
-		tss.rtuHandler.Logger = golog.New(os.Stdout, "TSS200-DEVICE: ", golog.LstdFlags)
+		tss.rtuHandler.Logger = golog.New(glogger.GLogger.Writer(), "TSS200-DEVICE: ", golog.LstdFlags)
 	}
 
 	if err := tss.rtuHandler.Connect(); err != nil {
