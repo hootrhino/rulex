@@ -1,17 +1,10 @@
 package device
 
 import (
+	"fmt"
+
 	"github.com/hootrhino/rulex/typex"
 )
-
-/*
-*
-* 一般来说不会有太多摄像头，默认都是0、1，到4已经能覆盖绝大多数设备
-*
- */
-var videoDevMap = map[string]int{
-	"video0": 0,
-}
 
 // RTSP URL格式= rtsp://<username>:<password>@<ip>:<port>，
 type _MainConfig struct {
@@ -45,8 +38,7 @@ func NewVideoCamera(e typex.RuleX) typex.XDevice {
 
 // 初始化 通常用来获取设备的配置
 func (vc *videoCamera) Init(devId string, configMap map[string]interface{}) error {
-
-	return nil
+	return fmt.Errorf("video camera not support windows")
 }
 
 // 启动, 设备的工作进程
