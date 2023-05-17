@@ -1,16 +1,5 @@
 package utils
 
-import (
-	"fmt"
-	"os"
-	"os/exec"
-	"runtime"
-	"strings"
-
-	"github.com/hootrhino/rulex/glogger"
-)
-
-
 /*
 *
 * Get Local IP
