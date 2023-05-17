@@ -30,7 +30,7 @@ end
 --
 -- DEVICEa3a94f6c1ae84f56a92f0f4cd7f53cc4
 function Main()
-    local Inid = 'DEVICEa3a94f6c1ae84f56a92f0f4cd7f53cc4'
+    local Inid = 'DEVICE7e31f1820a7f4c92977d26bcae2aae69'
     local Outid = 'OUTfde44d8992ce4fde82a3b096352b10cf'
     local cmdlist = {
         '010300010003540B', '02030000000305F8', '0303000000030429',
