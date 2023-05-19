@@ -18,6 +18,6 @@ func (v Version) String() string {
 
 var DefaultVersion = Version{
 	Version:   `v0.4.4-hotfix`,
-	ReleaseTime: "2023-05-16 16:59:10",
+	ReleaseTime: "2023-05-19 16:01:18",
 }
 

@@ -59,7 +59,7 @@ type tencentUpMsg struct {
 	SubDeviceId     string `json:"subDeviceId,omitempty"`     // 网关子设备ID
 }
 
-type tencentIothubSource struct {
+type genericIothubSource struct {
 	typex.XStatus
 	client     mqtt.Client
 	mainConfig common.TencentMqttConfig
@@ -70,7 +70,7 @@ func NewGenericIothubSource(e typex.RuleX) typex.XSource {
 	return NewTencentIothubSource(e)
 }
 func NewTencentIothubSource(e typex.RuleX) typex.XSource {
-	m := new(tencentIothubSource)
+	m := new(genericIothubSource)
 	m.RuleEngine = e
 	m.mainConfig = common.TencentMqttConfig{}
 	m.status = typex.SOURCE_DOWN
@@ -82,7 +82,7 @@ func NewTencentIothubSource(e typex.RuleX) typex.XSource {
 *
 *
  */
-func (tc *tencentIothubSource) Init(inEndId string, configMap map[string]interface{}) error {
+func (tc *genericIothubSource) Init(inEndId string, configMap map[string]interface{}) error {
 	tc.PointId = inEndId
 	if err := utils.BindSourceConfig(configMap, &tc.mainConfig); err != nil {
 		return err
@@ -95,7 +95,7 @@ func (tc *tencentIothubSource) Init(inEndId string, configMap map[string]interfa
 *
 *
  */
-func (tc *tencentIothubSource) Start(cctx typex.CCTX) error {
+func (tc *genericIothubSource) Start(cctx typex.CCTX) error {
 	tc.Ctx = cctx.Ctx
 	tc.CancelCTX = cctx.CancelCTX
 
@@ -105,14 +105,14 @@ func (tc *tencentIothubSource) Start(cctx typex.CCTX) error {
 	// 服务接口
 	//
 	var connectHandler mqtt.OnConnectHandler = func(client mqtt.Client) {
-		glogger.GLogger.Infof("Tencent IOTHUB Connected Success")
+		glogger.GLogger.Infof("Generic IOTHUB Connected Success")
 		tc.subscribe(PropertyTopic)
 		tc.subscribe(ActionTopic)
 		tc.status = typex.SOURCE_UP
 	}
 
 	var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err error) {
-		glogger.GLogger.Warnf("Tencent IOTHUB Disconnect: %v, try to reconnect\n", err)
+		glogger.GLogger.Warnf("Generic IOTHUB Disconnect: %v, try to reconnect\n", err)
 	}
 
 	opts := mqtt.NewClientOptions()
@@ -137,11 +137,11 @@ func (tc *tencentIothubSource) Start(cctx typex.CCTX) error {
 
 }
 
-func (tc *tencentIothubSource) DataModels() []typex.XDataModel {
+func (tc *genericIothubSource) DataModels() []typex.XDataModel {
 	return tc.XDataModels
 }
 
-func (tc *tencentIothubSource) Stop() {
+func (tc *genericIothubSource) Stop() {
 	tc.status = typex.SOURCE_STOP
 	tc.CancelCTX()
 	if tc.client != nil {
@@ -150,38 +150,38 @@ func (tc *tencentIothubSource) Stop() {
 	}
 
 }
-func (tc *tencentIothubSource) Reload() {
+func (tc *genericIothubSource) Reload() {
 
 }
-func (tc *tencentIothubSource) Pause() {
+func (tc *genericIothubSource) Pause() {
 
 }
-func (tc *tencentIothubSource) Status() typex.SourceState {
+func (tc *genericIothubSource) Status() typex.SourceState {
 	return tc.status
 }
 
-func (tc *tencentIothubSource) Test(inEndId string) bool {
+func (tc *genericIothubSource) Test(inEndId string) bool {
 	if tc.client != nil {
 		return tc.client.IsConnected()
 	}
 	return false
 }
 
-func (tc *tencentIothubSource) Enabled() bool {
+func (tc *genericIothubSource) Enabled() bool {
 	return tc.Enable
 }
-func (tc *tencentIothubSource) Details() *typex.InEnd {
+func (tc *genericIothubSource) Details() *typex.InEnd {
 	return tc.RuleEngine.GetInEnd(tc.PointId)
 }
-func (*tencentIothubSource) Driver() typex.XExternalDriver {
+func (*genericIothubSource) Driver() typex.XExternalDriver {
 	return nil
 }
-func (*tencentIothubSource) Configs() *typex.XConfig {
+func (*genericIothubSource) Configs() *typex.XConfig {
 	return &typex.XConfig{}
 }
 
 // 拓扑
-func (*tencentIothubSource) Topology() []typex.TopologyPoint {
+func (*genericIothubSource) Topology() []typex.TopologyPoint {
 	return []typex.TopologyPoint{}
 }
 
@@ -189,7 +189,7 @@ func (*tencentIothubSource) Topology() []typex.TopologyPoint {
 // 来自外面的数据,实际上就是LUA脚本调用的时候写进来的参数
 //
 
-func (tc *tencentIothubSource) DownStream(bytes []byte) (int, error) {
+func (tc *genericIothubSource) DownStream(bytes []byte) (int, error) {
 	var msg tencentUpMsg
 	if err := json.Unmarshal(bytes, &msg); err != nil {
 		return 0, err
@@ -230,10 +230,10 @@ func (tc *tencentIothubSource) DownStream(bytes []byte) (int, error) {
 }
 
 // 上行数据
-func (*tencentIothubSource) UpStream([]byte) (int, error) {
+func (*genericIothubSource) UpStream([]byte) (int, error) {
 	return 0, nil
 }
-func (tc *tencentIothubSource) subscribe(topic string) {
+func (tc *genericIothubSource) subscribe(topic string) {
 	token := tc.client.Subscribe(topic, 1, func(c mqtt.Client, msg mqtt.Message) {
 		work, err := tc.RuleEngine.WorkInEnd(tc.RuleEngine.GetInEnd(tc.PointId), string(msg.Payload()))
 		if !work {
