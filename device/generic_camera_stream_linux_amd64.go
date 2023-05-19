@@ -50,10 +50,12 @@ func NewVideoCamera(e typex.RuleX) typex.XDevice {
 	videoCamera.RuleEngine = e
 	videoCamera.status = typex.DEV_DOWN
 	videoCamera.mainConfig = _MainConfig{
+		MaxThread:  10,
 		Device:     "video0",
 		RtspUrl:    "rtsp://127.0.0.1",
 		InputMode:  "LOCAL",
 		OutputMode: "JPEG_STREAM",
+		OutputAddr: "127.0.0.1:2599",
 	}
 	return videoCamera
 }
@@ -151,7 +153,7 @@ func serveHttpJPEGStream(videoCamera *videoCamera) {
 	defer videoCamera.video.Close()
 	cvMat := gocv.NewMat()
 	defer cvMat.Close()
-	stream := NewMJPEGStream()
+	stream := NewMJPEGStream(videoCamera.mainConfig.MaxThread)
 	go func() {
 		mux := http.NewServeMux()
 		mux.HandleFunc("/", stream.ServeHTTP)
@@ -230,8 +232,8 @@ func (vc *videoCamera) Details() *typex.Device {
 
 }
 
-func (vc *videoCamera) SetState(_ typex.DeviceState) {
-
+func (vc *videoCamera) SetState(s typex.DeviceState) {
+	vc.status = s
 }
 
 func (vc *videoCamera) Driver() typex.XExternalDriver {
@@ -251,6 +253,8 @@ type mJPEGStream struct {
 	frame         []byte
 	lock          sync.Mutex
 	FrameInterval time.Duration
+	maxThread     int
+	currentThread int
 }
 
 // multipart/x-mixed-replace 一种固定写法
@@ -264,6 +268,11 @@ const header = "\r\n" +
 
 // serveHttpJPEGStream responds to HTTP requests with the MJPEG stream, implementing the http.Handler interface.
 func (s *mJPEGStream) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	s.currentThread++
+	if s.currentThread > s.maxThread {
+		w.Write([]byte("Exceed MaxThread"))
+		return
+	}
 	w.Header().Add("Content-Type", "multipart/x-mixed-replace;boundary="+boundaryWord)
 	c := make(chan []byte)
 	s.lock.Lock()
@@ -280,6 +289,7 @@ func (s *mJPEGStream) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	s.lock.Lock()
 	delete(s.m, c)
 	s.lock.Unlock()
+	s.currentThread--
 }
 
 func (s *mJPEGStream) UpdateJPEG(JPEG []byte) {
@@ -299,10 +309,12 @@ func (s *mJPEGStream) UpdateJPEG(JPEG []byte) {
 	s.lock.Unlock()
 }
 
-func NewMJPEGStream() *mJPEGStream {
+func NewMJPEGStream(mt int) *mJPEGStream {
 	return &mJPEGStream{
 		m:             make(map[chan []byte]bool),
 		frame:         make([]byte, len(header)),
 		FrameInterval: 50 * time.Millisecond,
+		currentThread: 0,
+		maxThread:     mt,
 	}
 }
