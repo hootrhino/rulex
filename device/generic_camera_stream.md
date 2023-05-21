@@ -2,7 +2,7 @@
 
 ## 介绍
 
-从本地或者远程摄像头拉流,支持本地USB和远程RTSP，**注意该功能只支持Linux系统**。
+从本地或者远程摄像头拉流，支持本地USB和远程RTSP，Windows 下环境搭建可参考该文档: https://p.kdocs.cn/s/SHGXWBAA3U 。
 
 ## 配置
 
