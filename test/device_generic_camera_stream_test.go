@@ -34,7 +34,7 @@ func Test_Generic_camera(t *testing.T) {
 			"device":     "video0",
 			"rtspUrl":    "rtsp://127.0.0.1",
 			"outputMode": "JPEG_STREAM",
-			"outputAddr": "127.0.0.1:2599",
+			"outputAddr": "0.0.0.0:2599",
 		})
 
 	if err := engine.LoadDevice(GENERIC_CAMERA); err != nil {
