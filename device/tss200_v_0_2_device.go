@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	golog "log"
-	"os"
 	"sync"
 	"time"
 
@@ -80,7 +79,7 @@ func (tss *tss200V2) Start(cctx typex.CCTX) error {
 	tss.rtuHandler.StopBits = tss.rtuConfig.StopBits
 	tss.rtuHandler.Timeout = time.Duration(tss.mainConfig.Timeout) * time.Second
 	if core.GlobalConfig.AppDebugMode {
-		tss.rtuHandler.Logger = golog.New(os.Stdout, "TSS200-DEVICE: ", golog.LstdFlags)
+		tss.rtuHandler.Logger = golog.New(glogger.GLogger.Writer(), "TSS200-DEVICE: ", golog.LstdFlags)
 	}
 
 	if err := tss.rtuHandler.Connect(); err != nil {
@@ -106,8 +105,10 @@ func (tss *tss200V2) Start(cctx typex.CCTX) error {
 			select {
 			case <-ctx.Done():
 				{
-					tss.status = typex.DEV_STOP
 					ticker.Stop()
+					if tss.rtuHandler != nil {
+						tss.rtuHandler.Close()
+					}
 					return
 				}
 			default:
@@ -152,13 +153,8 @@ func (tss *tss200V2) Status() typex.DeviceState {
 
 // 停止设备
 func (tss *tss200V2) Stop() {
-	tss.status = typex.DEV_STOP
+	tss.status = typex.DEV_DOWN
 	tss.CancelCTX()
-	if tss.rtuHandler != nil {
-		tss.rtuHandler.Close()
-		tss.rtuHandler = nil
-	}
-
 }
 
 // 设备属性，是一系列属性描述

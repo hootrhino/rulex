@@ -35,14 +35,21 @@ const (
 	USER_G776        DeviceType = "USER_G776"        // 有人 G776 4G模组
 	ICMP_SENDER      DeviceType = "ICMP_SENDER"      // ICMP_SENDER
 	GENERIC_PROTOCOL DeviceType = "GENERIC_PROTOCOL" // 通用自定义协议处理器
+	GENERIC_OPCUA    DeviceType = "GENERIC_OPCUA"    // 通用OPCUA
+	GENERIC_CAMERA   DeviceType = "GENERIC_CAMERA"   // 通用摄像头
 
 )
 
 // 设备元数据
 type Device struct {
-	UUID        string                 `json:"uuid"`        // UUID
-	Name        string                 `json:"name"`        // 设备名称，例如：灯光开关
-	Type        DeviceType             `json:"type"`        // 类型,一般是设备-型号，比如 ARDUINO-R3
+	UUID string     `json:"uuid"` // UUID
+	Name string     `json:"name"` // 设备名称，例如：灯光开关
+	Type DeviceType `json:"type"` // 类型,一般是设备-型号，比如 ARDUINO-R3
+	//------------------------------
+	// 2023年5月10日00:25, 发现新问题： 当设备被Stop了以后, 永远不会被拉起来, 但是实际情况下如果是
+	// 意外导致的失败, 可以用一个开关来控制其是否允许被重启
+	//------------------------------
+	AutoRestart bool                   `json:"autoRestart"` // 是否允许挂了的时候重启
 	Description string                 `json:"description"` // 设备描述信息
 	BindRules   map[string]Rule        `json:"-"`           // 与之关联的规则
 	State       DeviceState            `json:"state"`       // 状态
@@ -60,6 +67,7 @@ func NewDevice(t DeviceType,
 		Type:        t,
 		State:       DEV_STOP,
 		Description: description,
+		AutoRestart: true, // 0.5以前默认自动重启
 		Config:      config,
 		BindRules:   map[string]Rule{},
 	}

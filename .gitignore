@@ -19,8 +19,6 @@ _build*
 lua-log*
 *.txt
 plugin/http_server/www/*
-!plugin/http_server/www/favicon.ico
-!plugin/http_server/www/index.html
 dist/
 apps/*.lua
 test/apps/*.lua

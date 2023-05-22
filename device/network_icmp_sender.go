@@ -66,7 +66,6 @@ func (sender *IcmpSender) Init(devId string, configMap map[string]interface{}) e
 			select {
 			case <-ctx.Done():
 				{
-					sender.status = typex.DEV_STOP
 					ticker.Stop()
 					return
 				}
@@ -118,7 +117,7 @@ func (sender *IcmpSender) Status() typex.DeviceState {
 
 // 停止设备
 func (sender *IcmpSender) Stop() {
-	sender.status = typex.DEV_STOP
+	sender.status = typex.DEV_DOWN
 	sender.CancelCTX()
 }
 

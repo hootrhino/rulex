@@ -93,48 +93,6 @@ func (uart *genericUartDevice) Start(cctx typex.CCTX) error {
 		uart.status = typex.DEV_UP
 		return nil
 	}
-
-	// go func(ctx context.Context) {
-	// 	buffer := make([]byte, common.T_64KB) // 默认缓冲区64KB, 应该够了
-	// 	offset := 0
-	// 	for {
-	// 		select {
-	// 		case <-ctx.Done():
-	// 			return
-	// 		default:
-	// 			{
-	// 			}
-	// 		}
-	// 		uart.locker.Lock()
-	// 		len, err := uart.driver.Read([]byte{}, buffer[offset:])
-	// 		uart.locker.Unlock()
-	// 		if err != nil {
-	// 			glogger.GLogger.Error(err)
-	// 			if uart.status == typex.DEV_STOP {
-	// 				return
-	// 			} else {
-	// 				continue
-	// 			}
-	// 		}
-	// 		// 检查是否读到了协议结束符号, 只要发现结束符就提交, 移动指针
-	// 		for _, Byte := range buffer[offset : offset+len] {
-	// 			// 换行符 == 10
-	// 			Separator := uart.mainConfig.CommonConfig.Separator[0]
-	// 			if Byte == Separator {
-	// 				mapV := map[string]string{
-	// 					"tag":   uart.mainConfig.CommonConfig.Tag,
-	// 					"value": string(buffer[:offset]),
-	// 				}
-	// 				bytes, _ := json.Marshal(mapV)
-	// 				uart.RuleEngine.WorkDevice(uart.Details(), string(bytes))
-	// 				offset = 0
-	// 				break
-	// 			} else {
-	// 				offset += 1 // 一个一个移动
-	// 			}
-	// 		}
-	// 	}
-	// }(uart.Ctx)
 	uart.status = typex.DEV_UP
 	return nil
 }
@@ -197,7 +155,6 @@ func (uart *genericUartDevice) Stop() {
 	if uart.driver != nil {
 		uart.driver.Stop()
 		uart.driver = nil
-
 	}
 }
 

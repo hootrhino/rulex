@@ -90,8 +90,10 @@ func (s1200 *s1200plc) Start(cctx typex.CCTX) error {
 			select {
 			case <-ctx.Done():
 				{
-					s1200.status = typex.DEV_STOP
 					ticker.Stop()
+					if s1200.driver != nil {
+						s1200.driver.Stop()
+					}
 					return
 				}
 			default:
@@ -160,11 +162,9 @@ func (s1200 *s1200plc) Status() typex.DeviceState {
 
 // 停止设备
 func (s1200 *s1200plc) Stop() {
-	s1200.status = typex.DEV_STOP
+	s1200.status = typex.DEV_DOWN
 	s1200.CancelCTX()
-	if s1200.driver != nil {
-		s1200.driver = nil
-	}
+
 }
 
 // 设备属性，是一系列属性描述

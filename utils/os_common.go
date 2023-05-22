@@ -3,7 +3,6 @@ package utils
 import (
 	"fmt"
 	"os"
-	"os/exec"
 	"runtime"
 
 	"github.com/hootrhino/rulex/glogger"
@@ -17,39 +16,10 @@ import (
 func GetPwd() string {
 	dir, err := os.Getwd()
 	if err != nil {
-		glogger.GLogger.Fatal(err)
+		glogger.GLogger.Error(err)
+		return ""
 	}
 	return dir
-}
-
-/*
-*
-* Byte to Mbyte
-*
- */
-func BToMb(b uint64) uint64 {
-	return b / 1024 / 1024
-}
-
-/*
-*
-* Get Local IP
-*
- */
-func HostNameI() (string, error) {
-	if runtime.GOOS == "linux" {
-		cmd := exec.Command("hostname", "-I")
-		data, err1 := cmd.Output()
-		if err1 != nil {
-			return "", err1
-		}
-		return string(data), nil
-	}
-	return "[0.0.0.0]only support unix-like OS", nil
-}
-
-func BtoMB(bytes uint64) float64 {
-	return float64(bytes) / 1024 / 1024
 }
 
 /*
@@ -73,4 +43,16 @@ func TraceMemStats() {
 		fmt.Printf("%v,\t", v)
 	}
 	fmt.Println()
+}
+func BtoMB(bytes uint64) float64 {
+	return float64(bytes) / 1024 / 1024
+}
+
+/*
+*
+* Byte to Mbyte
+*
+ */
+func BToMb(b uint64) uint64 {
+	return b / 1024 / 1024
 }

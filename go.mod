@@ -48,6 +48,7 @@ require (
 	go.bug.st/serial v1.5.0
 	go.mongodb.org/mongo-driver v1.11.4
 	go.uber.org/zap v1.15.0
+	gocv.io/x/gocv v0.32.1
 	golang.org/x/crypto v0.8.0
 	golang.org/x/sys v0.7.0
 	google.golang.org/grpc v1.54.0

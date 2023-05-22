@@ -1,104 +1,59 @@
+# Modbus 通用采集器
+
 ## 简介
+
 通用 Modbus 资源，可以用来实现常见的 modbus 协议寄存器读写等功能。
 
 ## 配置
 
 ```json
 {
-    "name": "GENERIC_MODBUS",
+    "name": "485温湿度传感器",
     "type": "GENERIC_MODBUS",
-    "actionScript": "",
-    "description": "GENERIC_MODBUS",
     "config": {
-        "frequency": 100,
-        "autoRequest": true,
-        "mode": "RTU",
-        "timeout": 5,
-        "config": {
-            "baudRate": 9600,
+        "commonConfig": {
+            "frequency": 2000,
+            "retryTime": 5,
+            "autoRequest": true,
+            "mode": "RTU",
+            "timeout": 20
+        },
+        "rtuConfig": {
+            "timeout": 30,
+            "baudRate": 4800,
             "dataBits": 8,
-            "ip": "127.0.0.1",
             "parity": "N",
-            "port": 502,
             "stopBits": 1,
             "uart": "COM5"
         },
         "registers": [
             {
-                "slaverId": 1,
+                "weight": 1,
+                "initValue": 0,
+                "slaverId": 2,
+                "address": 0,
+                "quantity": 2,
+                "tag": "t2",
                 "function": 3,
-                "address": 3,
-                "quantity": 3,
-                "tag": "d1"
+                "value": ""
             },
             {
-                "slaverId": 2,
+                "weight": 1,
+                "initValue": 0,
+                "slaverId": 1,
+                "address": 0,
+                "quantity": 2,
+                "tag": "t1",
                 "function": 3,
-                "address": 3,
-                "quantity": 3,
-                "tag": "d2"
+                "value": ""
             }
         ]
     }
 }
 ```
 
-## 数据
+## 数据样例
 
-### 读
-#### 1. CMD
-无指令，直接读取出来的数据是一个数组:
-
-```go
-[
-    {
-        tag      string
-        function int
-        slaverId byte
-        address  uint16
-        quantity uint16
-        value    []byte
-    }
-]
-```
-#### 2. Args
-无参数
-
-#### 3. 数据样例
-```json
-[
-    {
-        "tag" :"t1",
-        "function" :3,
-        "slaverId" :1,
-        "address" :0,
-        "quantity" :1,
-        "value" : 100
-    }
-]
-```
-
-### 写
-#### 1. CMD
-
-无指令
-
-#### 2. Args
-
-```go
-[
-    {
-        tag      string
-        function int
-        slaverId byte
-        address  uint16
-        quantity uint16
-        value    []byte
-    }
-]
-```
-
-#### 3. 数据样例
 ```json
 {
     "d1":{
@@ -111,47 +66,45 @@
     }
 }
 ```
+
 - value: 十六进制字符串
-## 案例
 
-```lua
--- Success
-function Success()
-    print("Success")
-end
--- Failed
-function Failed(error)
-    print("Error:", error)
-end
+## 常用函数
 
--- Actions
-Actions = {
-    function(data)
-    local json = [
-            {
-                "tag" :"t1",
-                "function" :3,
-                "slaverId" :1,
-                "address" :0,
-                "quantity" :1,
-                "value" : 100
-            }
-        ]
-        local _, err = rulexlib:WriteDevice(device, rulexlib:T2J(json))
-        if (err ~= nil) then
-            log('WriteDevice open err: ', err)
-            return false, data
+为了更加清楚的描述接口的使用，下面给出数据解析详细示例：
+
+1. 打印日志
+
+    ```lua
+    Actions =
+    {
+        function(data)
+            print(data)
+            return true, data
         end
-        return true, data
-    end
-}
+    }
 
-```
+    ```
 
-## 说明
-仅仅是个通用 modbus 处理器。
+2. 推送到Mongodb
 
-## 社区
+    ```lua
+    Actions =
+    {
+        function(data)
+            local dataTable = rulexlib:J2T(data)
+            local Value = dataTable['value']
+            rulexlib:DataToMongo('uuid', Value)
+            return true, data
+        end
+    }
 
-### 维护者
-- wwhai
+    ```
+
+多多益善。
+
+## 维护
+
+开源参与者需要给出维护作者的邮箱，方便及时处理问题。
+
+- <xxx@xxx.com>

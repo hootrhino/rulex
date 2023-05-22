@@ -2,11 +2,16 @@
 
 ## 介绍
 
-简介。。。。。
+OPCUA采集协议是基于OPCUA协议的一种采集协议，主要用于采集OPCUA协议的数据，前支持的功能有：
+
+- 读取数据-nodeId方式
+- 认证模式：用户名密码认证，匿名
+- 消息模式 ：支持 encrypt，sign，none
+写数据功能暂未实现，后续会陆续支持。
 
 ## 配置
 
-这是设备启动所需的必要配置, 以OPCUA的为例:
+一般会有至少一个自定义协议，关键字段是 `opcuanodes` ，下面给出一个 JSON 样例:
 
 ```json
 {
@@ -21,7 +26,7 @@
         "frequency":500,
         "retryTime":10
     },
-    "opcuaNodes":[
+    "opcuanodes":[
         {
             "tag":"node1",
             "description":"node 1",
@@ -42,9 +47,9 @@
 
 ## 字段说明
 
-给出上面配置里面出现的字段的详细说明
-
 ### commonConfig
+
+该参数为通用配置。
 
 | 字段名  |  类型  | 必填  | 说明  |
 | ------------ | ------------ | ------------ | ------------ |
@@ -58,69 +63,62 @@
 | frequency  |  string  |  √  | 采集频率(毫秒)  |
 | retryTime  |  string  |  √  | 出错重试次数  |
 
+### opcuanodes
+
+该参数为点表字段。
+
+| 字段名  |  类型  | 必填  | 说明  |
+| ------------ | ------------ | ------------ | ------------ |
+| Tag  |  string  |  √  | 点表的标签，用于标识点表  |
+| NodeId  |  string  |  √  | 点表的NodeId，对应gopcua库中的NodeId  |
+| DataType  |  string  |  √  | 点表的数据类型，对应gopcua库中的VariantType  |
+| Value  |  string  |  √  | 点表的值，对应gopcua库中的Variant  |
+| Description  |  string  |  ×  | 点表的描述，用于描述点表  |
+
 ## 设备数据读取
 
-如果设备支持读, 给出一个读出来的数据示例
-
-```json
+```lua
 {
-    "d1":{
-        "tag":"d1",
-        "function":3,
-        "slaverId":1,
-        "address":0,
-        "quantity":2,
-        "value":"000a0b0c0d"
-    }
+ -- 读到的数据
 }
 ```
 
 ## 设备数据写入
 
-如果设备支持写, 给出一个写入的数据示例
-
 ```lua
 {
-    "function":3,
-    "slaverId":2,
-    "address":0,
-    "quantity":2,
-    "value":"..."
+   -- 读到的数据
 }
 ```
 
 ## 常用函数
 
-为了更加清楚的描述接口的使用，下面给出数据解析详细示例：
+下面给出数据解析示例：
 
-1. 打印日志
+### 打印日志
 
-    ```lua
-    Actions =
-    {
-        function(data)
-            return true, data
-        end
-    }
+```lua
+Actions =
+{
+    function(data)
+        return true, data
+    end
+}
 
-    ```
+```
 
-2. 推送到Mongodb
+### 推送到Mongodb
 
-    ```lua
-    Actions =
-    {
-        function(data)
-            return true, data
-        end
-    }
+```lua
+Actions =
+{
+    function(data)
+        return true, data
+    end
+}
 
-    ```
-
-多多益善。
+```
 
 ## 维护
-
-开源参与者需要给出维护作者的邮箱，方便及时处理问题。
 
 - <xxx@xxx.com>

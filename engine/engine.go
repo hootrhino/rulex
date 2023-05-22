@@ -628,6 +628,18 @@ func (e *RuleEngine) InitDeviceTypeManager() error {
 			Device: device.NewCustomProtocolDevice(e),
 		},
 	)
+	e.DeviceTypeManager.Register(typex.GENERIC_OPCUA,
+		&typex.XConfig{
+			Engine: e,
+			Device: device.NewGenericOpcuaDevice(e),
+		},
+	)
+	e.DeviceTypeManager.Register(typex.GENERIC_CAMERA,
+		&typex.XConfig{
+			Engine: e,
+			Device: device.NewVideoCamera(e),
+		},
+	)
 	return nil
 }
 
