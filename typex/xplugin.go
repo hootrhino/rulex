@@ -9,13 +9,14 @@ import "gopkg.in/ini.v1"
 // 3 LoadPlugin(sectionK string, p typex.XPlugin)
 //
 
-//
 // 插件的服务参数
-//
 type ServiceArg struct {
-	UUID string      `json:"uuid"` // 插件UUID
-	Name string      `json:"name"` // 服务名
-	Args interface{} `json:"args"` // 参数
+	UUID string      `json:"uuid"` // 插件UUID, Rulex用来查找插件的
+	Name string      `json:"name"` // 服务名, 在服务中响应识别
+	Args interface{} `json:"args"` // 服务参数
+}
+type ServiceResult struct {
+	Out interface{} `json:"out"`
 }
 
 /*
@@ -42,7 +43,7 @@ type XPluginMetaInfo struct {
 type XPlugin interface {
 	Init(*ini.Section) error // 参数为外部配置
 	Start(RuleX) error
-	Service(ServiceArg) error // 对外提供一些服务
+	Service(ServiceArg) ServiceResult // 对外提供一些服务
 	Stop() error
 	PluginMetaInfo() XPluginMetaInfo
 }

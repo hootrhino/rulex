@@ -44,10 +44,11 @@ type HttpApiServer struct {
 	dbPath     string
 	ginEngine  *gin.Engine
 	ruleEngine typex.RuleX
+	uuid       string
 }
 
 func NewHttpApiServer() *HttpApiServer {
-	return &HttpApiServer{}
+	return &HttpApiServer{uuid: "HTTP-API-SERVER"}
 }
 
 // HTTP服务器崩了, 重启恢复
@@ -229,6 +230,10 @@ func (hh *HttpApiServer) Start(r typex.RuleX) error {
 	//----------------------------------------------------------------------------------------------
 	hh.ginEngine.GET(url("aibase"), hh.addRoute(AiBase))
 	hh.ginEngine.DELETE(url("aibase"), hh.addRoute(DeleteAiBase))
+	//----------------------------------------------------------------------------------------------
+	// Plugin
+	//----------------------------------------------------------------------------------------------
+	hh.ginEngine.POST(url("plugin/service"), hh.addRoute(PluginService))
 
 	glogger.GLogger.Infof("Http server started on http://0.0.0.0:%v", hh.Port)
 	return nil
@@ -243,7 +248,8 @@ func (hh *HttpApiServer) Db() *gorm.DB {
 }
 func (hh *HttpApiServer) PluginMetaInfo() typex.XPluginMetaInfo {
 	return typex.XPluginMetaInfo{
-		Name:     "Rulex Base Api Server",
+		UUID:     hh.uuid,
+		Name:     "Base Api Server",
 		Version:  typex.DefaultVersion.Version,
 		Homepage: "https://rulex.pages.dev",
 		HelpLink: "https://rulex.pages.dev",
@@ -258,8 +264,8 @@ func (hh *HttpApiServer) PluginMetaInfo() typex.XPluginMetaInfo {
 * 服务调用接口
 *
  */
-func (cs *HttpApiServer) Service(arg typex.ServiceArg) error {
-	return nil
+func (cs *HttpApiServer) Service(arg typex.ServiceArg) typex.ServiceResult {
+	return typex.ServiceResult{Out: "HttpApiServer"}
 }
 
 // --------------------------------------------------------------------------------

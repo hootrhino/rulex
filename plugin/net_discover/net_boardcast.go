@@ -44,11 +44,13 @@ type NetDiscover struct {
 	ctx        context.Context
 	cancel     context.CancelFunc
 	Neighbors  map[string]gwnode // 邻居
+	uuid       string
 }
 
 func NewNetDiscover() typex.XPlugin {
 	ctx, cancel := context.WithCancel(context.Background())
-	return &NetDiscover{mainConfig: _serverConfig{}, ctx: ctx, cancel: cancel}
+	return &NetDiscover{mainConfig: _serverConfig{},
+		ctx: ctx, cancel: cancel, uuid: "NewNetDiscover"}
 }
 
 func (dm *NetDiscover) Init(config *ini.Section) error {
@@ -169,6 +171,7 @@ func calculateCpuPercent(cpus []float64) float64 {
 
 func (hh *NetDiscover) PluginMetaInfo() typex.XPluginMetaInfo {
 	return typex.XPluginMetaInfo{
+		UUID:     hh.uuid,
 		Name:     "NetDiscover",
 		Version:  "0.0.1",
 		Homepage: "www.github.com/hootrhino/rulex",
@@ -184,6 +187,6 @@ func (hh *NetDiscover) PluginMetaInfo() typex.XPluginMetaInfo {
 * 服务调用接口
 *
  */
-func (cs *NetDiscover) Service(arg typex.ServiceArg) error {
-	return nil
+func (cs *NetDiscover) Service(arg typex.ServiceArg) typex.ServiceResult {
+	return typex.ServiceResult{}
 }

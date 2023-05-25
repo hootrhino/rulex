@@ -23,6 +23,9 @@ func OutUuid() string {
 func DeviceUuid() string {
 	return MakeUUID("DEVICE")
 }
+func PluginUuid() string {
+	return MakeUUID("PLUGIN")
+}
 func AppUuid() string {
 	return MakeUUID("APP")
 }

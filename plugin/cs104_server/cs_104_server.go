@@ -30,10 +30,11 @@ type cs104Server struct {
 	Host    string
 	Port    int
 	LogMode bool
+	uuid    string
 }
 
 func NewCs104Server() typex.XPlugin {
-	return &cs104Server{}
+	return &cs104Server{uuid: "CS104-SERVER"}
 }
 func (sf *cs104Server) InterrogationHandler(c asdu.Connect,
 	asduPack *asdu.ASDU, qoi asdu.QualifierOfInterrogation) error {
@@ -90,6 +91,7 @@ func (cs *cs104Server) Stop() error {
 
 func (cs *cs104Server) PluginMetaInfo() typex.XPluginMetaInfo {
 	return typex.XPluginMetaInfo{
+		UUID:     cs.uuid,
 		Name:     "IEC104 server Plugin",
 		Version:  "0.0.1",
 		Homepage: "www.github.com/hootrhino/rulex",
@@ -105,6 +107,6 @@ func (cs *cs104Server) PluginMetaInfo() typex.XPluginMetaInfo {
 * 服务调用接口
 *
  */
-func (cs *cs104Server) Service(arg typex.ServiceArg) error {
+func (cs *cs104Server) Service(arg typex.ServiceArg) typex.ServiceResult {
 	return nil
 }
