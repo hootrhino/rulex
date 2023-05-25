@@ -26,10 +26,12 @@ type _ttydConfig struct {
 type WebTTYPlugin struct {
 	ttydCmd    *exec.Cmd
 	mainConfig _ttydConfig
+	uuid       string
 }
 
 func NewWebTTYPlugin() *WebTTYPlugin {
 	return &WebTTYPlugin{
+		uuid:       utils.PluginUuid(),
 		mainConfig: _ttydConfig{},
 	}
 }
@@ -87,6 +89,7 @@ func (tty *WebTTYPlugin) Stop() error {
 
 func (hh *WebTTYPlugin) PluginMetaInfo() typex.XPluginMetaInfo {
 	return typex.XPluginMetaInfo{
+		UUID:     hh.uuid,
 		Name:     "WebTTYPlugin",
 		Version:  "0.0.1",
 		Homepage: "https://github.com/tsl0922/ttyd",
@@ -102,6 +105,6 @@ func (hh *WebTTYPlugin) PluginMetaInfo() typex.XPluginMetaInfo {
 * 服务调用接口
 *
  */
-func (cs *WebTTYPlugin) Service(arg typex.ServiceArg) error {
-	return nil
+func (cs *WebTTYPlugin) Service(arg typex.ServiceArg) typex.ServiceResult {
+	return typex.ServiceResult{}
 }

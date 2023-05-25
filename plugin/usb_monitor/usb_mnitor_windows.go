@@ -19,10 +19,13 @@ import (
 *
  */
 type usbMonitor struct {
+	uuid string
 }
 
 func NewUsbMonitor() typex.XPlugin {
-	return &usbMonitor{}
+	return &usbMonitor{
+		uuid: "USB-MONITOR"
+	}
 }
 func (usbm *usbMonitor) Init(_ *ini.Section) error {
 	return nil
@@ -44,6 +47,7 @@ func (usbm *usbMonitor) Stop() error {
 
 func (usbm *usbMonitor) PluginMetaInfo() typex.XPluginMetaInfo {
 	return typex.XPluginMetaInfo{
+		UUID:     usbm.uuid,
 		Name:     "USB Monitor",
 		Version:  "0.0.1",
 		Homepage: "https://github.com/hootrhino/rulex.git",
@@ -59,6 +63,6 @@ func (usbm *usbMonitor) PluginMetaInfo() typex.XPluginMetaInfo {
 * 服务调用接口
 *
  */
-func (usbm *usbMonitor) Service(arg typex.ServiceArg) error {
-	return nil
+func (usbm *usbMonitor) Service(arg typex.ServiceArg) typex.ServiceResult {
+	return typex.ServiceResult{}
 }

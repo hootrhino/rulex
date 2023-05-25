@@ -9,6 +9,7 @@ import (
 
 	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/typex"
+	"github.com/hootrhino/rulex/utils"
 	"gopkg.in/ini.v1"
 )
 
@@ -17,11 +18,12 @@ type SensorServer struct {
 	cancelMain context.CancelFunc
 	tcpPort    int
 	httpPort   int
+	uuid       string
 }
 
 func NewSensorServer() *SensorServer {
 	ctx, cancel := context.WithCancel(context.Background())
-	return &SensorServer{ctxMain: ctx, cancelMain: cancel}
+	return &SensorServer{ctxMain: ctx, cancelMain: cancel, uuid: "SENSOR-SERVER"}
 }
 
 func (dm *SensorServer) Init(config *ini.Section) error {
@@ -42,6 +44,7 @@ func (dm *SensorServer) Stop() error {
 
 func (hh *SensorServer) PluginMetaInfo() typex.XPluginMetaInfo {
 	return typex.XPluginMetaInfo{
+		UUID:     hh.uuid,
 		Name:     "GenericSensorServer",
 		Version:  "0.0.1",
 		Homepage: "www.github.com/hootrhino/rulex",
@@ -57,8 +60,8 @@ func (hh *SensorServer) PluginMetaInfo() typex.XPluginMetaInfo {
 * 服务调用接口
 *
  */
-func (cs *SensorServer) Service(arg typex.ServiceArg) error {
-	return nil
+func (cs *SensorServer) Service(arg typex.ServiceArg) typex.ServiceResult {
+	return typex.ServiceResult{}
 }
 
 // --------------------------------------------------------------------------------------------------

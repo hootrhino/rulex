@@ -2,14 +2,18 @@ package demo_plugin
 
 import (
 	"github.com/hootrhino/rulex/typex"
+	"github.com/hootrhino/rulex/utils"
 	"gopkg.in/ini.v1"
 )
 
 type DemoPlugin struct {
+	uuid string
 }
 
 func NewDemoPlugin() *DemoPlugin {
-	return &DemoPlugin{}
+	return &DemoPlugin{
+		uuid: "DEMO01",
+	}
 }
 
 func (dm *DemoPlugin) Init(config *ini.Section) error {
@@ -25,6 +29,7 @@ func (dm *DemoPlugin) Stop() error {
 
 func (hh *DemoPlugin) PluginMetaInfo() typex.XPluginMetaInfo {
 	return typex.XPluginMetaInfo{
+		UUID:     hh.uuid,
 		Name:     "DemoPlugin",
 		Version:  "0.0.1",
 		Homepage: "www.github.com/hootrhino/rulex",
@@ -40,6 +45,6 @@ func (hh *DemoPlugin) PluginMetaInfo() typex.XPluginMetaInfo {
 * 服务调用接口
 *
  */
-func (cs *DemoPlugin) Service(arg typex.ServiceArg) error {
-	return nil
+func (cs *DemoPlugin) Service(arg typex.ServiceArg) typex.ServiceResult {
+	return typex.ServiceResult{}
 }
