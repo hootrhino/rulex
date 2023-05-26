@@ -76,7 +76,7 @@ func (s *MqttServer) Start(r typex.RuleX) error {
 		}
 	}
 	s.mqttServer.Events.OnMessage = func(c events.Client, p events.Packet) (events.Packet, error) {
-		glogger.GLogger.Debug("OnMessage:", c.ID, c.Username, p.TopicName, p.Payload)
+		glogger.GLogger.Debug("OnMessage:", c.ID, string(c.Username), (p.TopicName), string(p.Payload))
 		return p, nil
 	}
 	glogger.GLogger.Infof("MqttServer start at [%s:%v] successfully", s.Host, s.Port)
@@ -105,7 +105,6 @@ func (s *MqttServer) PluginMetaInfo() typex.XPluginMetaInfo {
 	}
 }
 
-
 /*
 *
 * 认证器, 目前只做了个简单的认证机制：password=md5(clientid+username)
@@ -115,10 +114,10 @@ type AuthController struct {
 }
 
 func (*AuthController) Authenticate(user, password []byte) bool {
-	glogger.GLogger.Debug("Client require Authenticate:", user, string(password))
+	glogger.GLogger.Debug("Client require Authenticate:", string(user), string(password))
 	return true
 }
 func (*AuthController) ACL(user []byte, topic string, write bool) bool {
-	glogger.GLogger.Debug("Client require ACL:", topic, write)
+	glogger.GLogger.Debug("Client require ACL:", string(user), string(topic), write)
 	return true
 }

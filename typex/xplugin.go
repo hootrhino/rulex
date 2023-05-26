@@ -21,7 +21,9 @@ type ServiceResult struct {
 
 /*
 *
-* 插件的元信息
+* 插件的元信息结构体
+*   注意：插件信息这里uuid，name有些是固定写死的，比较特殊，不要轻易改变已有的，否则会导致接口失效
+*        只要是已有的尽量不要改这个UUID。
 *
  */
 type XPluginMetaInfo struct {
