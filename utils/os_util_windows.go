@@ -1,12 +1,21 @@
 package utils
 
-/*
-*
-* Get Local IP
-*
- */
+import (
+	"net"
+	"os"
+)
+
 func HostNameI() ([]string, error) {
-	return []string{}, nil
+	// ws://192.168.150.100:2580/ws
+	host, _ := os.Hostname()
+	addrs, _ := net.LookupHost(host)
+	addrsL := []string{}
+	for _, addr := range addrs {
+		if len(addr) <= 28 {
+			addrsL = append(addrsL, addr)
+		}
+	}
+	return addrsL, nil
 }
 
 /*

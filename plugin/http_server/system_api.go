@@ -34,11 +34,8 @@ func Ping(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 func Plugins(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	data := []interface{}{}
 	plugins := e.AllPlugins()
-	id := 0
 	plugins.Range(func(key, value interface{}) bool {
 		pi := value.(typex.XPlugin).PluginMetaInfo()
-		pi.UUID = fmt.Sprintf("PLUGIN:%v", id)
-		id++
 		data = append(data, pi)
 		return true
 	})

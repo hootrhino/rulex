@@ -28,11 +28,15 @@ type MqttServer struct {
 	mqttServer *mqttServer.Server
 	clients    map[string]*events.Client
 	ruleEngine typex.RuleX
+	uuid       string
 }
 
 func NewMqttServer() typex.XPlugin {
 	return &MqttServer{
+		Host:    "127.0.0.1",
+		Port:    1884,
 		clients: map[string]*events.Client{},
+		uuid:    "RULEX-MqttServer",
 	}
 }
 
@@ -72,7 +76,7 @@ func (s *MqttServer) Start(r typex.RuleX) error {
 		}
 	}
 	s.mqttServer.Events.OnMessage = func(c events.Client, p events.Packet) (events.Packet, error) {
-
+		glogger.GLogger.Debug("OnMessage:", c.ID, string(c.Username), (p.TopicName), string(p.Payload))
 		return p, nil
 	}
 	glogger.GLogger.Infof("MqttServer start at [%s:%v] successfully", s.Host, s.Port)
@@ -90,6 +94,7 @@ func (s *MqttServer) Stop() error {
 
 func (s *MqttServer) PluginMetaInfo() typex.XPluginMetaInfo {
 	return typex.XPluginMetaInfo{
+		UUID:     s.uuid,
 		Name:     "Light Weight MqttServer",
 		Version:  "0.0.1",
 		Homepage: "www.github.com/hootrhino/rulex",
@@ -102,15 +107,6 @@ func (s *MqttServer) PluginMetaInfo() typex.XPluginMetaInfo {
 
 /*
 *
-* 服务调用接口
-*
- */
-func (cs *MqttServer) Service(arg typex.ServiceArg) error {
-	return nil
-}
-
-/*
-*
 * 认证器, 目前只做了个简单的认证机制：password=md5(clientid+username)
 *
  */
@@ -118,8 +114,10 @@ type AuthController struct {
 }
 
 func (*AuthController) Authenticate(user, password []byte) bool {
+	glogger.GLogger.Debug("Client require Authenticate:", string(user), string(password))
 	return true
 }
 func (*AuthController) ACL(user []byte, topic string, write bool) bool {
+	glogger.GLogger.Debug("Client require ACL:", string(user), string(topic), write)
 	return true
 }
