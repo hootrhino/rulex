@@ -2,7 +2,7 @@ name: 1- 自动发布版本
 on:
   push:
     tags:
-      - "v*"
+      - "---v*"
 
 jobs:
   build:
