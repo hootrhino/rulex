@@ -3,7 +3,9 @@ package utils
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"runtime"
+	"strings"
 
 	"github.com/hootrhino/rulex/glogger"
 )
@@ -55,4 +57,61 @@ func BtoMB(bytes uint64) float64 {
  */
 func BToMb(b uint64) uint64 {
 	return b / 1024 / 1024
+}
+
+/*
+*
+* 获取操作系统发行版版本
+runtime.GOARCH:
+
+	386: 32-bit Intel/AMD x86 architecture
+	amd64: 64-bit Intel/AMD x86 architecture
+	arm: ARM architecture (32-bit)
+	arm64: ARM architecture (64-bit)
+	ppc64: 64-bit PowerPC architecture
+	ppc64le: 64-bit little-endian PowerPC architecture
+	mips: MIPS architecture (32-bit)
+	mips64: MIPS architecture (64-bit)
+	s390x: IBM System z architecture (64-bit)
+	wasm: WebAssembly architecture
+
+runtime.GOOS:
+
+	darwin: macOS
+	freebsd: FreeBSD
+	linux: Linux
+	windows: Windows
+	netbsd: NetBSD
+	openbsd: OpenBSD
+	plan9: Plan 9
+	dragonfly: DragonFly BSD
+
+*
+*/
+func GetOSDistribution() (string, error) {
+	if runtime.GOOS == "windows" {
+		return runtime.GOOS, nil
+	}
+	// Linux 有很多发行版, 目前特别要识别一下Openwrt
+	if runtime.GOOS == "linux" {
+		cmd := exec.Command("cat", "/etc/issue")
+		output, err := cmd.Output()
+		if err != nil {
+			return runtime.GOOS, err
+		}
+		osIssue := strings.ToLower(string(output))
+		if strings.Contains((osIssue), "openwrt") {
+			return "openwrt", nil
+		}
+		if strings.Contains((osIssue), "ubuntu") {
+			return "ubuntu", nil
+		}
+		if strings.Contains((osIssue), "debian") {
+			return "debian", nil
+		}
+		if strings.Contains((osIssue), "armbian") {
+			return "armbian", nil
+		}
+	}
+	return runtime.GOOS, nil
 }
