@@ -2,7 +2,6 @@ package demo_plugin
 
 import (
 	"github.com/hootrhino/rulex/typex"
-	"github.com/hootrhino/rulex/utils"
 	"gopkg.in/ini.v1"
 )
 
