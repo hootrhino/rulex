@@ -14,7 +14,6 @@ import (
 	"github.com/hootrhino/rulex/engine"
 	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/typex"
-	"github.com/hootrhino/rulex/utils"
 )
 
 func init() {
@@ -63,7 +62,7 @@ func main() {
 					},
 				},
 				Action: func(c *cli.Context) error {
-					utils.ShowBanner()
+					fmt.Println(typex.Banner)
 					engine.RunRulex(c.String("config"))
 					glogger.GLogger.Info("Run rulex successfully.")
 					return nil

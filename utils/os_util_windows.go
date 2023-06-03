@@ -5,6 +5,11 @@ import (
 	"os"
 )
 
+/*
+*
+* 获取IP地址
+*
+ */
 func HostNameI() ([]string, error) {
 	// ws://192.168.150.100:2580/ws
 	host, _ := os.Hostname()
@@ -23,17 +28,12 @@ func HostNameI() ([]string, error) {
 * 获取设备树
 *
  */
-type WindowsDevices struct {
-	Uarts  []string `json:"uarts"`
-	Videos []string `json:"videos"`
-	Audios []string `json:"audios"`
-}
 
-func GetLinuxDevices() (WindowsDevices, error) {
-	WindowsDevices := WindowsDevices{
+func GetSystemDevices() (SystemDevices, error) {
+	SystemDevices := SystemDevices{
 		Uarts:  []string{},
 		Videos: []string{},
 		Audios: []string{},
 	}
-	return WindowsDevices, nil
+	return SystemDevices, nil
 }

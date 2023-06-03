@@ -32,46 +32,40 @@ func HostNameI() ([]string, error) {
 * 获取设备树
 *
  */
-type LinuxDevices struct {
-	Uarts  []string `json:"uarts"`
-	Videos []string `json:"videos"`
-	Audios []string `json:"audios"`
-}
-
-func GetLinuxDevices() (LinuxDevices, error) {
-	LinuxDevices := LinuxDevices{
+func GetSystemDevices() (SystemDevices, error) {
+	SystemDevices := SystemDevices{
 		Uarts:  []string{},
 		Videos: []string{},
 		Audios: []string{},
 	}
 	f, err := os.Open("/dev/")
 	if err != nil {
-		return LinuxDevices, err
+		return SystemDevices, err
 	}
 	list, err := f.Readdir(-1)
 	f.Close()
 	if err != nil {
-		return LinuxDevices, err
+		return SystemDevices, err
 	}
 
 	for _, d := range list {
 		if !d.IsDir() {
 			if strings.Contains(d.Name(), "ttyS") {
-				LinuxDevices.Uarts = append(LinuxDevices.Uarts, d.Name())
+				SystemDevices.Uarts = append(SystemDevices.Uarts, d.Name())
 			}
 			if strings.Contains(d.Name(), "ttyACM") {
-				LinuxDevices.Uarts = append(LinuxDevices.Uarts, d.Name())
+				SystemDevices.Uarts = append(SystemDevices.Uarts, d.Name())
 			}
 			if strings.Contains(d.Name(), "ttyUSB") {
-				LinuxDevices.Uarts = append(LinuxDevices.Uarts, d.Name())
+				SystemDevices.Uarts = append(SystemDevices.Uarts, d.Name())
 			}
 			if strings.Contains(d.Name(), "video") {
-				LinuxDevices.Videos = append(LinuxDevices.Videos, d.Name())
+				SystemDevices.Videos = append(SystemDevices.Videos, d.Name())
 			}
 			if strings.Contains(d.Name(), "audio") {
-				LinuxDevices.Audios = append(LinuxDevices.Audios, d.Name())
+				SystemDevices.Audios = append(SystemDevices.Audios, d.Name())
 			}
 		}
 	}
-	return LinuxDevices, nil
+	return SystemDevices, nil
 }
