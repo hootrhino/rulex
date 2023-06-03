@@ -13,6 +13,23 @@ import (
 *
  */
 func HostNameI() ([]string, error) {
+	dist, _ := GetOSDistribution()
+	if dist == "openwrt" {
+		line := `ip addr show | awk '/inet / {print $2}' | awk 'BEGIN{FS="/"} {split($0, arr, "/"); print arr[1]}'`
+		cmd := exec.Command("sh", "-c", line)
+		output, err := cmd.Output()
+		if err != nil {
+			return []string{}, err
+		}
+		result := strings.TrimSpace(string(output))
+		ips := []string{}
+		for _, v := range strings.Split(result, "\n") {
+			if v != "127.0.0.1" {
+				ips = append(ips, v)
+			}
+		}
+		return ips, nil
+	}
 	cmd := exec.Command("hostname", "-I")
 	data, err1 := cmd.Output()
 	if err1 != nil {
