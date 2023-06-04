@@ -14,12 +14,12 @@ import (
 *
  */
 type _AISDeviceBaseSentence struct {
-	Talker   string             `json:"Talker"`   // The talker id (e.g GP)
-	Type     string             `json:"Type"`     // The data type (e.g GSA)
-	Fields   []string           `json:"Fields"`   // Array of fields
-	Checksum string             `json:"Checksum"` // The Checksum
-	Raw      string             `json:"Raw"`      // The raw NMEA sentence received
-	TagBlock _AISDeviceTagBlock `json:"TagBlock"` // NMEA tagblock
+	Talker   string             `json:"talker,omitempty"`   // The talker id (e.g GP)
+	Type     string             `json:"type,omitempty"`     // The data type (e.g GSA)
+	Fields   []string           `json:"fields,omitempty"`   // Array of fields
+	Checksum string             `json:"checksum,omitempty"` // The Checksum
+	Raw      string             `json:"raw,omitempty"`      // The raw NMEA sentence received
+	TagBlock _AISDeviceTagBlock `json:"tagBlock,omitempty"` // NMEA tagblock
 }
 
 /*
