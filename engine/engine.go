@@ -293,7 +293,6 @@ func (e *RuleEngine) RunDeviceCallbacks(Device *typex.Device, callbackArgs strin
 	}
 }
 
-
 // LoadHook
 func (e *RuleEngine) LoadHook(h typex.XHook) error {
 	value, _ := e.Hooks.Load(h.Name())
@@ -603,6 +602,12 @@ func (e *RuleEngine) InitDeviceTypeManager() error {
 		&typex.XConfig{
 			Engine: e,
 			Device: device.NewVideoCamera(e),
+		},
+	)
+	e.DeviceTypeManager.Register(typex.GENERIC_AIS,
+		&typex.XConfig{
+			Engine: e,
+			Device: device.NewAISDevice(e),
 		},
 	)
 	return nil
