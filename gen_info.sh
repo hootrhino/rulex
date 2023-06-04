@@ -28,19 +28,12 @@ var DefaultVersion = Version{
 	Version:   \`${VERSION}\`,
 	ReleaseTime: "$(echo $(date "+%Y-%m-%d %H:%M:%S"))",
 }
-
+var Banner = \`
+ **  Welcome to RULEX framework world <'_'>
+**   Version: ${VERSION}-${HASH:0:15}
+ **  Document: https://rulex.pages.dev
+\`
 EOF
 
 echo "Generate Version Susseccfully"
-#######################################################################
-## Gen banner
-#######################################################################
-cat >./utils/banner.b <<EOF
 
-|
-|*| Welcome to RULEX framework world <'_'>
-|*| Version: ${VERSION}-${HASH:0:15}
-|*| Document: https://rulex.pages.dev
-|
-EOF
-echo "Generate Banner Susseccfully"

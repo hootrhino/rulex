@@ -17,7 +17,11 @@ func (v Version) String() string {
 }
 
 var DefaultVersion = Version{
-	Version:   `v0.4.4-hotfix`,
-	ReleaseTime: "2023-05-26 22:28:37",
+	Version:   `v0.5.0`,
+	ReleaseTime: "2023-06-03 19:39:23",
 }
-
+var Banner = `
+ **  Welcome to RULEX framework world <'_'>
+**   Version: v0.5.0-9ec9c33aaa6401e
+ **  Document: https://rulex.pages.dev
+`

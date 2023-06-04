@@ -1,6 +1,6 @@
 
 |
 |*| Welcome to RULEX framework world <'_'>
-|*| Version: v0.4.4-hotfix-330d00f9f5ea993
+|*| Version: v0.5.0-ff6409b396415dd
 |*| Document: https://rulex.pages.dev
 |
