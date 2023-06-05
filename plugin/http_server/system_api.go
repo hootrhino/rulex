@@ -100,7 +100,7 @@ func System(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		"osDist": func() string {
 			v, _ := utils.GetOSDistribution()
 			return v
-		},
+		}(),
 		"startedTime": StartedTime,
 		"ip": func() []string {
 			if err0 != nil {

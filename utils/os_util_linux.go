@@ -3,9 +3,53 @@ package utils
 import (
 	"os"
 	"os/exec"
-
 	"strings"
 )
+
+/*
+#include <sys/utsname.h>
+#include <stdio.h>
+
+struct utsname ReleaseInfo() {
+    struct utsname utsname1;
+    int rv = uname(&utsname1);
+    if (rv == -1) {
+        return utsname1;
+    }
+    return utsname1;
+}
+*/
+import "C"
+
+/*
+*
+* Cgo 实现, 用来获取Linux的系统参数
+*
+ */
+type Utsname struct {
+	sysname  string
+	nodename string
+	release  string
+	version  string
+	machine  string
+}
+
+func ReleaseInfo() Utsname {
+	CS := C.ReleaseInfo()
+	sysname := [65]C.char(CS.sysname)
+	nodename := [65]C.char(CS.nodename)
+	release := [65]C.char(CS.release)
+	version := [65]C.char(CS.version)
+	machine := [65]C.char(CS.machine)
+
+	return Utsname{
+		sysname:  C.GoStringN(&sysname[0], 65),
+		nodename: C.GoStringN(&nodename[0], 65),
+		release:  C.GoStringN(&release[0], 65),
+		version:  C.GoStringN(&version[0], 65),
+		machine:  C.GoStringN(&machine[0], 65),
+	}
+}
 
 /*
 *

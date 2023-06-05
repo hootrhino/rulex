@@ -1,19 +1,17 @@
 package test
 
-// import (
-// 	"bytes"
-// 	"fmt"
-// 	"testing"
-// 	"unsafe"
+import (
+	"github.com/hootrhino/rulex/utils"
 
-// 	"golang.org/x/sys/unix"
-// )
-// /*
-// *
-// * 测试UnixAPI
-// * go test -timeout 30s -run ^Test_unix_InotifyInit1$ github.com/hootrhino/rulex/test -v -count=1
-// *
-// */
+	"testing"
+)
+
+/*
+*
+* 测试UnixAPI
+* go test -timeout 30s -run ^Test_unix_InotifyInit1$ github.com/hootrhino/rulex/test -v -count=1
+*
+ */
 // func Test_unix_InotifyInit1(t *testing.T) {
 // 	fd, err := unix.InotifyInit1(0)
 // 	if err != nil {
@@ -72,3 +70,10 @@ package test
 // 		}
 // 	}
 // }
+
+// go test -timeout 30s -run ^Test_Cgo_ReleaseInfo github.com/hootrhino/rulex/test -v -count=1
+func Test_Cgo_ReleaseInfo(t *testing.T) {
+
+	t.Log("Test_Cgo_ReleaseInfo=>", (utils.ReleaseInfo()))
+
+}
