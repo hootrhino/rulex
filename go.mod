@@ -28,12 +28,13 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.17
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/mitchellh/mapstructure v1.5.0
-	github.com/mochi-co/mqtt v1.3.2
+	github.com/mochi-co/mqtt/v2 v2.2.12
 	github.com/muka/go-bluetooth v0.0.0-20221213043340-85dc80edc4e1
 	github.com/nats-io/nats.go v1.26.0
 	github.com/patrikeh/go-deep v0.0.0-20230427173908-a2775168ab3d
 	github.com/plgd-dev/go-coap/v2 v2.6.0
 	github.com/robinson/gos7 v0.0.0-20230421131203-d20ac6ca08cd
+	github.com/rs/zerolog v1.28.0
 	github.com/shirou/gopsutil v3.21.11+incompatible
 	github.com/shirou/gopsutil/v3 v3.23.5
 	github.com/sirupsen/logrus v1.9.2
@@ -77,7 +78,7 @@ require (
 	github.com/goburrow/modbus v0.1.0 // indirect
 	github.com/goburrow/serial v0.1.0 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
-	github.com/godbus/dbus/v5 v5.0.3 // indirect
+	github.com/godbus/dbus/v5 v5.0.4 // indirect
 	github.com/golang/mock v1.6.0 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
@@ -93,6 +94,7 @@ require (
 	github.com/klauspost/cpuid/v2 v2.2.5 // indirect
 	github.com/leodido/go-urn v1.2.4 // indirect
 	github.com/lufia/plan9stats v0.0.0-20230326075908-cb1d2100619a // indirect
+	github.com/mattn/go-colorable v0.1.12 // indirect
 	github.com/mattn/go-isatty v0.0.19 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect

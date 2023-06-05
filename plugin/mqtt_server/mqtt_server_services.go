@@ -1,7 +1,6 @@
 package mqttserver
 
 import (
-
 	"github.com/hootrhino/rulex/typex"
 )
 
@@ -23,9 +22,10 @@ func (s *MqttServer) ListClients(offset, count int) []Client {
 	for _, v := range s.clients {
 		c := Client{
 			ID:           v.ID,
-			Remote:       v.Remote,
-			Username:     string(v.Username),
-			CleanSession: v.CleanSession,
+			Remote:       v.Net.Remote,
+			Username:     string(v.Properties.Username),
+			CleanSession: v.Properties.Clean,
+			Listener:     v.Net.Listener,
 		}
 		result = append(result, c)
 	}
@@ -38,7 +38,8 @@ func (s *MqttServer) ListClients(offset, count int) []Client {
 *
  */
 func (s *MqttServer) KickOut(clientid string) bool {
-	if _, ok := s.clients[clientid]; ok {
+	if client, ok := s.clients[clientid]; ok {
+		client.Stop(nil)
 		return true
 	}
 	return false
@@ -54,5 +55,25 @@ func (s *MqttServer) Service(arg typex.ServiceArg) typex.ServiceResult {
 	if arg.Name == "clients" {
 		return typex.ServiceResult{Out: s.ListClients(0, 100)}
 	}
-	return typex.ServiceResult{}
+	if arg.Name == "kickout" {
+		switch tt := arg.Args.(type) {
+		case []interface{}:
+			{
+				for _, id := range tt {
+					switch idt := id.(type) {
+					case string:
+						{
+							s.KickOut(idt)
+						}
+					}
+				}
+			}
+		default:
+			{
+				return typex.ServiceResult{Out: []string{"unsupported args:" + arg.Name}}
+			}
+		}
+		return typex.ServiceResult{Out: []string{"kick out success"}}
+	}
+	return typex.ServiceResult{Out: []string{"no such service name:" + arg.Name}}
 }

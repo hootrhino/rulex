@@ -14,8 +14,9 @@ import (
 
 func PluginService(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 	type Form struct {
-		UUID string `json:"uuid" binding:"required"`
-		Name string `json:"name" binding:"required"`
+		UUID string      `json:"uuid" binding:"required"`
+		Name string      `json:"name" binding:"required"`
+		Args interface{} `json:"args"`
 	}
 	form := Form{}
 	if err := c.ShouldBindJSON(&form); err != nil {
@@ -26,6 +27,8 @@ func PluginService(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 	if ok {
 		result := plugin.(typex.XPlugin).Service(typex.ServiceArg{
 			Name: form.Name,
+			UUID: form.UUID,
+			Args: form.Args,
 		})
 		c.JSON(200, OkWithData(result.Out))
 		return
