@@ -78,36 +78,40 @@ func source_count(e typex.RuleX) map[string]int {
 
 /*
 *
-* 获取系统指标
+* 获取系统指标, Go 自带这个不准, 后期版本需要更换跨平台实现
 *
  */
 func System(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
-	cpuPercent, _ := cpu.Percent(5*time.Millisecond, true)
+	cpuPercent, _ := cpu.Percent(5*time.Millisecond, false)
 	parts, _ := disk.Partitions(true)
 	diskInfo, _ := disk.Usage(parts[0].Mountpoint)
 	// For info on each, see: https://golang.org/pkg/runtime/#MemStats
 	var m runtime.MemStats
 	runtime.ReadMemStats(&m)
-	ip, err := utils.HostNameI()
+	ip, err0 := utils.HostNameI()
 	hardWareInfo := map[string]interface{}{
-		"version":     e.Version().Version,
-		"diskInfo":    calculateDiskInfo(diskInfo),
-		"systemMem":   bToMb(m.Sys),
-		"allocMem":    bToMb(m.Alloc),
-		"totalMem":    bToMb(m.TotalAlloc),
-		"cpuPercent":  calculateCpuPercent(cpuPercent),
-		"osArch":      runtime.GOOS + "-" + runtime.GOARCH,
+		"version":    e.Version().Version,
+		"diskInfo":   calculateDiskInfo(diskInfo),
+		"systemMem":  bToMb(m.Sys),
+		"allocMem":   bToMb(m.Alloc),
+		"totalMem":   bToMb(m.TotalAlloc),
+		"cpuPercent": calculateCpuPercent(cpuPercent),
+		"osArch":     runtime.GOOS + "-" + runtime.GOARCH,
+		"osDist": func() string {
+			v, _ := utils.GetOSDistribution()
+			return v
+		}(),
 		"startedTime": StartedTime,
 		"ip": func() []string {
-			if err != nil {
-				glogger.GLogger.Error(err)
+			if err0 != nil {
+				glogger.GLogger.Error(err0)
 				return []string{"127.0.0.1"}
 			}
 			return ip
 		}(),
 		"wsUrl": func() []string {
-			if err != nil {
-				glogger.GLogger.Error(err)
+			if err0 != nil {
+				glogger.GLogger.Error(err0)
 				return []string{"ws://127.0.0.1:2580/ws"}
 			}
 			ips := []string{}
@@ -273,5 +277,5 @@ func calculateCpuPercent(cpus []float64) float64 {
 		acc += v
 	}
 	value, _ := strconv.ParseFloat(fmt.Sprintf("%.2f", acc), 64)
-	return value / float64(len(cpus))
+	return value
 }
