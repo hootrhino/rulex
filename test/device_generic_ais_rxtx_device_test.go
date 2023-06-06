@@ -3,10 +3,12 @@ package test
 import (
 	"encoding/json"
 	"fmt"
-	httpserver "github.com/hootrhino/rulex/plugin/http_server"
 	"log"
+	"net"
 	"testing"
 	"time"
+
+	httpserver "github.com/hootrhino/rulex/plugin/http_server"
 
 	"github.com/adrianmo/go-nmea"
 	"github.com/hootrhino/rulex/typex"
@@ -33,8 +35,71 @@ func Test_AIS_SEND_PACKET(t *testing.T) {
 * AIS 数据发送模拟器
 *
  */
-func ais_sender_emulator() {
+func ais_sender_emulator_udp() {
+	// Server address
+	serverAddr := "localhost:9980"
 
+	// Create UDP address
+	udpAddr, err := net.ResolveUDPAddr("udp", serverAddr)
+	if err != nil {
+		fmt.Println("Failed to resolve server address:", err)
+		return
+	}
+
+	// Create UDP connection
+	conn, err := net.DialUDP("udp", nil, udpAddr)
+	if err != nil {
+		fmt.Println("Failed to connect to server:", err)
+		return
+	}
+	defer conn.Close()
+
+	// Send data to the server
+	s1 := `\1G1:370208949,g:1,s:ABC,t:2320,c:1660780800,d:110*72\!ABVDM,1,1,5,B,H69EvShlTpID@TpMUG3COOL0000,2*14`
+	_, err = conn.Write([]byte(s1))
+	if err != nil {
+		fmt.Println("Failed to send data to server:", err)
+		return
+	}
+
+	// Receive response from the server
+	buffer := make([]byte, 1024)
+	bytesRead, _, err := conn.ReadFromUDP(buffer)
+	if err != nil {
+		fmt.Println("Failed to receive response from server:", err)
+		return
+	}
+
+	response := string(buffer[:bytesRead])
+	fmt.Println("Response from server:", response)
+}
+
+func ais_sender_emulator_tcp() {
+	// Connect to the server
+	s1 := `\1G1:370208949,g:1,s:ABC,t:2320,c:1660780800,d:110*72\!ABVDM,1,1,5,B,H69EvShlTpID@TpMUG3COOL0000,2*14`
+	conn, err := net.Dial("tcp", "localhost:9980")
+	if err != nil {
+		fmt.Println("Failed to connect:", err)
+		return
+	}
+	defer conn.Close()
+
+	_, err = conn.Write([]byte(s1))
+	if err != nil {
+		fmt.Println("Failed to send data:", err)
+		return
+	}
+
+	// Receive response from the server
+	buffer := make([]byte, 1024)
+	bytesRead, err := conn.Read(buffer)
+	if err != nil {
+		fmt.Println("Failed to receive response:", err)
+		return
+	}
+
+	response := string(buffer[:bytesRead])
+	fmt.Println("Response from server:", response)
 }
 
 // go test -timeout 30s -run ^Test_generic_ais_txrx_device github.com/hootrhino/rulex/test -v -count=1
@@ -56,6 +121,12 @@ func Test_generic_ais_txrx_device(t *testing.T) {
 	if err := engine.LoadDevice(GENERIC_AIS); err != nil {
 		t.Fatal(err)
 	}
-	time.Sleep(25 * time.Second)
+	for i := 0; i < 100; i++ {
+		ais_sender_emulator_tcp()
+	}
+	for i := 0; i < 100; i++ {
+		ais_sender_emulator_udp()
+	}
+	time.Sleep(10 * time.Second)
 	engine.Stop()
 }

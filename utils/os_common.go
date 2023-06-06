@@ -94,7 +94,7 @@ func GetOSDistribution() (string, error) {
 	}
 	// Linux 有很多发行版, 目前特别要识别一下Openwrt
 	if runtime.GOOS == "linux" {
-		cmd := exec.Command("cat", "/etc/issue")
+		cmd := exec.Command("cat", "/etc/os-release")
 		output, err := cmd.Output()
 		if err != nil {
 			return runtime.GOOS, err
@@ -111,6 +111,9 @@ func GetOSDistribution() (string, error) {
 		}
 		if strings.Contains((osIssue), "armbian") {
 			return "armbian", nil
+		}
+		if strings.Contains((osIssue), "deepin") {
+			return "deepin", nil
 		}
 	}
 	return runtime.GOOS, nil

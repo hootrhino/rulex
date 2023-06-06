@@ -1,6 +1,12 @@
 package device
 
 import (
+	"bufio"
+	"fmt"
+	"net"
+	"strings"
+
+	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/typex"
 	"github.com/hootrhino/rulex/utils"
 )
@@ -53,14 +59,16 @@ type _AISDevicePacket struct {
 
 // --------------------------------------------------------------------------------------------------
 type _AISDeviceConfig struct {
-	Host string `json:"host" validate:"required" title:"服务地址"`
-	Port int    `json:"port" validate:"required" title:"服务端口"`
+	Mode string `json:"mode"` // TCP UDP UART
+	Host string `json:"host" validate:"required"`
+	Port int    `json:"port" validate:"required"`
 }
 type AISDevice struct {
 	typex.XStatus
-	status     typex.DeviceState
-	mainConfig _AISDeviceConfig
-	RuleEngine typex.RuleX
+	status      typex.DeviceState
+	mainConfig  _AISDeviceConfig
+	RuleEngine  typex.RuleX
+	tcpListener net.Listener // TCP 接收端
 }
 
 /*
@@ -71,7 +79,11 @@ type AISDevice struct {
 func NewAISDevice(e typex.RuleX) typex.XDevice {
 	aisd := new(AISDevice)
 	aisd.RuleEngine = e
-	aisd.mainConfig = _AISDeviceConfig{}
+	aisd.mainConfig = _AISDeviceConfig{
+		Mode: "TCP",
+		Host: "0.0.0.0",
+		Port: 2600,
+	}
 	return aisd
 }
 
@@ -90,6 +102,15 @@ func (aisd *AISDevice) Start(cctx typex.CCTX) error {
 	aisd.Ctx = cctx.Ctx
 	aisd.CancelCTX = cctx.CancelCTX
 	//
+	listener, err := net.Listen("tcp",
+		fmt.Sprintf("%s%v", aisd.mainConfig.Host, aisd.mainConfig.Port))
+	if err != nil {
+		return err
+	}
+	aisd.tcpListener = listener
+	glogger.GLogger.Infof("AIS TCP server started on http://%s:%v",
+		aisd.mainConfig.Host, aisd.mainConfig.Port)
+	go aisd.handleConnect(listener)
 	return nil
 }
 
@@ -112,6 +133,9 @@ func (aisd *AISDevice) Status() typex.DeviceState {
 func (aisd *AISDevice) Stop() {
 	aisd.status = typex.DEV_DOWN
 	aisd.CancelCTX()
+	if aisd.tcpListener != nil {
+		aisd.tcpListener.Close()
+	}
 }
 
 // 设备属性，是一系列属性描述
@@ -146,4 +170,52 @@ func (aisd *AISDevice) OnDCACall(UUID string, Command string, Args interface{}) 
  */
 func (aisd *AISDevice) OnCtrl(cmd []byte, args []byte) ([]byte, error) {
 	return []byte{}, nil
+}
+
+//--------------------------------------------------------------------------------------------------
+// 内部
+//--------------------------------------------------------------------------------------------------
+/*
+*
+* 处理连接
+*
+ */
+func (aisd *AISDevice) handleConnect(listener net.Listener) {
+	for {
+		select {
+		case <-aisd.Ctx.Done():
+			{
+				return
+			}
+		default:
+			{
+			}
+		}
+		tcpcon, err := listener.Accept()
+		if err != nil {
+			glogger.GLogger.Error(err)
+			continue
+		}
+		go aisd.handleIO(tcpcon)
+	}
+
+}
+
+/*
+*
+* 数据处理
+*
+ */
+func (aisd *AISDevice) handleIO(conn net.Conn) {
+	defer conn.Close()
+	reader := bufio.NewReader(conn)
+
+	s, err := reader.ReadString('\n')
+	if err != nil {
+		glogger.GLogger.Error(err)
+		return
+	}
+	if strings.HasSuffix(s, "\r\n") {
+		glogger.GLogger.Debug("Received data:", s)
+	}
 }
