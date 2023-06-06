@@ -90,17 +90,14 @@ func System(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	runtime.ReadMemStats(&m)
 	ip, err0 := utils.HostNameI()
 	hardWareInfo := map[string]interface{}{
-		"version":    e.Version().Version,
-		"diskInfo":   calculateDiskInfo(diskInfo),
-		"systemMem":  bToMb(m.Sys),
-		"allocMem":   bToMb(m.Alloc),
-		"totalMem":   bToMb(m.TotalAlloc),
-		"cpuPercent": calculateCpuPercent(cpuPercent),
-		"osArch":     runtime.GOOS + "-" + runtime.GOARCH,
-		"osDist": func() string {
-			v, _ := utils.GetOSDistribution()
-			return v
-		}(),
+		"version":     e.Version().Version,
+		"diskInfo":    calculateDiskInfo(diskInfo),
+		"systemMem":   bToMb(m.Sys),
+		"allocMem":    bToMb(m.Alloc),
+		"totalMem":    bToMb(m.TotalAlloc),
+		"cpuPercent":  calculateCpuPercent(cpuPercent),
+		"osArch":      e.Version().Arch,
+		"osDist":      e.Version().Dist,
 		"startedTime": StartedTime,
 		"ip": func() []string {
 			if err0 != nil {

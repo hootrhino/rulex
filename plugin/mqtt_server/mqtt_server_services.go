@@ -68,12 +68,7 @@ func (s *MqttServer) Service(arg typex.ServiceArg) typex.ServiceResult {
 					}
 				}
 			}
-		default:
-			{
-				return typex.ServiceResult{Out: []string{"unsupported args:" + arg.Name}}
-			}
 		}
-		return typex.ServiceResult{Out: []string{"kick out success"}}
 	}
-	return typex.ServiceResult{Out: []string{"no such service name:" + arg.Name}}
+	return typex.ServiceResult{Out: []Client{Client{}}}
 }

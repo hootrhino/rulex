@@ -9,7 +9,6 @@ import (
 
 	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/typex"
-	"github.com/hootrhino/rulex/utils"
 	"gopkg.in/ini.v1"
 )
 
