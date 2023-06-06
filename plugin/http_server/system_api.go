@@ -82,7 +82,7 @@ func source_count(e typex.RuleX) map[string]int {
 *
  */
 func System(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
-	cpuPercent, _ := cpu.Percent(5*time.Millisecond, true)
+	cpuPercent, _ := cpu.Percent(5*time.Millisecond, false)
 	parts, _ := disk.Partitions(true)
 	diskInfo, _ := disk.Usage(parts[0].Mountpoint)
 	// For info on each, see: https://golang.org/pkg/runtime/#MemStats
@@ -277,5 +277,5 @@ func calculateCpuPercent(cpus []float64) float64 {
 		acc += v
 	}
 	value, _ := strconv.ParseFloat(fmt.Sprintf("%.2f", acc), 64)
-	return value / float64(len(cpus))
+	return value
 }
