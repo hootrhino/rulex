@@ -233,7 +233,9 @@ func (mdev *generic_modbus_device) Status() typex.DeviceState {
 
 // 停止设备
 func (mdev *generic_modbus_device) Stop() {
-	mdev.CancelCTX()
+	if mdev.CancelCTX != nil {
+		mdev.CancelCTX()
+	}
 	mdev.status = typex.DEV_DOWN
 
 }
