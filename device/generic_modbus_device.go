@@ -94,8 +94,8 @@ func (mdev *generic_modbus_device) Init(devId string, configMap map[string]inter
 	if err := utils.BindSourceConfig(configMap, &mdev.mainConfig); err != nil {
 		return err
 	}
-	// 超时大雨20秒无意义
-	if mdev.mainConfig.CommonConfig.Timeout > 30 {
+	// 超时大于30秒无意义
+	if mdev.mainConfig.CommonConfig.Timeout > 30000 {
 		return errors.New("'timeout' must less than 30 second")
 	}
 	// 频率不能太快
