@@ -14,6 +14,7 @@ import (
 	"github.com/hootrhino/rulex/engine"
 	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/typex"
+	"github.com/hootrhino/rulex/utils"
 )
 
 func init() {
@@ -28,6 +29,12 @@ func init() {
 			}
 		}
 	}()
+	dist, err := utils.GetOSDistribution()
+	if err != nil {
+		panic(err)
+	}
+	typex.DefaultVersion.Dist = dist
+	typex.DefaultVersion.Arch = runtime.GOOS + "-" + runtime.GOARCH
 }
 
 /*
