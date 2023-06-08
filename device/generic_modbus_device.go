@@ -82,7 +82,6 @@ func NewGenericModbusDevice(e typex.RuleX) typex.XDevice {
 		TcpConfig:    _GMODHostConfig{Host: "127.0.0.1", Port: 502},
 		RtuConfig:    common.CommonUartConfig{},
 	}
-	mdev.retryTimes = 0
 	mdev.Busy = false
 	mdev.status = typex.DEV_DOWN
 	return mdev
@@ -114,6 +113,8 @@ func (mdev *generic_modbus_device) Init(devId string, configMap map[string]inter
 	if !utils.SContains([]string{"RTU", "TCP"}, mdev.mainConfig.CommonConfig.Mode) {
 		return errors.New("unsupported mode, only can be one of 'TCP' or 'RTU'")
 	}
+	mdev.retryTimes = 0
+
 	return nil
 }
 
