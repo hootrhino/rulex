@@ -237,7 +237,7 @@ func (mdev *generic_modbus_device) Stop() {
 		mdev.CancelCTX()
 	}
 	mdev.status = typex.DEV_DOWN
-
+	mdev.driver.Stop()
 }
 
 // 设备属性，是一系列属性描述
