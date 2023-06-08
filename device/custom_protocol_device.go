@@ -212,7 +212,6 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 		go func(ctx context.Context, pp map[string]_CPDProtocol) {
 			ticker := time.NewTicker(time.Duration(*mdev.mainConfig.CommonConfig.Frequency) * time.Millisecond)
 			for {
-				<-ticker.C
 				select {
 				case <-ctx.Done():
 					{
@@ -293,6 +292,7 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 					}
 				}
 				mdev.Busy = false
+				<-ticker.C
 			}
 		}(mdev.Ctx, mdev.mainConfig.DeviceConfig)
 		mdev.status = typex.DEV_UP

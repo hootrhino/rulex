@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	golog "log"
+	"runtime"
 	"sync"
 	"time"
 
@@ -110,7 +111,7 @@ func (mdev *generic_modbus_device) Init(devId string, configMap map[string]inter
 	if utils.IsListDuplicated(tags) {
 		return errors.New("tag duplicated")
 	}
-	if !utils.SContains([]string{"RTU", "TCP","rtu", "tcp"}, mdev.mainConfig.CommonConfig.Mode) {
+	if !utils.SContains([]string{"RTU", "TCP", "rtu", "tcp"}, mdev.mainConfig.CommonConfig.Mode) {
 		return errors.New("unsupported mode, only can be one of 'TCP' or 'RTU'")
 	}
 	mdev.retryTimes = 0
@@ -155,6 +156,10 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 			return err
 		}
 		client := modbus.NewClient(mdev.tcpHandler)
+		runtime.SetFinalizer(client, func(c modbus.Client) {
+			println("runtime.SetFinalizer ===================>")
+
+		})
 		mdev.driver = driver.NewModBusTCPDriver(mdev.Details(),
 			mdev.RuleEngine, mdev.mainConfig.Registers, mdev.tcpHandler, client)
 	}
@@ -171,14 +176,9 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 		ticker := time.NewTicker(time.Duration(mdev.mainConfig.CommonConfig.Frequency) * time.Millisecond)
 		buffer := make([]byte, common.T_64KB)
 		for {
-			<-ticker.C
 			select {
 			case <-ctx.Done():
 				{
-					ticker.Stop()
-					if mdev.driver != nil {
-						mdev.driver.Stop()
-					}
 					return
 				}
 			default:
@@ -199,6 +199,7 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 			} else {
 				mdev.RuleEngine.WorkDevice(mdev.Details(), string(buffer[:n]))
 			}
+			<-ticker.C
 		}
 
 	}(mdev.Ctx, mdev.driver)
@@ -238,7 +239,6 @@ func (mdev *generic_modbus_device) Stop() {
 		mdev.CancelCTX()
 	}
 	mdev.status = typex.DEV_DOWN
-	mdev.driver.Stop()
 }
 
 // 设备属性，是一系列属性描述
