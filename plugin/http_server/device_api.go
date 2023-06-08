@@ -141,9 +141,10 @@ func UpdateDevice(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 		c.JSON(200, Error("missing 'uuid' fields"))
 		return
 	}
-	Device := e.GetDevice(form.UUID)
-	if Device == nil {
-		c.JSON(200, Error("device not exists:"+form.UUID))
+	// 更新的时候从数据库往外面拿
+	Device, err := hs.GetDeviceWithUUID(form.UUID)
+	if err != nil {
+		c.JSON(200, err)
 		return
 	}
 

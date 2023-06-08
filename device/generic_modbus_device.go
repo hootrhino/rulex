@@ -111,7 +111,7 @@ func (mdev *generic_modbus_device) Init(devId string, configMap map[string]inter
 	if utils.IsListDuplicated(tags) {
 		return errors.New("tag duplicated")
 	}
-	if !utils.SContains([]string{"RTU", "TCP", "rtu", "tcp"}, mdev.mainConfig.CommonConfig.Mode) {
+	if !utils.SContains([]string{"RTU", "TCP"}, mdev.mainConfig.CommonConfig.Mode) {
 		return errors.New("unsupported mode, only can be one of 'TCP' or 'RTU'")
 	}
 	mdev.retryTimes = 0
