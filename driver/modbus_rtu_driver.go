@@ -66,6 +66,7 @@ func (d *modBusRtuDriver) Read(cmd []byte, data []byte) (int, error) {
 	var err error
 	var results []byte
 	dataMap := map[string]common.RegisterRW{}
+	count := len(d.Registers)
 	for _, r := range d.Registers {
 		d.handler.SlaveId = r.SlaverId
 		if r.Function == common.READ_COIL {
@@ -73,6 +74,7 @@ func (d *modBusRtuDriver) Read(cmd []byte, data []byte) (int, error) {
 			results, err = d.client.ReadCoils(r.Address, r.Quantity)
 			d.lock.Unlock()
 			if err != nil {
+				count--
 				glogger.GLogger.Error(err)
 			}
 			value := common.RegisterRW{
@@ -90,6 +92,7 @@ func (d *modBusRtuDriver) Read(cmd []byte, data []byte) (int, error) {
 			results, err = d.client.ReadDiscreteInputs(r.Address, r.Quantity)
 			d.lock.Unlock()
 			if err != nil {
+				count--
 				glogger.GLogger.Error(err)
 			}
 			value := common.RegisterRW{
@@ -108,6 +111,7 @@ func (d *modBusRtuDriver) Read(cmd []byte, data []byte) (int, error) {
 			results, err = d.client.ReadHoldingRegisters(r.Address, r.Quantity)
 			d.lock.Unlock()
 			if err != nil {
+				count--
 				glogger.GLogger.Error(err)
 			}
 			value := common.RegisterRW{
@@ -125,6 +129,7 @@ func (d *modBusRtuDriver) Read(cmd []byte, data []byte) (int, error) {
 			results, err = d.client.ReadInputRegisters(r.Address, r.Quantity)
 			d.lock.Unlock()
 			if err != nil {
+				count--
 				glogger.GLogger.Error(err)
 			}
 			value := common.RegisterRW{
@@ -144,6 +149,11 @@ func (d *modBusRtuDriver) Read(cmd []byte, data []byte) (int, error) {
 	}
 	bytes, _ := json.Marshal(dataMap)
 	copy(data, bytes)
+	// 只要有部分成功，哪怕有一个设备出故障也认为是正常的，上层可以根据Value来判断
+	ll := len(d.Registers)
+	if ll > 0 && count > 0 {
+		return len(bytes), nil
+	}
 	return len(bytes), err
 
 }
