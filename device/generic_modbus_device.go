@@ -113,7 +113,6 @@ func (mdev *generic_modbus_device) Init(devId string, configMap map[string]inter
 	if !utils.SContains([]string{"RTU", "TCP"}, mdev.mainConfig.CommonConfig.Mode) {
 		return errors.New("unsupported mode, only can be one of 'TCP' or 'RTU'")
 	}
-	mdev.retryTimes = 0
 
 	return nil
 }
@@ -165,6 +164,7 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 		mdev.status = typex.DEV_UP
 		return nil
 	}
+	mdev.retryTimes = 0
 	go func(ctx context.Context, Driver typex.XExternalDriver) {
 
 		mdev.status = typex.DEV_UP
