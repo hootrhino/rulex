@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	golog "log"
-	"runtime"
 	"sync"
 	"time"
 
@@ -156,10 +155,6 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 			return err
 		}
 		client := modbus.NewClient(mdev.tcpHandler)
-		runtime.SetFinalizer(client, func(c modbus.Client) {
-			println("runtime.SetFinalizer ===================>")
-
-		})
 		mdev.driver = driver.NewModBusTCPDriver(mdev.Details(),
 			mdev.RuleEngine, mdev.mainConfig.Registers, mdev.tcpHandler, client)
 	}
@@ -237,6 +232,12 @@ func (mdev *generic_modbus_device) Status() typex.DeviceState {
 func (mdev *generic_modbus_device) Stop() {
 	if mdev.CancelCTX != nil {
 		mdev.CancelCTX()
+	}
+	if mdev.rtuHandler!=nil {
+		mdev.rtuHandler.Close()
+	}
+	if mdev.tcpHandler!=nil {
+		mdev.tcpHandler.Close()
 	}
 	mdev.status = typex.DEV_DOWN
 }
