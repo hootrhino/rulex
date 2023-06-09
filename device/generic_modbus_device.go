@@ -233,11 +233,8 @@ func (mdev *generic_modbus_device) Stop() {
 	if mdev.CancelCTX != nil {
 		mdev.CancelCTX()
 	}
-	if mdev.rtuHandler!=nil {
-		mdev.rtuHandler.Close()
-	}
-	if mdev.tcpHandler!=nil {
-		mdev.tcpHandler.Close()
+	if mdev.driver != nil {
+		mdev.driver.Stop()
 	}
 	mdev.status = typex.DEV_DOWN
 }
