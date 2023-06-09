@@ -23,6 +23,7 @@ type modBusTCPDriver struct {
 	RuleEngine typex.RuleX
 	Registers  []common.RegisterRW
 	device     *typex.Device
+	frequency  int64
 }
 
 func NewModBusTCPDriver(
@@ -30,7 +31,7 @@ func NewModBusTCPDriver(
 	e typex.RuleX,
 	Registers []common.RegisterRW,
 	handler *modbus.TCPClientHandler,
-	client modbus.Client) typex.XExternalDriver {
+	client modbus.Client, frequency int64) typex.XExternalDriver {
 	return &modBusTCPDriver{
 		state:      typex.DRIVER_UP,
 		device:     d,
@@ -38,6 +39,7 @@ func NewModBusTCPDriver(
 		client:     client,
 		handler:    handler,
 		Registers:  Registers,
+		frequency:  frequency,
 	}
 
 }
@@ -123,7 +125,7 @@ func (d *modBusTCPDriver) Read(cmd []byte, data []byte) (int, error) {
 			dataMap[r.Tag] = value
 		}
 		// 设置一个间隔时间防止低级CPU黏包等
-		time.Sleep(time.Duration(100) * time.Millisecond)
+		time.Sleep(time.Duration(d.frequency) * time.Millisecond)
 	}
 	bytes, _ := json.Marshal(dataMap)
 	copy(data, bytes)

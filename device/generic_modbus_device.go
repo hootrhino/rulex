@@ -140,7 +140,8 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 		}
 		client := modbus.NewClient(mdev.rtuHandler)
 		mdev.driver = driver.NewModBusRtuDriver(mdev.Details(),
-			mdev.RuleEngine, mdev.mainConfig.Registers, mdev.rtuHandler, client)
+			mdev.RuleEngine, mdev.mainConfig.Registers, mdev.rtuHandler,
+			client, mdev.mainConfig.CommonConfig.Frequency)
 	}
 	if mdev.mainConfig.CommonConfig.Mode == "TCP" {
 		mdev.tcpHandler = modbus.NewTCPClientHandler(
@@ -155,7 +156,8 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 		}
 		client := modbus.NewClient(mdev.tcpHandler)
 		mdev.driver = driver.NewModBusTCPDriver(mdev.Details(),
-			mdev.RuleEngine, mdev.mainConfig.Registers, mdev.tcpHandler, client)
+			mdev.RuleEngine, mdev.mainConfig.Registers, mdev.tcpHandler, client,
+			mdev.mainConfig.CommonConfig.Frequency)
 	}
 	//---------------------------------------------------------------------------------
 	// Start
@@ -168,7 +170,6 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 	go func(ctx context.Context, Driver typex.XExternalDriver) {
 
 		mdev.status = typex.DEV_UP
-		ticker := time.NewTicker(time.Duration(mdev.mainConfig.CommonConfig.Frequency) * time.Millisecond)
 		buffer := make([]byte, common.T_64KB)
 		for {
 			select {
@@ -194,7 +195,6 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 			} else {
 				mdev.RuleEngine.WorkDevice(mdev.Details(), string(buffer[:n]))
 			}
-			<-ticker.C
 		}
 
 	}(mdev.Ctx, mdev.driver)

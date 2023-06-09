@@ -25,6 +25,7 @@ type modBusRtuDriver struct {
 	Registers  []common.RegisterRW
 	device     *typex.Device
 	lock       sync.Mutex
+	frequency  int64
 }
 
 func NewModBusRtuDriver(
@@ -32,7 +33,7 @@ func NewModBusRtuDriver(
 	e typex.RuleX,
 	Registers []common.RegisterRW,
 	handler *modbus.RTUClientHandler,
-	client modbus.Client) typex.XExternalDriver {
+	client modbus.Client, frequency int64) typex.XExternalDriver {
 	return &modBusRtuDriver{
 		state:      typex.DRIVER_UP,
 		device:     d,
@@ -41,6 +42,7 @@ func NewModBusRtuDriver(
 		handler:    handler,
 		Registers:  Registers,
 		lock:       sync.Mutex{},
+		frequency:  frequency,
 	}
 
 }
@@ -138,7 +140,7 @@ func (d *modBusRtuDriver) Read(cmd []byte, data []byte) (int, error) {
 
 		// 设置一个间隔时间防止低级CPU黏包等
 		// TODO 未来通过参数形式传递
-		time.Sleep(time.Duration(100) * time.Millisecond)
+		time.Sleep(time.Duration(d.frequency) * time.Millisecond)
 	}
 	bytes, _ := json.Marshal(dataMap)
 	copy(data, bytes)
