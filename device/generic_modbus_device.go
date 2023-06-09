@@ -222,7 +222,8 @@ func (mdev *generic_modbus_device) OnWrite(cmd []byte, data []byte) (int, error)
 
 // 设备当前状态
 func (mdev *generic_modbus_device) Status() typex.DeviceState {
-	if mdev.retryTimes > 3 {
+	// 容错5次
+	if mdev.retryTimes > 5 {
 		return typex.DEV_DOWN
 	}
 	return typex.DEV_UP
