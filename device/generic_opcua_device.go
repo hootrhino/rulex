@@ -156,7 +156,6 @@ func (opcDev *genericOpcuaDevice) Start(cctx typex.CCTX) error {
 		ticker := time.NewTicker(time.Duration(opcDev.mainConfig.OpcuaCommonConfig.Frequency) * time.Millisecond)
 		buffer := make([]byte, common.T_64KB)
 		for {
-			<-ticker.C
 			select {
 			case <-ctx.Done():
 				{
@@ -183,6 +182,8 @@ func (opcDev *genericOpcuaDevice) Start(cctx typex.CCTX) error {
 				opcDev.RuleEngine.WorkDevice(opcDev.Details(), string(buffer[:n]))
 			}
 			opcDev.Busy = false
+			<-ticker.C
+
 		}
 	}(cctx.Ctx, opcDev.driver)
 

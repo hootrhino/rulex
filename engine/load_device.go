@@ -84,6 +84,8 @@ func (e *RuleEngine) LoadDevice(deviceInfo *typex.Device) error {
 *
  */
 func startDevices(abstractDevice typex.XDevice, deviceInfo *typex.Device, e *RuleEngine) error {
+	// Bind
+	deviceInfo.Device = abstractDevice
 	e.SaveDevice(deviceInfo)
 	// Load config
 	config := e.GetDevice(deviceInfo.UUID).Config
@@ -96,8 +98,7 @@ func startDevices(abstractDevice typex.XDevice, deviceInfo *typex.Device, e *Rul
 		e.RemoveDevice(deviceInfo.UUID)
 		return err
 	}
-	// Bind
-	deviceInfo.Device = abstractDevice
+
 	// start
 	if err := startDevice(abstractDevice, e); err != nil {
 		glogger.GLogger.Error(err)

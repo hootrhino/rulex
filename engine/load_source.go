@@ -84,7 +84,6 @@ func startSources(source typex.XSource, in *typex.InEnd, e *RuleEngine) error {
 		ticker := time.NewTicker(time.Duration(time.Second * 5))
 		// 5 seconds
 	TICKER:
-		<-ticker.C
 		select {
 		case <-ctx.Done():
 			{
@@ -93,6 +92,7 @@ func startSources(source typex.XSource, in *typex.InEnd, e *RuleEngine) error {
 			}
 		default:
 			{
+				<-ticker.C
 				goto CHECK
 			}
 		}

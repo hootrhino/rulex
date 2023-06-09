@@ -43,14 +43,17 @@ func Devices(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 		}
 		device := e.GetDevice(mdev.UUID)
 		if device == nil {
+			// 如果内存里面没有就给安排一个死设备
 			tDevice := new(typex.Device)
 			tDevice.UUID = mdev.UUID
 			tDevice.Name = mdev.Name
 			tDevice.Type = typex.DeviceType(mdev.Type)
 			tDevice.Description = mdev.Description
 			tDevice.BindRules = map[string]typex.Rule{}
-			tDevice.Config = map[string]interface{}{}
+			tDevice.Config = mdev.GetConfig()
 			tDevice.State = typex.DEV_STOP
+			c.JSON(200, OkWithData(tDevice))
+			return
 		}
 		c.JSON(200, OkWithData(device))
 	}
@@ -138,9 +141,10 @@ func UpdateDevice(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 		c.JSON(200, Error("missing 'uuid' fields"))
 		return
 	}
-	Device := e.GetDevice(form.UUID)
-	if Device == nil {
-		c.JSON(200, Error("device not exists:"+form.UUID))
+	// 更新的时候从数据库往外面拿
+	Device, err := hs.GetDeviceWithUUID(form.UUID)
+	if err != nil {
+		c.JSON(200, err)
 		return
 	}
 
