@@ -114,7 +114,7 @@ func Test_generic_ais_txrx_device(t *testing.T) {
 	}
 	GENERIC_AIS := typex.NewDevice(typex.GENERIC_AIS,
 		"GENERIC_AIS", "GENERIC_AIS", map[string]interface{}{
-			"host": "127.0.0.1",
+			"host": "0.0.0.0",
 			"port": 9980,
 		})
 

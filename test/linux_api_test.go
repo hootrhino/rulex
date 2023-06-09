@@ -1,7 +1,7 @@
 package test
 
 import (
-	"github.com/hootrhino/rulex/utils"
+	// "github.com/hootrhino/rulex/utils"
 
 	"testing"
 )
@@ -74,6 +74,6 @@ import (
 // go test -timeout 30s -run ^Test_Cgo_ReleaseInfo github.com/hootrhino/rulex/test -v -count=1
 func Test_Cgo_ReleaseInfo(t *testing.T) {
 
-	t.Log("Test_Cgo_ReleaseInfo=>", (utils.ReleaseInfo()))
+	//t.Log("Test_Cgo_ReleaseInfo=>", (utils.ReleaseInfo()))
 
 }

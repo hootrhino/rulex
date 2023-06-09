@@ -103,12 +103,12 @@ func (aisd *AISDevice) Start(cctx typex.CCTX) error {
 	aisd.CancelCTX = cctx.CancelCTX
 	//
 	listener, err := net.Listen("tcp",
-		fmt.Sprintf("%s%v", aisd.mainConfig.Host, aisd.mainConfig.Port))
+		fmt.Sprintf("%s:%v", aisd.mainConfig.Host, aisd.mainConfig.Port))
 	if err != nil {
 		return err
 	}
 	aisd.tcpListener = listener
-	glogger.GLogger.Infof("AIS TCP server started on http://%s:%v",
+	glogger.GLogger.Infof("AIS TCP server started on TCP://%s:%v",
 		aisd.mainConfig.Host, aisd.mainConfig.Port)
 	go aisd.handleConnect(listener)
 	return nil
