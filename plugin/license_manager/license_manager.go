@@ -37,9 +37,9 @@ func (hh *LicenseManager) PluginMetaInfo() typex.XPluginMetaInfo {
 		UUID:     hh.uuid,
 		Name:     "LicenseManager",
 		Version:  "v0.0.1",
-		Homepage: "www.github.com/hootrhino/rulex",
-		HelpLink: "www.github.com/hootrhino/rulex",
-		Author:   "wwhai",
+		Homepage: "https://github.com/dropliu/rulex",
+		HelpLink: "https://github.com/dropliu/rulex",
+		Author:   "dropliu",
 		Email:    "13594448678@163.com",
 		License:  "MIT",
 	}
