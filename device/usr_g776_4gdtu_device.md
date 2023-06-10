@@ -8,7 +8,6 @@ RULEX对USR-G776做了一个非常简单的支持：直接向串口透传数据�
 官方文档：https://www.usr.cn/Download/806.html
 ## 配置
 ```go
- */
 type _G776CommonConfig struct {
 	Tag         string `json:"tag" validate:"required" title:"数据Tag" info:"给数据打标签"`
 	Frequency   int64  `json:"frequency" validate:"required" title:"采集频率"`
@@ -59,4 +58,4 @@ Actions = {
 
 ```
 ### 注意事项
-    第二个参数必须是“DATA”，第三个参数可以是字符串、十六进制等.
+第二个参数必须是“DATA”，第三个参数可以是字符串、十六进制等.
