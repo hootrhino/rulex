@@ -146,7 +146,10 @@ func (hh *HttpApiServer) Start(r typex.RuleX) error {
 	// Create InEnd
 	//
 	hh.ginEngine.POST(url("inends"), hh.addRoute(CreateInend))
-	hh.ginEngine.PUT(url("inends"), hh.addRoute(CreateInend))
+	//
+	// Update Inend
+	//
+	hh.ginEngine.PUT(url("inends"), hh.addRoute(UpdateInend))
 	//
 	// 配置表
 	//
@@ -159,7 +162,10 @@ func (hh *HttpApiServer) Start(r typex.RuleX) error {
 	// Create OutEnd
 	//
 	hh.ginEngine.POST(url("outends"), hh.addRoute(CreateOutEnd))
-	hh.ginEngine.PUT(url("outends"), hh.addRoute(CreateOutEnd))
+	//
+	// Update OutEnd
+	//
+	hh.ginEngine.PUT(url("outends"), hh.addRoute(UpdateOutEnd))
 	//
 	// Create rule
 	//
@@ -295,7 +301,7 @@ func configHttpServer(hh *HttpApiServer) {
 	hh.ginEngine.Use(static.Serve("/", wwwRoot("")))
 	hh.ginEngine.Use(gin.CustomRecovery(func(c *gin.Context, err any) {
 		glogger.GLogger.Error(err)
-		c.JSON(200, Error500(err1crash))
+		c.JSON(HTTP_OK, Error500(err1crash))
 	}))
 	hh.ginEngine.NoRoute(func(c *gin.Context) {
 		c.Redirect(302, "/")

@@ -14,14 +14,14 @@ import (
 func AiBase(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
 	if uuid == "" {
-		c.JSON(200, OkWithData(e.GetAiBase().ListAi()))
+		c.JSON(HTTP_OK, OkWithData(e.GetAiBase().ListAi()))
 		return
 	}
 	if ai := e.GetAiBase().GetAi(uuid); ai != nil {
-		c.JSON(200, OkWithData(ai))
+		c.JSON(HTTP_OK, OkWithData(ai))
 		return
 	}
-	c.JSON(200, Error("ai base not found:"+uuid))
+	c.JSON(HTTP_OK, Error("ai base not found:"+uuid))
 }
 
 /*
@@ -34,13 +34,13 @@ func DeleteAiBase(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	if ai := e.GetAiBase().GetAi(uuid); ai != nil {
 		err := e.GetAiBase().RemoveAi(uuid)
 		if err != nil {
-			c.JSON(200, Error400(err))
+			c.JSON(HTTP_OK, Error400(err))
 			return
 		}
-		c.JSON(200, Ok())
+		c.JSON(HTTP_OK, Ok())
 		return
 	}
-	c.JSON(200, Error("ai base not found:"+uuid))
+	c.JSON(HTTP_OK, Error("ai base not found:"+uuid))
 }
 
 /*
@@ -50,7 +50,7 @@ func DeleteAiBase(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
  */
 
 func CreateAiBase(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
-	c.JSON(200, Ok())
+	c.JSON(HTTP_OK, Ok())
 }
 
 /*
@@ -59,5 +59,5 @@ func CreateAiBase(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 *
  */
 func UpdateAiBase(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
-	c.JSON(200, Ok())
+	c.JSON(HTTP_OK, Ok())
 }

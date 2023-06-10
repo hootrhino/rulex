@@ -9,6 +9,7 @@ import (
 )
 
 const SUCCESS string = "Success"
+const HTTP_OK int = 200
 
 // Http Return
 type R struct {

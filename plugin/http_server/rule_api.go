@@ -21,9 +21,9 @@ func Rules(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 			data = append(data, value)
 			return true
 		})
-		c.JSON(200, OkWithData(data))
+		c.JSON(HTTP_OK, OkWithData(data))
 	} else {
-		c.JSON(200, OkWithData(e.GetRule(uuid)))
+		c.JSON(HTTP_OK, OkWithData(e.GetRule(uuid)))
 	}
 }
 
@@ -44,11 +44,11 @@ func CreateRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	form := Form{Type: "lua"}
 
 	if err := c.ShouldBindJSON(&form); err != nil {
-		c.JSON(200, Error400(err))
+		c.JSON(HTTP_OK, Error400(err))
 		return
 	}
 	if !utils.SContains([]string{"lua", "expr"}, form.Type) {
-		c.JSON(200, Error(`rule type must one of 'lua' or 'expr':`+form.Type))
+		c.JSON(HTTP_OK, Error(`rule type must one of 'lua' or 'expr':`+form.Type))
 		return
 	}
 	lenSources := len(form.FromSource)
@@ -57,7 +57,7 @@ func CreateRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		for _, id := range form.FromSource {
 			in := e.GetInEnd(id)
 			if in == nil {
-				c.JSON(200, Error(`inend not exists: `+id))
+				c.JSON(HTTP_OK, Error(`inend not exists: `+id))
 				return
 			}
 		}
@@ -67,7 +67,7 @@ func CreateRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		for _, id := range form.FromDevice {
 			in := e.GetDevice(id)
 			if in == nil {
-				c.JSON(200, Error(`device not exists: `+id))
+				c.JSON(HTTP_OK, Error(`device not exists: `+id))
 				return
 			}
 		}
@@ -77,13 +77,13 @@ func CreateRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		form.Success, form.Actions, form.Failed)
 	if form.Type == "lua" {
 		if err := core.VerifyLuaSyntax(tmpRule); err != nil {
-			c.JSON(200, Error400(err))
+			c.JSON(HTTP_OK, Error400(err))
 			return
 		}
 	}
 	if form.Type == "expr" {
 		if err := core.VerifyExprSyntax(tmpRule); err != nil {
-			c.JSON(200, Error400(err))
+			c.JSON(HTTP_OK, Error400(err))
 			return
 		}
 	}
@@ -103,7 +103,7 @@ func CreateRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	if form.UUID != "" {
 		mRule.UUID = form.UUID
 		if err := hh.UpdateMRule(form.UUID, mRule); err != nil {
-			c.JSON(200, Error400(err))
+			c.JSON(HTTP_OK, Error400(err))
 			return
 		}
 	}
@@ -111,7 +111,7 @@ func CreateRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	if form.UUID == "" {
 		mRule.UUID = utils.RuleUuid()
 		if err := hh.InsertMRule(mRule); err != nil {
-			c.JSON(200, Error400(err))
+			c.JSON(HTTP_OK, Error400(err))
 			return
 		}
 	}
@@ -128,10 +128,10 @@ func CreateRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 			mRule.Failed)
 		e.RemoveRule(rule.UUID)
 		if err := e.LoadRule(rule); err != nil {
-			c.JSON(200, Error400(err))
+			c.JSON(HTTP_OK, Error400(err))
 			return
 		} else {
-			c.JSON(200, Ok())
+			c.JSON(HTTP_OK, Ok())
 			return
 		}
 	}
@@ -149,14 +149,14 @@ func CreateRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 			mRule.Failed)
 		e.RemoveRule(rule.UUID)
 		if err := e.LoadRule(rule); err != nil {
-			c.JSON(200, Error400(err))
+			c.JSON(HTTP_OK, Error400(err))
 			return
 		} else {
-			c.JSON(200, Ok())
+			c.JSON(HTTP_OK, Ok())
 			return
 		}
 	}
-	c.JSON(200, Error("unsupported type:"+form.Type))
+	c.JSON(HTTP_OK, Error("unsupported type:"+form.Type))
 
 }
 
@@ -165,16 +165,16 @@ func DeleteRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
 	_, err0 := hh.GetMRule(uuid)
 	if err0 != nil {
-		c.JSON(200, Error400(err0))
+		c.JSON(HTTP_OK, Error400(err0))
 		return
 	}
 	if err1 := hh.DeleteMRule(uuid); err1 != nil {
-		c.JSON(200, Error400(err1))
+		c.JSON(HTTP_OK, Error400(err1))
 		return
 
 	} else {
 		e.RemoveRule(uuid)
-		c.JSON(200, Ok())
+		c.JSON(HTTP_OK, Ok())
 		return
 	}
 
@@ -195,7 +195,7 @@ func ValidateLuaSyntax(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	}
 	form := Form{}
 	if err := c.ShouldBindJSON(&form); err != nil {
-		c.JSON(200, Error400(err))
+		c.JSON(HTTP_OK, Error400(err))
 		return
 	}
 	tmpRule := typex.NewRule(
@@ -209,9 +209,9 @@ func ValidateLuaSyntax(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		form.Actions,
 		form.Failed)
 	if err := core.VerifyLuaSyntax(tmpRule); err != nil {
-		c.JSON(200, Error400(err))
+		c.JSON(HTTP_OK, Error400(err))
 	} else {
-		c.JSON(200, Ok())
+		c.JSON(HTTP_OK, Ok())
 	}
 
 }
@@ -226,20 +226,20 @@ func TestSourceCallback(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	data, _ := c.GetQuery("data") // Data
 	_, err0 := hh.GetMRule(uuid)
 	if err0 != nil {
-		c.JSON(200, Error400(err0))
+		c.JSON(HTTP_OK, Error400(err0))
 		return
 	}
 	value, ok := e.AllInEnd().Load(uuid)
 	if !ok {
-		c.JSON(200, Error(fmt.Sprintf("'InEnd' not exists: %v", uuid)))
+		c.JSON(HTTP_OK, Error(fmt.Sprintf("'InEnd' not exists: %v", uuid)))
 		return
 	}
 	_, err1 := e.WorkInEnd((value).(*typex.InEnd), data)
 	if err1 != nil {
-		c.JSON(200, Error400(err1))
+		c.JSON(HTTP_OK, Error400(err1))
 		return
 	}
-	c.JSON(200, Ok())
+	c.JSON(HTTP_OK, Ok())
 }
 
 /*
@@ -252,15 +252,15 @@ func TestOutEndCallback(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	data, _ := c.GetQuery("data") // Data
 	_, err0 := hh.GetMRule(uuid)
 	if err0 != nil {
-		c.JSON(200, Error400(err0))
+		c.JSON(HTTP_OK, Error400(err0))
 		return
 	}
 	value, ok := e.AllOutEnd().Load(uuid)
 	if !ok {
-		c.JSON(200, Error((fmt.Sprintf("'OutEnd' not exists: %v", uuid))))
+		c.JSON(HTTP_OK, Error((fmt.Sprintf("'OutEnd' not exists: %v", uuid))))
 		return
 	}
-	c.JSON(200, OkWithData(e.PushOutQueue((value).(*typex.OutEnd), data)))
+	c.JSON(HTTP_OK, OkWithData(e.PushOutQueue((value).(*typex.OutEnd), data)))
 }
 
 /*
@@ -273,13 +273,13 @@ func TestDeviceCallback(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	data, _ := c.GetQuery("data") // Data, Read or write
 	_, err0 := hh.GetMRule(uuid)
 	if err0 != nil {
-		c.JSON(200, Error400(err0))
+		c.JSON(HTTP_OK, Error400(err0))
 		return
 	}
 	value, ok := e.AllDevices().Load(uuid)
 	if !ok {
-		c.JSON(200, Error((fmt.Sprintf("'Device' not exists: %v", uuid))))
+		c.JSON(HTTP_OK, Error((fmt.Sprintf("'Device' not exists: %v", uuid))))
 		return
 	}
-	c.JSON(200, OkWithData(e.PushDeviceQueue((value).(*typex.Device), data)))
+	c.JSON(HTTP_OK, OkWithData(e.PushDeviceQueue((value).(*typex.Device), data)))
 }

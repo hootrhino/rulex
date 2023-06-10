@@ -110,6 +110,9 @@ func StartQueue(maxQueueSize int) {
 					if qd.O != nil {
 						v, ok := qd.E.AllOutEnd().Load(qd.O.UUID)
 						if ok {
+							if v.(*OutEnd).Target == nil {
+								continue
+							}
 							if _, err := v.(*OutEnd).Target.To(qd.Data); err != nil {
 								glogger.GLogger.Error(err)
 								statistics.IncOutFailed()
