@@ -19,12 +19,16 @@ type _serverConfig struct {
 	Host   string `ini:"host"`
 	Port   int    `ini:"port"`
 }
+type _topic struct {
+	Topic string
+}
 type MqttServer struct {
 	Enable     bool
 	Host       string
 	Port       int
 	mqttServer *mqtt.Server
 	clients    map[string]*mqtt.Client
+	topics     map[string][]_topic // Topic 订阅表
 	ruleEngine typex.RuleX
 	uuid       string
 }
@@ -34,6 +38,7 @@ func NewMqttServer() typex.XPlugin {
 		Host:    "127.0.0.1",
 		Port:    1884,
 		clients: map[string]*mqtt.Client{},
+		topics:  map[string][]_topic{},
 		uuid:    "RULEX-MqttServer",
 	}
 }
@@ -123,6 +128,7 @@ func (h *mhooks) OnDisconnect(client *mqtt.Client, err error, expire bool) {
 	if h.s.clients[client.ID] != nil {
 		h.locker.Lock()
 		delete(h.s.clients, client.ID)
+		delete(h.s.topics, client.ID)
 		h.locker.Unlock()
 		glogger.GLogger.Debugf("Client disconnected:%s", client.ID)
 	}
@@ -161,5 +167,11 @@ func (h *ahooks) OnConnectAuthenticate(client *mqtt.Client, pk packets.Packet) b
 func (h *ahooks) OnACLCheck(client *mqtt.Client, topic string, write bool) bool {
 	glogger.GLogger.Debugf("OnACLCheck:[%v],[%v],[%v]",
 		client.ID, string(client.Properties.Username), topic)
+	_, ok := h.s.topics[client.ID]
+	if !ok {
+		h.s.topics[client.ID] = []_topic{{Topic: topic}}
+	} else {
+		h.s.topics[client.ID] = append(h.s.topics[client.ID], _topic{Topic: topic})
+	}
 	return true
 }
