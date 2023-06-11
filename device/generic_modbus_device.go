@@ -181,10 +181,10 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 				{
 				}
 			}
-			if mdev.Busy {
-				glogger.GLogger.Warn("Modbus device is busing now")
-				continue
-			}
+			// if mdev.Busy {
+			// 	glogger.GLogger.Warn("Modbus device is busing now")
+			// 	continue
+			// }
 
 			mdev.Busy = true
 			n, err := Driver.Read([]byte{}, buffer)
