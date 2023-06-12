@@ -19,21 +19,27 @@ var deviceReadBuffer []byte = make([]byte, common.T_4KB)
 
 func ReadDevice(rx typex.RuleX) func(*lua.LState) int {
 	return func(l *lua.LState) int {
-		// read(uuid,cmd)
 		devUUID := l.ToString(2)
 		cmd := l.ToString(3)
 		Device := rx.GetDevice(devUUID)
 		if Device != nil {
-			n, err := Device.Device.OnRead([]byte(cmd), deviceReadBuffer)
-			if err != nil {
-				glogger.GLogger.Error(err)
+			if Device.State == typex.DEV_UP {
+				n, err := Device.Device.OnRead([]byte(cmd), deviceReadBuffer)
+				if err != nil {
+					glogger.GLogger.Error(err)
+					l.Push(lua.LNil)
+					l.Push(lua.LString(err.Error()))
+					return 2
+				} else {
+					l.Push(lua.LString(deviceReadBuffer[:n]))
+					l.Push(lua.LNil)
+					return 2
+				}
+			} else {
 				l.Push(lua.LNil)
-				l.Push(lua.LString(err.Error()))
+				l.Push(lua.LString("device down:" + devUUID))
 				return 2
 			}
-			l.Push(lua.LString(deviceReadBuffer[:n]))
-			l.Push(lua.LNil)
-			return 2
 		}
 		l.Push(lua.LNil)
 		l.Push(lua.LString("device not exists:" + devUUID))
@@ -54,16 +60,23 @@ func WriteDevice(rx typex.RuleX) func(*lua.LState) int {
 		data := l.ToString(4)
 		Device := rx.GetDevice(devUUID)
 		if Device != nil {
-			n, err := Device.Device.OnWrite([]byte(cmd), []byte(data))
-			if err != nil {
-				glogger.GLogger.Error(err)
+			if Device.State == typex.DEV_UP {
+				n, err := Device.Device.OnWrite([]byte(cmd), []byte(data))
+				if err != nil {
+					glogger.GLogger.Error(err)
+					l.Push(lua.LNil)
+					l.Push(lua.LString(err.Error()))
+					return 2
+				} else {
+					l.Push(lua.LNumber(n))
+					l.Push(lua.LNil)
+					return 2
+				}
+			} else {
 				l.Push(lua.LNil)
-				l.Push(lua.LString(err.Error()))
+				l.Push(lua.LString("device down:" + devUUID))
 				return 2
 			}
-			l.Push(lua.LNumber(n))
-			l.Push(lua.LNil)
-			return 2
 		}
 		l.Push(lua.LNil)
 		l.Push(lua.LString("device not exists:" + devUUID))
@@ -84,16 +97,24 @@ func CtrlDevice(rx typex.RuleX) func(*lua.LState) int {
 		data := l.ToString(4)
 		Device := rx.GetDevice(devUUID)
 		if Device != nil {
-			result, err := Device.Device.OnCtrl([]byte(cmd), []byte(data))
-			if err != nil {
-				glogger.GLogger.Error(err)
+			if Device.State == typex.DEV_UP {
+				result, err := Device.Device.OnCtrl([]byte(cmd), []byte(data))
+				if err != nil {
+					glogger.GLogger.Error(err)
+					l.Push(lua.LNil)
+					l.Push(lua.LString(err.Error()))
+					return 2
+				} else {
+					l.Push(lua.LString(string(result)))
+					l.Push(lua.LNil)
+					return 2
+				}
+			} else {
 				l.Push(lua.LNil)
-				l.Push(lua.LString(err.Error()))
+				l.Push(lua.LString("device down:" + devUUID))
 				return 2
 			}
-			l.Push(lua.LString(string(result)))
-			l.Push(lua.LNil)
-			return 2
+
 		}
 		l.Push(lua.LNil)
 		l.Push(lua.LString("device not exists:" + devUUID))

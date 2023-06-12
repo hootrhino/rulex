@@ -128,22 +128,22 @@
 
 实际上观察一下样例 JSON 就知道怎么配置了。
 
-## 设备数据读取
+## 设备数据处理
 ```lua
--- get_uuid 就是配置的读指令
-local binary1, err1 = applib:ReadDevice("ID12345", "get_uuid")
-if err1 ~= nil then
-    print(err1)
+-- 动态协议请求
+AppNAME = 'Read'
+AppVERSION = '0.0.1'
+function Main(arg)
+    local Id = 'DEVICE056b93901b3b4a5b9a3d69d14dc1139f'
+    while true do
+        local result, err = applib:CtrlDevice(Id, "010300000002C40B")
+        --result {"in":"010300000002C40B","out":"010304000100022a32"}
+        print("CtrlDevice result=>", result)
+        applib:Sleep(60)
+    end
+    return 0
 end
-```
-## 设备数据写入
-```lua
--- ctrl1 就是配置的写指令
--- 参数：id, 指令，参数
-local binary1, err1 = applib:WriteDevice("ID12345", "ctrl1", "args")
-if err1 ~= nil then
-    print(err1)
-end
+
 ```
 注意:**数据在总线形式下并发读写是有独占机制，这里加了锁来处理**
 ## 常用函数
