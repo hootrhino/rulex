@@ -4,67 +4,7 @@
 
 ## 配置
 协议分静态协议和动态协议，下面是动态协议示例，一般会有至少一个自定义协议，关键字段是 `deviceConfig` ，下面给出一个 JSON 样例:
-### 静态协议
-```json
-{
-    "name": "GENERIC_PROTOCOL",
-    "type": "GENERIC_PROTOCOL",
-    "description": "GENERIC_PROTOCOL",
-    "config": {
-        "commonConfig": {
-            "transport": "rs485rawserial",
-            "retryTime": 5,
-            "frequency": 100
-        },
-        "uartConfig": {
-            "timeout": 1000,
-            "baudRate": 9600,
-            "dataBits": 8,
-            "parity": "N",
-            "stopBits": 1,
-            "uart": "COM5"
-        },
-        "deviceConfig": {
-            "read": {
-                "type":1,
-                "autoRequest": false,
-                "autoRequestGap": 60,
-                "bufferSize": 9,
-                "checkAlgorithm": "NONECHECK",
-                "onCheckError": "IGNORE",
-                "checksumBegin": 0,
-                "checksumEnd": 6,
-                "checksumValuePos": 6,
-                "description": "read",
-                "name": "read",
-                "rw": 1,
-                "protocol": {
-                    "in": "D400070A0001D8AA55",
-                    "out": "D400070A0001D8AA55"
-                }
-            },
-            "write": {
-                "type":2,
-                "autoRequest": false,
-                "autoRequestGap": 60,
-                "bufferSize": 9,
-                "checkAlgorithm": "NONECHECK",
-                "onCheckError": "IGNORE",
-                "checksumBegin": 0,
-                "checksumEnd": 6,
-                "checksumValuePos": 6,
-                "description": "write",
-                "name": "write",
-                "rw": 2,
-                "protocol": {
-                    "in": "D400070A0001D8AA55",
-                    "out": "D400070A0001D8AA55"
-                }
-            }
-        }
-    }
-}
-```
+
 ### 动态协议
 
 ```json
@@ -85,26 +25,6 @@
             "parity":"N",
             "stopBits":1,
             "uart":"COM5"
-        },
-        "deviceConfig":{
-            "write":{
-                "type":2,
-                "autoRequest":false,
-                "autoRequestGap":60,
-                "bufferSize":9,
-                "checkAlgorithm":"NONECHECK",
-                "onCheckError":"IGNORE",
-                "checksumBegin":0,
-                "checksumEnd":6,
-                "checksumValuePos":6,
-                "description":"write",
-                "name":"write",
-                "rw":2,
-                "protocol":{
-                    "in":"",
-                    "out":""
-                }
-            }
         }
     }
 }
@@ -116,17 +36,6 @@
 - type: 1-静态；2-动态, 在动态协议里面必须为2
 - description: 协议的一些备注信息
 - transport: 传输形式，目前支持 `rawtcp`, `rawudp`, `rs485rawserial`, `rs485rawtcp`
-- algorithm：校验算法，支持 `XOR`,`CRC16`,`NONECHECK`, 默认为不认证，即`NONECHECK`
-- rw: 读写权限，有3个值: 1:RO 2:WO 3:RW
-- bufferSize: 期望读取字节数，这个比较重要，最好是经过精确计算
-- checksumBegin: 从哪个位置开始校验
-- checksumEnd: 从哪里结束校验
-- checksumValuePos: 校验对比值的位置
-- protocol: 协议本体
-    - in: 请求参数, 用大写十六进制表示法，否则会解析失败, 例如：FFFFFF014CB2AA55
-    - out: 返回参数, 用大写十六进制表示法，否则会解析失败, 例如：FFFFFF014CB2AA55， 这个参数一般不参与业务，主要用来返回取值。
-
-实际上观察一下样例 JSON 就知道怎么配置了。
 
 ## 设备数据处理
 ```lua
