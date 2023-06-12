@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/hootrhino/rulex/common"
-	"github.com/hootrhino/rulex/driver"
 	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/typex"
 	"github.com/hootrhino/rulex/utils"
@@ -36,9 +35,10 @@ type UsrG776DTU struct {
 	typex.XStatus
 	status     typex.DeviceState
 	RuleEngine typex.RuleX
-	driver     typex.XExternalDriver
 	mainConfig _G776Config
 	locker     sync.Locker
+	serialPort serial.Port
+	errCount   int
 }
 
 /*
@@ -51,6 +51,7 @@ func NewUsrG776DTU(e typex.RuleX) typex.XDevice {
 	uart.locker = &sync.Mutex{}
 	uart.mainConfig = _G776Config{}
 	uart.RuleEngine = e
+	uart.serialPort = nil
 	return uart
 }
 
@@ -77,14 +78,15 @@ func (uart *UsrG776DTU) Start(cctx typex.CCTX) error {
 		DataBits: uart.mainConfig.UartConfig.DataBits,
 		Parity:   uart.mainConfig.UartConfig.Parity,
 		StopBits: uart.mainConfig.UartConfig.StopBits,
-		Timeout:  time.Duration(uart.mainConfig.UartConfig.Timeout) * time.Second,
+		Timeout:  time.Duration(uart.mainConfig.UartConfig.Timeout) * time.Millisecond,
 	}
 	serialPort, err := serial.Open(&config)
 	if err != nil {
 		glogger.GLogger.Error("Serial.Open failed:", err)
 		return err
 	}
-	uart.driver = driver.NewUsrG776Driver(uart.Ctx, uart.RuleEngine, uart.Details(), serialPort)
+	uart.errCount = 0
+	uart.serialPort = serialPort
 	uart.status = typex.DEV_UP
 	return nil
 }
@@ -101,25 +103,49 @@ func (uart *UsrG776DTU) OnRead(cmd []byte, data []byte) (int, error) {
 /*
 *
 * 有人G776-DTU写入串口的数据会被不加修改的透传到上层
+* rulexlib:DataToUsrG776DTU("uuid", "DATA", "data-....")
 *
  */
 func (uart *UsrG776DTU) OnWrite(cmd []byte, b []byte) (int, error) {
-	return uart.driver.Write(cmd, b)
+	if string(cmd) != ("DATA") {
+		return 0, nil
+	}
+	n, err := uart.serialPort.Write(b)
+	if err != nil {
+		uart.errCount++
+		glogger.GLogger.Error(err)
+		if uart.errCount > 5 {
+			return n, err
+		}
+	}
+	return n, nil
 }
 
 // 设备当前状态
 func (uart *UsrG776DTU) Status() typex.DeviceState {
+	if uart.serialPort != nil {
+		// https://www.usr.cn/Download/806.html
+		//  发送： AT\r
+		//  接收： \r\nOK\r\n\r\n
+		_, err := uart.serialPort.Write([]byte("AT\r"))
+		if err != nil {
+			uart.errCount++
+			glogger.GLogger.Error(err)
+			if uart.errCount > 5 {
+				return typex.DEV_DOWN
+			}
+		}
+	}
 	return typex.DEV_UP
 }
 
 // 停止设备
 func (uart *UsrG776DTU) Stop() {
-	uart.status = typex.DEV_DOWN
 	uart.CancelCTX()
-	if uart.driver != nil {
-		uart.driver.Stop()
+	uart.status = typex.DEV_DOWN
+	if uart.serialPort != nil {
+		uart.serialPort.Close()
 	}
-
 }
 
 // 设备属性，是一系列属性描述
@@ -140,7 +166,7 @@ func (uart *UsrG776DTU) SetState(status typex.DeviceState) {
 
 // 驱动
 func (uart *UsrG776DTU) Driver() typex.XExternalDriver {
-	return uart.driver
+	return nil
 }
 
 func (uart *UsrG776DTU) OnDCACall(UUID string, Command string, Args interface{}) typex.DCAResult {

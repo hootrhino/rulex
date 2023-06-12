@@ -39,7 +39,7 @@ func Plugins(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		data = append(data, pi)
 		return true
 	})
-	c.JSON(200, OkWithData(data))
+	c.JSON(HTTP_OK, OkWithData(data))
 }
 func bToMb(b uint64) uint64 {
 	return b / 1024 / 1024
@@ -90,17 +90,14 @@ func System(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	runtime.ReadMemStats(&m)
 	ip, err0 := utils.HostNameI()
 	hardWareInfo := map[string]interface{}{
-		"version":    e.Version().Version,
-		"diskInfo":   calculateDiskInfo(diskInfo),
-		"systemMem":  bToMb(m.Sys),
-		"allocMem":   bToMb(m.Alloc),
-		"totalMem":   bToMb(m.TotalAlloc),
-		"cpuPercent": calculateCpuPercent(cpuPercent),
-		"osArch":     runtime.GOOS + "-" + runtime.GOARCH,
-		"osDist": func() string {
-			v, _ := utils.GetOSDistribution()
-			return v
-		}(),
+		"version":     e.Version().Version,
+		"diskInfo":    calculateDiskInfo(diskInfo),
+		"systemMem":   bToMb(m.Sys),
+		"allocMem":    bToMb(m.Alloc),
+		"totalMem":    bToMb(m.TotalAlloc),
+		"cpuPercent":  calculateCpuPercent(cpuPercent),
+		"osArch":      e.Version().Arch,
+		"osDist":      e.Version().Dist,
 		"startedTime": StartedTime,
 		"ip": func() []string {
 			if err0 != nil {
@@ -121,7 +118,7 @@ func System(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 			return ips
 		}(),
 	}
-	c.JSON(200, OkWithData(gin.H{
+	c.JSON(HTTP_OK, OkWithData(gin.H{
 		"hardWareInfo": hardWareInfo,
 		"statistic":    statistics.AllStatistics(),
 		"sourceCount":  source_count(e),
@@ -134,7 +131,7 @@ func System(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 *
  */
 func SnapshotDump(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
-	c.JSON(200, OkWithData(e.SnapshotDump()))
+	c.JSON(HTTP_OK, OkWithData(e.SnapshotDump()))
 }
 
 // Get all Drivers
@@ -161,12 +158,12 @@ func Drivers(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		}
 		return true
 	})
-	c.JSON(200, OkWithData(data))
+	c.JSON(HTTP_OK, OkWithData(data))
 }
 
 // Get statistics data
 func Statistics(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
-	c.JSON(200, OkWithData(statistics.AllStatistics()))
+	c.JSON(HTTP_OK, OkWithData(statistics.AllStatistics()))
 }
 
 // Get statistics data
@@ -192,7 +189,7 @@ func SourceCount(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		c4 += 1
 		return true
 	})
-	c.JSON(200, OkWithData(map[string]int{
+	c.JSON(HTTP_OK, OkWithData(map[string]int{
 		"inends":  c1,
 		"outends": c2,
 		"rules":   c3,
@@ -208,9 +205,9 @@ func SourceCount(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 func RType(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	Type, _ := c.GetQuery("type")
 	if Type == "" {
-		c.JSON(200, OkWithData(source.SM.All()))
+		c.JSON(HTTP_OK, OkWithData(source.SM.All()))
 	} else {
-		c.JSON(200, OkWithData(source.SM.Find(typex.InEndType(Type))))
+		c.JSON(HTTP_OK, OkWithData(source.SM.Find(typex.InEndType(Type))))
 	}
 
 }
@@ -223,9 +220,9 @@ func RType(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 func TType(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	Type, _ := c.GetQuery("type")
 	if Type == "" {
-		c.JSON(200, OkWithData(target.TM.All()))
+		c.JSON(HTTP_OK, OkWithData(target.TM.All()))
 	} else {
-		c.JSON(200, OkWithData(target.TM.Find(typex.TargetType(Type))))
+		c.JSON(HTTP_OK, OkWithData(target.TM.Find(typex.TargetType(Type))))
 	}
 
 }
@@ -238,9 +235,9 @@ func TType(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 func DType(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	Type, _ := c.GetQuery("type")
 	if Type == "" {
-		c.JSON(200, OkWithData(device.DM.All()))
+		c.JSON(HTTP_OK, OkWithData(device.DM.All()))
 	} else {
-		c.JSON(200, OkWithData(device.DM.Find(typex.DeviceType(Type))))
+		c.JSON(HTTP_OK, OkWithData(device.DM.Find(typex.DeviceType(Type))))
 	}
 
 }
@@ -252,7 +249,7 @@ func DType(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
  */
 func GetUarts(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	ports, _ := serial.GetPortsList()
-	c.JSON(200, OkWithData(ports))
+	c.JSON(HTTP_OK, OkWithData(ports))
 }
 
 /*
@@ -261,7 +258,7 @@ func GetUarts(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 *
  */
 func StartedAt(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
-	c.JSON(200, OkWithData(StartedTime))
+	c.JSON(HTTP_OK, OkWithData(StartedTime))
 }
 
 func calculateDiskInfo(diskInfo *disk.UsageStat) float64 {

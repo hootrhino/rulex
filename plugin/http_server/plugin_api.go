@@ -20,7 +20,7 @@ func PluginService(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 	}
 	form := Form{}
 	if err := c.ShouldBindJSON(&form); err != nil {
-		c.JSON(200, Error400(err))
+		c.JSON(HTTP_OK, Error400(err))
 		return
 	}
 	plugin, ok := e.AllPlugins().Load(form.UUID)
@@ -30,8 +30,8 @@ func PluginService(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 			UUID: form.UUID,
 			Args: form.Args,
 		})
-		c.JSON(200, OkWithData(result.Out))
+		c.JSON(HTTP_OK, OkWithData(result.Out))
 		return
 	}
-	c.JSON(200, Error("plugin not exists"))
+	c.JSON(HTTP_OK, Error("plugin not exists"))
 }

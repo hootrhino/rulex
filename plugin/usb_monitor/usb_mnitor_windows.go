@@ -1,15 +1,10 @@
 package usbmonitor
 
 import (
-	"context"
-	"encoding/json"
 	"errors"
-	"runtime"
-	"strings"
 
-	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/typex"
-	"golang.org/x/sys/unix"
+
 	"gopkg.in/ini.v1"
 )
 
@@ -24,17 +19,12 @@ type usbMonitor struct {
 
 func NewUsbMonitor() typex.XPlugin {
 	return &usbMonitor{
-		uuid: "USB-MONITOR"
+		uuid: "USB-MONITOR",
 	}
 }
 func (usbm *usbMonitor) Init(_ *ini.Section) error {
 	return nil
 
-}
-
-type _info struct {
-	Type   string `json:"type"`
-	Device string `json:"device"`
 }
 
 func (usbm *usbMonitor) Start(_ typex.RuleX) error {

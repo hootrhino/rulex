@@ -42,7 +42,7 @@ require (
 	github.com/tbrandon/mbserver v0.0.0-20211210035124-daf3c8c4269f
 	github.com/thinkgos/go-iecp5 v1.2.1
 	github.com/urfave/cli/v2 v2.25.5
-	github.com/wwhai/gomodbus v0.2.2
+	github.com/wwhai/gomodbus v0.2.4
 	github.com/wwhai/goserial v0.2.0
 	github.com/wwhai/ntp v0.3.0
 	github.com/wwhai/tarmserial v1.0.0

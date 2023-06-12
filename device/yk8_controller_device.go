@@ -100,7 +100,6 @@ func (yk8 *YK8Controller) Start(cctx typex.CCTX) error {
 		buffer := make([]byte, common.T_64KB)
 		yk8.driver.Read([]byte{}, buffer) //清理缓存
 		for {
-			<-ticker.C
 			select {
 			case <-ctx.Done():
 				{
@@ -122,6 +121,8 @@ func (yk8 *YK8Controller) Start(cctx typex.CCTX) error {
 			} else {
 				yk8.RuleEngine.WorkDevice(yk8.Details(), string(buffer[:n]))
 			}
+			<-ticker.C
+
 		}
 
 	}(yk8.Ctx, yk8.driver)

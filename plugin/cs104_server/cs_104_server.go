@@ -108,5 +108,5 @@ func (cs *cs104Server) PluginMetaInfo() typex.XPluginMetaInfo {
 *
  */
 func (cs *cs104Server) Service(arg typex.ServiceArg) typex.ServiceResult {
-	return nil
+	return typex.ServiceResult{}
 }

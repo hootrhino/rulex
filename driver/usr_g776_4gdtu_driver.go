@@ -54,18 +54,23 @@ func (d *UsrG776Driver) Test() error {
 	if d.serialPort == nil {
 		return errors.New("serialPort is nil")
 	}
-	_, err := d.serialPort.Write([]byte("\r\n"))
+	_, err := d.serialPort.Write([]byte("AT\n"))
 	return err
 
 }
 
 func (d *UsrG776Driver) Read(cmd []byte, b []byte) (int, error) {
-
-	return d.serialPort.Read(b)
+	return 0, nil
 }
 
 func (d *UsrG776Driver) Write(cmd []byte, b []byte) (int, error) {
-	return d.serialPort.Write(b)
+	if string(cmd) == "AT" {
+		return d.serialPort.Write(b)
+	}
+	if string(cmd) == "DATA" {
+		return d.serialPort.Write(b)
+	}
+	return 0, nil
 }
 func (d *UsrG776Driver) DriverDetail() typex.DriverDetail {
 	return typex.DriverDetail{

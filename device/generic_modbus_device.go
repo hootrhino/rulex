@@ -82,7 +82,6 @@ func NewGenericModbusDevice(e typex.RuleX) typex.XDevice {
 		TcpConfig:    _GMODHostConfig{Host: "127.0.0.1", Port: 502},
 		RtuConfig:    common.CommonUartConfig{},
 	}
-	mdev.retryTimes = 0
 	mdev.Busy = false
 	mdev.status = typex.DEV_DOWN
 	return mdev
@@ -94,8 +93,8 @@ func (mdev *generic_modbus_device) Init(devId string, configMap map[string]inter
 	if err := utils.BindSourceConfig(configMap, &mdev.mainConfig); err != nil {
 		return err
 	}
-	// 超时大雨20秒无意义
-	if mdev.mainConfig.CommonConfig.Timeout > 30 {
+	// 超时大于30秒无意义
+	if mdev.mainConfig.CommonConfig.Timeout > 30000 {
 		return errors.New("'timeout' must less than 30 second")
 	}
 	// 频率不能太快
@@ -114,6 +113,7 @@ func (mdev *generic_modbus_device) Init(devId string, configMap map[string]inter
 	if !utils.SContains([]string{"RTU", "TCP"}, mdev.mainConfig.CommonConfig.Mode) {
 		return errors.New("unsupported mode, only can be one of 'TCP' or 'RTU'")
 	}
+
 	return nil
 }
 
@@ -129,7 +129,7 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 		mdev.rtuHandler.Parity = mdev.mainConfig.RtuConfig.Parity
 		mdev.rtuHandler.StopBits = mdev.mainConfig.RtuConfig.StopBits
 		// timeout 最大不能超过20, 不然无意义
-		mdev.rtuHandler.Timeout = time.Duration(mdev.mainConfig.CommonConfig.Timeout) * time.Millisecond
+		mdev.rtuHandler.Timeout = time.Duration(mdev.mainConfig.RtuConfig.Timeout) * time.Microsecond
 		if core.GlobalConfig.AppDebugMode {
 			mdev.rtuHandler.Logger = golog.New(glogger.GLogger.Writer(),
 				"Modbus: ", golog.LstdFlags)
@@ -140,7 +140,8 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 		}
 		client := modbus.NewClient(mdev.rtuHandler)
 		mdev.driver = driver.NewModBusRtuDriver(mdev.Details(),
-			mdev.RuleEngine, mdev.mainConfig.Registers, mdev.rtuHandler, client)
+			mdev.RuleEngine, mdev.mainConfig.Registers, mdev.rtuHandler,
+			client, mdev.mainConfig.CommonConfig.Frequency)
 	}
 	if mdev.mainConfig.CommonConfig.Mode == "TCP" {
 		mdev.tcpHandler = modbus.NewTCPClientHandler(
@@ -155,7 +156,8 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 		}
 		client := modbus.NewClient(mdev.tcpHandler)
 		mdev.driver = driver.NewModBusTCPDriver(mdev.Details(),
-			mdev.RuleEngine, mdev.mainConfig.Registers, mdev.tcpHandler, client)
+			mdev.RuleEngine, mdev.mainConfig.Registers, mdev.tcpHandler, client,
+			mdev.mainConfig.CommonConfig.Frequency)
 	}
 	//---------------------------------------------------------------------------------
 	// Start
@@ -164,30 +166,25 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 		mdev.status = typex.DEV_UP
 		return nil
 	}
+	mdev.retryTimes = 0
 	go func(ctx context.Context, Driver typex.XExternalDriver) {
 
 		mdev.status = typex.DEV_UP
-		ticker := time.NewTicker(time.Duration(mdev.mainConfig.CommonConfig.Frequency) * time.Millisecond)
 		buffer := make([]byte, common.T_64KB)
 		for {
-			<-ticker.C
 			select {
 			case <-ctx.Done():
 				{
-					ticker.Stop()
-					if mdev.driver != nil {
-						mdev.driver.Stop()
-					}
 					return
 				}
 			default:
 				{
 				}
 			}
-			if mdev.Busy {
-				glogger.GLogger.Warn("Modbus device is busing now")
-				continue
-			}
+			// if mdev.Busy {
+			// 	glogger.GLogger.Warn("Modbus device is busing now")
+			// 	continue
+			// }
 
 			mdev.Busy = true
 			n, err := Driver.Read([]byte{}, buffer)
@@ -225,7 +222,8 @@ func (mdev *generic_modbus_device) OnWrite(cmd []byte, data []byte) (int, error)
 
 // 设备当前状态
 func (mdev *generic_modbus_device) Status() typex.DeviceState {
-	if mdev.retryTimes > 3 {
+	// 容错5次
+	if mdev.retryTimes > 5 {
 		return typex.DEV_DOWN
 	}
 	return typex.DEV_UP
@@ -233,9 +231,13 @@ func (mdev *generic_modbus_device) Status() typex.DeviceState {
 
 // 停止设备
 func (mdev *generic_modbus_device) Stop() {
-	mdev.CancelCTX()
+	if mdev.CancelCTX != nil {
+		mdev.CancelCTX()
+	}
+	if mdev.driver != nil {
+		mdev.driver.Stop()
+	}
 	mdev.status = typex.DEV_DOWN
-
 }
 
 // 设备属性，是一系列属性描述

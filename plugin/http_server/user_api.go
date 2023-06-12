@@ -32,7 +32,7 @@ func Users(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 			Description: u.Description,
 		})
 	}
-	c.JSON(200, OkWithData(users))
+	c.JSON(HTTP_OK, OkWithData(users))
 }
 
 // CreateUser
@@ -45,7 +45,7 @@ func CreateUser(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	}
 	form := Form{}
 	if err := c.ShouldBindJSON(&form); err != nil {
-		c.JSON(200, Error400(err))
+		c.JSON(HTTP_OK, Error400(err))
 		return
 	}
 
@@ -56,10 +56,10 @@ func CreateUser(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 			Password:    md5Hash(form.Password),
 			Description: form.Description,
 		})
-		c.JSON(200, Ok())
+		c.JSON(HTTP_OK, Ok())
 		return
 	}
-	c.JSON(200, Error("用户名已存在:"+form.Username))
+	c.JSON(HTTP_OK, Error("用户名已存在:"+form.Username))
 }
 
 /*
@@ -82,18 +82,18 @@ func Login(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	}
 	var u _user
 	if err := c.BindJSON(&u); err != nil {
-		c.JSON(200, Error400(err))
+		c.JSON(HTTP_OK, Error400(err))
 		return
 	}
 	if _, err := hh.GetMUser(u.Username, md5Hash(u.Password)); err != nil {
-		c.JSON(200, Error400(err))
+		c.JSON(HTTP_OK, Error400(err))
 		return
 	}
 	if token, err := generateToken(u.Username); err != nil {
-		c.JSON(200, Error400(err))
+		c.JSON(HTTP_OK, Error400(err))
 		return
 	} else {
-		c.JSON(200, OkWithData(token))
+		c.JSON(HTTP_OK, OkWithData(token))
 	}
 }
 
@@ -109,11 +109,11 @@ func Logs(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	}
 	//TODO 日志暂时不记录
 	logs := []Data{}
-	c.JSON(200, OkWithData(logs))
+	c.JSON(HTTP_OK, OkWithData(logs))
 }
 
 func LogOut(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
-	c.JSON(200, Ok())
+	c.JSON(HTTP_OK, Ok())
 }
 
 /*
@@ -124,10 +124,10 @@ func LogOut(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 func Info(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	token := c.GetHeader("token")
 	if claims, err := parseToken(token); err != nil {
-		c.JSON(200, Error400(err))
+		c.JSON(HTTP_OK, Error400(err))
 		return
 	} else {
-		c.JSON(200, OkWithData(map[string]interface{}{
+		c.JSON(HTTP_OK, OkWithData(map[string]interface{}{
 			"token":  token,
 			"avatar": "rulex",
 			"name":   claims.Username,

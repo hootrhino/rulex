@@ -86,7 +86,6 @@ func (s1200 *s1200plc) Start(cctx typex.CCTX) error {
 		dataBuffer := make([]byte, common.T_4KB)
 		s1200.driver.Read([]byte{}, dataBuffer) //清理缓存
 		for {
-			<-ticker.C
 			select {
 			case <-ctx.Done():
 				{
@@ -118,6 +117,7 @@ func (s1200 *s1200plc) Start(cctx typex.CCTX) error {
 			if !ok {
 				glogger.GLogger.Error(err)
 			}
+			<-ticker.C
 		}
 
 	}(cctx.Ctx)

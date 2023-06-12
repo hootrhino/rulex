@@ -62,7 +62,6 @@ func (sender *IcmpSender) Init(devId string, configMap map[string]interface{}) e
 	go func(ctx context.Context) {
 		ticker := time.NewTicker(time.Duration(sender.mainConfig.CommonConfig.Frequency) * time.Millisecond)
 		for {
-			<-ticker.C
 			select {
 			case <-ctx.Done():
 				{
@@ -86,6 +85,8 @@ func (sender *IcmpSender) Init(devId string, configMap map[string]interface{}) e
 				})
 				sender.RuleEngine.WorkDevice(sender.Details(), string(datas))
 			}
+			<-ticker.C
+
 		}
 	}(typex.GCTX)
 	return nil
