@@ -61,11 +61,13 @@ func (d *modBusTCPDriver) State() typex.DriverState {
 
 func (d *modBusTCPDriver) Read(cmd []byte, data []byte) (int, error) {
 	dataMap := map[string]common.RegisterRW{}
+	var err error
+	var results []byte
 	count := len(d.Registers)
 	for _, r := range d.Registers {
 		d.handler.SlaveId = r.SlaverId
 		if r.Function == common.READ_COIL {
-			results, err := d.client.ReadCoils(r.Address, r.Quantity)
+			results, err = d.client.ReadCoils(r.Address, r.Quantity)
 			if err != nil {
 				count--
 				glogger.GLogger.Error(err)
@@ -81,7 +83,7 @@ func (d *modBusTCPDriver) Read(cmd []byte, data []byte) (int, error) {
 			dataMap[r.Tag] = value
 		}
 		if r.Function == common.READ_DISCRETE_INPUT {
-			results, err := d.client.ReadDiscreteInputs(r.Address, r.Quantity)
+			results, err = d.client.ReadDiscreteInputs(r.Address, r.Quantity)
 			if err != nil {
 				count--
 				glogger.GLogger.Error(err)
@@ -98,7 +100,7 @@ func (d *modBusTCPDriver) Read(cmd []byte, data []byte) (int, error) {
 
 		}
 		if r.Function == common.READ_HOLDING_REGISTERS {
-			results, err := d.client.ReadHoldingRegisters(r.Address, r.Quantity)
+			results, err = d.client.ReadHoldingRegisters(r.Address, r.Quantity)
 			if err != nil {
 				count--
 				glogger.GLogger.Error(err)
@@ -114,7 +116,7 @@ func (d *modBusTCPDriver) Read(cmd []byte, data []byte) (int, error) {
 			dataMap[r.Tag] = value
 		}
 		if r.Function == common.READ_INPUT_REGISTERS {
-			results, err := d.client.ReadInputRegisters(r.Address, r.Quantity)
+			results, err = d.client.ReadInputRegisters(r.Address, r.Quantity)
 			if err != nil {
 				count--
 				glogger.GLogger.Error(err)
@@ -138,6 +140,7 @@ func (d *modBusTCPDriver) Read(cmd []byte, data []byte) (int, error) {
 	if ll > 0 && count > 0 {
 		return len(bytes), nil
 	}
+	return len(bytes), err
 
 }
 
