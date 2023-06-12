@@ -35,28 +35,28 @@ func Devices(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 			}
 		}
 		c.JSON(HTTP_OK, OkWithData(devices))
-	} else {
-		mdev, err := hs.GetDeviceWithUUID(uuid)
-		if err != nil {
-			c.JSON(HTTP_OK, Error400(err))
-			return
-		}
-		device := e.GetDevice(mdev.UUID)
-		if device == nil {
-			// 如果内存里面没有就给安排一个死设备
-			tDevice := new(typex.Device)
-			tDevice.UUID = mdev.UUID
-			tDevice.Name = mdev.Name
-			tDevice.Type = typex.DeviceType(mdev.Type)
-			tDevice.Description = mdev.Description
-			tDevice.BindRules = map[string]typex.Rule{}
-			tDevice.Config = mdev.GetConfig()
-			tDevice.State = typex.DEV_STOP
-			c.JSON(HTTP_OK, OkWithData(tDevice))
-			return
-		}
-		c.JSON(HTTP_OK, OkWithData(device))
+		return
 	}
+	mdev, err := hs.GetDeviceWithUUID(uuid)
+	if err != nil {
+		c.JSON(HTTP_OK, Error400(err))
+		return
+	}
+	device := e.GetDevice(mdev.UUID)
+	if device == nil {
+		// 如果内存里面没有就给安排一个死设备
+		tDevice := new(typex.Device)
+		tDevice.UUID = mdev.UUID
+		tDevice.Name = mdev.Name
+		tDevice.Type = typex.DeviceType(mdev.Type)
+		tDevice.Description = mdev.Description
+		tDevice.BindRules = map[string]typex.Rule{}
+		tDevice.Config = mdev.GetConfig()
+		tDevice.State = typex.DEV_STOP
+		c.JSON(HTTP_OK, OkWithData(tDevice))
+		return
+	}
+	c.JSON(HTTP_OK, OkWithData(device))
 }
 
 // 删除设备
