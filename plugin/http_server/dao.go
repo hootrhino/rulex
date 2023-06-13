@@ -62,6 +62,14 @@ func (s *HttpApiServer) GetMRule(uuid string) (*MRule, error) {
 		return m, nil
 	}
 }
+func (s *HttpApiServer) GetAllMRule() ([]MRule, error) {
+	m := []MRule{}
+	if err := s.sqliteDb.Find(m).Error; err != nil {
+		return nil, err
+	} else {
+		return m, nil
+	}
+}
 
 func (s *HttpApiServer) GetMRuleWithUUID(uuid string) (*MRule, error) {
 	m := new(MRule)

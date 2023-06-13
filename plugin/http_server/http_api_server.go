@@ -173,7 +173,7 @@ func (hh *HttpApiServer) Start(r typex.RuleX) error {
 	//
 	// Update rule
 	//
-	hh.ginEngine.PUT(url("rules"), hh.addRoute(CreateRule))
+	hh.ginEngine.PUT(url("rules"), hh.addRoute(UpdateRule))
 	//
 	// Delete rule by UUID
 	//

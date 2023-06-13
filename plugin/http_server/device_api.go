@@ -62,10 +62,22 @@ func Devices(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 // 删除设备
 func DeleteDevice(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
-	_, err := hs.GetDeviceWithUUID(uuid)
+	Mdev, err := hs.GetDeviceWithUUID(uuid)
 	if err != nil {
 		c.JSON(HTTP_OK, Error400(err))
 		return
+	}
+	if len(Mdev.BindRules) > 0 {
+		c.JSON(HTTP_OK, Error("Can't remove, Already have rule bind:"+Mdev.BindRules.String()))
+		return
+	}
+	// 检查是否有规则被绑定了
+	for _, ruleId := range Mdev.BindRules {
+		_, err0 := hs.GetMRuleWithUUID(ruleId)
+		if err0 != nil {
+			c.JSON(HTTP_OK, Error400(err0))
+			return
+		}
 	}
 	if err := hs.DeleteDevice(uuid); err != nil {
 		c.JSON(HTTP_OK, Error400(err))
@@ -103,6 +115,7 @@ func CreateDevice(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 		Name:        form.Name,
 		Description: form.Description,
 		Config:      string(configJson),
+		BindRules:   []string{},
 	}); err != nil {
 		c.JSON(HTTP_OK, Error400(err))
 		return
