@@ -10,20 +10,54 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type ruleVo struct {
+	UUID        string   `json:"uuid"`
+	FromSource  []string `json:"fromSource"`
+	FromDevice  []string `json:"fromDevice"`
+	Name        string   `json:"name"`
+	Type        string   `json:"type"`
+	Expression  string   `json:"expression"`
+	Description string   `json:"description"`
+	Actions     string   `json:"actions"`
+	Success     string   `json:"success"`
+	Failed      string   `json:"failed"`
+}
+
 // Get all rules
 func Rules(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
-
 	uuid, _ := c.GetQuery("uuid")
 	if uuid == "" {
-		data := []interface{}{}
-		allRules := e.AllRule()
-		allRules.Range(func(key, value interface{}) bool {
-			data = append(data, value)
-			return true
-		})
-		c.JSON(HTTP_OK, OkWithData(data))
+		DataList := []ruleVo{}
+		allRules, _ := hh.GetAllMRule()
+		for _, rule := range allRules {
+			DataList = append(DataList, ruleVo{
+				UUID:        rule.UUID,
+				Name:        rule.Name,
+				Type:        rule.Type,
+				Expression:  rule.Expression,
+				Description: rule.Description,
+				FromSource:  rule.FromSource,
+				FromDevice:  rule.FromDevice,
+				Success:     rule.Success,
+				Failed:      rule.Failed,
+				Actions:     rule.Actions,
+			})
+		}
+		c.JSON(HTTP_OK, OkWithData(DataList))
 	} else {
-		c.JSON(HTTP_OK, OkWithData(e.GetRule(uuid)))
+		rule, _ := hh.GetMRuleWithUUID(uuid)
+		c.JSON(HTTP_OK, OkWithData(ruleVo{
+			UUID:        rule.UUID,
+			Name:        rule.Name,
+			Type:        rule.Type,
+			Expression:  rule.Expression,
+			Description: rule.Description,
+			FromSource:  rule.FromSource,
+			FromDevice:  rule.FromDevice,
+			Success:     rule.Success,
+			Failed:      rule.Failed,
+			Actions:     rule.Actions,
+		}))
 	}
 }
 
