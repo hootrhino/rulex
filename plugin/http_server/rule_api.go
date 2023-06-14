@@ -52,6 +52,7 @@ func Rules(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 			UUID:        rule.UUID,
 			Name:        rule.Name,
 			Type:        rule.Type,
+			Status:      1,
 			Expression:  rule.Expression,
 			Description: rule.Description,
 			FromSource:  rule.FromSource,

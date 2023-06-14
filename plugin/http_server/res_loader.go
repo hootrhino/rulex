@@ -25,18 +25,19 @@ func (hh *HttpApiServer) LoadNewestInEnd(uuid string) error {
 		return err1
 	}
 	// :mInEnd: {k1 :{k1:v1}, k2 :{k2:v2}} --> InEnd: [{k1:v1}, {k2:v2}]
-	var dataModelsMap map[string]typex.XDataModel
-	if err1 := json.Unmarshal([]byte(mInEnd.XDataModels), &dataModelsMap); err1 != nil {
-		glogger.GLogger.Error(err1)
-		return err1
-	}
+	// var dataModelsMap map[string]typex.XDataModel
+	// if err1 := json.Unmarshal([]byte(mInEnd.XDataModels), &dataModelsMap); err1 != nil {
+	// 	glogger.GLogger.Error(err1)
+	// 	return err1
+	// }
 	// 所有的更新都先停止资源,然后再加载
 	hh.ruleEngine.RemoveInEnd(uuid)
 	in := typex.NewInEnd(typex.InEndType(mInEnd.Type),
 		mInEnd.Name, mInEnd.Description, config)
 	// Important !!!!!!!! in.Id = mInEnd.UUID
 	in.UUID = mInEnd.UUID
-	in.DataModelsMap = dataModelsMap
+	// 未来会支持XDataModel数据模型, 目前暂时留空
+	in.DataModelsMap = map[string]typex.XDataModel{}
 	if err2 := hh.ruleEngine.LoadInEnd(in); err2 != nil {
 		glogger.GLogger.Error(err2)
 		return err2

@@ -16,7 +16,7 @@ func InEnds(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 			var device *typex.InEnd
 			if device = e.GetInEnd(v.UUID); device == nil {
 				tmpInEnd := typex.InEnd{
-					UUID:        utils.MakeUUID("INEND"),
+					UUID:        v.UUID,
 					Type:        typex.InEndType(v.Type),
 					Name:        v.Name,
 					Description: v.Description,
@@ -38,9 +38,19 @@ func InEnds(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 		c.JSON(HTTP_OK, Error400(err))
 		return
 	}
-	var inEnd *typex.InEnd
-	if inEnd = e.GetInEnd(Model.UUID); inEnd == nil {
-		inEnd.State = typex.SOURCE_STOP
+	inEnd := e.GetInEnd(Model.UUID)
+	if inEnd == nil {
+		tmpInEnd := typex.InEnd{
+			UUID:        Model.UUID,
+			Type:        typex.InEndType(Model.Type),
+			Name:        Model.Name,
+			Description: Model.Description,
+			BindRules:   map[string]typex.Rule{},
+			Config:      Model.GetConfig(),
+			State:       typex.SOURCE_STOP,
+		}
+		c.JSON(HTTP_OK, OkWithData(tmpInEnd))
+		return
 	}
 	c.JSON(HTTP_OK, OkWithData(inEnd))
 
@@ -75,6 +85,7 @@ func CreateInend(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		Name:        form.Name,
 		Description: form.Description,
 		Config:      string(configJson),
+		XDataModels: "[]",
 	}); err != nil {
 		c.JSON(HTTP_OK, Error400(err))
 		return
