@@ -58,6 +58,15 @@ type MInEnd struct {
 	XDataModels string
 }
 
+func (md MInEnd) GetConfig() map[string]interface{} {
+	result := make(map[string]interface{})
+	err := json.Unmarshal([]byte(md.Config), &result)
+	if err != nil {
+		return map[string]interface{}{}
+	}
+	return result
+}
+
 type MOutEnd struct {
 	RulexModel
 	// UUID for origin source ID

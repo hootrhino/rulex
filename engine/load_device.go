@@ -157,6 +157,23 @@ func startDevice(abstractDevice typex.XDevice, e *RuleEngine) error {
 		glogger.GLogger.Error("abstractDevice start error:", err)
 		return err
 	}
-
+	// 2023-06-14新增： 重启成功后数据会丢失,还得加载最新的Rule到设备中
+	device := abstractDevice.Details()
+	if device != nil {
+		for _, rule := range device.BindRules {
+			RuleInstance := typex.NewLuaRule(e,
+				rule.UUID,
+				rule.Name,
+				rule.Description,
+				rule.FromSource,
+				rule.FromDevice,
+				rule.Success,
+				rule.Actions,
+				rule.Failed)
+			if err1 := e.LoadRule(RuleInstance); err1 != nil {
+				return err1
+			}
+		}
+	}
 	return nil
 }

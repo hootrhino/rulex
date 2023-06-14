@@ -364,7 +364,7 @@ func UpdateRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 				c.JSON(HTTP_OK, Error400(err))
 				return
 			}
-
+			
 		}
 		if err := hh.UpdateMRule(form.UUID, mRule); err != nil {
 			c.JSON(HTTP_OK, Error400(err))
@@ -443,6 +443,7 @@ func DeleteRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		c.JSON(HTTP_OK, Error400(err))
 		return
 	}
+
 	e.RemoveRule(uuid)
 	c.JSON(HTTP_OK, Ok())
 }

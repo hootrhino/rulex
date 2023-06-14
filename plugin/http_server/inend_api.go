@@ -11,29 +11,39 @@ import (
 func InEnds(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
 	if uuid == "" {
-		inEnds := []*typex.InEnd{}
+		inEnds := []typex.InEnd{}
 		for _, v := range hs.AllMInEnd() {
 			var device *typex.InEnd
 			if device = e.GetInEnd(v.UUID); device == nil {
-				device.State = typex.SOURCE_STOP
+				tmpInEnd := typex.InEnd{
+					UUID:        utils.MakeUUID("INEND"),
+					Type:        typex.InEndType(v.Type),
+					Name:        v.Name,
+					Description: v.Description,
+					BindRules:   map[string]typex.Rule{},
+					Config:      v.GetConfig(),
+					State:       typex.SOURCE_STOP,
+				}
+				inEnds = append(inEnds, tmpInEnd)
 			}
 			if device != nil {
-				inEnds = append(inEnds, device)
+				inEnds = append(inEnds, *device)
 			}
 		}
 		c.JSON(HTTP_OK, OkWithData(inEnds))
-	} else {
-		Model, err := hs.GetMInEndWithUUID(uuid)
-		if err != nil {
-			c.JSON(HTTP_OK, Error400(err))
-			return
-		}
-		var inEnd *typex.InEnd
-		if inEnd = e.GetInEnd(Model.UUID); inEnd == nil {
-			inEnd.State = typex.SOURCE_STOP
-		}
-		c.JSON(HTTP_OK, OkWithData(inEnd))
+		return
 	}
+	Model, err := hs.GetMInEndWithUUID(uuid)
+	if err != nil {
+		c.JSON(HTTP_OK, Error400(err))
+		return
+	}
+	var inEnd *typex.InEnd
+	if inEnd = e.GetInEnd(Model.UUID); inEnd == nil {
+		inEnd.State = typex.SOURCE_STOP
+	}
+	c.JSON(HTTP_OK, OkWithData(inEnd))
+
 }
 
 // Create or Update InEnd
