@@ -243,6 +243,18 @@ func (tc *ithings) DownStream(bytes []byte) (int, error) {
 			}
 		}
 	}
+	// 直接写入
+	if msg.Method == "report" {
+		msg.Timestamp = time.Now().UnixMilli()                      // 上报时间戳使用毫秒
+		msg.ClientToken = fmt.Sprintf("%d", time.Now().UnixMicro()) // Token 使用时微秒间戳
+		topic := `$thing/up/property/%s/%s`
+		err := tc.client.Publish(fmt.Sprintf(topic,
+			tc.mainConfig.ProductId, tc.mainConfig.DeviceName), 1, false, msg.string()).Error()
+		if err != nil {
+			glogger.GLogger.Error(err)
+		}
+
+	}
 	return 0, nil
 }
 

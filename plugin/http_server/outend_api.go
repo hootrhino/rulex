@@ -135,5 +135,10 @@ func UpdateOutEnd(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 		return
 	}
 
+	if err := hs.LoadNewestOutEnd(form.UUID); err != nil {
+		c.JSON(HTTP_OK, Error400(err))
+		return
+	}
+
 	c.JSON(HTTP_OK, Ok())
 }
