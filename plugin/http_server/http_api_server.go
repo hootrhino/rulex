@@ -4,10 +4,11 @@ import (
 	"context"
 	"embed"
 	"errors"
+	"fmt"
 	"io/fs"
+	"net"
 	"net/http"
 	"path"
-	"strconv"
 	"time"
 
 	"github.com/gin-contrib/static"
@@ -70,7 +71,11 @@ func (hh *HttpApiServer) Init(config *ini.Section) error {
 	// Http server
 	//
 	go func(ctx context.Context, port int) {
-		if err := hh.ginEngine.Run(":" + strconv.Itoa(port)); err != nil {
+		listener, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", port))
+		if err != nil {
+			glogger.GLogger.Fatalf("httpserver listen error: %s\n", err)
+		}
+		if err := hh.ginEngine.RunListener(listener); err != nil {
 			glogger.GLogger.Fatalf("httpserver listen error: %s\n", err)
 		}
 	}(typex.GCTX, hh.Port)

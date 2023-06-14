@@ -1,9 +1,9 @@
 package typex
 
-//
+import "encoding/json"
+
 // Rule type is for property store,
 // XSource implements struct type is actually worker
-//
 type ModelType int
 
 // 'T' means Type
@@ -34,6 +34,11 @@ type XDataModel struct {
 	Tag       string      `json:"tag"`       // 标签
 	ValueType ModelType   `json:"valueType"` // 值类型
 	Value     interface{} `json:"value"`     // 具体的值
+}
+
+func (m XDataModel) String() string {
+	b, _ := json.Marshal(m)
+	return string(b)
 }
 
 //
