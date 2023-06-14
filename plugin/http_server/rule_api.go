@@ -439,6 +439,10 @@ func DeleteRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 			return
 		}
 	}
+	if err := hh.DeleteMRule(uuid); err != nil {
+		c.JSON(HTTP_OK, Error400(err))
+		return
+	}
 	e.RemoveRule(uuid)
 	c.JSON(HTTP_OK, Ok())
 }
