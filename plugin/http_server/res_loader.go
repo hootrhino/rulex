@@ -41,25 +41,7 @@ func (hh *HttpApiServer) LoadNewestInEnd(uuid string) error {
 		glogger.GLogger.Error(err2)
 		return err2
 	}
-	// 刷新最新的规则
-	for _, ruleId := range mInEnd.BindRules {
-		mRule, err0 := hh.GetMRuleWithUUID(ruleId)
-		if err0 != nil {
-			return err0
-		}
-		rule := typex.NewLuaRule(hh.ruleEngine,
-			mRule.UUID,
-			mRule.Name,
-			mRule.Description,
-			mRule.FromSource,
-			mRule.FromDevice,
-			mRule.Success,
-			mRule.Actions,
-			mRule.Failed)
-		if err1 := hh.ruleEngine.LoadRule(rule); err1 != nil {
-			return err1
-		}
-	}
+
 	return nil
 }
 
@@ -99,25 +81,6 @@ func (hh *HttpApiServer) LoadNewestDevice(uuid string) error {
 	dev.UUID = mDevice.UUID // 本质上是配置和内存的数据映射起来
 	if err := hh.ruleEngine.LoadDevice(dev); err != nil {
 		return err
-	}
-	// 刷新最新的规则
-	for _, ruleId := range mDevice.BindRules {
-		mRule, err0 := hh.GetMRuleWithUUID(ruleId)
-		if err0 != nil {
-			return err0
-		}
-		rule := typex.NewLuaRule(hh.ruleEngine,
-			mRule.UUID,
-			mRule.Name,
-			mRule.Description,
-			mRule.FromSource,
-			mRule.FromDevice,
-			mRule.Success,
-			mRule.Actions,
-			mRule.Failed)
-		if err1 := hh.ruleEngine.LoadRule(rule); err1 != nil {
-			return err1
-		}
 	}
 	return nil
 

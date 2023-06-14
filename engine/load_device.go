@@ -139,7 +139,7 @@ func tryIfRestartDevice(abstractDevice typex.XDevice, e *RuleEngine, devId strin
 	}
 	if Status == typex.DEV_DOWN {
 		abstractDevice.Details().State = typex.DEV_DOWN
-		glogger.GLogger.Warnf("Device %v %v down. try to restart it",
+		glogger.GLogger.Warnf("Device [%v, %v] down. try to restart.",
 			abstractDevice.Details().UUID, abstractDevice.Details().Name)
 		abstractDevice.Stop()
 		runtime.Gosched()
@@ -157,6 +157,7 @@ func startDevice(abstractDevice typex.XDevice, e *RuleEngine) error {
 		glogger.GLogger.Error("abstractDevice start error:", err)
 		return err
 	}
+	// LoadNewestDevice
 	// 2023-06-14新增： 重启成功后数据会丢失,还得加载最新的Rule到设备中
 	device := abstractDevice.Details()
 	if device != nil {

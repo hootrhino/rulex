@@ -16,6 +16,7 @@ type ruleVo struct {
 	FromDevice  []string `json:"fromDevice"`
 	Name        string   `json:"name"`
 	Type        string   `json:"type"`
+	Status      int      `json:"status"`
 	Expression  string   `json:"expression"`
 	Description string   `json:"description"`
 	Actions     string   `json:"actions"`
@@ -34,6 +35,7 @@ func Rules(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 				UUID:        rule.UUID,
 				Name:        rule.Name,
 				Type:        rule.Type,
+				Status:      1,
 				Expression:  rule.Expression,
 				Description: rule.Description,
 				FromSource:  rule.FromSource,
@@ -364,7 +366,7 @@ func UpdateRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 				c.JSON(HTTP_OK, Error400(err))
 				return
 			}
-			
+
 		}
 		if err := hh.UpdateMRule(form.UUID, mRule); err != nil {
 			c.JSON(HTTP_OK, Error400(err))

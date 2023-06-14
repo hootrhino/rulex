@@ -41,7 +41,7 @@ const (
 
 )
 
-// 设备元数据
+// 设备元数据, 本质是保存在配置里面的数据的一个内存映射实例
 type Device struct {
 	UUID string     `json:"uuid"` // UUID
 	Name string     `json:"name"` // 设备名称，例如：灯光开关

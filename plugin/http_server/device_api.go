@@ -159,7 +159,6 @@ func UpdateDevice(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 	}
 
 	if err := hs.UpdateDevice(Device.UUID, &MDevice{
-		UUID:        form.UUID,
 		Type:        form.Type,
 		Name:        form.Name,
 		Description: form.Description,
