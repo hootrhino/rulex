@@ -70,6 +70,26 @@ func MatchHex(rx typex.RuleX) func(*lua.LState) int {
 	}
 }
 
+/*
+*
+* 匹配十六进制转成整数
+*  MatchHex("FFFFFF014CB2AA55", "age:[1,1];sex:[4,5]")
+*
+ */
+func MatchUInt64(rx typex.RuleX) func(*lua.LState) int {
+	return func(l *lua.LState) int {
+		exprS := l.ToString(2)
+		hexS := l.ToString(3)
+		mhs := MatchHexLib(exprS, hexS)
+		ntb := lua.LTable{}
+		for _, v := range mhs {
+			ntb.RawSetString(v.Name, lua.LNumber(v.ToInt64()))
+		}
+		l.Push(&ntb)
+		return 1
+	}
+}
+
 type HexSegment struct {
 	Name  string
 	Value []byte

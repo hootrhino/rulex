@@ -180,7 +180,7 @@ func CreateRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		}
 		// 更新FromSource RULE到Device表中
 		for _, id := range form.FromSource {
-			InEnd, _ := hh.GetDeviceWithUUID(id)
+			InEnd, _ := hh.GetMInEndWithUUID(id)
 			if InEnd == nil {
 				c.JSON(HTTP_OK, Error(`inend not exists: `+id))
 				return
@@ -416,7 +416,7 @@ func DeleteRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	}
 	// 更新FromSource RULE到Device表中
 	for _, id := range mRule.FromSource {
-		InEnd, _ := hh.GetDeviceWithUUID(id)
+		InEnd, _ := hh.GetMInEndWithUUID(id)
 		if InEnd == nil {
 			c.JSON(HTTP_OK, Error(`inend not exists: `+id))
 			return

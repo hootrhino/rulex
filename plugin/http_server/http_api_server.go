@@ -117,6 +117,7 @@ func (hh *HttpApiServer) Start(r typex.RuleX) error {
 	// Get all inends
 	//
 	hh.ginEngine.GET(url("inends"), hh.addRoute(InEnds))
+	hh.ginEngine.GET(url("inends/detail"), hh.addRoute(InEndDetail))
 	//
 	//
 	//
@@ -125,6 +126,7 @@ func (hh *HttpApiServer) Start(r typex.RuleX) error {
 	// Get all outends
 	//
 	hh.ginEngine.GET(url("outends"), hh.addRoute(OutEnds))
+	hh.ginEngine.GET(url("outends/detail"), hh.addRoute(OutEndDetail))
 	//
 	// Get all rules
 	//
@@ -139,6 +141,7 @@ func (hh *HttpApiServer) Start(r typex.RuleX) error {
 	// Auth
 	//
 	hh.ginEngine.GET(url("users"), hh.addRoute(Users))
+	hh.ginEngine.GET(url("users/detail"), hh.addRoute(UserDetail))
 	hh.ginEngine.POST(url("users"), hh.addRoute(CreateUser))
 	//
 	//
@@ -215,6 +218,7 @@ func (hh *HttpApiServer) Start(r typex.RuleX) error {
 	// 设备管理
 	//
 	hh.ginEngine.GET(url("devices"), hh.addRoute(Devices))
+	hh.ginEngine.GET(url("devices/detail"), hh.addRoute(DeviceDetail))
 	hh.ginEngine.POST(url("devices"), hh.addRoute(CreateDevice))
 	hh.ginEngine.PUT(url("devices"), hh.addRoute(UpdateDevice))
 	hh.ginEngine.DELETE(url("devices"), hh.addRoute(DeleteDevice))

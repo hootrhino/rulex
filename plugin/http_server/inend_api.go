@@ -7,6 +7,30 @@ import (
 	"gopkg.in/square/go-jose.v2/json"
 )
 
+func InEndDetail(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
+	uuid, _ := c.GetQuery("uuid")
+	Model, err := hs.GetMInEndWithUUID(uuid)
+	if err != nil {
+		c.JSON(HTTP_OK, Error400(err))
+		return
+	}
+	inEnd := e.GetInEnd(Model.UUID)
+	if inEnd == nil {
+		tmpInEnd := typex.InEnd{
+			UUID:        Model.UUID,
+			Type:        typex.InEndType(Model.Type),
+			Name:        Model.Name,
+			Description: Model.Description,
+			BindRules:   map[string]typex.Rule{},
+			Config:      Model.GetConfig(),
+			State:       typex.SOURCE_STOP,
+		}
+		c.JSON(HTTP_OK, OkWithData(tmpInEnd))
+		return
+	}
+	c.JSON(HTTP_OK, OkWithData(inEnd))
+}
+
 // Get all inends
 func InEnds(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")

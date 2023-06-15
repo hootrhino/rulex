@@ -47,6 +47,9 @@ Actions =
             return true, data
         end
         for key, value in pairs(dataT) do
+            --
+            -- local MatchHexS = rulexlib:MatchUInt64("temp:[0,1];hum:[2,3]", value['value'])
+            --
             local MatchHexS = rulexlib:MatchHex("temp:[0,1];hum:[2,3]", value['value'])
             local ts = rulexlib:TsUnixNano()
             local Json = rulexlib:T2J(

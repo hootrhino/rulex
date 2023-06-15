@@ -13,6 +13,29 @@ import (
 * 列表先读数据库，然后读内存，合并状态后输出
 *
  */
+func DeviceDetail(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
+	uuid, _ := c.GetQuery("uuid")
+	mdev, err := hs.GetDeviceWithUUID(uuid)
+	if err != nil {
+		c.JSON(HTTP_OK, Error400(err))
+		return
+	}
+	device := e.GetDevice(mdev.UUID)
+	if device == nil {
+		// 如果内存里面没有就给安排一个死设备
+		tDevice := new(typex.Device)
+		tDevice.UUID = mdev.UUID
+		tDevice.Name = mdev.Name
+		tDevice.Type = typex.DeviceType(mdev.Type)
+		tDevice.Description = mdev.Description
+		tDevice.BindRules = map[string]typex.Rule{}
+		tDevice.Config = mdev.GetConfig()
+		tDevice.State = typex.DEV_STOP
+		c.JSON(HTTP_OK, OkWithData(tDevice))
+		return
+	}
+	c.JSON(HTTP_OK, OkWithData(device))
+}
 func Devices(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
 	if uuid == "" {

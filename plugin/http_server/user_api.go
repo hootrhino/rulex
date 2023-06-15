@@ -23,6 +23,9 @@ type user struct {
 	Description string `json:"description"`
 }
 
+func UserDetail(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+	Info(c, hh, e)
+}
 func Users(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	users := []user{}
 	for _, u := range hh.AllMUser() {

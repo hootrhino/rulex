@@ -8,6 +8,28 @@ import (
 	"gopkg.in/square/go-jose.v2/json"
 )
 
+func OutEndDetail(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
+	uuid, _ := c.GetQuery("uuid")
+	Model, err := hs.GetMOutEndWithUUID(uuid)
+	if err != nil {
+		c.JSON(HTTP_OK, Error400(err))
+		return
+	}
+	var OutEnd *typex.OutEnd
+	if OutEnd = e.GetOutEnd(Model.UUID); OutEnd == nil {
+		tmpOut := typex.OutEnd{
+			UUID:        Model.UUID,
+			State:       typex.SOURCE_STOP,
+			Type:        typex.TargetType(Model.Type),
+			Name:        Model.Name,
+			Description: Model.Description,
+		}
+		c.JSON(HTTP_OK, OkWithData(tmpOut))
+		return
+	}
+	c.JSON(HTTP_OK, OkWithData(OutEnd))
+}
+
 // Get all outends
 func OutEnds(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
