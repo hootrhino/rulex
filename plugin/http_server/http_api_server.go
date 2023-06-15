@@ -129,6 +129,7 @@ func (hh *HttpApiServer) Start(r typex.RuleX) error {
 	// Get all rules
 	//
 	hh.ginEngine.GET(url("rules"), hh.addRoute(Rules))
+	hh.ginEngine.GET(url("rules/detail"), hh.addRoute(RuleDetail))
 	//
 	// Get statistics data
 	//

@@ -24,6 +24,28 @@ type ruleVo struct {
 	Failed      string   `json:"failed"`
 }
 
+func RuleDetail(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+	uuid, _ := c.GetQuery("uuid")
+	rule, err := hh.GetMRuleWithUUID(uuid)
+	if err != nil {
+		c.JSON(HTTP_OK, Error400(err))
+		return
+	}
+	c.JSON(HTTP_OK, OkWithData(ruleVo{
+		UUID:        rule.UUID,
+		Name:        rule.Name,
+		Type:        rule.Type,
+		Status:      1,
+		Expression:  rule.Expression,
+		Description: rule.Description,
+		FromSource:  rule.FromSource,
+		FromDevice:  rule.FromDevice,
+		Success:     rule.Success,
+		Failed:      rule.Failed,
+		Actions:     rule.Actions,
+	}))
+}
+
 // Get all rules
 func Rules(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
