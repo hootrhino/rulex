@@ -47,25 +47,22 @@ Actions =
             return true, data
         end
         for key, value in pairs(dataT) do
-            --
-            -- local MatchHexS = rulexlib:MatchUInt64("temp:[0,1];hum:[2,3]", value['value'])
-            --
-            local MatchHexS = rulexlib:MatchHex("temp:[0,1];hum:[2,3]", value['value'])
+            local MatchHexS = rulexlib:MatchUInt64("temp:[0,1];hum:[2,3]", value['value'])
             local ts = rulexlib:TsUnixNano()
             local Json = rulexlib:T2J(
                 {
                     method = 'report',
-                    requestId = ts,
-                    timestamp = ts,
+                    clientToken = ts,
+                    timestamp = 1677762028638,
                     params = {
                         tag = key,
-                        temp = MatchHexS['temp'],
-                        hum = MatchHexS['hum'],
+                        temp = MatchHexS['temp'] * 0.1,
+                        hum = MatchHexS['hum'] * 0.1,
                     }
                 }
             )
-            print("DataToMqtt->OUT48320dfdeaaa4ec7971a37a922e17d93:", Json)
-            rulexlib:DataToMqtt('OUT48320dfdeaaa4ec7971a37a922e17d93', Json)
+            print("DataToMqtt-> OUT48320dfdeaaa4ec7971a37a922e17d93:", Json)
+            print(rulexlib:DataToMqtt('OUT48320dfdeaaa4ec7971a37a922e17d93', Json))
         end
         return true, data
     end

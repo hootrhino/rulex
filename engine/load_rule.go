@@ -89,7 +89,6 @@ func (e *RuleEngine) RemoveRule(ruleId string) {
 			return true
 		})
 		e.Rules.Delete(ruleId)
-		rule = nil
 		glogger.GLogger.Infof("Rule [%v] has been deleted", ruleId)
 	}
 }
