@@ -364,7 +364,7 @@ func (e *RuleEngine) RemoveOutEnd(uuid string) {
 			e.OutEnds.Delete(uuid)
 			outEnd = nil
 		}
-		glogger.GLogger.Infof("InEnd [%v] has been deleted", uuid)
+		glogger.GLogger.Infof("OutEnd [%v] has been deleted", uuid)
 	}
 }
 

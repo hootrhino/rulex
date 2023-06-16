@@ -76,6 +76,14 @@ type MOutEnd struct {
 	Description string
 	Config      string
 }
+func (md MOutEnd) GetConfig() map[string]interface{} {
+	result := make(map[string]interface{})
+	err := json.Unmarshal([]byte(md.Config), &result)
+	if err != nil {
+		return map[string]interface{}{}
+	}
+	return result
+}
 
 type MUser struct {
 	RulexModel
