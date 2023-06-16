@@ -18,7 +18,7 @@ func TestRegex(t *testing.T) {
 	segments := rulexlib.MatchHexLib("A0:[0,1];A1:[1,2]",
 		"0117011d0127011a0110010e")
 	for _, sg := range segments {
-		t.Logf("%+v", sg.ToInt64())
+		t.Logf("%+v", sg.ToUInt64())
 	}
 	t.Logf("%+v", segments)
 }
