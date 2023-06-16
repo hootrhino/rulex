@@ -27,3 +27,42 @@ if check(license_text){
     stop(error-message)
 }
 ```
+
+## 配置
+```ini
+[plugin.license_manager]
+local_addr  = "./rulex/cert.pem"
+remote_addr = "http://remote.site/cert/"
+net_name    = "eth0"
+```
+
+## 接口
+远程服务器承担了拉取、验证证书的作用，需要实现对应的接口
+
+```
+POST remote.site/cert
+request:
+{
+    "mac": "xxx",
+    "os": "linux",
+    "arch": "amd64",
+}
+response:
+-----BEGIN CERTIFICATE-----
+...
+-----END CERTIFICATE-----
+```
+
+```
+GET remote.site/cert
+request:
+{
+    "mac": "xxx",
+    "data": "xxx"
+}
+response:
+{
+    "ret": 0,
+    "msg": "xxx"
+}
+```
