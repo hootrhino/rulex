@@ -75,7 +75,7 @@ func MatchHex(rx typex.RuleX) func(*lua.LState) int {
 *  MatchHex("FFFFFF014CB2AA55", "age:[1,1];sex:[4,5]")
 *
  */
-func MatchUInt64(rx typex.RuleX) func(*lua.LState) int {
+func MatchUInt(rx typex.RuleX) func(*lua.LState) int {
 	return func(l *lua.LState) int {
 		exprS := l.ToString(2)
 		hexS := l.ToString(3)

@@ -69,17 +69,42 @@ func (hh *HttpApiServer) LoadNewestOutEnd(uuid string) error {
 
 // LoadNewestDevice
 func (hh *HttpApiServer) LoadNewestDevice(uuid string) error {
-	mDevice, _ := hh.GetDeviceWithUUID(uuid)
+	mDevice, err := hh.GetDeviceWithUUID(uuid)
+	if err != nil {
+		return err
+	}
 	config := map[string]interface{}{}
 	if err := json.Unmarshal([]byte(mDevice.Config), &config); err != nil {
 		return err
 	}
 	// 所有的更新都先停止资源,然后再加载
-	hh.ruleEngine.RemoveDevice(uuid)
+	hh.ruleEngine.RemoveDevice(uuid) // 删除内存里面的
 	dev := typex.NewDevice(typex.DeviceType(mDevice.Type), mDevice.Name,
-		mDevice.Description, config)
+		mDevice.Description, mDevice.GetConfig())
 	// Important !!!!!!!!
 	dev.UUID = mDevice.UUID // 本质上是配置和内存的数据映射起来
+	BindRules := map[string]typex.Rule{}
+	for _, ruleId := range mDevice.BindRules {
+		mRule, err1 := hh.GetMRuleWithUUID(ruleId)
+		if err1 != nil {
+			return err1
+		}
+		glogger.GLogger.Debugf("Load rule:%s", dev.Name)
+		RuleInstance := typex.NewLuaRule(
+			hh.ruleEngine,
+			mRule.UUID,
+			mRule.Name,
+			mRule.Description,
+			mRule.FromSource,
+			mRule.FromDevice,
+			mRule.Success,
+			mRule.Actions,
+			mRule.Failed)
+		BindRules[mRule.UUID] = *RuleInstance
+	}
+	// 最新的规则
+	dev.BindRules = BindRules
+	// 参数传给 --> startDevice()
 	if err := hh.ruleEngine.LoadDevice(dev); err != nil {
 		return err
 	}

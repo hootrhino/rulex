@@ -82,6 +82,7 @@ func (e *RuleEngine) RemoveRule(ruleId string) {
 		e.AllDevices().Range(func(key, value interface{}) bool {
 			Device := value.(*typex.Device)
 			for _, r := range Device.BindRules {
+				glogger.GLogger.Debugf("Unlink rule:%s", rule.Name)
 				if rule.UUID == r.UUID {
 					delete(Device.BindRules, ruleId)
 				}

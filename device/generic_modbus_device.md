@@ -15,54 +15,7 @@ Modbus协议是一种简单且易于实现的协议，广泛应用于工业自�
 
 ## 配置
 
-```json
-{
-    "code": 200,
-    "msg": "Success",
-    "data": [
-        {
-            "uuid": "DEVICEce3bf234a0a24b839c5f3d0a5893e7d3",
-            "name": "m1",
-            "type": "GENERIC_MODBUS",
-            "autoRestart": true,
-            "description": "11",
-            "state": 1,
-            "config": {
-                "commonConfig": {
-                    "autoRequest": false,
-                    "frequency": 60,
-                    "mode": "rtu",
-                    "retryTime": 5,
-                    "separator": "LF",
-                    "timeout": 60,
-                    "transport": "rs485rawserial"
-                },
-                "deviceConfig": {},
-                "registers": [
-                    {
-                        "address": 3,
-                        "function": 3,
-                        "initValue": 0,
-                        "quantity": 3,
-                        "slaverId": 1,
-                        "tag": "d3",
-                        "value": "",
-                        "weight": 1
-                    }
-                ],
-                "rtuConfig": {
-                    "baudRate": 9600,
-                    "dataBits": 8,
-                    "parity": "N",
-                    "stopBits": 1,
-                    "timeout": 60,
-                    "uart": "/dev/ttyUSB0"
-                }
-            }
-        }
-    ]
-}
-```
+。。。
 
 ## 数据样例
 Modbus采集器采集出来的数据是一个大Map结构。
@@ -83,20 +36,35 @@ Modbus采集器采集出来的数据是一个大Map结构。
 
 ## 常用函数
 
-为了更加清楚的描述接口的使用，下面给出数据解析详细示例：
-
-数据解析
+为了更加清楚的描述接口的使用，下面给出数据解析详细示例，主要用来实现采集数据保存到MongoDb：
 ```lua
 Actions =
 {
-    function (data)
-        local dataTable, err = rulexlib:J2T(data)
-        if err ~= nil then
+    function(data)
+        local dataT, err = rulexlib:J2T(data)
+        if (err ~= nil) then
+            print('parse json error:', err)
             return true, data
         end
-        for key, entity in pairs(dataTable) do
-            print(key, entity['value'])
+        for key, value in pairs(dataT) do
+            local MatchHexS = rulexlib:MatchUInt("temp:[0,1];hum:[2,3]", value['value'])
+            local ts = rulexlib:TsUnixNano()
+            local Json = rulexlib:T2J(
+                {
+                    method = 'report',
+                    clientToken = ts,
+                    timestamp = 1677762028638,
+                    params = {
+                        tag = key,
+                        temp = MatchHexS['temp'],
+                        hum = MatchHexS['hum'],
+                    }
+                }
+            )
+            print("DataToMongoDB ->:", Json)
+            print(rulexlib:DataToMqtt('OUT57c90e4cf8484a4caa43f5888c906cdb', Json))
         end
+        return true, data
     end
 }
 ```

@@ -138,8 +138,11 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 		// timeout 最大不能超过20, 不然无意义
 		mdev.rtuHandler.Timeout = time.Duration(mdev.mainConfig.RtuConfig.Timeout) * time.Microsecond
 		if core.GlobalConfig.AppDebugMode {
-			mdev.rtuHandler.Logger = golog.New(glogger.GLogger.Writer(),
-				"Modbus: ", golog.LstdFlags)
+			if mdev.mainConfig.CommonConfig.Mode == "RTU" {
+				mdev.rtuHandler.Logger = golog.New(glogger.GLogger.Writer(),
+					"Modbus RTU Mode: ", golog.LstdFlags)
+			}
+
 		}
 
 		if err := mdev.rtuHandler.Connect(); err != nil {
@@ -155,7 +158,10 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 			fmt.Sprintf("%s:%v", mdev.mainConfig.TcpConfig.Host, mdev.mainConfig.TcpConfig.Port),
 		)
 		if core.GlobalConfig.AppDebugMode {
-			mdev.tcpHandler.Logger = golog.New(glogger.GLogger.Writer(), "Modbus: ", golog.LstdFlags)
+			if mdev.mainConfig.CommonConfig.Mode == "TCP" {
+				mdev.tcpHandler.Logger = golog.New(glogger.GLogger.Writer(),
+					"Modbus TCP Mode: ", golog.LstdFlags)
+			}
 		}
 
 		if err := mdev.tcpHandler.Connect(); err != nil {
@@ -188,14 +194,7 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 				{
 				}
 			}
-			// if mdev.Busy {
-			// 	glogger.GLogger.Warn("Modbus device is busing now")
-			// 	continue
-			// }
-
-			mdev.Busy = true
 			n, err := Driver.Read([]byte{}, buffer)
-			mdev.Busy = false
 			if err != nil {
 				glogger.GLogger.Error(err)
 				mdev.retryTimes++
@@ -230,21 +229,19 @@ func (mdev *generic_modbus_device) OnWrite(cmd []byte, data []byte) (int, error)
 // 设备当前状态
 func (mdev *generic_modbus_device) Status() typex.DeviceState {
 	// 容错5次
-	if mdev.retryTimes > 5 {
+	if mdev.retryTimes > 0 {
 		return typex.DEV_DOWN
 	}
-	return typex.DEV_UP
+	return mdev.status
 }
 
 // 停止设备
 func (mdev *generic_modbus_device) Stop() {
-	if mdev.CancelCTX != nil {
-		mdev.CancelCTX()
-	}
+	mdev.CancelCTX()
+	mdev.status = typex.DEV_DOWN
 	if mdev.driver != nil {
 		mdev.driver.Stop()
 	}
-	mdev.status = typex.DEV_DOWN
 }
 
 // 设备属性，是一系列属性描述

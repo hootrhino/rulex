@@ -120,9 +120,9 @@ func loadDevices(abstractDevice typex.XDevice, deviceInfo *typex.Device, e *Rule
 				}
 			}
 			<-ticker.C
-			if abstractDevice.Details() == nil {
-				return
-			}
+			// if abstractDevice.Details() == nil {
+			// 	return
+			// }
 			tryIfRestartDevice(abstractDevice, e, deviceInfo.UUID)
 
 		}
@@ -161,7 +161,10 @@ func startDevice(abstractDevice typex.XDevice, e *RuleEngine) error {
 	// 2023-06-14新增： 重启成功后数据会丢失,还得加载最新的Rule到设备中
 	device := abstractDevice.Details()
 	if device != nil {
+		// bind 最新的规则
+		// FIX ME: 要从数据库拿刚更新的
 		for _, rule := range device.BindRules {
+			glogger.GLogger.Debugf("Load rule:%s", rule.Name)
 			RuleInstance := typex.NewLuaRule(e,
 				rule.UUID,
 				rule.Name,
