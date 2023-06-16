@@ -8,55 +8,72 @@ import (
 	"gopkg.in/square/go-jose.v2/json"
 )
 
-func OutEndDetail(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
+func OutEnds(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
-	Model, err := hs.GetMOutEndWithUUID(uuid)
+	if uuid == "" {
+		outends := []typex.OutEnd{}
+		for _, mOut := range hs.AllMOutEnd() {
+			outEnd := e.GetOutEnd(mOut.UUID)
+			if outEnd == nil {
+				tOut := typex.OutEnd{}
+				tOut.UUID = mOut.UUID
+				tOut.Name = mOut.Name
+				tOut.Type = typex.TargetType(mOut.Type)
+				tOut.Description = mOut.Description
+				tOut.Config = mOut.GetConfig()
+				tOut.State = typex.SOURCE_STOP
+				outends = append(outends, tOut)
+			}
+			if outEnd != nil {
+				outends = append(outends, *outEnd)
+			}
+		}
+		c.JSON(HTTP_OK, OkWithData(outends))
+		return
+	}
+	mOut, err := hs.GetMOutEndWithUUID(uuid)
 	if err != nil {
 		c.JSON(HTTP_OK, Error400(err))
 		return
 	}
-	var OutEnd *typex.OutEnd
-	if OutEnd = e.GetOutEnd(Model.UUID); OutEnd == nil {
-		tmpOut := typex.OutEnd{
-			UUID:        Model.UUID,
-			State:       typex.SOURCE_STOP,
-			Type:        typex.TargetType(Model.Type),
-			Name:        Model.Name,
-			Description: Model.Description,
-		}
-		c.JSON(HTTP_OK, OkWithData(tmpOut))
+	outEnd := e.GetOutEnd(mOut.UUID)
+	if outEnd == nil {
+		// 如果内存里面没有就给安排一个死设备
+		tOut := typex.OutEnd{}
+		tOut.UUID = mOut.UUID
+		tOut.Name = mOut.Name
+		tOut.Type = typex.TargetType(mOut.Type)
+		tOut.Description = mOut.Description
+		tOut.Config = mOut.GetConfig()
+		tOut.State = typex.SOURCE_STOP
+		c.JSON(HTTP_OK, OkWithData(tOut))
 		return
 	}
-	c.JSON(HTTP_OK, OkWithData(OutEnd))
+	c.JSON(HTTP_OK, OkWithData(outEnd))
 }
 
 // Get all outends
-func OutEnds(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
+func OutEndDetail(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
-	if uuid == "" {
-		outends := []*typex.OutEnd{}
-		for _, v := range hs.AllMOutEnd() {
-			var outEnd *typex.OutEnd
-			if outEnd = e.GetOutEnd(v.UUID); outEnd == nil {
-				outEnd.State = typex.SOURCE_STOP
-			}
-			if outEnd != nil {
-				outends = append(outends, outEnd)
-			}
-		}
-		c.JSON(HTTP_OK, OkWithData(outends))
-	} else {
-		Model, err := hs.GetMOutEndWithUUID(uuid)
-		if err != nil {
-			c.JSON(HTTP_OK, Error400(err))
-			return
-		}
-		var outend *typex.OutEnd
-		if outend = e.GetOutEnd(Model.UUID); outend == nil {
-			outend.State = typex.SOURCE_STOP
-		}
-		c.JSON(HTTP_OK, OkWithData(outend))
+	mOut, err := hs.GetMOutEndWithUUID(uuid)
+	if err != nil {
+		c.JSON(HTTP_OK, Error400(err))
+		return
 	}
+	outEnd := e.GetOutEnd(mOut.UUID)
+	if outEnd == nil {
+		// 如果内存里面没有就给安排一个死设备
+		tOutEnd := new(typex.OutEnd)
+		tOutEnd.UUID = mOut.UUID
+		tOutEnd.Name = mOut.Name
+		tOutEnd.Type = typex.TargetType(mOut.Type)
+		tOutEnd.Description = mOut.Description
+		tOutEnd.Config = mOut.GetConfig()
+		tOutEnd.State = typex.SOURCE_STOP
+		c.JSON(HTTP_OK, OkWithData(tOutEnd))
+		return
+	}
+	c.JSON(HTTP_OK, OkWithData(outEnd))
 }
 
 // Delete outEnd by UUID

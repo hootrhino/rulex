@@ -7,12 +7,10 @@ import (
 	"time"
 
 	"github.com/hootrhino/rulex/device"
-	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/source"
 	"github.com/hootrhino/rulex/statistics"
 	"github.com/hootrhino/rulex/target"
 	"github.com/hootrhino/rulex/typex"
-	"github.com/hootrhino/rulex/utils"
 
 	"github.com/gin-gonic/gin"
 	"github.com/shirou/gopsutil/v3/cpu"
@@ -82,13 +80,12 @@ func source_count(e typex.RuleX) map[string]int {
 *
  */
 func System(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
-	cpuPercent, _ := cpu.Percent(5*time.Millisecond, false)
-	parts, _ := disk.Partitions(true)
-	diskInfo, _ := disk.Usage(parts[0].Mountpoint)
+	cpuPercent, _ := cpu.Percent(time.Duration(3)*time.Second, true)
+	diskInfo, _ := disk.Usage("/")
 	// For info on each, see: https://golang.org/pkg/runtime/#MemStats
 	var m runtime.MemStats
 	runtime.ReadMemStats(&m)
-	ip, err0 := utils.HostNameI()
+	// ip, err0 := utils.HostNameI()
 	hardWareInfo := map[string]interface{}{
 		"version":     e.Version().Version,
 		"diskInfo":    calculateDiskInfo(diskInfo),
@@ -99,24 +96,24 @@ func System(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		"osArch":      e.Version().Arch,
 		"osDist":      e.Version().Dist,
 		"startedTime": StartedTime,
-		"ip": func() []string {
-			if err0 != nil {
-				glogger.GLogger.Error(err0)
-				return []string{"127.0.0.1"}
-			}
-			return ip
-		}(),
-		"wsUrl": func() []string {
-			if err0 != nil {
-				glogger.GLogger.Error(err0)
-				return []string{"ws://127.0.0.1:2580/ws"}
-			}
-			ips := []string{}
-			for _, ipp := range ip {
-				ips = append(ips, fmt.Sprintf("ws://%s:2580/ws", ipp))
-			}
-			return ips
-		}(),
+		// "ip": func() []string {
+		// 	if err0 != nil {
+		// 		glogger.GLogger.Error(err0)
+		// 		return []string{"127.0.0.1"}
+		// 	}
+		// 	return ip
+		// }(),
+		// "wsUrl": func() []string {
+		// 	if err0 != nil {
+		// 		glogger.GLogger.Error(err0)
+		// 		return []string{"ws://127.0.0.1:2580/ws"}
+		// 	}
+		// 	ips := []string{}
+		// 	for _, ipp := range ip {
+		// 		ips = append(ips, fmt.Sprintf("ws://%s:2580/ws", ipp))
+		// 	}
+		// 	return ips
+		// }(),
 	}
 	c.JSON(HTTP_OK, OkWithData(gin.H{
 		"hardWareInfo": hardWareInfo,
@@ -273,6 +270,6 @@ func calculateCpuPercent(cpus []float64) float64 {
 	for _, v := range cpus {
 		acc += v
 	}
-	value, _ := strconv.ParseFloat(fmt.Sprintf("%.2f", acc), 64)
+	value, _ := strconv.ParseFloat(fmt.Sprintf("%.2f", acc/float64(len(cpus))), 64)
 	return value
 }

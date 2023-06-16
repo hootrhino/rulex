@@ -12,6 +12,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
 type mongoTarget struct {
@@ -41,6 +42,8 @@ func (m *mongoTarget) Start(cctx typex.CCTX) error {
 	m.Ctx = cctx.Ctx
 	m.CancelCTX = cctx.CancelCTX
 	clientOptions := options.Client().ApplyURI(m.mainConfig.MongoUrl)
+	clientOptions.SetConnectTimeout(3 * time.Second)
+	clientOptions.SetDirect(true)
 	client, err0 := mongo.Connect(m.Ctx, clientOptions)
 	if err0 != nil {
 		return err0
@@ -86,7 +89,13 @@ func (m *mongoTarget) Pause() {
 }
 
 func (m *mongoTarget) Status() typex.SourceState {
-	return m.status
+	if m.client != nil {
+		if err := m.client.Ping(m.Ctx, &readpref.ReadPref{}); err != nil {
+			return typex.SOURCE_DOWN
+		}
+		return typex.SOURCE_UP
+	}
+	return typex.SOURCE_DOWN
 }
 
 func (m *mongoTarget) Stop() {

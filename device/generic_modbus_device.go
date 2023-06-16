@@ -52,8 +52,8 @@ type _GMODHostConfig struct {
 
 type _GMODConfig struct {
 	CommonConfig _GMODCommonConfig       `json:"commonConfig" validate:"required"`
-	RtuConfig    common.CommonUartConfig `json:"rtuConfig" validate:"required"`
-	TcpConfig    _GMODHostConfig         `json:"tcpConfig" validate:"required"`
+	RtuConfig    common.CommonUartConfig `json:"rtuConfig"`
+	TcpConfig    _GMODHostConfig         `json:"tcpConfig"`
 	Registers    []common.RegisterRW     `json:"registers" validate:"required" title:"寄存器配置"`
 }
 type generic_modbus_device struct {
@@ -80,7 +80,14 @@ func NewGenericModbusDevice(e typex.RuleX) typex.XDevice {
 	mdev.mainConfig = _GMODConfig{
 		CommonConfig: _GMODCommonConfig{},
 		TcpConfig:    _GMODHostConfig{Host: "127.0.0.1", Port: 502},
-		RtuConfig:    common.CommonUartConfig{},
+		RtuConfig: common.CommonUartConfig{
+			Timeout:  3000,
+			Uart:     "/tty/s1",
+			BaudRate: 9600,
+			DataBits: 8,
+			Parity:   "N",
+			StopBits: 1,
+		},
 	}
 	mdev.Busy = false
 	mdev.status = typex.DEV_DOWN

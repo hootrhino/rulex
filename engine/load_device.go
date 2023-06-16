@@ -57,7 +57,7 @@ func (e *RuleEngine) RemoveDevice(uuid string) {
 *
  */
 func (e *RuleEngine) LoadUserDevice(abstractDevice typex.XDevice, deviceInfo *typex.Device) error {
-	return startDevices(abstractDevice, deviceInfo, e)
+	return loadDevices(abstractDevice, deviceInfo, e)
 }
 
 // 加载内置设备
@@ -72,7 +72,7 @@ func (e *RuleEngine) LoadBuiltinDevice(deviceInfo *typex.Device) error {
  */
 func (e *RuleEngine) LoadDevice(deviceInfo *typex.Device) error {
 	if config := e.DeviceTypeManager.Find(deviceInfo.Type); config != nil {
-		return startDevices(config.Device, deviceInfo, e)
+		return loadDevices(config.Device, deviceInfo, e)
 	}
 	return fmt.Errorf("unsupported Device type:%s", deviceInfo.Type)
 
@@ -83,7 +83,7 @@ func (e *RuleEngine) LoadDevice(deviceInfo *typex.Device) error {
 * 启动一个和RULEX直连的外部设备
 *
  */
-func startDevices(abstractDevice typex.XDevice, deviceInfo *typex.Device, e *RuleEngine) error {
+func loadDevices(abstractDevice typex.XDevice, deviceInfo *typex.Device, e *RuleEngine) error {
 	// Bind
 	deviceInfo.Device = abstractDevice
 	e.SaveDevice(deviceInfo)
@@ -100,15 +100,15 @@ func startDevices(abstractDevice typex.XDevice, deviceInfo *typex.Device, e *Rul
 	}
 
 	// start
-	if err := startDevice(abstractDevice, e); err != nil {
-		glogger.GLogger.Error(err)
-		e.RemoveDevice(deviceInfo.UUID)
-		return err
-	}
+	// if err := startDevice(abstractDevice, e); err != nil {
+	// 	glogger.GLogger.Error(err)
+	// 	e.RemoveDevice(deviceInfo.UUID)
+	// 	return err
+	// }
+	startDevice(abstractDevice, e)
 	go func(ctx context.Context) {
 		for {
 			ticker := time.NewTicker(time.Duration(time.Second * 5))
-			<-ticker.C
 			select {
 			case <-ctx.Done():
 				{
@@ -119,7 +119,7 @@ func startDevices(abstractDevice typex.XDevice, deviceInfo *typex.Device, e *Rul
 				{
 				}
 			}
-
+			<-ticker.C
 			if abstractDevice.Details() == nil {
 				return
 			}
