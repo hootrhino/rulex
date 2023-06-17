@@ -3,7 +3,6 @@ package licensemanager
 /*
 *
 * 证书管理器
-* https://p.kdocs.cn/s/SEOJOBAAB4
  */
 
 import (
