@@ -57,7 +57,7 @@ func (e *RuleEngine) RemoveDevice(uuid string) {
 *
  */
 func (e *RuleEngine) LoadUserDevice(abstractDevice typex.XDevice, deviceInfo *typex.Device) error {
-	return startDevices(abstractDevice, deviceInfo, e)
+	return loadDevices(abstractDevice, deviceInfo, e)
 }
 
 // 加载内置设备
@@ -72,7 +72,7 @@ func (e *RuleEngine) LoadBuiltinDevice(deviceInfo *typex.Device) error {
  */
 func (e *RuleEngine) LoadDevice(deviceInfo *typex.Device) error {
 	if config := e.DeviceTypeManager.Find(deviceInfo.Type); config != nil {
-		return startDevices(config.Device, deviceInfo, e)
+		return loadDevices(config.Device, deviceInfo, e)
 	}
 	return fmt.Errorf("unsupported Device type:%s", deviceInfo.Type)
 
@@ -83,7 +83,7 @@ func (e *RuleEngine) LoadDevice(deviceInfo *typex.Device) error {
 * 启动一个和RULEX直连的外部设备
 *
  */
-func startDevices(abstractDevice typex.XDevice, deviceInfo *typex.Device, e *RuleEngine) error {
+func loadDevices(abstractDevice typex.XDevice, deviceInfo *typex.Device, e *RuleEngine) error {
 	// Bind
 	deviceInfo.Device = abstractDevice
 	e.SaveDevice(deviceInfo)
@@ -100,15 +100,15 @@ func startDevices(abstractDevice typex.XDevice, deviceInfo *typex.Device, e *Rul
 	}
 
 	// start
-	if err := startDevice(abstractDevice, e); err != nil {
-		glogger.GLogger.Error(err)
-		e.RemoveDevice(deviceInfo.UUID)
-		return err
-	}
+	// if err := startDevice(abstractDevice, e); err != nil {
+	// 	glogger.GLogger.Error(err)
+	// 	e.RemoveDevice(deviceInfo.UUID)
+	// 	return err
+	// }
+	startDevice(abstractDevice, e)
 	go func(ctx context.Context) {
 		for {
 			ticker := time.NewTicker(time.Duration(time.Second * 5))
-			<-ticker.C
 			select {
 			case <-ctx.Done():
 				{
@@ -119,10 +119,10 @@ func startDevices(abstractDevice typex.XDevice, deviceInfo *typex.Device, e *Rul
 				{
 				}
 			}
-
-			if abstractDevice.Details() == nil {
-				return
-			}
+			<-ticker.C
+			// if abstractDevice.Details() == nil {
+			// 	return
+			// }
 			tryIfRestartDevice(abstractDevice, e, deviceInfo.UUID)
 
 		}
@@ -139,7 +139,7 @@ func tryIfRestartDevice(abstractDevice typex.XDevice, e *RuleEngine, devId strin
 	}
 	if Status == typex.DEV_DOWN {
 		abstractDevice.Details().State = typex.DEV_DOWN
-		glogger.GLogger.Warnf("Device %v %v down. try to restart it",
+		glogger.GLogger.Warnf("Device [%v, %v] down. try to restart.",
 			abstractDevice.Details().UUID, abstractDevice.Details().Name)
 		abstractDevice.Stop()
 		runtime.Gosched()
@@ -157,6 +157,27 @@ func startDevice(abstractDevice typex.XDevice, e *RuleEngine) error {
 		glogger.GLogger.Error("abstractDevice start error:", err)
 		return err
 	}
-
+	// LoadNewestDevice
+	// 2023-06-14新增： 重启成功后数据会丢失,还得加载最新的Rule到设备中
+	device := abstractDevice.Details()
+	if device != nil {
+		// bind 最新的规则
+		// FIX ME: 要从数据库拿刚更新的
+		for _, rule := range device.BindRules {
+			glogger.GLogger.Debugf("Load rule:%s", rule.Name)
+			RuleInstance := typex.NewLuaRule(e,
+				rule.UUID,
+				rule.Name,
+				rule.Description,
+				rule.FromSource,
+				rule.FromDevice,
+				rule.Success,
+				rule.Actions,
+				rule.Failed)
+			if err1 := e.LoadRule(RuleInstance); err1 != nil {
+				return err1
+			}
+		}
+	}
 	return nil
 }

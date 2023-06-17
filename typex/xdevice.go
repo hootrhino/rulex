@@ -41,7 +41,7 @@ const (
 
 )
 
-// 设备元数据
+// 设备元数据, 本质是保存在配置里面的数据的一个内存映射实例
 type Device struct {
 	UUID string     `json:"uuid"` // UUID
 	Name string     `json:"name"` // 设备名称，例如：灯光开关
@@ -106,6 +106,9 @@ type XDevice interface {
 	Status() DeviceState
 	// 停止设备, 在这里释放资源,一般是先置状态为STOP,然后CancelContext()
 	Stop()
+	//
+	// 0.5.2 新增 Reload() error
+	//
 	// 设备属性，是一系列属性描述
 	Property() []DeviceProperty
 	// 链接指向真实设备，保存在内存里面，和SQLite里的数据是对应关系
@@ -116,7 +119,7 @@ type XDevice interface {
 	Driver() XExternalDriver
 	// 外部调用, 该接口是个高级功能, 准备为了设计分布式部署设备的时候用, 但是相当长时间内都不会开启
 	// 默认情况下该接口没有用
-	OnDCACall(UUID string, Command string, Args interface{}) DCAResult
+	// OnDCACall(UUID string, Command string, Args interface{}) DCAResult
 }
 
 /*

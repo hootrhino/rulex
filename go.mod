@@ -60,8 +60,11 @@ require (
 	gorm.io/gorm v1.25.1
 )
 
+require github.com/juju/errors v0.0.0-20170703010042-c7d06af17c68 // indirect
+
 require (
 	github.com/beorn7/perks v1.0.1 // indirect
+	github.com/blastrain/vitess-sqlparser v0.0.0-20201030050434-a139afbb1aba
 	github.com/bytedance/sonic v1.9.1 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect

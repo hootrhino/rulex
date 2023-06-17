@@ -1,17 +1,36 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html>
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
-        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0,minimal-ui:ios">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>RULEX-DASHBOARD</title>
+  <title>Hello Rulex</title>
+  <style>
+    body {
+      background-color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    @keyframes fade-in {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    .fade-in-text {
+      animation: fade-in 2s;
+    }
+  </style>
 </head>
 
 <body>
-
+  <h1 class="fade-in-text">Hello Rulex</h1>
 </body>
-<p>如果你看到这个界面,说明前端资源没有被打包进来,请重新打包资源</p>
 
 </html>

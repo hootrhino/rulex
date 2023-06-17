@@ -2,6 +2,7 @@ package httpserver
 
 import (
 	"database/sql/driver"
+	"fmt"
 	"time"
 
 	"gopkg.in/square/go-jose.v2/json"
@@ -22,6 +23,14 @@ func (f *stringList) Scan(data interface{}) error {
 	return json.Unmarshal([]byte(data.(string)), f)
 }
 
+func (f stringList) String() string {
+	r := []string{}
+	for _, v := range f {
+		r = append(r, v)
+	}
+	return fmt.Sprintf("%s", r)
+}
+
 type MRule struct {
 	RulexModel
 	UUID        string     `gorm:"not null"`
@@ -39,12 +48,23 @@ type MRule struct {
 type MInEnd struct {
 	RulexModel
 	// UUID for origin source ID
-	UUID        string `gorm:"not null"`
-	Type        string `gorm:"not null"`
-	Name        string `gorm:"not null"`
+	UUID      string     `gorm:"not null"`
+	Type      string     `gorm:"not null"`
+	Name      string     `gorm:"not null"`
+	BindRules stringList `json:"bindRules"` // 与之关联的规则表["A","B","C"]
+
 	Description string
 	Config      string
 	XDataModels string
+}
+
+func (md MInEnd) GetConfig() map[string]interface{} {
+	result := make(map[string]interface{})
+	err := json.Unmarshal([]byte(md.Config), &result)
+	if err != nil {
+		return map[string]interface{}{}
+	}
+	return result
 }
 
 type MOutEnd struct {
@@ -55,6 +75,14 @@ type MOutEnd struct {
 	Name        string `gorm:"not null"`
 	Description string
 	Config      string
+}
+func (md MOutEnd) GetConfig() map[string]interface{} {
+	result := make(map[string]interface{})
+	err := json.Unmarshal([]byte(md.Config), &result)
+	if err != nil {
+		return map[string]interface{}{}
+	}
+	return result
 }
 
 type MUser struct {
@@ -68,14 +96,12 @@ type MUser struct {
 // 设备元数据
 type MDevice struct {
 	RulexModel
-	UUID string `gorm:"not null"`
-	Name string `gorm:"not null"`
-	Type string `gorm:"not null"`
-	//   这个字段本来用于给设备单独新建脚本的，但是目前已经有了规则，所以先留空
-	// 或许以后会用到
-	ActionScript string
-	Config       string
-	Description  string
+	UUID        string `gorm:"not null"`
+	Name        string `gorm:"not null"`
+	Type        string `gorm:"not null"`
+	Config      string
+	BindRules   stringList `json:"bindRules"` // 与之关联的规则表["A","B","C"]
+	Description string
 }
 
 func (md MDevice) GetConfig() map[string]interface{} {

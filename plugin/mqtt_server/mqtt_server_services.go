@@ -10,11 +10,12 @@ import (
 *
  */
 type Client struct {
-	ID           string `json:"id"`
-	Remote       string `json:"remote"`
-	Listener     string `json:"listener"`
-	Username     string `json:"username"`
-	CleanSession bool   `json:"cleanSession"`
+	ID           string   `json:"id"`
+	Remote       string   `json:"remote"`
+	Listener     string   `json:"listener"`
+	Username     string   `json:"username"`
+	CleanSession bool     `json:"cleanSession"`
+	Topics       []_topic `json:"topics"`
 }
 
 func (s *MqttServer) ListClients(offset, count int) []Client {
@@ -27,6 +28,8 @@ func (s *MqttServer) ListClients(offset, count int) []Client {
 			CleanSession: v.Properties.Clean,
 			Listener:     v.Net.Listener,
 		}
+		topics := s.topics[v.ID]
+		c.Topics = topics
 		result = append(result, c)
 	}
 	return result

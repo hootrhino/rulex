@@ -10,9 +10,7 @@ const (
 	SOURCE_STOP  SourceState = 3
 )
 
-//
 // Abstract driver interface
-//
 type DriverState int
 
 const (
@@ -24,9 +22,7 @@ const (
 	DRIVER_DOWN DriverState = 2
 )
 
-//
 // InEndType
-//
 type InEndType string
 
 func (i InEndType) String() string {
@@ -75,9 +71,7 @@ const (
 	ITHINGS_IOT_HUB InEndType = "ITHINGS_IOT_HUB"
 )
 
-//
 // TargetType
-//
 type TargetType string
 
 func (i TargetType) String() string {
@@ -109,6 +103,8 @@ const (
 	UDP_TARGET TargetType = "UDP_TARGET"
 	// SQLITE
 	SQLITE_TARGET TargetType = "SQLITE_TARGET"
+	// USER_G776 DTU
+	USER_G776_TARGET TargetType = "USER_G776_TARGET"
 )
 
 /*

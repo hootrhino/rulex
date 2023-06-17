@@ -364,7 +364,7 @@ func (e *RuleEngine) RemoveOutEnd(uuid string) {
 			e.OutEnds.Delete(uuid)
 			outEnd = nil
 		}
-		glogger.GLogger.Infof("InEnd [%v] has been deleted", uuid)
+		glogger.GLogger.Infof("OutEnd [%v] has been deleted", uuid)
 	}
 }
 
@@ -728,6 +728,12 @@ func (e *RuleEngine) InitTargetTypeManager() error {
 		&typex.XConfig{
 			Engine: e,
 			Target: target.NewSqliteTarget(e),
+		},
+	)
+	e.TargetTypeManager.Register(typex.USER_G776_TARGET,
+		&typex.XConfig{
+			Engine: e,
+			Target: target.NewUserG776(e),
 		},
 	)
 	return nil

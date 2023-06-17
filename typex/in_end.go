@@ -30,7 +30,7 @@ func NewInEnd(Type InEndType,
 	c map[string]interface{}) *InEnd {
 
 	return &InEnd{
-		UUID:        utils.MakeUUID("INEND"),
+		UUID:        utils.InUuid(),
 		Type:        Type,
 		Name:        n,
 		Description: d,

@@ -109,7 +109,8 @@ func (mm *mqttOutEndTarget) Details() *typex.OutEnd {
 
 func (mm *mqttOutEndTarget) To(data interface{}) (interface{}, error) {
 	if mm.client != nil {
-		return mm.client.Publish(mm.mainConfig.PubTopic, 1, false, data).Error(), nil
+		token := mm.client.Publish(mm.mainConfig.PubTopic, 1, false, data)
+		return token.Error(), nil
 	}
 	return nil, errors.New("mqtt client is nil")
 }

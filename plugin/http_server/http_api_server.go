@@ -4,10 +4,11 @@ import (
 	"context"
 	"embed"
 	"errors"
+	"fmt"
 	"io/fs"
+	"net"
 	"net/http"
 	"path"
-	"strconv"
 	"time"
 
 	"github.com/gin-contrib/static"
@@ -70,7 +71,11 @@ func (hh *HttpApiServer) Init(config *ini.Section) error {
 	// Http server
 	//
 	go func(ctx context.Context, port int) {
-		if err := hh.ginEngine.Run(":" + strconv.Itoa(port)); err != nil {
+		listener, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", port))
+		if err != nil {
+			glogger.GLogger.Fatalf("httpserver listen error: %s\n", err)
+		}
+		if err := hh.ginEngine.RunListener(listener); err != nil {
 			glogger.GLogger.Fatalf("httpserver listen error: %s\n", err)
 		}
 	}(typex.GCTX, hh.Port)
@@ -112,6 +117,7 @@ func (hh *HttpApiServer) Start(r typex.RuleX) error {
 	// Get all inends
 	//
 	hh.ginEngine.GET(url("inends"), hh.addRoute(InEnds))
+	hh.ginEngine.GET(url("inends/detail"), hh.addRoute(InEndDetail))
 	//
 	//
 	//
@@ -120,10 +126,12 @@ func (hh *HttpApiServer) Start(r typex.RuleX) error {
 	// Get all outends
 	//
 	hh.ginEngine.GET(url("outends"), hh.addRoute(OutEnds))
+	hh.ginEngine.GET(url("outends/detail"), hh.addRoute(OutEndDetail))
 	//
 	// Get all rules
 	//
 	hh.ginEngine.GET(url("rules"), hh.addRoute(Rules))
+	hh.ginEngine.GET(url("rules/detail"), hh.addRoute(RuleDetail))
 	//
 	// Get statistics data
 	//
@@ -133,6 +141,7 @@ func (hh *HttpApiServer) Start(r typex.RuleX) error {
 	// Auth
 	//
 	hh.ginEngine.GET(url("users"), hh.addRoute(Users))
+	hh.ginEngine.GET(url("users/detail"), hh.addRoute(UserDetail))
 	hh.ginEngine.POST(url("users"), hh.addRoute(CreateUser))
 	//
 	//
@@ -146,7 +155,10 @@ func (hh *HttpApiServer) Start(r typex.RuleX) error {
 	// Create InEnd
 	//
 	hh.ginEngine.POST(url("inends"), hh.addRoute(CreateInend))
-	hh.ginEngine.PUT(url("inends"), hh.addRoute(CreateInend))
+	//
+	// Update Inend
+	//
+	hh.ginEngine.PUT(url("inends"), hh.addRoute(UpdateInend))
 	//
 	// 配置表
 	//
@@ -159,7 +171,10 @@ func (hh *HttpApiServer) Start(r typex.RuleX) error {
 	// Create OutEnd
 	//
 	hh.ginEngine.POST(url("outends"), hh.addRoute(CreateOutEnd))
-	hh.ginEngine.PUT(url("outends"), hh.addRoute(CreateOutEnd))
+	//
+	// Update OutEnd
+	//
+	hh.ginEngine.PUT(url("outends"), hh.addRoute(UpdateOutEnd))
 	//
 	// Create rule
 	//
@@ -167,7 +182,7 @@ func (hh *HttpApiServer) Start(r typex.RuleX) error {
 	//
 	// Update rule
 	//
-	hh.ginEngine.PUT(url("rules"), hh.addRoute(CreateRule))
+	hh.ginEngine.PUT(url("rules"), hh.addRoute(UpdateRule))
 	//
 	// Delete rule by UUID
 	//
@@ -203,6 +218,7 @@ func (hh *HttpApiServer) Start(r typex.RuleX) error {
 	// 设备管理
 	//
 	hh.ginEngine.GET(url("devices"), hh.addRoute(Devices))
+	hh.ginEngine.GET(url("devices/detail"), hh.addRoute(DeviceDetail))
 	hh.ginEngine.POST(url("devices"), hh.addRoute(CreateDevice))
 	hh.ginEngine.PUT(url("devices"), hh.addRoute(UpdateDevice))
 	hh.ginEngine.DELETE(url("devices"), hh.addRoute(DeleteDevice))
@@ -295,7 +311,7 @@ func configHttpServer(hh *HttpApiServer) {
 	hh.ginEngine.Use(static.Serve("/", wwwRoot("")))
 	hh.ginEngine.Use(gin.CustomRecovery(func(c *gin.Context, err any) {
 		glogger.GLogger.Error(err)
-		c.JSON(200, Error500(err1crash))
+		c.JSON(HTTP_OK, Error500(err1crash))
 	}))
 	hh.ginEngine.NoRoute(func(c *gin.Context) {
 		c.Redirect(302, "/")

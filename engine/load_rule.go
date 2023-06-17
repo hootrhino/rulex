@@ -34,7 +34,7 @@ func (e *RuleEngine) LoadRule(r *typex.Rule) error {
 			(in.BindRules)[r.UUID] = *r
 			return nil
 		} else {
-			return errors.New("'InEnd':" + inUUId + " is not exists when bind resource")
+			return errors.New("'InEnd':" + inUUId + " is not working now")
 		}
 	}
 	// 绑定设备
@@ -44,7 +44,7 @@ func (e *RuleEngine) LoadRule(r *typex.Rule) error {
 			// 绑定资源和规则，建立关联关系
 			(Device.BindRules)[r.UUID] = *r
 		} else {
-			return errors.New("'Device':" + devUUId + " is not exists when bind resource")
+			return errors.New("'Device':" + devUUId + " is not working now")
 		}
 	}
 	return nil
@@ -82,6 +82,7 @@ func (e *RuleEngine) RemoveRule(ruleId string) {
 		e.AllDevices().Range(func(key, value interface{}) bool {
 			Device := value.(*typex.Device)
 			for _, r := range Device.BindRules {
+				glogger.GLogger.Debugf("Unlink rule:%s", rule.Name)
 				if rule.UUID == r.UUID {
 					delete(Device.BindRules, ruleId)
 				}
@@ -89,7 +90,6 @@ func (e *RuleEngine) RemoveRule(ruleId string) {
 			return true
 		})
 		e.Rules.Delete(ruleId)
-		rule = nil
 		glogger.GLogger.Infof("Rule [%v] has been deleted", ruleId)
 	}
 }

@@ -9,6 +9,7 @@ import (
 )
 
 const SUCCESS string = "Success"
+const HTTP_OK int = 200
 
 // Http Return
 type R struct {
@@ -27,7 +28,7 @@ func OkWithData(data interface{}) R {
 	return R{200, SUCCESS, data}
 }
 func Error(s string) R {
-	return R{4000, s, nil}
+	return R{4000, s, []interface{}{}}
 }
 func Error400(e error) R {
 	return R{4001, e.Error(), []interface{}{}}

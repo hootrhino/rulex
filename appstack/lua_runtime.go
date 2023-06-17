@@ -104,6 +104,7 @@ func LoadAppLib(app *typex.Application, e typex.RuleX) {
 	addAppLib(app, e, "applib", "HToN", rulexlib.HToN(e))
 	addAppLib(app, e, "applib", "HsubToN", rulexlib.HsubToN(e))
 	addAppLib(app, e, "applib", "MatchHex", rulexlib.MatchHex(e))
+	addAppLib(app, e, "applib", "MatchUInt", rulexlib.MatchUInt(e))
 	// 浮点数处理
 	addAppLib(app, e, "applib", "Bin2F32", rulexlib.BinToFloat32(e))
 	addAppLib(app, e, "applib", "Bin2F64", rulexlib.BinToFloat64(e))

@@ -17,7 +17,7 @@ import (
 *
  */
 func (e *RuleEngine) LoadUserOutEnd(target typex.XTarget, out *typex.OutEnd) error {
-	return startTarget(target, out, e)
+	return loadTarget(target, out, e)
 }
 
 /*
@@ -29,7 +29,7 @@ func (e *RuleEngine) LoadBuiltinOutEnd(out *typex.OutEnd) error {
 }
 func (e *RuleEngine) LoadOutEnd(out *typex.OutEnd) error {
 	if config := e.TargetTypeManager.Find(out.Type); config != nil {
-		return startTarget(config.Target, out, e)
+		return loadTarget(config.Target, out, e)
 	}
 	return errors.New("unsupported target type:" + out.Type.String())
 }
@@ -39,12 +39,10 @@ func (e *RuleEngine) LoadOutEnd(out *typex.OutEnd) error {
 // Target life cycle:
 //
 //	Register -> Start -> running/restart cycle
-func startTarget(target typex.XTarget, out *typex.OutEnd, e typex.RuleX) error {
-	//
-	// 先注册, 如果出问题了直接删除就行
-	//
+func loadTarget(target typex.XTarget, out *typex.OutEnd, e typex.RuleX) error {
+	// Set sources to inend
+	out.Target = target
 	e.SaveOutEnd(out)
-
 	// Load config
 	config := e.GetOutEnd(out.UUID).Config
 	if config == nil {
@@ -57,44 +55,33 @@ func startTarget(target typex.XTarget, out *typex.OutEnd, e typex.RuleX) error {
 		e.RemoveInEnd(out.UUID)
 		return err
 	}
-	// 然后启动资源
-	ctx, cancelCTX := typex.NewCCTX()
-	if err := target.Start(typex.CCTX{Ctx: ctx, CancelCTX: cancelCTX}); err != nil {
-		glogger.GLogger.Error(err)
-		e.RemoveOutEnd(out.UUID)
-		return err
-	}
-	// Set sources to inend
-	out.Target = target
+	// start
+	// if err := startTarget(target, e); err != nil {
+	// 	glogger.GLogger.Error(err)
+	// 	e.RemoveOutEnd(out.UUID)
+	// 	return err
+	// }
 	//
-	tryIfRestartTarget(target, e, out.UUID)
+	startTarget(target, e)
 	go func(ctx context.Context) {
 		ticker := time.NewTicker(time.Duration(time.Second * 5))
-
-		// 5 seconds
-		//
-	TICKER:
-		<-ticker.C
-		select {
-		case <-ctx.Done():
-			{
-				ticker.Stop()
-				return
+		for {
+			select {
+			case <-ctx.Done():
+				{
+					ticker.Stop()
+					return
+				}
+			default:
+				{
+				}
 			}
-		default:
-			{
-				goto CHECK
-			}
-		}
-	CHECK:
-		{
+			<-ticker.C
 			if target.Details() == nil {
 				return
 			}
 			tryIfRestartTarget(target, e, out.UUID)
-			goto TICKER
 		}
-
 	}(typex.GCTX)
 	glogger.GLogger.Infof("Target [%v, %v] load successfully", out.Name, out.UUID)
 	return nil
@@ -111,9 +98,17 @@ func tryIfRestartTarget(target typex.XTarget, e typex.RuleX, id string) {
 		target.Stop()
 		runtime.Gosched()
 		runtime.GC()
-		ctx, cancelCTX := typex.NewCCTX()
-		target.Start(typex.CCTX{Ctx: ctx, CancelCTX: cancelCTX})
+		startTarget(target, e)
 	} else {
 		target.Details().State = typex.SOURCE_UP
 	}
+}
+
+func startTarget(target typex.XTarget, e typex.RuleX) error {
+	ctx, cancelCTX := typex.NewCCTX()
+	if err := target.Start(typex.CCTX{Ctx: ctx, CancelCTX: cancelCTX}); err != nil {
+		glogger.GLogger.Error("abstractDevice start error:", err)
+		return err
+	}
+	return nil
 }

@@ -8,33 +8,72 @@ import (
 	"gopkg.in/square/go-jose.v2/json"
 )
 
-// Get all outends
 func OutEnds(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
 	if uuid == "" {
-		outends := []*typex.OutEnd{}
-		for _, v := range hs.AllMOutEnd() {
-			var device *typex.OutEnd
-			if device = e.GetOutEnd(v.UUID); device == nil {
-				device.State = typex.SOURCE_STOP
+		outends := []typex.OutEnd{}
+		for _, mOut := range hs.AllMOutEnd() {
+			outEnd := e.GetOutEnd(mOut.UUID)
+			if outEnd == nil {
+				tOut := typex.OutEnd{}
+				tOut.UUID = mOut.UUID
+				tOut.Name = mOut.Name
+				tOut.Type = typex.TargetType(mOut.Type)
+				tOut.Description = mOut.Description
+				tOut.Config = mOut.GetConfig()
+				tOut.State = typex.SOURCE_STOP
+				outends = append(outends, tOut)
 			}
-			if device != nil {
-				outends = append(outends, device)
+			if outEnd != nil {
+				outends = append(outends, *outEnd)
 			}
 		}
-		c.JSON(200, OkWithData(outends))
-	} else {
-		Model, err := hs.GetMOutEndWithUUID(uuid)
-		if err != nil {
-			c.JSON(200, Error400(err))
-			return
-		}
-		var outend *typex.OutEnd
-		if outend = e.GetOutEnd(Model.UUID); outend == nil {
-			outend.State = typex.SOURCE_STOP
-		}
-		c.JSON(200, OkWithData(outend))
+		c.JSON(HTTP_OK, OkWithData(outends))
+		return
 	}
+	mOut, err := hs.GetMOutEndWithUUID(uuid)
+	if err != nil {
+		c.JSON(HTTP_OK, Error400(err))
+		return
+	}
+	outEnd := e.GetOutEnd(mOut.UUID)
+	if outEnd == nil {
+		// 如果内存里面没有就给安排一个死设备
+		tOut := typex.OutEnd{}
+		tOut.UUID = mOut.UUID
+		tOut.Name = mOut.Name
+		tOut.Type = typex.TargetType(mOut.Type)
+		tOut.Description = mOut.Description
+		tOut.Config = mOut.GetConfig()
+		tOut.State = typex.SOURCE_STOP
+		c.JSON(HTTP_OK, OkWithData(tOut))
+		return
+	}
+	c.JSON(HTTP_OK, OkWithData(outEnd))
+}
+
+// Get all outends
+func OutEndDetail(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
+	uuid, _ := c.GetQuery("uuid")
+	mOut, err := hs.GetMOutEndWithUUID(uuid)
+	if err != nil {
+		c.JSON(HTTP_OK, Error400(err))
+		return
+	}
+	outEnd := e.GetOutEnd(mOut.UUID)
+	if outEnd == nil {
+		// 如果内存里面没有就给安排一个死设备
+		tOutEnd := new(typex.OutEnd)
+		tOutEnd.UUID = mOut.UUID
+		tOutEnd.Name = mOut.Name
+		tOutEnd.Type = typex.TargetType(mOut.Type)
+		tOutEnd.Description = mOut.Description
+		tOutEnd.Config = mOut.GetConfig()
+		tOutEnd.State = typex.SOURCE_STOP
+		c.JSON(HTTP_OK, OkWithData(tOutEnd))
+		return
+	}
+	c.JSON(HTTP_OK, OkWithData(outEnd))
 }
 
 // Delete outEnd by UUID
@@ -42,14 +81,14 @@ func DeleteOutEnd(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
 	_, err := hh.GetMOutEnd(uuid)
 	if err != nil {
-		c.JSON(200, Error400(err))
+		c.JSON(HTTP_OK, Error400(err))
 		return
 	}
 	if err := hh.DeleteMOutEnd(uuid); err != nil {
-		c.JSON(200, Error400(err))
+		c.JSON(HTTP_OK, Error400(err))
 	} else {
 		e.RemoveOutEnd(uuid)
-		c.JSON(200, Ok())
+		c.JSON(HTTP_OK, Ok())
 	}
 
 }
@@ -66,56 +105,79 @@ func CreateOutEnd(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	form := Form{}
 
 	if err0 := c.ShouldBindJSON(&form); err0 != nil {
-		c.JSON(200, Error400(err0))
+		c.JSON(HTTP_OK, Error400(err0))
 		return
 	}
 	configJson, err1 := json.Marshal(form.Config)
 	if err1 != nil {
-		c.JSON(200, Error400(err1))
+		c.JSON(HTTP_OK, Error400(err1))
 		return
 	}
-	var uuid *string = new(string)
+	newUUID := utils.OutUuid()
+	if err := hh.InsertMOutEnd(&MOutEnd{
+		UUID:        newUUID,
+		Type:        form.Type,
+		Name:        form.Name,
+		Description: form.Description,
+		Config:      string(configJson),
+	}); err != nil {
+		c.JSON(HTTP_OK, Error400(err))
+		return
+	}
+	if err := hh.LoadNewestOutEnd(newUUID); err != nil {
+		c.JSON(HTTP_OK, Error400(err))
+		return
+	}
+	c.JSON(HTTP_OK, Ok())
 
+}
+
+// 更新
+func UpdateOutEnd(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
+	type Form struct {
+		UUID        string                 `json:"uuid"` // 如果空串就是新建, 非空就是更新
+		Type        string                 `json:"type" binding:"required"`
+		Name        string                 `json:"name" binding:"required"`
+		Description string                 `json:"description"`
+		Config      map[string]interface{} `json:"config" binding:"required"`
+	}
+	form := Form{}
+
+	if err := c.ShouldBindJSON(&form); err != nil {
+		c.JSON(HTTP_OK, Error400(err))
+		return
+	}
+	configJson, err := json.Marshal(form.Config)
+	if err != nil {
+		c.JSON(HTTP_OK, Error400(err))
+		return
+	}
 	if form.UUID == "" {
-		newUUID := utils.OutUuid()
-		if err := hh.InsertMOutEnd(&MOutEnd{
-			UUID:        newUUID,
-			Type:        form.Type,
-			Name:        form.Name,
-			Description: form.Description,
-			Config:      string(configJson),
-		}); err != nil {
-			c.JSON(200, Error400(err))
-			return
-		} else {
-			uuid = &newUUID
-		}
-	} else {
-		outEnd := e.GetOutEnd(form.UUID)
-		if outEnd != nil {
-			outEnd.SetState(typex.SOURCE_DOWN)
-			outEnd.Target.Reload() // 重启
-			hh.DeleteMOutEnd(outEnd.UUID)
-			if err := hh.InsertMOutEnd(&MOutEnd{
-				UUID:        form.UUID,
-				Type:        form.Type,
-				Name:        form.Name,
-				Description: form.Description,
-				Config:      string(configJson),
-			}); err != nil {
-				c.JSON(200, Error400(err))
-				return
-			}
-			uuid = &form.UUID
-		}
-	}
-
-	if err := hh.LoadNewestOutEnd(*uuid); err != nil {
-		c.JSON(200, Error400(err))
+		c.JSON(HTTP_OK, Error("missing 'uuid' fields"))
 		return
-	} else {
-		c.JSON(200, Ok())
+	}
+	// 更新的时候从数据库往外面拿
+	OutEnd, err := hs.GetMOutEndWithUUID(form.UUID)
+	if err != nil {
+		c.JSON(HTTP_OK, err)
 		return
 	}
 
+	if err := hs.UpdateMOutEnd(OutEnd.UUID, &MOutEnd{
+		UUID:        form.UUID,
+		Type:        form.Type,
+		Name:        form.Name,
+		Description: form.Description,
+		Config:      string(configJson),
+	}); err != nil {
+		c.JSON(HTTP_OK, Error400(err))
+		return
+	}
+
+	if err := hs.LoadNewestOutEnd(form.UUID); err != nil {
+		c.JSON(HTTP_OK, Error400(err))
+		return
+	}
+
+	c.JSON(HTTP_OK, Ok())
 }

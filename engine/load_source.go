@@ -202,5 +202,23 @@ func startSource(source typex.XSource, e *RuleEngine) error {
 		}
 		glogger.GLogger.Infof("Driver start successfully: [%v]", source.Driver().DriverDetail().Name)
 	}
+	// 2023-06-14新增： 重启成功后数据会丢失,还得加载最新的Rule到设备中
+	Source := source.Details()
+	if Source != nil {
+		for _, rule := range Source.BindRules {
+			RuleInstance := typex.NewLuaRule(e,
+				rule.UUID,
+				rule.Name,
+				rule.Description,
+				rule.FromSource,
+				rule.FromDevice,
+				rule.Success,
+				rule.Actions,
+				rule.Failed)
+			if err1 := e.LoadRule(RuleInstance); err1 != nil {
+				return err1
+			}
+		}
+	}
 	return nil
 }
