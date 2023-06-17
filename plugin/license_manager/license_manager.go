@@ -56,7 +56,7 @@ func (l *LicenseManager) Init(section *ini.Section) error {
 
 	// 加载失败，设置定时器1小时再检查
 	if l.cert.Load() == nil {
-		time.AfterFunc(5*time.Second, func() { l.reload(true) })
+		time.AfterFunc(time.Hour, func() { l.reload(true) })
 	}
 
 	return nil
