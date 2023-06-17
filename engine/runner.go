@@ -54,19 +54,19 @@ func RunRulex(iniPath string) {
 	// Load inend from sqlite
 	//
 	for _, minEnd := range httpServer.AllMInEnd() {
-		config := map[string]interface{}{}
-		if err := json.Unmarshal([]byte(minEnd.Config), &config); err != nil {
-			glogger.GLogger.Error(err)
-		}
-		// :mInEnd: {k1 :{k1:v1}, k2 :{k2:v2}} --> InEnd: [{k1:v1}, {k2:v2}]
-		var dataModelsMap map[string]typex.XDataModel
-		if err := json.Unmarshal([]byte(minEnd.XDataModels), &dataModelsMap); err != nil {
-			glogger.GLogger.Error(err)
-		}
-		in := typex.NewInEnd(typex.InEndType(minEnd.Type), minEnd.Name, minEnd.Description, config)
-		in.UUID = minEnd.UUID // Important !!!!!!!!
-		in.DataModelsMap = dataModelsMap
-		if err := engine.LoadInEnd(in); err != nil {
+		// config := map[string]interface{}{}
+		// if err := json.Unmarshal([]byte(minEnd.Config), &config); err != nil {
+		// 	glogger.GLogger.Error(err)
+		// }
+		// // :mInEnd: {k1 :{k1:v1}, k2 :{k2:v2}} --> InEnd: [{k1:v1}, {k2:v2}]
+		// var dataModelsMap map[string]typex.XDataModel
+		// if err := json.Unmarshal([]byte(minEnd.XDataModels), &dataModelsMap); err != nil {
+		// 	glogger.GLogger.Error(err)
+		// }
+		// in := typex.NewInEnd(typex.InEndType(minEnd.Type), minEnd.Name, minEnd.Description, config)
+		// in.UUID = minEnd.UUID // Important !!!!!!!!
+		// in.DataModelsMap = dataModelsMap
+		if err := httpServer.LoadNewestInEnd(minEnd.UUID); err != nil {
 			glogger.GLogger.Error("InEnd load failed:", err)
 		}
 	}
@@ -86,24 +86,29 @@ func RunRulex(iniPath string) {
 			config,
 		)
 		newOutEnd.UUID = mOutEnd.UUID // Important !!!!!!!!
+		newOutEnd.Config = mOutEnd.GetConfig()
 		if err := engine.LoadOutEnd(newOutEnd); err != nil {
 			glogger.GLogger.Error("OutEnd load failed:", err)
 		}
 	}
 	// 加载设备
 	for _, mDevice := range httpServer.AllDevices() {
-		config := map[string]interface{}{}
-		if err := json.Unmarshal([]byte(mDevice.Config), &config); err != nil {
-			glogger.GLogger.Error(err)
-		}
-		newDevice := typex.NewDevice(
-			typex.DeviceType(mDevice.Type),
-			mDevice.Name,
-			mDevice.Description,
-			config,
-		)
-		newDevice.UUID = mDevice.UUID // Important !!!!!!!!
-		if err := engine.LoadDevice(newDevice); err != nil {
+		// config := map[string]interface{}{}
+		// if err := json.Unmarshal([]byte(mDevice.Config), &config); err != nil {
+		// 	glogger.GLogger.Error(err)
+		// }
+		// newDevice := typex.NewDevice(
+		// 	typex.DeviceType(mDevice.Type),
+		// 	mDevice.Name,
+		// 	mDevice.Description,
+		// 	config,
+		// )
+		// newDevice.UUID = mDevice.UUID // Important !!!!!!!!
+		// newDevice.Config = mDevice.GetConfig()
+		// Load Newest Device
+		// httpServer.LoadNewestDevice(mDevice.UUID)
+		glogger.GLogger.Debug("LoadNewestDevice mDevice.BindRules: ", mDevice.BindRules.String())
+		if err := httpServer.LoadNewestDevice(mDevice.UUID); err != nil {
 			glogger.GLogger.Error("Device load failed:", err)
 		}
 	}
@@ -143,20 +148,20 @@ func RunRulex(iniPath string) {
 	//
 	// 规则最后加载
 	//
-	for _, mRule := range httpServer.AllMRules() {
-		rule := typex.NewRule(engine,
-			mRule.UUID,
-			mRule.Name,
-			mRule.Description,
-			mRule.FromSource,
-			mRule.FromDevice,
-			mRule.Success,
-			mRule.Actions,
-			mRule.Failed)
-		if err := engine.LoadRule(rule); err != nil {
-			glogger.GLogger.Error(err)
-		}
-	}
+	// for _, mRule := range httpServer.AllMRules() {
+	// 	rule := typex.NewRule(engine,
+	// 		mRule.UUID,
+	// 		mRule.Name,
+	// 		mRule.Description,
+	// 		mRule.FromSource,
+	// 		mRule.FromDevice,
+	// 		mRule.Success,
+	// 		mRule.Actions,
+	// 		mRule.Failed)
+	// 	if err := engine.LoadRule(rule); err != nil {
+	// 		glogger.GLogger.Error(err)
+	// 	}
+	// }
 	s := <-c
 	glogger.GLogger.Warn("Received stop signal:", s)
 	engine.Stop()

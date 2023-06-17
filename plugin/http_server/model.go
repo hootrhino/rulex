@@ -2,7 +2,6 @@ package httpserver
 
 import (
 	"database/sql/driver"
-	"fmt"
 	"time"
 
 	"gopkg.in/square/go-jose.v2/json"
@@ -14,21 +13,31 @@ type RulexModel struct {
 }
 type stringList []string
 
+/*
+*
+* 给GORM用的
+*
+ */
 func (f stringList) Value() (driver.Value, error) {
 	b, err := json.Marshal(f)
 	return string(b), err
 }
 
+/*
+*
+* 给GORM用的
+*
+ */
 func (f *stringList) Scan(data interface{}) error {
 	return json.Unmarshal([]byte(data.(string)), f)
 }
 
 func (f stringList) String() string {
-	r := []string{}
-	for _, v := range f {
-		r = append(r, v)
-	}
-	return fmt.Sprintf("%s", r)
+	b, _ := json.Marshal(f)
+	return string(b)
+}
+func (f stringList) Len() int {
+	return len(f)
 }
 
 type MRule struct {
@@ -76,6 +85,7 @@ type MOutEnd struct {
 	Description string
 	Config      string
 }
+
 func (md MOutEnd) GetConfig() map[string]interface{} {
 	result := make(map[string]interface{})
 	err := json.Unmarshal([]byte(md.Config), &result)

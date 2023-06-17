@@ -36,7 +36,7 @@ func (e *RuleEngine) LoadBuiltInEnd(in *typex.InEnd) error {
  */
 func (e *RuleEngine) LoadInEnd(in *typex.InEnd) error {
 	if config := e.SourceTypeManager.Find(in.Type); config != nil {
-		return startSources(config.Source, in, e)
+		return startSources(config.NewSource(e), in, e)
 	}
 	return fmt.Errorf("unsupported InEnd type:%s", in.Type)
 }

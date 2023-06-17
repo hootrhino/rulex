@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	golog "log"
+
 	"sync"
 	"time"
 
@@ -138,11 +139,8 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 		// timeout 最大不能超过20, 不然无意义
 		mdev.rtuHandler.Timeout = time.Duration(mdev.mainConfig.RtuConfig.Timeout) * time.Microsecond
 		if core.GlobalConfig.AppDebugMode {
-			if mdev.mainConfig.CommonConfig.Mode == "RTU" {
-				mdev.rtuHandler.Logger = golog.New(glogger.GLogger.Writer(),
-					"Modbus RTU Mode: ", golog.LstdFlags)
-			}
-
+			mdev.rtuHandler.Logger = golog.New(glogger.GLogger.Writer(),
+				"Modbus RTU Mode: "+mdev.PointId+", ", golog.LstdFlags)
 		}
 
 		if err := mdev.rtuHandler.Connect(); err != nil {
@@ -158,10 +156,8 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 			fmt.Sprintf("%s:%v", mdev.mainConfig.TcpConfig.Host, mdev.mainConfig.TcpConfig.Port),
 		)
 		if core.GlobalConfig.AppDebugMode {
-			if mdev.mainConfig.CommonConfig.Mode == "TCP" {
-				mdev.tcpHandler.Logger = golog.New(glogger.GLogger.Writer(),
-					"Modbus TCP Mode: ", golog.LstdFlags)
-			}
+			mdev.tcpHandler.Logger = golog.New(glogger.GLogger.Writer(),
+				"Modbus TCP Mode: "+mdev.PointId+", ", golog.LstdFlags)
 		}
 
 		if err := mdev.tcpHandler.Connect(); err != nil {
@@ -181,8 +177,6 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 	}
 	mdev.retryTimes = 0
 	go func(ctx context.Context, Driver typex.XExternalDriver) {
-
-		mdev.status = typex.DEV_UP
 		buffer := make([]byte, common.T_64KB)
 		for {
 			select {
@@ -204,6 +198,7 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 		}
 
 	}(mdev.Ctx, mdev.driver)
+	mdev.status = typex.DEV_UP
 	return nil
 }
 
@@ -232,7 +227,7 @@ func (mdev *generic_modbus_device) Status() typex.DeviceState {
 	if mdev.retryTimes > 0 {
 		return typex.DEV_DOWN
 	}
-	return mdev.status
+	return typex.DEV_UP
 }
 
 // 停止设备

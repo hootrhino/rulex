@@ -59,6 +59,7 @@ func (q *DataCacheQueue) GetSize() int {
 *
  */
 func (q *DataCacheQueue) Push(d QueueData) error {
+	// glogger.GLogger.Debug("DataCacheQueue Push:", d.Data)
 	// 比较数据和容积
 	if len(q.Queue)+1 > q.GetSize() {
 		msg := fmt.Sprintf("attached max queue size, max size is:%v, current size is: %v", q.GetSize(), len(q.Queue)+1)
@@ -104,6 +105,7 @@ func StartQueue(maxQueueSize int) {
 						qd.E.RunHooks(qd.Data)
 					}
 					if qd.D != nil {
+						// glogger.GLogger.Debug("RunDeviceCallbacks Device:", qd.D.UUID)
 						qd.E.RunDeviceCallbacks(qd.D, qd.Data)
 						qd.E.RunHooks(qd.Data)
 					}

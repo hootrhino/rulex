@@ -24,7 +24,7 @@ type coAPInEndSource struct {
 	status     typex.SourceState
 }
 
-func NewCoAPInEndSource(e typex.RuleX) *coAPInEndSource {
+func NewCoAPInEndSource(e typex.RuleX) typex.XSource {
 	c := coAPInEndSource{}
 	c.router = mux.NewRouter()
 	c.mainConfig = common.HostConfig{}
