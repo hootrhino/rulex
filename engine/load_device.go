@@ -72,7 +72,7 @@ func (e *RuleEngine) LoadBuiltinDevice(deviceInfo *typex.Device) error {
  */
 func (e *RuleEngine) LoadDevice(deviceInfo *typex.Device) error {
 	if config := e.DeviceTypeManager.Find(deviceInfo.Type); config != nil {
-		return loadDevices(config.Device, deviceInfo, e)
+		return loadDevices(config.NewDevice(e), deviceInfo, e)
 	}
 	return fmt.Errorf("unsupported Device type:%s", deviceInfo.Type)
 
@@ -88,6 +88,7 @@ func loadDevices(abstractDevice typex.XDevice, deviceInfo *typex.Device, e *Rule
 	deviceInfo.Device = abstractDevice
 	e.SaveDevice(deviceInfo)
 	// Load config
+	// 要从数据库里面查Config
 	config := e.GetDevice(deviceInfo.UUID).Config
 	if config == nil {
 		e.RemoveDevice(deviceInfo.UUID)
@@ -161,8 +162,7 @@ func startDevice(abstractDevice typex.XDevice, e *RuleEngine) error {
 	// 2023-06-14新增： 重启成功后数据会丢失,还得加载最新的Rule到设备中
 	device := abstractDevice.Details()
 	if device != nil {
-		// bind 最新的规则
-		// FIX ME: 要从数据库拿刚更新的
+		// bind 最新的规则 要从数据库拿刚更新的
 		for _, rule := range device.BindRules {
 			glogger.GLogger.Debugf("Load rule:%s", rule.Name)
 			RuleInstance := typex.NewLuaRule(e,

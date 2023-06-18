@@ -119,7 +119,7 @@ type XDevice interface {
 	Driver() XExternalDriver
 	// 外部调用, 该接口是个高级功能, 准备为了设计分布式部署设备的时候用, 但是相当长时间内都不会开启
 	// 默认情况下该接口没有用
-	// OnDCACall(UUID string, Command string, Args interface{}) DCAResult
+	OnDCACall(UUID string, Command string, Args interface{}) DCAResult
 }
 
 /*

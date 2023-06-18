@@ -175,9 +175,9 @@ func (e *RuleEngine) Stop() {
 	e.OutEnds.Range(func(key, value interface{}) bool {
 		outEnd := value.(*typex.OutEnd)
 		if outEnd.Target != nil {
-			glogger.GLogger.Info("Stop Target:", outEnd.Name, outEnd.UUID)
+			glogger.GLogger.Info("Stop NewTarget:", outEnd.Name, outEnd.UUID)
 			outEnd.Target.Stop()
-			glogger.GLogger.Info("Stop Target:", outEnd.Name, outEnd.UUID, " Successfully")
+			glogger.GLogger.Info("Stop NewTarget:", outEnd.Name, outEnd.UUID, " Successfully")
 		}
 		return true
 	})
@@ -534,80 +534,80 @@ func (e *RuleEngine) RestartDevice(uuid string) error {
 func (e *RuleEngine) InitDeviceTypeManager() error {
 	e.DeviceTypeManager.Register(typex.TSS200V02,
 		&typex.XConfig{
-			Engine: e,
-			Device: device.NewTS200Sensor(e),
+			Engine:    e,
+			NewDevice: device.NewTS200Sensor,
 		},
 	)
 	e.DeviceTypeManager.Register(typex.YK08_RELAY,
 		&typex.XConfig{
-			Engine: e,
-			Device: device.NewYK8Controller(e),
+			Engine:    e,
+			NewDevice: device.NewYK8Controller,
 		},
 	)
 	e.DeviceTypeManager.Register(typex.RTU485_THER,
 		&typex.XConfig{
-			Engine: e,
-			Device: device.NewRtu485Ther(e),
+			Engine:    e,
+			NewDevice: device.NewRtu485Ther,
 		},
 	)
 	e.DeviceTypeManager.Register(typex.S1200PLC,
 		&typex.XConfig{
-			Engine: e,
-			Device: device.NewS1200plc(e),
+			Engine:    e,
+			NewDevice: device.NewS1200plc,
 		},
 	)
 	e.DeviceTypeManager.Register(typex.GENERIC_MODBUS,
 		&typex.XConfig{
-			Engine: e,
-			Device: device.NewGenericModbusDevice(e),
+			Engine:    e,
+			NewDevice: device.NewGenericModbusDevice,
 		},
 	)
 	e.DeviceTypeManager.Register(typex.GENERIC_UART,
 		&typex.XConfig{
-			Engine: e,
-			Device: device.NewGenericUartDevice(e),
+			Engine:    e,
+			NewDevice: device.NewGenericUartDevice,
 		},
 	)
 	e.DeviceTypeManager.Register(typex.GENERIC_SNMP,
 		&typex.XConfig{
-			Engine: e,
-			Device: device.NewGenericSnmpDevice(e),
+			Engine:    e,
+			NewDevice: device.NewGenericSnmpDevice,
 		},
 	)
 	e.DeviceTypeManager.Register(typex.USER_G776,
 		&typex.XConfig{
-			Engine: e,
-			Device: device.NewUsrG776DTU(e),
+			Engine:    e,
+			NewDevice: device.NewUsrG776DTU,
 		},
 	)
 	e.DeviceTypeManager.Register(typex.ICMP_SENDER,
 		&typex.XConfig{
-			Engine: e,
-			Device: device.NewIcmpSender(e),
+			Engine:    e,
+			NewDevice: device.NewIcmpSender,
 		},
 	)
 	e.DeviceTypeManager.Register(typex.GENERIC_PROTOCOL,
 		&typex.XConfig{
-			Engine: e,
-			Device: device.NewCustomProtocolDevice(e),
+			Engine:    e,
+			NewDevice: device.NewCustomProtocolDevice,
 		},
 	)
 	e.DeviceTypeManager.Register(typex.GENERIC_OPCUA,
 		&typex.XConfig{
-			Engine: e,
-			Device: device.NewGenericOpcuaDevice(e),
+			Engine:    e,
+			NewDevice: device.NewGenericOpcuaDevice,
 		},
 	)
 	e.DeviceTypeManager.Register(typex.GENERIC_CAMERA,
 		&typex.XConfig{
-			Engine: e,
-			Device: device.NewVideoCamera(e),
+			Engine:    e,
+			NewDevice: device.NewVideoCamera,
 		},
 	)
 	e.DeviceTypeManager.Register(typex.GENERIC_AIS,
 		&typex.XConfig{
-			Engine: e,
-			Device: device.NewAISDevice(e),
+			Engine:    e,
+			NewDevice: device.NewAISDevice,
 		},
 	)
 	return nil
@@ -621,56 +621,56 @@ func (e *RuleEngine) InitDeviceTypeManager() error {
 func (e *RuleEngine) InitSourceTypeManager() error {
 	e.SourceTypeManager.Register(typex.MQTT,
 		&typex.XConfig{
-			Engine: e,
-			Source: source.NewMqttInEndSource(e),
+			Engine:    e,
+			NewSource: source.NewMqttInEndSource,
 		},
 	)
 	e.SourceTypeManager.Register(typex.HTTP,
 		&typex.XConfig{
-			Engine: e,
-			Source: source.NewHttpInEndSource(e),
+			Engine:    e,
+			NewSource: source.NewHttpInEndSource,
 		},
 	)
 	e.SourceTypeManager.Register(typex.COAP,
 		&typex.XConfig{
-			Engine: e,
-			Source: source.NewCoAPInEndSource(e),
+			Engine:    e,
+			NewSource: source.NewCoAPInEndSource,
 		},
 	)
 	e.SourceTypeManager.Register(typex.GRPC,
 		&typex.XConfig{
-			Engine: e,
-			Source: source.NewGrpcInEndSource(e),
+			Engine:    e,
+			NewSource: source.NewGrpcInEndSource,
 		},
 	)
 	e.SourceTypeManager.Register(typex.NATS_SERVER,
 		&typex.XConfig{
-			Engine: e,
-			Source: source.NewNatsSource(e),
+			Engine:    e,
+			NewSource: source.NewNatsSource,
 		},
 	)
 	e.SourceTypeManager.Register(typex.RULEX_UDP,
 		&typex.XConfig{
-			Engine: e,
-			Source: source.NewUdpInEndSource(e),
+			Engine:    e,
+			NewSource: source.NewUdpInEndSource,
 		},
 	)
 	e.SourceTypeManager.Register(typex.TENCENT_IOT_HUB,
 		&typex.XConfig{
-			Engine: e,
-			Source: source.NewTencentIothubSource(e),
+			Engine:    e,
+			NewSource: source.NewTencentIothubSource,
 		},
 	)
 	e.SourceTypeManager.Register(typex.GENERIC_IOT_HUB,
 		&typex.XConfig{
-			Engine: e,
-			Source: source.NewGenericIothubSource(e),
+			Engine:    e,
+			NewSource: source.NewGenericIothubSource,
 		},
 	)
 	e.SourceTypeManager.Register(typex.ITHINGS_IOT_HUB,
 		&typex.XConfig{
-			Engine: e,
-			Source: source.NewIThingsSource(e),
+			Engine:    e,
+			NewSource: source.NewIThingsSource,
 		},
 	)
 	return nil
@@ -684,56 +684,56 @@ func (e *RuleEngine) InitSourceTypeManager() error {
 func (e *RuleEngine) InitTargetTypeManager() error {
 	e.TargetTypeManager.Register(typex.MONGO_SINGLE,
 		&typex.XConfig{
-			Engine: e,
-			Target: target.NewMongoTarget(e),
+			Engine:    e,
+			NewTarget: target.NewMongoTarget,
 		},
 	)
 	e.TargetTypeManager.Register(typex.MQTT_TARGET,
 		&typex.XConfig{
-			Engine: e,
-			Target: target.NewMqttTarget(e),
+			Engine:    e,
+			NewTarget: target.NewMqttTarget,
 		},
 	)
 	e.TargetTypeManager.Register(typex.NATS_TARGET,
 		&typex.XConfig{
-			Engine: e,
-			Target: target.NewNatsTarget(e),
+			Engine:    e,
+			NewTarget: target.NewNatsTarget,
 		},
 	)
 	e.TargetTypeManager.Register(typex.HTTP_TARGET,
 		&typex.XConfig{
-			Engine: e,
-			Target: target.NewHTTPTarget(e),
+			Engine:    e,
+			NewTarget: target.NewHTTPTarget,
 		},
 	)
 	e.TargetTypeManager.Register(typex.TDENGINE_TARGET,
 		&typex.XConfig{
-			Engine: e,
-			Target: target.NewTdEngineTarget(e),
+			Engine:    e,
+			NewTarget: target.NewTdEngineTarget,
 		},
 	)
 	e.TargetTypeManager.Register(typex.GRPC_CODEC_TARGET,
 		&typex.XConfig{
-			Engine: e,
-			Target: target.NewCodecTarget(e),
+			Engine:    e,
+			NewTarget: target.NewCodecTarget,
 		},
 	)
 	e.TargetTypeManager.Register(typex.UDP_TARGET,
 		&typex.XConfig{
-			Engine: e,
-			Target: target.NewUdpTarget(e),
+			Engine:    e,
+			NewTarget: target.NewUdpTarget,
 		},
 	)
 	e.TargetTypeManager.Register(typex.SQLITE_TARGET,
 		&typex.XConfig{
-			Engine: e,
-			Target: target.NewSqliteTarget(e),
+			Engine:    e,
+			NewTarget: target.NewSqliteTarget,
 		},
 	)
 	e.TargetTypeManager.Register(typex.USER_G776_TARGET,
 		&typex.XConfig{
-			Engine: e,
-			Target: target.NewUserG776(e),
+			Engine:    e,
+			NewTarget: target.NewUserG776,
 		},
 	)
 	return nil

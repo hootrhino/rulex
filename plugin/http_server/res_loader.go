@@ -10,9 +10,10 @@ import (
 
 /*
 *
-* 每次资源新建或者更新以后, 需要把内存里的数据清空，把配置里的更新上去
+* 当资源重启加载的时候，内存里面的数据会丢失，需要重新从数据库加载规则到资源，建立绑定关联。
 *
  */
+
 // LoadNewestInEnd
 func (hh *HttpApiServer) LoadNewestInEnd(uuid string) error {
 	mInEnd, _ := hh.GetMInEndWithUUID(uuid)
@@ -36,8 +37,35 @@ func (hh *HttpApiServer) LoadNewestInEnd(uuid string) error {
 		mInEnd.Name, mInEnd.Description, config)
 	// Important !!!!!!!! in.Id = mInEnd.UUID
 	in.UUID = mInEnd.UUID
+	in.Config = mInEnd.GetConfig()
 	// 未来会支持XDataModel数据模型, 目前暂时留空
 	in.DataModelsMap = map[string]typex.XDataModel{}
+	BindRules := map[string]typex.Rule{}
+	for _, ruleId := range mInEnd.BindRules {
+		if ruleId == "" {
+			continue
+		}
+		mRule, err1 := hh.GetMRuleWithUUID(ruleId)
+		if err1 != nil {
+			return err1
+		}
+		glogger.GLogger.Debugf("Load rule:%s", mRule.Name)
+		RuleInstance := typex.NewLuaRule(
+			hh.ruleEngine,
+			mRule.UUID,
+			mRule.Name,
+			mRule.Description,
+			mRule.FromSource,
+			mRule.FromDevice,
+			mRule.Success,
+			mRule.Actions,
+			mRule.Failed)
+		BindRules[mRule.UUID] = *RuleInstance
+	}
+	// 最新的规则
+	in.BindRules = BindRules
+	// 最新的配置
+	in.Config = mInEnd.GetConfig()
 	if err2 := hh.ruleEngine.LoadInEnd(in); err2 != nil {
 		glogger.GLogger.Error(err2)
 		return err2
@@ -59,6 +87,7 @@ func (hh *HttpApiServer) LoadNewestOutEnd(uuid string) error {
 		mOutEnd.Name, mOutEnd.Description, config)
 	// Important !!!!!!!!
 	out.UUID = mOutEnd.UUID
+	out.Config = mOutEnd.GetConfig()
 	if err := hh.ruleEngine.LoadOutEnd(out); err != nil {
 		return err
 	} else {
@@ -66,6 +95,12 @@ func (hh *HttpApiServer) LoadNewestOutEnd(uuid string) error {
 	}
 
 }
+
+/*
+*
+* 当资源重启加载的时候，内存里面的数据会丢失，需要重新从数据库加载规则到资源，建立绑定关联。
+*
+ */
 
 // LoadNewestDevice
 func (hh *HttpApiServer) LoadNewestDevice(uuid string) error {
@@ -85,11 +120,14 @@ func (hh *HttpApiServer) LoadNewestDevice(uuid string) error {
 	dev.UUID = mDevice.UUID // 本质上是配置和内存的数据映射起来
 	BindRules := map[string]typex.Rule{}
 	for _, ruleId := range mDevice.BindRules {
+		if ruleId == "" {
+			continue
+		}
 		mRule, err1 := hh.GetMRuleWithUUID(ruleId)
 		if err1 != nil {
 			return err1
 		}
-		glogger.GLogger.Debugf("Load rule:%s", dev.Name)
+		glogger.GLogger.Debugf("Load rule:%s", mRule.Name)
 		RuleInstance := typex.NewLuaRule(
 			hh.ruleEngine,
 			mRule.UUID,
@@ -104,19 +142,12 @@ func (hh *HttpApiServer) LoadNewestDevice(uuid string) error {
 	}
 	// 最新的规则
 	dev.BindRules = BindRules
+	// 最新的配置
+	dev.Config = mDevice.GetConfig()
 	// 参数传给 --> startDevice()
 	if err := hh.ruleEngine.LoadDevice(dev); err != nil {
 		return err
 	}
 	return nil
 
-}
-
-/*
-*
-* 当资源重启加载的时候，内存里面的数据会丢失，需要重新从数据库加载规则到资源，建立绑定关联。
-*
- */
-func (hh *HttpApiServer) LoadDeviceRule(uuid string) error {
-	return nil
 }

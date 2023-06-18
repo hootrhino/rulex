@@ -17,7 +17,7 @@ type udpSource struct {
 	status     typex.SourceState
 }
 
-func NewUdpInEndSource(e typex.RuleX) *udpSource {
+func NewUdpInEndSource(e typex.RuleX) typex.XSource {
 	u := udpSource{}
 	u.mainConfig = common.RULEXUdpConfig{}
 	u.RuleEngine = e

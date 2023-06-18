@@ -29,7 +29,7 @@ func (e *RuleEngine) LoadBuiltinOutEnd(out *typex.OutEnd) error {
 }
 func (e *RuleEngine) LoadOutEnd(out *typex.OutEnd) error {
 	if config := e.TargetTypeManager.Find(out.Type); config != nil {
-		return loadTarget(config.Target, out, e)
+		return loadTarget(config.NewTarget(e), out, e)
 	}
 	return errors.New("unsupported target type:" + out.Type.String())
 }

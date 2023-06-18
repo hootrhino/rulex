@@ -48,9 +48,9 @@ func (m XDataModel) String() string {
 //
 
 type XConfig struct {
-	Type   string  `json:"type"` // 类型
-	Device XDevice `json:"-"`
-	Source XSource `json:"-"`
-	Target XTarget `json:"-"`
-	Engine RuleX   `json:"-"`
+	Type      string              `json:"type"` // 类型
+	Engine    RuleX               `json:"-"`
+	NewDevice func(RuleX) XDevice `json:"-"`
+	NewSource func(RuleX) XSource `json:"-"`
+	NewTarget func(RuleX) XTarget `json:"-"`
 }
