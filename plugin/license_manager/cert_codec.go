@@ -23,8 +23,8 @@ func decodeCert(data []byte) (*Certificate, error) {
 
 	var cert = &Certificate{
 		Raw:       b2s(data),
-		Issuer:    xcert.Issuer.CommonName,
-		Subject:   xcert.Subject.CommonName,
+		Issuer:    xcert.Issuer,
+		Subject:   xcert.Subject,
 		NotBefore: xcert.NotBefore,
 		NotAfter:  xcert.NotAfter,
 		PublicKey: key,
