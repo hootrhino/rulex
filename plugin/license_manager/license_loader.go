@@ -2,9 +2,11 @@ package licensemanager
 
 import (
 	"bytes"
+	"crypto/md5"
 	"crypto/rand"
 	"crypto/rsa"
 	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -273,6 +275,8 @@ func offlineVerifyCert(cert *Certificate, netName string) error {
 	inte, err := net.InterfaceByName(netName)
 	if err == nil && inte.HardwareAddr != nil {
 		mac = inte.HardwareAddr.String()
+		md5Byts := md5.Sum(s2b(mac))
+		mac = hex.EncodeToString(md5Byts[:])
 	}
 	if len(mac) == 0 {
 		return fmt.Errorf("unknown netName: %s", netName)

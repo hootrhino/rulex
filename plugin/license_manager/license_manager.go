@@ -86,6 +86,7 @@ func (l *LicenseManager) reload(quit bool) *Certificate {
 	// 加载失败并退出
 	if quit {
 		glogger.GLogger.Fatal("need a valid certificate")
+		// panic("need a valid certificate")
 	}
 
 	return nil

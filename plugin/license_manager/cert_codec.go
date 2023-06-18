@@ -4,6 +4,7 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
+	"fmt"
 	"reflect"
 	"unsafe"
 )
@@ -11,6 +12,9 @@ import (
 func decodeCert(data []byte) (*Certificate, error) {
 	// 解析证书
 	block, _ := pem.Decode(data)
+	if block == nil {
+		return nil, fmt.Errorf("illegal certificate")
+	}
 	xcert, err := x509.ParseCertificate(block.Bytes)
 	if err != nil {
 		return nil, err
