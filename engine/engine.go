@@ -655,16 +655,10 @@ func (e *RuleEngine) InitSourceTypeManager() error {
 			NewSource: source.NewUdpInEndSource,
 		},
 	)
-	e.SourceTypeManager.Register(typex.TENCENT_IOT_HUB,
-		&typex.XConfig{
-			Engine:    e,
-			NewSource: source.NewTencentIothubSource,
-		},
-	)
 	e.SourceTypeManager.Register(typex.GENERIC_IOT_HUB,
 		&typex.XConfig{
 			Engine:    e,
-			NewSource: source.NewGenericIothubSource,
+			NewSource: source.NewIoTHubSource,
 		},
 	)
 	e.SourceTypeManager.Register(typex.ITHINGS_IOT_HUB,

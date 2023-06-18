@@ -26,9 +26,9 @@ const (
 	// 动作
 	_ithings_ActionTopic   = "$thing/down/action/%v/%v"
 	_ithings_ActionUpTopic = "$thing/up/action/%v/%v"
-	// 子设备拓扑
-	_ithings_subTopologyDown = "$gateway/down/operation/%v/%v"
-	_ithings_subTopologyUp   = "$gateway/up/operation/%v/%v"
+	// 子设备拓扑 [当前版本Ithings不支持]
+	_ithings_subTopologyDown = "$thing/down/operation/%v/%v"
+	_ithings_subTopologyUp   = "$thing/up/operation/%v/%v"
 )
 
 /*
@@ -65,12 +65,18 @@ type ithings struct {
 	status        typex.SourceState
 	subDevices    map[string]TopologyDevice // 子设备
 	topologyReady bool
+	// Topic
+	PropertyTopic     string
+	ActionTopic       string
+	TopologyTopicDown string
 }
 
 func NewIThingsSource(e typex.RuleX) typex.XSource {
 	m := new(ithings)
 	m.RuleEngine = e
-	m.mainConfig = common.IThingsMqttConfig{}
+	m.mainConfig = common.IThingsMqttConfig{
+		Mode: "DC",
+	}
 	m.subDevices = map[string]TopologyDevice{}
 	m.topologyReady = false
 	m.status = typex.SOURCE_DOWN
@@ -99,17 +105,13 @@ func (tc *ithings) Start(cctx typex.CCTX) error {
 	tc.Ctx = cctx.Ctx
 	tc.CancelCTX = cctx.CancelCTX
 
-	PropertyTopic := fmt.Sprintf(_ithings_PropertyTopic, tc.mainConfig.ProductId, tc.mainConfig.DeviceName)
-	ActionTopic := fmt.Sprintf(_ithings_ActionTopic, tc.mainConfig.ProductId, tc.mainConfig.DeviceName)
-	TopologyTopicDown := fmt.Sprintf(_ithings_subTopologyDown, tc.mainConfig.ProductId, tc.mainConfig.DeviceName)
-	TopologyTopicUp := fmt.Sprintf(_ithings_subTopologyUp, tc.mainConfig.ProductId, tc.mainConfig.DeviceName)
-	// 服务接口
-	//
-	var connectHandler mqtt.OnConnectHandler = func(client mqtt.Client) {
-		glogger.GLogger.Infof("IThings IOTHUB Connected Success")
-		tc.subscribe(PropertyTopic)
-		tc.subscribe(ActionTopic)
-
+	tc.PropertyTopic = fmt.Sprintf(_ithings_PropertyTopic, tc.mainConfig.ProductId, tc.mainConfig.DeviceName)
+	tc.ActionTopic = fmt.Sprintf(_ithings_ActionTopic, tc.mainConfig.ProductId, tc.mainConfig.DeviceName)
+	// 网关模式
+	if tc.mainConfig.Mode == "GW" {
+		glogger.GLogger.Info("Connect IThings with Gateway Mode")
+		TopologyTopicDown := fmt.Sprintf(_ithings_subTopologyDown, tc.mainConfig.ProductId, tc.mainConfig.DeviceName)
+		TopologyTopicUp := fmt.Sprintf(_ithings_subTopologyUp, tc.mainConfig.ProductId, tc.mainConfig.DeviceName)
 		token3 := tc.client.Subscribe(TopologyTopicDown, 1, func(c mqtt.Client, m mqtt.Message) {
 			topologyDownMsg := TopologyDownMsg{
 				Payload: TopologyPayload{
@@ -128,21 +130,27 @@ func (tc *ithings) Start(cctx typex.CCTX) error {
 		})
 		if token3.Error() != nil {
 			glogger.GLogger.Info("Topology fetch error:", token3.Error())
-
-		} else {
-			// 请求下发拓扑
-			token4 := tc.client.Publish(TopologyTopicUp, 1, false, `{"method":"describeSubDevices"}`)
-			if token4.Error() != nil {
-				glogger.GLogger.Error("Topology Publish error:", token3.Error())
-
-			}
+			return token3.Error()
 		}
-
+		// 请求下发拓扑
+		token4 := tc.client.Publish(TopologyTopicUp, 1, false, `{"method":"describeSubDevices"}`)
+		if token4.Error() != nil {
+			glogger.GLogger.Error("Topology Publish error:", token3.Error())
+			return token4.Error()
+		}
+	}
+	if tc.mainConfig.Mode == "DC" {
+		glogger.GLogger.Info("Connect IThings with Direct Connect Mode")
+	}
+	var connectHandler mqtt.OnConnectHandler = func(client mqtt.Client) {
+		tc.subscribe(tc.PropertyTopic)
+		tc.subscribe(tc.ActionTopic)
 		tc.status = typex.SOURCE_UP
+		glogger.GLogger.Infof("IThings IOTHUB Connected Success")
 	}
 
 	var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err error) {
-		glogger.GLogger.Warnf("IThings IOTHUB Disconnect: %v, try to reconnect\n", err)
+		glogger.GLogger.Warnf("IThings IOTHUB Disconnect: %v, try to reconnect", err)
 	}
 
 	opts := mqtt.NewClientOptions()
@@ -162,7 +170,6 @@ func (tc *ithings) Start(cctx typex.CCTX) error {
 	if token := tc.client.Connect(); token.Wait() && token.Error() != nil {
 		return token.Error()
 	}
-
 	return nil
 
 }
@@ -172,11 +179,13 @@ func (tc *ithings) DataModels() []typex.XDataModel {
 }
 
 func (tc *ithings) Stop() {
-	tc.status = typex.SOURCE_STOP
 	tc.CancelCTX()
+	tc.status = typex.SOURCE_DOWN
 	if tc.client != nil {
+		tc.client.Unsubscribe(tc.PropertyTopic)
+		tc.client.Unsubscribe(tc.ActionTopic)
+		tc.client.Unsubscribe(tc.TopologyTopicDown)
 		tc.client.Disconnect(0)
-		tc.client = nil
 	}
 }
 func (tc *ithings) Reload() {
@@ -186,7 +195,12 @@ func (tc *ithings) Pause() {
 
 }
 func (tc *ithings) Status() typex.SourceState {
-	return tc.status
+	if tc.client != nil {
+		if tc.client.IsConnected() {
+			return typex.SOURCE_UP
+		}
+	}
+	return typex.SOURCE_DOWN
 }
 
 func (tc *ithings) Test(inEndId string) bool {
@@ -307,14 +321,14 @@ type TopologyDevice struct {
 	DeviceName string `json:"deviceName"`
 }
 
-// $gateway/status/${productid}/${devicename}
+// $thing/status/${productid}/${devicename}
 func (tt TopologyDevice) OnlineTopic() string {
-	return fmt.Sprintf("$gateway/status/%s/%s", tt.ProductID, tt.DeviceName)
+	return fmt.Sprintf("$thing/status/%s/%s", tt.ProductID, tt.DeviceName)
 }
 
-// $gateway/status/${productid}/${devicename}
+// $thing/status/${productid}/${devicename}
 func (tt TopologyDevice) OfflineTopic() string {
-	return fmt.Sprintf("$gateway/status/%s/%s", tt.ProductID, tt.DeviceName)
+	return fmt.Sprintf("$thing/status/%s/%s", tt.ProductID, tt.DeviceName)
 }
 
 // $thing/up/property/{ProductID}/{DeviceName}
