@@ -159,7 +159,7 @@ func UpdateOutEnd(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 	// 更新的时候从数据库往外面拿
 	OutEnd, err := hs.GetMOutEndWithUUID(form.UUID)
 	if err != nil {
-		c.JSON(HTTP_OK, err)
+		c.JSON(HTTP_OK, Error400(err))
 		return
 	}
 
