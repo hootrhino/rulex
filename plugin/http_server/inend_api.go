@@ -177,7 +177,7 @@ func UpdateInend(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 // Delete inend by UUID
 func DeleteInEnd(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
-	_, err := hh.GetMInEnd(uuid)
+	_, err := hh.GetMInEndWithUUID(uuid)
 	if err != nil {
 		c.JSON(HTTP_OK, Error400(err))
 		return
@@ -185,10 +185,13 @@ func DeleteInEnd(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	if err := hh.DeleteMInEnd(uuid); err != nil {
 		c.JSON(HTTP_OK, Error400(err))
 	} else {
+		old := e.GetInEnd(uuid)
+		if old != nil {
+			old.Source.Stop()
+		}
 		e.RemoveInEnd(uuid)
 		c.JSON(HTTP_OK, Ok())
 	}
-
 }
 
 /*

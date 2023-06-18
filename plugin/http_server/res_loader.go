@@ -25,19 +25,16 @@ func (hh *HttpApiServer) LoadNewestInEnd(uuid string) error {
 		glogger.GLogger.Error(err1)
 		return err1
 	}
-	// :mInEnd: {k1 :{k1:v1}, k2 :{k2:v2}} --> InEnd: [{k1:v1}, {k2:v2}]
-	// var dataModelsMap map[string]typex.XDataModel
-	// if err1 := json.Unmarshal([]byte(mInEnd.XDataModels), &dataModelsMap); err1 != nil {
-	// 	glogger.GLogger.Error(err1)
-	// 	return err1
-	// }
 	// 所有的更新都先停止资源,然后再加载
+	old := hh.ruleEngine.GetInEnd(uuid)
+	if old != nil {
+		old.Source.Stop()
+	}
 	hh.ruleEngine.RemoveInEnd(uuid)
 	in := typex.NewInEnd(typex.InEndType(mInEnd.Type),
-		mInEnd.Name, mInEnd.Description, config)
+		mInEnd.Name, mInEnd.Description, mInEnd.GetConfig())
 	// Important !!!!!!!! in.Id = mInEnd.UUID
 	in.UUID = mInEnd.UUID
-	in.Config = mInEnd.GetConfig()
 	// 未来会支持XDataModel数据模型, 目前暂时留空
 	in.DataModelsMap = map[string]typex.XDataModel{}
 	BindRules := map[string]typex.Rule{}
@@ -82,6 +79,10 @@ func (hh *HttpApiServer) LoadNewestOutEnd(uuid string) error {
 		return err
 	}
 	// 所有的更新都先停止资源,然后再加载
+	old := hh.ruleEngine.GetOutEnd(uuid)
+	if old != nil {
+		old.Target.Stop()
+	}
 	hh.ruleEngine.RemoveOutEnd(uuid)
 	out := typex.NewOutEnd(typex.TargetType(mOutEnd.Type),
 		mOutEnd.Name, mOutEnd.Description, config)
@@ -113,6 +114,10 @@ func (hh *HttpApiServer) LoadNewestDevice(uuid string) error {
 		return err
 	}
 	// 所有的更新都先停止资源,然后再加载
+	old := hh.ruleEngine.GetDevice(uuid)
+	if old != nil {
+		old.Device.Stop()
+	}
 	hh.ruleEngine.RemoveDevice(uuid) // 删除内存里面的
 	dev := typex.NewDevice(typex.DeviceType(mDevice.Type), mDevice.Name,
 		mDevice.Description, mDevice.GetConfig())

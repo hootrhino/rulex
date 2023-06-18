@@ -55,13 +55,6 @@ func loadTarget(target typex.XTarget, out *typex.OutEnd, e typex.RuleX) error {
 		e.RemoveInEnd(out.UUID)
 		return err
 	}
-	// start
-	// if err := startTarget(target, e); err != nil {
-	// 	glogger.GLogger.Error(err)
-	// 	e.RemoveOutEnd(out.UUID)
-	// 	return err
-	// }
-	//
 	startTarget(target, e)
 	go func(ctx context.Context) {
 		ticker := time.NewTicker(time.Duration(time.Second * 5))
@@ -77,7 +70,7 @@ func loadTarget(target typex.XTarget, out *typex.OutEnd, e typex.RuleX) error {
 				}
 			}
 			<-ticker.C
-			if target.Details() == nil {
+			if target.Status() == typex.SOURCE_STOP {
 				return
 			}
 			tryIfRestartTarget(target, e, out.UUID)

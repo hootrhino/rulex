@@ -99,13 +99,6 @@ func loadDevices(abstractDevice typex.XDevice, deviceInfo *typex.Device, e *Rule
 		e.RemoveDevice(deviceInfo.UUID)
 		return err
 	}
-
-	// start
-	// if err := startDevice(abstractDevice, e); err != nil {
-	// 	glogger.GLogger.Error(err)
-	// 	e.RemoveDevice(deviceInfo.UUID)
-	// 	return err
-	// }
 	startDevice(abstractDevice, e)
 	go func(ctx context.Context) {
 		for {
@@ -121,9 +114,9 @@ func loadDevices(abstractDevice typex.XDevice, deviceInfo *typex.Device, e *Rule
 				}
 			}
 			<-ticker.C
-			// if abstractDevice.Details() == nil {
-			// 	return
-			// }
+			if abstractDevice.Status() == typex.DEV_STOP {
+				return
+			}
 			tryIfRestartDevice(abstractDevice, e, deviceInfo.UUID)
 
 		}
