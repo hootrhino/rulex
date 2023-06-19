@@ -55,7 +55,8 @@ func (s *MqttServer) Init(config *ini.Section) error {
 
 func (s *MqttServer) Start(r typex.RuleX) error {
 	s.ruleEngine = r
-	zlog := zerolog.New(glogger.GLogger.Writer())
+	zlog := zerolog.New(glogger.GLogger.Writer()).With().Logger()
+
 	server := mqtt.New(&mqtt.Options{Logger: &zlog})
 	tcp := listeners.NewTCP("node1", fmt.Sprintf("%v:%v", s.Host, s.Port), nil)
 	if err := server.AddListener(tcp); err != nil {
