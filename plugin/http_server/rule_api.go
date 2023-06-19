@@ -361,11 +361,11 @@ func UpdateRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 			return
 		}
 		// 更新FromSource RULE到Device表中
-		for _, id := range form.FromSource {
-			if id != "" {
-				InEnd, _ := hh.GetMInEndWithUUID(id)
+		for _, inId := range form.FromSource {
+			if inId != "" {
+				InEnd, _ := hh.GetMInEndWithUUID(inId)
 				if InEnd == nil {
-					c.JSON(HTTP_OK, Error(`inend not exists: `+id))
+					c.JSON(HTTP_OK, Error(`inend not exists: `+inId))
 					return
 				}
 				// 去重旧的
@@ -374,7 +374,7 @@ func UpdateRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 					ruleMap[rule] = rule
 				}
 				// 追加新的ID
-				ruleMap[id] = mRule.UUID
+				ruleMap[inId] = mRule.UUID
 				// 最后ID列表
 				BindRules := []string{}
 				for _, iid := range ruleMap {
@@ -384,6 +384,11 @@ func UpdateRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 				if err := hh.UpdateMInEnd(InEnd.UUID, &MInEnd{
 					BindRules: BindRules,
 				}); err != nil {
+					c.JSON(HTTP_OK, Error400(err))
+					return
+				}
+				// LoadNewest!!!
+				if err := hh.LoadNewestInEnd(inId); err != nil {
 					c.JSON(HTTP_OK, Error400(err))
 					return
 				}

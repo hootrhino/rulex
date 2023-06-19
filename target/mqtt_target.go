@@ -3,7 +3,6 @@ package target
 import (
 	"errors"
 	"fmt"
-	"time"
 
 	"github.com/hootrhino/rulex/common"
 	"github.com/hootrhino/rulex/glogger"
@@ -58,8 +57,8 @@ func (mm *mqttOutEndTarget) Start(cctx typex.CCTX) error {
 	opts.SetPassword(mm.mainConfig.Password)
 	opts.OnConnect = connectHandler
 	opts.OnConnectionLost = connectLostHandler
-	opts.SetAutoReconnect(true)
-	opts.SetMaxReconnectInterval(30 * time.Second)
+	opts.SetAutoReconnect(false)
+	opts.SetMaxReconnectInterval(0)
 	mm.client = mqtt.NewClient(opts)
 	token := mm.client.Connect()
 	if token.Wait() && token.Error() != nil {
@@ -76,8 +75,8 @@ func (mm *mqttOutEndTarget) DataModels() []typex.XDataModel {
 }
 
 func (mm *mqttOutEndTarget) Stop() {
-	mm.status = typex.SOURCE_DOWN
 	mm.CancelCTX()
+	mm.status = typex.SOURCE_DOWN
 	if mm.client != nil {
 		mm.client.Disconnect(0)
 		mm.client = nil
