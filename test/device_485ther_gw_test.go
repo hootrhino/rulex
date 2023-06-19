@@ -56,7 +56,8 @@ func Test_modbus_485_sensor_gateway(t *testing.T) {
 			},
 		})
 	RTU485Device.UUID = "RTU485Device1"
-	if err := engine.LoadDevice(RTU485Device); err != nil {
+	ctx, cancelF := typex.NewCCTX()
+	if err := engine.LoadDeviceWithCtx(RTU485Device, ctx, cancelF); err != nil {
 		t.Error("RTU485Device load failed:", err)
 	}
 	mqttOutEnd := typex.NewOutEnd(
@@ -73,7 +74,8 @@ func Test_modbus_485_sensor_gateway(t *testing.T) {
 		},
 	)
 	mqttOutEnd.UUID = "mqttOutEnd-iothub"
-	if err := engine.LoadOutEnd(mqttOutEnd); err != nil {
+	ctx1, cancelF1 := typex.NewCCTX()
+	if err := engine.LoadOutEndWithCtx(mqttOutEnd, ctx1, cancelF1); err != nil {
 		t.Error("mqttOutEnd load failed:", err)
 	}
 	rule := typex.NewRule(engine,

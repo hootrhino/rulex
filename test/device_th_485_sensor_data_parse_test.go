@@ -33,8 +33,8 @@ func Test_modbus_485_sensor_data_parse(t *testing.T) {
 	grpcInend := typex.NewInEnd("GRPC", "Test_485_sensor", "Test_485_sensor", map[string]interface{}{
 		"port": 2581,
 	})
-
-	if err := engine.LoadInEnd(grpcInend); err != nil {
+	ctx, cancelF := typex.NewCCTX()
+	if err := engine.LoadInEndWithCtx(grpcInend, ctx, cancelF); err != nil {
 		t.Error("grpcInend load failed:", err)
 	}
 	rule := typex.NewRule(engine,

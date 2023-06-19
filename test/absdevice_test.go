@@ -23,7 +23,8 @@ func Test_ABS_device1(t *testing.T) {
 		},
 	}
 
-	engine.LoadDevice(demoDev)
+	ctx, cancelF := typex.NewCCTX()
+	engine.LoadDeviceWithCtx(demoDev, ctx, cancelF)
 	t.Log(engine.SnapshotDump())
 
 	time.Sleep(20 * time.Second)
@@ -41,8 +42,8 @@ func Test_ABS_device2(t *testing.T) {
 			"K": "V",
 		},
 	}
-
-	if err := engine.LoadDevice(demoDev); err != nil {
+	ctx, cancelF := typex.NewCCTX()
+	if err := engine.LoadDeviceWithCtx(demoDev,ctx, cancelF); err != nil {
 		t.Log(err)
 	}
 	time.Sleep(1 * time.Second)

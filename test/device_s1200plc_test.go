@@ -126,7 +126,8 @@ func Test_RULEX_WITH_S1200PLC(t *testing.T) {
 		},
 	)
 	S1200PLC.UUID = "S1200PLC"
-	if err := engine.LoadDevice(S1200PLC); err != nil {
+	ctx, cancelF := typex.NewCCTX()
+	if err := engine.LoadDeviceWithCtx(S1200PLC, ctx, cancelF); err != nil {
 		t.Error("S1200PLC load failed:", err)
 	}
 	//
@@ -144,7 +145,8 @@ func Test_RULEX_WITH_S1200PLC(t *testing.T) {
 		},
 	)
 	EMQX_BROKER.UUID = "EMQX_BROKER"
-	if err := engine.LoadOutEnd(EMQX_BROKER); err != nil {
+	ctx1, cancelF1 := typex.NewCCTX()
+	if err := engine.LoadOutEndWithCtx(EMQX_BROKER, ctx1, cancelF1); err != nil {
 		t.Error("mqttOutEnd load failed:", err)
 	}
 	// 	// 加载一个规则

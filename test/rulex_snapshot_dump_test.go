@@ -44,8 +44,8 @@ func Test_snapshot_dump(t *testing.T) {
 	grpcInend := typex.NewInEnd("GRPC", "Rulex Grpc InEnd", "Rulex Grpc InEnd", map[string]interface{}{
 		"port": 2581,
 	})
-
-	if err := e.LoadInEnd(grpcInend); err != nil {
+	ctx, cancelF := typex.NewCCTX() // ,ctx, cancelF
+	if err := e.LoadInEndWithCtx(grpcInend, ctx, cancelF); err != nil {
 		glogger.GLogger.Error("Rule load failed:", err)
 	}
 

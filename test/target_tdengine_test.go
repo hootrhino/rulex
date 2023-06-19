@@ -38,8 +38,8 @@ func Test_data_to_tdengine(t *testing.T) {
 			"port": 2581,
 			"host": "127.0.0.1",
 		})
-
-	if err := engine.LoadInEnd(grpcInend); err != nil {
+	ctx, cancelF := typex.NewCCTX() // ,ctx, cancelF
+	if err := engine.LoadInEndWithCtx(grpcInend, ctx, cancelF); err != nil {
 		t.Fatal("grpcInend load failed:", err)
 	}
 
@@ -57,7 +57,8 @@ func Test_data_to_tdengine(t *testing.T) {
 			"insertSql":      "INSERT INTO meter01 VALUES (NOW, %v, %v, %v, %v);",
 		})
 	tdOutEnd.UUID = "TD1"
-	if err := engine.LoadOutEnd(tdOutEnd); err != nil {
+	ctx1, cancelF1 := typex.NewCCTX() // ,ctx, cancelF
+	if err := engine.LoadOutEndWithCtx(tdOutEnd, ctx1, cancelF1); err != nil {
 		t.Fatal(err)
 	}
 	//

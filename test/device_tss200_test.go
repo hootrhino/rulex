@@ -45,7 +45,8 @@ func Test_TSS200_ReadData(t *testing.T) {
 			},
 		})
 	tss200.UUID = "TSS200V02"
-	if err := engine.LoadDevice(tss200); err != nil {
+	ctx, cancelF := typex.NewCCTX()
+	if err := engine.LoadDeviceWithCtx(tss200, ctx, cancelF); err != nil {
 		t.Log(err)
 	}
 	rule := typex.NewRule(engine,

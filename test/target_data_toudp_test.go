@@ -40,7 +40,9 @@ func Test_DataToUdp(t *testing.T) {
 		},
 	)
 	UdpServer.UUID = "UdpServer"
-	if err := engine.LoadOutEnd(UdpServer); err != nil {
+	ctx1, cancelF1 := typex.NewCCTX() // ,ctx, cancelF
+
+	if err := engine.LoadOutEndWithCtx(UdpServer, ctx1, cancelF1); err != nil {
 		t.Fatal(err)
 	}
 

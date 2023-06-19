@@ -29,7 +29,9 @@ func Test_ithings(t *testing.T) {
 			"deviceName": "RULEX-MQTT网关",
 		})
 	ithingsIothub.UUID = "ithingsIothub"
-	if err := engine.LoadInEnd(ithingsIothub); err != nil {
+	ctx, cancelF := typex.NewCCTX() // ,ctx, cancelF
+
+	if err := engine.LoadInEndWithCtx(ithingsIothub, ctx, cancelF); err != nil {
 		t.Fatal("ithingsIothub load failed:", err)
 	}
 

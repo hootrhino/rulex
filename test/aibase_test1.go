@@ -24,7 +24,8 @@ func Test_AIBASE_ANN_MNIST(t *testing.T) {
 			"host": "127.0.0.1",
 			"port": 2581,
 		})
-	if err := engine.LoadInEnd(grpcInend); err != nil {
+	ctx, cancelF := typex.NewCCTX()
+	if err := engine.LoadInEndWithCtx(grpcInend, ctx, cancelF); err != nil {
 		t.Error("grpcInend load failed:", err)
 	}
 	rule := typex.NewRule(engine,
