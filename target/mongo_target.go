@@ -1,7 +1,6 @@
 package target
 
 import (
-	"context"
 	"time"
 
 	"github.com/hootrhino/rulex/common"
@@ -12,7 +11,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
 type mongoTarget struct {
@@ -43,15 +41,10 @@ func (m *mongoTarget) Start(cctx typex.CCTX) error {
 	m.CancelCTX = cctx.CancelCTX
 	clientOptions := options.Client().ApplyURI(m.mainConfig.MongoUrl)
 	clientOptions.SetConnectTimeout(3 * time.Second)
-	clientOptions.SetDirect(true)
+	// clientOptions.SetDirect(true)
 	client, err0 := mongo.Connect(m.Ctx, clientOptions)
 	if err0 != nil {
 		return err0
-	}
-	ctx, cancel := context.WithTimeout(m.Ctx, 3*time.Second)
-	defer cancel()
-	if err1 := client.Ping(ctx, nil); err1 != nil {
-		return err1
 	}
 	m.collection = client.Database(m.mainConfig.Database).Collection(m.mainConfig.Collection)
 	m.client = client
@@ -64,9 +57,7 @@ func (m *mongoTarget) Start(cctx typex.CCTX) error {
 
 func (m *mongoTarget) Test(outEndId string) bool {
 	if m.client != nil {
-		ctx, cancel := context.WithTimeout(m.Ctx, 3*time.Second)
-		defer cancel()
-		if err1 := m.client.Ping(ctx, nil); err1 != nil {
+		if err1 := m.client.Ping(m.Ctx, nil); err1 != nil {
 			return false
 		} else {
 			return true
@@ -90,20 +81,19 @@ func (m *mongoTarget) Pause() {
 
 func (m *mongoTarget) Status() typex.SourceState {
 	if m.client != nil {
-		if err := m.client.Ping(m.Ctx, &readpref.ReadPref{}); err != nil {
+		if err := m.client.Ping(m.Ctx, nil); err != nil {
+			glogger.GLogger.Error(err)
 			return typex.SOURCE_DOWN
 		}
-		return typex.SOURCE_UP
 	}
-	return typex.SOURCE_DOWN
+	return m.status
 }
 
 func (m *mongoTarget) Stop() {
-	m.status = typex.SOURCE_STOP
 	m.CancelCTX()
+	m.status = typex.SOURCE_DOWN
 	if m.client != nil {
 		m.client.Disconnect(m.Ctx)
-		m.client = nil
 	}
 }
 

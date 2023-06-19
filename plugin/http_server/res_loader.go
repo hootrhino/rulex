@@ -63,17 +63,22 @@ func (hh *HttpApiServer) LoadNewestInEnd(uuid string) error {
 	in.BindRules = BindRules
 	// 最新的配置
 	in.Config = mInEnd.GetConfig()
-	if err2 := hh.ruleEngine.LoadInEnd(in); err2 != nil {
+	ctx, cancelCTX := typex.NewCCTX()
+	if err2 := hh.ruleEngine.LoadInEndWithCtx(in, ctx, cancelCTX); err2 != nil {
 		glogger.GLogger.Error(err2)
 		return err2
 	}
-
+	go hh.StartInSupervisor(ctx, in)
 	return nil
 }
 
 // LoadNewestOutEnd
 func (hh *HttpApiServer) LoadNewestOutEnd(uuid string) error {
-	mOutEnd, _ := hh.GetMOutEndWithUUID(uuid)
+	mOutEnd, err := hh.GetMOutEndWithUUID(uuid)
+	if err != nil {
+		return err
+	}
+
 	config := map[string]interface{}{}
 	if err := json.Unmarshal([]byte(mOutEnd.Config), &config); err != nil {
 		return err
@@ -89,11 +94,12 @@ func (hh *HttpApiServer) LoadNewestOutEnd(uuid string) error {
 	// Important !!!!!!!!
 	out.UUID = mOutEnd.UUID
 	out.Config = mOutEnd.GetConfig()
-	if err := hh.ruleEngine.LoadOutEnd(out); err != nil {
+	ctx, cancelCTX := typex.NewCCTX()
+	if err := hh.ruleEngine.LoadOutEndWithCtx(out, ctx, cancelCTX); err != nil {
 		return err
-	} else {
-		return nil
 	}
+	go hh.StartOutSupervisor(ctx, out)
+	return nil
 
 }
 
@@ -150,9 +156,11 @@ func (hh *HttpApiServer) LoadNewestDevice(uuid string) error {
 	// 最新的配置
 	dev.Config = mDevice.GetConfig()
 	// 参数传给 --> startDevice()
-	if err := hh.ruleEngine.LoadDevice(dev); err != nil {
+	ctx, cancelCTX := typex.NewCCTX()
+	if err := hh.ruleEngine.LoadDeviceWithCtx(dev, ctx, cancelCTX); err != nil {
 		return err
 	}
+	go hh.StartDeviceSupervisor(ctx, dev)
 	return nil
 
 }

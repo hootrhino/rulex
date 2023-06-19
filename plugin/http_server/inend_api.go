@@ -28,6 +28,7 @@ func InEndDetail(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 		c.JSON(HTTP_OK, OkWithData(tmpInEnd))
 		return
 	}
+	inEnd.State = inEnd.Source.Status()
 	c.JSON(HTTP_OK, OkWithData(inEnd))
 }
 
@@ -37,8 +38,8 @@ func InEnds(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 	if uuid == "" {
 		inEnds := []typex.InEnd{}
 		for _, v := range hs.AllMInEnd() {
-			var device *typex.InEnd
-			if device = e.GetInEnd(v.UUID); device == nil {
+			var inEnd *typex.InEnd
+			if inEnd = e.GetInEnd(v.UUID); inEnd == nil {
 				tmpInEnd := typex.InEnd{
 					UUID:        v.UUID,
 					Type:        typex.InEndType(v.Type),
@@ -50,8 +51,9 @@ func InEnds(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 				}
 				inEnds = append(inEnds, tmpInEnd)
 			}
-			if device != nil {
-				inEnds = append(inEnds, *device)
+			if inEnd != nil {
+				inEnd.State = inEnd.Source.Status()
+				inEnds = append(inEnds, *inEnd)
 			}
 		}
 		c.JSON(HTTP_OK, OkWithData(inEnds))
@@ -76,6 +78,7 @@ func InEnds(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 		c.JSON(HTTP_OK, OkWithData(tmpInEnd))
 		return
 	}
+	inEnd.State = inEnd.Source.Status()
 	c.JSON(HTTP_OK, OkWithData(inEnd))
 
 }
@@ -188,6 +191,7 @@ func DeleteInEnd(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		old := e.GetInEnd(uuid)
 		if old != nil {
 			old.Source.Stop()
+			old.Source.Details().State = typex.SOURCE_STOP
 		}
 		e.RemoveInEnd(uuid)
 		c.JSON(HTTP_OK, Ok())

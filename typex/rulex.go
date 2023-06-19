@@ -1,6 +1,7 @@
 package typex
 
 import (
+	"context"
 	"sync"
 )
 
@@ -53,7 +54,7 @@ type RuleX interface {
 	//
 	// 加载输入
 	//
-	LoadInEnd(*InEnd) error
+	LoadInEndWithCtx(in *InEnd, ctx context.Context, cancelCTX context.CancelFunc) error
 	//
 	// 获取输入
 	//
@@ -73,7 +74,7 @@ type RuleX interface {
 	//
 	// 加载输出
 	//
-	LoadOutEnd(*OutEnd) error
+	LoadOutEndWithCtx(in *OutEnd, ctx context.Context, cancelCTX context.CancelFunc) error
 	//
 	// 所有输出
 	//
@@ -143,7 +144,7 @@ type RuleX interface {
 	//
 	// 加载设备
 	//
-	LoadDevice(*Device) error
+	LoadDeviceWithCtx(in *Device, ctx context.Context, cancelCTX context.CancelFunc) error
 	//
 	// 获取设备
 	//

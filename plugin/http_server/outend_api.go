@@ -25,6 +25,7 @@ func OutEnds(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 				outends = append(outends, tOut)
 			}
 			if outEnd != nil {
+				outEnd.State = outEnd.Target.Status()
 				outends = append(outends, *outEnd)
 			}
 		}
@@ -49,6 +50,7 @@ func OutEnds(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 		c.JSON(HTTP_OK, OkWithData(tOut))
 		return
 	}
+	outEnd.State = outEnd.Target.Status()
 	c.JSON(HTTP_OK, OkWithData(outEnd))
 }
 
@@ -73,24 +75,30 @@ func OutEndDetail(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 		c.JSON(HTTP_OK, OkWithData(tOutEnd))
 		return
 	}
+	outEnd.State = outEnd.Target.Status()
 	c.JSON(HTTP_OK, OkWithData(outEnd))
 }
 
 // Delete outEnd by UUID
-func DeleteOutEnd(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+func DeleteOutEnd(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
-	_, err := hh.GetMOutEnd(uuid)
+	_, err := hs.GetMOutEndWithUUID(uuid)
 	if err != nil {
 		c.JSON(HTTP_OK, Error400(err))
 		return
 	}
-	if err := hh.DeleteMOutEnd(uuid); err != nil {
-		c.JSON(HTTP_OK, Error400(err))
-	} else {
-		e.RemoveOutEnd(uuid)
-		c.JSON(HTTP_OK, Ok())
-	}
 
+	if err := hs.DeleteMOutEnd(uuid); err != nil {
+		c.JSON(HTTP_OK, Error400(err))
+		return
+	}
+	old := e.GetOutEnd(uuid)
+	if old != nil {
+		old.Target.Stop()
+		old.Target.Details().State = typex.SOURCE_STOP
+	}
+	e.RemoveOutEnd(uuid)
+	c.JSON(HTTP_OK, Ok())
 }
 
 // Create or Update OutEnd

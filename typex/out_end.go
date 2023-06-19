@@ -15,13 +15,6 @@ type OutEnd struct {
 	Target XTarget                `json:"-"`
 }
 
-func (o *OutEnd) GetState() SourceState {
-	return o.State
-}
-
-func (o *OutEnd) SetState(s SourceState) {
-	o.State = s
-}
 
 func NewOutEnd(t TargetType,
 	n string,
