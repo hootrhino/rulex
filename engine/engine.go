@@ -162,7 +162,7 @@ func (e *RuleEngine) Stop() {
 		inEnd := value.(*typex.InEnd)
 		if inEnd.Source != nil {
 			glogger.GLogger.Info("Stop InEnd:", inEnd.Name, inEnd.UUID)
-			e.GetInEnd(inEnd.UUID).SetState(typex.SOURCE_DOWN)
+			e.GetInEnd(inEnd.UUID).State = typex.SOURCE_STOP
 			inEnd.Source.Stop()
 			if inEnd.Source.Driver() != nil {
 				inEnd.Source.Driver().Stop()
@@ -176,6 +176,7 @@ func (e *RuleEngine) Stop() {
 		outEnd := value.(*typex.OutEnd)
 		if outEnd.Target != nil {
 			glogger.GLogger.Info("Stop NewTarget:", outEnd.Name, outEnd.UUID)
+			e.GetOutEnd(outEnd.UUID).State = typex.SOURCE_STOP
 			outEnd.Target.Stop()
 			glogger.GLogger.Info("Stop NewTarget:", outEnd.Name, outEnd.UUID, " Successfully")
 		}
@@ -193,6 +194,7 @@ func (e *RuleEngine) Stop() {
 	e.Devices.Range(func(key, value interface{}) bool {
 		Device := value.(*typex.Device)
 		glogger.GLogger.Info("Stop Device:", Device.Name)
+		e.GetDevice(Device.UUID).State = typex.DEV_STOP
 		Device.Device.Stop()
 		glogger.GLogger.Info("Stop Device:", Device.Name, " Successfully")
 		return true
@@ -480,15 +482,7 @@ func (e *RuleEngine) PickUpProcess(uuid string) *typex.GoodsProcess {
 
 // 重启源
 func (e *RuleEngine) RestartInEnd(uuid string) error {
-	if value, ok := e.InEnds.Load(uuid); ok {
-		o := (value.(*typex.InEnd))
-		if o.State == typex.SOURCE_UP {
-			o.Source.Stop()
-		}
-		if err := e.LoadInEnd(o); err != nil {
-			glogger.GLogger.Error("InEnd load failed:", err)
-			return err
-		}
+	if _, ok := e.InEnds.Load(uuid); ok {
 		return nil
 	}
 	return errors.New("InEnd:" + uuid + "not exists")
@@ -496,15 +490,7 @@ func (e *RuleEngine) RestartInEnd(uuid string) error {
 
 // 重启目标
 func (e *RuleEngine) RestartOutEnd(uuid string) error {
-	if value, ok := e.OutEnds.Load(uuid); ok {
-		o := (value.(*typex.OutEnd))
-		if o.State == typex.SOURCE_UP {
-			o.Target.Stop()
-		}
-		if err := e.LoadOutEnd(o); err != nil {
-			glogger.GLogger.Error("OutEnd load failed:", err)
-			return err
-		}
+	if _, ok := e.OutEnds.Load(uuid); ok {
 		return nil
 	}
 	return errors.New("OutEnd:" + uuid + "not exists")
@@ -512,15 +498,7 @@ func (e *RuleEngine) RestartOutEnd(uuid string) error {
 
 // 重启设备
 func (e *RuleEngine) RestartDevice(uuid string) error {
-	if value, ok := e.Devices.Load(uuid); ok {
-		o := (value.(*typex.Device))
-		if o.State == typex.DEV_UP {
-			o.Device.Stop()
-		}
-		if err := e.LoadDevice(o); err != nil {
-			glogger.GLogger.Error("Device load failed:", err)
-			return err
-		}
+	if _, ok := e.Devices.Load(uuid); ok {
 		return nil
 	}
 	return errors.New("Device:" + uuid + "not exists")

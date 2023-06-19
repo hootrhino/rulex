@@ -167,13 +167,11 @@ func (tc *iothub) Start(cctx typex.CCTX) error {
 		tc.subscribe(tc.ActionDownTopic)
 		tc.status = typex.SOURCE_UP
 		glogger.GLogger.Infof("iothub IOTHUB Connected Success")
-		fmt.Println("==================> 这玩意上线了:", tc.mainConfig.ClientId)
 
 	}
 
 	var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err error) {
 		glogger.GLogger.Warnf("iothub IOTHUB Disconnect: %v, %v try to reconnect", err, tc.status)
-		fmt.Println("==================> 这玩意掉线了:", tc.mainConfig.ClientId)
 	}
 
 	opts := mqtt.NewClientOptions()
@@ -183,9 +181,6 @@ func (tc *iothub) Start(cctx typex.CCTX) error {
 	opts.SetPassword(tc.mainConfig.Password)
 	opts.OnConnect = connectHandler
 	opts.OnConnectionLost = connectLostHandler
-	opts.OnReconnecting = func(c mqtt.Client, co *mqtt.ClientOptions) {
-		fmt.Println("==================> 这玩意尝试重连:", tc.mainConfig.ClientId)
-	}
 	opts.SetCleanSession(true)
 	opts.SetPingTimeout(30 * time.Second)
 	opts.SetKeepAlive(60 * time.Second)
@@ -223,7 +218,6 @@ func (tc *iothub) Pause() {
 
 }
 func (tc *iothub) Status() typex.SourceState {
-	fmt.Println("获取状态,,,,,,,,,,,,,,,,,,,......................", tc.client.IsConnectionOpen())
 	if tc.client != nil {
 		if tc.client.IsConnectionOpen() {
 			return typex.SOURCE_UP

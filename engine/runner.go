@@ -1,7 +1,7 @@
 package engine
 
 import (
-	"encoding/json"
+
 	"os"
 	"os/signal"
 	"syscall"
@@ -63,19 +63,7 @@ func RunRulex(iniPath string) {
 	// Load out from sqlite
 	//
 	for _, mOutEnd := range httpServer.AllMOutEnd() {
-		config := map[string]interface{}{}
-		if err := json.Unmarshal([]byte(mOutEnd.Config), &config); err != nil {
-			glogger.GLogger.Error(err)
-		}
-		newOutEnd := typex.NewOutEnd(
-			typex.TargetType(mOutEnd.Type),
-			mOutEnd.Name,
-			mOutEnd.Description,
-			config,
-		)
-		newOutEnd.UUID = mOutEnd.UUID // Important !!!!!!!!
-		newOutEnd.Config = mOutEnd.GetConfig()
-		if err := engine.LoadOutEnd(newOutEnd); err != nil {
+		if err := httpServer.LoadNewestOutEnd(mOutEnd.UUID); err != nil {
 			glogger.GLogger.Error("OutEnd load failed:", err)
 		}
 	}
@@ -85,6 +73,7 @@ func RunRulex(iniPath string) {
 		if err := httpServer.LoadNewestDevice(mDevice.UUID); err != nil {
 			glogger.GLogger.Error("Device load failed:", err)
 		}
+
 	}
 	// 加载外挂
 	for _, mGoods := range httpServer.AllGoods() {
@@ -119,23 +108,6 @@ func RunRulex(iniPath string) {
 			}
 		}
 	}
-	//
-	// 规则最后加载
-	//
-	// for _, mRule := range httpServer.AllMRules() {
-	// 	rule := typex.NewRule(engine,
-	// 		mRule.UUID,
-	// 		mRule.Name,
-	// 		mRule.Description,
-	// 		mRule.FromSource,
-	// 		mRule.FromDevice,
-	// 		mRule.Success,
-	// 		mRule.Actions,
-	// 		mRule.Failed)
-	// 	if err := engine.LoadRule(rule); err != nil {
-	// 		glogger.GLogger.Error(err)
-	// 	}
-	// }
 	s := <-c
 	glogger.GLogger.Warn("Received stop signal:", s)
 	engine.Stop()

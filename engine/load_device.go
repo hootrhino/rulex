@@ -3,9 +3,7 @@ package engine
 import (
 	"context"
 	"fmt"
-	"runtime"
 	"sync"
-	"time"
 
 	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/typex"
@@ -52,27 +50,14 @@ func (e *RuleEngine) RemoveDevice(uuid string) {
 }
 
 /*
-* 从0.4.0开始, 可支持用户加载设备
-* 加载用户设备， 第一个参数为Worker, 第二个参数为设备原始信息，实际上就是元数据
-*
- */
-func (e *RuleEngine) LoadUserDevice(abstractDevice typex.XDevice, deviceInfo *typex.Device) error {
-	return loadDevices(abstractDevice, deviceInfo, e)
-}
-
-// 加载内置设备
-func (e *RuleEngine) LoadBuiltinDevice(deviceInfo *typex.Device) error {
-	return e.LoadDevice(deviceInfo)
-}
-
-/*
 *
 * 加载设备
 *
  */
-func (e *RuleEngine) LoadDevice(deviceInfo *typex.Device) error {
+func (e *RuleEngine) LoadDeviceWithCtx(deviceInfo *typex.Device,
+	ctx context.Context, cancelCTX context.CancelFunc) error {
 	if config := e.DeviceTypeManager.Find(deviceInfo.Type); config != nil {
-		return loadDevices(config.NewDevice(e), deviceInfo, e)
+		return e.loadDevices(config.NewDevice(e), deviceInfo, ctx, cancelCTX)
 	}
 	return fmt.Errorf("unsupported Device type:%s", deviceInfo.Type)
 
@@ -83,7 +68,8 @@ func (e *RuleEngine) LoadDevice(deviceInfo *typex.Device) error {
 * 启动一个和RULEX直连的外部设备
 *
  */
-func loadDevices(abstractDevice typex.XDevice, deviceInfo *typex.Device, e *RuleEngine) error {
+func (e *RuleEngine) loadDevices(abstractDevice typex.XDevice, deviceInfo *typex.Device,
+	ctx context.Context, cancelCTX context.CancelFunc) error {
 	// Bind
 	deviceInfo.Device = abstractDevice
 	e.SaveDevice(deviceInfo)
@@ -99,54 +85,13 @@ func loadDevices(abstractDevice typex.XDevice, deviceInfo *typex.Device, e *Rule
 		e.RemoveDevice(deviceInfo.UUID)
 		return err
 	}
-	startDevice(abstractDevice, e)
-	go func(ctx context.Context) {
-		for {
-			ticker := time.NewTicker(time.Duration(time.Second * 5))
-			select {
-			case <-ctx.Done():
-				{
-					ticker.Stop()
-					return
-				}
-			default:
-				{
-				}
-			}
-			<-ticker.C
-			if abstractDevice.Status() == typex.DEV_STOP {
-				return
-			}
-			tryIfRestartDevice(abstractDevice, e, deviceInfo.UUID)
-
-		}
-
-	}(typex.GCTX)
+	startDevice(abstractDevice, e, ctx, cancelCTX)
 	glogger.GLogger.Infof("device [%v, %v] load successfully", deviceInfo.Name, deviceInfo.UUID)
 	return nil
 }
 
-func tryIfRestartDevice(abstractDevice typex.XDevice, e *RuleEngine, devId string) {
-	Status := abstractDevice.Status()
-	if Status == typex.DEV_STOP {
-		return
-	}
-	if Status == typex.DEV_DOWN {
-		abstractDevice.Details().State = typex.DEV_DOWN
-		glogger.GLogger.Warnf("Device [%v, %v] down. try to restart.",
-			abstractDevice.Details().UUID, abstractDevice.Details().Name)
-		abstractDevice.Stop()
-		runtime.Gosched()
-		runtime.GC()
-		startDevice(abstractDevice, e)
-	} else {
-		abstractDevice.Details().State = typex.DEV_UP
-	}
-
-}
-
-func startDevice(abstractDevice typex.XDevice, e *RuleEngine) error {
-	ctx, cancelCTX := typex.NewCCTX()
+func startDevice(abstractDevice typex.XDevice, e *RuleEngine,
+	ctx context.Context, cancelCTX context.CancelFunc) error {
 	if err := abstractDevice.Start(typex.CCTX{Ctx: ctx, CancelCTX: cancelCTX}); err != nil {
 		glogger.GLogger.Error("abstractDevice start error:", err)
 		return err

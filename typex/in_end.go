@@ -16,13 +16,6 @@ type InEnd struct {
 	Source        XSource                `json:"-"`
 }
 
-func (in *InEnd) GetState() SourceState {
-	return in.State
-}
-
-func (in *InEnd) SetState(s SourceState) {
-	in.State = s
-}
 
 func NewInEnd(Type InEndType,
 	n string,

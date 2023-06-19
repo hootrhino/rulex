@@ -34,6 +34,7 @@ func DeviceDetail(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 		c.JSON(HTTP_OK, OkWithData(tDevice))
 		return
 	}
+	device.State = device.Device.Status()
 	c.JSON(HTTP_OK, OkWithData(device))
 }
 func Devices(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
@@ -80,6 +81,7 @@ func Devices(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 		c.JSON(HTTP_OK, OkWithData(tDevice))
 		return
 	}
+	device.State = device.Device.Status()
 	c.JSON(HTTP_OK, OkWithData(device))
 }
 
@@ -109,14 +111,15 @@ func DeleteDevice(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 	}
 	if err := hs.DeleteDevice(uuid); err != nil {
 		c.JSON(HTTP_OK, Error400(err))
-	} else {
-		old := e.GetDevice(uuid)
-		if old != nil {
-			old.Device.Stop()
-		}
-		e.RemoveDevice(uuid)
-		c.JSON(HTTP_OK, Ok())
+		return
 	}
+	old := e.GetDevice(uuid)
+	if old != nil {
+		old.Device.Stop()
+		old.Device.Details().State = typex.DEV_STOP
+	}
+	e.RemoveDevice(uuid)
+	c.JSON(HTTP_OK, Ok())
 
 }
 
