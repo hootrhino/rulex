@@ -198,25 +198,23 @@ func (tc *iothub) Start(cctx typex.CCTX) error {
 func (tc *iothub) DataModels() []typex.XDataModel {
 	return tc.XDataModels
 }
-
-func (tc *iothub) Stop() {
-	tc.CancelCTX()
-	tc.status = typex.SOURCE_STOP
-	if tc.client != nil {
-		tc.client.Unsubscribe(tc.PropertyDownTopic)
-		tc.client.Unsubscribe(tc.ActionDownTopic)
-		tc.client.Unsubscribe(tc.TopologyTopicDown)
-		tc.client.Disconnect(100)
-		tc.client = nil
-		fmt.Println("关闭进程", tc.mainConfig)
-	}
-}
 func (tc *iothub) Reload() {
 
 }
 func (tc *iothub) Pause() {
 
 }
+func (tc *iothub) Stop() {
+	tc.status = typex.SOURCE_DOWN
+	tc.CancelCTX()
+	if tc.client != nil {
+		tc.client.Unsubscribe(tc.PropertyDownTopic)
+		tc.client.Unsubscribe(tc.ActionDownTopic)
+		tc.client.Unsubscribe(tc.TopologyTopicDown)
+		tc.client.Disconnect(100)
+	}
+}
+
 func (tc *iothub) Status() typex.SourceState {
 	if tc.client != nil {
 		if tc.client.IsConnectionOpen() {

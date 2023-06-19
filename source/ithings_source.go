@@ -164,8 +164,8 @@ func (tc *ithings) Start(cctx typex.CCTX) error {
 	opts.SetPingTimeout(30 * time.Second)
 	opts.SetKeepAlive(60 * time.Second)
 	opts.SetConnectTimeout(30 * time.Second)
-	opts.SetAutoReconnect(true)
-	opts.SetMaxReconnectInterval(5 * time.Second)
+	opts.SetAutoReconnect(false)
+	opts.SetMaxReconnectInterval(0)
 	tc.client = mqtt.NewClient(opts)
 	if token := tc.client.Connect(); token.Wait() && token.Error() != nil {
 		return token.Error()

@@ -78,7 +78,6 @@ func (e *RuleEngine) startSource(source typex.XSource,
 
 	if err := source.Start(typex.CCTX{Ctx: ctx, CancelCTX: cancelCTX}); err != nil {
 		glogger.GLogger.Error("Source start error:", err)
-		source.Stop()
 		return err
 	}
 	// LoadNewestSource
@@ -102,4 +101,3 @@ func (e *RuleEngine) startSource(source typex.XSource,
 	}
 	return nil
 }
-
