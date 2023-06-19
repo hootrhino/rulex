@@ -47,11 +47,12 @@ func Test_tencent_iothub(t *testing.T) {
 			},
 		})
 	YK8Device.UUID = "YK8Device1"
-	if err := engine.LoadDevice(YK8Device); err != nil {
+	ctx, cancelF := typex.NewCCTX() // ,ctx, cancelF
+	if err := engine.LoadDeviceWithCtx(YK8Device, ctx, cancelF); err != nil {
 		t.Fatal("YK8Device load failed:", err)
 	}
 
-	tencentIothub := typex.NewInEnd(typex.TENCENT_IOT_HUB,
+	tencentIothub := typex.NewInEnd(typex.GENERIC_IOT_HUB,
 		"MQTT", "MQTT", map[string]interface{}{
 			"host":       "127.0.0.1",
 			"port":       1883,
@@ -62,8 +63,8 @@ func Test_tencent_iothub(t *testing.T) {
 			"deviceName": "RULEX-001",
 		})
 	tencentIothub.UUID = "tencentIothub"
-
-	if err := engine.LoadInEnd(tencentIothub); err != nil {
+	ctx1, cancelF1 := typex.NewCCTX() // ,ctx, cancelF
+	if err := engine.LoadInEndWithCtx(tencentIothub, ctx1, cancelF1); err != nil {
 		t.Fatal("mqttOutEnd load failed:", err)
 	}
 

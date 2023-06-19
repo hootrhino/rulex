@@ -35,7 +35,8 @@ func Test_g7776_Device(t *testing.T) {
 			"uart":      "COM2",
 		})
 	GUART.UUID = "GUART1"
-	if err := engine.LoadDevice(GUART); err != nil {
+	ctx, cancelF := typex.NewCCTX()
+	if err := engine.LoadDeviceWithCtx(GUART, ctx, cancelF); err != nil {
 		t.Fatal("GUART load failed:", err)
 	}
 

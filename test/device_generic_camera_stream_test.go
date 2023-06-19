@@ -36,8 +36,8 @@ func Test_Generic_camera(t *testing.T) {
 			"outputMode": "JPEG_STREAM",
 			"outputAddr": "0.0.0.0:2599",
 		})
-
-	if err := engine.LoadDevice(GENERIC_CAMERA); err != nil {
+	ctx, cancelF := typex.NewCCTX()
+	if err := engine.LoadDeviceWithCtx(GENERIC_CAMERA, ctx, cancelF); err != nil {
 		t.Fatal(err)
 	}
 	time.Sleep(25 * time.Second)

@@ -40,7 +40,8 @@ func Test_DataToHttp(t *testing.T) {
 		},
 	)
 	httpServer.UUID = "httpServer"
-	if err := engine.LoadOutEnd(httpServer); err != nil {
+	ctx, cancelF := typex.NewCCTX() // ,ctx, cancelF
+	if err := engine.LoadOutEndWithCtx(httpServer, ctx, cancelF); err != nil {
 		t.Fatal(err)
 	}
 

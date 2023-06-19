@@ -48,11 +48,12 @@ func Test_modbus_485_yk8(t *testing.T) {
 			},
 		})
 	YK8Device.UUID = "YK8Device1"
-	if err := engine.LoadDevice(YK8Device); err != nil {
+	ctx, cancelF := typex.NewCCTX() // ,ctx, cancelF
+	if err := engine.LoadDeviceWithCtx(YK8Device, ctx, cancelF); err != nil {
 		t.Fatal("YK8Device load failed:", err)
 	}
-
-	tencentIothub := typex.NewInEnd(typex.TENCENT_IOT_HUB,
+	ctx1, cancelF1 := typex.NewCCTX() // ,ctx, cancelF
+	tencentIothub := typex.NewInEnd(typex.GENERIC_IOT_HUB,
 		"MQTT", "MQTT", map[string]interface{}{
 			"host":       "10.55.16.144",
 			"port":       1883,
@@ -64,7 +65,7 @@ func Test_modbus_485_yk8(t *testing.T) {
 		})
 	tencentIothub.UUID = "tencentIothub"
 
-	if err := engine.LoadInEnd(tencentIothub); err != nil {
+	if err := engine.LoadInEndWithCtx(tencentIothub, ctx1, cancelF1); err != nil {
 		t.Fatal("mqttOutEnd load failed:", err)
 	}
 

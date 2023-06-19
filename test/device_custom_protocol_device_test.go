@@ -56,8 +56,8 @@ func TestCustomProtocolDevice(t *testing.T) {
 			"port": 2581,
 			"host": "127.0.0.1",
 		})
-
-	if err := engine.LoadInEnd(grpcInend); err != nil {
+	ctx, cancelF := typex.NewCCTX()
+	if err := engine.LoadInEndWithCtx(grpcInend, ctx, cancelF); err != nil {
 		t.Fatal("Rule load failed:", err)
 	}
 	//
@@ -98,7 +98,8 @@ func TestCustomProtocolDevice(t *testing.T) {
 			},
 		})
 	dev1.UUID = "dev1"
-	if err := engine.LoadDevice(dev1); err != nil {
+	ctx1, cancelF1 := typex.NewCCTX()
+	if err := engine.LoadDeviceWithCtx(dev1,ctx1, cancelF1); err != nil {
 		t.Fatal("dev1 load failed:", err)
 	}
 

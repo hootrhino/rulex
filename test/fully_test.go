@@ -2,6 +2,7 @@ package test
 
 import (
 	"context"
+
 	"github.com/hootrhino/rulex/glogger"
 	httpserver "github.com/hootrhino/rulex/plugin/http_server"
 	"github.com/hootrhino/rulex/rulexrpc"
@@ -26,7 +27,8 @@ func TestFullyRun(t *testing.T) {
 		"host": "127.0.0.1",
 		"port": 2581,
 	})
-	if err := engine.LoadInEnd(grpcInend); err != nil {
+	ctx, cancelF := typex.NewCCTX() // ,ctx, cancelF
+	if err := engine.LoadInEndWithCtx(grpcInend, ctx, cancelF); err != nil {
 		glogger.GLogger.Error("grpcInend load failed:", err)
 	}
 	//

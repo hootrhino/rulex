@@ -35,7 +35,8 @@ func Test_http_source(t *testing.T) {
 			"host": "127.0.0.1",
 		},
 	)
-	if err := engine.LoadInEnd(httpInend); err != nil {
+	ctx, cancelF := typex.NewCCTX() // ,ctx, cancelF
+	if err := engine.LoadInEndWithCtx(httpInend, ctx, cancelF); err != nil {
 		t.Fatal("httpInend load failed:", err)
 	}
 	//

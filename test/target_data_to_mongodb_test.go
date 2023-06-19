@@ -30,8 +30,8 @@ func Test_DataToMongo(t *testing.T) {
 		"port": 2581,
 		"host": "127.0.0.1",
 	})
-
-	if err := engine.LoadInEnd(grpcInend); err != nil {
+	ctx, cancelF := typex.NewCCTX() // ,ctx, cancelF
+	if err := engine.LoadInEndWithCtx(grpcInend, ctx, cancelF); err != nil {
 		glogger.GLogger.Error("Rule load failed:", err)
 	}
 	//
@@ -44,7 +44,8 @@ func Test_DataToMongo(t *testing.T) {
 			"collection": "temp_gateway_test_" + ts,
 		})
 	mongoOut.UUID = "mongoOut"
-	if err := engine.LoadOutEnd(mongoOut); err != nil {
+	ctx1, cancelF1 := typex.NewCCTX() // ,ctx, cancelF
+	if err := engine.LoadOutEndWithCtx(mongoOut, ctx1, cancelF1); err != nil {
 		glogger.GLogger.Fatal(err)
 	}
 	rule := typex.NewRule(engine,

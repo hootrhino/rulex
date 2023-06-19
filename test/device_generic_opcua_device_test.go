@@ -50,8 +50,8 @@ func Test_Generic_opcua_device(t *testing.T) {
 				},
 			},
 		})
-
-	if err := engine.LoadDevice(GENERIC_OPCUA); err != nil {
+	ctx, cancelF := typex.NewCCTX()
+	if err := engine.LoadDeviceWithCtx(GENERIC_OPCUA, ctx, cancelF); err != nil {
 		t.Fatal(err)
 	}
 	rule := typex.NewRule(engine,
