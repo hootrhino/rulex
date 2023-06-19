@@ -7,6 +7,7 @@ package licensemanager
 
 import (
 	"crypto/rsa"
+	"crypto/x509/pkix"
 	"sync/atomic"
 	"time"
 
@@ -38,9 +39,9 @@ type LicenseConfig struct {
 
 // Certificate 证书信息
 type Certificate struct {
-	Raw       string `json:"raw"`
-	Issuer    string `json:"issuer"`  // 授权方
-	Subject   string `json:"subject"` // 证书授权信息
+	Raw       string    `json:"raw"`
+	Issuer    pkix.Name `json:"issuer"`  // 授权方
+	Subject   pkix.Name `json:"subject"` // 证书授权信息
 	NotAfter  time.Time
 	NotBefore time.Time
 	PublicKey *rsa.PublicKey `json:"key"` // 加密公钥
@@ -70,7 +71,7 @@ func (l *LicenseManager) reload(quit bool) *Certificate {
 	}
 
 	// 尝试加载证书
-	cert, err := loadAndVeifyCert(l.conf)
+	cert, err := loadAndVerifyCert(l.conf)
 	if err == nil {
 		if !l.cert.CompareAndSwap(nil, cert) {
 			cert, _ = l.cert.Load().(*Certificate)
@@ -84,7 +85,8 @@ func (l *LicenseManager) reload(quit bool) *Certificate {
 
 	// 加载失败并退出
 	if quit {
-		panic("need a valid certificate")
+		glogger.GLogger.Fatal("need a valid certificate")
+		// panic("need a valid certificate")
 	}
 
 	return nil
@@ -155,7 +157,7 @@ func Certificate2Info(cert *Certificate) CertificateInfo {
 		StartDate:  cert.NotBefore.Format(time.DateOnly),
 		EndDate:    cert.NotAfter.Format(time.DateOnly),
 		Valid:      time.Since(cert.NotAfter) < 0,
-		Issuer:     cert.Issuer,
-		Subject:    cert.Subject,
+		Issuer:     cert.Issuer.CommonName,
+		Subject:    cert.Subject.CommonName,
 	}
 }
