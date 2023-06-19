@@ -2,9 +2,11 @@ package licensemanager
 
 import (
 	"bytes"
+	"crypto/md5"
 	"crypto/rand"
 	"crypto/rsa"
 	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -20,7 +22,7 @@ import (
 
 const defaultCertPath = "./rulex.pem"
 
-func loadAndVeifyCert(conf LicenseConfig) (*Certificate, error) {
+func loadAndVerifyCert(conf LicenseConfig) (*Certificate, error) {
 	path := conf.LocalAddr
 	if len(path) == 0 {
 		path = defaultCertPath
@@ -31,19 +33,21 @@ func loadAndVeifyCert(conf LicenseConfig) (*Certificate, error) {
 		return nil, err
 	}
 
-	// 校验证书
-	if err := verifyCert(conf.RemoteAddr, conf.NetName, cert.PublicKey); err != nil {
-		if isLocal {
-			os.Remove(path)
-		}
-		return nil, err
-	}
-
-	// 校验成功，证书写入到本地
 	if !isLocal {
+		// 第一次拉到证书，联网校验
+		if err := onlineVerifyCert(conf.RemoteAddr, conf.NetName, cert.PublicKey); err != nil {
+			return nil, err
+		}
+		// 校验成功，证书写入到本地
 		writeToFile(path, cert.Raw)
+	} else {
+		// 本地已有证书，离线校验即可
+		if err := offlineVerifyCert(cert, conf.NetName); err != nil {
+			// 验证失败，移除证书
+			os.Remove(path)
+			return nil, err
+		}
 	}
-
 	return cert, nil
 }
 
@@ -189,11 +193,12 @@ response:
 */
 
 var (
-	ErrUnsupportedPublicKey = errors.New("unsupported public key type")
-	ErrUnknownHardwareAddr  = errors.New("unknown hardware addr")
+	ErrUnsupportedPublicKey  = errors.New("unsupported public key type")
+	ErrUnknownHardwareAddr   = errors.New("unknown hardware addr")
+	ErrMismatchedCertificate = errors.New("mismatched certificate")
 )
 
-func verifyCert(url, netName string, key *rsa.PublicKey) error {
+func onlineVerifyCert(url, netName string, key *rsa.PublicKey) error {
 	hw := deviceInfo(netName)
 	if len(hw.MAC) == 0 {
 		return ErrUnknownHardwareAddr
@@ -263,6 +268,24 @@ func retryRequest(req *http.Request, fn func(*http.Response) error) error {
 	}
 
 	return err
+}
+
+func offlineVerifyCert(cert *Certificate, netName string) error {
+	var mac string
+	inte, err := net.InterfaceByName(netName)
+	if err == nil && inte.HardwareAddr != nil {
+		mac = inte.HardwareAddr.String()
+		md5Byts := md5.Sum(s2b(mac))
+		mac = hex.EncodeToString(md5Byts[:])
+	}
+	if len(mac) == 0 {
+		return fmt.Errorf("unknown netName: %s", netName)
+	}
+
+	if mac != cert.Subject.CommonName {
+		return ErrMismatchedCertificate
+	}
+	return nil
 }
 
 func deviceInfo(name string) DeviceInfo {
