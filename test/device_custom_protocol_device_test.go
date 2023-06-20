@@ -99,7 +99,7 @@ func TestCustomProtocolDevice(t *testing.T) {
 		})
 	dev1.UUID = "dev1"
 	ctx1, cancelF1 := typex.NewCCTX()
-	if err := engine.LoadDeviceWithCtx(dev1,ctx1, cancelF1); err != nil {
+	if err := engine.LoadDeviceWithCtx(dev1, ctx1, cancelF1); err != nil {
 		t.Fatal("dev1 load failed:", err)
 	}
 
@@ -157,23 +157,23 @@ func Test_SerialPortRW(t *testing.T) {
 	bytes, _ := hex.DecodeString("FFFFFF014CB2AA55")
 	result := [7]byte{}
 	serialPort.Write((bytes))
-	// time.Sleep(time.Microsecond * 60)
+	// time.Sleep(time.Millisecond * 60)
 	n1, _ := serialPort.Read(result[:])
 	t.Log("serialPort.Read 1:", n1, result[:n1])
 	serialPort.Write((bytes))
-	// time.Sleep(time.Microsecond * 60)
+	// time.Sleep(time.Millisecond * 60)
 	n2, _ := serialPort.Read(result[:])
 	t.Log("serialPort.Read 2:", n2, result[:n2])
 	serialPort.Write((bytes))
-	// time.Sleep(time.Microsecond * 60)
+	// time.Sleep(time.Millisecond * 60)
 	n3, _ := serialPort.Read(result[:])
 	t.Log("serialPort.Read 3:", n3, result[:n3])
 	serialPort.Write((bytes))
-	// time.Sleep(time.Microsecond * 60)
+	// time.Sleep(time.Millisecond * 60)
 	n4, _ := serialPort.Read(result[:])
 	t.Log("serialPort.Read 4:", n4, result[:n4])
 	serialPort.Write((bytes))
-	// time.Sleep(time.Microsecond * 60)
+	// time.Sleep(time.Millisecond * 60)
 	n5, _ := serialPort.Read(result[:])
 	t.Log("serialPort.Read 5:", n5, result[:n5])
 	serialPort.Write((bytes))
