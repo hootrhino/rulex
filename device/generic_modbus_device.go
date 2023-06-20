@@ -137,7 +137,7 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 		mdev.rtuHandler.Parity = mdev.mainConfig.RtuConfig.Parity
 		mdev.rtuHandler.StopBits = mdev.mainConfig.RtuConfig.StopBits
 		// timeout 最大不能超过20, 不然无意义
-		mdev.rtuHandler.Timeout = time.Duration(mdev.mainConfig.RtuConfig.Timeout) * time.Microsecond
+		mdev.rtuHandler.Timeout = time.Duration(mdev.mainConfig.RtuConfig.Timeout) * time.Millisecond
 		if core.GlobalConfig.AppDebugMode {
 			mdev.rtuHandler.Logger = golog.New(glogger.GLogger.Writer(),
 				"Modbus RTU Mode: "+mdev.PointId+", ", golog.LstdFlags)
@@ -191,7 +191,7 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 			n, err := Driver.Read([]byte{}, buffer)
 			if err != nil {
 				glogger.GLogger.Error(err)
-				mdev.retryTimes++
+				// mdev.retryTimes++
 			} else {
 				mdev.RuleEngine.WorkDevice(mdev.Details(), string(buffer[:n]))
 			}

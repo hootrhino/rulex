@@ -37,11 +37,11 @@ func TestRTU_relay(t *testing.T) {
 			client.WriteSingleCoil(key, 0xFF00)
 			st1, _ := client.ReadCoils(key, 1)
 			t.Log("ReadCoils==> ", st1)
-			time.Sleep(500 * time.Microsecond)
+			time.Sleep(500 * time.Millisecond)
 			client.WriteSingleCoil(key, 0)
 			st2, _ := client.ReadCoils(key, 1)
 			t.Log("ReadCoils==> ", st2)
-			time.Sleep(500 * time.Microsecond)
+			time.Sleep(500 * time.Millisecond)
 
 		}
 
