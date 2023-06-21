@@ -115,8 +115,10 @@ func DeleteDevice(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 	}
 	old := e.GetDevice(uuid)
 	if old != nil {
-		old.Device.Stop()
-		old.Device.Details().State = typex.DEV_STOP
+		if old.Device.Status() == typex.DEV_UP {
+			old.Device.Details().State = typex.DEV_STOP
+			old.Device.Stop()
+		}
 	}
 	e.RemoveDevice(uuid)
 	c.JSON(HTTP_OK, Ok())

@@ -28,7 +28,10 @@ func (hh *HttpApiServer) LoadNewestInEnd(uuid string) error {
 	// 所有的更新都先停止资源,然后再加载
 	old := hh.ruleEngine.GetInEnd(uuid)
 	if old != nil {
-		old.Source.Stop()
+		if old.Source.Status() == typex.SOURCE_UP {
+			old.Source.Details().State = typex.SOURCE_STOP
+			old.Source.Stop()
+		}
 	}
 	hh.ruleEngine.RemoveInEnd(uuid)
 	in := typex.NewInEnd(typex.InEndType(mInEnd.Type),

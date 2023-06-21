@@ -163,15 +163,12 @@ func (tc *iothub) Start(cctx typex.CCTX) error {
 		glogger.GLogger.Info("Connect iothub with Direct Connect Mode")
 	}
 	var connectHandler mqtt.OnConnectHandler = func(client mqtt.Client) {
-		tc.subscribe(tc.PropertyDownTopic)
-		tc.subscribe(tc.ActionDownTopic)
-		tc.status = typex.SOURCE_UP
-		glogger.GLogger.Infof("iothub IOTHUB Connected Success")
+		glogger.GLogger.Infof("IOTHUB Connected Success")
 
 	}
 
 	var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err error) {
-		glogger.GLogger.Warnf("iothub IOTHUB Disconnect: %v, %v try to reconnect", err, tc.status)
+		glogger.GLogger.Warnf("IOTHUB Disconnect: %v, %v try to reconnect", err, tc.status)
 	}
 
 	opts := mqtt.NewClientOptions()
@@ -184,13 +181,25 @@ func (tc *iothub) Start(cctx typex.CCTX) error {
 	opts.SetCleanSession(true)
 	opts.SetPingTimeout(30 * time.Second)
 	opts.SetKeepAlive(60 * time.Second)
-	opts.SetConnectTimeout(30 * time.Second)
+	opts.SetConnectTimeout(5 * time.Second)
 	opts.SetAutoReconnect(false)
 	opts.SetMaxReconnectInterval(0)
 	tc.client = mqtt.NewClient(opts)
 	if token := tc.client.Connect(); token.Wait() && token.Error() != nil {
 		return token.Error()
 	}
+	if err := tc.subscribe(tc.PropertyDownTopic); err != nil {
+		return err
+	}
+	if err := tc.subscribe(tc.ActionDownTopic); err != nil {
+		return err
+	}
+	if tc.mainConfig.Mode == "GW" {
+		if err := tc.subscribe(tc.TopologyTopicDown); err != nil {
+			return err
+		}
+	}
+	tc.status = typex.SOURCE_UP
 	return nil
 
 }
@@ -294,7 +303,7 @@ func (*iothub) UpStream([]byte) (int, error) {
 	return 0, nil
 }
 
-func (tc *iothub) subscribe(topic string) {
+func (tc *iothub) subscribe(topic string) error {
 	token := tc.client.Subscribe(topic, 1, func(c mqtt.Client, msg mqtt.Message) {
 		// 所有的消息都给丢进规则引擎里面, 交给用户的lua脚本来处理
 		work, err := tc.RuleEngine.WorkInEnd(tc.RuleEngine.GetInEnd(tc.PointId), string(msg.Payload()))
@@ -304,8 +313,10 @@ func (tc *iothub) subscribe(topic string) {
 	})
 	if token.Error() != nil {
 		glogger.GLogger.Error(token.Error())
+		return token.Error()
 	} else {
 		glogger.GLogger.Info("topic:", topic, " subscribed")
+		return nil
 	}
 
 }

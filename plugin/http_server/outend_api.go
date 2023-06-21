@@ -94,8 +94,10 @@ func DeleteOutEnd(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 	}
 	old := e.GetOutEnd(uuid)
 	if old != nil {
-		old.Target.Stop()
-		old.Target.Details().State = typex.SOURCE_STOP
+		if old.Target.Status() == typex.SOURCE_UP {
+			old.Target.Details().State = typex.SOURCE_STOP
+			old.Target.Stop()
+		}
 	}
 	e.RemoveOutEnd(uuid)
 	c.JSON(HTTP_OK, Ok())
