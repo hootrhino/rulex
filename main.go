@@ -34,7 +34,8 @@ func init() {
 		panic(err)
 	}
 	typex.DefaultVersion.Dist = dist
-	typex.DefaultVersion.Arch = runtime.GOOS + "-" + runtime.GOARCH
+	arch := fmt.Sprintf("%s-%s-%s", runtime.GOOS, typex.DefaultVersion.Dist, runtime.GOARCH)
+	typex.DefaultVersion.Arch = arch
 }
 
 /*
