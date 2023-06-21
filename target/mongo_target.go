@@ -1,6 +1,7 @@
 package target
 
 import (
+	"context"
 	"time"
 
 	"github.com/hootrhino/rulex/common"
@@ -57,7 +58,9 @@ func (m *mongoTarget) Start(cctx typex.CCTX) error {
 
 func (m *mongoTarget) Test(outEndId string) bool {
 	if m.client != nil {
-		if err1 := m.client.Ping(m.Ctx, nil); err1 != nil {
+		ctx, cancel := context.WithTimeout(m.Ctx, time.Second*2)
+		defer cancel()
+		if err1 := m.client.Ping(ctx, nil); err1 != nil {
 			return false
 		} else {
 			return true
@@ -81,8 +84,10 @@ func (m *mongoTarget) Pause() {
 
 func (m *mongoTarget) Status() typex.SourceState {
 	if m.client != nil {
-		if err := m.client.Ping(m.Ctx, nil); err != nil {
-			glogger.GLogger.Error(err)
+		ctx, cancel := context.WithTimeout(m.Ctx, time.Second*2)
+		defer cancel()
+		if err1 := m.client.Ping(ctx, nil); err1 != nil {
+			glogger.GLogger.Error(err1)
 			return typex.SOURCE_DOWN
 		}
 	}
