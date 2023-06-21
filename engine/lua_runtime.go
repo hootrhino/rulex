@@ -105,6 +105,9 @@ func LoadBuildInLuaLib(e typex.RuleX, r *typex.Rule) {
 	// 树莓派4B
 	r.AddLib(e, "raspi4b", "GPIOGet", rulexlib.RASPI4_GPIOGet(e))
 	r.AddLib(e, "raspi4b", "GPIOSet", rulexlib.RASPI4_GPIOSet(e))
+	// 玩客云WS1508
+	r.AddLib(e, "ws1608", "GPIOGet", rulexlib.WKYWS1608_GPIOGet(e))
+	r.AddLib(e, "ws1608", "GPIOSet", rulexlib.WKYWS1608_GPIOSet(e))
 	//------------------------------------------------------------------------
 	// AI BASE
 	//------------------------------------------------------------------------

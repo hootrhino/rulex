@@ -178,6 +178,9 @@ func LoadAppLib(app *typex.Application, e typex.RuleX) {
 	// 树莓派4B
 	addAppLib(app, e, "raspi4b", "GPIOGet", rulexlib.RASPI4_GPIOGet(e))
 	addAppLib(app, e, "raspi4b", "GPIOSet", rulexlib.RASPI4_GPIOSet(e))
+	// 玩客云WS1508
+	addAppLib(app, e, "ws1608", "GPIOGet", rulexlib.WKYWS1608_GPIOGet(e))
+	addAppLib(app, e, "ws1608", "GPIOSet", rulexlib.WKYWS1608_GPIOSet(e))
 	//------------------------------------------------------------------------
 	// 校验数据
 	//------------------------------------------------------------------------

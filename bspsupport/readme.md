@@ -22,10 +22,11 @@ ARCHSUPPORT=EEKITH3 rulex run
 
 ## 支持硬件列表
 
-| 硬件名          | 环境参数 | 示例                              |
-| --------------- | -------- | --------------------------------- |
+| 硬件名          | 环境参数 | 示例                            |
+| --------------- | -------- | ------------------------------- |
 | EEKITH3版本网关 | EEKITH3  | `ARCHSUPPORT=EEKITH3 rulex run` |
-| 树树莓派4B、4B+ | RPI4     | `ARCHSUPPORT=RPI4B rulex run`   |
+| 树莓派4B、4B+   | RPI4     | `ARCHSUPPORT=RPI4B rulex run`   |
+| 玩客云S805      | WKYS805  | `ARCHSUPPORT=WKYS805 rulex run` |
 
 > 警告: 这些属于板级高级功能，和硬件架构以及外设有关，默认关闭。 如果你自己需要定制，最好针对自己的硬件进行跨平台适配, 如果没有指定平台，可能会导致预料之外的结果。
 
@@ -52,3 +53,29 @@ ARCHSUPPORT=EEKITH3 rulex run
    | 参数名 | 类型 | 说明     |
    | ------ | ---- | -------- |
    | Pin    | int  | GPIO引脚 |
+
+## 示例脚本
+1. 玩客云WS1608
+```lua
+function Main(arg)
+    while true do
+        ws1608:GPIOSet("red", 1)
+        applib:Sleep(2000)
+        ws1608:GPIOSet("red", 0)
+        applib:Sleep(2000)
+    end
+end
+
+```
+2. EEKIT 网关
+```lua
+function Main(arg)
+    while true do
+        eekit:GPIOSet(6, 1)
+        applib:Sleep(2000)
+        eekit:GPIOSet(7, 0)
+        applib:Sleep(2000)
+    end
+end
+
+```
