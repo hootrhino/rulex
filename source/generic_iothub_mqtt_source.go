@@ -164,6 +164,17 @@ func (tc *iothub) Start(cctx typex.CCTX) error {
 	}
 	var connectHandler mqtt.OnConnectHandler = func(client mqtt.Client) {
 		glogger.GLogger.Infof("IOTHUB Connected Success")
+		if err := tc.subscribe(tc.PropertyDownTopic); err != nil {
+			glogger.GLogger.Error(err)
+		}
+		if err := tc.subscribe(tc.ActionDownTopic); err != nil {
+			glogger.GLogger.Error(err)
+		}
+		if tc.mainConfig.Mode == "GW" {
+			if err := tc.subscribe(tc.TopologyTopicDown); err != nil {
+				glogger.GLogger.Error(err)
+			}
+		}
 
 	}
 
@@ -188,17 +199,7 @@ func (tc *iothub) Start(cctx typex.CCTX) error {
 	if token := tc.client.Connect(); token.Wait() && token.Error() != nil {
 		return token.Error()
 	}
-	if err := tc.subscribe(tc.PropertyDownTopic); err != nil {
-		return err
-	}
-	if err := tc.subscribe(tc.ActionDownTopic); err != nil {
-		return err
-	}
-	if tc.mainConfig.Mode == "GW" {
-		if err := tc.subscribe(tc.TopologyTopicDown); err != nil {
-			return err
-		}
-	}
+
 	tc.status = typex.SOURCE_UP
 	return nil
 
