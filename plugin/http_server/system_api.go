@@ -80,7 +80,7 @@ func source_count(e typex.RuleX) map[string]int {
 *
  */
 func System(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
-	cpuPercent, _ := cpu.Percent(time.Duration(3)*time.Second, true)
+	cpuPercent, _ := cpu.Percent(time.Duration(1)*time.Second, true)
 	diskInfo, _ := disk.Usage("/")
 	// For info on each, see: https://golang.org/pkg/runtime/#MemStats
 	var m runtime.MemStats
