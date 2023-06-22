@@ -13,14 +13,14 @@ import (
 * 列表先读数据库，然后读内存，合并状态后输出
 *
  */
-func DeviceDetail(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
+func DeviceDetail(c *gin.Context, hs *HttpApiServer) {
 	uuid, _ := c.GetQuery("uuid")
 	mdev, err := hs.GetDeviceWithUUID(uuid)
 	if err != nil {
 		c.JSON(HTTP_OK, Error400(err))
 		return
 	}
-	device := e.GetDevice(mdev.UUID)
+	device := hs.ruleEngine.GetDevice(mdev.UUID)
 	if device == nil {
 		// 如果内存里面没有就给安排一个死设备
 		tDevice := new(typex.Device)
@@ -37,12 +37,12 @@ func DeviceDetail(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 	device.State = device.Device.Status()
 	c.JSON(HTTP_OK, OkWithData(device))
 }
-func Devices(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
+func Devices(c *gin.Context, hs *HttpApiServer) {
 	uuid, _ := c.GetQuery("uuid")
 	if uuid == "" {
 		devices := []*typex.Device{}
 		for _, mdev := range hs.AllDevices() {
-			device := e.GetDevice(mdev.UUID)
+			device := hs.ruleEngine.GetDevice(mdev.UUID)
 			if device == nil {
 				tDevice := new(typex.Device)
 				tDevice.UUID = mdev.UUID
@@ -67,7 +67,7 @@ func Devices(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 		c.JSON(HTTP_OK, Error400(err))
 		return
 	}
-	device := e.GetDevice(mdev.UUID)
+	device := hs.ruleEngine.GetDevice(mdev.UUID)
 	if device == nil {
 		// 如果内存里面没有就给安排一个死设备
 		tDevice := new(typex.Device)
@@ -86,7 +86,7 @@ func Devices(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 }
 
 // 删除设备
-func DeleteDevice(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
+func DeleteDevice(c *gin.Context, hs *HttpApiServer) {
 	uuid, _ := c.GetQuery("uuid")
 	Mdev, err := hs.GetDeviceWithUUID(uuid)
 	if err != nil {
@@ -113,20 +113,20 @@ func DeleteDevice(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 		c.JSON(HTTP_OK, Error400(err))
 		return
 	}
-	old := e.GetDevice(uuid)
+	old := hs.ruleEngine.GetDevice(uuid)
 	if old != nil {
 		if old.Device.Status() == typex.DEV_UP {
 			old.Device.Details().State = typex.DEV_STOP
 			old.Device.Stop()
 		}
 	}
-	e.RemoveDevice(uuid)
+	hs.ruleEngine.RemoveDevice(uuid)
 	c.JSON(HTTP_OK, Ok())
 
 }
 
 // 创建设备
-func CreateDevice(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
+func CreateDevice(c *gin.Context, hs *HttpApiServer) {
 	type Form struct {
 		UUID         string                 `json:"uuid"`
 		Name         string                 `json:"name"`
@@ -166,7 +166,7 @@ func CreateDevice(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 }
 
 // 更新设备
-func UpdateDevice(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
+func UpdateDevice(c *gin.Context, hs *HttpApiServer) {
 	type Form struct {
 		UUID        string                 `json:"uuid"`
 		Name        string                 `json:"name"`

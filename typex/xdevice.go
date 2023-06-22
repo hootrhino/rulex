@@ -21,6 +21,20 @@ const (
 	DEV_DOWN DeviceState = 2
 )
 
+func (s DeviceState) String() string {
+	if s == 2 {
+		return "DOWN"
+	}
+	if s == 1 {
+		return "UP"
+	}
+	if s == 0 {
+		return "STOP"
+	}
+	return "UnKnown State"
+
+}
+
 type DeviceType string
 
 // 支持的设备类型

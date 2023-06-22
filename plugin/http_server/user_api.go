@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/hootrhino/rulex/typex"
-
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 )
@@ -23,10 +21,10 @@ type user struct {
 	Description string `json:"description"`
 }
 
-func UserDetail(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
-	Info(c, hh, e)
+func UserDetail(c *gin.Context, hh *HttpApiServer) {
+	Info(c, hh)
 }
-func Users(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+func Users(c *gin.Context, hh *HttpApiServer) {
 	users := []user{}
 	for _, u := range hh.AllMUser() {
 		users = append(users, user{
@@ -39,7 +37,7 @@ func Users(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 }
 
 // CreateUser
-func CreateUser(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+func CreateUser(c *gin.Context, hh *HttpApiServer) {
 	type Form struct {
 		Role        string `json:"role" binding:"required"`
 		Username    string `json:"username" binding:"required"`
@@ -78,7 +76,7 @@ func md5Hash(str string) string {
 
 // Login
 // TODO: 下个版本实现用户基础管理
-func Login(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+func Login(c *gin.Context, hh *HttpApiServer) {
 	type _user struct {
 		Username string `json:"username" binding:"required"`
 		Password string `json:"password" binding:"required"`
@@ -105,7 +103,7 @@ func Login(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 * 日志管理
 *
  */
-func Logs(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+func Logs(c *gin.Context, hh *HttpApiServer) {
 	type Data struct {
 		Id      int    `json:"id" binding:"required"`
 		Content string `json:"content" binding:"required"`
@@ -115,7 +113,7 @@ func Logs(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	c.JSON(HTTP_OK, OkWithData(logs))
 }
 
-func LogOut(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+func LogOut(c *gin.Context, hh *HttpApiServer) {
 	c.JSON(HTTP_OK, Ok())
 }
 
@@ -124,7 +122,7 @@ func LogOut(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 * TODO：用户信息, 当前版本写死 下个版本实现数据库查找
 *
  */
-func Info(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+func Info(c *gin.Context, hh *HttpApiServer) {
 	token := c.GetHeader("token")
 	if claims, err := parseToken(token); err != nil {
 		c.JSON(HTTP_OK, Error400(err))

@@ -29,8 +29,47 @@ type web_data_app struct {
 	Description string `json:"description"`
 }
 
+/*
+*
+* APP 详情
+*
+ */
+func AppDetail(c *gin.Context, hs *HttpApiServer) {
+	uuid, _ := c.GetQuery("uuid")
+	// uuid
+	appInfo, err1 := hs.GetAppWithUUID(uuid)
+	if err1 != nil {
+		c.JSON(HTTP_OK, Error400(err1))
+		return
+	}
+	web_data := web_data_app{
+		UUID:      appInfo.UUID,
+		Name:      appInfo.Name,
+		Version:   appInfo.Version,
+		AutoStart: *appInfo.AutoStart,
+		Type:      "lua",
+		AppState: func() int {
+			if a := hs.ruleEngine.GetApp(appInfo.UUID); a != nil {
+				return int(a.AppState)
+			}
+			return 0
+		}(),
+		Filepath:    appInfo.Filepath,
+		Description: appInfo.Description,
+		LuaSource: func() string {
+			path := "./apps/" + appInfo.UUID + ".lua"
+			bytes, err := os.ReadFile(path)
+			if err != nil {
+				return err.Error()
+			}
+			return string(bytes)
+		}(),
+	}
+	c.JSON(HTTP_OK, OkWithData(web_data))
+}
+
 // 列表
-func Apps(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
+func Apps(c *gin.Context, hs *HttpApiServer) {
 	uuid, _ := c.GetQuery("uuid")
 	// 从配置拿App
 	if uuid == "" {
@@ -43,7 +82,7 @@ func Apps(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 				AutoStart: *app.AutoStart,
 				Type:      "lua",
 				AppState: func() int {
-					if a := e.GetApp(app.UUID); a != nil {
+					if a := hs.ruleEngine.GetApp(app.UUID); a != nil {
 						return int(a.AppState)
 					}
 					return 0
@@ -69,7 +108,7 @@ func Apps(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 		AutoStart: *appInfo.AutoStart,
 		Type:      "lua",
 		AppState: func() int {
-			if a := e.GetApp(appInfo.UUID); a != nil {
+			if a := hs.ruleEngine.GetApp(appInfo.UUID); a != nil {
 				return int(a.AppState)
 			}
 			return 0
@@ -115,7 +154,7 @@ function Main(arg)
 end
 `
 
-func CreateApp(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
+func CreateApp(c *gin.Context, hs *HttpApiServer) {
 	type Form struct {
 		Name        string `json:"name"`        // 名称
 		Version     string `json:"version"`     // 版本号
@@ -166,7 +205,7 @@ func CreateApp(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 		return
 	}
 	// 立即加载
-	if err := e.LoadApp(typex.NewApplication(
+	if err := hs.ruleEngine.LoadApp(typex.NewApplication(
 		newUUID, form.Name, form.Version, path)); err != nil {
 		glogger.GLogger.Error("app Load failed:", err)
 		c.JSON(HTTP_OK, Error400(err))
@@ -175,7 +214,7 @@ func CreateApp(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 	// 自启动立即运行
 	if form.AutoStart {
 		glogger.GLogger.Debugf("app autoStart allowed:%s-%s-%s", newUUID, form.Version, form.Name)
-		if err2 := e.StartApp(newUUID); err2 != nil {
+		if err2 := hs.ruleEngine.StartApp(newUUID); err2 != nil {
 			glogger.GLogger.Error("app autoStart failed:", err2)
 		}
 	}
@@ -187,7 +226,7 @@ func CreateApp(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 * Update app
 *
  */
-func UpdateApp(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
+func UpdateApp(c *gin.Context, hs *HttpApiServer) {
 	type Form struct {
 		UUID        string `json:"uuid"`        // uuid
 		Name        string `json:"name"`        // 名称
@@ -232,24 +271,24 @@ func UpdateApp(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 		return
 	}
 	// 如果内存里面有, 先把内存里的清理了
-	if app := e.GetApp(form.UUID); app != nil {
+	if app := hs.ruleEngine.GetApp(form.UUID); app != nil {
 		glogger.GLogger.Debug("Already loaded, will try to stop:", form.UUID)
 		// 已经启动了就不能再启动
 		if app.AppState == 1 {
-			e.StopApp(form.UUID)
+			hs.ruleEngine.StopApp(form.UUID)
 		}
-		e.RemoveApp(app.UUID)
+		hs.ruleEngine.RemoveApp(app.UUID)
 	}
 	//
 	if form.AutoStart {
 		glogger.GLogger.Debugf("app autoStart allowed:%s-%s-%s", form.UUID, form.Version, form.Name)
 		// 必须先load后start
-		if err := e.LoadApp(typex.NewApplication(
+		if err := hs.ruleEngine.LoadApp(typex.NewApplication(
 			form.UUID, form.Name, form.Version, path)); err != nil {
 			c.JSON(HTTP_OK, Error400(err))
 			return
 		}
-		if err2 := e.StartApp(form.UUID); err2 != nil {
+		if err2 := hs.ruleEngine.StartApp(form.UUID); err2 != nil {
 			glogger.GLogger.Error("app autoStart failed:", err2)
 			c.JSON(HTTP_OK, Error400(err2))
 			return
@@ -264,7 +303,7 @@ func UpdateApp(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 * 1 停止了的, 就需要重启一下
 * 2 还未被加载进来的（刚新建），先load后start
  */
-func StartApp(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
+func StartApp(c *gin.Context, hs *HttpApiServer) {
 	uuid, _ := c.GetQuery("uuid")
 	// 检查数据库
 	mApp, err := hs.GetAppWithUUID(uuid)
@@ -273,14 +312,14 @@ func StartApp(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 		return
 	}
 	// 如果内存里面有, 判断状态
-	if app := e.GetApp(uuid); app != nil {
+	if app := hs.ruleEngine.GetApp(uuid); app != nil {
 		glogger.GLogger.Debug("Already loaded, will try to start:", uuid)
 		// 已经启动了就不能再启动
 		if app.AppState == 1 {
 			c.JSON(HTTP_OK, Error400(fmt.Errorf("app is running now:%s", uuid)))
 		}
 		if app.AppState == 0 {
-			if err := e.StartApp(uuid); err != nil {
+			if err := hs.ruleEngine.StartApp(uuid); err != nil {
 				c.JSON(HTTP_OK, Error400(err))
 			} else {
 				c.JSON(HTTP_OK, OkWithData("app start successfully:"+uuid))
@@ -290,13 +329,13 @@ func StartApp(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 	}
 	// 如果内存里面没有，尝试从配置加载
 	glogger.GLogger.Debug("No loaded, will try to load:", uuid)
-	if err := e.LoadApp(typex.NewApplication(
+	if err := hs.ruleEngine.LoadApp(typex.NewApplication(
 		mApp.UUID, mApp.Name, mApp.Version, mApp.Filepath)); err != nil {
 		c.JSON(HTTP_OK, Error400(err))
 		return
 	}
 	glogger.GLogger.Debug("app loaded, will try to start:", uuid)
-	if err := e.StartApp(uuid); err != nil {
+	if err := hs.ruleEngine.StartApp(uuid); err != nil {
 		c.JSON(HTTP_OK, Error400(err))
 		return
 	}
@@ -304,15 +343,15 @@ func StartApp(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 }
 
 // 停止, 但是不删除，仅仅是把虚拟机进程给杀死
-func StopApp(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
+func StopApp(c *gin.Context, hs *HttpApiServer) {
 	uuid, _ := c.GetQuery("uuid")
-	if app := e.GetApp(uuid); app != nil {
+	if app := hs.ruleEngine.GetApp(uuid); app != nil {
 		if app.AppState == 0 {
 			c.JSON(HTTP_OK, Error400(fmt.Errorf("app is stopping now:%s", uuid)))
 			return
 		}
 		if app.AppState == 1 {
-			if err := e.StopApp(uuid); err != nil {
+			if err := hs.ruleEngine.StopApp(uuid); err != nil {
 				c.JSON(HTTP_OK, OkWithData(err))
 				return
 			}
@@ -324,14 +363,14 @@ func StopApp(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 }
 
 // 删除
-func RemoveApp(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
+func RemoveApp(c *gin.Context, hs *HttpApiServer) {
 	uuid, _ := c.GetQuery("uuid")
 	// 先把正在运行的给停了
-	if app := e.GetApp(uuid); app != nil {
+	if app := hs.ruleEngine.GetApp(uuid); app != nil {
 		app.Remove()
 	}
 	// 内存给清理了
-	if err := e.RemoveApp(uuid); err != nil {
+	if err := hs.ruleEngine.RemoveApp(uuid); err != nil {
 		c.JSON(HTTP_OK, Error400(err))
 		return
 	}

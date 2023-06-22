@@ -12,18 +12,18 @@ import (
 * Goods
 *
  */
-func Goods(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+func Goods(c *gin.Context, hh *HttpApiServer) {
 	uuid, _ := c.GetQuery("uuid")
 	if uuid == "" {
 		data := []*typex.Goods{}
-		e.AllGoods().Range(func(key, value interface{}) bool {
+		hh.ruleEngine.AllGoods().Range(func(key, value interface{}) bool {
 			v := value.(*typex.Goods)
 			data = append(data, v)
 			return true
 		})
 		c.JSON(HTTP_OK, OkWithData(data))
 	} else {
-		c.JSON(HTTP_OK, OkWithData(e.GetGoods(uuid)))
+		c.JSON(HTTP_OK, OkWithData(hh.ruleEngine.GetGoods(uuid)))
 	}
 }
 
@@ -32,7 +32,7 @@ func Goods(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 * 删除外挂
 *
  */
-func DeleteGoods(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+func DeleteGoods(c *gin.Context, hh *HttpApiServer) {
 	uuid, _ := c.GetQuery("uuid")
 	goods, err := hh.GetGoodsWithUUID(uuid)
 	if err != nil {
@@ -40,7 +40,7 @@ func DeleteGoods(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	} else {
 		// 数据库和内存都要删除
 		hh.DeleteGoods(goods.UUID)
-		e.RemoveGoods(goods.UUID)
+		hh.ruleEngine.RemoveGoods(goods.UUID)
 		c.JSON(HTTP_OK, Ok())
 	}
 }
@@ -50,7 +50,7 @@ func DeleteGoods(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 * CreateGood
 *
  */
-func CreateGoods(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+func CreateGoods(c *gin.Context, hh *HttpApiServer) {
 	type Form struct {
 		Addr        string   `json:"addr" binding:"required"` // TCP or Unix Socket
 		Description string   `json:"description"`             // Description text
@@ -78,7 +78,7 @@ func CreateGoods(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		Description: mGoods.Description,
 		Args:        mGoods.Args,
 	}
-	if err := e.LoadGoods(goods); err != nil {
+	if err := hh.ruleEngine.LoadGoods(goods); err != nil {
 		c.JSON(HTTP_OK, Error400(err))
 		return
 	}
@@ -90,6 +90,6 @@ func CreateGoods(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 * 更新操作
 *
  */
-func UpdateGoods(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+func UpdateGoods(c *gin.Context, hh *HttpApiServer) {
 	c.JSON(HTTP_OK, Error("暂不支持更新"))
 }
