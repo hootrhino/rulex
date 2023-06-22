@@ -35,7 +35,6 @@ type RuleX interface {
 	// 消息推到队列
 	//
 	PushQueue(QueueData) error
-	PushDebugQueue(QueueData) error
 	PushInQueue(in *InEnd, data string) error
 	PushOutQueue(out *OutEnd, data string) error
 	PushDeviceQueue(device *Device, data string) error
