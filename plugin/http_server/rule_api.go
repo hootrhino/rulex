@@ -24,7 +24,7 @@ type ruleVo struct {
 	Failed      string   `json:"failed"`
 }
 
-func RuleDetail(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+func RuleDetail(c *gin.Context, hh *HttpApiServer) {
 	uuid, _ := c.GetQuery("uuid")
 	rule, err := hh.GetMRuleWithUUID(uuid)
 	if err != nil {
@@ -47,7 +47,7 @@ func RuleDetail(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 }
 
 // Get all rules
-func Rules(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+func Rules(c *gin.Context, hh *HttpApiServer) {
 	uuid, _ := c.GetQuery("uuid")
 	if uuid == "" {
 		DataList := []ruleVo{}
@@ -91,7 +91,7 @@ func Rules(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 }
 
 // Create rule
-func CreateRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+func CreateRule(c *gin.Context, hh *HttpApiServer) {
 	type Form struct {
 		FromSource  []string `json:"fromSource" binding:"required"`
 		FromDevice  []string `json:"fromDevice" binding:"required"`
@@ -173,8 +173,8 @@ func CreateRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 			mRule.Success,
 			mRule.Actions,
 			mRule.Failed)
-		e.RemoveRule(rule.UUID)
-		if err := e.LoadRule(rule); err != nil {
+		hh.ruleEngine.RemoveRule(rule.UUID)
+		if err := hh.ruleEngine.LoadRule(rule); err != nil {
 			c.JSON(HTTP_OK, Error400(err))
 			return
 		}
@@ -263,7 +263,7 @@ func CreateRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 * Update
 *
  */
-func UpdateRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+func UpdateRule(c *gin.Context, hh *HttpApiServer) {
 	type Form struct {
 		UUID        string   `json:"uuid" binding:"required"` // 如果空串就是新建，非空就是更新
 		FromSource  []string `json:"fromSource" binding:"required"`
@@ -290,7 +290,7 @@ func UpdateRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	lenDevices := len(form.FromDevice)
 	if lenSources > 0 {
 		for _, id := range form.FromSource {
-			in := e.GetInEnd(id)
+			in := hh.ruleEngine.GetInEnd(id)
 			if in == nil {
 				c.JSON(HTTP_OK, Error(`inend not exists: `+id))
 				return
@@ -300,7 +300,7 @@ func UpdateRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 
 	if lenDevices > 0 {
 		for _, id := range form.FromDevice {
-			in := e.GetDevice(id)
+			in := hh.ruleEngine.GetDevice(id)
 			if in == nil {
 				c.JSON(HTTP_OK, Error(`device not exists: `+id))
 				return
@@ -339,8 +339,8 @@ func UpdateRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 			mRule.Success,
 			mRule.Actions,
 			mRule.Failed)
-		e.RemoveRule(rule.UUID)
-		if err := e.LoadRule(rule); err != nil {
+		hh.ruleEngine.RemoveRule(rule.UUID)
+		if err := hh.ruleEngine.LoadRule(rule); err != nil {
 			c.JSON(HTTP_OK, Error400(err))
 			return
 		}
@@ -438,7 +438,7 @@ func UpdateRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 }
 
 // Delete rule by UUID
-func DeleteRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+func DeleteRule(c *gin.Context, hh *HttpApiServer) {
 	uuid, _ := c.GetQuery("uuid")
 	mRule, err0 := hh.GetMRule(uuid)
 	if err0 != nil {
@@ -508,7 +508,7 @@ func DeleteRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		c.JSON(HTTP_OK, Error400(err))
 		return
 	}
-	e.RemoveRule(uuid)
+	hh.ruleEngine.RemoveRule(uuid)
 	c.JSON(HTTP_OK, Ok())
 }
 
@@ -517,7 +517,7 @@ func DeleteRule(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 * 验证lua语法
 *
  */
-func ValidateLuaSyntax(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+func ValidateLuaSyntax(c *gin.Context, hh *HttpApiServer) {
 	type Form struct {
 		FromSource []string `json:"fromSource" binding:"required"`
 		FromDevice []string `json:"fromDevice" binding:"required"`
@@ -553,7 +553,7 @@ func ValidateLuaSyntax(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 * 测试脚本执行效果
 *
  */
-func TestSourceCallback(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+func TestSourceCallback(c *gin.Context, hh *HttpApiServer) {
 	uuid, _ := c.GetQuery("uuid") // InEnd
 	data, _ := c.GetQuery("data") // Data
 	_, err0 := hh.GetMRule(uuid)
@@ -561,12 +561,12 @@ func TestSourceCallback(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		c.JSON(HTTP_OK, Error400(err0))
 		return
 	}
-	value, ok := e.AllInEnd().Load(uuid)
+	value, ok := hh.ruleEngine.AllInEnd().Load(uuid)
 	if !ok {
 		c.JSON(HTTP_OK, Error(fmt.Sprintf("'InEnd' not exists: %v", uuid)))
 		return
 	}
-	_, err1 := e.WorkInEnd((value).(*typex.InEnd), data)
+	_, err1 := hh.ruleEngine.WorkInEnd((value).(*typex.InEnd), data)
 	if err1 != nil {
 		c.JSON(HTTP_OK, Error400(err1))
 		return
@@ -579,7 +579,7 @@ func TestSourceCallback(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 * 测试 OutEnd 的结果
 *
  */
-func TestOutEndCallback(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+func TestOutEndCallback(c *gin.Context, hh *HttpApiServer) {
 	uuid, _ := c.GetQuery("uuid") // OutEnd
 	data, _ := c.GetQuery("data") // Data
 	_, err0 := hh.GetMRule(uuid)
@@ -587,12 +587,12 @@ func TestOutEndCallback(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		c.JSON(HTTP_OK, Error400(err0))
 		return
 	}
-	value, ok := e.AllOutEnd().Load(uuid)
+	value, ok := hh.ruleEngine.AllOutEnd().Load(uuid)
 	if !ok {
 		c.JSON(HTTP_OK, Error((fmt.Sprintf("'OutEnd' not exists: %v", uuid))))
 		return
 	}
-	c.JSON(HTTP_OK, OkWithData(e.PushOutQueue((value).(*typex.OutEnd), data)))
+	c.JSON(HTTP_OK, OkWithData(hh.ruleEngine.PushOutQueue((value).(*typex.OutEnd), data)))
 }
 
 /*
@@ -600,7 +600,7 @@ func TestOutEndCallback(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 * 测试 Device 的结果
 *
  */
-func TestDeviceCallback(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+func TestDeviceCallback(c *gin.Context, hh *HttpApiServer) {
 	uuid, _ := c.GetQuery("uuid") // Device
 	data, _ := c.GetQuery("data") // Data, Read or write
 	_, err0 := hh.GetMRule(uuid)
@@ -608,10 +608,10 @@ func TestDeviceCallback(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		c.JSON(HTTP_OK, Error400(err0))
 		return
 	}
-	value, ok := e.AllDevices().Load(uuid)
+	value, ok := hh.ruleEngine.AllDevices().Load(uuid)
 	if !ok {
 		c.JSON(HTTP_OK, Error((fmt.Sprintf("'Device' not exists: %v", uuid))))
 		return
 	}
-	c.JSON(HTTP_OK, OkWithData(e.PushDeviceQueue((value).(*typex.Device), data)))
+	c.JSON(HTTP_OK, OkWithData(hh.ruleEngine.PushDeviceQueue((value).(*typex.Device), data)))
 }

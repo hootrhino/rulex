@@ -8,12 +8,12 @@ import (
 	"gopkg.in/square/go-jose.v2/json"
 )
 
-func OutEnds(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
+func OutEnds(c *gin.Context, hh *HttpApiServer) {
 	uuid, _ := c.GetQuery("uuid")
 	if uuid == "" {
 		outends := []typex.OutEnd{}
-		for _, mOut := range hs.AllMOutEnd() {
-			outEnd := e.GetOutEnd(mOut.UUID)
+		for _, mOut := range hh.AllMOutEnd() {
+			outEnd := hh.ruleEngine.GetOutEnd(mOut.UUID)
 			if outEnd == nil {
 				tOut := typex.OutEnd{}
 				tOut.UUID = mOut.UUID
@@ -32,12 +32,12 @@ func OutEnds(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 		c.JSON(HTTP_OK, OkWithData(outends))
 		return
 	}
-	mOut, err := hs.GetMOutEndWithUUID(uuid)
+	mOut, err := hh.GetMOutEndWithUUID(uuid)
 	if err != nil {
 		c.JSON(HTTP_OK, Error400(err))
 		return
 	}
-	outEnd := e.GetOutEnd(mOut.UUID)
+	outEnd := hh.ruleEngine.GetOutEnd(mOut.UUID)
 	if outEnd == nil {
 		// 如果内存里面没有就给安排一个死设备
 		tOut := typex.OutEnd{}
@@ -55,14 +55,14 @@ func OutEnds(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 }
 
 // Get all outends
-func OutEndDetail(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
+func OutEndDetail(c *gin.Context, hs *HttpApiServer) {
 	uuid, _ := c.GetQuery("uuid")
 	mOut, err := hs.GetMOutEndWithUUID(uuid)
 	if err != nil {
 		c.JSON(HTTP_OK, Error400(err))
 		return
 	}
-	outEnd := e.GetOutEnd(mOut.UUID)
+	outEnd := hs.ruleEngine.GetOutEnd(mOut.UUID)
 	if outEnd == nil {
 		// 如果内存里面没有就给安排一个死设备
 		tOutEnd := new(typex.OutEnd)
@@ -80,7 +80,7 @@ func OutEndDetail(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 }
 
 // Delete outEnd by UUID
-func DeleteOutEnd(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
+func DeleteOutEnd(c *gin.Context, hs *HttpApiServer) {
 	uuid, _ := c.GetQuery("uuid")
 	_, err := hs.GetMOutEndWithUUID(uuid)
 	if err != nil {
@@ -92,19 +92,19 @@ func DeleteOutEnd(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 		c.JSON(HTTP_OK, Error400(err))
 		return
 	}
-	old := e.GetOutEnd(uuid)
+	old := hs.ruleEngine.GetOutEnd(uuid)
 	if old != nil {
 		if old.Target.Status() == typex.SOURCE_UP {
 			old.Target.Details().State = typex.SOURCE_STOP
 			old.Target.Stop()
 		}
 	}
-	e.RemoveOutEnd(uuid)
+	hs.ruleEngine.RemoveOutEnd(uuid)
 	c.JSON(HTTP_OK, Ok())
 }
 
 // Create or Update OutEnd
-func CreateOutEnd(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+func CreateOutEnd(c *gin.Context, hh *HttpApiServer) {
 	type Form struct {
 		UUID        string                 `json:"uuid"` // 如果空串就是新建, 非空就是更新
 		Type        string                 `json:"type" binding:"required"`
@@ -143,7 +143,7 @@ func CreateOutEnd(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 }
 
 // 更新
-func UpdateOutEnd(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
+func UpdateOutEnd(c *gin.Context, hs *HttpApiServer) {
 	type Form struct {
 		UUID        string                 `json:"uuid"` // 如果空串就是新建, 非空就是更新
 		Type        string                 `json:"type" binding:"required"`

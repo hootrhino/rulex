@@ -10,6 +10,23 @@ const (
 	SOURCE_STOP  SourceState = 3
 )
 
+func (s SourceState) String() string {
+	if s == 0 {
+		return "DOWN"
+	}
+	if s == 1 {
+		return "UP"
+	}
+	if s == 2 {
+		return "PAUSE"
+	}
+	if s == 3 {
+		return "STOP"
+	}
+	return "UnKnown State"
+
+}
+
 // Abstract driver interface
 type DriverState int
 

@@ -12,7 +12,7 @@ import (
 *
  */
 
-func PluginService(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
+func PluginService(c *gin.Context, hh *HttpApiServer) {
 	type Form struct {
 		UUID string      `json:"uuid" binding:"required"`
 		Name string      `json:"name" binding:"required"`
@@ -23,7 +23,7 @@ func PluginService(c *gin.Context, hs *HttpApiServer, e typex.RuleX) {
 		c.JSON(HTTP_OK, Error400(err))
 		return
 	}
-	plugin, ok := e.AllPlugins().Load(form.UUID)
+	plugin, ok := hh.ruleEngine.AllPlugins().Load(form.UUID)
 	if ok {
 		result := plugin.(typex.XPlugin).Service(typex.ServiceArg{
 			Name: form.Name,

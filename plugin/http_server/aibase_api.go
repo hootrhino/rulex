@@ -1,8 +1,6 @@
 package httpserver
 
 import (
-	"github.com/hootrhino/rulex/typex"
-
 	"github.com/gin-gonic/gin"
 )
 
@@ -11,13 +9,13 @@ import (
 * AiBase
 *
  */
-func AiBase(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+func AiBase(c *gin.Context, hh *HttpApiServer) {
 	uuid, _ := c.GetQuery("uuid")
 	if uuid == "" {
-		c.JSON(HTTP_OK, OkWithData(e.GetAiBase().ListAi()))
+		c.JSON(HTTP_OK, OkWithData(hh.ruleEngine.GetAiBase().ListAi()))
 		return
 	}
-	if ai := e.GetAiBase().GetAi(uuid); ai != nil {
+	if ai := hh.ruleEngine.GetAiBase().GetAi(uuid); ai != nil {
 		c.JSON(HTTP_OK, OkWithData(ai))
 		return
 	}
@@ -29,10 +27,10 @@ func AiBase(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 * 删除
 *
  */
-func DeleteAiBase(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+func DeleteAiBase(c *gin.Context, hh *HttpApiServer) {
 	uuid, _ := c.GetQuery("uuid")
-	if ai := e.GetAiBase().GetAi(uuid); ai != nil {
-		err := e.GetAiBase().RemoveAi(uuid)
+	if ai := hh.ruleEngine.GetAiBase().GetAi(uuid); ai != nil {
+		err := hh.ruleEngine.GetAiBase().RemoveAi(uuid)
 		if err != nil {
 			c.JSON(HTTP_OK, Error400(err))
 			return
@@ -49,7 +47,7 @@ func DeleteAiBase(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 *
  */
 
-func CreateAiBase(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+func CreateAiBase(c *gin.Context, hh *HttpApiServer) {
 	c.JSON(HTTP_OK, Ok())
 }
 
@@ -58,6 +56,6 @@ func CreateAiBase(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 * 更新
 *
  */
-func UpdateAiBase(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+func UpdateAiBase(c *gin.Context, hh *HttpApiServer) {
 	c.JSON(HTTP_OK, Ok())
 }

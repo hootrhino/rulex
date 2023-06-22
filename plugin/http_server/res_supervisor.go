@@ -46,7 +46,7 @@ func (hh *HttpApiServer) StartInSupervisor(ctx context.Context, in *typex.InEnd)
 			go hh.LoadNewestInEnd(UUID)
 			return
 		}
-		glogger.GLogger.Debugf("Supervisor Get Source :%v state:%v", UUID, currentIn.Source.Status())
+		glogger.GLogger.Debugf("Supervisor Get Source :%v state:%v", UUID, currentIn.Source.Status().String())
 		<-ticker.C
 	}
 }
@@ -88,7 +88,7 @@ func (hh *HttpApiServer) StartOutSupervisor(ctx context.Context, out *typex.OutE
 			go hh.LoadNewestOutEnd(UUID)
 			return
 		}
-		glogger.GLogger.Debugf("Supervisor Get OutEnd :%v state:%v", UUID, currentOut.Target.Status())
+		glogger.GLogger.Debugf("Supervisor Get OutEnd :%v state:%v", UUID, currentOut.Target.Status().String())
 		<-ticker.C
 	}
 }
@@ -130,7 +130,7 @@ func (hh *HttpApiServer) StartDeviceSupervisor(ctx context.Context, device *type
 			go hh.LoadNewestDevice(UUID)
 			return
 		}
-		glogger.GLogger.Debugf("Supervisor Get Device :%v state:%v", UUID, currentDevice.Device.Status())
+		glogger.GLogger.Debugf("Supervisor Get Device :%v state:%v", UUID, currentDevice.Device.Status().String())
 		<-ticker.C
 	}
 }
