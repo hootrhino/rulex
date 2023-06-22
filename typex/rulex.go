@@ -20,10 +20,6 @@ type RulexConfig struct {
 	LogLevel              string `ini:"log_level" json:"logLevel"`
 	LogPath               string `ini:"log_path" json:"logPath"`
 	LuaLogPath            string `ini:"lua_log_path" json:"luaLogPath"`
-	RemoteLoggerIp        string `ini:"remote_logger_ip" json:"remoteLoggerIp"`
-	RemoteLoggerPort      int    `ini:"remote_logger_port" json:"remoteLoggerPort"`
-	RemoteLoggerSn        string `ini:"remote_logger_sn" json:"remoteLoggerSn"`
-	RemoteLoggerUid       string `ini:"remote_logger_uid" json:"remoteLoggerUid"`
 	MaxStoreSize          int    `ini:"max_store_size" json:"maxStoreSize"`
 	AppDebugMode          bool   `ini:"app_debug_mode" json:"appDebugMode"`
 	Extlibs               Extlib `ini:"extlibs,,allowshadow" json:"extlibs"`
@@ -39,6 +35,7 @@ type RuleX interface {
 	// 消息推到队列
 	//
 	PushQueue(QueueData) error
+	PushDebugQueue(QueueData) error
 	PushInQueue(in *InEnd, data string) error
 	PushOutQueue(out *OutEnd, data string) error
 	PushDeviceQueue(device *Device, data string) error

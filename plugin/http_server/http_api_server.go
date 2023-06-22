@@ -187,6 +187,7 @@ func (hh *HttpApiServer) Start(r typex.RuleX) error {
 	// Delete rule by UUID
 	//
 	hh.ginEngine.DELETE(url("rules"), hh.addRoute(DeleteRule))
+	hh.ginEngine.POST(url("rules/testIn"), hh.addRoute(TestSourceCallback))
 	//
 	// Delete inend by UUID
 	//

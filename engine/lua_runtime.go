@@ -21,6 +21,7 @@ func LoadBuildInLuaLib(e typex.RuleX, r *typex.Rule) {
 	r.AddLib(e, "rulexlib", "JQ", rulexlib.JqSelect(e))
 	// 日志
 	r.AddLib(e, "rulexlib", "log", rulexlib.Log(e))
+	r.AddLib(e, "rulexlib", "Debug", rulexlib.Debug(e, r.UUID))
 	// 二进制操作
 	r.AddLib(e, "rulexlib", "MB", rulexlib.MatchBinary(e))
 	r.AddLib(e, "rulexlib", "MBHex", rulexlib.MatchBinaryHex(e))

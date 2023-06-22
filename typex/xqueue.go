@@ -23,11 +23,12 @@ type XQueue interface {
 }
 
 type QueueData struct {
-	I    *InEnd
-	O    *OutEnd
-	D    *Device
-	E    RuleX
-	Data string
+	Debug bool // 是否是Debug消息
+	I     *InEnd
+	O     *OutEnd
+	D     *Device
+	E     RuleX
+	Data  string
 }
 
 func (qd QueueData) String() string {
@@ -101,13 +102,24 @@ func StartQueue(maxQueueSize int) {
 					// 只需要判断 in 或者 out 是不是 nil即可
 					//
 					if qd.I != nil {
+						// 如果是Debug消息直接打印出来
 						qd.E.RunSourceCallbacks(qd.I, qd.Data)
 						qd.E.RunHooks(qd.Data)
+						if qd.Debug {
+							glogger.GLogger.WithField("type", "testRule").
+								Debug("RunSourceCallbacks Device:", qd.I.UUID)
+							continue
+						}
 					}
 					if qd.D != nil {
 						// glogger.GLogger.Debug("RunDeviceCallbacks Device:", qd.D.UUID)
 						qd.E.RunDeviceCallbacks(qd.D, qd.Data)
 						qd.E.RunHooks(qd.Data)
+						if qd.Debug {
+							glogger.GLogger.WithField("type", "testRule").
+								Debug("RunDeviceCallbacks Device:", qd.D.UUID)
+							continue
+						}
 					}
 					if qd.O != nil {
 						v, ok := qd.E.AllOutEnd().Load(qd.O.UUID)
@@ -122,6 +134,11 @@ func StartQueue(maxQueueSize int) {
 								statistics.IncOut()
 
 							}
+						}
+						if qd.Debug {
+							glogger.GLogger.WithField("type", "testRule").
+								Debug("To Target:", qd.O.UUID)
+							continue
 						}
 					}
 				}
