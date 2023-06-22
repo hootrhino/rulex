@@ -554,19 +554,28 @@ func ValidateLuaSyntax(c *gin.Context, hh *HttpApiServer) {
 *
  */
 func TestSourceCallback(c *gin.Context, hh *HttpApiServer) {
-	uuid, _ := c.GetQuery("uuid") // InEnd
-	data, _ := c.GetQuery("data") // Data
-	_, err0 := hh.GetMRule(uuid)
-	if err0 != nil {
-		c.JSON(HTTP_OK, Error400(err0))
+	type Form struct {
+		UUID     string `json:"uuid"`
+		TestData string `json:"testData"`
+	}
+	form := Form{}
+	if err := c.BindJSON(&form); err != nil {
+		c.JSON(HTTP_OK, Error400(err))
 		return
 	}
-	value, ok := hh.ruleEngine.AllInEnd().Load(uuid)
-	if !ok {
-		c.JSON(HTTP_OK, Error(fmt.Sprintf("'InEnd' not exists: %v", uuid)))
+
+	inend := hh.ruleEngine.GetInEnd(form.UUID)
+	if inend == nil {
+		c.JSON(HTTP_OK, Error(fmt.Sprintf("'InEnd' not exists: %v", form.UUID)))
 		return
 	}
-	_, err1 := hh.ruleEngine.WorkInEnd((value).(*typex.InEnd), data)
+	err1 := hh.ruleEngine.PushQueue(typex.QueueData{
+		E:     hh.ruleEngine,
+		I:     inend,
+		O:     nil,
+		Debug: true,
+		Data:  form.TestData,
+	})
 	if err1 != nil {
 		c.JSON(HTTP_OK, Error400(err1))
 		return
