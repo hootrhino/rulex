@@ -2,7 +2,7 @@ name: 1- 自动发布版本
 on:
   push:
     tags:
-      - "v*"
+      - "---v*"
 
 jobs:
   build:
@@ -36,3 +36,6 @@ jobs:
       # ------------------------------
       - uses: ncipollo/release-action@v1
         name: "上传文件"
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+          artifacts: "release.tar.gz,__build/changelog.txt"
