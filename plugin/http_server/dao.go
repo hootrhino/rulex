@@ -253,7 +253,6 @@ func (s *HttpApiServer) GetDeviceWithUUID(uuid string) (*MDevice, error) {
 
 // 删除设备
 func (s *HttpApiServer) DeleteDevice(uuid string) error {
-
 	if s.sqliteDb.Where("uuid=?", uuid).Delete(&MDevice{}).RowsAffected == 0 {
 		return errors.New("not found:" + uuid)
 	}
@@ -280,6 +279,23 @@ func (s *HttpApiServer) UpdateDevice(uuid string, o *MDevice) error {
 func (s *HttpApiServer) InsertModbusPointPosition(list []*MModbusPointPosition) error {
 	m := MModbusPointPosition{}
 	return s.sqliteDb.Model(m).Create(list).Error
+}
+
+// DeleteModbusPointAndDevice 删除modbus点位与设备
+func (s *HttpApiServer) DeleteModbusPointAndDevice(deviceUuid string) error {
+	return s.sqliteDb.Transaction(func(tx *gorm.DB) (err error) {
+
+		err = tx.Where("device_uuid = ?", deviceUuid).Delete(&MModbusPointPosition{}).Error
+		if err != nil {
+			return err
+		}
+
+		err = tx.Where("uuid = ?", deviceUuid).Delete(&MDevice{}).Error
+		if err != nil {
+			return err
+		}
+		return nil
+	})
 }
 
 // -------------------------------------------------------------------------------------

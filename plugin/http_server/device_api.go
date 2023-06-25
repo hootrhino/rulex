@@ -115,10 +115,20 @@ func DeleteDevice(c *gin.Context, hs *HttpApiServer) {
 		}
 
 	}
-	if err := hs.DeleteDevice(uuid); err != nil {
-		c.JSON(HTTP_OK, Error400(err))
-		return
+
+	// 检查是否通用Modbus设备.需要同步删除点位表记录
+	if Mdev.Type == "GENERIC_MODBUS_POINT_EXCEL" {
+		if err := hs.DeleteModbusPointAndDevice(uuid); err != nil {
+			c.JSON(HTTP_OK, Error400(err))
+			return
+		}
+	} else {
+		if err := hs.DeleteDevice(uuid); err != nil {
+			c.JSON(HTTP_OK, Error400(err))
+			return
+		}
 	}
+
 	old := hs.ruleEngine.GetDevice(uuid)
 	if old != nil {
 		if old.Device.Status() == typex.DEV_UP {
@@ -126,6 +136,7 @@ func DeleteDevice(c *gin.Context, hs *HttpApiServer) {
 			old.Device.Stop()
 		}
 	}
+
 	hs.ruleEngine.RemoveDevice(uuid)
 	c.JSON(HTTP_OK, Ok())
 
