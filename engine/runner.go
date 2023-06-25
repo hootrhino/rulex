@@ -1,7 +1,6 @@
 package engine
 
 import (
-
 	"os"
 	"os/signal"
 	"syscall"
@@ -9,6 +8,7 @@ import (
 	"github.com/hootrhino/rulex/core"
 	"github.com/hootrhino/rulex/glogger"
 	httpserver "github.com/hootrhino/rulex/plugin/http_server"
+	icmpsender "github.com/hootrhino/rulex/plugin/icmp_sender"
 	mqttserver "github.com/hootrhino/rulex/plugin/mqtt_server"
 	"github.com/hootrhino/rulex/typex"
 )
@@ -47,6 +47,11 @@ func RunRulex(iniPath string) {
 	}
 	mqttServer := mqttserver.NewMqttServer()
 	if err := engine.LoadPlugin("plugin.mqtt_server", mqttServer); err != nil {
+		glogger.GLogger.Error(err)
+		return
+	}
+	icmpSender := icmpsender.NewICMPSender()
+	if err := engine.LoadPlugin("plugin.icmpsender", icmpSender); err != nil {
 		glogger.GLogger.Error(err)
 		return
 	}

@@ -136,7 +136,7 @@ func Apps(c *gin.Context, hs *HttpApiServer) {
 const semVerRegexExpr = `^(0|[1-9]+[0-9]*)\.(0|[1-9]+[0-9]*)\.(0|[1-9]+[0-9]*)(-(0|[1-9A-Za-z-][0-9A-Za-z-]*)(\.[0-9A-Za-z-]+)*)?(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$`
 const luaTemplate = `
 --
--- App use lua syntax, goto https://rulex.pages.dev for more document
+-- App use lua syntax, goto https://hootrhino.github.io for more document
 -- APPID: %s
 --
 AppNAME = "%s"
