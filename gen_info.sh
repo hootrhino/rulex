@@ -25,7 +25,7 @@ var DefaultVersion = Version{
 var Banner = \`
  **  Welcome to RULEX framework world <'_'>
 **   Version: ${VERSION}-${HASH:0:15}
- **  Document: https://rulex.pages.dev
+ **  Document: https://hootrhino.github.io
 \`
 EOF
 
