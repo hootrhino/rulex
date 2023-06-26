@@ -51,6 +51,15 @@ const (
 	DEFAULT_DB_PATH string = "./rulex.db"
 )
 
+type modbusPointPosition struct {
+	DeviceUuid   string `json:"deviceUuid"  `
+	Tag          string `json:"tag"         `
+	Function     int    `json:"function"    `
+	SlaverId     byte   `json:"slaverId"    `
+	StartAddress uint16 `json:"startAddress"`
+	Quality      uint16 `json:"quality"     `
+}
+
 type _GMODExcelCommonConfig struct {
 	Mode        string `json:"mode" title:"工作模式" info:"RTU/TCP"`
 	Timeout     int    `json:"timeout" validate:"required" title:"连接超时"`
@@ -102,11 +111,6 @@ func NewGenericModbusExcelDevice(e typex.RuleX) typex.XDevice {
 	}
 	mdev.Busy = false
 	mdev.status = typex.DEV_DOWN
-
-	mdev.sqliteDb, err = gorm.Open(sqlite.Open(DEFAULT_DB_PATH), &gorm.Config{
-		Logger:                 logger.Default.LogMode(logger.Info),
-		SkipDefaultTransaction: false,
-	})
 	if err != nil {
 		log.Panic(err)
 		return nil
@@ -115,7 +119,7 @@ func NewGenericModbusExcelDevice(e typex.RuleX) typex.XDevice {
 }
 
 //  初始化
-func (mdev *generic_modbus_excel_device) Init(devId string, configMap map[string]interface{}) error {
+func (mdev *generic_modbus_excel_device) Init(devId string, configMap map[string]interface{}) (err error) {
 	mdev.PointId = devId
 	if err := utils.BindSourceConfig(configMap, &mdev.mainConfig); err != nil {
 		return err
@@ -131,17 +135,17 @@ func (mdev *generic_modbus_excel_device) Init(devId string, configMap map[string
 
 	}
 
-	type ModbusPointPosition struct {
-		DeviceUuid   string `json:"deviceUuid"  `
-		Tag          string `json:"tag"         `
-		Function     int    `json:"function"    `
-		SlaverId     byte   `json:"slaverId"    `
-		StartAddress uint16 `json:"startAddress"`
-		Quality      uint16 `json:"quality"     `
+	// 初始哈DB
+	mdev.sqliteDb, err = gorm.Open(sqlite.Open(DEFAULT_DB_PATH), &gorm.Config{
+		Logger:                 logger.Default.LogMode(logger.Info),
+		SkipDefaultTransaction: false,
+	})
+	if err != nil {
+		return errors.New(fmt.Sprintf("Initializing sqliteDB exception: %s", err.Error()))
 	}
 
-	var list []*ModbusPointPosition
-	err := mdev.sqliteDb.Table("m_modbus_point_position").Where("device_uuid = ?", devId).Find(&list).Error
+	var list []modbusPointPosition
+	err = mdev.sqliteDb.Table("m_modbus_point_position").Where("device_uuid = ?", devId).Find(&list).Error
 	if err != nil {
 		return err
 	}
@@ -292,6 +296,10 @@ func (mdev *generic_modbus_excel_device) Stop() {
 	}
 	if mdev.driver != nil {
 		mdev.driver.Stop()
+	}
+
+	if mdev.sqliteDb != nil {
+		mdev.sqliteDb = nil
 	}
 	mdev.status = typex.DEV_DOWN
 }

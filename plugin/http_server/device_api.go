@@ -257,6 +257,12 @@ func ModbusSheetImport(c *gin.Context, hs *HttpApiServer) {
 		return
 	}
 
+	// 判断文件大小是否符合要求（1MB）
+	if header.Size > 1024*1024 {
+		c.JSON(HTTP_OK, Error("Excel file size cannot be greater than 1MB"))
+		return
+	}
+
 	list, err := parseModbusPointExcel(file, "Sheet1", deviceUuid)
 	if err != nil {
 		c.JSON(HTTP_OK, Error400(err))
