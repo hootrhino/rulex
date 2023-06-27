@@ -4,12 +4,13 @@ import (
 	"errors"
 	"os"
 
-	"github.com/hootrhino/rulex/core"
-	"github.com/hootrhino/rulex/glogger"
 	_ "github.com/mattn/go-sqlite3"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
+
+	"github.com/hootrhino/rulex/core"
+	"github.com/hootrhino/rulex/glogger"
 )
 
 /*
@@ -47,6 +48,7 @@ func (s *HttpApiServer) InitDb(dbPath string) {
 		&MGoods{},
 		&MApp{},
 		&MAiBase{},
+		&MModbusPointPosition{},
 	); err != nil {
 		glogger.GLogger.Fatal(err)
 		os.Exit(1)
@@ -237,7 +239,7 @@ func (s *HttpApiServer) AllDevices() []MDevice {
 	return devices
 }
 
-//-------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------
 
 // 获取设备列表
 func (s *HttpApiServer) GetDeviceWithUUID(uuid string) (*MDevice, error) {
@@ -251,7 +253,6 @@ func (s *HttpApiServer) GetDeviceWithUUID(uuid string) (*MDevice, error) {
 
 // 删除设备
 func (s *HttpApiServer) DeleteDevice(uuid string) error {
-
 	if s.sqliteDb.Where("uuid=?", uuid).Delete(&MDevice{}).RowsAffected == 0 {
 		return errors.New("not found:" + uuid)
 	}
@@ -274,9 +275,32 @@ func (s *HttpApiServer) UpdateDevice(uuid string, o *MDevice) error {
 	}
 }
 
-//-------------------------------------------------------------------------------------
+// InsertModbusPointPosition 插入modbus点位表
+func (s *HttpApiServer) InsertModbusPointPosition(list []MModbusPointPosition) error {
+	m := MModbusPointPosition{}
+	return s.sqliteDb.Model(m).Create(list).Error
+}
+
+// DeleteModbusPointAndDevice 删除modbus点位与设备
+func (s *HttpApiServer) DeleteModbusPointAndDevice(deviceUuid string) error {
+	return s.sqliteDb.Transaction(func(tx *gorm.DB) (err error) {
+
+		err = tx.Where("device_uuid = ?", deviceUuid).Delete(&MModbusPointPosition{}).Error
+		if err != nil {
+			return err
+		}
+
+		err = tx.Where("uuid = ?", deviceUuid).Delete(&MDevice{}).Error
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+}
+
+// -------------------------------------------------------------------------------------
 // Goods
-//-------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------
 
 // 获取Goods列表
 func (s *HttpApiServer) AllGoods() []MGoods {
@@ -318,9 +342,9 @@ func (s *HttpApiServer) UpdateGoods(uuid string, goods *MGoods) error {
 	}
 }
 
-//-------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------
 // App Dao
-//-------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------
 
 // 获取App列表
 func (s *HttpApiServer) AllApp() []MApp {

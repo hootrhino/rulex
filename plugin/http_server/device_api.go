@@ -1,6 +1,12 @@
 package httpserver
 
 import (
+	"errors"
+	"io"
+	"strconv"
+
+	"github.com/xuri/excelize/v2"
+
 	"github.com/hootrhino/rulex/typex"
 	"github.com/hootrhino/rulex/utils"
 
@@ -109,10 +115,20 @@ func DeleteDevice(c *gin.Context, hs *HttpApiServer) {
 		}
 
 	}
-	if err := hs.DeleteDevice(uuid); err != nil {
-		c.JSON(HTTP_OK, Error400(err))
-		return
+
+	// 检查是否通用Modbus设备.需要同步删除点位表记录
+	if Mdev.Type == "GENERIC_MODBUS_POINT_EXCEL" {
+		if err := hs.DeleteModbusPointAndDevice(uuid); err != nil {
+			c.JSON(HTTP_OK, Error400(err))
+			return
+		}
+	} else {
+		if err := hs.DeleteDevice(uuid); err != nil {
+			c.JSON(HTTP_OK, Error400(err))
+			return
+		}
 	}
+
 	old := hs.ruleEngine.GetDevice(uuid)
 	if old != nil {
 		if old.Device.Status() == typex.DEV_UP {
@@ -120,6 +136,7 @@ func DeleteDevice(c *gin.Context, hs *HttpApiServer) {
 			old.Device.Stop()
 		}
 	}
+
 	hs.ruleEngine.RemoveDevice(uuid)
 	c.JSON(HTTP_OK, Ok())
 
@@ -211,4 +228,91 @@ func UpdateDevice(c *gin.Context, hs *HttpApiServer) {
 	}
 
 	c.JSON(HTTP_OK, Ok())
+}
+
+// ModbusSheetImport 上传Excel文件
+func ModbusSheetImport(c *gin.Context, hs *HttpApiServer) {
+	// 解析 multipart/form-data 类型的请求体
+	err := c.Request.ParseMultipartForm(32 << 20) // 限制上传文件大小为 512MB
+	if err != nil {
+		c.JSON(HTTP_OK, Error400(err))
+		return
+	}
+
+	// 获取上传的文件
+	file, header, err := c.Request.FormFile("file")
+	if err != nil {
+		c.JSON(HTTP_OK, Error400(err))
+		return
+	}
+	defer file.Close()
+
+	deviceUuid := c.Request.Form.Get("deviceUuid")
+
+	// 检查文件类型是否为 Excel
+	contentType := header.Header.Get("Content-Type")
+	if contentType != "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" &&
+		contentType != "application/vnd.ms-excel" {
+		c.JSON(HTTP_OK, Error("上传的文件必须是 Excel 格式"))
+		return
+	}
+
+	// 判断文件大小是否符合要求（1MB）
+	if header.Size > 1024*1024 {
+		c.JSON(HTTP_OK, Error("Excel file size cannot be greater than 1MB"))
+		return
+	}
+
+	list, err := parseModbusPointExcel(file, "Sheet1", deviceUuid)
+	if err != nil {
+		c.JSON(HTTP_OK, Error400(err))
+		return
+	}
+
+	err = hs.InsertModbusPointPosition(list)
+	if err != nil {
+		c.JSON(HTTP_OK, Error400(err))
+		return
+	}
+	c.JSON(HTTP_OK, Ok())
+}
+
+func parseModbusPointExcel(r io.Reader, sheetName string, deviceUuid string) (list []MModbusPointPosition, err error) {
+	excelFile, err := excelize.OpenReader(r)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		excelFile.Close()
+	}()
+	// 读取表格
+	rows, err := excelFile.GetRows(sheetName)
+	if err != nil {
+		return nil, err
+	}
+	// 判断首行标头
+	// |Tag|Function|SlaverId|StartAddress|Quality|
+	if rows[0][0] != "Tag" || rows[0][1] != "Function" || rows[0][2] != "SlaverId" || rows[0][3] != "StartAddress" || rows[0][4] != "Quality" {
+		return nil, errors.New("表头不符合要求")
+	}
+
+	list = make([]MModbusPointPosition, 0)
+
+	for i := 1; i < len(rows); i++ {
+		row := rows[i]
+		function, _ := strconv.Atoi(row[1])
+		slaverId, _ := strconv.ParseInt(row[2], 10, 8)
+		address, _ := strconv.ParseUint(row[3], 10, 16)
+		quantity, _ := strconv.ParseUint(row[3], 10, 16)
+		model := MModbusPointPosition{
+			DeviceUuid:   deviceUuid,
+			Tag:          row[0],
+			Function:     function,
+			SlaverId:     byte(slaverId),
+			StartAddress: uint16(address),
+			Quality:      uint16(quantity),
+		}
+		list = append(list, model)
+	}
+	return list, nil
 }

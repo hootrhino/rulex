@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/gin-contrib/static"
+
 	"github.com/hootrhino/rulex/device"
 	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/source"
@@ -223,6 +224,7 @@ func (hh *HttpApiServer) Start(r typex.RuleX) error {
 	hh.ginEngine.POST(url("devices"), hh.addRoute(CreateDevice))
 	hh.ginEngine.PUT(url("devices"), hh.addRoute(UpdateDevice))
 	hh.ginEngine.DELETE(url("devices"), hh.addRoute(DeleteDevice))
+	hh.ginEngine.POST(url("devices/modbus/sheetImport"), hh.addRoute(ModbusSheetImport))
 
 	// 外挂管理
 	hh.ginEngine.GET(url("goods"), hh.addRoute(Goods))
@@ -233,23 +235,23 @@ func (hh *HttpApiServer) Start(r typex.RuleX) error {
 	source.LoadSt()
 	target.LoadTt()
 	device.LoadDt()
-	//----------------------------------------------------------------------------------------------
+	// ----------------------------------------------------------------------------------------------
 	// APP
-	//----------------------------------------------------------------------------------------------
+	// ----------------------------------------------------------------------------------------------
 	hh.ginEngine.GET(url("app"), hh.addRoute(Apps))
 	hh.ginEngine.POST(url("app"), hh.addRoute(CreateApp))
 	hh.ginEngine.PUT(url("app"), hh.addRoute(UpdateApp))
 	hh.ginEngine.DELETE(url("app"), hh.addRoute(RemoveApp))
 	hh.ginEngine.PUT(url("app/start"), hh.addRoute(StartApp))
 	hh.ginEngine.PUT(url("app/stop"), hh.addRoute(StopApp))
-	//----------------------------------------------------------------------------------------------
+	// ----------------------------------------------------------------------------------------------
 	// AI BASE
-	//----------------------------------------------------------------------------------------------
+	// ----------------------------------------------------------------------------------------------
 	hh.ginEngine.GET(url("aibase"), hh.addRoute(AiBase))
 	hh.ginEngine.DELETE(url("aibase"), hh.addRoute(DeleteAiBase))
-	//----------------------------------------------------------------------------------------------
+	// ----------------------------------------------------------------------------------------------
 	// Plugin
-	//----------------------------------------------------------------------------------------------
+	// ----------------------------------------------------------------------------------------------
 	hh.ginEngine.POST(url("plugin/service"), hh.addRoute(PluginService))
 
 	glogger.GLogger.Infof("Http server started on http://0.0.0.0:%v", hh.Port)
