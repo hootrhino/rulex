@@ -87,7 +87,81 @@ UDP服务器软件：接收EEKIT转发的数据
 
 #### 5.规则管理
 
+#### (1)新建规则
 
+![image-20230627224947095](image/readme/image-20230627224947095.png)
+
+#### (2)填写基础信息
+
+![image-20230627225143977](image/readme/image-20230627225143977.png)
+
+这里规则必须先选择对应设备，如果是输入资源的规则那么就选择输入规则，选择后，开始编写lua规则脚本
+
+#### (3)编写lua规则脚本
+
+脚本如下：
+
+Actions = {
+
+  function(data)
+
+​    local dataT, err0 = rulexlib:J2T(data)
+
+​    if err0 ~= nil then
+
+​      print("ERROR:", err0)
+
+​      goto END
+
+​    end
+
+​    for _, entity in pairs(dataT) do
+
+​      print('tag', entity.tag)
+
+​      print('value', entity.value)
+
+​      local udpData = rulexlib:T2J{
+
+​        model = 'modbus_device',
+
+​        sn = entity.tag,
+
+​        value = entity.value
+
+​      }
+
+​      print('udpData => ', udpData)
+
+​      local err4 = rulexlib:DataToUdp(
+
+​               'OUT268b2ec7edc548719ab1b83ed3730105', udpData)
+
+​      print('DataToUdp success? =>', err4 == nil)
+
+​    end
+
+​    ::END::
+
+​    return true, data
+
+  end
+
+}
+
+输出资源为上图配置的UDP输出资源UUID
+
+![image-20230627225835881](image/readme/image-20230627225835881.png)
+
+配置的规则代码如图，单击提交
+
+![image-20230627225918846](image/readme/image-20230627225918846.png)
+
+#### (4)UDP工具查看数据
+
+![image-20230627230022726](image/readme/image-20230627230022726.png)
+
+成功收到数据，本例PC有两个IP，实际是真实IP地址
 
 ## 数据样例
 Modbus采集器采集出来的数据是一个大Map结构。
