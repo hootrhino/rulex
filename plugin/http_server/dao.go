@@ -276,7 +276,7 @@ func (s *HttpApiServer) UpdateDevice(uuid string, o *MDevice) error {
 }
 
 // InsertModbusPointPosition 插入modbus点位表
-func (s *HttpApiServer) InsertModbusPointPosition(list []*MModbusPointPosition) error {
+func (s *HttpApiServer) InsertModbusPointPosition(list []MModbusPointPosition) error {
 	m := MModbusPointPosition{}
 	return s.sqliteDb.Model(m).Create(list).Error
 }

@@ -277,7 +277,7 @@ func ModbusSheetImport(c *gin.Context, hs *HttpApiServer) {
 	c.JSON(HTTP_OK, Ok())
 }
 
-func parseModbusPointExcel(r io.Reader, sheetName string, deviceUuid string) (list []*MModbusPointPosition, err error) {
+func parseModbusPointExcel(r io.Reader, sheetName string, deviceUuid string) (list []MModbusPointPosition, err error) {
 	excelFile, err := excelize.OpenReader(r)
 	if err != nil {
 		return nil, err
@@ -296,7 +296,7 @@ func parseModbusPointExcel(r io.Reader, sheetName string, deviceUuid string) (li
 		return nil, errors.New("表头不符合要求")
 	}
 
-	list = make([]*MModbusPointPosition, 0)
+	list = make([]MModbusPointPosition, 0)
 
 	for i := 1; i < len(rows); i++ {
 		row := rows[i]
@@ -304,7 +304,7 @@ func parseModbusPointExcel(r io.Reader, sheetName string, deviceUuid string) (li
 		slaverId, _ := strconv.ParseInt(row[2], 10, 8)
 		address, _ := strconv.ParseUint(row[3], 10, 16)
 		quantity, _ := strconv.ParseUint(row[3], 10, 16)
-		model := &MModbusPointPosition{
+		model := MModbusPointPosition{
 			DeviceUuid:   deviceUuid,
 			Tag:          row[0],
 			Function:     function,
