@@ -127,7 +127,7 @@ func CreateRule(c *gin.Context, hh *HttpApiServer) {
 
 	if lenDevices > 0 {
 		for _, id := range form.FromDevice {
-			in, _ := hh.GetDeviceWithUUID(id)
+			in, _ := hh.GetMDeviceWithUUID(id)
 			if in == nil {
 				c.JSON(HTTP_OK, Error(`device not exists: `+id))
 				return
@@ -163,63 +163,65 @@ func CreateRule(c *gin.Context, hh *HttpApiServer) {
 		Actions:     form.Actions,
 	}
 
-	if form.Type == "lua" {
-		rule := typex.NewLuaRule(hh.ruleEngine,
-			mRule.UUID,
-			mRule.Name,
-			mRule.Description,
-			mRule.FromSource,
-			mRule.FromDevice,
-			mRule.Success,
-			mRule.Actions,
-			mRule.Failed)
-		hh.ruleEngine.RemoveRule(rule.UUID)
-		if err := hh.ruleEngine.LoadRule(rule); err != nil {
+	if form.Type != "lua" {
+		// 未来可能支持别的脚本
+	}
+	rule := typex.NewLuaRule(hh.ruleEngine,
+		mRule.UUID,
+		mRule.Name,
+		mRule.Description,
+		mRule.FromSource,
+		mRule.FromDevice,
+		mRule.Success,
+		mRule.Actions,
+		mRule.Failed)
+	hh.ruleEngine.RemoveRule(rule.UUID)
+	if err := hh.ruleEngine.LoadRule(rule); err != nil {
+		c.JSON(HTTP_OK, Error400(err))
+		return
+	}
+	// 更新FromSource RULE到Device表中
+	for _, inId := range form.FromSource {
+		InEnd, _ := hh.GetMInEndWithUUID(inId)
+		if InEnd == nil {
+			c.JSON(HTTP_OK, Error(`inend not exists: `+inId))
+			return
+		}
+		// 去重旧的
+		ruleMap := map[string]string{}
+		for _, rule := range InEnd.BindRules {
+			ruleMap[rule] = rule
+		}
+		// 追加新的ID
+		ruleMap[inId] = mRule.UUID
+		// 最后ID列表
+		BindRules := []string{}
+		for _, iid := range ruleMap {
+			BindRules = append(BindRules, iid)
+		}
+		InEnd.BindRules = BindRules
+		if err := hh.UpdateMInEnd(InEnd.UUID, &MInEnd{
+			BindRules: BindRules,
+		}); err != nil {
 			c.JSON(HTTP_OK, Error400(err))
 			return
 		}
-		// 更新FromSource RULE到Device表中
-		for _, inId := range form.FromSource {
-			InEnd, _ := hh.GetMInEndWithUUID(inId)
-			if InEnd == nil {
-				c.JSON(HTTP_OK, Error(`inend not exists: `+inId))
-				return
-			}
-			// 去重旧的
-			ruleMap := map[string]string{}
-			for _, rule := range InEnd.BindRules {
-				ruleMap[rule] = rule
-			}
-			// 追加新的ID
-			ruleMap[inId] = mRule.UUID
-			// 最后ID列表
-			BindRules := []string{}
-			for _, iid := range ruleMap {
-				BindRules = append(BindRules, iid)
-			}
-			InEnd.BindRules = BindRules
-			if err := hh.UpdateMInEnd(InEnd.UUID, &MInEnd{
-				BindRules: BindRules,
-			}); err != nil {
-				c.JSON(HTTP_OK, Error400(err))
-				return
-			}
-			// SaveDB
-			if err := hh.InsertMRule(mRule); err != nil {
-				c.JSON(HTTP_OK, Error400(err))
-				return
-			}
-			// LoadNewest!!!
-			if err := hh.LoadNewestInEnd(inId); err != nil {
-				c.JSON(HTTP_OK, Error400(err))
-				return
-			}
-
+		// SaveDB
+		if err := hh.InsertMRule(mRule); err != nil {
+			c.JSON(HTTP_OK, Error400(err))
+			return
 		}
+		// LoadNewest!!!
+		if err := hh.LoadNewestInEnd(inId); err != nil {
+			c.JSON(HTTP_OK, Error400(err))
+			return
+		}
+
 	}
+
 	// FromDevice
 	for _, devId := range form.FromDevice {
-		Device, _ := hh.GetDeviceWithUUID(devId)
+		Device, _ := hh.GetMDeviceWithUUID(devId)
 		if Device == nil {
 			c.JSON(HTTP_OK, Error(`device not exists: `+devId))
 			return
@@ -398,7 +400,7 @@ func UpdateRule(c *gin.Context, hh *HttpApiServer) {
 		// FromDevice
 		for _, devId := range form.FromDevice {
 			if devId != "" {
-				Device, _ := hh.GetDeviceWithUUID(devId)
+				Device, _ := hh.GetMDeviceWithUUID(devId)
 				if Device == nil {
 					c.JSON(HTTP_OK, Error(`device not exists: `+devId))
 					return
@@ -453,18 +455,12 @@ func DeleteRule(c *gin.Context, hh *HttpApiServer) {
 			return
 		}
 		// 去重旧的
-		ruleMap := map[string]string{}
-		for _, rule := range InEnd.BindRules {
-			ruleMap[rule] = rule
-		}
-		// 删除ID
-		delete(ruleMap, mRule.UUID)
-		// 最后ID列表
 		BindRules := []string{}
-		for _, iid := range ruleMap {
-			BindRules = append(BindRules, iid)
+		for _, iid := range InEnd.BindRules {
+			if iid != mRule.UUID {
+				BindRules = append(BindRules, iid)
+			}
 		}
-		InEnd.BindRules = BindRules
 		if err := hh.UpdateMInEnd(InEnd.UUID, &MInEnd{
 			BindRules: BindRules,
 		}); err != nil {
@@ -474,41 +470,46 @@ func DeleteRule(c *gin.Context, hh *HttpApiServer) {
 	}
 	// FromDevice
 	for _, devId := range mRule.FromDevice {
-		Device, _ := hh.GetDeviceWithUUID(devId)
+		Device, _ := hh.GetMDeviceWithUUID(devId)
 		if Device == nil {
 			c.JSON(HTTP_OK, Error(`device not exists: `+devId))
 			return
 		}
 		// 去重旧的
-		ruleMap := map[string]string{}
-		for _, rule := range Device.BindRules {
-			ruleMap[devId] = rule
-		}
-		// 删除ID
-		delete(ruleMap, mRule.UUID)
-		// 最后ID列表
 		BindRules := []string{}
-		for _, iid := range ruleMap {
-			BindRules = append(BindRules, iid)
+		for _, iid := range Device.BindRules {
+			if iid != mRule.UUID {
+				BindRules = append(BindRules, iid)
+			}
 		}
-		Device.BindRules = BindRules
 		if err := hh.UpdateDevice(Device.UUID, &MDevice{
 			BindRules: BindRules,
 		}); err != nil {
 			c.JSON(HTTP_OK, Error400(err))
 			return
 		}
-		// LoadNewest!!!
-		if err := hh.LoadNewestDevice(devId); err != nil {
-			c.JSON(HTTP_OK, Error400(err))
-			return
-		}
+
 	}
 	if err := hh.DeleteMRule(uuid); err != nil {
 		c.JSON(HTTP_OK, Error400(err))
 		return
 	}
 	hh.ruleEngine.RemoveRule(uuid)
+	//
+	// 内存里的数据刷新完了以后更新数据库，最后重启
+	//
+	for _, devId := range mRule.FromDevice {
+		if err := hh.LoadNewestDevice(devId); err != nil {
+			c.JSON(HTTP_OK, Error400(err))
+			return
+		}
+	}
+	for _, devId := range mRule.FromSource {
+		if err := hh.LoadNewestInEnd(devId); err != nil {
+			c.JSON(HTTP_OK, Error400(err))
+			return
+		}
+	}
 	c.JSON(HTTP_OK, Ok())
 }
 

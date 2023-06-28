@@ -21,7 +21,7 @@ import (
  */
 func DeviceDetail(c *gin.Context, hs *HttpApiServer) {
 	uuid, _ := c.GetQuery("uuid")
-	mdev, err := hs.GetDeviceWithUUID(uuid)
+	mdev, err := hs.GetMDeviceWithUUID(uuid)
 	if err != nil {
 		c.JSON(HTTP_OK, Error400(err))
 		return
@@ -68,7 +68,7 @@ func Devices(c *gin.Context, hs *HttpApiServer) {
 		c.JSON(HTTP_OK, OkWithData(devices))
 		return
 	}
-	mdev, err := hs.GetDeviceWithUUID(uuid)
+	mdev, err := hs.GetMDeviceWithUUID(uuid)
 	if err != nil {
 		c.JSON(HTTP_OK, Error400(err))
 		return
@@ -94,7 +94,7 @@ func Devices(c *gin.Context, hs *HttpApiServer) {
 // 删除设备
 func DeleteDevice(c *gin.Context, hs *HttpApiServer) {
 	uuid, _ := c.GetQuery("uuid")
-	Mdev, err := hs.GetDeviceWithUUID(uuid)
+	Mdev, err := hs.GetMDeviceWithUUID(uuid)
 	if err != nil {
 		c.JSON(HTTP_OK, Error400(err))
 		return
@@ -206,7 +206,7 @@ func UpdateDevice(c *gin.Context, hs *HttpApiServer) {
 		return
 	}
 	// 更新的时候从数据库往外面拿
-	Device, err := hs.GetDeviceWithUUID(form.UUID)
+	Device, err := hs.GetMDeviceWithUUID(form.UUID)
 	if err != nil {
 		c.JSON(HTTP_OK, err)
 		return

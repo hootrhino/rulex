@@ -242,7 +242,7 @@ func (s *HttpApiServer) AllDevices() []MDevice {
 // -------------------------------------------------------------------------------------
 
 // 获取设备列表
-func (s *HttpApiServer) GetDeviceWithUUID(uuid string) (*MDevice, error) {
+func (s *HttpApiServer) GetMDeviceWithUUID(uuid string) (*MDevice, error) {
 	m := new(MDevice)
 	if err := s.sqliteDb.Where("uuid=?", uuid).First(m).Error; err != nil {
 		return nil, err
