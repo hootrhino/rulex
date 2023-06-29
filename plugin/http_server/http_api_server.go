@@ -2,13 +2,9 @@ package httpserver
 
 import (
 	"context"
-	"embed"
 	"errors"
 	"fmt"
-	"io/fs"
 	"net"
-	"net/http"
-	"path"
 	"time"
 
 	common "github.com/hootrhino/rulex/plugin/http_server/common"
@@ -88,10 +84,7 @@ func (hh *HttpApiServer) Init(config *ini.Section) error {
 	hh.ginEngine.GET("/ws", glogger.WsLogger)
 	return nil
 }
-
-// HttpApiServer Start
-func (hh *HttpApiServer) Start(r typex.RuleX) error {
-	hh.ruleEngine = r
+func (hh *HttpApiServer) LoadRoute() {
 	//
 	// Get all plugins
 	//
@@ -258,6 +251,12 @@ func (hh *HttpApiServer) Start(r typex.RuleX) error {
 	hh.ginEngine.POST(url("plugin/service"), hh.addRoute(PluginService))
 	hh.ginEngine.GET(url("plugin/detail"), hh.addRoute(PluginDetail))
 
+}
+
+// HttpApiServer Start
+func (hh *HttpApiServer) Start(r typex.RuleX) error {
+	hh.ruleEngine = r
+	hh.LoadRoute()
 	glogger.GLogger.Infof("Http server started on http://0.0.0.0:%v", hh.Port)
 	return nil
 }
@@ -272,8 +271,8 @@ func (hh *HttpApiServer) Db() *gorm.DB {
 func (hh *HttpApiServer) PluginMetaInfo() typex.XPluginMetaInfo {
 	return typex.XPluginMetaInfo{
 		UUID:     hh.uuid,
-		Name:     "Base Api Server",
-		Version:  typex.DefaultVersion.Version,
+		Name:     "RULEX HTTP RESTFul Api Server",
+		Version:  "v1.0.0",
 		Homepage: "https://hootrhino.github.io",
 		HelpLink: "https://hootrhino.github.io",
 		Author:   "wwhai",
@@ -289,27 +288,6 @@ func (hh *HttpApiServer) PluginMetaInfo() typex.XPluginMetaInfo {
  */
 func (cs *HttpApiServer) Service(arg typex.ServiceArg) typex.ServiceResult {
 	return typex.ServiceResult{Out: "HttpApiServer"}
-}
-
-// --------------------------------------------------------------------------------
-//
-//go:embed  www/*
-var files embed.FS
-
-type WWWFS struct {
-	http.FileSystem
-}
-
-func (f WWWFS) Exists(prefix string, filepath string) bool {
-	_, err := f.Open(path.Join(prefix, filepath))
-	return err == nil
-}
-
-func wwwRoot(dir string) static.ServeFileSystem {
-	if sub, err := fs.Sub(files, path.Join("www", dir)); err == nil {
-		return WWWFS{http.FS(sub)}
-	}
-	return nil
 }
 
 // Add api route
@@ -328,7 +306,7 @@ func (hh *HttpApiServer) Authorize() gin.HandlerFunc {
 func (hh *HttpApiServer) configHttpServer() {
 	hh.ginEngine.Use(hh.Authorize())
 	hh.ginEngine.Use(common.Cros())
-	hh.ginEngine.Use(static.Serve("/", wwwRoot("")))
+	hh.ginEngine.Use(static.Serve("/", WWWRoot("")))
 	hh.ginEngine.Use(gin.CustomRecovery(func(c *gin.Context, err any) {
 		glogger.GLogger.Error(err)
 		c.JSON(common.HTTP_OK, common.Error500(err1crash))

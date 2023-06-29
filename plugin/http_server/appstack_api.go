@@ -6,6 +6,7 @@ import (
 	"regexp"
 
 	common "github.com/hootrhino/rulex/plugin/http_server/common"
+	"github.com/hootrhino/rulex/plugin/http_server/model"
 
 	"github.com/gin-gonic/gin"
 	"github.com/hootrhino/rulex/appstack"
@@ -195,7 +196,7 @@ func CreateApp(c *gin.Context, hs *HttpApiServer) {
 		c.JSON(common.HTTP_OK, common.Error400(err1))
 		return
 	}
-	if err := hs.InsertApp(&MApp{
+	if err := hs.InsertApp(&model.MApp{
 		UUID:        newUUID,
 		Name:        form.Name,
 		Version:     form.Version,
@@ -255,7 +256,7 @@ func UpdateApp(c *gin.Context, hs *HttpApiServer) {
 		return
 	}
 
-	if err := hs.UpdateApp(&MApp{
+	if err := hs.UpdateApp(&model.MApp{
 		UUID:        form.UUID,
 		Name:        form.Name,
 		Version:     form.Version,

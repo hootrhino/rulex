@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	common "github.com/hootrhino/rulex/plugin/http_server/common"
+	"github.com/hootrhino/rulex/plugin/http_server/model"
 
 	"github.com/xuri/excelize/v2"
 
@@ -165,7 +166,7 @@ func CreateDevice(c *gin.Context, hs *HttpApiServer) {
 		return
 	}
 	newUUID := utils.DeviceUuid()
-	if err := hs.InsertDevice(&MDevice{
+	if err := hs.InsertDevice(&model.MDevice{
 		UUID:        newUUID,
 		Type:        form.Type,
 		Name:        form.Name,
@@ -214,7 +215,7 @@ func UpdateDevice(c *gin.Context, hs *HttpApiServer) {
 		return
 	}
 
-	if err := hs.UpdateDevice(Device.UUID, &MDevice{
+	if err := hs.UpdateDevice(Device.UUID, &model.MDevice{
 		Type:        form.Type,
 		Name:        form.Name,
 		Description: form.Description,
@@ -279,7 +280,9 @@ func ModbusSheetImport(c *gin.Context, hs *HttpApiServer) {
 	c.JSON(common.HTTP_OK, common.Ok())
 }
 
-func parseModbusPointExcel(r io.Reader, sheetName string, deviceUuid string) (list []MModbusPointPosition, err error) {
+func parseModbusPointExcel(r io.Reader,
+	sheetName string,
+	deviceUuid string) (list []model.MModbusPointPosition, err error) {
 	excelFile, err := excelize.OpenReader(r)
 	if err != nil {
 		return nil, err
@@ -298,7 +301,7 @@ func parseModbusPointExcel(r io.Reader, sheetName string, deviceUuid string) (li
 		return nil, errors.New("表头不符合要求")
 	}
 
-	list = make([]MModbusPointPosition, 0)
+	list = make([]model.MModbusPointPosition, 0)
 
 	for i := 1; i < len(rows); i++ {
 		row := rows[i]
@@ -306,7 +309,7 @@ func parseModbusPointExcel(r io.Reader, sheetName string, deviceUuid string) (li
 		slaverId, _ := strconv.ParseInt(row[2], 10, 8)
 		address, _ := strconv.ParseUint(row[3], 10, 16)
 		quantity, _ := strconv.ParseUint(row[3], 10, 16)
-		model := MModbusPointPosition{
+		model := model.MModbusPointPosition{
 			DeviceUuid:   deviceUuid,
 			Tag:          row[0],
 			Function:     function,
