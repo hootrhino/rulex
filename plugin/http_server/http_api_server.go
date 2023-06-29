@@ -48,7 +48,9 @@ type HttpApiServer struct {
 }
 
 func NewHttpApiServer() *HttpApiServer {
-	return &HttpApiServer{uuid: "HTTP-API-SERVER"}
+	return &HttpApiServer{
+		uuid: "HTTP-API-SERVER",
+	}
 }
 
 // HTTP服务器崩了, 重启恢复

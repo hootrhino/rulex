@@ -10,7 +10,6 @@ import (
 
 	"github.com/hootrhino/rulex/device"
 	"github.com/hootrhino/rulex/source"
-	"github.com/hootrhino/rulex/statistics"
 	"github.com/hootrhino/rulex/target"
 	"github.com/hootrhino/rulex/typex"
 
@@ -119,7 +118,7 @@ func System(c *gin.Context, hh *HttpApiServer) {
 	}
 	c.JSON(common.HTTP_OK, common.OkWithData(gin.H{
 		"hardWareInfo": hardWareInfo,
-		"statistic":    statistics.AllStatistics(),
+		"statistic":    hh.ruleEngine.GetMetricStatistics(),
 		"sourceCount":  source_count(hh.ruleEngine),
 	}))
 }
@@ -162,7 +161,7 @@ func Drivers(c *gin.Context, hh *HttpApiServer) {
 
 // Get statistics data
 func Statistics(c *gin.Context, hh *HttpApiServer) {
-	c.JSON(common.HTTP_OK, common.OkWithData(statistics.AllStatistics()))
+	c.JSON(common.HTTP_OK, common.OkWithData(hh.ruleEngine.GetMetricStatistics()))
 }
 
 // Get statistics data

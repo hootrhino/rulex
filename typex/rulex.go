@@ -203,6 +203,7 @@ type RuleX interface {
 	// AiBase
 	//----------------------------------------
 	GetAiBase() XAiRuntime
+	GetMetricStatistics() *MetricStatistics
 }
 
 // 拓扑接入点，比如 modbus 检测点等
