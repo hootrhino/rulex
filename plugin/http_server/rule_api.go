@@ -28,7 +28,7 @@ func RuleDetail(c *gin.Context, hh *HttpApiServer) {
 	uuid, _ := c.GetQuery("uuid")
 	rule, err := hh.GetMRuleWithUUID(uuid)
 	if err != nil {
-		c.JSON(HTTP_OK, Error400(err))
+		c.JSON(HTTP_OK, Error400EmptyObj(err))
 		return
 	}
 	c.JSON(HTTP_OK, OkWithData(ruleVo{

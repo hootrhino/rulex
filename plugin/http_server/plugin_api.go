@@ -1,6 +1,8 @@
 package httpserver
 
 import (
+	"fmt"
+
 	"github.com/hootrhino/rulex/typex"
 
 	"github.com/gin-gonic/gin"
@@ -34,4 +36,20 @@ func PluginService(c *gin.Context, hh *HttpApiServer) {
 		return
 	}
 	c.JSON(HTTP_OK, Error("plugin not exists"))
+}
+
+/*
+*
+* 插件详情
+*
+ */
+func PluginDetail(c *gin.Context, hh *HttpApiServer) {
+	uuid, _ := c.GetQuery("uuid")
+	plugin, ok := hh.ruleEngine.AllPlugins().Load(uuid)
+	if ok {
+		result := plugin.(typex.XPlugin)
+		c.JSON(HTTP_OK, OkWithData(result.PluginMetaInfo()))
+		return
+	}
+	c.JSON(HTTP_OK, Error400EmptyObj(fmt.Errorf("no such plugin:%s", uuid)))
 }

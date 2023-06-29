@@ -23,7 +23,7 @@ func DeviceDetail(c *gin.Context, hs *HttpApiServer) {
 	uuid, _ := c.GetQuery("uuid")
 	mdev, err := hs.GetMDeviceWithUUID(uuid)
 	if err != nil {
-		c.JSON(HTTP_OK, Error400(err))
+		c.JSON(HTTP_OK, Error400EmptyObj(err))
 		return
 	}
 	device := hs.ruleEngine.GetDevice(mdev.UUID)

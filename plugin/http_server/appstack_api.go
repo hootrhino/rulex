@@ -39,7 +39,7 @@ func AppDetail(c *gin.Context, hs *HttpApiServer) {
 	// uuid
 	appInfo, err1 := hs.GetAppWithUUID(uuid)
 	if err1 != nil {
-		c.JSON(HTTP_OK, Error400(err1))
+		c.JSON(HTTP_OK, Error400EmptyObj(err1))
 		return
 	}
 	web_data := web_data_app{

@@ -59,7 +59,7 @@ func OutEndDetail(c *gin.Context, hs *HttpApiServer) {
 	uuid, _ := c.GetQuery("uuid")
 	mOut, err := hs.GetMOutEndWithUUID(uuid)
 	if err != nil {
-		c.JSON(HTTP_OK, Error400(err))
+		c.JSON(HTTP_OK, Error400EmptyObj(err))
 		return
 	}
 	outEnd := hs.ruleEngine.GetOutEnd(mOut.UUID)

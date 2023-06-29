@@ -11,7 +11,7 @@ func InEndDetail(c *gin.Context, hs *HttpApiServer) {
 	uuid, _ := c.GetQuery("uuid")
 	Model, err := hs.GetMInEndWithUUID(uuid)
 	if err != nil {
-		c.JSON(HTTP_OK, Error400(err))
+		c.JSON(HTTP_OK, Error400EmptyObj(err))
 		return
 	}
 	inEnd := hs.ruleEngine.GetInEnd(Model.UUID)
