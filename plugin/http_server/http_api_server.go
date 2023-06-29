@@ -225,6 +225,8 @@ func (hh *HttpApiServer) Start(r typex.RuleX) error {
 	hh.ginEngine.PUT(url("devices"), hh.addRoute(UpdateDevice))
 	hh.ginEngine.DELETE(url("devices"), hh.addRoute(DeleteDevice))
 	hh.ginEngine.POST(url("devices/modbus/sheetImport"), hh.addRoute(ModbusSheetImport))
+	hh.ginEngine.PUT(url("devices/modbus/point"), hh.addRoute(UpdateModbusPoint))
+	hh.ginEngine.GET(url("devices/modbus"), hh.addRoute(ModbusPoints))
 
 	// 外挂管理
 	hh.ginEngine.GET(url("goods"), hh.addRoute(Goods))

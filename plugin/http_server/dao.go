@@ -275,6 +275,10 @@ func (s *HttpApiServer) UpdateDevice(uuid string, o *MDevice) error {
 	}
 }
 
+// -------------------------------------------------------------------------------------
+// ModbusPointPositions
+// -------------------------------------------------------------------------------------
+
 // InsertModbusPointPosition 插入modbus点位表
 func (s *HttpApiServer) InsertModbusPointPosition(list []MModbusPointPosition) error {
 	m := MModbusPointPosition{}
@@ -296,6 +300,24 @@ func (s *HttpApiServer) DeleteModbusPointAndDevice(deviceUuid string) error {
 		}
 		return nil
 	})
+}
+
+// UpdateModbusPoint 更新modbus点位
+func (s *HttpApiServer) UpdateModbusPoint(model MModbusPointPosition) error {
+	m := MDevice{}
+	if err := s.sqliteDb.Where("id = ?", model.ID).First(&m).Error; err != nil {
+		return err
+	} else {
+		s.sqliteDb.Model(m).Updates(&model)
+		return nil
+	}
+}
+
+// AllModbusPointByDeviceUuid 根据设备UUID查询设备点位
+func (s *HttpApiServer) AllModbusPointByDeviceUuid(deviceUuid string) (list []MModbusPointPosition, err error) {
+
+	err = s.sqliteDb.Where("device_uuid = ?", deviceUuid).Find(&list).Error
+	return
 }
 
 // -------------------------------------------------------------------------------------

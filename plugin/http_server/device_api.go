@@ -230,6 +230,56 @@ func UpdateDevice(c *gin.Context, hs *HttpApiServer) {
 	c.JSON(HTTP_OK, Ok())
 }
 
+// ModbusPoints 获取modbus_excel类型的点位数据
+func ModbusPoints(c *gin.Context, hs *HttpApiServer) {
+	deviceUuid := c.GetString("deviceUuid")
+	list, err := hs.AllModbusPointByDeviceUuid(deviceUuid)
+	if err != nil {
+		c.JSON(HTTP_OK, Error400(err))
+		return
+	}
+	c.JSON(HTTP_OK, OkWithData(list))
+}
+
+// UpdateModbusPoint 更新modbus_excel类型的点位数据
+func UpdateModbusPoint(c *gin.Context, hs *HttpApiServer) {
+	type Form struct {
+		Id           uint
+		DeviceUuid   string `json:"deviceUuid"    gorm:"not null"`
+		Tag          string `json:"tag"           gorm:"not null"`
+		Function     int    `json:"function"      gorm:"not null"`
+		SlaverId     byte   `json:"slaverId"      gorm:"not null"`
+		StartAddress uint16 `json:"startAddress"  gorm:"not null"`
+		Quality      uint16 `json:"quality"       gorm:"not null"`
+	}
+
+	form := Form{}
+	if err := c.ShouldBindJSON(&form); err != nil {
+		c.JSON(HTTP_OK, Error400(err))
+		return
+	}
+
+	err := hs.UpdateModbusPoint(MModbusPointPosition{
+		RulexModel: RulexModel{
+			ID: form.Id,
+		},
+		DeviceUuid:   form.DeviceUuid,
+		Tag:          form.Tag,
+		Function:     form.Function,
+		SlaverId:     form.SlaverId,
+		StartAddress: form.StartAddress,
+		Quality:      form.Quality,
+	})
+
+	if err != nil {
+		c.JSON(HTTP_OK, Error400(err))
+		return
+	}
+
+	c.JSON(HTTP_OK, Ok())
+
+}
+
 // ModbusSheetImport 上传Excel文件
 func ModbusSheetImport(c *gin.Context, hs *HttpApiServer) {
 	// 解析 multipart/form-data 类型的请求体
