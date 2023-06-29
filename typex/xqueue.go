@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/hootrhino/rulex/glogger"
-	"github.com/hootrhino/rulex/statistics"
 )
 
 var DefaultDataCacheQueue XQueue
@@ -129,10 +128,9 @@ func StartQueue(maxQueueSize int) {
 							}
 							if _, err := v.(*OutEnd).Target.To(qd.Data); err != nil {
 								glogger.GLogger.Error(err)
-								statistics.IncOutFailed()
+								qd.E.GetMetricStatistics().IncOutFailed()
 							} else {
-								statistics.IncOut()
-
+								qd.E.GetMetricStatistics().IncOut()
 							}
 						}
 						if qd.Debug {
