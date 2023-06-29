@@ -51,6 +51,7 @@ Actions = {
                 print('Property Reply error:', err)
                 return false, data
             end
+            print('IotHUB property:', dataT['data'])
         end
         return true, data
     end
