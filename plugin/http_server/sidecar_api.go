@@ -2,6 +2,7 @@ package httpserver
 
 import (
 	common "github.com/hootrhino/rulex/plugin/http_server/common"
+	"github.com/hootrhino/rulex/plugin/http_server/model"
 	"github.com/hootrhino/rulex/typex"
 	"github.com/hootrhino/rulex/utils"
 
@@ -62,7 +63,7 @@ func CreateGoods(c *gin.Context, hh *HttpApiServer) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	mGoods := MGoods{
+	mGoods := model.MGoods{
 		UUID:        utils.GoodsUuid(),
 		Addr:        form.Addr,
 		Description: form.Description,

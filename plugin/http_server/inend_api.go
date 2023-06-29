@@ -3,6 +3,7 @@ package httpserver
 import (
 	"github.com/gin-gonic/gin"
 	common "github.com/hootrhino/rulex/plugin/http_server/common"
+	"github.com/hootrhino/rulex/plugin/http_server/model"
 	"github.com/hootrhino/rulex/typex"
 	"github.com/hootrhino/rulex/utils"
 	"gopkg.in/square/go-jose.v2/json"
@@ -107,7 +108,7 @@ func CreateInend(c *gin.Context, hh *HttpApiServer) {
 
 	newUUID := utils.InUuid()
 
-	if err := hh.InsertMInEnd(&MInEnd{
+	if err := hh.InsertMInEnd(&model.MInEnd{
 		UUID:        newUUID,
 		Type:        form.Type,
 		Name:        form.Name,
@@ -161,7 +162,7 @@ func UpdateInend(c *gin.Context, hs *HttpApiServer) {
 		return
 	}
 
-	if err := hs.UpdateMInEnd(InEnd.UUID, &MInEnd{
+	if err := hs.UpdateMInEnd(InEnd.UUID, &model.MInEnd{
 		UUID:        form.UUID,
 		Type:        form.Type,
 		Name:        form.Name,

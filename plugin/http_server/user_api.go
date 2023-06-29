@@ -7,6 +7,7 @@ import (
 	"time"
 
 	common "github.com/hootrhino/rulex/plugin/http_server/common"
+	"github.com/hootrhino/rulex/plugin/http_server/model"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
@@ -53,7 +54,7 @@ func CreateUser(c *gin.Context, hh *HttpApiServer) {
 	}
 
 	if _, err := hh.GetMUser(form.Username, md5Hash(form.Password)); err != nil {
-		hh.InsertMUser(&MUser{
+		hh.InsertMUser(&model.MUser{
 			Role:        form.Role,
 			Username:    form.Username,
 			Password:    md5Hash(form.Password),
@@ -62,7 +63,7 @@ func CreateUser(c *gin.Context, hh *HttpApiServer) {
 		c.JSON(common.HTTP_OK, common.Ok())
 		return
 	}
-	c.JSON(common.HTTP_OK, common.Error("用户名已存在:"+form.Username))
+	c.JSON(common.HTTP_OK, common.Error("user already exists:"+form.Username))
 }
 
 /*

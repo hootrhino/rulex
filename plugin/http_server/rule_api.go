@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	common "github.com/hootrhino/rulex/plugin/http_server/common"
+	"github.com/hootrhino/rulex/plugin/http_server/model"
 
 	"github.com/hootrhino/rulex/core"
 	"github.com/hootrhino/rulex/typex"
@@ -152,7 +153,7 @@ func CreateRule(c *gin.Context, hh *HttpApiServer) {
 		}
 	}
 	//
-	mRule := &MRule{
+	mRule := &model.MRule{
 		Name:        form.Name,
 		Type:        form.Type,
 		UUID:        utils.RuleUuid(),
@@ -202,7 +203,7 @@ func CreateRule(c *gin.Context, hh *HttpApiServer) {
 			BindRules = append(BindRules, iid)
 		}
 		InEnd.BindRules = BindRules
-		if err := hh.UpdateMInEnd(InEnd.UUID, &MInEnd{
+		if err := hh.UpdateMInEnd(InEnd.UUID, &model.MInEnd{
 			BindRules: BindRules,
 		}); err != nil {
 			c.JSON(common.HTTP_OK, common.Error400(err))
@@ -241,7 +242,7 @@ func CreateRule(c *gin.Context, hh *HttpApiServer) {
 			BindRules = append(BindRules, iid)
 		}
 		Device.BindRules = BindRules
-		if err := hh.UpdateDevice(Device.UUID, &MDevice{
+		if err := hh.UpdateDevice(Device.UUID, &model.MDevice{
 			BindRules: BindRules,
 		}); err != nil {
 			c.JSON(common.HTTP_OK, common.Error400(err))
@@ -350,7 +351,7 @@ func UpdateRule(c *gin.Context, hh *HttpApiServer) {
 		}
 		// SaveDB
 		//
-		if err := hh.UpdateMRule(mRule.UUID, &MRule{
+		if err := hh.UpdateMRule(mRule.UUID, &model.MRule{
 			Name:        form.Name,
 			Type:        form.Type,
 			Expression:  form.Expression,
@@ -385,7 +386,7 @@ func UpdateRule(c *gin.Context, hh *HttpApiServer) {
 					BindRules = append(BindRules, iid)
 				}
 				InEnd.BindRules = BindRules
-				if err := hh.UpdateMInEnd(InEnd.UUID, &MInEnd{
+				if err := hh.UpdateMInEnd(InEnd.UUID, &model.MInEnd{
 					BindRules: BindRules,
 				}); err != nil {
 					c.JSON(common.HTTP_OK, common.Error400(err))
@@ -420,7 +421,7 @@ func UpdateRule(c *gin.Context, hh *HttpApiServer) {
 					BindRules = append(BindRules, iid)
 				}
 				Device.BindRules = BindRules
-				if err := hh.UpdateDevice(Device.UUID, &MDevice{
+				if err := hh.UpdateDevice(Device.UUID, &model.MDevice{
 					BindRules: BindRules,
 				}); err != nil {
 					c.JSON(common.HTTP_OK, common.Error400(err))
@@ -463,7 +464,7 @@ func DeleteRule(c *gin.Context, hh *HttpApiServer) {
 				BindRules = append(BindRules, iid)
 			}
 		}
-		if err := hh.UpdateMInEnd(InEnd.UUID, &MInEnd{
+		if err := hh.UpdateMInEnd(InEnd.UUID, &model.MInEnd{
 			BindRules: BindRules,
 		}); err != nil {
 			c.JSON(common.HTTP_OK, common.Error400(err))
@@ -484,7 +485,7 @@ func DeleteRule(c *gin.Context, hh *HttpApiServer) {
 				BindRules = append(BindRules, iid)
 			}
 		}
-		if err := hh.UpdateDevice(Device.UUID, &MDevice{
+		if err := hh.UpdateDevice(Device.UUID, &model.MDevice{
 			BindRules: BindRules,
 		}); err != nil {
 			c.JSON(common.HTTP_OK, common.Error400(err))

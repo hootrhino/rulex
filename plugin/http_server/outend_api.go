@@ -2,6 +2,7 @@ package httpserver
 
 import (
 	common "github.com/hootrhino/rulex/plugin/http_server/common"
+	"github.com/hootrhino/rulex/plugin/http_server/model"
 	"github.com/hootrhino/rulex/typex"
 	"github.com/hootrhino/rulex/utils"
 
@@ -125,7 +126,7 @@ func CreateOutEnd(c *gin.Context, hh *HttpApiServer) {
 		return
 	}
 	newUUID := utils.OutUuid()
-	if err := hh.InsertMOutEnd(&MOutEnd{
+	if err := hh.InsertMOutEnd(&model.MOutEnd{
 		UUID:        newUUID,
 		Type:        form.Type,
 		Name:        form.Name,
@@ -174,7 +175,7 @@ func UpdateOutEnd(c *gin.Context, hs *HttpApiServer) {
 		return
 	}
 
-	if err := hs.UpdateMOutEnd(OutEnd.UUID, &MOutEnd{
+	if err := hs.UpdateMOutEnd(OutEnd.UUID, &model.MOutEnd{
 		UUID:        form.UUID,
 		Type:        form.Type,
 		Name:        form.Name,
