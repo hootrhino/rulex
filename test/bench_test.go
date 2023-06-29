@@ -28,7 +28,7 @@ func TestRunLuaBench(t *testing.T) {
 		coroutine, _ := luaVM.NewThread()
 		state, err2, _ := luaVM.Resume(coroutine, f.(*lua.LFunction), lua.LNumber(1), lua.LNumber(1))
 		if state == lua.ResumeError {
-			t.Error(err2)
+			t.common.Error(err2)
 		}
 	}
 	t.Log("luaVM.Resume:", time.Now().UnixNano()-t2, "ns")

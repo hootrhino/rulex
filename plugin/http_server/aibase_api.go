@@ -2,6 +2,7 @@ package httpserver
 
 import (
 	"github.com/gin-gonic/gin"
+	common "github.com/hootrhino/rulex/plugin/http_server/common"
 )
 
 /*
@@ -12,14 +13,14 @@ import (
 func AiBase(c *gin.Context, hh *HttpApiServer) {
 	uuid, _ := c.GetQuery("uuid")
 	if uuid == "" {
-		c.JSON(HTTP_OK, OkWithData(hh.ruleEngine.GetAiBase().ListAi()))
+		c.JSON(common.HTTP_OK, common.OkWithData(hh.ruleEngine.GetAiBase().ListAi()))
 		return
 	}
 	if ai := hh.ruleEngine.GetAiBase().GetAi(uuid); ai != nil {
-		c.JSON(HTTP_OK, OkWithData(ai))
+		c.JSON(common.HTTP_OK, common.OkWithData(ai))
 		return
 	}
-	c.JSON(HTTP_OK, Error("ai base not found:"+uuid))
+	c.JSON(common.HTTP_OK, common.Error("ai base not found:"+uuid))
 }
 
 /*
@@ -32,13 +33,13 @@ func DeleteAiBase(c *gin.Context, hh *HttpApiServer) {
 	if ai := hh.ruleEngine.GetAiBase().GetAi(uuid); ai != nil {
 		err := hh.ruleEngine.GetAiBase().RemoveAi(uuid)
 		if err != nil {
-			c.JSON(HTTP_OK, Error400(err))
+			c.JSON(common.HTTP_OK, common.Error400(err))
 			return
 		}
-		c.JSON(HTTP_OK, Ok())
+		c.JSON(common.HTTP_OK, common.Ok())
 		return
 	}
-	c.JSON(HTTP_OK, Error("ai base not found:"+uuid))
+	c.JSON(common.HTTP_OK, common.Error("ai base not found:"+uuid))
 }
 
 /*
@@ -48,7 +49,7 @@ func DeleteAiBase(c *gin.Context, hh *HttpApiServer) {
  */
 
 func CreateAiBase(c *gin.Context, hh *HttpApiServer) {
-	c.JSON(HTTP_OK, Ok())
+	c.JSON(common.HTTP_OK, common.Ok())
 }
 
 /*
@@ -57,5 +58,5 @@ func CreateAiBase(c *gin.Context, hh *HttpApiServer) {
 *
  */
 func UpdateAiBase(c *gin.Context, hh *HttpApiServer) {
-	c.JSON(HTTP_OK, Ok())
+	c.JSON(common.HTTP_OK, common.Ok())
 }

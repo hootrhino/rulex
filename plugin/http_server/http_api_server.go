@@ -11,6 +11,8 @@ import (
 	"path"
 	"time"
 
+	common "github.com/hootrhino/rulex/plugin/http_server/common"
+
 	"github.com/gin-contrib/static"
 
 	"github.com/hootrhino/rulex/device"
@@ -67,7 +69,7 @@ func (hh *HttpApiServer) Init(config *ini.Section) error {
 	hh.Host = mainConfig.Host
 	hh.dbPath = mainConfig.DbPath
 	hh.Port = mainConfig.Port
-	configHttpServer(hh)
+	hh.configHttpServer()
 	//
 	// Http server
 	//
@@ -310,13 +312,26 @@ func wwwRoot(dir string) static.ServeFileSystem {
 	return nil
 }
 
-func configHttpServer(hh *HttpApiServer) {
+// Add api route
+func (h *HttpApiServer) addRoute(f func(*gin.Context, *HttpApiServer)) func(*gin.Context) {
+
+	return func(c *gin.Context) {
+		f(c, h)
+	}
+}
+func (hh *HttpApiServer) Authorize() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Next()
+	}
+}
+
+func (hh *HttpApiServer) configHttpServer() {
 	hh.ginEngine.Use(hh.Authorize())
-	hh.ginEngine.Use(Cros())
+	hh.ginEngine.Use(common.Cros())
 	hh.ginEngine.Use(static.Serve("/", wwwRoot("")))
 	hh.ginEngine.Use(gin.CustomRecovery(func(c *gin.Context, err any) {
 		glogger.GLogger.Error(err)
-		c.JSON(HTTP_OK, Error500(err1crash))
+		c.JSON(common.HTTP_OK, common.Error500(err1crash))
 	}))
 	hh.ginEngine.NoRoute(func(c *gin.Context) {
 		c.Redirect(302, "/")

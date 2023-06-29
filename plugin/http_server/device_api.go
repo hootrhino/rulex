@@ -5,6 +5,8 @@ import (
 	"io"
 	"strconv"
 
+	common "github.com/hootrhino/rulex/plugin/http_server/common"
+
 	"github.com/xuri/excelize/v2"
 
 	"github.com/hootrhino/rulex/typex"
@@ -23,7 +25,7 @@ func DeviceDetail(c *gin.Context, hs *HttpApiServer) {
 	uuid, _ := c.GetQuery("uuid")
 	mdev, err := hs.GetMDeviceWithUUID(uuid)
 	if err != nil {
-		c.JSON(HTTP_OK, Error400EmptyObj(err))
+		c.JSON(common.HTTP_OK, common.Error400EmptyObj(err))
 		return
 	}
 	device := hs.ruleEngine.GetDevice(mdev.UUID)
@@ -37,11 +39,11 @@ func DeviceDetail(c *gin.Context, hs *HttpApiServer) {
 		tDevice.BindRules = map[string]typex.Rule{}
 		tDevice.Config = mdev.GetConfig()
 		tDevice.State = typex.DEV_STOP
-		c.JSON(HTTP_OK, OkWithData(tDevice))
+		c.JSON(common.HTTP_OK, common.OkWithData(tDevice))
 		return
 	}
 	device.State = device.Device.Status()
-	c.JSON(HTTP_OK, OkWithData(device))
+	c.JSON(common.HTTP_OK, common.OkWithData(device))
 }
 func Devices(c *gin.Context, hs *HttpApiServer) {
 	uuid, _ := c.GetQuery("uuid")
@@ -65,12 +67,12 @@ func Devices(c *gin.Context, hs *HttpApiServer) {
 				devices = append(devices, device)
 			}
 		}
-		c.JSON(HTTP_OK, OkWithData(devices))
+		c.JSON(common.HTTP_OK, common.OkWithData(devices))
 		return
 	}
 	mdev, err := hs.GetMDeviceWithUUID(uuid)
 	if err != nil {
-		c.JSON(HTTP_OK, Error400(err))
+		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
 	device := hs.ruleEngine.GetDevice(mdev.UUID)
@@ -84,11 +86,11 @@ func Devices(c *gin.Context, hs *HttpApiServer) {
 		tDevice.BindRules = map[string]typex.Rule{}
 		tDevice.Config = mdev.GetConfig()
 		tDevice.State = typex.DEV_STOP
-		c.JSON(HTTP_OK, OkWithData(tDevice))
+		c.JSON(common.HTTP_OK, common.OkWithData(tDevice))
 		return
 	}
 	device.State = device.Device.Status()
-	c.JSON(HTTP_OK, OkWithData(device))
+	c.JSON(common.HTTP_OK, common.OkWithData(device))
 }
 
 // 删除设备
@@ -96,12 +98,12 @@ func DeleteDevice(c *gin.Context, hs *HttpApiServer) {
 	uuid, _ := c.GetQuery("uuid")
 	Mdev, err := hs.GetMDeviceWithUUID(uuid)
 	if err != nil {
-		c.JSON(HTTP_OK, Error400(err))
+		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
 	// 要处理这个空字符串 ""
 	if Mdev.BindRules.Len() == 1 && len(Mdev.BindRules[0]) != 0 {
-		c.JSON(HTTP_OK, Error("Can't remove, Already have rule bind:"+Mdev.BindRules.String()))
+		c.JSON(common.HTTP_OK, common.Error("Can't remove, Already have rule bind:"+Mdev.BindRules.String()))
 		return
 	}
 	// 检查是否有规则被绑定了
@@ -109,7 +111,7 @@ func DeleteDevice(c *gin.Context, hs *HttpApiServer) {
 		if ruleId != "" {
 			_, err0 := hs.GetMRuleWithUUID(ruleId)
 			if err0 != nil {
-				c.JSON(HTTP_OK, Error400(err0))
+				c.JSON(common.HTTP_OK, common.Error400(err0))
 				return
 			}
 		}
@@ -119,12 +121,12 @@ func DeleteDevice(c *gin.Context, hs *HttpApiServer) {
 	// 检查是否通用Modbus设备.需要同步删除点位表记录
 	if Mdev.Type == "GENERIC_MODBUS_POINT_EXCEL" {
 		if err := hs.DeleteModbusPointAndDevice(uuid); err != nil {
-			c.JSON(HTTP_OK, Error400(err))
+			c.JSON(common.HTTP_OK, common.Error400(err))
 			return
 		}
 	} else {
 		if err := hs.DeleteDevice(uuid); err != nil {
-			c.JSON(HTTP_OK, Error400(err))
+			c.JSON(common.HTTP_OK, common.Error400(err))
 			return
 		}
 	}
@@ -138,7 +140,7 @@ func DeleteDevice(c *gin.Context, hs *HttpApiServer) {
 	}
 
 	hs.ruleEngine.RemoveDevice(uuid)
-	c.JSON(HTTP_OK, Ok())
+	c.JSON(common.HTTP_OK, common.Ok())
 
 }
 
@@ -154,12 +156,12 @@ func CreateDevice(c *gin.Context, hs *HttpApiServer) {
 	}
 	form := Form{}
 	if err := c.ShouldBindJSON(&form); err != nil {
-		c.JSON(HTTP_OK, Error400(err))
+		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
 	configJson, err := json.Marshal(form.Config)
 	if err != nil {
-		c.JSON(HTTP_OK, Error400(err))
+		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
 	newUUID := utils.DeviceUuid()
@@ -171,14 +173,14 @@ func CreateDevice(c *gin.Context, hs *HttpApiServer) {
 		Config:      string(configJson),
 		BindRules:   []string{},
 	}); err != nil {
-		c.JSON(HTTP_OK, Error400(err))
+		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
 	if err := hs.LoadNewestDevice(newUUID); err != nil {
-		c.JSON(HTTP_OK, Error400(err))
+		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	c.JSON(HTTP_OK, Ok())
+	c.JSON(common.HTTP_OK, common.Ok())
 
 }
 
@@ -193,22 +195,22 @@ func UpdateDevice(c *gin.Context, hs *HttpApiServer) {
 	}
 	form := Form{}
 	if err := c.ShouldBindJSON(&form); err != nil {
-		c.JSON(HTTP_OK, Error400(err))
+		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
 	configJson, err := json.Marshal(form.Config)
 	if err != nil {
-		c.JSON(HTTP_OK, Error400(err))
+		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
 	if form.UUID == "" {
-		c.JSON(HTTP_OK, Error("missing 'uuid' fields"))
+		c.JSON(common.HTTP_OK, common.Error("missing 'uuid' fields"))
 		return
 	}
 	// 更新的时候从数据库往外面拿
 	Device, err := hs.GetMDeviceWithUUID(form.UUID)
 	if err != nil {
-		c.JSON(HTTP_OK, err)
+		c.JSON(common.HTTP_OK, err)
 		return
 	}
 
@@ -218,16 +220,16 @@ func UpdateDevice(c *gin.Context, hs *HttpApiServer) {
 		Description: form.Description,
 		Config:      string(configJson),
 	}); err != nil {
-		c.JSON(HTTP_OK, Error400(err))
+		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
 
 	if err := hs.LoadNewestDevice(form.UUID); err != nil {
-		c.JSON(HTTP_OK, Error400(err))
+		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
 
-	c.JSON(HTTP_OK, Ok())
+	c.JSON(common.HTTP_OK, common.Ok())
 }
 
 // ModbusSheetImport 上传Excel文件
@@ -235,14 +237,14 @@ func ModbusSheetImport(c *gin.Context, hs *HttpApiServer) {
 	// 解析 multipart/form-data 类型的请求体
 	err := c.Request.ParseMultipartForm(32 << 20) // 限制上传文件大小为 512MB
 	if err != nil {
-		c.JSON(HTTP_OK, Error400(err))
+		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
 
 	// 获取上传的文件
 	file, header, err := c.Request.FormFile("file")
 	if err != nil {
-		c.JSON(HTTP_OK, Error400(err))
+		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
 	defer file.Close()
@@ -253,28 +255,28 @@ func ModbusSheetImport(c *gin.Context, hs *HttpApiServer) {
 	contentType := header.Header.Get("Content-Type")
 	if contentType != "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" &&
 		contentType != "application/vnd.ms-excel" {
-		c.JSON(HTTP_OK, Error("上传的文件必须是 Excel 格式"))
+		c.JSON(common.HTTP_OK, common.Error("上传的文件必须是 Excel 格式"))
 		return
 	}
 
 	// 判断文件大小是否符合要求（1MB）
 	if header.Size > 1024*1024 {
-		c.JSON(HTTP_OK, Error("Excel file size cannot be greater than 1MB"))
+		c.JSON(common.HTTP_OK, common.Error("Excel file size cannot be greater than 1MB"))
 		return
 	}
 
 	list, err := parseModbusPointExcel(file, "Sheet1", deviceUuid)
 	if err != nil {
-		c.JSON(HTTP_OK, Error400(err))
+		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
 
 	err = hs.InsertModbusPointPosition(list)
 	if err != nil {
-		c.JSON(HTTP_OK, Error400(err))
+		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	c.JSON(HTTP_OK, Ok())
+	c.JSON(common.HTTP_OK, common.Ok())
 }
 
 func parseModbusPointExcel(r io.Reader, sheetName string, deviceUuid string) (list []MModbusPointPosition, err error) {

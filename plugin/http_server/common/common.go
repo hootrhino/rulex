@@ -52,12 +52,6 @@ func Error500EmptyObj(e error) R {
 	return R{5001, e.Error(), EmptyObj{}}
 }
 
-func (hh *HttpApiServer) Authorize() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		c.Next()
-	}
-}
-
 func Cros() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		cros(c)
@@ -82,12 +76,4 @@ func cros(c *gin.Context) {
 	}
 	c.Request.Header.Del("Origin")
 	c.Next()
-}
-
-// Add api route
-func (h *HttpApiServer) addRoute(f func(*gin.Context, *HttpApiServer)) func(*gin.Context) {
-
-	return func(c *gin.Context) {
-		f(c, h)
-	}
 }

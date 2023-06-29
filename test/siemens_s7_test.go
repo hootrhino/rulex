@@ -14,7 +14,7 @@ func Test_server(t *testing.T) {
 	server.SetDB(10, []uint16{11, 22, 33, 44, 55, 66, 77, 88, 99, 100})
 	err := server.Listen("0.0.0.0:1800", 0, 1)
 	if err != nil {
-		t.Error(err)
+		t.common.Error(err)
 		return
 	}
 	client(t)
@@ -26,13 +26,13 @@ func client(t *testing.T) {
 
 	defer handler.Close()
 	if err := handler.Connect(); err != nil {
-		t.Error(err)
+		t.common.Error(err)
 		return
 	}
 	client := gos7.NewClient(handler)
 	dataBuf := make([]byte, 10)
 	if err := client.AGReadDB(10, 0, 10, dataBuf); err != nil {
-		t.Error(err)
+		t.common.Error(err)
 		return
 	}
 	t.Log("client.AGReadDB =>", dataBuf)
@@ -49,13 +49,13 @@ func Test_readDB(t *testing.T) {
 
 	defer handler.Close()
 	if err := handler.Connect(); err != nil {
-		t.Error(err)
+		t.common.Error(err)
 		return
 	}
 	client := gos7.NewClient(handler)
 	dataBuf := make([]byte, 10)
 	if err := client.AGReadDB(10, 0, 10, dataBuf); err != nil {
-		t.Error(err)
+		t.common.Error(err)
 		return
 	}
 	t.Log("client.AGReadDB =>", dataBuf)

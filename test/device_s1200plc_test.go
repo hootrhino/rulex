@@ -128,7 +128,7 @@ func Test_RULEX_WITH_S1200PLC(t *testing.T) {
 	S1200PLC.UUID = "S1200PLC"
 	ctx, cancelF := typex.NewCCTX()
 	if err := engine.LoadDeviceWithCtx(S1200PLC, ctx, cancelF); err != nil {
-		t.Error("S1200PLC load failed:", err)
+		t.common.Error("S1200PLC load failed:", err)
 	}
 	//
 	// 透传到内部EMQX
@@ -147,7 +147,7 @@ func Test_RULEX_WITH_S1200PLC(t *testing.T) {
 	EMQX_BROKER.UUID = "EMQX_BROKER"
 	ctx1, cancelF1 := typex.NewCCTX()
 	if err := engine.LoadOutEndWithCtx(EMQX_BROKER, ctx1, cancelF1); err != nil {
-		t.Error("mqttOutEnd load failed:", err)
+		t.common.Error("mqttOutEnd load failed:", err)
 	}
 	// 	// 加载一个规则
 	rule1 := typex.NewRule(engine,
@@ -165,7 +165,7 @@ func Test_RULEX_WITH_S1200PLC(t *testing.T) {
 		end
 	}`, `function Failed(error) print("[EMQX_BROKER Failed Callback]", error) end`)
 	if err := engine.LoadRule(rule1); err != nil {
-		t.Error(err)
+		t.common.Error(err)
 	}
 
 	glogger.GLogger.Warn("Received stop signal:", s)
