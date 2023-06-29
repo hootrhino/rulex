@@ -55,7 +55,7 @@ func writeToFile(path string, s string) {
 	file, err := os.Create(path)
 	if err != nil {
 		glogger.GLogger.Error("license_manager:writeToFile", err.Error())
-		// fmt.Println("license_manager:writeToFile", err.Error())
+		// fmt.Println("license_manager:writeToFile", err. common.Error())
 		return
 	}
 	defer file.Close()

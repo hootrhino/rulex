@@ -1,6 +1,7 @@
 package httpserver
 
 import (
+	common "github.com/hootrhino/rulex/plugin/http_server/common"
 	"github.com/hootrhino/rulex/typex"
 	"github.com/hootrhino/rulex/utils"
 
@@ -21,9 +22,9 @@ func Goods(c *gin.Context, hh *HttpApiServer) {
 			data = append(data, v)
 			return true
 		})
-		c.JSON(HTTP_OK, OkWithData(data))
+		c.JSON(common.HTTP_OK, common.OkWithData(data))
 	} else {
-		c.JSON(HTTP_OK, OkWithData(hh.ruleEngine.GetGoods(uuid)))
+		c.JSON(common.HTTP_OK, common.OkWithData(hh.ruleEngine.GetGoods(uuid)))
 	}
 }
 
@@ -36,12 +37,12 @@ func DeleteGoods(c *gin.Context, hh *HttpApiServer) {
 	uuid, _ := c.GetQuery("uuid")
 	goods, err := hh.GetGoodsWithUUID(uuid)
 	if err != nil {
-		c.JSON(HTTP_OK, Error400(err))
+		c.JSON(common.HTTP_OK, common.Error400(err))
 	} else {
 		// 数据库和内存都要删除
 		hh.DeleteGoods(goods.UUID)
 		hh.ruleEngine.RemoveGoods(goods.UUID)
-		c.JSON(HTTP_OK, Ok())
+		c.JSON(common.HTTP_OK, common.Ok())
 	}
 }
 
@@ -58,7 +59,7 @@ func CreateGoods(c *gin.Context, hh *HttpApiServer) {
 	}
 	form := Form{}
 	if err := c.ShouldBindJSON(&form); err != nil {
-		c.JSON(HTTP_OK, Error400(err))
+		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
 	mGoods := MGoods{
@@ -69,7 +70,7 @@ func CreateGoods(c *gin.Context, hh *HttpApiServer) {
 	}
 
 	if err := hh.InsertGoods(&mGoods); err != nil {
-		c.JSON(HTTP_OK, Error400(err))
+		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
 	goods := typex.Goods{
@@ -79,10 +80,10 @@ func CreateGoods(c *gin.Context, hh *HttpApiServer) {
 		Args:        mGoods.Args,
 	}
 	if err := hh.ruleEngine.LoadGoods(goods); err != nil {
-		c.JSON(HTTP_OK, Error400(err))
+		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	c.JSON(HTTP_OK, Ok())
+	c.JSON(common.HTTP_OK, common.Ok())
 }
 
 /*
@@ -91,5 +92,5 @@ func CreateGoods(c *gin.Context, hh *HttpApiServer) {
 *
  */
 func UpdateGoods(c *gin.Context, hh *HttpApiServer) {
-	c.JSON(HTTP_OK, Error("暂不支持更新"))
+	c.JSON(common.HTTP_OK, common.Error("暂不支持更新"))
 }

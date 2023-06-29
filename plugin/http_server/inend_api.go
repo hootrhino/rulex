@@ -2,6 +2,7 @@ package httpserver
 
 import (
 	"github.com/gin-gonic/gin"
+	common "github.com/hootrhino/rulex/plugin/http_server/common"
 	"github.com/hootrhino/rulex/typex"
 	"github.com/hootrhino/rulex/utils"
 	"gopkg.in/square/go-jose.v2/json"
@@ -11,7 +12,7 @@ func InEndDetail(c *gin.Context, hs *HttpApiServer) {
 	uuid, _ := c.GetQuery("uuid")
 	Model, err := hs.GetMInEndWithUUID(uuid)
 	if err != nil {
-		c.JSON(HTTP_OK, Error400EmptyObj(err))
+		c.JSON(common.HTTP_OK, common.Error400EmptyObj(err))
 		return
 	}
 	inEnd := hs.ruleEngine.GetInEnd(Model.UUID)
@@ -25,11 +26,11 @@ func InEndDetail(c *gin.Context, hs *HttpApiServer) {
 			Config:      Model.GetConfig(),
 			State:       typex.SOURCE_STOP,
 		}
-		c.JSON(HTTP_OK, OkWithData(tmpInEnd))
+		c.JSON(common.HTTP_OK, common.OkWithData(tmpInEnd))
 		return
 	}
 	inEnd.State = inEnd.Source.Status()
-	c.JSON(HTTP_OK, OkWithData(inEnd))
+	c.JSON(common.HTTP_OK, common.OkWithData(inEnd))
 }
 
 // Get all inends
@@ -56,12 +57,12 @@ func InEnds(c *gin.Context, hs *HttpApiServer) {
 				inEnds = append(inEnds, *inEnd)
 			}
 		}
-		c.JSON(HTTP_OK, OkWithData(inEnds))
+		c.JSON(common.HTTP_OK, common.OkWithData(inEnds))
 		return
 	}
 	Model, err := hs.GetMInEndWithUUID(uuid)
 	if err != nil {
-		c.JSON(HTTP_OK, Error400(err))
+		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
 	inEnd := hs.ruleEngine.GetInEnd(Model.UUID)
@@ -75,11 +76,11 @@ func InEnds(c *gin.Context, hs *HttpApiServer) {
 			Config:      Model.GetConfig(),
 			State:       typex.SOURCE_STOP,
 		}
-		c.JSON(HTTP_OK, OkWithData(tmpInEnd))
+		c.JSON(common.HTTP_OK, common.OkWithData(tmpInEnd))
 		return
 	}
 	inEnd.State = inEnd.Source.Status()
-	c.JSON(HTTP_OK, OkWithData(inEnd))
+	c.JSON(common.HTTP_OK, common.OkWithData(inEnd))
 
 }
 
@@ -95,12 +96,12 @@ func CreateInend(c *gin.Context, hh *HttpApiServer) {
 	form := Form{}
 
 	if err0 := c.ShouldBindJSON(&form); err0 != nil {
-		c.JSON(HTTP_OK, Error400(err0))
+		c.JSON(common.HTTP_OK, common.Error400(err0))
 		return
 	}
 	configJson, err1 := json.Marshal(form.Config)
 	if err1 != nil {
-		c.JSON(HTTP_OK, Error400(err1))
+		c.JSON(common.HTTP_OK, common.Error400(err1))
 		return
 	}
 
@@ -114,14 +115,14 @@ func CreateInend(c *gin.Context, hh *HttpApiServer) {
 		Config:      string(configJson),
 		XDataModels: "[]",
 	}); err != nil {
-		c.JSON(HTTP_OK, Error400(err))
+		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
 	if err := hh.LoadNewestInEnd(newUUID); err != nil {
-		c.JSON(HTTP_OK, Error400(err))
+		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	c.JSON(HTTP_OK, Ok())
+	c.JSON(common.HTTP_OK, common.Ok())
 
 }
 
@@ -141,22 +142,22 @@ func UpdateInend(c *gin.Context, hs *HttpApiServer) {
 	form := Form{}
 
 	if err := c.ShouldBindJSON(&form); err != nil {
-		c.JSON(HTTP_OK, Error400(err))
+		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
 	configJson, err := json.Marshal(form.Config)
 	if err != nil {
-		c.JSON(HTTP_OK, Error400(err))
+		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
 	if form.UUID == "" {
-		c.JSON(HTTP_OK, Error("missing 'uuid' fields"))
+		c.JSON(common.HTTP_OK, common.Error("missing 'uuid' fields"))
 		return
 	}
 	// 更新的时候从数据库往外面拿
 	InEnd, err := hs.GetMInEndWithUUID(form.UUID)
 	if err != nil {
-		c.JSON(HTTP_OK, err)
+		c.JSON(common.HTTP_OK, err)
 		return
 	}
 
@@ -167,14 +168,14 @@ func UpdateInend(c *gin.Context, hs *HttpApiServer) {
 		Description: form.Description,
 		Config:      string(configJson),
 	}); err != nil {
-		c.JSON(HTTP_OK, Error400(err))
+		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
 	if err := hs.LoadNewestInEnd(form.UUID); err != nil {
-		c.JSON(HTTP_OK, Error400(err))
+		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	c.JSON(HTTP_OK, Ok())
+	c.JSON(common.HTTP_OK, common.Ok())
 }
 
 // Delete inend by UUID
@@ -182,11 +183,11 @@ func DeleteInEnd(c *gin.Context, hs *HttpApiServer) {
 	uuid, _ := c.GetQuery("uuid")
 	_, err := hs.GetMInEndWithUUID(uuid)
 	if err != nil {
-		c.JSON(HTTP_OK, Error400(err))
+		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
 	if err := hs.DeleteMInEnd(uuid); err != nil {
-		c.JSON(HTTP_OK, Error400(err))
+		c.JSON(common.HTTP_OK, common.Error400(err))
 	} else {
 		old := hs.ruleEngine.GetInEnd(uuid)
 		if old != nil {
@@ -194,7 +195,7 @@ func DeleteInEnd(c *gin.Context, hs *HttpApiServer) {
 			old.Source.Details().State = typex.SOURCE_STOP
 		}
 		hs.ruleEngine.RemoveInEnd(uuid)
-		c.JSON(HTTP_OK, Ok())
+		c.JSON(common.HTTP_OK, common.Ok())
 	}
 }
 
@@ -207,9 +208,9 @@ func GetInEndConfig(c *gin.Context, hs *HttpApiServer) {
 	uuid, _ := c.GetQuery("uuid")
 	inend := hs.ruleEngine.GetInEnd(uuid)
 	if inend != nil {
-		c.JSON(HTTP_OK, OkWithData(inend.Source.Configs()))
+		c.JSON(common.HTTP_OK, common.OkWithData(inend.Source.Configs()))
 	} else {
-		c.JSON(HTTP_OK, OkWithEmpty())
+		c.JSON(common.HTTP_OK, common.OkWithEmpty())
 	}
 
 }
@@ -224,9 +225,9 @@ func GetInEndModels(c *gin.Context, hh *HttpApiServer) {
 	inend := hh.ruleEngine.GetInEnd(uuid)
 	if inend != nil {
 		modelsMap := inend.Source.DataModels()
-		c.JSON(HTTP_OK, OkWithData(modelsMap))
+		c.JSON(common.HTTP_OK, common.OkWithData(modelsMap))
 	} else {
-		c.JSON(HTTP_OK, OkWithEmpty())
+		c.JSON(common.HTTP_OK, common.OkWithEmpty())
 	}
 
 }

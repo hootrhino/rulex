@@ -1,6 +1,7 @@
 package httpserver
 
 import (
+	common "github.com/hootrhino/rulex/plugin/http_server/common"
 	"github.com/hootrhino/rulex/typex"
 	"github.com/hootrhino/rulex/utils"
 
@@ -29,12 +30,12 @@ func OutEnds(c *gin.Context, hh *HttpApiServer) {
 				outends = append(outends, *outEnd)
 			}
 		}
-		c.JSON(HTTP_OK, OkWithData(outends))
+		c.JSON(common.HTTP_OK, common.OkWithData(outends))
 		return
 	}
 	mOut, err := hh.GetMOutEndWithUUID(uuid)
 	if err != nil {
-		c.JSON(HTTP_OK, Error400(err))
+		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
 	outEnd := hh.ruleEngine.GetOutEnd(mOut.UUID)
@@ -47,11 +48,11 @@ func OutEnds(c *gin.Context, hh *HttpApiServer) {
 		tOut.Description = mOut.Description
 		tOut.Config = mOut.GetConfig()
 		tOut.State = typex.SOURCE_STOP
-		c.JSON(HTTP_OK, OkWithData(tOut))
+		c.JSON(common.HTTP_OK, common.OkWithData(tOut))
 		return
 	}
 	outEnd.State = outEnd.Target.Status()
-	c.JSON(HTTP_OK, OkWithData(outEnd))
+	c.JSON(common.HTTP_OK, common.OkWithData(outEnd))
 }
 
 // Get all outends
@@ -59,7 +60,7 @@ func OutEndDetail(c *gin.Context, hs *HttpApiServer) {
 	uuid, _ := c.GetQuery("uuid")
 	mOut, err := hs.GetMOutEndWithUUID(uuid)
 	if err != nil {
-		c.JSON(HTTP_OK, Error400EmptyObj(err))
+		c.JSON(common.HTTP_OK, common.Error400EmptyObj(err))
 		return
 	}
 	outEnd := hs.ruleEngine.GetOutEnd(mOut.UUID)
@@ -72,11 +73,11 @@ func OutEndDetail(c *gin.Context, hs *HttpApiServer) {
 		tOutEnd.Description = mOut.Description
 		tOutEnd.Config = mOut.GetConfig()
 		tOutEnd.State = typex.SOURCE_STOP
-		c.JSON(HTTP_OK, OkWithData(tOutEnd))
+		c.JSON(common.HTTP_OK, common.OkWithData(tOutEnd))
 		return
 	}
 	outEnd.State = outEnd.Target.Status()
-	c.JSON(HTTP_OK, OkWithData(outEnd))
+	c.JSON(common.HTTP_OK, common.OkWithData(outEnd))
 }
 
 // Delete outEnd by UUID
@@ -84,12 +85,12 @@ func DeleteOutEnd(c *gin.Context, hs *HttpApiServer) {
 	uuid, _ := c.GetQuery("uuid")
 	_, err := hs.GetMOutEndWithUUID(uuid)
 	if err != nil {
-		c.JSON(HTTP_OK, Error400(err))
+		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
 
 	if err := hs.DeleteMOutEnd(uuid); err != nil {
-		c.JSON(HTTP_OK, Error400(err))
+		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
 	old := hs.ruleEngine.GetOutEnd(uuid)
@@ -100,7 +101,7 @@ func DeleteOutEnd(c *gin.Context, hs *HttpApiServer) {
 		}
 	}
 	hs.ruleEngine.RemoveOutEnd(uuid)
-	c.JSON(HTTP_OK, Ok())
+	c.JSON(common.HTTP_OK, common.Ok())
 }
 
 // Create or Update OutEnd
@@ -115,12 +116,12 @@ func CreateOutEnd(c *gin.Context, hh *HttpApiServer) {
 	form := Form{}
 
 	if err0 := c.ShouldBindJSON(&form); err0 != nil {
-		c.JSON(HTTP_OK, Error400(err0))
+		c.JSON(common.HTTP_OK, common.Error400(err0))
 		return
 	}
 	configJson, err1 := json.Marshal(form.Config)
 	if err1 != nil {
-		c.JSON(HTTP_OK, Error400(err1))
+		c.JSON(common.HTTP_OK, common.Error400(err1))
 		return
 	}
 	newUUID := utils.OutUuid()
@@ -131,14 +132,14 @@ func CreateOutEnd(c *gin.Context, hh *HttpApiServer) {
 		Description: form.Description,
 		Config:      string(configJson),
 	}); err != nil {
-		c.JSON(HTTP_OK, Error400(err))
+		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
 	if err := hh.LoadNewestOutEnd(newUUID); err != nil {
-		c.JSON(HTTP_OK, Error400(err))
+		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	c.JSON(HTTP_OK, Ok())
+	c.JSON(common.HTTP_OK, common.Ok())
 
 }
 
@@ -154,22 +155,22 @@ func UpdateOutEnd(c *gin.Context, hs *HttpApiServer) {
 	form := Form{}
 
 	if err := c.ShouldBindJSON(&form); err != nil {
-		c.JSON(HTTP_OK, Error400(err))
+		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
 	configJson, err := json.Marshal(form.Config)
 	if err != nil {
-		c.JSON(HTTP_OK, Error400(err))
+		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
 	if form.UUID == "" {
-		c.JSON(HTTP_OK, Error("missing 'uuid' fields"))
+		c.JSON(common.HTTP_OK, common.Error("missing 'uuid' fields"))
 		return
 	}
 	// 更新的时候从数据库往外面拿
 	OutEnd, err := hs.GetMOutEndWithUUID(form.UUID)
 	if err != nil {
-		c.JSON(HTTP_OK, Error400(err))
+		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
 
@@ -180,14 +181,14 @@ func UpdateOutEnd(c *gin.Context, hs *HttpApiServer) {
 		Description: form.Description,
 		Config:      string(configJson),
 	}); err != nil {
-		c.JSON(HTTP_OK, Error400(err))
+		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
 
 	if err := hs.LoadNewestOutEnd(form.UUID); err != nil {
-		c.JSON(HTTP_OK, Error400(err))
+		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
 
-	c.JSON(HTTP_OK, Ok())
+	c.JSON(common.HTTP_OK, common.Ok())
 }
