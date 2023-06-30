@@ -67,6 +67,9 @@ func (as *AppStack) StartApp(uuid string) error {
 	if !ok {
 		return fmt.Errorf("app not exists:%s", uuid)
 	}
+	if app.AppState == 1 {
+		app.Stop()
+	}
 	// args := lua.LBool(false) // Main的参数，未来准备扩展
 	ctx, cancel := context.WithCancel(typex.GCTX)
 	app.SetCnC(ctx, cancel)

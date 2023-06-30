@@ -355,7 +355,7 @@ func StopApp(c *gin.Context, hs *HttpApiServer) {
 		}
 		if app.AppState == 1 {
 			if err := hs.ruleEngine.StopApp(uuid); err != nil {
-				c.JSON(common.HTTP_OK, common.OkWithData(err))
+				c.JSON(common.HTTP_OK, common.Error400(err))
 				return
 			}
 			c.JSON(common.HTTP_OK, common.OkWithData("app stopped:%s"+uuid))
