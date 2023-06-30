@@ -44,7 +44,8 @@ $$
 | Ws log topic                     | 用途                 |
 | -------------------------------- | -------------------- |
 | plugin/ICMPSenderPing/ICMPSender | 网络测度插件的日志   |
-| rule/console/$UUID               | 某个规则测试日志     |
+| rule/test/$UUID                  | 某个规则测试日志     |
+| rule/log/$UUID                   | 某个规则运行时的日志 |
 | app/console/$UUID                | 某个轻量应用运行日志 |
 ### 常见日志示例
 1. 测速
