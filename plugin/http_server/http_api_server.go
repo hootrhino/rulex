@@ -5,9 +5,12 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"os"
 	"time"
 
+	"github.com/hootrhino/rulex/core"
 	common "github.com/hootrhino/rulex/plugin/http_server/common"
+	"github.com/hootrhino/rulex/plugin/http_server/model"
 
 	"github.com/gin-contrib/static"
 
@@ -22,7 +25,9 @@ import (
 	"gopkg.in/ini.v1"
 
 	_ "github.com/mattn/go-sqlite3"
+	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 const _API_V1_ROOT string = "/api/v1/"
@@ -47,6 +52,51 @@ type HttpApiServer struct {
 	uuid       string
 }
 
+/*
+*
+* 初始化数据库
+*
+ */
+func (s *HttpApiServer) InitDb(dbPath string) {
+	var err error
+	if core.GlobalConfig.AppDebugMode {
+		s.sqliteDb, err = gorm.Open(sqlite.Open(dbPath), &gorm.Config{
+			Logger:                 logger.Default.LogMode(logger.Info),
+			SkipDefaultTransaction: false,
+		})
+	} else {
+		s.sqliteDb, err = gorm.Open(sqlite.Open(dbPath), &gorm.Config{
+			Logger:                 logger.Default.LogMode(logger.Error),
+			SkipDefaultTransaction: false,
+		})
+	}
+
+	if err != nil {
+		glogger.GLogger.Error(err)
+		// Sqlite 创建失败应该是致命错误了, 多半是环境出问题，直接给panic了, 不尝试救活
+		panic(err)
+	}
+	// 注册数据库配置表
+	// 这么写看起来是很难受, 但是这玩意就是go的哲学啊(大道至简？？？)
+	if err := s.DB().AutoMigrate(
+		&model.MInEnd{},
+		&model.MOutEnd{},
+		&model.MRule{},
+		&model.MUser{},
+		&model.MDevice{},
+		&model.MGoods{},
+		&model.MApp{},
+		&model.MAiBase{},
+		&model.MModbusPointPosition{},
+	); err != nil {
+		glogger.GLogger.Fatal(err)
+		os.Exit(1)
+	}
+}
+
+func (s *HttpApiServer) DB() *gorm.DB {
+	return s.sqliteDb
+}
 func NewHttpApiServer() *HttpApiServer {
 	return &HttpApiServer{
 		uuid: "HTTP-API-SERVER",
@@ -267,9 +317,6 @@ func (hh *HttpApiServer) Stop() error {
 	return nil
 }
 
-func (hh *HttpApiServer) Db() *gorm.DB {
-	return hh.sqliteDb
-}
 func (hh *HttpApiServer) PluginMetaInfo() typex.XPluginMetaInfo {
 	return typex.XPluginMetaInfo{
 		UUID:     hh.uuid,
