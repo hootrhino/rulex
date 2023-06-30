@@ -3,8 +3,10 @@ package httpserver
 import (
 	"fmt"
 
+	"github.com/hootrhino/rulex/glogger"
 	common "github.com/hootrhino/rulex/plugin/http_server/common"
 	"github.com/hootrhino/rulex/plugin/http_server/model"
+	"github.com/sirupsen/logrus"
 
 	"github.com/hootrhino/rulex/core"
 	"github.com/hootrhino/rulex/typex"
@@ -573,13 +575,10 @@ func TestSourceCallback(c *gin.Context, hh *HttpApiServer) {
 		c.JSON(common.HTTP_OK, common.Error(fmt.Sprintf("'InEnd' not exists: %v", form.UUID)))
 		return
 	}
-	err1 := hh.ruleEngine.PushQueue(typex.QueueData{
-		E:     hh.ruleEngine,
-		I:     inend,
-		O:     nil,
-		Debug: true,
-		Data:  form.TestData,
-	})
+	glogger.GLogger.WithFields(logrus.Fields{
+		"topic": "rule/test/" + form.UUID,
+	}).Debug(form.TestData)
+	err1 := hh.ruleEngine.PushInQueue(inend, form.TestData)
 	if err1 != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err1))
 		return
@@ -593,38 +592,59 @@ func TestSourceCallback(c *gin.Context, hh *HttpApiServer) {
 *
  */
 func TestOutEndCallback(c *gin.Context, hh *HttpApiServer) {
-	uuid, _ := c.GetQuery("uuid") // OutEnd
-	data, _ := c.GetQuery("data") // Data
-	_, err0 := hh.GetMRule(uuid)
-	if err0 != nil {
-		c.JSON(common.HTTP_OK, common.Error400(err0))
+	type Form struct {
+		UUID     string `json:"uuid"`
+		TestData string `json:"testData"`
+	}
+	form := Form{}
+	if err := c.BindJSON(&form); err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	value, ok := hh.ruleEngine.AllOutEnd().Load(uuid)
-	if !ok {
-		c.JSON(common.HTTP_OK, common.Error((fmt.Sprintf("'OutEnd' not exists: %v", uuid))))
+
+	outend := hh.ruleEngine.GetOutEnd(form.UUID)
+	if outend == nil {
+		c.JSON(common.HTTP_OK, common.Error(fmt.Sprintf("'OutEnd' not exists: %v", form.UUID)))
 		return
 	}
-	c.JSON(common.HTTP_OK, common.OkWithData(hh.ruleEngine.PushOutQueue((value).(*typex.OutEnd), data)))
+	glogger.GLogger.WithFields(logrus.Fields{
+		"topic": "rule/test/" + form.UUID,
+	}).Debug(form.TestData)
+	err1 := hh.ruleEngine.PushOutQueue(outend, form.TestData)
+	if err1 != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err1))
+		return
+	}
+	c.JSON(common.HTTP_OK, common.Ok())
 }
 
 /*
 *
-* 测试 Device 的结果
+* Device
 *
  */
 func TestDeviceCallback(c *gin.Context, hh *HttpApiServer) {
-	uuid, _ := c.GetQuery("uuid") // Device
-	data, _ := c.GetQuery("data") // Data, Read or write
-	_, err0 := hh.GetMRule(uuid)
-	if err0 != nil {
-		c.JSON(common.HTTP_OK, common.Error400(err0))
+	type Form struct {
+		UUID     string `json:"uuid"`
+		TestData string `json:"testData"`
+	}
+	form := Form{}
+	if err := c.BindJSON(&form); err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	value, ok := hh.ruleEngine.AllDevices().Load(uuid)
-	if !ok {
-		c.JSON(common.HTTP_OK, common.Error((fmt.Sprintf("'Device' not exists: %v", uuid))))
+	glogger.GLogger.WithFields(logrus.Fields{
+		"topic": "rule/test/" + form.UUID,
+	}).Debug(form.TestData)
+	device := hh.ruleEngine.GetDevice(form.UUID)
+	if device == nil {
+		c.JSON(common.HTTP_OK, common.Error(fmt.Sprintf("'Device' not exists: %v", form.UUID)))
 		return
 	}
-	c.JSON(common.HTTP_OK, common.OkWithData(hh.ruleEngine.PushDeviceQueue((value).(*typex.Device), data)))
+	err1 := hh.ruleEngine.PushDeviceQueue(device, form.TestData)
+	if err1 != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err1))
+		return
+	}
+	c.JSON(common.HTTP_OK, common.Ok())
 }

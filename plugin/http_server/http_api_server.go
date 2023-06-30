@@ -241,7 +241,12 @@ func (hs *HttpApiServer) LoadRoute() {
 	// Delete rule by UUID
 	//
 	hs.ginEngine.DELETE(url("rules"), hs.addRoute(DeleteRule))
+	//
+	// 测试规则
+	//
 	hs.ginEngine.POST(url("rules/testIn"), hs.addRoute(TestSourceCallback))
+	hs.ginEngine.POST(url("rules/testOut"), hs.addRoute(TestOutEndCallback))
+	hs.ginEngine.POST(url("rules/testDevice"), hs.addRoute(TestDeviceCallback))
 	//
 	// Delete inend by UUID
 	//

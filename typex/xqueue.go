@@ -103,40 +103,24 @@ func StartQueue(maxQueueSize int) {
 					if qd.I != nil {
 						// 如果是Debug消息直接打印出来
 						qd.E.RunSourceCallbacks(qd.I, qd.Data)
-						qd.E.RunHooks(qd.Data)
-						if qd.Debug {
-							glogger.GLogger.WithField("type", "testRule").
-								Debug("RunSourceCallbacks Device:", qd.I.UUID)
-							continue
-						}
 					}
 					if qd.D != nil {
-						// glogger.GLogger.Debug("RunDeviceCallbacks Device:", qd.D.UUID)
 						qd.E.RunDeviceCallbacks(qd.D, qd.Data)
 						qd.E.RunHooks(qd.Data)
-						if qd.Debug {
-							glogger.GLogger.WithField("type", "testRule").
-								Debug("RunDeviceCallbacks Device:", qd.D.UUID)
-							continue
-						}
 					}
 					if qd.O != nil {
 						v, ok := qd.E.AllOutEnd().Load(qd.O.UUID)
 						if ok {
-							if v.(*OutEnd).Target == nil {
+							target := v.(*OutEnd).Target
+							if target == nil {
 								continue
 							}
-							if _, err := v.(*OutEnd).Target.To(qd.Data); err != nil {
+							if _, err := target.To(qd.Data); err != nil {
 								glogger.GLogger.Error(err)
 								qd.E.GetMetricStatistics().IncOutFailed()
 							} else {
 								qd.E.GetMetricStatistics().IncOut()
 							}
-						}
-						if qd.Debug {
-							glogger.GLogger.WithField("type", "testRule").
-								Debug("To Target:", qd.O.UUID)
-							continue
 						}
 					}
 				}

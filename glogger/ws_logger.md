@@ -62,9 +62,35 @@ $$
     ```json
     {
         "appId":"rulex",
-        "level":"info",
-        "msg":"success",
-        "time":"2023-06-30T13:04:06+08:00",
-        "topic":"rule/debugger/RULE12345678"
+        "file":"C:/Users/wangwenhai/workspace/rulex/plugin/http_server/rule_api.go:580",
+        "func":"github.com/hootrhino/rulex/plugin/http_server.TestSourceCallback",
+        "level":"debug",
+        "msg":"string",
+        "time":"2023-06-30T17:52:31+08:00",
+        "topic":"rule/test/INa56de94aa22340c89cfab091a53d074f"
+    }
+    ```
+3. Rule 运行时 log
+    ```json
+    {
+        "appId":"rulex",
+        "file":"C:/Users/wangwenhai/workspace/rulex/plugin/http_server/rule_api.go:580",
+        "func":"github.com/hootrhino/rulex/plugin/http_server.TestSourceCallback",
+        "level":"debug",
+        "msg":"string",
+        "time":"2023-06-30T17:52:31+08:00",
+        "topic":"rule/log/INa56de94aa22340c89cfab091a53d074f"
+    }
+    ```
+4. APP 运行输出
+    ```json
+    {
+        "appId":"rulex",
+        "file":"C:/Users/wangwenhai/workspace/rulex/rulexlib/log_lib.go:35",
+        "func":"github.com/hootrhino/rulex/rulexlib.DebugAPP.func1",
+        "level":"debug",
+        "msg":"2023-06-30 17:31:35",
+        "time":"2023-06-30T17:31:35+08:00",
+        "topic":"app/console/APP66c580e7b2c04aa18c30164973ec1d76"
     }
     ```
