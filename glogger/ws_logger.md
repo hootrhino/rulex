@@ -24,8 +24,46 @@
 - msg: 日志本体
 - topic: 用来标识该日志的一个作用, 例如`app/UUID12345678/log`表示`UUID12345678`这个app的运行日志。
 
+### Topic 规范
+Topic 具备一定的格式规范，但是仅仅为了区分业务，格式不会对功能造成影响。
+
+格式如下：
+$$
+/业务名/模块/······
+$$
+
+例如网络测速的日志Topic:
+$$
+/plugin/ICMPSenderPing/UUID
+$$
+
+前端只需要知道Topic即可知道其具体的含义。
+
 ### 常见Topic
-| Ws topic | 示例 | 用途 |
-| -------- | ---- | ---- |
-| /1/2/3   | 占位 | 占位 |
-| /1/2/3   | 占位 | 占位 |
+
+| Ws log topic                     | 用途                 |
+| -------------------------------- | -------------------- |
+| plugin/ICMPSenderPing/ICMPSender | 网络测度插件的日志   |
+| rule/console/$UUID               | 某个规则测试日志     |
+| app/console/$UUID                | 某个轻量应用运行日志 |
+### 常见日志示例
+1. 测速
+    ```json
+    {
+        "appId":"rulex",
+        "level":"info",
+        "msg":"[Count:3] Ping Reply From [192.168.1.1]: time=505.8µs ms TTL=128",
+        "time":"2023-06-30T13:04:06+08:00",
+        "topic":"plugin/ICMPSenderPing/ICMPSender"
+    }
+    ```
+2. Rule 调试 log
+    ```json
+    {
+        "appId":"rulex",
+        "level":"info",
+        "msg":"success",
+        "time":"2023-06-30T13:04:06+08:00",
+        "topic":"rule/debugger/RULE12345678"
+    }
+    ```
