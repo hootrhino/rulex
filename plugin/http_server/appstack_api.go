@@ -40,7 +40,7 @@ type web_data_app struct {
 func AppDetail(c *gin.Context, hs *HttpApiServer) {
 	uuid, _ := c.GetQuery("uuid")
 	// uuid
-	appInfo, err1 := hs.GetAppWithUUID(uuid)
+	appInfo, err1 := hs.GetMAppWithUUID(uuid)
 	if err1 != nil {
 		c.JSON(common.HTTP_OK, common.Error400EmptyObj(err1))
 		return
@@ -99,7 +99,7 @@ func Apps(c *gin.Context, hs *HttpApiServer) {
 		return
 	}
 	// uuid
-	appInfo, err1 := hs.GetAppWithUUID(uuid)
+	appInfo, err1 := hs.GetMAppWithUUID(uuid)
 	if err1 != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err1))
 		return
@@ -309,7 +309,7 @@ func UpdateApp(c *gin.Context, hs *HttpApiServer) {
 func StartApp(c *gin.Context, hs *HttpApiServer) {
 	uuid, _ := c.GetQuery("uuid")
 	// 检查数据库
-	mApp, err := hs.GetAppWithUUID(uuid)
+	mApp, err := hs.GetMAppWithUUID(uuid)
 	if err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return

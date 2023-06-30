@@ -306,7 +306,7 @@ func (s *HttpApiServer) AllApp() []model.MApp {
 	return m
 
 }
-func (s *HttpApiServer) GetAppWithUUID(uuid string) (*model.MApp, error) {
+func (s *HttpApiServer) GetMAppWithUUID(uuid string) (*model.MApp, error) {
 	m := model.MApp{}
 	if err := s.DB().Where("uuid=?", uuid).First(&m).Error; err != nil {
 		return nil, err
