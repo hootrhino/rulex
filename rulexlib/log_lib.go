@@ -24,7 +24,7 @@ func Log(rx typex.RuleX) func(*lua.LState) int {
 
 /*
 *
-* APP debug输出
+* APP debug输出, applib:debug(".....")
 *
  */
 func DebugAPP(rx typex.RuleX, uuid string) func(*lua.LState) int {
