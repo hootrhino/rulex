@@ -32,7 +32,7 @@ func DebugAPP(rx typex.RuleX, uuid string) func(*lua.LState) int {
 		content := l.ToString(2)
 		glogger.GLogger.WithFields(logrus.Fields{
 			"topic": "app/console/" + uuid,
-		}).Debug(content)
+		}).Info(content)
 		return 0
 	}
 }
