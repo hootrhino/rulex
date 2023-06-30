@@ -31,8 +31,7 @@ func Debug(rx typex.RuleX, uuid string) func(*lua.LState) int {
 	return func(l *lua.LState) int {
 		content := l.ToString(2)
 		glogger.GLogger.WithFields(logrus.Fields{
-			"logType": "debugRule",
-			"ruleId":  uuid,
+			"topic": "rule/console/" + uuid,
 		}).Debug(content)
 		return 0
 	}
