@@ -3,7 +3,7 @@ package httpserver
 import (
 	"errors"
 
-	model "github.com/hootrhino/rulex/plugin/http_server/model"
+	"github.com/hootrhino/rulex/plugin/http_server/model"
 
 	"gorm.io/gorm"
 )
@@ -256,18 +256,18 @@ func (s *HttpApiServer) DeleteModbusPointAndDevice(deviceUuid string) error {
 }
 
 // UpdateModbusPoint 更新modbus点位
-func (s *HttpApiServer) UpdateModbusPoint(model MModbusPointPosition) error {
-	m := MDevice{}
-	if err := s.sqliteDb.Where("id = ?", model.ID).First(&m).Error; err != nil {
+func (s *HttpApiServer) UpdateModbusPoint(mm model.MModbusPointPosition) error {
+	m := model.MDevice{}
+	if err := s.sqliteDb.Where("id = ?", mm.ID).First(&m).Error; err != nil {
 		return err
 	} else {
-		s.sqliteDb.Model(m).Updates(&model)
+		s.sqliteDb.Model(m).Updates(&m)
 		return nil
 	}
 }
 
 // AllModbusPointByDeviceUuid 根据设备UUID查询设备点位
-func (s *HttpApiServer) AllModbusPointByDeviceUuid(deviceUuid string) (list []MModbusPointPosition, err error) {
+func (s *HttpApiServer) AllModbusPointByDeviceUuid(deviceUuid string) (list []model.MModbusPointPosition, err error) {
 
 	err = s.sqliteDb.Where("device_uuid = ?", deviceUuid).Find(&list).Error
 	return

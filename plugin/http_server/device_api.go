@@ -238,10 +238,10 @@ func ModbusPoints(c *gin.Context, hs *HttpApiServer) {
 	deviceUuid := c.GetString("deviceUuid")
 	list, err := hs.AllModbusPointByDeviceUuid(deviceUuid)
 	if err != nil {
-		c.JSON(HTTP_OK, Error400(err))
+		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	c.JSON(HTTP_OK, OkWithData(list))
+	c.JSON(common.HTTP_OK, common.OkWithData(list))
 }
 
 // UpdateModbusPoint 更新modbus_excel类型的点位数据
@@ -258,12 +258,12 @@ func UpdateModbusPoint(c *gin.Context, hs *HttpApiServer) {
 
 	form := Form{}
 	if err := c.ShouldBindJSON(&form); err != nil {
-		c.JSON(HTTP_OK, Error400(err))
+		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
 
-	err := hs.UpdateModbusPoint(MModbusPointPosition{
-		RulexModel: RulexModel{
+	err := hs.UpdateModbusPoint(model.MModbusPointPosition{
+		RulexModel: model.RulexModel{
 			ID: form.Id,
 		},
 		DeviceUuid:   form.DeviceUuid,
@@ -275,11 +275,11 @@ func UpdateModbusPoint(c *gin.Context, hs *HttpApiServer) {
 	})
 
 	if err != nil {
-		c.JSON(HTTP_OK, Error400(err))
+		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
 
-	c.JSON(HTTP_OK, Ok())
+	c.JSON(common.HTTP_OK, common.Ok())
 
 }
 
