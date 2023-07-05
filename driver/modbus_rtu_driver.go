@@ -142,9 +142,6 @@ func (d *modBusRtuDriver) Read(cmd []byte, data []byte) (int, error) {
 			}
 			dataMap[r.Tag] = value
 		}
-
-		// 设置一个间隔时间防止低级CPU黏包等
-		// TODO 未来通过参数形式传递
 		time.Sleep(time.Duration(d.frequency) * time.Millisecond)
 	}
 	bytes, _ := json.Marshal(dataMap)
@@ -158,39 +155,48 @@ func (d *modBusRtuDriver) Read(cmd []byte, data []byte) (int, error) {
 
 }
 
-func (d *modBusRtuDriver) Write(cmd []byte, data []byte) (int, error) {
-	dataMap := []common.RegisterRW{}
+/*
+*
+* 支持Modbus写入
+*
+ */
+func (d *modBusRtuDriver) Write(_ []byte, data []byte) (int, error) {
+	dataMap := []common.RegisterW{}
 	if err := json.Unmarshal(data, &dataMap); err != nil {
 		return 0, err
 	}
 	for _, r := range dataMap {
+		// 5
 		if r.Function == common.WRITE_SINGLE_COIL {
 			d.lock.Lock()
-			_, err := d.client.WriteSingleCoil(r.Address, binary.BigEndian.Uint16([]byte(r.Value)[0:2]))
+			_, err := d.client.WriteSingleCoil(r.Address, binary.BigEndian.Uint16(r.Values))
 			d.lock.Unlock()
 			if err != nil {
 				return 0, err
 			}
 		}
+		// 15
 		if r.Function == common.WRITE_MULTIPLE_COILS {
 			d.lock.Lock()
-			_, err := d.client.WriteMultipleCoils(r.Address, r.Quantity, []byte(r.Value))
+			_, err := d.client.WriteMultipleCoils(r.Address, uint16(len(r.Values)), r.Values)
 			d.lock.Unlock()
 			if err != nil {
 				return 0, err
 			}
 		}
+		// 6
 		if r.Function == common.WRITE_SINGLE_HOLDING_REGISTER {
 			d.lock.Lock()
-			_, err := d.client.WriteSingleRegister(r.Address, binary.BigEndian.Uint16([]byte(r.Value)[0:2]))
+			_, err := d.client.WriteSingleRegister(r.Address, binary.BigEndian.Uint16(r.Values))
 			d.lock.Unlock()
 			if err != nil {
 				return 0, err
 			}
 		}
+		// 16
 		if r.Function == common.WRITE_MULTIPLE_HOLDING_REGISTERS {
 			d.lock.Lock()
-			_, err := d.client.WriteMultipleRegisters(r.Address, r.Quantity, []byte(r.Value))
+			_, err := d.client.WriteMultipleRegisters(r.Address, uint16(len(r.Values)), r.Values)
 			d.lock.Unlock()
 			if err != nil {
 				return 0, err

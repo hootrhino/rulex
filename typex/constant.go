@@ -10,9 +10,24 @@ const (
 	SOURCE_STOP  SourceState = 3
 )
 
-//
+func (s SourceState) String() string {
+	if s == 0 {
+		return "DOWN"
+	}
+	if s == 1 {
+		return "UP"
+	}
+	if s == 2 {
+		return "PAUSE"
+	}
+	if s == 3 {
+		return "STOP"
+	}
+	return "UnKnown State"
+
+}
+
 // Abstract driver interface
-//
 type DriverState int
 
 const (
@@ -24,9 +39,7 @@ const (
 	DRIVER_DOWN DriverState = 2
 )
 
-//
 // InEndType
-//
 type InEndType string
 
 func (i InEndType) String() string {
@@ -63,10 +76,6 @@ const (
 	// RULEX UDP 自定义简单协议
 	//
 	RULEX_UDP InEndType = "RULEX_UDP"
-	//
-	// TENCENT_IOT_HUB 自定义简单协议
-	//
-	TENCENT_IOT_HUB InEndType = "TENCENT_IOT_HUB"
 	// 通用IotHUB
 	GENERIC_IOT_HUB InEndType = "GENERIC_IOT_HUB"
 	//
@@ -75,9 +84,7 @@ const (
 	ITHINGS_IOT_HUB InEndType = "ITHINGS_IOT_HUB"
 )
 
-//
 // TargetType
-//
 type TargetType string
 
 func (i TargetType) String() string {
@@ -109,6 +116,8 @@ const (
 	UDP_TARGET TargetType = "UDP_TARGET"
 	// SQLITE
 	SQLITE_TARGET TargetType = "SQLITE_TARGET"
+	// USER_G776 DTU
+	USER_G776_TARGET TargetType = "USER_G776_TARGET"
 )
 
 /*

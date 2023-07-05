@@ -33,9 +33,9 @@ func Test_modbus_485_sensor_data_parse(t *testing.T) {
 	grpcInend := typex.NewInEnd("GRPC", "Test_485_sensor", "Test_485_sensor", map[string]interface{}{
 		"port": 2581,
 	})
-
-	if err := engine.LoadInEnd(grpcInend); err != nil {
-		t.Error("grpcInend load failed:", err)
+	ctx, cancelF := typex.NewCCTX()
+	if err := engine.LoadInEndWithCtx(grpcInend, ctx, cancelF); err != nil {
+		t.common.Error("grpcInend load failed:", err)
 	}
 	rule := typex.NewRule(engine,
 		"uuid",
@@ -66,7 +66,7 @@ func Test_modbus_485_sensor_data_parse(t *testing.T) {
 		}`,
 		`function Failed(error) print("[LUA Failed Callback]", error) end`)
 	if err := engine.LoadRule(rule); err != nil {
-		t.Error(err)
+		t.common.Error(err)
 	}
 	conn, err := grpc.Dial("127.0.0.1:2581", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
@@ -88,7 +88,7 @@ func Test_modbus_485_sensor_data_parse(t *testing.T) {
 			`,
 		})
 		if err != nil {
-			t.Error(err)
+			t.common.Error(err)
 		}
 		t.Logf("Rulex Rpc Call Result ====>>: %v --%v", resp.GetMessage(), i)
 

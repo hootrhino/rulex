@@ -1,4 +1,4 @@
-package httpserver
+package model
 
 import (
 	"database/sql/driver"
@@ -13,13 +13,31 @@ type RulexModel struct {
 }
 type stringList []string
 
+/*
+*
+* 给GORM用的
+*
+ */
 func (f stringList) Value() (driver.Value, error) {
 	b, err := json.Marshal(f)
 	return string(b), err
 }
 
+/*
+*
+* 给GORM用的
+*
+ */
 func (f *stringList) Scan(data interface{}) error {
 	return json.Unmarshal([]byte(data.(string)), f)
+}
+
+func (f stringList) String() string {
+	b, _ := json.Marshal(f)
+	return string(b)
+}
+func (f stringList) Len() int {
+	return len(f)
 }
 
 type MRule struct {
@@ -39,12 +57,23 @@ type MRule struct {
 type MInEnd struct {
 	RulexModel
 	// UUID for origin source ID
-	UUID        string `gorm:"not null"`
-	Type        string `gorm:"not null"`
-	Name        string `gorm:"not null"`
+	UUID      string     `gorm:"not null"`
+	Type      string     `gorm:"not null"`
+	Name      string     `gorm:"not null"`
+	BindRules stringList `json:"bindRules"` // 与之关联的规则表["A","B","C"]
+
 	Description string
 	Config      string
 	XDataModels string
+}
+
+func (md MInEnd) GetConfig() map[string]interface{} {
+	result := make(map[string]interface{})
+	err := json.Unmarshal([]byte(md.Config), &result)
+	if err != nil {
+		return map[string]interface{}{}
+	}
+	return result
 }
 
 type MOutEnd struct {
@@ -55,6 +84,15 @@ type MOutEnd struct {
 	Name        string `gorm:"not null"`
 	Description string
 	Config      string
+}
+
+func (md MOutEnd) GetConfig() map[string]interface{} {
+	result := make(map[string]interface{})
+	err := json.Unmarshal([]byte(md.Config), &result)
+	if err != nil {
+		return map[string]interface{}{}
+	}
+	return result
 }
 
 type MUser struct {
@@ -68,14 +106,12 @@ type MUser struct {
 // 设备元数据
 type MDevice struct {
 	RulexModel
-	UUID string `gorm:"not null"`
-	Name string `gorm:"not null"`
-	Type string `gorm:"not null"`
-	//   这个字段本来用于给设备单独新建脚本的，但是目前已经有了规则，所以先留空
-	// 或许以后会用到
-	ActionScript string
-	Config       string
-	Description  string
+	UUID        string `gorm:"not null"`
+	Name        string `gorm:"not null"`
+	Type        string `gorm:"not null"`
+	Config      string
+	BindRules   stringList `json:"bindRules"` // 与之关联的规则表["A","B","C"]
+	Description string
 }
 
 func (md MDevice) GetConfig() map[string]interface{} {
@@ -128,4 +164,15 @@ type MAiBase struct {
 	Version     string `gorm:"not null"` // 版本号
 	Filepath    string `gorm:"not null"` // 文件路径, 是相对于main的apps目录
 	Description string `gorm:"not null"`
+}
+
+// MModbusPointPosition modbus数据点位
+type MModbusPointPosition struct {
+	RulexModel
+	DeviceUuid   string `json:"deviceUuid"    gorm:"not null"`
+	Tag          string `json:"tag"           gorm:"not null"`
+	Function     int    `json:"function"      gorm:"not null"`
+	SlaverId     byte   `json:"slaverId"      gorm:"not null"`
+	StartAddress uint16 `json:"startAddress"  gorm:"not null"`
+	Quality      uint16 `json:"quality"       gorm:"not null"`
 }

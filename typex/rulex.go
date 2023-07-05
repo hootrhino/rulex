@@ -1,6 +1,8 @@
 package typex
 
 import (
+	"context"
+	"os"
 	"sync"
 )
 
@@ -19,13 +21,10 @@ type RulexConfig struct {
 	LogLevel              string `ini:"log_level" json:"logLevel"`
 	LogPath               string `ini:"log_path" json:"logPath"`
 	LuaLogPath            string `ini:"lua_log_path" json:"luaLogPath"`
-	RemoteLoggerIp        string `ini:"remote_logger_ip" json:"remoteLoggerIp"`
-	RemoteLoggerPort      int    `ini:"remote_logger_port" json:"remoteLoggerPort"`
-	RemoteLoggerSn        string `ini:"remote_logger_sn" json:"remoteLoggerSn"`
-	RemoteLoggerUid       string `ini:"remote_logger_uid" json:"remoteLoggerUid"`
 	MaxStoreSize          int    `ini:"max_store_size" json:"maxStoreSize"`
 	AppDebugMode          bool   `ini:"app_debug_mode" json:"appDebugMode"`
 	Extlibs               Extlib `ini:"extlibs,,allowshadow" json:"extlibs"`
+	UpdateServer          string `ini:"update_server" json:"updateServer"`
 }
 
 // RuleX interface
@@ -53,7 +52,7 @@ type RuleX interface {
 	//
 	// 加载输入
 	//
-	LoadInEnd(*InEnd) error
+	LoadInEndWithCtx(in *InEnd, ctx context.Context, cancelCTX context.CancelFunc) error
 	//
 	// 获取输入
 	//
@@ -73,7 +72,7 @@ type RuleX interface {
 	//
 	// 加载输出
 	//
-	LoadOutEnd(*OutEnd) error
+	LoadOutEndWithCtx(in *OutEnd, ctx context.Context, cancelCTX context.CancelFunc) error
 	//
 	// 所有输出
 	//
@@ -136,6 +135,8 @@ type RuleX interface {
 	// 停止规则引擎
 	//
 	Stop()
+	// 优雅关闭
+	Wait(...os.Signal)
 	//
 	// Snapshot Dump
 	//
@@ -143,7 +144,7 @@ type RuleX interface {
 	//
 	// 加载设备
 	//
-	LoadDevice(*Device) error
+	LoadDeviceWithCtx(in *Device, ctx context.Context, cancelCTX context.CancelFunc) error
 	//
 	// 获取设备
 	//
@@ -206,6 +207,7 @@ type RuleX interface {
 	// AiBase
 	//----------------------------------------
 	GetAiBase() XAiRuntime
+	GetMetricStatistics() *MetricStatistics
 }
 
 // 拓扑接入点，比如 modbus 检测点等

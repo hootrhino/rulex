@@ -49,11 +49,8 @@ func NewApplication(uuid, Name, Version, Filepath string) *Application {
 func (app *Application) SetCnC(ctx context.Context, cancel context.CancelFunc) {
 	app.ctx = ctx
 	app.cancel = cancel
+	app.vm.SetContext(app.ctx)
 }
-func (app *Application) GetCnC() (context.Context, context.CancelFunc) {
-	return app.ctx, app.cancel
-}
-
 func (app *Application) SetMainFunc(f *lua.LFunction) {
 	app.luaMainFunc = f
 }
@@ -77,6 +74,7 @@ func (app *Application) Stop() {
 			log.Println("[gopher-lua] app Stop:", app.UUID, ", with recover error: ", err)
 		}
 	}()
+	app.AppState = 0
 	app.cancel()
 }
 
@@ -86,14 +84,8 @@ func (app *Application) Stop() {
 *
  */
 func (app *Application) Remove() {
-	defer func() {
-		if err := recover(); err != nil {
-			log.Println("[gopher-lua] app Remove:", app.UUID, ", with recover error: ", err)
-		}
-	}()
-	app.Stop()
-	app.vm.Close()
-	app.vm = nil
+	app.cancel()
+	// app.VM().Close()
 	runtime.GC()
 }
 

@@ -61,11 +61,15 @@ func (d *modBusTCPDriver) State() typex.DriverState {
 
 func (d *modBusTCPDriver) Read(cmd []byte, data []byte) (int, error) {
 	dataMap := map[string]common.RegisterRW{}
+	var err error
+	var results []byte
+	count := len(d.Registers)
 	for _, r := range d.Registers {
 		d.handler.SlaveId = r.SlaverId
 		if r.Function == common.READ_COIL {
-			results, err := d.client.ReadCoils(r.Address, r.Quantity)
+			results, err = d.client.ReadCoils(r.Address, r.Quantity)
 			if err != nil {
+				count--
 				glogger.GLogger.Error(err)
 			}
 			value := common.RegisterRW{
@@ -79,8 +83,9 @@ func (d *modBusTCPDriver) Read(cmd []byte, data []byte) (int, error) {
 			dataMap[r.Tag] = value
 		}
 		if r.Function == common.READ_DISCRETE_INPUT {
-			results, err := d.client.ReadDiscreteInputs(r.Address, r.Quantity)
+			results, err = d.client.ReadDiscreteInputs(r.Address, r.Quantity)
 			if err != nil {
+				count--
 				glogger.GLogger.Error(err)
 			}
 			value := common.RegisterRW{
@@ -95,8 +100,9 @@ func (d *modBusTCPDriver) Read(cmd []byte, data []byte) (int, error) {
 
 		}
 		if r.Function == common.READ_HOLDING_REGISTERS {
-			results, err := d.client.ReadHoldingRegisters(r.Address, r.Quantity)
+			results, err = d.client.ReadHoldingRegisters(r.Address, r.Quantity)
 			if err != nil {
+				count--
 				glogger.GLogger.Error(err)
 			}
 			value := common.RegisterRW{
@@ -110,8 +116,9 @@ func (d *modBusTCPDriver) Read(cmd []byte, data []byte) (int, error) {
 			dataMap[r.Tag] = value
 		}
 		if r.Function == common.READ_INPUT_REGISTERS {
-			results, err := d.client.ReadInputRegisters(r.Address, r.Quantity)
+			results, err = d.client.ReadInputRegisters(r.Address, r.Quantity)
 			if err != nil {
+				count--
 				glogger.GLogger.Error(err)
 			}
 			value := common.RegisterRW{
@@ -124,12 +131,16 @@ func (d *modBusTCPDriver) Read(cmd []byte, data []byte) (int, error) {
 			}
 			dataMap[r.Tag] = value
 		}
-		// 设置一个间隔时间防止低级CPU黏包等
 		time.Sleep(time.Duration(d.frequency) * time.Millisecond)
 	}
 	bytes, _ := json.Marshal(dataMap)
 	copy(data, bytes)
-	return len(bytes), nil
+	// 只要有部分成功，哪怕有一个设备出故障也认为是正常的，上层可以根据Value来判断
+	ll := len(d.Registers)
+	if ll > 0 && count > 0 {
+		return len(bytes), nil
+	}
+	return len(bytes), err
 
 }
 
@@ -176,7 +187,5 @@ func (d *modBusTCPDriver) DriverDetail() typex.DriverDetail {
 }
 
 func (d *modBusTCPDriver) Stop() error {
-	d.handler.Close()
-	d = nil
-	return nil
+	return d.handler.Close()
 }

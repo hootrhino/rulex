@@ -74,7 +74,7 @@ func (sd *genericSnmpDevice) Start(cctx typex.CCTX) error {
 	}
 	err := client.Connect()
 	if err != nil {
-		glogger.GLogger.Error("Connect err: %v", err)
+		glogger.GLogger.Errorf("Connect err: %v", err)
 		return err
 	}
 

@@ -93,6 +93,7 @@ func LoadAppLib(app *typex.Application, e typex.RuleX) {
 	addAppLib(app, e, "applib", "JQ", rulexlib.JqSelect(e))
 	// 日志
 	addAppLib(app, e, "applib", "log", rulexlib.Log(e))
+	addAppLib(app, e, "applib", "Debug", rulexlib.DebugAPP(e, app.UUID))
 	// 二进制操作
 	addAppLib(app, e, "applib", "MB", rulexlib.MatchBinary(e))
 	addAppLib(app, e, "applib", "MBHex", rulexlib.MatchBinaryHex(e))
@@ -104,6 +105,7 @@ func LoadAppLib(app *typex.Application, e typex.RuleX) {
 	addAppLib(app, e, "applib", "HToN", rulexlib.HToN(e))
 	addAppLib(app, e, "applib", "HsubToN", rulexlib.HsubToN(e))
 	addAppLib(app, e, "applib", "MatchHex", rulexlib.MatchHex(e))
+	addAppLib(app, e, "applib", "MatchUInt", rulexlib.MatchUInt(e))
 	// 浮点数处理
 	addAppLib(app, e, "applib", "Bin2F32", rulexlib.BinToFloat32(e))
 	addAppLib(app, e, "applib", "Bin2F64", rulexlib.BinToFloat64(e))
@@ -177,6 +179,9 @@ func LoadAppLib(app *typex.Application, e typex.RuleX) {
 	// 树莓派4B
 	addAppLib(app, e, "raspi4b", "GPIOGet", rulexlib.RASPI4_GPIOGet(e))
 	addAppLib(app, e, "raspi4b", "GPIOSet", rulexlib.RASPI4_GPIOSet(e))
+	// 玩客云WS1508
+	addAppLib(app, e, "ws1608", "GPIOGet", rulexlib.WKYWS1608_GPIOGet(e))
+	addAppLib(app, e, "ws1608", "GPIOSet", rulexlib.WKYWS1608_GPIOSet(e))
 	//------------------------------------------------------------------------
 	// 校验数据
 	//------------------------------------------------------------------------

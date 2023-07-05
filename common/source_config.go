@@ -1,6 +1,7 @@
 package common
 
-type TencentMqttConfig struct {
+type GenericIoTHUBMqttConfig struct {
+	Mode       string `json:"mode" validate:"required" title:"模式:GW(网关)|DC(直连)"`
 	ProductId  string `json:"productId" validate:"required" title:"产品名"`
 	DeviceName string `json:"deviceName" validate:"required" title:"设备名"`
 	//
@@ -12,6 +13,7 @@ type TencentMqttConfig struct {
 	Password string `json:"password" validate:"required" title:"连接密码"`
 }
 type IThingsMqttConfig struct {
+	Mode       string `json:"mode" validate:"required" title:"模式:GW(网关)|DC(直连)"`
 	ProductId  string `json:"productId" validate:"required" title:"产品名"`
 	DeviceName string `json:"deviceName" validate:"required" title:"设备名"`
 	//

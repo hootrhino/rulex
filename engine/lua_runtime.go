@@ -21,6 +21,7 @@ func LoadBuildInLuaLib(e typex.RuleX, r *typex.Rule) {
 	r.AddLib(e, "rulexlib", "JQ", rulexlib.JqSelect(e))
 	// 日志
 	r.AddLib(e, "rulexlib", "log", rulexlib.Log(e))
+	r.AddLib(e, "rulexlib", "Debug", rulexlib.Debug(e, r.UUID))
 	// 二进制操作
 	r.AddLib(e, "rulexlib", "MB", rulexlib.MatchBinary(e))
 	r.AddLib(e, "rulexlib", "MBHex", rulexlib.MatchBinaryHex(e))
@@ -32,6 +33,7 @@ func LoadBuildInLuaLib(e typex.RuleX, r *typex.Rule) {
 	r.AddLib(e, "rulexlib", "HToN", rulexlib.HToN(e))
 	r.AddLib(e, "rulexlib", "HsubToN", rulexlib.HsubToN(e))
 	r.AddLib(e, "rulexlib", "MatchHex", rulexlib.MatchHex(e))
+	r.AddLib(e, "rulexlib", "MatchUInt", rulexlib.MatchUInt(e))
 	// 浮点数处理
 	r.AddLib(e, "rulexlib", "Bin2F32", rulexlib.BinToFloat32(e))
 	r.AddLib(e, "rulexlib", "Bin2F64", rulexlib.BinToFloat64(e))
@@ -104,6 +106,9 @@ func LoadBuildInLuaLib(e typex.RuleX, r *typex.Rule) {
 	// 树莓派4B
 	r.AddLib(e, "raspi4b", "GPIOGet", rulexlib.RASPI4_GPIOGet(e))
 	r.AddLib(e, "raspi4b", "GPIOSet", rulexlib.RASPI4_GPIOSet(e))
+	// 玩客云WS1508
+	r.AddLib(e, "ws1608", "GPIOGet", rulexlib.WKYWS1608_GPIOGet(e))
+	r.AddLib(e, "ws1608", "GPIOSet", rulexlib.WKYWS1608_GPIOSet(e))
 	//------------------------------------------------------------------------
 	// AI BASE
 	//------------------------------------------------------------------------

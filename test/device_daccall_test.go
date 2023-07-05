@@ -51,7 +51,8 @@ func Test_dac_call_device(t *testing.T) {
 			},
 		})
 	GMODBUS.UUID = "GMODBUS"
-	if err := engine.LoadDevice(GMODBUS); err != nil {
+	ctx, cancelF := typex.NewCCTX()
+	if err := engine.LoadDeviceWithCtx(GMODBUS, ctx, cancelF); err != nil {
 		t.Fatal(err)
 	}
 	rule := typex.NewRule(engine,

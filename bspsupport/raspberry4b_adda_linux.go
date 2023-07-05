@@ -1,7 +1,6 @@
 package archsupport
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -92,7 +91,7 @@ func RASPI4_GPIOGet(pin int) (int, error) {
 		return -1, err
 	}
 	if len(Value) < 1 {
-		return -1, errors.New("invalid length")
+		return -1, errInvalidLen
 	}
 	if Value[0] == '0' {
 		return 0, nil
@@ -100,5 +99,5 @@ func RASPI4_GPIOGet(pin int) (int, error) {
 	if Value[0] == '1' {
 		return 1, nil
 	}
-	return -1, errors.New("invalid value")
+	return -1, errInvalidValue
 }

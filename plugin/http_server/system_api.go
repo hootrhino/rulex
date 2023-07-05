@@ -6,13 +6,12 @@ import (
 	"strconv"
 	"time"
 
+	common "github.com/hootrhino/rulex/plugin/http_server/common"
+
 	"github.com/hootrhino/rulex/device"
-	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/source"
-	"github.com/hootrhino/rulex/statistics"
 	"github.com/hootrhino/rulex/target"
 	"github.com/hootrhino/rulex/typex"
-	"github.com/hootrhino/rulex/utils"
 
 	"github.com/gin-gonic/gin"
 	"github.com/shirou/gopsutil/v3/cpu"
@@ -25,21 +24,21 @@ import (
 * 健康检查接口, 一般用来监视是否工作
 *
  */
-func Ping(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+func Ping(c *gin.Context, hh *HttpApiServer) {
 	c.Writer.Write([]byte("PONG"))
 	c.Writer.Flush()
 }
 
 // Get all plugins
-func Plugins(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+func Plugins(c *gin.Context, hh *HttpApiServer) {
 	data := []interface{}{}
-	plugins := e.AllPlugins()
+	plugins := hh.ruleEngine.AllPlugins()
 	plugins.Range(func(key, value interface{}) bool {
 		pi := value.(typex.XPlugin).PluginMetaInfo()
 		data = append(data, pi)
 		return true
 	})
-	c.JSON(HTTP_OK, OkWithData(data))
+	c.JSON(common.HTTP_OK, common.OkWithData(data))
 }
 func bToMb(b uint64) uint64 {
 	return b / 1024 / 1024
@@ -81,47 +80,46 @@ func source_count(e typex.RuleX) map[string]int {
 * 获取系统指标, Go 自带这个不准, 后期版本需要更换跨平台实现
 *
  */
-func System(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
-	cpuPercent, _ := cpu.Percent(5*time.Millisecond, false)
-	parts, _ := disk.Partitions(true)
-	diskInfo, _ := disk.Usage(parts[0].Mountpoint)
+func System(c *gin.Context, hh *HttpApiServer) {
+	cpuPercent, _ := cpu.Percent(time.Duration(1)*time.Second, true)
+	diskInfo, _ := disk.Usage("/")
 	// For info on each, see: https://golang.org/pkg/runtime/#MemStats
 	var m runtime.MemStats
 	runtime.ReadMemStats(&m)
-	ip, err0 := utils.HostNameI()
+	// ip, err0 := utils.HostNameI()
 	hardWareInfo := map[string]interface{}{
-		"version":     e.Version().Version,
+		"version":     hh.ruleEngine.Version().Version,
 		"diskInfo":    calculateDiskInfo(diskInfo),
 		"systemMem":   bToMb(m.Sys),
 		"allocMem":    bToMb(m.Alloc),
 		"totalMem":    bToMb(m.TotalAlloc),
 		"cpuPercent":  calculateCpuPercent(cpuPercent),
-		"osArch":      e.Version().Arch,
-		"osDist":      e.Version().Dist,
+		"osArch":      hh.ruleEngine.Version().Arch,
+		"osDist":      hh.ruleEngine.Version().Dist,
 		"startedTime": StartedTime,
-		"ip": func() []string {
-			if err0 != nil {
-				glogger.GLogger.Error(err0)
-				return []string{"127.0.0.1"}
-			}
-			return ip
-		}(),
-		"wsUrl": func() []string {
-			if err0 != nil {
-				glogger.GLogger.Error(err0)
-				return []string{"ws://127.0.0.1:2580/ws"}
-			}
-			ips := []string{}
-			for _, ipp := range ip {
-				ips = append(ips, fmt.Sprintf("ws://%s:2580/ws", ipp))
-			}
-			return ips
-		}(),
+		// "ip": func() []string {
+		// 	if err0 != nil {
+		// 		glogger.GLogger. common.Error(err0)
+		// 		return []string{"127.0.0.1"}
+		// 	}
+		// 	return ip
+		// }(),
+		// "wsUrl": func() []string {
+		// 	if err0 != nil {
+		// 		glogger.GLogger. common.Error(err0)
+		// 		return []string{"ws://127.0.0.1:2580/ws"}
+		// 	}
+		// 	ips := []string{}
+		// 	for _, ipp := range ip {
+		// 		ips = append(ips, fmt.Sprintf("ws://%s:2580/ws", ipp))
+		// 	}
+		// 	return ips
+		// }(),
 	}
-	c.JSON(HTTP_OK, OkWithData(gin.H{
+	c.JSON(common.HTTP_OK, common.OkWithData(gin.H{
 		"hardWareInfo": hardWareInfo,
-		"statistic":    statistics.AllStatistics(),
-		"sourceCount":  source_count(e),
+		"statistic":    hh.ruleEngine.GetMetricStatistics(),
+		"sourceCount":  source_count(hh.ruleEngine),
 	}))
 }
 
@@ -130,15 +128,15 @@ func System(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 * SnapshotDump
 *
  */
-func SnapshotDump(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
-	c.JSON(HTTP_OK, OkWithData(e.SnapshotDump()))
+func SnapshotDump(c *gin.Context, hh *HttpApiServer) {
+	c.JSON(common.HTTP_OK, common.OkWithData(hh.ruleEngine.SnapshotDump()))
 }
 
 // Get all Drivers
-func Drivers(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+func Drivers(c *gin.Context, hh *HttpApiServer) {
 	data := []interface{}{}
 	id := 0
-	e.AllInEnd().Range(func(key, value interface{}) bool {
+	hh.ruleEngine.AllInEnd().Range(func(key, value interface{}) bool {
 		drivers := value.(*typex.InEnd).Source.Driver()
 		if drivers != nil {
 			dd := drivers.DriverDetail()
@@ -148,7 +146,7 @@ func Drivers(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		}
 		return true
 	})
-	e.AllDevices().Range(func(key, value interface{}) bool {
+	hh.ruleEngine.AllDevices().Range(func(key, value interface{}) bool {
 		drivers := value.(*typex.Device).Device.Driver()
 		if drivers != nil {
 			dd := drivers.DriverDetail()
@@ -158,20 +156,20 @@ func Drivers(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		}
 		return true
 	})
-	c.JSON(HTTP_OK, OkWithData(data))
+	c.JSON(common.HTTP_OK, common.OkWithData(data))
 }
 
 // Get statistics data
-func Statistics(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
-	c.JSON(HTTP_OK, OkWithData(statistics.AllStatistics()))
+func Statistics(c *gin.Context, hh *HttpApiServer) {
+	c.JSON(common.HTTP_OK, common.OkWithData(hh.ruleEngine.GetMetricStatistics()))
 }
 
 // Get statistics data
-func SourceCount(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
-	allInEnd := e.AllInEnd()
-	allOutEnd := e.AllOutEnd()
-	allRule := e.AllRule()
-	plugins := e.AllPlugins()
+func SourceCount(c *gin.Context, hh *HttpApiServer) {
+	allInEnd := hh.ruleEngine.AllInEnd()
+	allOutEnd := hh.ruleEngine.AllOutEnd()
+	allRule := hh.ruleEngine.AllRule()
+	plugins := hh.ruleEngine.AllPlugins()
 	var c1, c2, c3, c4 int
 	allInEnd.Range(func(key, value interface{}) bool {
 		c1 += 1
@@ -189,7 +187,7 @@ func SourceCount(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 		c4 += 1
 		return true
 	})
-	c.JSON(HTTP_OK, OkWithData(map[string]int{
+	c.JSON(common.HTTP_OK, common.OkWithData(map[string]int{
 		"inends":  c1,
 		"outends": c2,
 		"rules":   c3,
@@ -202,12 +200,12 @@ func SourceCount(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 * 输入类型配置
 *
  */
-func RType(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+func RType(c *gin.Context, hh *HttpApiServer) {
 	Type, _ := c.GetQuery("type")
 	if Type == "" {
-		c.JSON(HTTP_OK, OkWithData(source.SM.All()))
+		c.JSON(common.HTTP_OK, common.OkWithData(source.SM.All()))
 	} else {
-		c.JSON(HTTP_OK, OkWithData(source.SM.Find(typex.InEndType(Type))))
+		c.JSON(common.HTTP_OK, common.OkWithData(source.SM.Find(typex.InEndType(Type))))
 	}
 
 }
@@ -217,12 +215,12 @@ func RType(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 * 输出类型配置
 *
  */
-func TType(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+func TType(c *gin.Context, hh *HttpApiServer) {
 	Type, _ := c.GetQuery("type")
 	if Type == "" {
-		c.JSON(HTTP_OK, OkWithData(target.TM.All()))
+		c.JSON(common.HTTP_OK, common.OkWithData(target.TM.All()))
 	} else {
-		c.JSON(HTTP_OK, OkWithData(target.TM.Find(typex.TargetType(Type))))
+		c.JSON(common.HTTP_OK, common.OkWithData(target.TM.Find(typex.TargetType(Type))))
 	}
 
 }
@@ -232,12 +230,12 @@ func TType(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 * 设备配置
 *
  */
-func DType(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+func DType(c *gin.Context, hh *HttpApiServer) {
 	Type, _ := c.GetQuery("type")
 	if Type == "" {
-		c.JSON(HTTP_OK, OkWithData(device.DM.All()))
+		c.JSON(common.HTTP_OK, common.OkWithData(device.DM.All()))
 	} else {
-		c.JSON(HTTP_OK, OkWithData(device.DM.Find(typex.DeviceType(Type))))
+		c.JSON(common.HTTP_OK, common.OkWithData(device.DM.Find(typex.DeviceType(Type))))
 	}
 
 }
@@ -247,9 +245,9 @@ func DType(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 * 获取本地的串口列表
 *
  */
-func GetUarts(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+func GetUarts(c *gin.Context, hh *HttpApiServer) {
 	ports, _ := serial.GetPortsList()
-	c.JSON(HTTP_OK, OkWithData(ports))
+	c.JSON(common.HTTP_OK, common.OkWithData(ports))
 }
 
 /*
@@ -257,8 +255,8 @@ func GetUarts(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 * 计算开机时间
 *
  */
-func StartedAt(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
-	c.JSON(HTTP_OK, OkWithData(StartedTime))
+func StartedAt(c *gin.Context, hh *HttpApiServer) {
+	c.JSON(common.HTTP_OK, common.OkWithData(StartedTime))
 }
 
 func calculateDiskInfo(diskInfo *disk.UsageStat) float64 {
@@ -273,6 +271,6 @@ func calculateCpuPercent(cpus []float64) float64 {
 	for _, v := range cpus {
 		acc += v
 	}
-	value, _ := strconv.ParseFloat(fmt.Sprintf("%.2f", acc), 64)
+	value, _ := strconv.ParseFloat(fmt.Sprintf("%.2f", acc/float64(len(cpus))), 64)
 	return value
 }

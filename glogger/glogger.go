@@ -22,7 +22,7 @@ func StartGLogger(LogLevel string,
 	AppDebugMode bool,
 	path string,
 	key string, value interface{}) {
-	GLogger = Logrus.WithFields(logrus.Fields{"appName": key, "appId": value})
+	GLogger = Logrus.WithField("appId", value)
 	private_local_logger = NewLogWriter("./" + time.Now().Format("2006-01-02-") + path)
 	Logrus.Formatter = new(logrus.JSONFormatter)
 	if AppDebugMode {

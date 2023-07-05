@@ -1,6 +1,6 @@
 # RULEX Framework
 
-**希望大家第一眼就看到这个说明 更多文档参考(国内可能需要科学上网): https://rulex.pages.dev**
+**希望大家第一眼就看到这个说明 更多文档参考(国内可能需要科学上网): https://hootrhino.github.io**
 > 如果您阅读过 RULEX 的源码，你会发现里面有很多很愚蠢的设计（比如对资源的状态管理、类型硬编码设计等），因为特殊历史原因导致了其设计上有一些很糟粕的地方，如有建议请不吝赐教，一起让这个框架更加优秀！同时未来随着版本的迭代，很多低级问题会逐步被重构完善。
 
 ### RULEX 是一个轻量级工业类边缘网关开发框架
@@ -10,6 +10,17 @@
 <div style="text-align:center">
 <img src="./README_RES/structure.png"/>
 </div>
+
+## 预览
+
+![image](https://user-images.githubusercontent.com/20577297/249867828-afb6c81f-288e-47f9-b7d2-73330896ac30.png)
+![image](https://user-images.githubusercontent.com/20577297/249867911-907827d1-5f1d-4ddb-bab7-3fc792f28c41.png)
+![image](https://user-images.githubusercontent.com/20577297/249867961-9ca5c333-28d0-4154-9758-297e0bac3ca3.png)
+![image](https://user-images.githubusercontent.com/20577297/249868010-8a5f1ca7-0203-4754-a206-cda48d75e331.png)
+![image](https://user-images.githubusercontent.com/20577297/249868079-50ec6002-7447-4eca-9ebd-e32cd4d6caff.png)
+![image](https://user-images.githubusercontent.com/20577297/249868117-288fffa0-7b96-4f82-85e1-97470f4dce35.png)
+![image](https://user-images.githubusercontent.com/20577297/249868160-9662b07c-d189-4cea-be63-94b210abf908.png)
+
 
 ## 快速开始
 
@@ -120,7 +131,7 @@ end
 ## 社区
 
 - QQ群：608382561
-- 文档: <a href="https://rulex.pages.dev">[点我查看详细文档]</a>
+- 文档: <a href="https://hootrhino.github.io">[点我查看详细文档]</a>
 - 微信：nilyouth( 加好友后进群, 别忘了来个小星星, 暗号：RULEX )
   <div style="text-align:center">
     <img src="./README_RES/wx.jpg" width="150px" />

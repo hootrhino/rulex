@@ -4,7 +4,6 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"fmt"
-	"math"
 	"regexp"
 	"strconv"
 	"strings"
@@ -70,6 +69,39 @@ func MatchHex(rx typex.RuleX) func(*lua.LState) int {
 	}
 }
 
+/*
+*
+* 匹配十六进制转成整数
+*  MatchHex("FFFFFF014CB2AA55", "age:[1,1];sex:[4,5]")
+*
+ */
+func MatchUInt(rx typex.RuleX) func(*lua.LState) int {
+	return func(l *lua.LState) int {
+		exprS := l.ToString(2)
+		hexS := l.ToString(3)
+		mhs := MatchHexLib(exprS, hexS)
+		ntb := lua.LTable{}
+		for _, v := range mhs {
+			size := len(v.Value)
+
+			if size == 2 {
+				ntb.RawSetString(v.Name, lua.LNumber(v.ToUint16()))
+			}
+			if size == 4 {
+				ntb.RawSetString(v.Name, lua.LNumber(v.ToUint32()))
+			}
+			if size == 8 {
+				ntb.RawSetString(v.Name, lua.LNumber(v.ToUInt64()))
+			}
+			if size > 8 {
+				ntb.RawSetString(v.Name, lua.LNumber(-0xFFFFFFFF))
+			}
+		}
+		l.Push(&ntb)
+		return 1
+	}
+}
+
 type HexSegment struct {
 	Name  string
 	Value []byte
@@ -79,18 +111,17 @@ func (sgm HexSegment) ToHexString() string {
 	return fmt.Sprintf("%X", sgm.Value)
 }
 
-func (sgm HexSegment) ToInt64() uint64 {
-	return binary.BigEndian.Uint64(sgm.Value)
+func (sgm HexSegment) ToUint16() uint16 {
+	value := binary.BigEndian.Uint16(sgm.Value)
+	return value
 }
-
-func (sgm HexSegment) ToFloat32() float32 {
-	bits := binary.BigEndian.Uint32([]byte(sgm.Value))
-	return math.Float32frombits(bits)
+func (sgm HexSegment) ToUint32() uint32 {
+	value := binary.BigEndian.Uint32(sgm.Value)
+	return value
 }
-
-func (sgm HexSegment) ToFloat64() float64 {
-	bits := binary.BigEndian.Uint64([]byte(sgm.Value))
-	return math.Float64frombits(bits)
+func (sgm HexSegment) ToUInt64() uint64 {
+	value := binary.BigEndian.Uint64(sgm.Value)
+	return value
 }
 
 // 全局正则表达式编译器, 这是已经验证过的正则表达式，所以一定编译成功，故不检查error

@@ -2,6 +2,7 @@ package test
 
 import (
 	"context"
+
 	"github.com/hootrhino/rulex/glogger"
 	httpserver "github.com/hootrhino/rulex/plugin/http_server"
 	mbserver "github.com/tbrandon/mbserver"
@@ -51,8 +52,8 @@ func Test_Generic_modbus_device_tcp_mode(t *testing.T) {
 				},
 			},
 		})
-
-	if err := engine.LoadDevice(GMODBUS); err != nil {
+	ctx, cancelF := typex.NewCCTX()
+	if err := engine.LoadDeviceWithCtx(GMODBUS, ctx, cancelF); err != nil {
 		t.Fatal(err)
 	}
 	rule := typex.NewRule(engine,

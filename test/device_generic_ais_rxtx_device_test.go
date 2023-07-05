@@ -117,8 +117,8 @@ func Test_generic_ais_txrx_device(t *testing.T) {
 			"host": "0.0.0.0",
 			"port": 9980,
 		})
-
-	if err := engine.LoadDevice(GENERIC_AIS); err != nil {
+	ctx, cancelF := typex.NewCCTX()
+	if err := engine.LoadDeviceWithCtx(GENERIC_AIS, ctx, cancelF); err != nil {
 		t.Fatal(err)
 	}
 	for i := 0; i < 100; i++ {

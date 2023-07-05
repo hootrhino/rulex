@@ -67,23 +67,20 @@ func (as *AppStack) StartApp(uuid string) error {
 	if !ok {
 		return fmt.Errorf("app not exists:%s", uuid)
 	}
+	if app.AppState == 1 {
+		return fmt.Errorf("app not already started:%s", uuid)
+	}
 	// args := lua.LBool(false) // Main的参数，未来准备扩展
 	ctx, cancel := context.WithCancel(typex.GCTX)
 	app.SetCnC(ctx, cancel)
-	go func(ctx context.Context, appId string) {
+	go func(app *typex.Application) {
 		defer func() {
-			app.AppState = 0
-			glogger.GLogger.Debug("App exit:", appId)
+			glogger.GLogger.Debug("App exit:", app.UUID)
 			if err := recover(); err != nil {
-				// buf := make([]byte, 1<<16)
-				// runtime.Stack(buf, true)
-				// fmt.Println(string(buf))
 				glogger.GLogger.Error("App recover:", err)
 			}
-
 		}()
-		app.VM().SetContext(ctx)
-		glogger.GLogger.Debugf("Ready to run app:%s-%s-%s", app.UUID, app.Name, app.Version)
+		glogger.GLogger.Debugf("Ready to run app:%s", app.UUID)
 		app.AppState = 1
 		err := app.VM().CallByParam(lua.P{
 			Fn:      app.GetMainFunc(),
@@ -97,11 +94,10 @@ func (as *AppStack) StartApp(uuid string) error {
 			},
 		}, lua.LBool(false))
 		if err != nil {
-			glogger.GLogger.Error("app.VM().CallByParam error:", err)
-			return
+			glogger.GLogger.Error("normal app.VM().CallByParam error:", err)
 		}
 		app.AppState = 0
-	}(ctx, app.UUID)
+	}(app)
 	glogger.GLogger.Info("App started:", app.UUID)
 	return nil
 }
@@ -113,8 +109,8 @@ func (as *AppStack) StartApp(uuid string) error {
  */
 func (as *AppStack) RemoveApp(uuid string) error {
 	if app, ok := as.applications[uuid]; ok {
-		delete(as.applications, uuid)
 		app.Remove()
+		delete(as.applications, uuid)
 	}
 	glogger.GLogger.Info("App removed:", uuid)
 	return nil
@@ -127,10 +123,10 @@ func (as *AppStack) RemoveApp(uuid string) error {
  */
 func (as *AppStack) StopApp(uuid string) error {
 	if app, ok := as.applications[uuid]; ok {
-		app.AppState = 0
-		app.Stop()
+		app.Remove()
+		delete(as.applications, uuid)
 	}
-	glogger.GLogger.Info("App stopped:", uuid)
+	glogger.GLogger.Info("App removed:", uuid)
 	return nil
 }
 

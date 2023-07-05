@@ -30,8 +30,8 @@ func Test_Generic_snmp_device(t *testing.T) {
 			"transport": "udp",
 			"version":   3,
 		})
-
-	if err := engine.LoadDevice(GENERIC_SNMP); err != nil {
+	ctx, cancelF := typex.NewCCTX()
+	if err := engine.LoadDeviceWithCtx(GENERIC_SNMP, ctx, cancelF); err != nil {
 		t.Fatal(err)
 	}
 	rule := typex.NewRule(engine,

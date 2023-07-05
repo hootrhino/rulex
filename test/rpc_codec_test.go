@@ -67,8 +67,8 @@ func Test_Codec(t *testing.T) {
 		"Rulex Grpc InEnd", map[string]interface{}{
 			"port": 2581,
 		})
-
-	if err := engine.LoadInEnd(grpcInend); err != nil {
+	ctx, cancelF := typex.NewCCTX() // ,ctx, cancelF
+	if err := engine.LoadInEndWithCtx(grpcInend, ctx, cancelF); err != nil {
 		glogger.GLogger.Fatal("Rule load failed:", err)
 	}
 	grpcCodec1 := typex.NewOutEnd("GRPC_CODEC_TARGET",
@@ -79,7 +79,8 @@ func Test_Codec(t *testing.T) {
 			"type": "DECODE",
 		})
 	grpcCodec1.UUID = "grpcCodec001"
-	if err := engine.LoadOutEnd(grpcCodec1); err != nil {
+	ctx1, cancelF1 := typex.NewCCTX() // ,ctx, cancelF
+	if err := engine.LoadOutEndWithCtx(grpcCodec1, ctx1, cancelF1); err != nil {
 		glogger.GLogger.Fatal("grpcCodec load failed:", err)
 	}
 	grpcCodec2 := typex.NewOutEnd("GRPC_CODEC_TARGET",
@@ -90,7 +91,8 @@ func Test_Codec(t *testing.T) {
 			"type": "ENCODE",
 		})
 	grpcCodec2.UUID = "grpcCodec002"
-	if err := engine.LoadOutEnd(grpcCodec2); err != nil {
+	ctx2, cancelF2 := typex.NewCCTX() // ,ctx, cancelF
+	if err := engine.LoadOutEndWithCtx(grpcCodec2, ctx2, cancelF2); err != nil {
 		glogger.GLogger.Fatal("grpcCodec load failed:", err)
 	}
 	rule := typex.NewRule(engine,

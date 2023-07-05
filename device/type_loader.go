@@ -19,6 +19,7 @@ func LoadDt() {
 	DM.Register(typex.YK08_RELAY, &typex.XConfig{})
 	DM.Register(typex.S1200PLC, &typex.XConfig{})
 	DM.Register(typex.GENERIC_MODBUS, &typex.XConfig{})
+	DM.Register(typex.GENERIC_MODBUS_POINT_EXCEL, &typex.XConfig{})
 	DM.Register(typex.GENERIC_UART, &typex.XConfig{})
 	DM.Register(typex.GENERIC_SNMP, &typex.XConfig{})
 	DM.Register(typex.USER_G776, &typex.XConfig{})

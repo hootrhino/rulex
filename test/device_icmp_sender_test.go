@@ -32,7 +32,8 @@ func Test_IcmpSender_Device(t *testing.T) {
 			"hosts":       []string{"127.0.0.1", "8.8.8.8"},
 		})
 	ICMP_SENDER.UUID = "ICMP_SENDER1"
-	if err := engine.LoadDevice(ICMP_SENDER); err != nil {
+	ctx, cancelF := typex.NewCCTX()
+	if err := engine.LoadDeviceWithCtx(ICMP_SENDER, ctx, cancelF); err != nil {
 		t.Fatal("ICMP_SENDER load failed:", err)
 	}
 

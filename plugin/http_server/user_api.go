@@ -6,7 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/hootrhino/rulex/typex"
+	common "github.com/hootrhino/rulex/plugin/http_server/common"
+	"github.com/hootrhino/rulex/plugin/http_server/model"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
@@ -23,7 +24,10 @@ type user struct {
 	Description string `json:"description"`
 }
 
-func Users(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+func UserDetail(c *gin.Context, hh *HttpApiServer) {
+	Info(c, hh)
+}
+func Users(c *gin.Context, hh *HttpApiServer) {
 	users := []user{}
 	for _, u := range hh.AllMUser() {
 		users = append(users, user{
@@ -32,11 +36,11 @@ func Users(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 			Description: u.Description,
 		})
 	}
-	c.JSON(HTTP_OK, OkWithData(users))
+	c.JSON(common.HTTP_OK, common.OkWithData(users))
 }
 
 // CreateUser
-func CreateUser(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+func CreateUser(c *gin.Context, hh *HttpApiServer) {
 	type Form struct {
 		Role        string `json:"role" binding:"required"`
 		Username    string `json:"username" binding:"required"`
@@ -45,21 +49,21 @@ func CreateUser(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 	}
 	form := Form{}
 	if err := c.ShouldBindJSON(&form); err != nil {
-		c.JSON(HTTP_OK, Error400(err))
+		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
 
 	if _, err := hh.GetMUser(form.Username, md5Hash(form.Password)); err != nil {
-		hh.InsertMUser(&MUser{
+		hh.InsertMUser(&model.MUser{
 			Role:        form.Role,
 			Username:    form.Username,
 			Password:    md5Hash(form.Password),
 			Description: form.Description,
 		})
-		c.JSON(HTTP_OK, Ok())
+		c.JSON(common.HTTP_OK, common.Ok())
 		return
 	}
-	c.JSON(HTTP_OK, Error("用户名已存在:"+form.Username))
+	c.JSON(common.HTTP_OK, common.Error("user already exists:"+form.Username))
 }
 
 /*
@@ -75,25 +79,25 @@ func md5Hash(str string) string {
 
 // Login
 // TODO: 下个版本实现用户基础管理
-func Login(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+func Login(c *gin.Context, hh *HttpApiServer) {
 	type _user struct {
 		Username string `json:"username" binding:"required"`
 		Password string `json:"password" binding:"required"`
 	}
 	var u _user
 	if err := c.BindJSON(&u); err != nil {
-		c.JSON(HTTP_OK, Error400(err))
+		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
 	if _, err := hh.GetMUser(u.Username, md5Hash(u.Password)); err != nil {
-		c.JSON(HTTP_OK, Error400(err))
+		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
 	if token, err := generateToken(u.Username); err != nil {
-		c.JSON(HTTP_OK, Error400(err))
+		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	} else {
-		c.JSON(HTTP_OK, OkWithData(token))
+		c.JSON(common.HTTP_OK, common.OkWithData(token))
 	}
 }
 
@@ -102,18 +106,18 @@ func Login(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 * 日志管理
 *
  */
-func Logs(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+func Logs(c *gin.Context, hh *HttpApiServer) {
 	type Data struct {
 		Id      int    `json:"id" binding:"required"`
 		Content string `json:"content" binding:"required"`
 	}
 	//TODO 日志暂时不记录
 	logs := []Data{}
-	c.JSON(HTTP_OK, OkWithData(logs))
+	c.JSON(common.HTTP_OK, common.OkWithData(logs))
 }
 
-func LogOut(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
-	c.JSON(HTTP_OK, Ok())
+func LogOut(c *gin.Context, hh *HttpApiServer) {
+	c.JSON(common.HTTP_OK, common.Ok())
 }
 
 /*
@@ -121,13 +125,13 @@ func LogOut(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
 * TODO：用户信息, 当前版本写死 下个版本实现数据库查找
 *
  */
-func Info(c *gin.Context, hh *HttpApiServer, e typex.RuleX) {
+func Info(c *gin.Context, hh *HttpApiServer) {
 	token := c.GetHeader("token")
 	if claims, err := parseToken(token); err != nil {
-		c.JSON(HTTP_OK, Error400(err))
+		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	} else {
-		c.JSON(HTTP_OK, OkWithData(map[string]interface{}{
+		c.JSON(common.HTTP_OK, common.OkWithData(map[string]interface{}{
 			"token":  token,
 			"avatar": "rulex",
 			"name":   claims.Username,

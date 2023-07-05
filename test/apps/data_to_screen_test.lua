@@ -1,5 +1,5 @@
 --
--- App use lua syntax, goto https://rulex.pages.dev for more document
+-- App use lua syntax, goto https://hootrhino.github.io for more document
 -- APPID: APP12a32a3d45df4555a50e04472a78ab4b
 --
 AppNAME = "helloworld"

@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/hootrhino/rulex/glogger"
-	"github.com/hootrhino/rulex/statistics"
 )
 
 var DefaultDataCacheQueue XQueue
@@ -23,11 +22,12 @@ type XQueue interface {
 }
 
 type QueueData struct {
-	I    *InEnd
-	O    *OutEnd
-	D    *Device
-	E    RuleX
-	Data string
+	Debug bool // 是否是Debug消息
+	I     *InEnd
+	O     *OutEnd
+	D     *Device
+	E     RuleX
+	Data  string
 }
 
 func (qd QueueData) String() string {
@@ -59,6 +59,7 @@ func (q *DataCacheQueue) GetSize() int {
 *
  */
 func (q *DataCacheQueue) Push(d QueueData) error {
+	// glogger.GLogger.Debug("DataCacheQueue Push:", d.Data)
 	// 比较数据和容积
 	if len(q.Queue)+1 > q.GetSize() {
 		msg := fmt.Sprintf("attached max queue size, max size is:%v, current size is: %v", q.GetSize(), len(q.Queue)+1)
@@ -100,8 +101,8 @@ func StartQueue(maxQueueSize int) {
 					// 只需要判断 in 或者 out 是不是 nil即可
 					//
 					if qd.I != nil {
+						// 如果是Debug消息直接打印出来
 						qd.E.RunSourceCallbacks(qd.I, qd.Data)
-						qd.E.RunHooks(qd.Data)
 					}
 					if qd.D != nil {
 						qd.E.RunDeviceCallbacks(qd.D, qd.Data)
@@ -110,15 +111,15 @@ func StartQueue(maxQueueSize int) {
 					if qd.O != nil {
 						v, ok := qd.E.AllOutEnd().Load(qd.O.UUID)
 						if ok {
-							if v.(*OutEnd).Target == nil {
+							target := v.(*OutEnd).Target
+							if target == nil {
 								continue
 							}
-							if _, err := v.(*OutEnd).Target.To(qd.Data); err != nil {
+							if _, err := target.To(qd.Data); err != nil {
 								glogger.GLogger.Error(err)
-								statistics.IncOutFailed()
+								qd.E.GetMetricStatistics().IncOutFailed()
 							} else {
-								statistics.IncOut()
-
+								qd.E.GetMetricStatistics().IncOut()
 							}
 						}
 					}

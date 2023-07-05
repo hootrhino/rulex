@@ -15,7 +15,7 @@ package test
 // 	)
 
 // 	if err != nil {
-// 		fmt.Println(err.Error())
+// 		fmt.Println(err. common.Error())
 // 	}
 
 // 	err = unix.Bind(fd, &unix.SockaddrNetlink{
@@ -33,6 +33,6 @@ package test
 // 			}
 // 		}
 // 	} else {
-// 		fmt.Println(err.Error())
+// 		fmt.Println(err. common.Error())
 // 	}
 // }

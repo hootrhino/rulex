@@ -21,10 +21,4 @@ lua-log*
 plugin/http_server/www/*
 dist/
 apps/*.lua
-test/apps/*.lua
-!test/apps/complex_data_push.lua
-!test/apps/complex_data_push.lua
-!test/apps/complex_data_push1.lua
-!test/apps/data_udp_server.lua
-!test/apps/hello_world.lua
-!test/apps/match_hex.lua
+plugin/http_server/www/index.html

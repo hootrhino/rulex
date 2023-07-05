@@ -1,9 +1,9 @@
 package typex
 
-//
+import "encoding/json"
+
 // Rule type is for property store,
 // XSource implements struct type is actually worker
-//
 type ModelType int
 
 // 'T' means Type
@@ -36,6 +36,11 @@ type XDataModel struct {
 	Value     interface{} `json:"value"`     // 具体的值
 }
 
+func (m XDataModel) String() string {
+	b, _ := json.Marshal(m)
+	return string(b)
+}
+
 //
 //
 // 创建资源的时候需要一个通用配置类
@@ -43,9 +48,9 @@ type XDataModel struct {
 //
 
 type XConfig struct {
-	Type   string  `json:"type"` // 类型
-	Device XDevice `json:"-"`
-	Source XSource `json:"-"`
-	Target XTarget `json:"-"`
-	Engine RuleX   `json:"-"`
+	Type      string              `json:"type"` // 类型
+	Engine    RuleX               `json:"-"`
+	NewDevice func(RuleX) XDevice `json:"-"`
+	NewSource func(RuleX) XSource `json:"-"`
+	NewTarget func(RuleX) XTarget `json:"-"`
 }

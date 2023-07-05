@@ -16,13 +16,6 @@ type InEnd struct {
 	Source        XSource                `json:"-"`
 }
 
-func (in *InEnd) GetState() SourceState {
-	return in.State
-}
-
-func (in *InEnd) SetState(s SourceState) {
-	in.State = s
-}
 
 func NewInEnd(Type InEndType,
 	n string,
@@ -30,7 +23,7 @@ func NewInEnd(Type InEndType,
 	c map[string]interface{}) *InEnd {
 
 	return &InEnd{
-		UUID:        utils.MakeUUID("INEND"),
+		UUID:        utils.InUuid(),
 		Type:        Type,
 		Name:        n,
 		Description: d,

@@ -9,7 +9,7 @@ import (
 
 	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/typex"
-	"github.com/hootrhino/rulex/utils"
+
 	"golang.org/x/sys/unix"
 	"gopkg.in/ini.v1"
 )
@@ -162,8 +162,8 @@ func (usbm *usbMonitor) PluginMetaInfo() typex.XPluginMetaInfo {
 		UUID:     usbm.uuid,
 		Name:     "USB Monitor",
 		Version:  "0.0.1",
-		Homepage: "www.github.com/hootrhino/rulex",
-		HelpLink: "www.github.com/hootrhino/rulex",
+		Homepage: "https://hootrhino.github.io",
+		HelpLink: "https://hootrhino.github.io",
 		Author:   "wwhai",
 		Email:    "cnwwhai@gmail.com",
 		License:  "MIT",

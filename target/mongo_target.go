@@ -41,14 +41,11 @@ func (m *mongoTarget) Start(cctx typex.CCTX) error {
 	m.Ctx = cctx.Ctx
 	m.CancelCTX = cctx.CancelCTX
 	clientOptions := options.Client().ApplyURI(m.mainConfig.MongoUrl)
+	clientOptions.SetConnectTimeout(3 * time.Second)
+	// clientOptions.SetDirect(true)
 	client, err0 := mongo.Connect(m.Ctx, clientOptions)
 	if err0 != nil {
 		return err0
-	}
-	ctx, cancel := context.WithTimeout(m.Ctx, 3*time.Second)
-	defer cancel()
-	if err1 := client.Ping(ctx, nil); err1 != nil {
-		return err1
 	}
 	m.collection = client.Database(m.mainConfig.Database).Collection(m.mainConfig.Collection)
 	m.client = client
@@ -61,7 +58,7 @@ func (m *mongoTarget) Start(cctx typex.CCTX) error {
 
 func (m *mongoTarget) Test(outEndId string) bool {
 	if m.client != nil {
-		ctx, cancel := context.WithTimeout(m.Ctx, 3*time.Second)
+		ctx, cancel := context.WithTimeout(m.Ctx, time.Second*2)
 		defer cancel()
 		if err1 := m.client.Ping(ctx, nil); err1 != nil {
 			return false
@@ -86,15 +83,22 @@ func (m *mongoTarget) Pause() {
 }
 
 func (m *mongoTarget) Status() typex.SourceState {
+	if m.client != nil {
+		ctx, cancel := context.WithTimeout(m.Ctx, time.Second*2)
+		defer cancel()
+		if err1 := m.client.Ping(ctx, nil); err1 != nil {
+			glogger.GLogger.Error(err1)
+			return typex.SOURCE_DOWN
+		}
+	}
 	return m.status
 }
 
 func (m *mongoTarget) Stop() {
-	m.status = typex.SOURCE_STOP
 	m.CancelCTX()
+	m.status = typex.SOURCE_DOWN
 	if m.client != nil {
 		m.client.Disconnect(m.Ctx)
-		m.client = nil
 	}
 }
 
