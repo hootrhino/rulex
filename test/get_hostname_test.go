@@ -9,7 +9,7 @@ import (
 func Test_get_hostname(t *testing.T) {
 	//ss, err := GetLocalIP()
 	// if err != nil {
-	// 	t.Error(err)
+	// 	t. common.Error(err)
 	// }
 	//t.Log(ss)
 	localAddresses()

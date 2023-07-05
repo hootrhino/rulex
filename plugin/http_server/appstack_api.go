@@ -5,6 +5,9 @@ import (
 	"os"
 	"regexp"
 
+	common "github.com/hootrhino/rulex/plugin/http_server/common"
+	"github.com/hootrhino/rulex/plugin/http_server/model"
+
 	"github.com/gin-gonic/gin"
 	"github.com/hootrhino/rulex/appstack"
 	"github.com/hootrhino/rulex/glogger"
@@ -37,9 +40,9 @@ type web_data_app struct {
 func AppDetail(c *gin.Context, hs *HttpApiServer) {
 	uuid, _ := c.GetQuery("uuid")
 	// uuid
-	appInfo, err1 := hs.GetAppWithUUID(uuid)
+	appInfo, err1 := hs.GetMAppWithUUID(uuid)
 	if err1 != nil {
-		c.JSON(HTTP_OK, Error400(err1))
+		c.JSON(common.HTTP_OK, common.Error400EmptyObj(err1))
 		return
 	}
 	web_data := web_data_app{
@@ -65,7 +68,7 @@ func AppDetail(c *gin.Context, hs *HttpApiServer) {
 			return string(bytes)
 		}(),
 	}
-	c.JSON(HTTP_OK, OkWithData(web_data))
+	c.JSON(common.HTTP_OK, common.OkWithData(web_data))
 }
 
 // 列表
@@ -92,13 +95,13 @@ func Apps(c *gin.Context, hs *HttpApiServer) {
 			}
 			result = append(result, web_data)
 		}
-		c.JSON(HTTP_OK, OkWithData(result))
+		c.JSON(common.HTTP_OK, common.OkWithData(result))
 		return
 	}
 	// uuid
-	appInfo, err1 := hs.GetAppWithUUID(uuid)
+	appInfo, err1 := hs.GetMAppWithUUID(uuid)
 	if err1 != nil {
-		c.JSON(HTTP_OK, Error400(err1))
+		c.JSON(common.HTTP_OK, common.Error400(err1))
 		return
 	}
 	web_data := web_data_app{
@@ -124,7 +127,7 @@ func Apps(c *gin.Context, hs *HttpApiServer) {
 			return string(bytes)
 		}(),
 	}
-	c.JSON(HTTP_OK, OkWithData(web_data))
+	c.JSON(common.HTTP_OK, common.OkWithData(web_data))
 
 }
 
@@ -163,19 +166,19 @@ func CreateApp(c *gin.Context, hs *HttpApiServer) {
 	}
 	form := Form{}
 	if err := c.ShouldBindJSON(&form); err != nil {
-		c.JSON(HTTP_OK, Error400(err))
+		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
 	match, _ := regexp.Match(semVerRegexExpr, []byte(form.Version))
 	if !match {
-		c.JSON(HTTP_OK, Error400(fmt.Errorf("version not match server style:%s", form.Version)))
+		c.JSON(common.HTTP_OK, common.Error400(fmt.Errorf("version not match server style:%s", form.Version)))
 		return
 	}
 	_, errStat := os.Stat("./apps/")
 	if os.IsNotExist(errStat) {
 		err := os.Mkdir("./apps/", 0777)
 		if err != nil {
-			c.JSON(HTTP_OK, Error400(err))
+			c.JSON(common.HTTP_OK, common.Error400(err))
 			return
 		}
 	}
@@ -184,16 +187,16 @@ func CreateApp(c *gin.Context, hs *HttpApiServer) {
 	path := "./apps/" + newUUID + ".lua"
 	_, err := os.Create(path)
 	if err != nil {
-		c.JSON(HTTP_OK, Error400(err))
+		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
 	err1 := os.WriteFile(path, []byte(fmt.Sprintf(luaTemplate,
 		newUUID, form.Name, form.Version, form.Description, defaultLuaMain)), 0777)
 	if err1 != nil {
-		c.JSON(HTTP_OK, Error400(err1))
+		c.JSON(common.HTTP_OK, common.Error400(err1))
 		return
 	}
-	if err := hs.InsertApp(&MApp{
+	if err := hs.InsertApp(&model.MApp{
 		UUID:        newUUID,
 		Name:        form.Name,
 		Version:     form.Version,
@@ -201,14 +204,14 @@ func CreateApp(c *gin.Context, hs *HttpApiServer) {
 		AutoStart:   &form.AutoStart,
 		Description: form.Description,
 	}); err != nil {
-		c.JSON(HTTP_OK, Error400(err))
+		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
 	// 立即加载
 	if err := hs.ruleEngine.LoadApp(typex.NewApplication(
 		newUUID, form.Name, form.Version, path)); err != nil {
 		glogger.GLogger.Error("app Load failed:", err)
-		c.JSON(HTTP_OK, Error400(err))
+		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
 	// 自启动立即运行
@@ -218,7 +221,7 @@ func CreateApp(c *gin.Context, hs *HttpApiServer) {
 			glogger.GLogger.Error("app autoStart failed:", err2)
 		}
 	}
-	c.JSON(HTTP_OK, OkWithData("app create successfully"))
+	c.JSON(common.HTTP_OK, common.OkWithData("app create successfully"))
 }
 
 /*
@@ -238,36 +241,36 @@ func UpdateApp(c *gin.Context, hs *HttpApiServer) {
 	}
 	form := Form{}
 	if err := c.ShouldBindJSON(&form); err != nil {
-		c.JSON(HTTP_OK, Error400(err))
+		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
 	// 校验版本号
 	match, _ := regexp.Match(semVerRegexExpr, []byte(form.Version))
 	if !match {
-		c.JSON(HTTP_OK, Error400(fmt.Errorf("version not match server style:%s", form.Version)))
+		c.JSON(common.HTTP_OK, common.Error400(fmt.Errorf("version not match server style:%s", form.Version)))
 		return
 	}
 	// 校验语法
 	if err1 := appstack.ValidateLuaSyntax([]byte(form.LuaSource)); err1 != nil {
-		c.JSON(HTTP_OK, Error400(err1))
+		c.JSON(common.HTTP_OK, common.Error400(err1))
 		return
 	}
 
-	if err := hs.UpdateApp(&MApp{
+	if err := hs.UpdateApp(&model.MApp{
 		UUID:        form.UUID,
 		Name:        form.Name,
 		Version:     form.Version,
 		AutoStart:   &form.AutoStart,
 		Description: form.Description,
 	}); err != nil {
-		c.JSON(HTTP_OK, Error400(err))
+		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
 	// 最后把文件内容改变了
 	path := "./apps/" + form.UUID + ".lua"
 	err1 := os.WriteFile(path, []byte(form.LuaSource), 0644)
 	if err1 != nil {
-		c.JSON(HTTP_OK, Error400(err1))
+		c.JSON(common.HTTP_OK, common.Error400(err1))
 		return
 	}
 	// 如果内存里面有, 先把内存里的清理了
@@ -285,16 +288,16 @@ func UpdateApp(c *gin.Context, hs *HttpApiServer) {
 		// 必须先load后start
 		if err := hs.ruleEngine.LoadApp(typex.NewApplication(
 			form.UUID, form.Name, form.Version, path)); err != nil {
-			c.JSON(HTTP_OK, Error400(err))
+			c.JSON(common.HTTP_OK, common.Error400(err))
 			return
 		}
 		if err2 := hs.ruleEngine.StartApp(form.UUID); err2 != nil {
 			glogger.GLogger.Error("app autoStart failed:", err2)
-			c.JSON(HTTP_OK, Error400(err2))
+			c.JSON(common.HTTP_OK, common.Error400(err2))
 			return
 		}
 	}
-	c.JSON(HTTP_OK, OkWithData("app update successfully:"+form.UUID))
+	c.JSON(common.HTTP_OK, common.OkWithData("app update successfully:"+form.UUID))
 }
 
 /*
@@ -306,9 +309,9 @@ func UpdateApp(c *gin.Context, hs *HttpApiServer) {
 func StartApp(c *gin.Context, hs *HttpApiServer) {
 	uuid, _ := c.GetQuery("uuid")
 	// 检查数据库
-	mApp, err := hs.GetAppWithUUID(uuid)
+	mApp, err := hs.GetMAppWithUUID(uuid)
 	if err != nil {
-		c.JSON(HTTP_OK, Error400(err))
+		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
 	// 如果内存里面有, 判断状态
@@ -316,13 +319,13 @@ func StartApp(c *gin.Context, hs *HttpApiServer) {
 		glogger.GLogger.Debug("Already loaded, will try to start:", uuid)
 		// 已经启动了就不能再启动
 		if app.AppState == 1 {
-			c.JSON(HTTP_OK, Error400(fmt.Errorf("app is running now:%s", uuid)))
+			c.JSON(common.HTTP_OK, common.Error400(fmt.Errorf("app is running now:%s", uuid)))
 		}
 		if app.AppState == 0 {
 			if err := hs.ruleEngine.StartApp(uuid); err != nil {
-				c.JSON(HTTP_OK, Error400(err))
+				c.JSON(common.HTTP_OK, common.Error400(err))
 			} else {
-				c.JSON(HTTP_OK, OkWithData("app start successfully:"+uuid))
+				c.JSON(common.HTTP_OK, common.OkWithData("app start successfully:"+uuid))
 			}
 		}
 		return
@@ -331,15 +334,15 @@ func StartApp(c *gin.Context, hs *HttpApiServer) {
 	glogger.GLogger.Debug("No loaded, will try to load:", uuid)
 	if err := hs.ruleEngine.LoadApp(typex.NewApplication(
 		mApp.UUID, mApp.Name, mApp.Version, mApp.Filepath)); err != nil {
-		c.JSON(HTTP_OK, Error400(err))
+		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
 	glogger.GLogger.Debug("app loaded, will try to start:", uuid)
 	if err := hs.ruleEngine.StartApp(uuid); err != nil {
-		c.JSON(HTTP_OK, Error400(err))
+		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	c.JSON(HTTP_OK, OkWithData("app start successfully:"+uuid))
+	c.JSON(common.HTTP_OK, common.OkWithData("app start successfully:"+uuid))
 }
 
 // 停止, 但是不删除，仅仅是把虚拟机进程给杀死
@@ -347,19 +350,19 @@ func StopApp(c *gin.Context, hs *HttpApiServer) {
 	uuid, _ := c.GetQuery("uuid")
 	if app := hs.ruleEngine.GetApp(uuid); app != nil {
 		if app.AppState == 0 {
-			c.JSON(HTTP_OK, Error400(fmt.Errorf("app is stopping now:%s", uuid)))
+			c.JSON(common.HTTP_OK, common.Error400(fmt.Errorf("app is stopping now:%s", uuid)))
 			return
 		}
 		if app.AppState == 1 {
 			if err := hs.ruleEngine.StopApp(uuid); err != nil {
-				c.JSON(HTTP_OK, OkWithData(err))
+				c.JSON(common.HTTP_OK, common.Error400(err))
 				return
 			}
-			c.JSON(HTTP_OK, OkWithData("app stopped:%s"+uuid))
+			c.JSON(common.HTTP_OK, common.OkWithData("app stopped:%s"+uuid))
 			return
 		}
 	}
-	c.JSON(HTTP_OK, Error400(fmt.Errorf("app not exists:%s", uuid)))
+	c.JSON(common.HTTP_OK, common.Error400(fmt.Errorf("app not exists:%s", uuid)))
 }
 
 // 删除
@@ -371,18 +374,18 @@ func RemoveApp(c *gin.Context, hs *HttpApiServer) {
 	}
 	// 内存给清理了
 	if err := hs.ruleEngine.RemoveApp(uuid); err != nil {
-		c.JSON(HTTP_OK, Error400(err))
+		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
 	// Sqlite 配置也给删了
 	if err := hs.DeleteApp(uuid); err != nil {
-		c.JSON(HTTP_OK, Error400(err))
+		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
 	// lua的文件也删了
 	if err := os.Remove("./apps/" + uuid + ".lua"); err != nil {
-		c.JSON(HTTP_OK, Error400(err))
+		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	c.JSON(HTTP_OK, OkWithData(fmt.Errorf("remove app successfully:%s", uuid)))
+	c.JSON(common.HTTP_OK, common.OkWithData(fmt.Errorf("remove app successfully:%s", uuid)))
 }

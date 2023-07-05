@@ -14,7 +14,6 @@ import (
 	"github.com/hootrhino/rulex/device"
 	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/source"
-	"github.com/hootrhino/rulex/statistics"
 	"github.com/hootrhino/rulex/target"
 	"github.com/hootrhino/rulex/trailer"
 	"github.com/hootrhino/rulex/typex"
@@ -38,6 +37,7 @@ type RuleEngine struct {
 	DeviceTypeManager typex.DeviceRegistry `json:"-"`
 	SourceTypeManager typex.SourceRegistry `json:"-"`
 	TargetTypeManager typex.TargetRegistry `json:"-"`
+	MetricStatistics  *typex.MetricStatistics
 }
 
 func NewRuleEngine(config typex.RulexConfig) typex.RuleX {
@@ -53,6 +53,7 @@ func NewRuleEngine(config typex.RulexConfig) typex.RuleX {
 		Drivers:           &sync.Map{},
 		Devices:           &sync.Map{},
 		Config:            &config,
+		MetricStatistics:  typex.NewMetricStatistics(),
 	}
 	// trailer
 	re.Trailer = trailer.NewTrailerManager(re)
@@ -61,6 +62,9 @@ func NewRuleEngine(config typex.RulexConfig) typex.RuleX {
 	// current only support Internal ai
 	re.AiBaseRuntime = aibase.NewAIRuntime(re)
 	return re
+}
+func (e *RuleEngine) GetMetricStatistics() *typex.MetricStatistics {
+	return e.MetricStatistics
 }
 func (e *RuleEngine) GetAiBase() typex.XAiRuntime {
 	return e.AiBaseRuntime
@@ -77,9 +81,9 @@ func (e *RuleEngine) PushQueue(qd typex.QueueData) error {
 	err := typex.DefaultDataCacheQueue.Push(qd)
 	if err != nil {
 		glogger.GLogger.Error("PushQueue error:", err)
-		statistics.IncInFailed()
+		e.MetricStatistics.IncInFailed()
 	} else {
-		statistics.IncIn()
+		e.MetricStatistics.IncIn()
 	}
 	return err
 }
@@ -93,9 +97,9 @@ func (e *RuleEngine) PushInQueue(in *typex.InEnd, data string) error {
 	err := typex.DefaultDataCacheQueue.Push(qd)
 	if err != nil {
 		glogger.GLogger.Error("PushInQueue error:", err)
-		statistics.IncInFailed()
+		e.MetricStatistics.IncInFailed()
 	} else {
-		statistics.IncIn()
+		e.MetricStatistics.IncIn()
 	}
 	return err
 }
@@ -116,9 +120,9 @@ func (e *RuleEngine) PushDeviceQueue(Device *typex.Device, data string) error {
 	err := typex.DefaultDataCacheQueue.Push(qd)
 	if err != nil {
 		glogger.GLogger.Error("PushInQueue error:", err)
-		statistics.IncInFailed()
+		e.MetricStatistics.IncInFailed()
 	} else {
-		statistics.IncIn()
+		e.MetricStatistics.IncIn()
 	}
 	return err
 }
@@ -133,9 +137,9 @@ func (e *RuleEngine) PushOutQueue(out *typex.OutEnd, data string) error {
 	err := typex.DefaultDataCacheQueue.Push(qd)
 	if err != nil {
 		glogger.GLogger.Error("PushOutQueue error:", err)
-		statistics.IncInFailed()
+		e.MetricStatistics.IncInFailed()
 	} else {
-		statistics.IncIn()
+		e.MetricStatistics.IncIn()
 	}
 	return err
 }
@@ -429,7 +433,7 @@ func (e *RuleEngine) SnapshotDump() string {
 		"outends":    outends,
 		"devices":    devices,
 		"drivers":    drivers,
-		"statistics": statistics.AllStatistics(),
+		"statistics": e.MetricStatistics,
 		"system":     system,
 		"config":     core.GlobalConfig,
 	}

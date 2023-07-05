@@ -81,7 +81,7 @@ func (l *LicenseManager) reload(quit bool) *Certificate {
 
 	// 日志输出
 	glogger.GLogger.Error("license_manager:", err.Error())
-	// fmt.Println("license_manager:", err.Error())
+	// fmt.Println("license_manager:", err. common.Error())
 
 	// 加载失败并退出
 	if quit {

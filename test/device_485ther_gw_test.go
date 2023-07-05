@@ -58,7 +58,7 @@ func Test_modbus_485_sensor_gateway(t *testing.T) {
 	RTU485Device.UUID = "RTU485Device1"
 	ctx, cancelF := typex.NewCCTX()
 	if err := engine.LoadDeviceWithCtx(RTU485Device, ctx, cancelF); err != nil {
-		t.Error("RTU485Device load failed:", err)
+		t.common.Error("RTU485Device load failed:", err)
 	}
 	mqttOutEnd := typex.NewOutEnd(
 		"MQTT",
@@ -76,7 +76,7 @@ func Test_modbus_485_sensor_gateway(t *testing.T) {
 	mqttOutEnd.UUID = "mqttOutEnd-iothub"
 	ctx1, cancelF1 := typex.NewCCTX()
 	if err := engine.LoadOutEndWithCtx(mqttOutEnd, ctx1, cancelF1); err != nil {
-		t.Error("mqttOutEnd load failed:", err)
+		t.common.Error("mqttOutEnd load failed:", err)
 	}
 	rule := typex.NewRule(engine,
 		"uuid",
@@ -105,7 +105,7 @@ end}
 `,
 		`function Failed(error) print("[LUA Failed Callback]", error) end`)
 	if err := engine.LoadRule(rule); err != nil {
-		t.Error(err)
+		t.common.Error(err)
 	}
 	time.Sleep(25 * time.Second)
 	engine.Stop()

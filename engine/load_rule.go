@@ -1,7 +1,6 @@
 package engine
 
 import (
-	"errors"
 	"sync"
 
 	"github.com/hootrhino/rulex/core"
@@ -33,8 +32,6 @@ func (e *RuleEngine) LoadRule(r *typex.Rule) error {
 		if in := e.GetInEnd(inUUId); in != nil {
 			(in.BindRules)[r.UUID] = *r
 			return nil
-		} else {
-			return errors.New("'InEnd':" + inUUId + " is not working now")
 		}
 	}
 	// 绑定设备
@@ -43,8 +40,6 @@ func (e *RuleEngine) LoadRule(r *typex.Rule) error {
 		if Device := e.GetDevice(devUUId); Device != nil {
 			// 绑定资源和规则，建立关联关系
 			(Device.BindRules)[r.UUID] = *r
-		} else {
-			return errors.New("'Device':" + devUUId + " is not working now")
 		}
 	}
 	return nil

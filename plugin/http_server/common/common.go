@@ -16,29 +16,40 @@ type R struct {
 	Data interface{} `json:"data"`
 }
 
+// 空响应
+type EmptyObj struct {
+}
+
 func Ok() R {
-	return R{200, SUCCESS, []interface{}{}}
+	return R{200, SUCCESS, []EmptyObj{}}
+}
+func ReturnEmptyObj() R {
+	return R{200, SUCCESS, EmptyObj{}}
+}
+func ReturnEmptyObjs() R {
+	return R{200, SUCCESS, []EmptyObj{}}
 }
 func OkWithEmpty() R {
-	return R{200, SUCCESS, []interface{}{}}
+	return R{200, SUCCESS, []EmptyObj{}}
 }
 func OkWithData(data interface{}) R {
 	return R{200, SUCCESS, data}
 }
 func Error(s string) R {
-	return R{4000, s, []interface{}{}}
+	return R{4000, s, []EmptyObj{}}
 }
 func Error400(e error) R {
-	return R{4001, e.Error(), []interface{}{}}
+	return R{4001, e.Error(), []EmptyObj{}}
 }
 func Error500(e error) R {
-	return R{5001, e.Error(), []interface{}{}}
+	return R{5001, e.Error(), []EmptyObj{}}
 }
 
-func (hh *HttpApiServer) Authorize() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		c.Next()
-	}
+func Error400EmptyObj(e error) R {
+	return R{4001, e.Error(), EmptyObj{}}
+}
+func Error500EmptyObj(e error) R {
+	return R{5001, e.Error(), EmptyObj{}}
 }
 
 func Cros() gin.HandlerFunc {
@@ -65,12 +76,4 @@ func cros(c *gin.Context) {
 	}
 	c.Request.Header.Del("Origin")
 	c.Next()
-}
-
-// Add api route
-func (h *HttpApiServer) addRoute(f func(*gin.Context, *HttpApiServer)) func(*gin.Context) {
-
-	return func(c *gin.Context) {
-		f(c, h)
-	}
 }

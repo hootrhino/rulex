@@ -40,7 +40,7 @@ func (*Telemetry) Init(sec *ini.Section) error {
 	if err != nil {
 		// 日志
 		glogger.GLogger.Error("plugin.telemetry dail", err.Error())
-		// fmt.Println("plugin.telemetry dail", err.Error())
+		// fmt.Println("plugin.telemetry dail", err. common.Error())
 		return nil
 	}
 
@@ -63,7 +63,7 @@ func (*Telemetry) Init(sec *ini.Section) error {
 			_, err = conn.Write(data)
 			if err != nil {
 				glogger.GLogger.Error("plugin.telemetry send", err.Error())
-				// fmt.Println("plugin.telemetry send", err.Error())
+				// fmt.Println("plugin.telemetry send", err. common.Error())
 				return
 			}
 			time.Sleep(300 * time.Millisecond)

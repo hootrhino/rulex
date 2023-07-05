@@ -114,7 +114,7 @@ func (hh *HttpApiServer) LoadNewestOutEnd(uuid string) error {
 
 // LoadNewestDevice
 func (hh *HttpApiServer) LoadNewestDevice(uuid string) error {
-	mDevice, err := hh.GetDeviceWithUUID(uuid)
+	mDevice, err := hh.GetMDeviceWithUUID(uuid)
 	if err != nil {
 		return err
 	}

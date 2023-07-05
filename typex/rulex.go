@@ -2,6 +2,7 @@ package typex
 
 import (
 	"context"
+	"os"
 	"sync"
 )
 
@@ -23,6 +24,7 @@ type RulexConfig struct {
 	MaxStoreSize          int    `ini:"max_store_size" json:"maxStoreSize"`
 	AppDebugMode          bool   `ini:"app_debug_mode" json:"appDebugMode"`
 	Extlibs               Extlib `ini:"extlibs,,allowshadow" json:"extlibs"`
+	UpdateServer          string `ini:"update_server" json:"updateServer"`
 }
 
 // RuleX interface
@@ -133,6 +135,8 @@ type RuleX interface {
 	// 停止规则引擎
 	//
 	Stop()
+	// 优雅关闭
+	Wait(...os.Signal)
 	//
 	// Snapshot Dump
 	//
@@ -203,6 +207,7 @@ type RuleX interface {
 	// AiBase
 	//----------------------------------------
 	GetAiBase() XAiRuntime
+	GetMetricStatistics() *MetricStatistics
 }
 
 // 拓扑接入点，比如 modbus 检测点等

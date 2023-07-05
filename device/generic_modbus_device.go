@@ -191,7 +191,7 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 			n, err := Driver.Read([]byte{}, buffer)
 			if err != nil {
 				glogger.GLogger.Error(err)
-				// mdev.retryTimes++
+				mdev.retryTimes++
 			} else {
 				mdev.RuleEngine.WorkDevice(mdev.Details(), string(buffer[:n]))
 			}
@@ -227,7 +227,7 @@ func (mdev *generic_modbus_device) Status() typex.DeviceState {
 	if mdev.retryTimes > 0 {
 		return typex.DEV_DOWN
 	}
-	return typex.DEV_UP
+	return mdev.status
 }
 
 // 停止设备

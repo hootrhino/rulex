@@ -1,6 +1,9 @@
 package httpserver
 
 import (
+	"fmt"
+
+	common "github.com/hootrhino/rulex/plugin/http_server/common"
 	"github.com/hootrhino/rulex/typex"
 
 	"github.com/gin-gonic/gin"
@@ -20,7 +23,7 @@ func PluginService(c *gin.Context, hh *HttpApiServer) {
 	}
 	form := Form{}
 	if err := c.ShouldBindJSON(&form); err != nil {
-		c.JSON(HTTP_OK, Error400(err))
+		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
 	plugin, ok := hh.ruleEngine.AllPlugins().Load(form.UUID)
@@ -30,8 +33,24 @@ func PluginService(c *gin.Context, hh *HttpApiServer) {
 			UUID: form.UUID,
 			Args: form.Args,
 		})
-		c.JSON(HTTP_OK, OkWithData(result.Out))
+		c.JSON(common.HTTP_OK, common.OkWithData(result.Out))
 		return
 	}
-	c.JSON(HTTP_OK, Error("plugin not exists"))
+	c.JSON(common.HTTP_OK, common.Error("plugin not exists"))
+}
+
+/*
+*
+* 插件详情
+*
+ */
+func PluginDetail(c *gin.Context, hh *HttpApiServer) {
+	uuid, _ := c.GetQuery("uuid")
+	plugin, ok := hh.ruleEngine.AllPlugins().Load(uuid)
+	if ok {
+		result := plugin.(typex.XPlugin)
+		c.JSON(common.HTTP_OK, common.OkWithData(result.PluginMetaInfo()))
+		return
+	}
+	c.JSON(common.HTTP_OK, common.Error400EmptyObj(fmt.Errorf("no such plugin:%s", uuid)))
 }

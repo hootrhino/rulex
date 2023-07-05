@@ -51,6 +51,18 @@ type RegisterRW struct {
 	Value    string `json:"value" title:"值" info:"本地系统的串口路径"`              // Value
 }
 
+/*
+*
+* 写入的数据
+*
+ */
+type RegisterW struct {
+	Function int    `json:"function"` // Function
+	SlaverId byte   `json:"slaverId"` // 从机ID
+	Address  uint16 `json:"address"`  // Address
+	Values   []byte `json:"values"`   // Value
+}
+
 // Uart "/dev/ttyUSB0"
 // BaudRate = 115200
 // DataBits = 8
