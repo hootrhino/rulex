@@ -283,6 +283,8 @@ func (hs *HttpApiServer) LoadRoute() {
 	hs.ginEngine.PUT(url("devices"), hs.addRoute(UpdateDevice))
 	hs.ginEngine.DELETE(url("devices"), hs.addRoute(DeleteDevice))
 	hs.ginEngine.POST(url("devices/modbus/sheetImport"), hs.addRoute(ModbusSheetImport))
+	hs.ginEngine.PUT(url("devices/modbus/point"), hs.addRoute(UpdateModbusPoint))
+	hs.ginEngine.GET(url("devices/modbus"), hs.addRoute(ModbusPoints))
 
 	// 外挂管理
 	hs.ginEngine.GET(url("goods"), hs.addRoute(Goods))
