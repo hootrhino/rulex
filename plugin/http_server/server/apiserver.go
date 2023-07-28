@@ -3,7 +3,6 @@ package server
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/hootrhino/rulex/typex"
-	"gorm.io/gorm"
 )
 
 /*
@@ -34,4 +33,13 @@ func (ras *RulexApiServer) AddRoute(method, path string, handler func(ctx *gin.C
 	if method == "DELETE" {
 		ras.ginEngine.DELETE(path, handler)
 	}
+}
+
+/*
+*
+* API 调用
+*
+ */
+func (ras *RulexApiServer) InvokeAPI(name string) {
+
 }
