@@ -176,3 +176,16 @@ type MModbusPointPosition struct {
 	StartAddress uint16 `json:"startAddress"  gorm:"not null"`
 	Quality      uint16 `json:"quality"       gorm:"not null"`
 }
+
+/*
+*
+* 大屏
+*
+ */
+type MVisual struct {
+	RulexModel
+	UUID    string `gorm:"not null"` // 名称
+	Name    string `gorm:"not null"` // 名称
+	Type    string `gorm:"not null"` // 类型
+	Content string `gorm:"not null"` // 大屏的内容
+}
