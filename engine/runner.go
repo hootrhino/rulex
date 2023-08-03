@@ -1,6 +1,7 @@
 package engine
 
 import (
+	"github.com/hootrhino/rulex/plugin/api_server"
 	"os"
 	"os/signal"
 	"syscall"
@@ -45,6 +46,14 @@ func RunRulex(iniPath string) {
 		glogger.GLogger.Error(err)
 		return
 	}
+
+	// http server v2
+	apiServer := api_server.NewHttpPlugin()
+	if err := engine.LoadPlugin("plugin.api_server", apiServer); err != nil {
+		glogger.GLogger.Error(err)
+		return
+	}
+
 	mqttServer := mqttserver.NewMqttServer()
 	if err := engine.LoadPlugin("plugin.mqtt_server", mqttServer); err != nil {
 		glogger.GLogger.Error(err)

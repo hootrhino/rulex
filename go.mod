@@ -47,6 +47,7 @@ require (
 	github.com/wwhai/ntp v0.3.0
 	github.com/wwhai/tarmserial v1.0.0
 	github.com/wwhai/tinycache v0.0.0-20191004192108-46f407853014
+	github.com/xuri/excelize/v2 v2.7.1
 	go.bug.st/serial v1.5.0
 	go.mongodb.org/mongo-driver v1.11.6
 	go.uber.org/zap v1.15.0
@@ -66,7 +67,6 @@ require (
 	github.com/richardlehane/mscfb v1.0.4 // indirect
 	github.com/richardlehane/msoleps v1.0.3 // indirect
 	github.com/xuri/efp v0.0.0-20220603152613-6918739fd470 // indirect
-	github.com/xuri/excelize/v2 v2.7.1 // indirect
 	github.com/xuri/nfp v0.0.0-20220409054826-5e722a1d9e22 // indirect
 )
 
