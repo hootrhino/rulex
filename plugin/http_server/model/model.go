@@ -177,6 +177,9 @@ type MModbusPointPosition struct {
 	Quality      uint16 `json:"quality"       gorm:"not null"`
 }
 
+//--------------------------------------------------------------------------------------------------
+// 0.6.0
+//--------------------------------------------------------------------------------------------------
 /*
 *
 * 大屏
@@ -188,4 +191,30 @@ type MVisual struct {
 	Name    string `gorm:"not null"` // 名称
 	Type    string `gorm:"not null"` // 类型
 	Content string `gorm:"not null"` // 大屏的内容
+}
+
+/*
+*
+* 通用分组
+*
+ */
+type MGenericGroup struct {
+	RulexModel
+	UUID   string `gorm:"not null"` // 名称
+	Name   string `gorm:"not null"` // 名称
+	Type   string `gorm:"not null"` // 组的类型, DEVICE: 设备分组
+	Parent string `gorm:"not null"` // 上级, 如果是0表示根节点
+}
+
+/*
+*
+* 应用商店里面的各类协议脚本
+*
+ */
+type MProtocolApp struct {
+	RulexModel
+	UUID    string `gorm:"not null"` // 名称
+	Name    string `gorm:"not null"` // 名称
+	Type    string `gorm:"not null"` // 类型: IN OUT DEVICE APP
+	Content string `gorm:"not null"` // 协议包的内容
 }
