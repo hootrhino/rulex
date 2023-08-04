@@ -6,29 +6,50 @@
 协议分静态协议和动态协议，下面是动态协议示例，一般会有至少一个自定义协议，关键字段是 `deviceConfig` ，下面给出一个 JSON 样例:
 
 ### 动态协议
-
-```json
-{
-    "name":"GENERIC_PROTOCOL",
-    "type":"GENERIC_PROTOCOL",
-    "description":"GENERIC_PROTOCOL",
-    "config":{
-        "commonConfig":{
-            "transport":"rs485rawserial",
-            "retryTime":5,
-            "frequency":100
-        },
-        "uartConfig":{
-            "timeout":1000,
-            "baudRate":9600,
-            "dataBits":8,
-            "parity":"N",
-            "stopBits":1,
-            "uart":"COM5"
+动态协议有2种，分别是串口和TCP，用`transport`字段区分。
+- 当 `transport`是 `rawserial` 的时候表示串口
+    ```json
+    {
+        "name":"GENERIC_PROTOCOL",
+        "type":"GENERIC_PROTOCOL",
+        "description":"GENERIC_PROTOCOL",
+        "config":{
+            "commonConfig":{
+                "transport":"rawserial",
+                "retryTime":5,
+                "frequency":100
+            },
+            "uartConfig":{
+                "timeout":1000,
+                "baudRate":9600,
+                "dataBits":8,
+                "parity":"N",
+                "stopBits":1,
+                "uart":"COM5"
+            }
         }
     }
-}
-```
+    ```
+- 当 `transport`是 `rawtcp` 的时候表示自定义TCP
+    ```json
+    {
+        "name":"GENERIC_PROTOCOL",
+        "type":"GENERIC_PROTOCOL",
+        "description":"GENERIC_PROTOCOL",
+        "config":{
+            "commonConfig":{
+                "transport":"rawtcp",
+                "retryTime":5,
+                "frequency":100
+            },
+            "hostConfig":{
+                "host": "192.168.1.1",
+                "port": 4455,
+            }
+        }
+    }
+    ```
+
 
 ## 字段：
 
