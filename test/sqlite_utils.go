@@ -12,7 +12,7 @@ import (
  */
 var unitTestDB *gorm.DB
 
-func LoadDB() {
+func LoadUnitTestDB() {
 	var err error
 	unitTestDB, err = gorm.Open(sqlite.Open("unitest.db"), &gorm.Config{})
 	if err != nil {

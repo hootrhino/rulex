@@ -23,7 +23,7 @@ func Test_rulex_base_lib(t *testing.T) {
 		})
 	ctx, cancelF := typex.NewCCTX() // ,ctx, cancelF
 	if err := engine.LoadInEndWithCtx(grpcInend, ctx, cancelF); err != nil {
-		t.common.Error("grpcInend load failed:", err)
+		t.Error("grpcInend load failed:", err)
 	}
 	//
 	// Load Rule
@@ -58,11 +58,11 @@ func Test_rulex_base_lib(t *testing.T) {
 	}`,
 		`function Failed(error) print("[Failed Callback]", error) end`)
 	if err := engine.LoadRule(rule); err != nil {
-		t.common.Error(err)
+		t.Error(err)
 	}
 	conn, err := grpc.Dial("127.0.0.1:2581", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		t.common.Error(err)
+		t.Error(err)
 	}
 	client := rulexrpc.NewRulexRpcClient(conn)
 
@@ -75,7 +75,7 @@ func Test_rulex_base_lib(t *testing.T) {
 				]`})
 
 	if err != nil {
-		t.common.Error(err)
+		t.Error(err)
 	}
 	t.Logf("Rulex Rpc Call Result ====>>: %v", resp.GetMessage())
 

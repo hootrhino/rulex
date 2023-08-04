@@ -11,6 +11,7 @@ import (
 
 	"github.com/go-playground/assert/v2"
 	httpserver "github.com/hootrhino/rulex/plugin/http_server"
+	"github.com/hootrhino/rulex/plugin/http_server/model"
 
 	"github.com/hootrhino/rulex/typex"
 )
@@ -101,8 +102,8 @@ func _createTestApp_1(t *testing.T) string {
 	}
 	t.Log("UT_createApp: ", string(output))
 	//
-	LoadDB()
-	mApp := []httpserver.MApp{}
+	LoadUnitTestDB()
+	mApp := []model.MApp{}
 	unitTestDB.Raw("SELECT * FROM m_apps").Find(&mApp)
 	assert.Equal(t, 1, len(mApp))
 	t.Log(mApp[0].UUID)
@@ -122,8 +123,8 @@ func _updateTestApp_1(t *testing.T, uuid string) {
 		t.Fatal(err)
 	}
 	t.Log("UT_updateApp: ", string(output))
-	LoadDB()
-	mApp := []httpserver.MApp{}
+	LoadUnitTestDB()
+	mApp := []model.MApp{}
 	unitTestDB.Raw("SELECT * FROM m_apps").Find(&mApp)
 	assert.Equal(t, 1, len(mApp))
 	t.Log("APP UUID ==> ", mApp[0].UUID)
@@ -142,8 +143,8 @@ func _deleteTestApp_1(t *testing.T, uuid string) {
 	}
 	t.Log("UT_deleteApp: ", string(output))
 	//
-	LoadDB()
-	mApp := []httpserver.MApp{}
+	LoadUnitTestDB()
+	mApp := []model.MApp{}
 	unitTestDB.Raw("SELECT * FROM m_apps").Find(&mApp)
 	assert.Equal(t, 0, len(mApp))
 }
