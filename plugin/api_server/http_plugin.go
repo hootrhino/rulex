@@ -39,9 +39,9 @@ func (*HttpPlugin) Init(config *ini.Section) error {
 	return nil
 }
 
-func (*HttpPlugin) Start(typex.RuleX) error {
+func (*HttpPlugin) Start(r typex.RuleX) error {
 	// 优雅退出程序
-	router := initialize.Routers()
+	router := initialize.Routers(r)
 	PORT := strconv.Itoa(apiPort)
 	go func() {
 		// 启动服务

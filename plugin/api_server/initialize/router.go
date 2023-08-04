@@ -4,9 +4,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/hootrhino/rulex/plugin/api_server/middleware"
 	"github.com/hootrhino/rulex/plugin/api_server/router"
+	"github.com/hootrhino/rulex/typex"
 )
 
-func Routers() *gin.Engine {
+func Routers(ruleEngine typex.RuleX) *gin.Engine {
 	Router := gin.Default()
 	// 注册全局中间件,根据实际业务需求注册
 	Router.Use(
@@ -15,6 +16,6 @@ func Routers() *gin.Engine {
 	// 配置全局路径
 	ApiGroup := Router.Group("/api/v2/")
 	// 注册路由
-	router.InitRuleRouter(ApiGroup)
+	router.InitRuleRouter(ruleEngine, ApiGroup)
 	return Router
 }
