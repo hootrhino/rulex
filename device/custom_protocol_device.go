@@ -56,6 +56,7 @@ func NewCustomProtocolDevice(e typex.RuleX) typex.XDevice {
 	mdev.mainConfig = _CustomProtocolConfig{
 		CommonConfig: _CPDCommonConfig{},
 		UartConfig:   common.CommonUartConfig{},
+		HostConfig:   common.HostConfig{Timeout: 50},
 	}
 	return mdev
 
@@ -70,7 +71,7 @@ func (mdev *CustomProtocolDevice) Init(devId string, configMap map[string]interf
 	if !utils.SContains([]string{"N", "E", "O"}, mdev.mainConfig.UartConfig.Parity) {
 		return errors.New("parity value only one of 'N','O','E'")
 	}
-	if !utils.SContains([]string{`rawtcp`, `rawudp`, `rawserial`, `rs485rawtcp`},
+	if !utils.SContains([]string{`rawtcp`, `rawudp`, `rawserial`},
 		mdev.mainConfig.CommonConfig.Transport) {
 		return errors.New("option only one of 'rawtcp','rawudp','rawserial','rawserial'")
 	}
@@ -152,14 +153,9 @@ func (mdev *CustomProtocolDevice) OnCtrl(cmd []byte, _ []byte) ([]byte, error) {
 
 // 设备当前状态
 func (mdev *CustomProtocolDevice) Status() typex.DeviceState {
-	if mdev.mainConfig.CommonConfig.RetryTime == 0 {
-		mdev.status = typex.DEV_UP
-	}
-	if mdev.mainConfig.CommonConfig.RetryTime > 0 {
-		if mdev.errorCount >= mdev.mainConfig.CommonConfig.RetryTime {
-			mdev.CancelCTX()
-			mdev.status = typex.DEV_DOWN
-		}
+	if mdev.errorCount >= mdev.mainConfig.CommonConfig.RetryTime {
+		mdev.CancelCTX()
+		mdev.status = typex.DEV_DOWN
 	}
 	return mdev.status
 }
@@ -168,8 +164,12 @@ func (mdev *CustomProtocolDevice) Status() typex.DeviceState {
 func (mdev *CustomProtocolDevice) Stop() {
 	mdev.CancelCTX()
 	mdev.status = typex.DEV_DOWN
-	mdev.serialPort.Close()
-
+	if mdev.mainConfig.CommonConfig.Transport == rawtcp {
+		mdev.tcpcon.Close()
+	}
+	if mdev.mainConfig.CommonConfig.Transport == rawserial {
+		mdev.serialPort.Close()
+	}
 }
 
 // 设备属性，是一系列属性描述
@@ -224,9 +224,13 @@ func (mdev *CustomProtocolDevice) ctrl(args []byte) ([]byte, error) {
 			time.Duration(30)*time.Millisecond /*30ms wait*/)
 	}
 	if mdev.mainConfig.CommonConfig.Transport == rawtcp {
+		mdev.tcpcon.SetReadDeadline(
+			time.Now().Add((time.Duration(mdev.mainConfig.HostConfig.Timeout) * time.Millisecond)),
+		)
 		count, errSliceRequest = utils.SliceRequest(ctx, mdev.tcpcon,
 			hexs, result[:], false,
 			time.Duration(30)*time.Millisecond /*30ms wait*/)
+		mdev.tcpcon.SetReadDeadline(time.Time{})
 	}
 
 	cancel()
