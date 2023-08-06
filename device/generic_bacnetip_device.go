@@ -17,15 +17,16 @@ type bacnetIpCommonConfig struct {
 	Ip        string `json:"ip,omitempty" title:"bacnet设备ip"`
 	Port      int    `json:"port,omitempty" title:"bacnet端口，通常是47808"`
 	LocalPort int    `json:"localPort" title:"本地监听端口，填0表示默认47808（有的模拟器必须本地监听47808才能正常交互）"`
+	Interval  int    `json:"interval" title:"采集间隔，单位秒"`
 }
 
 type bacnetIpNodeConfig struct {
-	//IsMstp     int `json:"isMstp,omitempty" title:"是否为mstp设备，若是则设备id和子网号必须填写"`
-	//DeviceId   int `json:"deviceId,omitempty" title:"设备id"`
-	//Subnet     int `json:"subnet,omitempty" title:"子网号"`
-	Tag  string `json:"tag" validate:"required" title:"数据Tag" info:""`
-	Type int    `json:"type,omitempty" title:"object类型"`
-	Id   int    `json:"id,omitempty" title:"object的id"`
+	IsMstp   int    `json:"isMstp,omitempty" title:"是否为mstp设备，若是则设备id和子网号必须填写"`
+	DeviceId int    `json:"deviceId,omitempty" title:"设备id"`
+	Subnet   int    `json:"subnet,omitempty" title:"子网号"`
+	Tag      string `json:"tag" validate:"required" title:"数据Tag"`
+	Type     int    `json:"type,omitempty" title:"object类型"`
+	Id       int    `json:"id,omitempty" title:"object的id"`
 
 	property btypes.PropertyData `json:"ignore"`
 }
@@ -111,7 +112,8 @@ func (dev *GenericBacnetIpDevice) Start(cctx typex.CCTX) error {
 	}
 
 	go func(ctx context.Context) {
-		ticker := time.NewTicker(10 * time.Second)
+		interval := dev.bacnetIpConfig.CommonConfig.Interval
+		ticker := time.NewTicker(time.Duration(interval) * time.Second)
 		for {
 			select {
 			case <-ctx.Done():
