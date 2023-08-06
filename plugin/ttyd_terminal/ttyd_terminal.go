@@ -62,7 +62,7 @@ func (tty *WebTTYPlugin) Init(config *ini.Section) error {
  */
 func (tty *WebTTYPlugin) Start(typex.RuleX) error {
 	tty.ttydCmd = exec.CommandContext(typex.GCTX,
-		"ttyd", "-p", fmt.Sprintf("%d", tty.mainConfig.ListenPort),
+		"ttyd", "-W", "-p", fmt.Sprintf("%d", tty.mainConfig.ListenPort),
 		"-o", "-6", "bash")
 	// tty.ttydCmd.Stdout = glogger.GLogger.Out
 	// tty.ttydCmd.Stderr = glogger.GLogger.Out
