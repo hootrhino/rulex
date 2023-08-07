@@ -83,6 +83,7 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 	mdev.Ctx = cctx.Ctx
 	mdev.CancelCTX = cctx.CancelCTX
 	mdev.errorCount = 0
+	mdev.status = typex.DEV_DOWN
 
 	// 现阶段暂时只支持RS485串口, 以后有需求再支持TCP、UDP
 	if mdev.mainConfig.CommonConfig.Transport == "rawserial" {
@@ -165,10 +166,14 @@ func (mdev *CustomProtocolDevice) Stop() {
 	mdev.CancelCTX()
 	mdev.status = typex.DEV_DOWN
 	if mdev.mainConfig.CommonConfig.Transport == rawtcp {
-		mdev.tcpcon.Close()
+		if mdev.tcpcon != nil {
+			mdev.tcpcon.Close()
+		}
 	}
 	if mdev.mainConfig.CommonConfig.Transport == rawserial {
-		mdev.serialPort.Close()
+		if mdev.serialPort != nil {
+			mdev.serialPort.Close()
+		}
 	}
 }
 
