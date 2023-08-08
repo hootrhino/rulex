@@ -1,7 +1,6 @@
 package device
 
 import (
-	"bytes"
 	"image"
 	"image/jpeg"
 
@@ -140,23 +139,9 @@ func (vc *videoCamera) Start(cctx typex.CCTX) error {
 			glogger.GLogger.Error(err)
 			return err
 		}
+
 		rtspClient.OnPacketRTPAny(func(medi *media.Media, forma formats.Format, pkt *rtp.Packet) {
-			fmt.Println(pkt.String(), forma.Codec())
-			_, _, err := image.Decode(bytes.NewReader(pkt.Payload))
-			if err != nil {
-				glogger.GLogger.Fatal(err)
-			}
-			// CVMat, err00 := gocv.NewMatFromBytes(1920, 1080, gocv.MatTypeCV8UC4, pkt.Payload)
-			// if err00 != nil {
-			// 	glogger.GLogger.Error(err00)
-			// } else {
-			// 	i, err := CVMat.ToImage()
-			// 	if err != nil {
-			// 		panic(err)
-			// 	}
-			// 	saveImageToFile(i, "demo-rtsp.png")
-			// 	panic(1)
-			// }
+			fmt.Println(forma.ClockRate())
 		})
 
 		vc.rtspClient = &rtspClient
@@ -189,18 +174,6 @@ func (vc *videoCamera) Start(cctx typex.CCTX) error {
 		go vc.StartRTSPStreamServer()
 	}
 	vc.status = typex.DEV_UP
-	return nil
-}
-func saveImageToFile(img image.Image, filename string) error {
-	file, err := os.Create(filename)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-	err = jpeg.Encode(file, img, nil)
-	if err != nil {
-		return err
-	}
 	return nil
 }
 
