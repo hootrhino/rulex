@@ -1,6 +1,7 @@
 package device
 
 import (
+	"bytes"
 	"image"
 	"image/jpeg"
 
@@ -120,34 +121,42 @@ func (vc *videoCamera) Start(cctx typex.CCTX) error {
 		rtspClient := gortsplib.Client{}
 		u, err := url.Parse(vc.mainConfig.RtspUrl)
 		if err != nil {
+			glogger.GLogger.Error(err)
 			return err
 		}
 		// connect to the server
 		err = rtspClient.Start(u.Scheme, u.Host)
 		if err != nil {
+			glogger.GLogger.Error(err)
 			return err
 		}
 		medias, baseURL, _, err := rtspClient.Describe(u)
 		if err != nil {
+			glogger.GLogger.Error(err)
 			return err
 		}
 		err = rtspClient.SetupAll(medias, baseURL)
 		if err != nil {
+			glogger.GLogger.Error(err)
 			return err
 		}
 		rtspClient.OnPacketRTPAny(func(medi *media.Media, forma formats.Format, pkt *rtp.Packet) {
-			CVMat, err00 := gocv.NewMatFromBytes(1920, 1080, gocv.MatTypeCV8UC4, pkt.Payload)
-			if err00 != nil {
-				glogger.GLogger.Error(err00)
-			} else {
-				fmt.Println(CVMat.Cols())
-				i, err := CVMat.ToImage()
-				if err != nil {
-					panic(err)
-				}
-				saveImageToFile(i, "demo-rtsp.png")
-				panic(1)
+			fmt.Println(pkt.String(), forma.Codec())
+			_, _, err := image.Decode(bytes.NewReader(pkt.Payload))
+			if err != nil {
+				glogger.GLogger.Fatal(err)
 			}
+			// CVMat, err00 := gocv.NewMatFromBytes(1920, 1080, gocv.MatTypeCV8UC4, pkt.Payload)
+			// if err00 != nil {
+			// 	glogger.GLogger.Error(err00)
+			// } else {
+			// 	i, err := CVMat.ToImage()
+			// 	if err != nil {
+			// 		panic(err)
+			// 	}
+			// 	saveImageToFile(i, "demo-rtsp.png")
+			// 	panic(1)
+			// }
 		})
 
 		vc.rtspClient = &rtspClient
@@ -163,6 +172,7 @@ func (vc *videoCamera) Start(cctx typex.CCTX) error {
 		}
 		vc.video, err = gocv.OpenVideoCapture(videoDevMap[vc.mainConfig.Device])
 		if err != nil {
+			glogger.GLogger.Error(err)
 			return err
 		}
 	}
