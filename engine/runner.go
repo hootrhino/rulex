@@ -1,15 +1,20 @@
 package engine
 
 import (
+	mqttserver "github.com/hootrhino/rulex/plugin/mqtt_server"
+	netdiscover "github.com/hootrhino/rulex/plugin/net_discover"
+	ttyterminal "github.com/hootrhino/rulex/plugin/ttyd_terminal"
+	usbmonitor "github.com/hootrhino/rulex/plugin/usb_monitor"
+	"gopkg.in/ini.v1"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 
 	"github.com/hootrhino/rulex/core"
 	"github.com/hootrhino/rulex/glogger"
 	httpserver "github.com/hootrhino/rulex/plugin/http_server"
 	icmpsender "github.com/hootrhino/rulex/plugin/icmp_sender"
-	mqttserver "github.com/hootrhino/rulex/plugin/mqtt_server"
 	"github.com/hootrhino/rulex/typex"
 )
 
@@ -39,19 +44,12 @@ func RunRulex(iniPath string) {
 	signal.Notify(c, syscall.SIGINT, syscall.SIGABRT, syscall.SIGTERM)
 	engine := NewRuleEngine(mainConfig)
 	engine.Start()
+
+	// Load Plugin
+	loadPlugin(engine)
 	// Load Http api Server
 	httpServer := httpserver.NewHttpApiServer()
 	if err := engine.LoadPlugin("plugin.http_server", httpServer); err != nil {
-		glogger.GLogger.Error(err)
-		return
-	}
-	mqttServer := mqttserver.NewMqttServer()
-	if err := engine.LoadPlugin("plugin.mqtt_server", mqttServer); err != nil {
-		glogger.GLogger.Error(err)
-		return
-	}
-	icmpSender := icmpsender.NewICMPSender()
-	if err := engine.LoadPlugin("plugin.icmpsender", icmpSender); err != nil {
 		glogger.GLogger.Error(err)
 		return
 	}
@@ -117,4 +115,55 @@ func RunRulex(iniPath string) {
 	glogger.GLogger.Warn("Received stop signal:", s)
 	engine.Stop()
 	os.Exit(0)
+}
+
+// loadPlugin 根据Ini配置信息，加载插件
+func loadPlugin(engine typex.RuleX) {
+	cfg, _ := ini.ShadowLoad(core.INIPath)
+	sections := cfg.ChildSections("plugin")
+	for _, section := range sections {
+		name := strings.TrimPrefix(section.Name(), "plugin.")
+		key, err1 := section.GetKey("enable")
+		if err1 != nil {
+			glogger.GLogger.Error(err1)
+			continue
+		}
+		enable, err2 := key.Bool()
+		if err2 != nil {
+			glogger.GLogger.Error(err2)
+			continue
+		}
+		if !enable {
+			glogger.GLogger.Infof("Plugin is not enable:%s", name)
+			continue
+		}
+		var plugin typex.XPlugin
+		if name == "mqtt_server" {
+			plugin = mqttserver.NewMqttServer()
+			goto lab
+		}
+		if name == "usbmonitor" {
+			plugin = usbmonitor.NewUsbMonitor()
+			goto lab
+		}
+		if name == "icmpsender" {
+			plugin = icmpsender.NewICMPSender()
+			goto lab
+		}
+		if name == "netdiscover" {
+			plugin = netdiscover.NewNetDiscover()
+			goto lab
+		}
+		if name == "ttyd" {
+			plugin = ttyterminal.NewWebTTYPlugin()
+			goto lab
+		} else {
+			continue
+		}
+	lab:
+		if err := engine.LoadPlugin(section.Name(), plugin); err != nil {
+			glogger.GLogger.Error(err)
+			return
+		}
+	}
 }
