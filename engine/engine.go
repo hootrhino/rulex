@@ -21,7 +21,7 @@ import (
 	"github.com/shirou/gopsutil/v3/disk"
 )
 
-// 规则引擎
+// RuleEngine 规则引擎
 type RuleEngine struct {
 	Hooks             *sync.Map            `json:"hooks"`
 	Rules             *sync.Map            `json:"rules"`

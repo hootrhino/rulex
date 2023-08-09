@@ -17,5 +17,6 @@ func Routers(ruleEngine typex.RuleX) *gin.Engine {
 	ApiGroup := Router.Group("/api/v2/")
 	// 注册路由
 	router.InitRuleRouter(ruleEngine, ApiGroup)
+	router.InitSystemRouter(ruleEngine, ApiGroup)
 	return Router
 }

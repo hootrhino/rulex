@@ -2,6 +2,7 @@ package engine
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/hootrhino/rulex/core"
 	"github.com/hootrhino/rulex/glogger"
@@ -39,8 +40,14 @@ func (e *RuleEngine) LoadPlugin(sectionK string, p typex.XPlugin) error {
 		return err
 	}
 
+	fmt.Println("uuid:", p.PluginMetaInfo().UUID)
+	glogger.GLogger.Infof("Plugin start successfully:[%v]", p.PluginMetaInfo().UUID)
 	e.Plugins.Store(p.PluginMetaInfo().UUID, p)
 	glogger.GLogger.Infof("Plugin start successfully:[%v]", p.PluginMetaInfo().Name)
+	//e.Plugins.Range(func(key, value interface{}) bool {
+	//	fmt.Println("Key:", key, "Value:", value)
+	//	return true
+	//})
 	return nil
 
 }

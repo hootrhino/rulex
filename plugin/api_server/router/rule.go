@@ -8,7 +8,7 @@ import (
 
 func InitRuleRouter(ruleEngine typex.RuleX, Router *gin.RouterGroup) {
 	registerRouter := Router.Group("rule")
-	newAccount := service.NewRuleService(ruleEngine)
-	registerRouter.GET("/list", newAccount.GetRuleList) // 获取数据
+	rule := service.NewRuleService(ruleEngine)
+	registerRouter.GET("/list", rule.GetRuleList) // 获取数据
 
 }

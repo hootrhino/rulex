@@ -7,10 +7,7 @@ import (
 	"github.com/hootrhino/rulex/typex"
 	"github.com/hootrhino/rulex/utils"
 	"gopkg.in/ini.v1"
-	"os"
-	"os/signal"
 	"strconv"
-	"syscall"
 )
 
 var apiPort int = 8000
@@ -49,9 +46,9 @@ func (*HttpPlugin) Start(r typex.RuleX) error {
 			fmt.Println(fmt.Sprintf("服务启动失败:%s", err.Error()))
 		}
 	}()
-	exit := make(chan os.Signal)
-	signal.Notify(exit, syscall.SIGINT, syscall.SIGTERM)
-	<-exit
+	//exit := make(chan os.Signal)
+	//signal.Notify(exit, syscall.SIGINT, syscall.SIGTERM)
+	//<-exit
 	return nil
 }
 
@@ -62,7 +59,7 @@ func (*HttpPlugin) Stop() error {
 func (hp *HttpPlugin) PluginMetaInfo() typex.XPluginMetaInfo {
 	return typex.XPluginMetaInfo{
 		UUID:     hp.uuid,
-		Name:     "RULEX HTTP RESTFul Api Server",
+		Name:     "RULEX HTTP RESTFul Api Server V2.0.0",
 		Version:  "v2.0.0",
 		Homepage: "https://hootrhino.github.io",
 		HelpLink: "https://hootrhino.github.io",

@@ -34,6 +34,7 @@ func Plugins(c *gin.Context, hh *HttpApiServer) {
 	data := []interface{}{}
 	plugins := hh.ruleEngine.AllPlugins()
 	plugins.Range(func(key, value interface{}) bool {
+		fmt.Println("Key:", key, "Value:", value)
 		pi := value.(typex.XPlugin).PluginMetaInfo()
 		data = append(data, pi)
 		return true

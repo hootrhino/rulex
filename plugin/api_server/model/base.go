@@ -13,11 +13,13 @@ type BaseModel struct {
 
 type stringList []string
 
+// Value 写入数据库之前，对数据做类型转换
 func (f stringList) Value() (driver.Value, error) {
 	b, err := json.Marshal(f)
 	return string(b), err
 }
 
+// Scan 将数据库中取出的数据，赋值给目标类型
 func (f *stringList) Scan(data interface{}) error {
 	return json.Unmarshal([]byte(data.(string)), f)
 }
