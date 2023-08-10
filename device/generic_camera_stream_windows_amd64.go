@@ -3,7 +3,6 @@ package device
 import (
 	"fmt"
 	"os/exec"
-	"strings"
 
 	"time"
 

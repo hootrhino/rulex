@@ -27,17 +27,17 @@ func DeleteVisual(uuid string) error {
 }
 
 // 创建Visual
-func InsertVisual(Visual *model.MVisual) error {
-	return sqlitedao.Sqlite.DB().Create(Visual).Error
+func InsertVisual(Visual model.MVisual) error {
+	return sqlitedao.Sqlite.DB().Create(&Visual).Error
 }
 
 // 更新Visual
-func UpdateVisual(Visual *model.MVisual) error {
+func UpdateVisual(Visual model.MVisual) error {
 	m := model.MVisual{}
 	if err := sqlitedao.Sqlite.DB().Where("uuid=?", Visual.UUID).First(&m).Error; err != nil {
 		return err
 	} else {
-		sqlitedao.Sqlite.DB().Model(m).Updates(*Visual)
+		sqlitedao.Sqlite.DB().Model(m).Updates(Visual)
 		return nil
 	}
 }
