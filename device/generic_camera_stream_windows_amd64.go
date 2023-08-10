@@ -1,14 +1,13 @@
 package device
 
 import (
-	"image"
-	"image/jpeg"
+	"fmt"
+	"os/exec"
+	"strings"
 
-	"os"
 	"time"
 
 	"context"
-	"fmt"
 	"net"
 	"net/http"
 	"sync"
@@ -62,13 +61,32 @@ func NewVideoCamera(e typex.RuleX) typex.XDevice {
 	videoCamera.status = typex.DEV_DOWN
 	videoCamera.mainConfig = _MainConfig{
 		MaxThread:  10,
+		InputMode:  "LOCAL",
 		Device:     "video0",
 		RtspUrl:    "rtsp://127.0.0.1",
-		InputMode:  "LOCAL",
 		OutputMode: "JPEG_STREAM",
 		OutputAddr: "127.0.0.1:2599",
 	}
 	return videoCamera
+}
+
+/*
+* 教程:
+* https://ffmpeg.xianwaizhiyin.net/base-ffmpeg/ffmpeg-install.html
+*
+ */
+func CheckFFMPEG() error {
+	// Command to check if 'ffmpeg' exists
+	cmd := exec.Command("ffmpeg", "-version")
+	output, err := cmd.CombinedOutput()
+
+	if err != nil {
+		return err
+	}
+	if len(output) < 100 {
+		return fmt.Errorf("ffmpeg not exists")
+	}
+	return nil
 }
 
 // 初始化 通常用来获取设备的配置
@@ -77,6 +95,14 @@ func (vc *videoCamera) Init(devId string, configMap map[string]interface{}) erro
 	if err := utils.BindSourceConfig(configMap, &vc.mainConfig); err != nil {
 		return err
 	}
+	if err := CheckFFMPEG(); err != nil {
+		return err
+	}
+	/*
+	*
+	* 检查一下URL
+	*
+	 */
 	if vc.mainConfig.InputMode == "RTSP" {
 		rtspClient := gortsplib.Client{}
 		u, err := url.Parse(vc.mainConfig.RtspUrl)
@@ -89,7 +115,11 @@ func (vc *videoCamera) Init(devId string, configMap map[string]interface{}) erro
 		}
 		defer rtspClient.Close()
 	}
-	// 从本地摄像头获取
+	/*
+	*
+	* Local指的是本地的USB摄像头
+	*
+	 */
 	if vc.mainConfig.InputMode == "LOCAL" {
 		if _, ok := videoDevMap[vc.mainConfig.Device]; !ok {
 			errMsg := fmt.Errorf("video device: %v not exists", vc.mainConfig.Device)
