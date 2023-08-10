@@ -29,6 +29,9 @@ func PluginUuid() string {
 func VisualUuid() string {
 	return MakeUUID("VISUAL")
 }
+func GroupUuid() string {
+	return MakeUUID("GROUP")
+}
 func AppUuid() string {
 	return MakeUUID("APP")
 }

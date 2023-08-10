@@ -63,6 +63,7 @@ func (s *HttpApiServer) registerModel() {
 		&model.MModbusPointPosition{},
 		&model.MVisual{},
 		&model.MGenericGroup{},
+		&model.MGenericGroupRelation{},
 		&model.MProtocolApp{},
 	)
 }
@@ -295,6 +296,8 @@ func (hs *HttpApiServer) LoadRoute() {
 		groupApi.DELETE("/delete", hs.addRoute(DeleteGroup))
 		groupApi.PUT("/update", hs.addRoute(UpdateGroup))
 		groupApi.GET("/list", hs.addRoute(ListGroup))
+		// groupApi.POST("/bind", hs.addRoute(Bind))
+		groupApi.PUT("/unbind", hs.addRoute(ListGroup))
 	}
 
 	//

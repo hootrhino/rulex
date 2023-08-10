@@ -208,6 +208,18 @@ type MGenericGroup struct {
 
 /*
 *
+* 分组表的绑定关系表
+*
+ */
+type MGenericGroupRelation struct {
+	RulexModel
+	UUID string `gorm:"not null"`
+	Gid  string `gorm:"not null"` // 分组ID
+	Rid  string `gorm:"not null"` // 被绑定方
+}
+
+/*
+*
 * 应用商店里面的各类协议脚本
 *
  */
