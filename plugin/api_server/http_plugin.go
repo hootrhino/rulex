@@ -37,7 +37,6 @@ func (*HttpPlugin) Init(config *ini.Section) error {
 }
 
 func (*HttpPlugin) Start(r typex.RuleX) error {
-	// 优雅退出程序
 	router := initialize.Routers(r)
 	PORT := strconv.Itoa(apiPort)
 	go func() {
@@ -46,6 +45,7 @@ func (*HttpPlugin) Start(r typex.RuleX) error {
 			fmt.Println(fmt.Sprintf("服务启动失败:%s", err.Error()))
 		}
 	}()
+	// 此处不能使用优雅退出方式，会导致插件的加载bug
 	//exit := make(chan os.Signal)
 	//signal.Notify(exit, syscall.SIGINT, syscall.SIGTERM)
 	//<-exit
@@ -63,8 +63,8 @@ func (hp *HttpPlugin) PluginMetaInfo() typex.XPluginMetaInfo {
 		Version:  "v2.0.0",
 		Homepage: "https://hootrhino.github.io",
 		HelpLink: "https://hootrhino.github.io",
-		Author:   "wwhai",
-		Email:    "cnwwhai@gmail.com",
+		Author:   "liws",
+		Email:    "963755497@qq.com",
 		License:  "MIT",
 	}
 }
