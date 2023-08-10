@@ -14,7 +14,7 @@ import (
 // └──────┘    └──────┘    └──────┘
 func (e *RuleEngine) LoadPlugin(sectionK string, p typex.XPlugin) error {
 	section := utils.GetINISection(core.INIPath, sectionK)
-	key, err1 := section.GetKey("enable")
+	/*key, err1 := section.GetKey("enable")
 	if err1 != nil {
 		return err1
 	}
@@ -25,7 +25,7 @@ func (e *RuleEngine) LoadPlugin(sectionK string, p typex.XPlugin) error {
 	if !enable {
 		glogger.GLogger.Infof("Plugin is not enable:%s", p.PluginMetaInfo().Name)
 		return nil
-	}
+	}*/
 
 	if err := p.Init(section); err != nil {
 		return err
