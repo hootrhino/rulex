@@ -296,8 +296,10 @@ func (hs *HttpApiServer) LoadRoute() {
 		groupApi.DELETE("/delete", hs.addRoute(DeleteGroup))
 		groupApi.PUT("/update", hs.addRoute(UpdateGroup))
 		groupApi.GET("/list", hs.addRoute(ListGroup))
-		// groupApi.POST("/bind", hs.addRoute(Bind))
-		groupApi.PUT("/unbind", hs.addRoute(ListGroup))
+		groupApi.POST("/bind", hs.addRoute(BindResource))
+		groupApi.PUT("/unbind", hs.addRoute(UnBindResource))
+		groupApi.GET("/devices", hs.addRoute(FindDeviceByGroup))
+		groupApi.GET("/visuals", hs.addRoute(FindVisualByGroup))
 	}
 
 	//

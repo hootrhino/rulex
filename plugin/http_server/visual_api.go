@@ -9,10 +9,10 @@ import (
 )
 
 type VisualVo struct {
-	UUID    string `json:"uuid"`    // 名称
-	Name    string `json:"name"`    // 名称
-	Type    string `json:"type"`    // 类型
-	Content string `json:"content"` // 大屏的内容
+	UUID    string `json:"uuid" validate:"required"`    // 名称
+	Name    string `json:"name" validate:"required"`    // 名称
+	Type    string `json:"type" validate:"required"`    // 类型
+	Content string `json:"content" validate:"required"` // 大屏的内容
 }
 
 /*
@@ -28,7 +28,7 @@ func CreateVisual(c *gin.Context, hh *HttpApiServer) {
 		return
 	}
 	MVisual := model.MVisual{
-		UUID: utils.VisualUuid(),
+		UUID:    utils.VisualUuid(),
 		Name:    vvo.Name,
 		Type:    vvo.Type,
 		Content: vvo.Content,

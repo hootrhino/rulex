@@ -11,14 +11,14 @@ import (
 )
 
 type MGenericGroupVo struct {
-	UUID   string `json:"uuid"`   // 名称
-	Name   string `json:"name"`   // 名称
-	Type   string `json:"type"`   // 组的类型, DEVICE: 设备分组
-	Parent string `json:"parent"` // 上级, 如果是0表示根节点
+	UUID   string `json:"uuid" validate:"required"` // 名称
+	Name   string `json:"name" validate:"required"` // 名称
+	Type   string `json:"type" validate:"required"` // 组的类型, DEVICE: 设备分组, VISUAL: 大屏分组
+	Parent string `json:"parent"`                   // 上级, 如果是0表示根节点
 }
 type MGenericGroupRelationVo struct {
-	Gid string `json:"gid"` // 分组ID
-	Rid string `json:"rid"` // 被绑定方
+	Gid string `json:"gid" validate:"required"` // 分组ID
+	Rid string `json:"rid" validate:"required"` // 被绑定方
 }
 
 /*
@@ -31,6 +31,9 @@ func CreateGroup(c *gin.Context, hh *HttpApiServer) {
 	if err := c.ShouldBindJSON(&vvo); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
+	}
+	if !utils.SContains([]string{"VISUAL", "DEVICE"}, vvo.Type) {
+		c.JSON(common.HTTP_OK, common.Error400(fmt.Errorf("invalid type [%s]", vvo.Type)))
 	}
 	Model := model.MGenericGroup{
 		UUID:   utils.GroupUuid(),
@@ -84,7 +87,7 @@ func DeleteGroup(c *gin.Context, hh *HttpApiServer) {
 	}
 	// 删除之前需要判断一下是不是有子元
 	if count > 0 {
-		msg := fmt.Errorf("group have binding other resources")
+		msg := fmt.Errorf("group:%s have binding to other resources", uuid)
 		c.JSON(common.HTTP_OK, common.Error400(msg))
 		return
 	}
@@ -140,9 +143,26 @@ func GroupDetail(c *gin.Context, hh *HttpApiServer) {
 *
  */
 func BindResource(c *gin.Context, hh *HttpApiServer) {
-	gid, _ := c.GetQuery("gid")
-	rid, _ := c.GetQuery("rid")
-	if err := service.BindResource(gid, rid); err != nil {
+	type FormDto struct {
+		Gid string `json:"gid"`
+		Rid string `json:"rid"`
+	}
+	form := FormDto{}
+	if err := c.ShouldBindJSON(&form); err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
+	if count, err := service.CheckAlreadyBinding(form.Gid, form.Rid); err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	} else {
+		if count > 0 {
+			msg := fmt.Errorf("[%s] already binding to group [%s]", form.Rid, form.Gid)
+			c.JSON(common.HTTP_OK, common.Error400(msg))
+			return
+		}
+	}
+	if err := service.BindResource(form.Gid, form.Rid); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
@@ -164,4 +184,53 @@ func UnBindResource(c *gin.Context, hh *HttpApiServer) {
 	}
 	c.JSON(common.HTTP_OK, common.Ok())
 
+}
+
+/*
+*
+* 设备
+*
+ */
+func FindDeviceByGroup(c *gin.Context, hh *HttpApiServer) {
+	Type, _ := c.GetQuery("type")
+	Gid, _ := c.GetQuery("gid")
+	vv2 := []model.MDevice{}
+
+	if Type == "DEVICE" {
+		_, MDevices := service.FindByType(Gid, Type)
+		for _, mG := range MDevices {
+			vv2 = append(vv2, model.MDevice{
+				UUID: mG.UUID,
+				Name: mG.Name,
+				Type: mG.Type,
+			})
+		}
+		c.JSON(common.HTTP_OK, common.OkWithData(vv2))
+		return
+	}
+	c.JSON(common.HTTP_OK, common.Error400(fmt.Errorf("unsupported group type:%s", Type)))
+}
+
+/*
+*
+* 大屏
+*
+ */
+func FindVisualByGroup(c *gin.Context, hh *HttpApiServer) {
+	Type, _ := c.GetQuery("type")
+	Gid, _ := c.GetQuery("gid")
+	vv1 := []model.MVisual{}
+	if Type == "VISUAL" {
+		MVisuals, _ := service.FindByType(Gid, Type)
+		for _, mG := range MVisuals {
+			vv1 = append(vv1, model.MVisual{
+				UUID: mG.UUID,
+				Name: mG.Name,
+				Type: mG.Type,
+			})
+		}
+		c.JSON(common.HTTP_OK, common.OkWithData(vv1))
+		return
+	}
+	c.JSON(common.HTTP_OK, common.Error400(fmt.Errorf("unsupported group type:%s", Type)))
 }
