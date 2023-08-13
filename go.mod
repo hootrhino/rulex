@@ -10,7 +10,6 @@ require (
 	github.com/antonmedv/expr v1.12.5
 	github.com/bluele/gcache v0.0.2
 	github.com/bluenviron/gortsplib/v3 v3.9.0
-	github.com/bluenviron/mediacommon v0.7.0
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/eclipse/paho.mqtt.golang v1.4.2
 	github.com/emirpasic/gods v1.18.1
@@ -67,8 +66,7 @@ require (
 )
 
 require (
-	github.com/asticode/go-astikit v0.30.0 // indirect
-	github.com/asticode/go-astits v1.11.0 // indirect
+	github.com/bluenviron/mediacommon v0.7.0 // indirect
 	github.com/juju/errors v0.0.0-20170703010042-c7d06af17c68 // indirect
 	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826 // indirect
 	github.com/pion/randutil v0.1.0 // indirect
