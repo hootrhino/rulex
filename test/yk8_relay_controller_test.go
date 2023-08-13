@@ -68,14 +68,14 @@ func TestRTU_YK081(t *testing.T) {
 	handler.Logger = log.New(os.Stdout, "rtu: ", log.LstdFlags)
 
 	if err := handler.Connect(); err != nil {
-		t.common.Error(err)
+		t.Error(err)
 		return
 	}
 	defer handler.Close()
 	client := modbus.NewClient(handler)
 
 	if results, err := client.ReadCoils(0x00, 0x08); err != nil {
-		t.common.Error(err)
+		t.Error(err)
 		return
 	} else {
 		t.Log("===> ", results)

@@ -407,7 +407,7 @@ func (e *RuleEngine) SnapshotDump() string {
 	e.AllDevices().Range(func(key, value interface{}) bool {
 		Device := value.(*typex.Device)
 		if Device.Device.Driver() != nil {
-			drivers = append(drivers, Device.Device.Driver())
+			devices = append(devices, Device.Device.Driver())
 		}
 		return true
 	})

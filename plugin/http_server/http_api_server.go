@@ -5,11 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"net"
-	"os"
 	"time"
 
-	"github.com/hootrhino/rulex/core"
 	common "github.com/hootrhino/rulex/plugin/http_server/common"
+	sqlitedao "github.com/hootrhino/rulex/plugin/http_server/dao/sqlite"
 	"github.com/hootrhino/rulex/plugin/http_server/model"
 
 	"github.com/gin-contrib/static"
@@ -25,9 +24,6 @@ import (
 	"gopkg.in/ini.v1"
 
 	_ "github.com/mattn/go-sqlite3"
-	"gorm.io/driver/sqlite"
-	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 )
 
 const _API_V1_ROOT string = "/api/v1/"
@@ -43,13 +39,10 @@ type _serverConfig struct {
 	Port   int    `ini:"port"`
 }
 type HttpApiServer struct {
-	Port       int
-	Host       string
-	sqliteDb   *gorm.DB
-	dbPath     string
+	uuid       string
 	ginEngine  *gin.Engine
 	ruleEngine typex.RuleX
-	uuid       string
+	mainConfig _serverConfig
 }
 
 /*
@@ -57,27 +50,8 @@ type HttpApiServer struct {
 * 初始化数据库
 *
  */
-func (s *HttpApiServer) InitDb(dbPath string) {
-	var err error
-	if core.GlobalConfig.AppDebugMode {
-		s.sqliteDb, err = gorm.Open(sqlite.Open(dbPath), &gorm.Config{
-			Logger:                 logger.Default.LogMode(logger.Info),
-			SkipDefaultTransaction: false,
-		})
-	} else {
-		s.sqliteDb, err = gorm.Open(sqlite.Open(dbPath), &gorm.Config{
-			Logger:                 logger.Default.LogMode(logger.Error),
-			SkipDefaultTransaction: false,
-		})
-	}
-
-	if err != nil {
-		// Sqlite 创建失败应该是致命错误了, 多半是环境出问题，直接给panic了, 不尝试救活
-		glogger.GLogger.Fatal(err)
-	}
-	// 注册数据库配置表
-	// 这么写看起来是很难受, 但是这玩意就是go的哲学啊(大道至简？？？)
-	if err := s.DB().AutoMigrate(
+func (s *HttpApiServer) registerModel() {
+	sqlitedao.Sqlite.DB().AutoMigrate(
 		&model.MInEnd{},
 		&model.MOutEnd{},
 		&model.MRule{},
@@ -88,18 +62,16 @@ func (s *HttpApiServer) InitDb(dbPath string) {
 		&model.MAiBase{},
 		&model.MModbusPointPosition{},
 		&model.MVisual{},
-	); err != nil {
-		glogger.GLogger.Fatal(err)
-		os.Exit(1)
-	}
+		&model.MGenericGroup{},
+		&model.MGenericGroupRelation{},
+		&model.MProtocolApp{},
+	)
 }
 
-func (s *HttpApiServer) DB() *gorm.DB {
-	return s.sqliteDb
-}
 func NewHttpApiServer() *HttpApiServer {
 	return &HttpApiServer{
-		uuid: "HTTP-API-SERVER",
+		uuid:       "HTTP-API-SERVER",
+		mainConfig: _serverConfig{},
 	}
 }
 
@@ -109,27 +81,17 @@ var err1crash = errors.New("http server crash, try to recovery")
 func (hs *HttpApiServer) Init(config *ini.Section) error {
 	gin.SetMode(gin.ReleaseMode)
 	hs.ginEngine = gin.New()
-
-	var mainConfig _serverConfig
-	if err := utils.InIMapToStruct(config, &mainConfig); err != nil {
+	if err := utils.InIMapToStruct(config, &hs.mainConfig); err != nil {
 		return err
 	}
-	hs.Host = mainConfig.Host
-	hs.dbPath = mainConfig.DbPath
-	hs.Port = mainConfig.Port
+	if hs.mainConfig.DbPath == "" {
+		sqlitedao.Load(_DEFAULT_DB_PATH)
+
+	} else {
+		sqlitedao.Load(hs.mainConfig.DbPath)
+	}
+	hs.registerModel()
 	hs.configHttpServer()
-	//
-	// Http server
-	//
-	go func(ctx context.Context, port int) {
-		listener, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", port))
-		if err != nil {
-			glogger.GLogger.Fatalf("httpserver listen error: %s\n", err)
-		}
-		if err := hs.ginEngine.RunListener(listener); err != nil {
-			glogger.GLogger.Fatalf("httpserver listen error: %s\n", err)
-		}
-	}(typex.GCTX, hs.Port)
 	//
 	// WebSocket server
 	//
@@ -302,23 +264,68 @@ func (hs *HttpApiServer) LoadRoute() {
 	// ----------------------------------------------------------------------------------------------
 	// APP
 	// ----------------------------------------------------------------------------------------------
-	hs.ginEngine.GET(url("app"), hs.addRoute(Apps))
-	hs.ginEngine.POST(url("app"), hs.addRoute(CreateApp))
-	hs.ginEngine.PUT(url("app"), hs.addRoute(UpdateApp))
-	hs.ginEngine.DELETE(url("app"), hs.addRoute(RemoveApp))
-	hs.ginEngine.PUT(url("app/start"), hs.addRoute(StartApp))
-	hs.ginEngine.PUT(url("app/stop"), hs.addRoute(StopApp))
-	hs.ginEngine.GET(url("app/detail"), hs.addRoute(AppDetail))
+	appApi := hs.ginEngine.Group(url("/app"))
+	{
+		appApi.GET(("/"), hs.addRoute(Apps))
+		appApi.POST(("/"), hs.addRoute(CreateApp))
+		appApi.PUT(("/"), hs.addRoute(UpdateApp))
+		appApi.DELETE(("/"), hs.addRoute(RemoveApp))
+		appApi.PUT(("/start"), hs.addRoute(StartApp))
+		appApi.PUT(("/stop"), hs.addRoute(StopApp))
+		appApi.GET(("/detail"), hs.addRoute(AppDetail))
+	}
 	// ----------------------------------------------------------------------------------------------
 	// AI BASE
 	// ----------------------------------------------------------------------------------------------
-	hs.ginEngine.GET(url("aibase"), hs.addRoute(AiBase))
-	hs.ginEngine.DELETE(url("aibase"), hs.addRoute(DeleteAiBase))
+	aiApi := hs.ginEngine.Group(url("/aibase"))
+	{
+		aiApi.GET(("/"), hs.addRoute(AiBase))
+		aiApi.DELETE(("/"), hs.addRoute(DeleteAiBase))
+	}
 	// ----------------------------------------------------------------------------------------------
 	// Plugin
 	// ----------------------------------------------------------------------------------------------
-	hs.ginEngine.POST(url("plugin/service"), hs.addRoute(PluginService))
-	hs.ginEngine.GET(url("plugin/detail"), hs.addRoute(PluginDetail))
+	pluginApi := hs.ginEngine.Group(url("/plugin"))
+	{
+		pluginApi.POST(("/service"), hs.addRoute(PluginService))
+		pluginApi.GET(("/detail"), hs.addRoute(PluginDetail))
+	}
+
+	//
+	// 分组管理
+	//
+	groupApi := hs.ginEngine.Group(url("/group"))
+	{
+		groupApi.POST("/create", hs.addRoute(CreateGroup))
+		groupApi.DELETE("/delete", hs.addRoute(DeleteGroup))
+		groupApi.PUT("/update", hs.addRoute(UpdateGroup))
+		groupApi.GET("/list", hs.addRoute(ListGroup))
+		groupApi.POST("/bind", hs.addRoute(BindResource))
+		groupApi.PUT("/unbind", hs.addRoute(UnBindResource))
+		groupApi.GET("/devices", hs.addRoute(FindDeviceByGroup))
+		groupApi.GET("/visuals", hs.addRoute(FindVisualByGroup))
+	}
+
+	//
+	// 协议应用管理
+	//
+	protoAppApi := hs.ginEngine.Group(url("/protoapp"))
+	{
+		protoAppApi.POST("/create", hs.addRoute(CreateProtocolApp))
+		protoAppApi.DELETE("/delete", hs.addRoute(DeleteProtocolApp))
+		protoAppApi.PUT("/update", hs.addRoute(UpdateProtocolApp))
+		protoAppApi.GET("/list", hs.addRoute(ListProtocolApp))
+	}
+	//
+	// 大屏应用管理
+	//
+	screenApi := hs.ginEngine.Group(url("/visual"))
+	{
+		screenApi.POST("/create", hs.addRoute(CreateVisual))
+		screenApi.DELETE("/delete", hs.addRoute(DeleteVisual))
+		screenApi.PUT("/update", hs.addRoute(UpdateVisual))
+		screenApi.GET("/list", hs.addRoute(ListVisual))
+	}
 
 }
 
@@ -326,7 +333,7 @@ func (hs *HttpApiServer) LoadRoute() {
 func (hs *HttpApiServer) Start(r typex.RuleX) error {
 	hs.ruleEngine = r
 	hs.LoadRoute()
-	glogger.GLogger.Infof("Http server started on http://0.0.0.0:%v", hs.Port)
+	glogger.GLogger.Infof("Http server started on :%v", hs.mainConfig.Port)
 	return nil
 }
 
@@ -358,7 +365,6 @@ func (*HttpApiServer) Service(arg typex.ServiceArg) typex.ServiceResult {
 
 // Add api route
 func (hs *HttpApiServer) addRoute(f func(*gin.Context, *HttpApiServer)) func(*gin.Context) {
-
 	return func(c *gin.Context) {
 		f(c, hs)
 	}
@@ -380,11 +386,18 @@ func (hs *HttpApiServer) configHttpServer() {
 	hs.ginEngine.NoRoute(func(c *gin.Context) {
 		c.Redirect(302, "/")
 	})
-	if hs.dbPath == "" {
-		hs.InitDb(_DEFAULT_DB_PATH)
-	} else {
-		hs.InitDb(hs.dbPath)
-	}
+	//
+	// Http server
+	//
+	go func(ctx context.Context, port int) {
+		listener, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", port))
+		if err != nil {
+			glogger.GLogger.Fatalf("httpserver listen error: %s\n", err)
+		}
+		if err := hs.ginEngine.RunListener(listener); err != nil {
+			glogger.GLogger.Fatalf("httpserver listen error: %s\n", err)
+		}
+	}(typex.GCTX, hs.mainConfig.Port)
 }
 
 /*

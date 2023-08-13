@@ -40,7 +40,9 @@ func (e *RuleEngine) RemoveDevice(uuid string) {
 	if dev := e.GetDevice(uuid); dev != nil {
 		if dev.Device != nil {
 			glogger.GLogger.Infof("Device [%v] ready to stop", uuid)
-			dev.Device.Stop()
+			if dev.Device.Status() == typex.DEV_UP {
+				dev.Device.Stop()
+			}
 			glogger.GLogger.Infof("Device [%v] has been stopped", uuid)
 			e.Devices.Delete(uuid)
 			glogger.GLogger.Infof("Device [%v] has been deleted", uuid)
