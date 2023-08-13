@@ -233,6 +233,10 @@ func (hs *HttpApiServer) LoadRoute() {
 	//
 	hs.ginEngine.GET(url("uarts"), hs.addRoute(GetUarts))
 	//
+	// 网络适配器列表
+	//
+	hs.ginEngine.GET(url("netInterfaces"), hs.addRoute(GetNetInterfaces))
+	//
 	// 获取服务启动时间
 	//
 	hs.ginEngine.GET(url("startedAt"), hs.addRoute(StartedAt))

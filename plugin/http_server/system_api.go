@@ -2,6 +2,8 @@ package httpserver
 
 import (
 	"fmt"
+	"github.com/hootrhino/rulex/plugin/http_server/model"
+	"net"
 	"runtime"
 	"strconv"
 	"time"
@@ -250,6 +252,15 @@ func GetUarts(c *gin.Context, hh *HttpApiServer) {
 	c.JSON(common.HTTP_OK, common.OkWithData(ports))
 }
 
+func GetNetInterfaces(c *gin.Context, hh *HttpApiServer) {
+	interfaces, err := getAvailableInterfaces()
+	if err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+	} else {
+		c.JSON(common.HTTP_OK, common.OkWithData(interfaces))
+	}
+}
+
 /*
 *
 * 计算开机时间
@@ -273,4 +284,39 @@ func calculateCpuPercent(cpus []float64) float64 {
 	}
 	value, _ := strconv.ParseFloat(fmt.Sprintf("%.2f", acc/float64(len(cpus))), 64)
 	return value
+}
+
+func getAvailableInterfaces() ([]*model.NetInterfaceInfo, error) {
+	interfaces, err := net.Interfaces()
+	if err != nil {
+		return nil, err
+	}
+
+	netInterfaces := make([]*model.NetInterfaceInfo, 0, len(interfaces))
+	for _, inter := range interfaces {
+		info := &model.NetInterfaceInfo{
+			Name: inter.Name,
+			Mac:  inter.HardwareAddr.String(),
+		}
+		addrs, err := inter.Addrs()
+		if err != nil {
+			continue
+		}
+		for i := range addrs {
+			addr := addrs[i].String()
+			cidr, _, _ := net.ParseCIDR(addr)
+			if cidr == nil {
+				continue
+			}
+			if cidr.To4() != nil {
+				// 找到第一个ipv4地址
+				info.Addr = addr
+				break
+			}
+		}
+		netInterfaces = append(netInterfaces, info)
+
+	}
+
+	return netInterfaces, nil
 }

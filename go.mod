@@ -3,6 +3,7 @@ module github.com/hootrhino/rulex
 go 1.18
 
 require (
+	github.com/BeatTime/bacnet v0.2.0-gary
 	github.com/DrmagicE/gmqtt v0.5.0
 	github.com/Kowiste/ProfinetServer v0.0.0-20200929093941-9c422ae1f008
 	github.com/adrianmo/go-nmea v1.8.0
@@ -40,7 +41,7 @@ require (
 	github.com/rs/zerolog v1.28.0
 	github.com/shirou/gopsutil v3.21.11+incompatible
 	github.com/shirou/gopsutil/v3 v3.23.5
-	github.com/sirupsen/logrus v1.9.2
+	github.com/sirupsen/logrus v1.9.3
 	github.com/suapapa/go_eddystone v1.3.1
 	github.com/tbrandon/mbserver v0.0.0-20211210035124-daf3c8c4269f
 	github.com/thinkgos/go-iecp5 v1.2.1

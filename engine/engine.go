@@ -592,6 +592,12 @@ func (e *RuleEngine) InitDeviceTypeManager() error {
 			NewDevice: device.NewAISDevice,
 		},
 	)
+	e.DeviceTypeManager.Register(typex.GENERIC_BACNET_IP,
+		&typex.XConfig{
+			Engine:    e,
+			NewDevice: device.NewGenericBacnetIpDevice,
+		},
+	)
 	return nil
 }
 
