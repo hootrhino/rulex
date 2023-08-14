@@ -212,12 +212,12 @@ func (mdev *CustomProtocolDevice) OnDCACall(_ string, Command string,
 // 内部函数
 // --------------------------------------------------------------------------------------------------
 func (mdev *CustomProtocolDevice) ctrl(args []byte) ([]byte, error) {
-	glogger.GLogger.Debug("Custom Protocol Device Request:", string(args))
 	hexs, err1 := hex.DecodeString(string(args))
 	if err1 != nil {
 		glogger.GLogger.Error(err1)
 		return nil, err1
 	}
+	glogger.GLogger.Debug("Custom Protocol Device Request:", hexs)
 	result := [__DEFAULT_BUFFER_SIZE]byte{}
 	ctx, cancel := context.WithTimeout(context.Background(),
 		time.Duration(mdev.mainConfig.UartConfig.Timeout)*time.Millisecond)
