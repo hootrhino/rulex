@@ -26,7 +26,7 @@ func Test_AIBASE_ANN_MNIST(t *testing.T) {
 		})
 	ctx, cancelF := typex.NewCCTX()
 	if err := engine.LoadInEndWithCtx(grpcInend, ctx, cancelF); err != nil {
-		t.common.Error("grpcInend load failed:", err)
+		t.Error("grpcInend load failed:", err)
 	}
 	rule := typex.NewRule(engine,
 		"uuid",
@@ -55,7 +55,7 @@ func Test_AIBASE_ANN_MNIST(t *testing.T) {
 		}`,
 		`function Failed(error) print("[LUA Failed Callback]", error) end`)
 	if err := engine.LoadRule(rule); err != nil {
-		t.common.Error(err)
+		t.Error(err)
 	}
 	conn, err := grpc.Dial("127.0.0.1:2581",
 		grpc.WithTransportCredentials(insecure.NewCredentials()))
@@ -69,7 +69,7 @@ func Test_AIBASE_ANN_MNIST(t *testing.T) {
 			Value: `{"value":"0298010d"}`,
 		})
 		if err != nil {
-			t.common.Error(err)
+			t.Error(err)
 		}
 		t.Logf("Rulex Rpc Call Result ====>>: %v --%v", resp.GetMessage(), i)
 

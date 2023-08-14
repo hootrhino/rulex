@@ -53,7 +53,7 @@ const (
 	GENERIC_OPCUA              DeviceType = "GENERIC_OPCUA"              // 通用OPCUA
 	GENERIC_CAMERA             DeviceType = "GENERIC_CAMERA"             // 通用摄像头
 	GENERIC_AIS                DeviceType = "GENERIC_AIS"                // 通用AIS
-
+	GENERIC_BACNET_IP          DeviceType = "GENERIC_BACNET_IP"          // 通用BacnetIP
 )
 
 // 设备元数据, 本质是保存在配置里面的数据的一个内存映射实例

@@ -60,7 +60,7 @@ func CreateUser(c *gin.Context, hh *HttpApiServer) {
 			Password:    md5Hash(form.Password),
 			Description: form.Description,
 		})
-		c.JSON(common.HTTP_OK, common.Ok())
+		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
 	c.JSON(common.HTTP_OK, common.Error("user already exists:"+form.Username))

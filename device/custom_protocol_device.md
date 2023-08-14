@@ -6,29 +6,50 @@
 协议分静态协议和动态协议，下面是动态协议示例，一般会有至少一个自定义协议，关键字段是 `deviceConfig` ，下面给出一个 JSON 样例:
 
 ### 动态协议
-
-```json
-{
-    "name":"GENERIC_PROTOCOL",
-    "type":"GENERIC_PROTOCOL",
-    "description":"GENERIC_PROTOCOL",
-    "config":{
-        "commonConfig":{
-            "transport":"rs485rawserial",
-            "retryTime":5,
-            "frequency":100
-        },
-        "uartConfig":{
-            "timeout":1000,
-            "baudRate":9600,
-            "dataBits":8,
-            "parity":"N",
-            "stopBits":1,
-            "uart":"COM5"
+动态协议有2种，分别是串口和TCP，用`transport`字段区分。
+- 当 `transport`是 `rawserial` 的时候表示串口
+    ```json
+    {
+        "name":"GENERIC_PROTOCOL",
+        "type":"GENERIC_PROTOCOL",
+        "description":"GENERIC_PROTOCOL",
+        "config":{
+            "commonConfig":{
+                "transport":"rawserial",
+                "retryTime":5,
+                "frequency":100
+            },
+            "uartConfig":{
+                "timeout":1000,
+                "baudRate":9600,
+                "dataBits":8,
+                "parity":"N",
+                "stopBits":1,
+                "uart":"COM5"
+            }
         }
     }
-}
-```
+    ```
+- 当 `transport`是 `rawtcp` 的时候表示自定义TCP
+    ```json
+    {
+        "name":"GENERIC_PROTOCOL",
+        "type":"GENERIC_PROTOCOL",
+        "description":"GENERIC_PROTOCOL",
+        "config":{
+            "commonConfig":{
+                "transport":"rawtcp",
+                "retryTime":5,
+                "frequency":100
+            },
+            "hostConfig":{
+                "host": "192.168.1.1",
+                "port": 4455,
+            }
+        }
+    }
+    ```
+
 
 ## 字段：
 
@@ -128,3 +149,89 @@ end
 		local V, err = rulexlib:CDAB("ABCDEF12")
     -- V = CDAB12EF
   ```
+
+## 自定义TCP示例
+### 设备模拟器
+```go
+package main
+
+import (
+	"fmt"
+	"net"
+)
+
+func StartCustomTCPServer() {
+	listener, err := net.Listen("tcp", ":3399")
+	if err != nil {
+		fmt.Println("Error listening:", err)
+		return
+	}
+	fmt.Println("listening:", listener.Addr().String())
+
+	for {
+		conn, err := listener.Accept()
+		if err != nil {
+			fmt.Println("Error accepting:", err)
+			continue
+		}
+		go handleConnection(conn)
+	}
+}
+
+func handleConnection(conn net.Conn) {
+	defer conn.Close()
+	data := make([]byte, 10)
+	for {
+		n, err := conn.Read(data)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		fmt.Println("Received Request From Custom TCP:", data[:n])
+		if n > 0 {
+			if data[0] == 1 {
+				conn.Write([]byte{0x01})
+			}
+			if data[0] == 2 {
+				conn.Write([]byte{0x02, 0x03, 0x04})
+			}
+			if data[0] == 3 {
+				conn.Write([]byte{0x0A, 0x0B, 0x0C, 0x0D})
+			}
+			if data[0] == 4 {
+				conn.Write([]byte{0x11, 0x22, 0x33, 0x44, 0x55})
+			}
+			if data[0] == 5 {
+				conn.Write([]byte{0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF})
+			}
+		}
+	}
+
+}
+
+func main() {
+	StartCustomTCPServer()
+}
+
+```
+### RULEX APP Demo
+```lua
+AppNAME = "Test1"
+AppVERSION = "1.0.0"
+AppDESCRIPTION = ""
+--
+-- Main
+--
+
+function Main(arg)
+    while true do
+        for i = 1, 5, 1 do
+            local result, err = applib:CtrlDevice('uuid', "0" .. i)
+            print("|*** CtrlDevice [0x01] result=>", result, err)
+            applib:Sleep(1000)
+        end
+    end
+    return 0
+end
+
+```
