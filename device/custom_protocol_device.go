@@ -73,7 +73,7 @@ func (mdev *CustomProtocolDevice) Init(devId string, configMap map[string]interf
 	}
 	if !utils.SContains([]string{`rawtcp`, `rawudp`, `rawserial`},
 		mdev.mainConfig.CommonConfig.Transport) {
-		return errors.New("option only one of 'rawtcp','rawudp','rawserial','rawserial'")
+		return errors.New("option only one of 'rawtcp','rawudp','rawserial'")
 	}
 	return nil
 }
