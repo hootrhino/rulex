@@ -152,7 +152,7 @@ AppDESCRIPTION = "%s"
 `
 const defaultLuaMain = `
 function Main(arg)
-	print("Hello World:",  applib:Time())
+	applib:Debug("Hello World:" .. applib:Time())
 	return 0
 end
 `
@@ -216,9 +216,9 @@ func CreateApp(c *gin.Context, hs *HttpApiServer) {
 	}
 	// 自启动立即运行
 	if form.AutoStart {
-		glogger.GLogger.Debugf("app autoStart allowed:%s-%s-%s", newUUID, form.Version, form.Name)
+		glogger.GLogger.Debugf("App autoStart allowed:%s-%s-%s", newUUID, form.Version, form.Name)
 		if err2 := hs.ruleEngine.StartApp(newUUID); err2 != nil {
-			glogger.GLogger.Error("app autoStart failed:", err2)
+			glogger.GLogger.Error("App autoStart failed:", err2)
 		}
 	}
 	c.JSON(common.HTTP_OK, common.OkWithData("app create successfully"))
@@ -284,7 +284,7 @@ func UpdateApp(c *gin.Context, hs *HttpApiServer) {
 	}
 	//
 	if form.AutoStart {
-		glogger.GLogger.Debugf("app autoStart allowed:%s-%s-%s", form.UUID, form.Version, form.Name)
+		glogger.GLogger.Debugf("App autoStart allowed:%s-%s-%s", form.UUID, form.Version, form.Name)
 		// 必须先load后start
 		if err := hs.ruleEngine.LoadApp(typex.NewApplication(
 			form.UUID, form.Name, form.Version, path)); err != nil {
@@ -292,7 +292,7 @@ func UpdateApp(c *gin.Context, hs *HttpApiServer) {
 			return
 		}
 		if err2 := hs.ruleEngine.StartApp(form.UUID); err2 != nil {
-			glogger.GLogger.Error("app autoStart failed:", err2)
+			glogger.GLogger.Error("App autoStart failed:", err2)
 			c.JSON(common.HTTP_OK, common.Error400(err2))
 			return
 		}
