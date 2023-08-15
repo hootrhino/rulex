@@ -1,15 +1,16 @@
 package engine
 
 import (
+	"os"
+	"os/signal"
+	"strings"
+	"syscall"
+
 	mqttserver "github.com/hootrhino/rulex/plugin/mqtt_server"
 	netdiscover "github.com/hootrhino/rulex/plugin/net_discover"
 	ttyterminal "github.com/hootrhino/rulex/plugin/ttyd_terminal"
 	usbmonitor "github.com/hootrhino/rulex/plugin/usb_monitor"
 	"gopkg.in/ini.v1"
-	"os"
-	"os/signal"
-	"strings"
-	"syscall"
 
 	"github.com/hootrhino/rulex/core"
 	"github.com/hootrhino/rulex/glogger"

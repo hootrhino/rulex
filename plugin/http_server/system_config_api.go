@@ -2,51 +2,6 @@ package httpserver
 
 import "github.com/gin-gonic/gin"
 
-// 网络配置结构体
-type NetConfig struct {
-	DHCP    string   `json:"dhcp"`
-	Ip      []string `json:"ip"`
-	Gateway string   `json:"gateway"`
-	Names   []string `json:"names"`
-	Version int      `json:"version"`
-}
-
-// 读取Ip状态(静态/动态)  yaml
-type T struct {
-	Network struct {
-		Ethernets struct {
-			Eth struct {
-				DHCP    string   `yaml:"dhcp4"`
-				Ip      []string `yaml:"addresses"`
-				Gateway string   `yaml:"gateway4"`
-				Names   struct {
-					Ip []string `yaml:"addresses"`
-				} `yaml:"names"`
-			} `yaml:"eth0"`
-		} `yaml:"ethernets"`
-		Version int `json:"version"`
-	} `yaml:"network"`
-}
-
-// 读取WIFI状态(静态/动态)  yaml
-type WT struct {
-	Network struct {
-		Ethernets struct {
-			Eth struct {
-				DHCP    string   `yaml:"dhcp4"`
-				Ip      []string `yaml:"addresses"`
-				Gateway string   `yaml:"gateway4"`
-				Names   struct {
-					Ip []string `yaml:"addresses"`
-				} `yaml:"names"`
-			} `yaml:"wlan0"`
-		} `yaml:"ethernets"`
-		Version int `json:"version"`
-	} `yaml:"network"`
-}
-
-// 主要是针对WIFI、时区、IP地址设置
-
 /*
 *
 * WIFI
@@ -72,8 +27,29 @@ func SetTime(c *gin.Context, hh *HttpApiServer) {
 /*
 *
 * 设置静态网络IP等
-*
- */
+
+	{
+	  "network": {
+	    "version": 2,
+	    "renderer": "networkd",
+	    "ethernets": {
+	      "enp0s9": {
+	        "dhcp4": "no",
+	        "addresses": [
+	          "192.168.121.221/24"
+	        ],
+	        "gateway4": "192.168.121.1",
+	        "nameservers": {
+	          "addresses": [
+	            "8.8.8.8",
+	            "1.1.1.1"
+	          ]
+	        }
+	      }
+	    }
+	  }
+	}
+*/
 func SetStaticNetwork(c *gin.Context, hh *HttpApiServer) {
 	type Form struct {
 	}
