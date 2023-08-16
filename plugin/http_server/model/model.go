@@ -230,3 +230,12 @@ type MProtocolApp struct {
 	Type    string `gorm:"not null"` // 类型: IN OUT DEVICE APP
 	Content string `gorm:"not null"` // 协议包的内容
 }
+
+/*
+*
+* 系统配置参数, 直接以String保存，完了以后再加工成Dto结构体
+*
+ */
+type MNetworkConfig struct {
+	Network string `yaml:"network" json:"network,omitempty"`
+}
