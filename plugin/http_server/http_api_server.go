@@ -65,6 +65,7 @@ func (s *HttpApiServer) registerModel() {
 		&model.MGenericGroup{},
 		&model.MGenericGroupRelation{},
 		&model.MProtocolApp{},
+		&model.MNetworkConfig{},
 	)
 }
 

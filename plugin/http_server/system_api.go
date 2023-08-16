@@ -2,7 +2,6 @@ package httpserver
 
 import (
 	"fmt"
-	"github.com/hootrhino/rulex/plugin/http_server/model"
 	"net"
 	"runtime"
 	"strconv"
@@ -286,15 +285,21 @@ func calculateCpuPercent(cpus []float64) float64 {
 	return value
 }
 
-func getAvailableInterfaces() ([]*model.NetInterfaceInfo, error) {
+type NetInterfaceInfo struct {
+	Name string `json:"name,omitempty"`
+	Mac  string `json:"mac,omitempty"`
+	Addr string `json:"addr,omitempty"`
+}
+
+func getAvailableInterfaces() ([]NetInterfaceInfo, error) {
 	interfaces, err := net.Interfaces()
 	if err != nil {
 		return nil, err
 	}
 
-	netInterfaces := make([]*model.NetInterfaceInfo, 0, len(interfaces))
+	netInterfaces := make([]NetInterfaceInfo, 0, len(interfaces))
 	for _, inter := range interfaces {
-		info := &model.NetInterfaceInfo{
+		info := NetInterfaceInfo{
 			Name: inter.Name,
 			Mac:  inter.HardwareAddr.String(),
 		}
