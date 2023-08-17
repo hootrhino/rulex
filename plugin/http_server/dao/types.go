@@ -9,6 +9,7 @@ import "gorm.io/gorm"
  */
 type DAO interface {
 	Init(string) error
+	InitializeData()
 	RegisterModel(dst ...interface{})
 	Name() string
 	DB() *gorm.DB

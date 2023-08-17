@@ -3,8 +3,10 @@ package service
 import (
 	"encoding/json"
 	"fmt"
-	"os"
 	"strings"
+
+	sqlitedao "github.com/hootrhino/rulex/plugin/http_server/dao/sqlite"
+	"github.com/hootrhino/rulex/plugin/http_server/model"
 )
 
 // # /etc/network/interfaces
@@ -29,13 +31,12 @@ import (
 // iface eth0 inet dhcp
 
 type EtcNetworkConfig struct {
-	Name        string   `json:"name,omitempty"`
-	Interface   string   `json:"interface,omitempty"`
-	Address     string   `json:"address,omitempty"`
-	Netmask     string   `json:"netmask,omitempty"`
-	Gateway     string   `json:"gateway,omitempty"`
-	DNS         []string `json:"dns,omitempty"`
-	DHCPEnabled bool     `json:"dhcp_enabled,omitempty"`
+	Interface   string   `json:"interface"`
+	Address     string   `json:"address"`
+	Netmask     string   `json:"netmask"`
+	Gateway     string   `json:"gateway"`
+	DNS         []string `json:"dns"`
+	DHCPEnabled bool     `json:"dhcp_enabled"`
 }
 
 func (nc *EtcNetworkConfig) JsonString() string {
@@ -50,11 +51,11 @@ sudo systemctl restart networking
 sudo service networking restart
 *
 */
-func ApplyConfig(iface EtcNetworkConfig) error {
+func (iface *EtcNetworkConfig) GenEtcConfig() string {
 	configLines := []string{
-		"auto lo",
-		"iface lo inet loopback",
-		fmt.Sprintf("auto %s", iface.Name),
+		// "auto lo",
+		// "iface lo inet loopback",
+		fmt.Sprintf("auto %s", iface.Interface),
 		fmt.Sprintf("iface %s inet %s", iface.Interface, func(dhcpEnabled bool) string {
 			if dhcpEnabled {
 				return "dhcp"
@@ -69,7 +70,21 @@ func ApplyConfig(iface EtcNetworkConfig) error {
 		configLines = append(configLines, fmt.Sprintf("    gateway %s", iface.Gateway))
 		configLines = append(configLines, fmt.Sprintf("    dns-nameservers %s\n", strings.Join(iface.DNS, " ")))
 	}
-
 	configText := strings.Join(configLines, "\n")
-	return os.WriteFile("/etc/network/interfaces", []byte(configText), 0644)
+	// return os.WriteFile("/etc/network/interfaces", []byte(configText), 0644)
+	return configText
+}
+
+/*
+*
+* 匹配: /etc/network/interfaces
+*
+ */
+func GetAllNetConfig() ([]model.MNetworkConfig, error) {
+	// 查出前两个网卡的配置
+	ethCfg := []model.MNetworkConfig{}
+	err := sqlitedao.Sqlite.DB().
+		Where("interface=? or interface=?", "eth0", "eth1").
+		Find(&ethCfg).Error
+	return ethCfg, err
 }

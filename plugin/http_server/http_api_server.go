@@ -10,6 +10,7 @@ import (
 	common "github.com/hootrhino/rulex/plugin/http_server/common"
 	sqlitedao "github.com/hootrhino/rulex/plugin/http_server/dao/sqlite"
 	"github.com/hootrhino/rulex/plugin/http_server/model"
+	"github.com/hootrhino/rulex/plugin/http_server/service"
 
 	"github.com/gin-contrib/static"
 
@@ -93,11 +94,23 @@ func (hs *HttpApiServer) Init(config *ini.Section) error {
 	}
 	hs.registerModel()
 	hs.configHttpServer()
+	hs.InitializeNwtWorkConfigData()
 	//
 	// WebSocket server
 	//
 	hs.ginEngine.GET("/ws", glogger.WsLogger)
 	return nil
+}
+
+/*
+*
+* 初始化网络配置
+*
+ */
+func (hs *HttpApiServer) InitializeNwtWorkConfigData() {
+	if !service.CheckIfAlreadyInitNetWorkConfig() {
+		service.InitNetWorkConfig()
+	}
 }
 
 /*
@@ -326,6 +339,16 @@ func (hs *HttpApiServer) LoadRoute() {
 		screenApi.DELETE("/delete", hs.addRoute(DeleteVisual))
 		screenApi.PUT("/update", hs.addRoute(UpdateVisual))
 		screenApi.GET("/list", hs.addRoute(ListVisual))
+	}
+	//
+	// 大屏应用管理
+	//
+	settingsApi := hs.ginEngine.Group(url("/settings"))
+	{
+		settingsApi.POST("/network", hs.addRoute(SetStaticNetwork))
+		settingsApi.POST("/time", hs.addRoute(SetTime))
+		settingsApi.POST("/wifi", hs.addRoute(SetWifi))
+		settingsApi.POST("/volume", hs.addRoute(SetVolume))
 	}
 
 }

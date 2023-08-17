@@ -251,6 +251,11 @@ func GetUarts(c *gin.Context, hh *HttpApiServer) {
 	c.JSON(common.HTTP_OK, common.OkWithData(ports))
 }
 
+/*
+*
+* 本地网卡
+*
+ */
 func GetNetInterfaces(c *gin.Context, hh *HttpApiServer) {
 	interfaces, err := getAvailableInterfaces()
 	if err != nil {

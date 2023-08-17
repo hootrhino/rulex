@@ -25,19 +25,49 @@ network:
 */
 //
 // 读取Ip状态(静态/动态)  yaml
-type Interface struct {
-	Dhcp4       bool     `yaml:"dhcp4" json:"dhcp4,omitempty"`
-	Addresses   []string `yaml:"addresses" json:"addresses,omitempty"`
-	Gateway4    string   `yaml:"gateway4" json:"gateway4,omitempty"`
-	Nameservers []string `yaml:"nameservers" json:"nameservers,omitempty"`
+type HwInterface struct {
+	Dhcp4       bool     `yaml:"dhcp4" json:"dhcp4"`
+	Addresses   []string `yaml:"addresses" json:"addresses"`
+	Gateway4    string   `yaml:"gateway4" json:"gateway4"`
+	Nameservers []string `yaml:"nameservers" json:"nameservers"`
+}
+
+// network:
+//
+//	version: 2
+//	renderer: networkd
+//	wifis:
+//	  wlan0:
+//	    dhcp4: yes
+//	    access-points:
+//	      "YourWiFiSSID":
+//	        password: "YourWiFiPassword"
+
+type SSIDConfig struct {
+	Password string `yaml:"password" json:"password"`
+}
+type AccessPoints struct {
+	SSIDConfig SSIDConfig `yaml:"ssid" json:"ssid"`
+}
+type WLANInterface struct {
+	Dhcp4        bool         `yaml:"dhcp4" json:"dhcp4"`
+	AccessPoints AccessPoints `yaml:"access-points" json:"access-points"`
+}
+type Wifis struct {
+	Wlan0 WLANInterface
+}
+type EthInterface struct {
+	Eth0  HwInterface `yaml:"eth0" json:"eth0"`
+	Eth1  HwInterface `yaml:"eth1" json:"eth1"`
+	Wifis Wifis       `yaml:"wifis" json:"wifis"`
 }
 type Network struct {
-	Version   int                  `yaml:"version" json:"version,omitempty"`
-	Renderer  string               `yaml:"renderer" json:"renderer,omitempty"`
-	Ethernets map[string]Interface `yaml:"ethernets" json:"ethernets,omitempty"`
+	Version   int          `yaml:"version" json:"version"`
+	Renderer  string       `yaml:"renderer" json:"renderer"`
+	Ethernets EthInterface `yaml:"ethernets" json:"ethernets"`
 }
 type NetplanConfig struct {
-	Network Network `yaml:"network" json:"network,omitempty"`
+	Network Network `yaml:"network" json:"network"`
 }
 
 /*
@@ -55,50 +85,25 @@ type NetplanConfig struct {
     DNSPod DNS (也称为Dnspod Public DNS):
     IPv4: 119.29.29.29, 182.254.116.116
 */
-func DefaultStaticNetplanConfig() *NetplanConfig {
-	return &NetplanConfig{
-		Network: Network{
-			Version:  2,
-			Renderer: "NetworkManager",
-			Ethernets: map[string]Interface{
-				"eth0": {
-					Dhcp4:       false,
-					Addresses:   []string{"192.168.128.1/24"},
-					Gateway4:    "192.168.128.1",
-					Nameservers: []string{"114.114.114.114", "8.8.8.8", "180.76.76.76"},
-				},
-				"eth1": {
-					Dhcp4:       false,
-					Addresses:   []string{"192.168.128.1/24"},
-					Gateway4:    "192.168.128.2",
-					Nameservers: []string{"114.114.114.114", "8.8.8.8", "180.76.76.76"},
-				},
-			},
-		},
-	}
-}
 
 /*
 *
 * 默认 DHCP
 *
  */
-func DefaultDHCPNetplanConfig() *NetplanConfig {
-	return &NetplanConfig{
-		Network: Network{
-			Version:  2,
-			Renderer: "NetworkManager",
-			Ethernets: map[string]Interface{
-				"eth0": {
-					Dhcp4: true,
-				},
-				"eth1": {
-					Dhcp4: true,
-				},
-			},
-		},
-	}
-}
+// func DefaultDHCPNetplanConfig() *NetplanConfig {
+// 	return &NetplanConfig{
+// 		Network: Network{
+// 			Version:  2,
+// 			Renderer: "NetworkManager",
+// 			Ethernets: EthInterface{
+// 				Eth0:  HwInterface{Dhcp4: true},
+// 				Eth1:  HwInterface{Dhcp4: true},
+// 				Wlan0: WLANInterface{Dhcp4: true},
+// 			},
+// 		},
+// 	}
+// }
 func (nc *NetplanConfig) FromJson(jsons string) error {
 	return json.Unmarshal([]byte(jsons), nc)
 }
