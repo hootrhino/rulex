@@ -22,11 +22,13 @@ ARCHSUPPORT=EEKITH3 rulex run
 
 ## 支持硬件列表
 
-| 硬件名          | 环境参数 | 示例                            |
-| --------------- | -------- | ------------------------------- |
-| EEKITH3版本网关 | EEKITH3  | `ARCHSUPPORT=EEKITH3 rulex run` |
-| 树莓派4B、4B+   | RPI4     | `ARCHSUPPORT=RPI4B rulex run`   |
-| 玩客云S805      | WKYS805  | `ARCHSUPPORT=WKYS805 rulex run` |
+| 硬件名             | 环境参数  | 示例                              |
+| ------------------ | --------- | --------------------------------- |
+| EEKIT H3版本网关   | EEKITH3   | `ARCHSUPPORT=EEKITH3 rulex run`   |
+| EEKIT T507版本网关 | EEKITT507 | `ARCHSUPPORT=EEKITT507 rulex run` |
+| EEKIT T113版本网关 | EEKITT113 | `ARCHSUPPORT=EEKITT113 rulex run` |
+| 树莓派4B、4B+      | RPI4      | `ARCHSUPPORT=RPI4B rulex run`     |
+| 玩客云S805         | WKYS805   | `ARCHSUPPORT=WKYS805 rulex run`   |
 
 > 警告: 这些属于板级高级功能，和硬件架构以及外设有关，默认关闭。 如果你自己需要定制，最好针对自己的硬件进行跨平台适配, 如果没有指定平台，可能会导致预料之外的结果。
 

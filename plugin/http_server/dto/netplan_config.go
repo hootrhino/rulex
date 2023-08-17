@@ -1,4 +1,4 @@
-package service
+package dto
 
 type hwInterface struct {
 	Dhcp4       bool     `yaml:"dhcp4" json:"dhcp4,omitempty"`

@@ -118,3 +118,36 @@ func GetOSDistribution() (string, error) {
 	}
 	return runtime.GOOS, nil
 }
+
+/*
+*
+* 获取Ubuntu的版本
+*
+ */
+func GetUbuntuVersion() (string, error) {
+	// lsb_release -ds -> Ubuntu 22.04.1 LTS
+	cmd := exec.Command("lsb_release", "-ds")
+	output, err := cmd.Output()
+	if err != nil {
+		return "", err
+	}
+	info := strings.ToLower(strings.TrimSpace(string(output)))
+	if strings.Contains(info, "ubuntu") {
+		if strings.Contains(info, "16.") {
+			return "ubuntu16", nil
+		}
+		if strings.Contains(info, "18.") {
+			return "ubuntu18", nil
+		}
+		if strings.Contains(info, "20.") {
+			return "ubuntu20", nil
+		}
+		if strings.Contains(info, "22.") {
+			return "ubuntu22", nil
+		}
+		if strings.Contains(info, "24.") {
+			return "ubuntu24", nil
+		}
+	}
+	return "", fmt.Errorf("unsupported OS:%s", info)
+}
