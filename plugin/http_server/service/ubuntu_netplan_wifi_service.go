@@ -35,16 +35,15 @@ type WlanConfig struct {
  */
 func (nc *WlanConfig) YAMLString() string {
 	var netplanWLAN0Config string = fmt.Sprintf(
-		`
-network:
+		`network:
   version: 2
   renderer: NetworkManager
-    wifis:
-      wlan0:
-        dhcp4: yes
-        access-points:
-          "%s":
-            password: "%s"
+  wifis:
+    wlan0:
+      dhcp4: yes
+      access-points:
+        "%s":
+          password: "%s"
 `, nc.Wlan0.SSID, nc.Wlan0.Password)
 	return netplanWLAN0Config
 }
@@ -55,8 +54,5 @@ network:
 *
  */
 func (nc *WlanConfig) ApplyWlan0Config() error {
-	// sudo netplan apply
-	// sudo systemctl restart systemd-networkd
-	// sudo service networking restart
-	return os.WriteFile("/etc/netplan/001-wlan.yaml", []byte(nc.YAMLString()), 0755)
+	return os.WriteFile("./test/data/001-wlan.yaml", []byte(nc.YAMLString()), 0755)
 }

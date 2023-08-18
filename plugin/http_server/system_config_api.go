@@ -3,11 +3,14 @@ package httpserver
 import (
 	"fmt"
 	"net"
+	"os"
+	"os/exec"
 	"runtime"
 	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hootrhino/rulex/glogger"
 	common "github.com/hootrhino/rulex/plugin/http_server/common"
 	"github.com/hootrhino/rulex/plugin/http_server/model"
 	"github.com/hootrhino/rulex/plugin/http_server/service"
@@ -136,8 +139,52 @@ func SetWifi(c *gin.Context, hh *HttpApiServer) {
 	if NetCfgType == "NETPLAN" { // Ubuntu18极其以后
 		ApplyNewestNetplanWlanConfig()
 	}
+	if NetCfgType == "NETWORK_ETC" { // Ubuntu18极其以后
+		ApplyNewestEtcWlanConfig()
+	}
+
 	// 保存到数据库, 并且写入配置
 	c.JSON(common.HTTP_OK, common.Ok())
+
+}
+
+/*
+*
+* 生成最新的ETC配置
+*
+ */
+func ApplyNewestEtcEthConfig() error {
+	MEth0, err := service.GetEth0Config()
+	if err != nil {
+		return err
+	}
+	MEth1, err := service.GetEth1Config()
+	if err != nil {
+		return err
+	}
+	EtcEth0Cfg := service.EtcNetworkConfig{
+		Interface:   MEth0.Interface,
+		Address:     MEth0.Address,
+		Netmask:     MEth0.Address,
+		Gateway:     MEth0.Address,
+		DNS:         MEth0.DNS,
+		DHCPEnabled: *MEth0.DHCPEnabled,
+	}
+	EtcEth1Cfg := service.EtcNetworkConfig{
+		Interface:   MEth1.Interface,
+		Address:     MEth1.Address,
+		Netmask:     MEth1.Address,
+		Gateway:     MEth1.Address,
+		DNS:         MEth1.DNS,
+		DHCPEnabled: *MEth1.DHCPEnabled,
+	}
+	loopBack := "# DON'T EDIT THIS FILE!\nauto lo\niface lo inet loopback\n"
+	return os.WriteFile("./test/data/etc-interfaces.conf",
+		[]byte(
+			loopBack+
+				EtcEth0Cfg.GenEtcConfig()+
+				"\n"+
+				EtcEth1Cfg.GenEtcConfig()+"\n"), 0755)
 
 }
 
@@ -165,6 +212,21 @@ func SetSystemTime(c *gin.Context, hh *HttpApiServer) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
+	c.JSON(common.HTTP_OK, common.Ok())
+
+}
+
+/*
+*
+* 用来测试生成各种网络配置
+*
+ */
+func TestGenEtcNetCfg(c *gin.Context, hh *HttpApiServer) {
+	ApplyNewestEtcEthConfig()
+	// ApplyNewestEtcWlanConfig()
+	//
+	ApplyNewestNetplanEthConfig()
+	ApplyNewestNetplanWlanConfig()
 	c.JSON(common.HTTP_OK, common.Ok())
 
 }
@@ -285,12 +347,13 @@ func SetEthNetwork(c *gin.Context, hh *HttpApiServer) {
 			}
 		}
 	}
-
-	if NetCfgType == "NETWORK_ETC" { // Ubuntu16
-		ApplyNewestEtcConfig()
+	if NetCfgType == "NETWORK_ETC" { // Ubuntu1604
+		ApplyNewestEtcEthConfig()
+		service.EtcApply()
 	}
 	if NetCfgType == "NETPLAN" { // Ubuntu18极其以后
 		ApplyNewestNetplanEthConfig()
+		service.NetplanApply()
 	}
 	// 保存到数据库, 并且写入配置
 	c.JSON(common.HTTP_OK, common.Ok())
@@ -315,7 +378,29 @@ func ApplyNewestNetplanWlanConfig() error {
 			Security:  MWlan0.Security,
 		},
 	}
-	fmt.Println(Wlan0Config.YAMLString())
+	// fmt.Println(Wlan0Config.YAMLString())
+	return Wlan0Config.ApplyWlan0Config()
+}
+
+/*
+*
+* ubuntu1604网络, 使用一个 nmcli 指令
+*
+ */
+func ApplyNewestEtcWlanConfig() error {
+	MWlan0, err := service.GetWlan0Config()
+	if err != nil {
+		return err
+	}
+	s := "nmcli dev wifi connect \"%s\" password \"%s\" iface %s"
+	cmd := exec.Command("sh", "-c",
+		fmt.Sprintf(s, MWlan0.SSID, MWlan0.Password, MWlan0.Interface))
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		glogger.GLogger.Error(err)
+		return err
+	}
+	glogger.GLogger.Info(out)
 	return nil
 }
 
@@ -354,37 +439,11 @@ func ApplyNewestNetplanEthConfig() error {
 			},
 		},
 	}
-	fmt.Println(NetplanConfig.YAMLString())
-	return nil
+	// fmt.Println(NetplanConfig.YAMLString())
+	return NetplanConfig.ApplyEthConfig()
 
 }
 
-/*
-*
-* 生成 etc 文件
-*
- */
-func ApplyNewestEtcConfig() error {
-	// 取出最新的配置
-	MNetworkConfigs, err := service.GetAllNetConfig()
-	if err != nil {
-		return err
-	}
-	etcFileContent := ""
-	for _, MNetworkConfig := range MNetworkConfigs {
-		NetworkConfig := service.EtcNetworkConfig{
-			Interface:   MNetworkConfig.Interface,
-			Address:     MNetworkConfig.Address,
-			Netmask:     MNetworkConfig.Netmask,
-			Gateway:     MNetworkConfig.Gateway,
-			DNS:         MNetworkConfig.DNS,
-			DHCPEnabled: *MNetworkConfig.DHCPEnabled,
-		}
-		etcFileContent += NetworkConfig.GenEtcConfig() + "\n"
-	}
-	fmt.Println(etcFileContent)
-	return nil
-}
 func isValidSubnetMask(mask string) bool {
 	// 分割子网掩码为4个整数
 	parts := strings.Split(mask, ".")

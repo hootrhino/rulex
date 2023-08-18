@@ -358,6 +358,8 @@ func (hs *HttpApiServer) LoadRoute() {
 		settingsApi.POST("/wifi", hs.addRoute(SetWifi))
 		settingsApi.GET("/volume", hs.addRoute(GetVolume))
 		settingsApi.POST("/volume", hs.addRoute(SetVolume))
+		// TODO: 仅开发做测试用, 完了会删除这个接口
+		settingsApi.POST("/test", hs.addRoute(TestGenEtcNetCfg))
 	}
 
 }
