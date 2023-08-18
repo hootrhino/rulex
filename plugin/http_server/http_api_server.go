@@ -67,6 +67,7 @@ func (s *HttpApiServer) registerModel() {
 		&model.MGenericGroupRelation{},
 		&model.MProtocolApp{},
 		&model.MNetworkConfig{},
+		&model.MWifiConfig{},
 	)
 }
 
@@ -108,8 +109,13 @@ func (hs *HttpApiServer) Init(config *ini.Section) error {
 *
  */
 func (hs *HttpApiServer) InitializeNwtWorkConfigData() {
+	// 初始化有线网口配置
 	if !service.CheckIfAlreadyInitNetWorkConfig() {
 		service.InitNetWorkConfig()
+	}
+	// 初始化WIFI配置
+	if !service.CheckIfAlreadyInitWlanConfig() {
+		service.InitWlanConfig()
 	}
 }
 
@@ -345,7 +351,7 @@ func (hs *HttpApiServer) LoadRoute() {
 	//
 	settingsApi := hs.ginEngine.Group(url("/settings"))
 	{
-		settingsApi.POST("/network", hs.addRoute(SetStaticNetwork))
+		settingsApi.POST("/eth", hs.addRoute(SetEthNetwork))
 		settingsApi.POST("/time", hs.addRoute(SetTime))
 		settingsApi.POST("/wifi", hs.addRoute(SetWifi))
 		settingsApi.POST("/volume", hs.addRoute(SetVolume))

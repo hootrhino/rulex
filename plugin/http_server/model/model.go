@@ -238,11 +238,24 @@ type MProtocolApp struct {
  */
 type MNetworkConfig struct {
 	RulexModel
-	Type        string       `gorm:"not null"`  // 类型: ubuntu16, ubuntu18
-	Interface   string       `json:"interface"` // eth1 eth0
-	Address     string       `json:"address"`
-	Netmask     string       `json:"netmask"`
-	Gateway     string       `json:"gateway"`
-	DNS         StringList `json:"dns"`
-	DHCPEnabled bool         `json:"dhcp_enabled"`
+	Type        string     `gorm:"not null"` // 类型: ubuntu16, ubuntu18
+	Interface   string     `gorm:"not null"` // eth1 eth0
+	Address     string     `gorm:"not null"`
+	Netmask     string     `gorm:"not null"`
+	Gateway     string     `gorm:"not null"`
+	DNS         StringList `gorm:"not null"`
+	DHCPEnabled bool       `gorm:"not null"`
+}
+
+/*
+*
+* 无线网络配置
+*
+ */
+type MWifiConfig struct {
+	RulexModel
+	Interface string `gorm:"not null"`
+	SSID      string `gorm:"not null"`
+	Password  string `gorm:"not null"`
+	Security  string `gorm:"not null"` // wpa2-psk wpa3-psk
 }

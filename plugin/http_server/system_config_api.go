@@ -32,7 +32,56 @@ func SetVolume(c *gin.Context, hh *HttpApiServer) {
  */
 func SetWifi(c *gin.Context, hh *HttpApiServer) {
 	type Form struct {
+		Interface string `json:"interface"`
+		SSID      string `json:"ssid"`
+		Password  string `json:"password"`
+		Security  string `json:"security"` // wpa2-psk wpa3-psk
 	}
+
+	DtoCfg := Form{}
+	if err0 := c.ShouldBindJSON(&DtoCfg); err0 != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err0))
+		return
+	}
+	if !strings.Contains("wpa2-psk wpa3-psk", DtoCfg.Security) {
+		c.JSON(common.HTTP_OK,
+			common.Error(("Only support 2 valid security algorithm:wpa2-psk,wpa3-psk")))
+		return
+	}
+	if !strings.Contains("wlan0", DtoCfg.Interface) {
+		c.JSON(common.HTTP_OK,
+			common.Error(("Only support wlan0")))
+		return
+	}
+	UbuntuVersion, err := utils.GetUbuntuVersion()
+	if err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
+	NetCfgType := "NETWORK_ETC"
+	if (UbuntuVersion == "ubuntu18") ||
+		UbuntuVersion == "ubuntu20" ||
+		UbuntuVersion == "ubuntu22" ||
+		(UbuntuVersion == "ubuntu24") {
+		NetCfgType = "NETPLAN"
+	}
+	MNetCfg := model.MWifiConfig{
+		Interface: DtoCfg.Interface,
+		SSID:      DtoCfg.SSID,
+		Password:  DtoCfg.Password,
+		Security:  DtoCfg.Security,
+	}
+	if err := service.UpdateWlan0Config(MNetCfg); err != nil {
+		if err != nil {
+			c.JSON(common.HTTP_OK, common.Error400(err))
+			return
+		}
+	}
+	if NetCfgType == "NETPLAN" { // Ubuntu18极其以后
+		ApplyNewestNetplanWlanConfig()
+	}
+	// 保存到数据库, 并且写入配置
+	c.JSON(common.HTTP_OK, common.OkWithData(DtoCfg))
 
 }
 
@@ -67,7 +116,7 @@ func isValidIP(ip string) bool {
 	return parsedIP != nil
 }
 
-func SetStaticNetwork(c *gin.Context, hh *HttpApiServer) {
+func SetEthNetwork(c *gin.Context, hh *HttpApiServer) {
 	if runtime.GOOS != "linux" {
 		c.JSON(common.HTTP_OK, common.Error("Set Static Network Not Support:"+runtime.GOOS))
 		return
@@ -155,7 +204,7 @@ func SetStaticNetwork(c *gin.Context, hh *HttpApiServer) {
 		ApplyNewestEtcConfig()
 	}
 	if NetCfgType == "NETPLAN" { // Ubuntu18极其以后
-		ApplyNewestNetplanConfig()
+		ApplyNewestNetplanEthConfig()
 	}
 	// 保存到数据库, 并且写入配置
 	c.JSON(common.HTTP_OK, common.OkWithData(DtoCfg))
@@ -164,10 +213,32 @@ func SetStaticNetwork(c *gin.Context, hh *HttpApiServer) {
 
 /*
 *
+* 生成最新的无线配置
+*
+ */
+func ApplyNewestNetplanWlanConfig() error {
+	MWlan0, err := service.GetWlan0Config()
+	if err != nil {
+		return err
+	}
+	Wlan0Config := service.WlanConfig{
+		Wlan0: service.WLANInterface{
+			Interface: MWlan0.Interface,
+			SSID:      MWlan0.SSID,
+			Password:  MWlan0.Password,
+			Security:  MWlan0.Security,
+		},
+	}
+	fmt.Println(Wlan0Config.YAMLString())
+	return nil
+}
+
+/*
+*
 * 生成YAML
 *
  */
-func ApplyNewestNetplanConfig() error {
+func ApplyNewestNetplanEthConfig() error {
 	Eth0, err := service.GetEth0Config()
 	if err != nil {
 		return err
@@ -194,8 +265,6 @@ func ApplyNewestNetplanConfig() error {
 					Gateway4:    Eth1.Gateway,
 					Nameservers: Eth1.DNS,
 				},
-				// WIFI 暂不支持
-				//Wlan0: service.WLANInterface{},
 			},
 		},
 	}
