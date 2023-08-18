@@ -352,8 +352,11 @@ func (hs *HttpApiServer) LoadRoute() {
 	settingsApi := hs.ginEngine.Group(url("/settings"))
 	{
 		settingsApi.POST("/eth", hs.addRoute(SetEthNetwork))
-		settingsApi.POST("/time", hs.addRoute(SetTime))
+		settingsApi.GET("/time", hs.addRoute(GetSystemTime))
+		settingsApi.PUT("/time", hs.addRoute(SetSystemTime))
+		settingsApi.GET("/wifi", hs.addRoute(GetWifi))
 		settingsApi.POST("/wifi", hs.addRoute(SetWifi))
+		settingsApi.GET("/volume", hs.addRoute(GetVolume))
 		settingsApi.POST("/volume", hs.addRoute(SetVolume))
 	}
 

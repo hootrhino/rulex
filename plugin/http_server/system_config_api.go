@@ -20,9 +20,45 @@ import (
 *
  */
 func SetVolume(c *gin.Context, hh *HttpApiServer) {
-	type Form struct {
+	if runtime.GOOS != "linux" {
+		c.JSON(common.HTTP_OK, common.Error("OS Not Support:"+runtime.GOOS))
+		return
 	}
+	type Form struct {
+		Volume int `json:"volume"`
+	}
+	DtoCfg := Form{}
+	if err0 := c.ShouldBindJSON(&DtoCfg); err0 != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err0))
+		return
+	}
+	v, err := service.SetVolume(DtoCfg.Volume)
+	if err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
+	c.JSON(common.HTTP_OK, common.OkWithData(v))
 
+}
+
+/*
+*
+* 获取音量的值
+*
+ */
+func GetVolume(c *gin.Context, hh *HttpApiServer) {
+	if runtime.GOOS != "linux" {
+		c.JSON(common.HTTP_OK, common.Error("OS Not Support:"+runtime.GOOS))
+		return
+	}
+	v, err := service.GetVolume()
+	if err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
+	c.JSON(common.HTTP_OK, common.OkWithData(map[string]string{
+		"volume": v,
+	}))
 }
 
 /*
@@ -30,7 +66,27 @@ func SetVolume(c *gin.Context, hh *HttpApiServer) {
 * WIFI
 *
  */
+func GetWifi(c *gin.Context, hh *HttpApiServer) {
+	MWifiConfig, err := service.GetWlan0Config()
+	if err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
+	c.JSON(common.HTTP_OK, common.OkWithData(service.WlanConfig{
+		Wlan0: service.WLANInterface{
+			Interface: MWifiConfig.Interface,
+			SSID:      MWifiConfig.SSID,
+			Password:  MWifiConfig.Password,
+			Security:  MWifiConfig.Security,
+		},
+	}))
+
+}
 func SetWifi(c *gin.Context, hh *HttpApiServer) {
+	if runtime.GOOS != "linux" {
+		c.JSON(common.HTTP_OK, common.Error("OS Not Support:"+runtime.GOOS))
+		return
+	}
 	type Form struct {
 		Interface string `json:"interface"`
 		SSID      string `json:"ssid"`
@@ -81,7 +137,7 @@ func SetWifi(c *gin.Context, hh *HttpApiServer) {
 		ApplyNewestNetplanWlanConfig()
 	}
 	// 保存到数据库, 并且写入配置
-	c.JSON(common.HTTP_OK, common.OkWithData(DtoCfg))
+	c.JSON(common.HTTP_OK, common.Ok())
 
 }
 
@@ -91,10 +147,40 @@ func SetWifi(c *gin.Context, hh *HttpApiServer) {
   - sudo date -s "2023-08-07 15:30:00"
     获取时间: date "+%Y-%m-%d %H:%M:%S" -> 2023-08-07 15:30:00
 */
-func SetTime(c *gin.Context, hh *HttpApiServer) {
-	type Form struct {
+func SetSystemTime(c *gin.Context, hh *HttpApiServer) {
+	if runtime.GOOS != "linux" {
+		c.JSON(common.HTTP_OK, common.Error("OS Not Support:"+runtime.GOOS))
+		return
 	}
+	type Form struct {
+		Time string `json:"time"`
+	}
+	DtoCfg := Form{}
+	if err0 := c.ShouldBindJSON(&DtoCfg); err0 != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err0))
+		return
+	}
+	err := service.SetSystemTime(DtoCfg.Time)
+	if err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
+	c.JSON(common.HTTP_OK, common.Ok())
 
+}
+
+/*
+*
+* 获取系统时间
+*
+ */
+func GetSystemTime(c *gin.Context, hh *HttpApiServer) {
+	if runtime.GOOS != "linux" {
+		c.JSON(common.HTTP_OK, common.Error("OS Not Support:"+runtime.GOOS))
+		return
+	}
+	SysTime := service.GetSystemTime()
+	c.JSON(common.HTTP_OK, common.OkWithData(SysTime))
 }
 
 /*
@@ -118,7 +204,7 @@ func isValidIP(ip string) bool {
 
 func SetEthNetwork(c *gin.Context, hh *HttpApiServer) {
 	if runtime.GOOS != "linux" {
-		c.JSON(common.HTTP_OK, common.Error("Set Static Network Not Support:"+runtime.GOOS))
+		c.JSON(common.HTTP_OK, common.Error("OS Not Support:"+runtime.GOOS))
 		return
 	}
 	type Form struct {
@@ -207,7 +293,7 @@ func SetEthNetwork(c *gin.Context, hh *HttpApiServer) {
 		ApplyNewestNetplanEthConfig()
 	}
 	// 保存到数据库, 并且写入配置
-	c.JSON(common.HTTP_OK, common.OkWithData(DtoCfg))
+	c.JSON(common.HTTP_OK, common.Ok())
 
 }
 
