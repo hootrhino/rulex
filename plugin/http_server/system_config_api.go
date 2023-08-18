@@ -181,7 +181,7 @@ func SetEthNetwork(c *gin.Context, hh *HttpApiServer) {
 		Netmask:     DtoCfg.Netmask,
 		Gateway:     DtoCfg.Gateway,
 		DNS:         DtoCfg.DNS,
-		DHCPEnabled: DtoCfg.DHCPEnabled,
+		DHCPEnabled: &DtoCfg.DHCPEnabled,
 	}
 	if DtoCfg.Interface == "eth0" {
 		if err := service.UpdateEth0Config(MNetCfg); err != nil {
@@ -292,7 +292,7 @@ func ApplyNewestEtcConfig() error {
 			Netmask:     MNetworkConfig.Netmask,
 			Gateway:     MNetworkConfig.Gateway,
 			DNS:         MNetworkConfig.DNS,
-			DHCPEnabled: MNetworkConfig.DHCPEnabled,
+			DHCPEnabled: *MNetworkConfig.DHCPEnabled,
 		}
 		etcFileContent += NetworkConfig.GenEtcConfig() + "\n"
 	}

@@ -25,7 +25,7 @@ network:
 //
 // 读取Ip状态(静态/动态)  yaml
 type HwInterface struct {
-	Dhcp4       bool     `yaml:"dhcp4" json:"dhcp4"`
+	Dhcp4       *bool    `yaml:"dhcp4" json:"dhcp4"`
 	Addresses   []string `yaml:"addresses" json:"addresses"`
 	Gateway4    string   `yaml:"gateway4" json:"gateway4"`
 	Nameservers []string `yaml:"nameservers" json:"nameservers"`
