@@ -347,7 +347,7 @@ func (hs *HttpApiServer) LoadRoute() {
 		screenApi.GET("/list", hs.addRoute(ListVisual))
 	}
 	//
-	// 大屏应用管理
+	// 系统设置
 	//
 	settingsApi := hs.ginEngine.Group(url("/settings"))
 	{
