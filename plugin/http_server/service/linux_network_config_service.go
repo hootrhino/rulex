@@ -32,8 +32,8 @@ import (
 func GetEth0Config() (model.MNetworkConfig, error) {
 	MNetworkConfig := model.MNetworkConfig{}
 	err := sqlitedao.Sqlite.DB().
-		Find(&MNetworkConfig).
-		Where("interface=?", "eth0").Error
+		Where("interface=?", "eth0").
+		Find(&MNetworkConfig).Error
 	return MNetworkConfig, err
 }
 
@@ -45,8 +45,8 @@ func GetEth0Config() (model.MNetworkConfig, error) {
 func GetEth1Config() (model.MNetworkConfig, error) {
 	MNetworkConfig := model.MNetworkConfig{}
 	err := sqlitedao.Sqlite.DB().
-		Find(&MNetworkConfig).
-		Where("interface=?", "eth1").Error
+		Where("interface=?", "eth1").
+		Find(&MNetworkConfig).Error
 	return MNetworkConfig, err
 }
 
@@ -158,6 +158,7 @@ func InitNetWorkConfig() error {
 /*
 *
 * 应用最新配置
+* sudo netplan apply
 *
  */
 func NetplanApply() error {
@@ -165,6 +166,22 @@ func NetplanApply() error {
 	cmd.Dir = "/etc/netplan/"
 	cmd.Env = append(cmd.Env,
 		"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin")
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		glogger.GLogger.Error(err)
+		return err
+	}
+	glogger.GLogger.Info(out)
+	return nil
+}
+
+/*
+*
+* Ubuntu16 ETC 配置应用
+* sudo service networking restart
+ */
+func EtcApply() error {
+	cmd := exec.Command("sh", "-c", `service networking restart`)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		glogger.GLogger.Error(err)

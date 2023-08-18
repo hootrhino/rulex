@@ -53,8 +53,6 @@ sudo service networking restart
 */
 func (iface *EtcNetworkConfig) GenEtcConfig() string {
 	configLines := []string{
-		// "auto lo",
-		// "iface lo inet loopback",
 		fmt.Sprintf("auto %s", iface.Interface),
 		fmt.Sprintf("iface %s inet %s", iface.Interface, func(dhcpEnabled bool) string {
 			if dhcpEnabled {
@@ -63,15 +61,11 @@ func (iface *EtcNetworkConfig) GenEtcConfig() string {
 			return "static"
 		}(iface.DHCPEnabled)),
 	}
-
-	if !iface.DHCPEnabled {
-		configLines = append(configLines, fmt.Sprintf("    address %s", iface.Address))
-		configLines = append(configLines, fmt.Sprintf("    netmask %s", iface.Netmask))
-		configLines = append(configLines, fmt.Sprintf("    gateway %s", iface.Gateway))
-		configLines = append(configLines, fmt.Sprintf("    dns-nameservers %s\n", strings.Join(iface.DNS, " ")))
-	}
+	configLines = append(configLines, fmt.Sprintf("    address %s", iface.Address))
+	configLines = append(configLines, fmt.Sprintf("    netmask %s", iface.Netmask))
+	configLines = append(configLines, fmt.Sprintf("    gateway %s", iface.Gateway))
+	configLines = append(configLines, fmt.Sprintf("    dns-nameservers %s\n", strings.Join(iface.DNS, " ")))
 	configText := strings.Join(configLines, "\n")
-	// return os.WriteFile("/etc/network/interfaces", []byte(configText), 0644)
 	return configText
 }
 

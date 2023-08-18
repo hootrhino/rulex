@@ -27,8 +27,8 @@ func UpdateWlan0Config(MNetworkConfig model.MWifiConfig) error {
 func GetWlan0Config() (model.MWifiConfig, error) {
 	MWifiConfig := model.MWifiConfig{}
 	err := sqlitedao.Sqlite.DB().
-		Find(&MWifiConfig).
-		Where("interface=? and id = 1", "wlan0").Error
+		Where("interface=? and id = 1", "wlan0").
+		Find(&MWifiConfig).Error
 	return MWifiConfig, err
 }
 

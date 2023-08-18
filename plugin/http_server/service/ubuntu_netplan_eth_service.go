@@ -68,5 +68,6 @@ func (nc *NetplanConfig) ApplyEthConfig() error {
 	// sudo netplan apply
 	// sudo systemctl restart systemd-networkd
 	// sudo service networking restart
-	return os.WriteFile("/etc/netplan/001-eth.yaml", []byte(nc.YAMLString()), 0755)
+	// return os.WriteFile("/etc/netplan/001-eth.yaml", []byte(nc.YAMLString()), 0755)
+	return os.WriteFile("./test/data/001-eth.yaml", []byte(nc.YAMLString()), 0755)
 }
