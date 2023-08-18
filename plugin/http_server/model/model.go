@@ -244,7 +244,7 @@ type MNetworkConfig struct {
 	Netmask     string     `gorm:"not null"`
 	Gateway     string     `gorm:"not null"`
 	DNS         StringList `gorm:"not null"`
-	DHCPEnabled bool       `gorm:"not null"`
+	DHCPEnabled *bool      `gorm:"not null"`
 }
 
 /*
