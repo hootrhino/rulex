@@ -17,7 +17,9 @@ package service
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"time"
 )
@@ -107,4 +109,42 @@ func GetVolume() (string, error) {
 	}
 	volume := strings.TrimSpace(string(output))
 	return volume, nil
+}
+
+/*
+*
+* 时区
+*
+ */
+func GetTimeZone() string {
+	currentZone, _ := time.Now().Zone()
+	return currentZone
+
+}
+func SetTimeZone(timezone string) error {
+	// 获取时区文件的路径
+	timezonePath := filepath.Join("/usr/share/zoneinfo", timezone)
+
+	// 检查时区文件是否存在
+	if _, err := os.Stat(timezonePath); os.IsNotExist(err) {
+		return err
+	}
+
+	// 读取时区文件内容
+	_, err := os.ReadFile(timezonePath)
+	if err != nil {
+		return err
+	}
+
+	// 更新系统的 /etc/localtime 符号链接
+	err = os.Remove("/etc/localtime")
+	if err != nil {
+		return err
+	}
+
+	err = os.Symlink(timezonePath, "/etc/localtime")
+	if err != nil {
+		return err
+	}
+	return nil
 }
