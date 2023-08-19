@@ -69,7 +69,9 @@ function Main(arg)
 end
 
 ```
-2. EEKIT 网关
+>必须使用这个系统：Linux aml-s812 5.9.0-rc7-aml-s812 #20.12 SMP Sun Dec 13 22:50:05 CST 2020 armv7l GNU/Linux, Armbian 20.12 Buster \l
+
+1. EEKIT 网关
 ```lua
 function Main(arg)
     while true do
