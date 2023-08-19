@@ -75,14 +75,15 @@ func GetWifi(c *gin.Context, hh *HttpApiServer) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	c.JSON(common.HTTP_OK, common.OkWithData(service.WlanConfig{
+	Cfg := service.WlanConfig{
 		Wlan0: service.WLANInterface{
 			Interface: MWifiConfig.Interface,
 			SSID:      MWifiConfig.SSID,
 			Password:  MWifiConfig.Password,
 			Security:  MWifiConfig.Security,
 		},
-	}))
+	}
+	c.JSON(common.HTTP_OK, common.OkWithData(Cfg))
 
 }
 func SetWifi(c *gin.Context, hh *HttpApiServer) {
