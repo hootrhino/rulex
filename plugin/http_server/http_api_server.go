@@ -95,7 +95,7 @@ func (hs *HttpApiServer) Init(config *ini.Section) error {
 	}
 	hs.registerModel()
 	hs.configHttpServer()
-	hs.InitializeNwtWorkConfigData()
+	hs.InitializeNetWorkConfigData()
 	//
 	// WebSocket server
 	//
@@ -108,7 +108,7 @@ func (hs *HttpApiServer) Init(config *ini.Section) error {
 * 初始化网络配置
 *
  */
-func (hs *HttpApiServer) InitializeNwtWorkConfigData() {
+func (hs *HttpApiServer) InitializeNetWorkConfigData() {
 	// 初始化有线网口配置
 	if !service.CheckIfAlreadyInitNetWorkConfig() {
 		service.InitNetWorkConfig()
