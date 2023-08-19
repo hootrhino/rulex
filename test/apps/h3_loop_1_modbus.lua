@@ -13,3 +13,21 @@
 -- You should have received a copy of the GNU Affero General Public License
 -- along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+AppNAME = "双路Modbus50毫秒轮询测试"
+AppVERSION = "1.0.0"
+AppDESCRIPTION = ""
+--
+-- Main
+--
+
+function Main(arg)
+    while true do
+        local result, err = applib:CtrlDevice('$UUID', "010300010001D5CA")
+        if err ~= nil then
+            applib:Debug("!!!*** CtrlDevice Error=>" .. err)
+        else
+            applib:Debug("√√√*** CtrlDevice result=>" .. result)
+        end
+        applib:Sleep(50)
+    end
+end

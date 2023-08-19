@@ -1,3 +1,4 @@
+---@diagnostic disable: undefined-global
 -- Copyright (C) 2023 wwhai
 --
 -- This program is free software: you can redistribute it and/or modify
@@ -13,7 +14,7 @@
 -- You should have received a copy of the GNU Affero General Public License
 -- along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-AppNAME = "双路Modbus50毫秒轮询测试"
+AppNAME = "当检测到DI信号后往tcp服务器发送文本数据"
 AppVERSION = "1.0.0"
 AppDESCRIPTION = ""
 --
@@ -21,13 +22,19 @@ AppDESCRIPTION = ""
 --
 
 function Main(arg)
+    local s = 0
     while true do
-        local result, err = applib:CtrlDevice('$UUID', "010300010001D5CA")
+        local v, err = eekith3:GPIOGet(9)
         if err ~= nil then
-            applib:Debug("!!!*** CtrlDevice Error=>" .. err)
+            break
         else
-            applib:Debug("√√√*** CtrlDevice result=>" .. result)
+            if v ~= s then
+                local err0 = applib:DataToUdp('udpServerUUID', 'hello gpio9:' .. v)
+                print('DataToUdp success? =>', err0 == nil)
+            end
+            s = v
         end
         applib:Sleep(50)
     end
+    return 0
 end
