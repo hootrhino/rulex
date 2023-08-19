@@ -89,13 +89,13 @@ end
      local b, err = hex:Hexs2Bytes('FFFFFF014CB2AA55')
      -- b 是一个table: {0 = 0, 1 = 1}
   ```
-- eekit:GPIOSet: 控制GPIO
+- eekith3:GPIOSet: 控制GPIO
   ```lua
-     local err = eekit:GPIOSet(6, 1)
+     local err = eekith3:GPIOSet(6, 1)
   ```
-- eekit:GPIOGet 16进制字符串转成字节
+- eekith3:GPIOGet 16进制字符串转成字节
   ```lua
-     local value, err = eekit:GPIOGet(6)
+     local value, err = eekith3:GPIOGet(6)
      -- value 的值为 0 或者 1
   ```
 - applib:MatchHex 提取十六进制

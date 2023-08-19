@@ -39,7 +39,7 @@ ARCHSUPPORT=EEKITH3 rulex run
 1. GPIO 设置
 
    ```lua
-   eekit:GPIOSet(Pin, Value)
+   eekith3:GPIOSet(Pin, Value)
    ```
    参数表
 
@@ -50,7 +50,7 @@ ARCHSUPPORT=EEKITH3 rulex run
 2. GPIO 获取
 
    ```lua
-   eekit:GPIOGet(Pin)
+   eekith3:GPIOGet(Pin)
    ```
    | 参数名 | 类型 | 说明     |
    | ------ | ---- | -------- |
@@ -73,9 +73,9 @@ end
 ```lua
 function Main(arg)
     while true do
-        eekit:GPIOSet(6, 1)
+        eekith3:GPIOSet(6, 1)
         applib:Sleep(2000)
-        eekit:GPIOSet(7, 0)
+        eekith3:GPIOSet(7, 0)
         applib:Sleep(2000)
     end
 end
