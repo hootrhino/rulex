@@ -78,10 +78,7 @@ const (
 	RULEX_UDP InEndType = "RULEX_UDP"
 	// 通用IotHUB
 	GENERIC_IOT_HUB InEndType = "GENERIC_IOT_HUB"
-	//
-	// Ithings 平台
-	//
-	ITHINGS_IOT_HUB InEndType = "ITHINGS_IOT_HUB"
+
 )
 
 // TargetType

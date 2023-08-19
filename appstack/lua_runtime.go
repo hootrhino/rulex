@@ -99,9 +99,7 @@ func LoadAppLib(app *typex.Application, e typex.RuleX) {
 	// 消息转发
 	addAppLib(app, e, "applib", "DataToHttp", rulexlib.DataToHttp(e))
 	addAppLib(app, e, "applib", "DataToMqtt", rulexlib.DataToMqtt(e))
-	// DataToIthings 专门为Ithings支持的
-	// vendor: 三方支持命名空间
-	addAppLib(app, e, "vendor", "DataToIthings", rulexlib.DataToMqtt(e))
+
 	addAppLib(app, e, "applib", "DataToUdp", rulexlib.DataToUdp(e))
 	// JQ
 	addAppLib(app, e, "applib", "JqSelect", rulexlib.JqSelect(e))
