@@ -3,13 +3,13 @@ network:
   renderer: NetworkManager
   ethernets:
     eth0:
-      dhcp4: false
+      dhcp4: true
       addresses:
-      - 192.168.128.100
-      gateway4: 192.168.128.1
+      - 192.168.1.101
+      gateway4: 192.168.1.1
       nameservers:
       - 8.8.8.8
-      - 114.114.114.114
+      - 8.8.4.4
     eth1:
       dhcp4: false
       addresses:

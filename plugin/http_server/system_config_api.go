@@ -234,6 +234,21 @@ func TestGenEtcNetCfg(c *gin.Context, hh *HttpApiServer) {
 
 /*
 *
+* 时区设置
+*
+ */
+func SetSystemTimeZone(c *gin.Context, hh *HttpApiServer) {
+	// TODO
+	c.JSON(common.HTTP_OK, common.Ok())
+
+}
+func GetSystemTimeZone(c *gin.Context, hh *HttpApiServer) {
+	c.JSON(common.HTTP_OK, common.OkWithData(service.GetTimeZone()))
+
+}
+
+/*
+*
 * 获取系统时间
 *
  */
@@ -265,6 +280,45 @@ func isValidIP(ip string) bool {
 	return parsedIP != nil
 }
 
+/*
+*
+* 展示网络配置信息
+*
+ */
+func GetEthNetwork(c *gin.Context, hh *HttpApiServer) {
+	MEth0, err := service.GetEth0Config()
+	if err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+
+	}
+	MEth1, err := service.GetEth1Config()
+	if err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
+	Eth0Cfg := service.EtcNetworkConfig{
+		Interface:   MEth0.Interface,
+		Address:     MEth0.Address,
+		Netmask:     MEth0.Address,
+		Gateway:     MEth0.Address,
+		DNS:         MEth0.DNS,
+		DHCPEnabled: *MEth0.DHCPEnabled,
+	}
+	Eth1Cfg := service.EtcNetworkConfig{
+		Interface:   MEth1.Interface,
+		Address:     MEth1.Address,
+		Netmask:     MEth1.Address,
+		Gateway:     MEth1.Address,
+		DNS:         MEth1.DNS,
+		DHCPEnabled: *MEth1.DHCPEnabled,
+	}
+	c.JSON(common.HTTP_OK, common.OkWithData(map[string]service.EtcNetworkConfig{
+		"eth0": Eth0Cfg,
+		"eth1": Eth1Cfg,
+	}))
+
+}
 func SetEthNetwork(c *gin.Context, hh *HttpApiServer) {
 	if runtime.GOOS != "linux" {
 		c.JSON(common.HTTP_OK, common.Error("OS Not Support:"+runtime.GOOS))

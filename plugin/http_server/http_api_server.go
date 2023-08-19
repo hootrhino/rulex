@@ -349,19 +349,7 @@ func (hs *HttpApiServer) LoadRoute() {
 	//
 	// 系统设置
 	//
-	settingsApi := hs.ginEngine.Group(url("/settings"))
-	{
-		settingsApi.POST("/eth", hs.addRoute(SetEthNetwork))
-		settingsApi.GET("/time", hs.addRoute(GetSystemTime))
-		settingsApi.PUT("/time", hs.addRoute(SetSystemTime))
-		settingsApi.GET("/wifi", hs.addRoute(GetWifi))
-		settingsApi.POST("/wifi", hs.addRoute(SetWifi))
-		settingsApi.GET("/volume", hs.addRoute(GetVolume))
-		settingsApi.POST("/volume", hs.addRoute(SetVolume))
-		// TODO: 仅开发做测试用, 完了会删除这个接口
-		// settingsApi.POST("/test", hs.addRoute(TestGenEtcNetCfg))
-	}
-
+	hs.LoadSystemSettingsAPI()
 }
 
 // HttpApiServer Start
