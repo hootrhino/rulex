@@ -17,15 +17,14 @@ import (
 //	        password: "YourWiFiPassword"
 
 type WLANInterface struct {
-	Interface string `yaml:"-" json:"-"`
-	SSID      string `yaml:"-" json:"-"`
-	Password  string `yaml:"-" json:"-"`
-	Security  string `yaml:"-" json:"-"`
+	Interface string `yaml:"-" json:"interface"`
+	SSID      string `yaml:"-" json:"ssid"`
+	Password  string `yaml:"-" json:"password"`
+	Security  string `yaml:"-" json:"security"`
 }
 
 type WlanConfig struct {
-	Wlan0 WLANInterface `yaml:"-" json:"-"`
-	Wlan1 WLANInterface `yaml:"-" json:"-"`
+	Wlan0 WLANInterface `yaml:"-" json:"wlan0"`
 }
 
 /*
