@@ -1,4 +1,4 @@
-AppNAME = 'DataToIthings'
+AppNAME = 'Data'
 AppVERSION = '0.0.1'
 function Main(arg)
     print("XOR: 0101=>", misc:XOR("0101", 0))

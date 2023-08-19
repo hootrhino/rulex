@@ -664,12 +664,6 @@ func (e *RuleEngine) InitSourceTypeManager() error {
 			NewSource: source.NewIoTHubSource,
 		},
 	)
-	e.SourceTypeManager.Register(typex.ITHINGS_IOT_HUB,
-		&typex.XConfig{
-			Engine:    e,
-			NewSource: source.NewIThingsSource,
-		},
-	)
 	return nil
 }
 

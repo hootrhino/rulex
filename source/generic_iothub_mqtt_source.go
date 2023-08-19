@@ -73,6 +73,56 @@ func (it iothubUpMsg) String() string {
 	return string(b)
 }
 
+/*
+*
+* 下发拓扑结构
+*
+ */
+// {
+// 	"method":"describesubDevices",
+// 	"clientToken":"3160be0b-6d4f-e6fa-d614-8fb422c0d16c",
+// 	"timestamp":1681625336600,
+// 	"status":"成功",
+// 	"payload":{
+// 		"devices":[
+// 			{
+// 				"productID":"268dGhSTdOE",
+// 				"deviceName":"RULEX-大屏1"
+// 			}
+// 		]
+// 	}
+// }
+type TopologyDevice struct {
+	ProductID  string `json:"productID"`
+	DeviceName string `json:"deviceName"`
+}
+
+// $thing/status/${productid}/${devicename}
+func (tt TopologyDevice) OnlineTopic() string {
+	return fmt.Sprintf("$thing/status/%s/%s", tt.ProductID, tt.DeviceName)
+}
+
+// $thing/status/${productid}/${devicename}
+func (tt TopologyDevice) OfflineTopic() string {
+	return fmt.Sprintf("$thing/status/%s/%s", tt.ProductID, tt.DeviceName)
+}
+
+// $thing/up/property/{ProductID}/{DeviceName}
+func (tt TopologyDevice) ReportTopic() string {
+	return fmt.Sprintf("$thing/up/property/%s/%s", tt.ProductID, tt.DeviceName)
+}
+
+type TopologyPayload struct {
+	Devices []TopologyDevice `json:"devices"`
+}
+type TopologyDownMsg struct {
+	Method      string          `json:"method"`
+	ClientToken string          `json:"clientToken"`
+	Timestamp   int64           `json:"timestamp"`
+	Status      string          `json:"status"`
+	Payload     TopologyPayload `json:"payload"`
+}
+
 type iothub struct {
 	typex.XStatus
 	client        mqtt.Client
