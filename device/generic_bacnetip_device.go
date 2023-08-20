@@ -154,7 +154,7 @@ func (dev *GenericBacnetIpDevice) read() ([]byte, error) {
 	for _, v := range dev.bacnetIpConfig.NodeConfig {
 		property, err := dev.bacnetClient.ReadProperty(dev.remoteDev, v.property)
 		if err != nil {
-			glogger.GLogger.Error("read failed. tag = %v, err=%v", v.Tag, err)
+			glogger.GLogger.Errorf("read failed. tag = %v, err=%v", v.Tag, err)
 			continue
 		}
 		value := fmt.Sprintf("%v", property.Object.Properties[0].Data)
