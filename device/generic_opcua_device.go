@@ -124,21 +124,20 @@ func (opcDev *genericOpcuaDevice) Start(cctx typex.CCTX) error {
 		return err
 	}
 	//初始化配置
-	opts := []opcua.Option{
-		opcua.SecurityPolicy(opcDev.mainConfig.OpcuaCommonConfig.Policy),
-		opcua.SecurityModeString(opcDev.mainConfig.OpcuaCommonConfig.Mode),
-	}
-	//判断登录方式
-	switch AuthType(opcDev.mainConfig.OpcuaCommonConfig.Auth) {
-	case AUTH_USERNAME:
-		opts = append(opts, opcua.AuthUsername(opcDev.mainConfig.OpcuaCommonConfig.Username, opcDev.mainConfig.OpcuaCommonConfig.Password))
-		opts = append(opts, opcua.SecurityFromEndpoint(ep, ua.UserTokenTypeUserName))
-		break
-	default:
-		opts = append(opts, opcua.AuthAnonymous())
-		opts = append(opts, opcua.SecurityFromEndpoint(ep, ua.UserTokenTypeAnonymous))
-		break
-	}
+	// opts := []opcua.Option{
+	// 	opcua.SecurityPolicy(opcDev.mainConfig.OpcuaCommonConfig.Policy),
+	// 	opcua.SecurityModeString(opcDev.mainConfig.OpcuaCommonConfig.Mode),
+	// }
+	// //判断登录方式
+	// switch AuthType(opcDev.mainConfig.OpcuaCommonConfig.Auth) {
+	// case AUTH_USERNAME:
+	// 	opts = append(opts, opcua.AuthUsername(opcDev.mainConfig.OpcuaCommonConfig.Username,
+	// 		opcDev.mainConfig.OpcuaCommonConfig.Password))
+	// 	opts = append(opts, opcua.SecurityFromEndpoint(ep, ua.UserTokenTypeUserName))
+	// default:
+	// 	opts = append(opts, opcua.AuthAnonymous())
+	// 	opts = append(opts, opcua.SecurityFromEndpoint(ep, ua.UserTokenTypeAnonymous))
+	// }
 	//连接opcua -判断连接是否正常
 	opcDev.client = opcua.NewClient(ep.EndpointURL, opcua.SecurityMode(ua.MessageSecurityModeNone))
 	if err := opcDev.client.Connect(cctx.Ctx); err != nil {
@@ -207,7 +206,7 @@ func (opcDev *genericOpcuaDevice) readNodes(cmd []byte, data []byte) (int, error
 		time.Sleep(time.Duration(100) * time.Millisecond)
 		id, err := ua.ParseNodeID(r.NodeID)
 		if err != nil {
-			glogger.GLogger.Error("invalid node id: %v", err)
+			glogger.GLogger.Errorf("invalid node id: %v", err)
 		}
 		req := &ua.ReadRequest{
 			MaxAge: 2000,
@@ -220,11 +219,11 @@ func (opcDev *genericOpcuaDevice) readNodes(cmd []byte, data []byte) (int, error
 		resp, err := opcDev.client.ReadWithContext(ctx, req)
 		if err != nil {
 			opcDev.errorCount++
-			glogger.GLogger.Error("Read failed: %s", err)
+			glogger.GLogger.Errorf("Read failed: %s", err)
 		}
 		if resp.Results[0].Status != ua.StatusOK {
 			opcDev.errorCount++
-			glogger.GLogger.Error("Status not OK: %v", resp.Results[0].Status)
+			glogger.GLogger.Errorf("Status not OK: %v", resp.Results[0].Status)
 
 		}
 		value := OpcuaNode{
@@ -238,7 +237,7 @@ func (opcDev *genericOpcuaDevice) readNodes(cmd []byte, data []byte) (int, error
 		dataMap[r.Tag] = value
 		if err != nil {
 			opcDev.errorCount++
-			glogger.GLogger.Error("OPCUA value not match type: %s", err)
+			glogger.GLogger.Errorf("OPCUA value not match type: %s", err)
 		}
 
 	}
