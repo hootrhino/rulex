@@ -53,5 +53,5 @@ func (nc *WlanConfig) YAMLString() string {
 *
  */
 func (nc *WlanConfig) ApplyWlan0Config() error {
-	return os.WriteFile("./test/data/001-wlan.yaml", []byte(nc.YAMLString()), 0755)
+	return os.WriteFile("/etc/netplan/001-wlan.yaml", []byte(nc.YAMLString()), 0755)
 }
