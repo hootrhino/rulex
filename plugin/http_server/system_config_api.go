@@ -59,6 +59,10 @@ func GetVolume(c *gin.Context, hh *HttpApiServer) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
+	if v == "" {
+		c.JSON(common.HTTP_OK, common.Error("Volume get failed, please check system"))
+		return
+	}
 	c.JSON(common.HTTP_OK, common.OkWithData(map[string]string{
 		"volume": v,
 	}))
@@ -180,7 +184,7 @@ func ApplyNewestEtcEthConfig() error {
 		DHCPEnabled: *MEth1.DHCPEnabled,
 	}
 	loopBack := "# DON'T EDIT THIS FILE!\nauto lo\niface lo inet loopback\n"
-	return os.WriteFile("./test/data/etc-interfaces.conf",
+	return os.WriteFile("/etc/interfaces",
 		[]byte(
 			loopBack+
 				EtcEth0Cfg.GenEtcConfig()+
