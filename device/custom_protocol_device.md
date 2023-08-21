@@ -57,6 +57,19 @@
 - type: 1-静态；2-动态, 在动态协议里面必须为2
 - description: 协议的一些备注信息
 - transport: 传输形式，目前支持 `rawtcp`, `rawudp`, `rs485rawserial`, `rs485rawtcp`
+## 数据
+返回的数据有如下格式:
+```json
+{
+  "in":"0001020304ABCDEF",
+  "out":"11220ABCDEF"
+}
+```
+字段说明
+- in: 请求的报文
+- out: 返回的结果
+
+> 注意：均为十六进制格式
 
 ## 设备数据处理
 ```lua

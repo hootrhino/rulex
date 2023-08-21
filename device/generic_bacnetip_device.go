@@ -28,7 +28,7 @@ type bacnetIpNodeConfig struct {
 	Type     int    `json:"type,omitempty" title:"object类型"`
 	Id       int    `json:"id,omitempty" title:"object的id"`
 
-	property btypes.PropertyData `json:"ignore"`
+	property btypes.PropertyData
 }
 
 type BacnetIpConfig struct {
@@ -76,6 +76,7 @@ func (dev *GenericBacnetIpDevice) Start(cctx typex.CCTX) error {
 		Port:       dev.bacnetIpConfig.CommonConfig.LocalPort,
 		SubnetCIDR: 10, // 随便填一个，主要为了能够创建Client
 	})
+	
 	if err != nil {
 		return err
 	}
