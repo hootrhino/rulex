@@ -68,6 +68,8 @@ func (dev *GenericBacnetIpDevice) Init(devId string, configMap map[string]interf
 }
 
 func (dev *GenericBacnetIpDevice) Start(cctx typex.CCTX) error {
+	dev.CancelCTX = cctx.CancelCTX
+	dev.Ctx = cctx.Ctx
 	// 创建一个bacnetip的本地网络
 	client, err := bacnet.NewClient(&bacnet.ClientBuilder{
 		Ip:         "0.0.0.0",
@@ -77,8 +79,6 @@ func (dev *GenericBacnetIpDevice) Start(cctx typex.CCTX) error {
 	if err != nil {
 		return err
 	}
-	dev.bacnetClient = client
-	go client.ClientRun()
 
 	// 将nodeConfig对应的配置信息
 	for idx, v := range dev.bacnetIpConfig.NodeConfig {
@@ -110,6 +110,8 @@ func (dev *GenericBacnetIpDevice) Start(cctx typex.CCTX) error {
 			Mac:    mac,
 		},
 	}
+	dev.bacnetClient = client
+	go dev.bacnetClient.ClientRun()
 
 	go func(ctx context.Context) {
 		interval := dev.bacnetIpConfig.CommonConfig.Interval
@@ -134,7 +136,7 @@ func (dev *GenericBacnetIpDevice) Start(cctx typex.CCTX) error {
 			}
 			<-ticker.C
 		}
-	}(cctx.Ctx)
+	}(dev.Ctx)
 
 	dev.status = typex.DEV_UP
 	return nil
@@ -179,6 +181,7 @@ func (dev *GenericBacnetIpDevice) Status() typex.DeviceState {
 }
 
 func (dev *GenericBacnetIpDevice) Stop() {
+	dev.CancelCTX()
 	if dev.bacnetClient != nil {
 		dev.bacnetClient.Close()
 	}
