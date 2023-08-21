@@ -76,10 +76,11 @@ func (dev *GenericBacnetIpDevice) Start(cctx typex.CCTX) error {
 		Port:       dev.bacnetIpConfig.CommonConfig.LocalPort,
 		SubnetCIDR: 10, // 随便填一个，主要为了能够创建Client
 	})
-	
+
 	if err != nil {
 		return err
 	}
+	client.SetLogger(glogger.GLogger.Logger)
 
 	// 将nodeConfig对应的配置信息
 	for idx, v := range dev.bacnetIpConfig.NodeConfig {

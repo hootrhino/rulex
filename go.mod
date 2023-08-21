@@ -3,7 +3,7 @@ module github.com/hootrhino/rulex
 go 1.18
 
 require (
-	github.com/BeatTime/bacnet v0.2.0-gary
+	github.com/BeatTime/bacnet v0.2.1
 	github.com/DrmagicE/gmqtt v0.5.0
 	github.com/Kowiste/ProfinetServer v0.0.0-20200929093941-9c422ae1f008
 	github.com/adrianmo/go-nmea v1.8.0
