@@ -2,19 +2,13 @@
 
 ## 1. Modbus上传Excel点位文件
 
----
-#### 接口说明
-<style>
-table th:first-of-type {
-width: 100px;
-}
-</style>
+### 接口说明
 
 | URL                                            | request | version | status |
 | :--------------------------------------------- | :------ | :------ | :----- |
 | http://server_ip/v1/devices/modbus/sheetImport | POST    | 1.0     | true   |
 
-#### 请求参数说明
+### 请求参数说明
 
 注意：请求content-type是multipart/form-data
 
@@ -22,11 +16,13 @@ width: 100px;
 | :--------- | :----- | :--- | :-------------------------- |
 | deviceUuid | String | true | 设备UUID                    |
 | file       | file   | true | 点位excel文件（具体看模板） |
+
+Excel 模板
 ![excel](image/generic_modbus_excel_device/1692706230355.png)
-#### 请求响应示例JSON
+### 请求响应示例JSON
+响应示例
 
 ```json
-// 响应示例
 {
   "code": 200,
   "msg": "Success",
@@ -34,21 +30,14 @@ width: 100px;
 }
 ```
 
-## 2. 更新modbus_excel类型的点位数据
-
----
-#### 接口说明
-<style>
-table th:first-of-type {
-    width: 100px;
-}
-</style>
+## 2. 更新点位数据
+### 接口说明
 
 | URL                                              | request | version | status |
 | :----------------------------------------------- | :------ | :------ | :----- |
 | http://192.168.2.58:8080/v1/devices/modbus/point | PUT     | 1.0     | true   |
 
-#### 请求参数说明
+### 请求参数说明
 
 注意：请求content-type是multipart/form-data
 
@@ -62,7 +51,7 @@ table th:first-of-type {
 | StartAddress | int    | true | 起始地址              |
 | Quality      | int    | true | 偏移量（双字节）      |
 
-#### 请求示例JSON
+### 请求示例JSON
 ```json
 {
     "id": 1,
@@ -75,7 +64,7 @@ table th:first-of-type {
 }
 ```
 
-#### 返回示例JSON
+### 返回示例JSON
 ```json
 {
     "code": 200,
@@ -84,21 +73,15 @@ table th:first-of-type {
 }
 ```
 
-## 3. 获取modbus_excel类型的点位数据
+## 3. 获取点位数据
 
----
-#### 接口说明
-<style>
-table th:first-of-type {
-    width: 100px;
-}
-</style>
+### 接口说明
 
 | URL                                              | request | version | status |
 | :----------------------------------------------- | :------ | :------ | :----- |
 | http://192.168.2.58:8080/v1/devices/modbus/point | GET     | 1.0     | true   |
 
-#### 请求参数说明
+### 请求参数说明
 
 注意：请求content-type是multipart/form-data
 
@@ -106,14 +89,14 @@ table th:first-of-type {
 | :--------- | :--- | :--- | :------- |
 | DeviceUuid | file | true | 设备UUID |
 
-#### 请求示例JSON
+### 请求示例JSON
 ```json
 {
     "deviceUuid": "uuid"
 }
 ```
 
-#### 返回示例JSON
+### 返回示例JSON
 ```json
 {
     "code": 200,
