@@ -1,9 +1,7 @@
 package utils
 
 import (
-	"strings"
-
-	"github.com/google/uuid"
+	"github.com/lithammer/shortuuid/v4"
 )
 
 // MakeUUID
@@ -46,5 +44,5 @@ func RuleUuid() string {
 
 // MakeUUID
 func MakeUUID(prefix string) string {
-	return prefix + strings.Replace(uuid.NewString(), "-", "", -1)
+	return prefix + shortuuid.New()
 }
