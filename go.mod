@@ -3,13 +3,12 @@ module github.com/hootrhino/rulex
 go 1.18
 
 require (
-	github.com/BeatTime/bacnet v0.2.0-gary
+	github.com/BeatTime/bacnet v0.2.1
 	github.com/DrmagicE/gmqtt v0.5.0
 	github.com/Kowiste/ProfinetServer v0.0.0-20200929093941-9c422ae1f008
 	github.com/adrianmo/go-nmea v1.8.0
 	github.com/antonmedv/expr v1.12.5
 	github.com/bluele/gcache v0.0.2
-	github.com/bluenviron/gortsplib/v3 v3.9.0
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/eclipse/paho.mqtt.golang v1.4.2
 	github.com/emirpasic/gods v1.18.1
@@ -26,6 +25,7 @@ require (
 	github.com/hootrhino/gopher-lua v1.0.0
 	github.com/hootrhino/wmi v0.0.0-20230603082700-cfa077a8cf01
 	github.com/itchyny/gojq v0.12.13
+	github.com/lithammer/shortuuid/v4 v4.0.0
 	github.com/makiuchi-d/gozxing v0.1.1
 	github.com/mattn/go-sqlite3 v1.14.17
 	github.com/mitchellh/go-homedir v1.1.0
@@ -34,7 +34,6 @@ require (
 	github.com/muka/go-bluetooth v0.0.0-20221213043340-85dc80edc4e1
 	github.com/nats-io/nats.go v1.26.0
 	github.com/patrikeh/go-deep v0.0.0-20230427173908-a2775168ab3d
-	github.com/pion/rtp v1.8.1
 	github.com/plgd-dev/go-coap/v2 v2.6.0
 	github.com/robinson/gos7 v0.0.0-20230421131203-d20ac6ca08cd
 	github.com/rs/zerolog v1.28.0
@@ -54,7 +53,6 @@ require (
 	go.bug.st/serial v1.5.0
 	go.mongodb.org/mongo-driver v1.11.6
 	go.uber.org/zap v1.15.0
-	gocv.io/x/gocv v0.33.0
 	golang.org/x/crypto v0.11.0
 	golang.org/x/sys v0.10.0
 	google.golang.org/grpc v1.55.0
@@ -66,14 +64,11 @@ require (
 )
 
 require (
-	github.com/bluenviron/mediacommon v0.7.0 // indirect
 	github.com/juju/errors v0.0.0-20170703010042-c7d06af17c68 // indirect
 	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826 // indirect
-	github.com/pion/randutil v0.1.0 // indirect
-	github.com/pion/rtcp v1.2.10 // indirect
-	github.com/pion/sdp/v3 v3.0.6 // indirect
 	github.com/richardlehane/mscfb v1.0.4 // indirect
 	github.com/richardlehane/msoleps v1.0.3 // indirect
+	github.com/stretchr/testify v1.8.4 // indirect
 	github.com/xuri/efp v0.0.0-20220603152613-6918739fd470 // indirect
 	github.com/xuri/nfp v0.0.0-20220409054826-5e722a1d9e22 // indirect
 )
@@ -157,6 +152,6 @@ require (
 	google.golang.org/genproto v0.0.0-20230525234025-438c736192d0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20230525234020-1aefcd67740a // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20230530153820-e85fd2cbaebc // indirect
-	gopkg.in/yaml.v2 v2.4.0 // indirect
+	gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

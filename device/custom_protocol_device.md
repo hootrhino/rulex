@@ -57,6 +57,19 @@
 - type: 1-静态；2-动态, 在动态协议里面必须为2
 - description: 协议的一些备注信息
 - transport: 传输形式，目前支持 `rawtcp`, `rawudp`, `rs485rawserial`, `rs485rawtcp`
+## 数据
+返回的数据有如下格式:
+```json
+{
+  "in":"0001020304ABCDEF",
+  "out":"11220ABCDEF"
+}
+```
+字段说明
+- in: 请求的报文
+- out: 返回的结果
+
+> 注意：均为十六进制格式
 
 ## 设备数据处理
 ```lua
@@ -89,13 +102,13 @@ end
      local b, err = hex:Hexs2Bytes('FFFFFF014CB2AA55')
      -- b 是一个table: {0 = 0, 1 = 1}
   ```
-- eekit:GPIOSet: 控制GPIO
+- eekith3:GPIOSet: 控制GPIO
   ```lua
-     local err = eekit:GPIOSet(6, 1)
+     local err = eekith3:GPIOSet(6, 1)
   ```
-- eekit:GPIOGet 16进制字符串转成字节
+- eekith3:GPIOGet 16进制字符串转成字节
   ```lua
-     local value, err = eekit:GPIOGet(6)
+     local value, err = eekith3:GPIOGet(6)
      -- value 的值为 0 或者 1
   ```
 - applib:MatchHex 提取十六进制

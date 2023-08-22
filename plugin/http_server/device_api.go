@@ -135,7 +135,6 @@ func DeleteDevice(c *gin.Context, hs *HttpApiServer) {
 	old := hs.ruleEngine.GetDevice(uuid)
 	if old != nil {
 		if old.Device.Status() == typex.DEV_UP {
-			old.Device.Details().State = typex.DEV_STOP
 			old.Device.Stop()
 		}
 	}

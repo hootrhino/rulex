@@ -32,6 +32,7 @@ type SqliteDAO struct {
 func Load(dbPath string) {
 	Sqlite = &SqliteDAO{name: "SqliteDAO"}
 	Sqlite.Init(dbPath)
+	Sqlite.InitializeData()
 }
 
 /*
@@ -56,6 +57,15 @@ func (s *SqliteDAO) Init(dbPath string) error {
 		glogger.GLogger.Fatal(err)
 	}
 	return err
+}
+
+/*
+*
+* 给数据库初始化一些数据用
+*
+ */
+func (s *SqliteDAO) InitializeData() {
+
 }
 
 /*

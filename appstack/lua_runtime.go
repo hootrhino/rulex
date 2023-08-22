@@ -1,3 +1,18 @@
+// Copyright (C) 2023 wwhai
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 package appstack
 
 import (
@@ -84,9 +99,7 @@ func LoadAppLib(app *typex.Application, e typex.RuleX) {
 	// 消息转发
 	addAppLib(app, e, "applib", "DataToHttp", rulexlib.DataToHttp(e))
 	addAppLib(app, e, "applib", "DataToMqtt", rulexlib.DataToMqtt(e))
-	// DataToIthings 专门为Ithings支持的
-	// vendor: 三方支持命名空间
-	addAppLib(app, e, "vendor", "DataToIthings", rulexlib.DataToMqtt(e))
+
 	addAppLib(app, e, "applib", "DataToUdp", rulexlib.DataToUdp(e))
 	// JQ
 	addAppLib(app, e, "applib", "JqSelect", rulexlib.JqSelect(e))
@@ -173,9 +186,9 @@ func LoadAppLib(app *typex.Application, e typex.RuleX) {
 	//------------------------------------------------------------------------
 	// 注册GPIO操作函数到LUA运行时
 	//------------------------------------------------------------------------
-	// EEKIT
-	addAppLib(app, e, "eekit", "GPIOGet", rulexlib.EEKIT_GPIOGet(e))
-	addAppLib(app, e, "eekit", "GPIOSet", rulexlib.EEKIT_GPIOSet(e))
+	// EEKIT H3
+	addAppLib(app, e, "eekith3", "GPIOGet", rulexlib.EEKIT_GPIOGet(e))
+	addAppLib(app, e, "eekith3", "GPIOSet", rulexlib.EEKIT_GPIOSet(e))
 	// 树莓派4B
 	addAppLib(app, e, "raspi4b", "GPIOGet", rulexlib.RASPI4_GPIOGet(e))
 	addAppLib(app, e, "raspi4b", "GPIOSet", rulexlib.RASPI4_GPIOSet(e))

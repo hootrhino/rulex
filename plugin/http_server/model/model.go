@@ -11,14 +11,14 @@ type RulexModel struct {
 	ID        uint `gorm:"primarykey"`
 	CreatedAt time.Time
 }
-type stringList []string
+type StringList []string
 
 /*
 *
 * 给GORM用的
 *
  */
-func (f stringList) Value() (driver.Value, error) {
+func (f StringList) Value() (driver.Value, error) {
 	b, err := json.Marshal(f)
 	return string(b), err
 }
@@ -28,15 +28,15 @@ func (f stringList) Value() (driver.Value, error) {
 * 给GORM用的
 *
  */
-func (f *stringList) Scan(data interface{}) error {
+func (f *StringList) Scan(data interface{}) error {
 	return json.Unmarshal([]byte(data.(string)), f)
 }
 
-func (f stringList) String() string {
+func (f StringList) String() string {
 	b, _ := json.Marshal(f)
 	return string(b)
 }
-func (f stringList) Len() int {
+func (f StringList) Len() int {
 	return len(f)
 }
 
@@ -45,8 +45,8 @@ type MRule struct {
 	UUID        string     `gorm:"not null"`
 	Name        string     `gorm:"not null"`
 	Type        string     // 脚本类型，目前支持"lua"和"expr"两种
-	FromSource  stringList `gorm:"not null type:string[]"`
-	FromDevice  stringList `gorm:"not null type:string[]"`
+	FromSource  StringList `gorm:"not null type:string[]"`
+	FromDevice  StringList `gorm:"not null type:string[]"`
 	Expression  string     `gorm:"not null"` // Expr脚本
 	Actions     string     `gorm:"not null"`
 	Success     string     `gorm:"not null"`
@@ -60,7 +60,7 @@ type MInEnd struct {
 	UUID      string     `gorm:"not null"`
 	Type      string     `gorm:"not null"`
 	Name      string     `gorm:"not null"`
-	BindRules stringList `json:"bindRules"` // 与之关联的规则表["A","B","C"]
+	BindRules StringList `json:"bindRules"` // 与之关联的规则表["A","B","C"]
 
 	Description string
 	Config      string
@@ -110,7 +110,7 @@ type MDevice struct {
 	Name        string `gorm:"not null"`
 	Type        string `gorm:"not null"`
 	Config      string
-	BindRules   stringList `json:"bindRules"` // 与之关联的规则表["A","B","C"]
+	BindRules   StringList `json:"bindRules"` // 与之关联的规则表["A","B","C"]
 	Description string
 }
 
@@ -132,7 +132,7 @@ type MGoods struct {
 	UUID        string     `gorm:"not null"`
 	Addr        string     `gorm:"not null"`
 	Description string     `gorm:"not null"`
-	Args        stringList `gorm:"not null"`
+	Args        StringList `gorm:"not null"`
 }
 
 /*
@@ -229,4 +229,33 @@ type MProtocolApp struct {
 	Name    string `gorm:"not null"` // 名称
 	Type    string `gorm:"not null"` // 类型: IN OUT DEVICE APP
 	Content string `gorm:"not null"` // 协议包的内容
+}
+
+/*
+*
+* 系统配置参数, 直接以String保存，完了以后再加工成Dto结构体
+*
+ */
+type MNetworkConfig struct {
+	RulexModel
+	Type        string     `gorm:"not null"` // 类型: ubuntu16, ubuntu18
+	Interface   string     `gorm:"not null"` // eth1 eth0
+	Address     string     `gorm:"not null"`
+	Netmask     string     `gorm:"not null"`
+	Gateway     string     `gorm:"not null"`
+	DNS         StringList `gorm:"not null"`
+	DHCPEnabled *bool      `gorm:"not null"`
+}
+
+/*
+*
+* 无线网络配置
+*
+ */
+type MWifiConfig struct {
+	RulexModel
+	Interface string `gorm:"not null"`
+	SSID      string `gorm:"not null"`
+	Password  string `gorm:"not null"`
+	Security  string `gorm:"not null"` // wpa2-psk wpa3-psk
 }

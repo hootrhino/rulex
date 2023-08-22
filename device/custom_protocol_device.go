@@ -1,3 +1,18 @@
+// Copyright (C) 2023 wwhai
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 package device
 
 import (
@@ -73,7 +88,7 @@ func (mdev *CustomProtocolDevice) Init(devId string, configMap map[string]interf
 	}
 	if !utils.SContains([]string{`rawtcp`, `rawudp`, `rawserial`},
 		mdev.mainConfig.CommonConfig.Transport) {
-		return errors.New("option only one of 'rawtcp','rawudp','rawserial','rawserial'")
+		return errors.New("option only one of 'rawtcp','rawudp','rawserial'")
 	}
 	return nil
 }
@@ -212,12 +227,12 @@ func (mdev *CustomProtocolDevice) OnDCACall(_ string, Command string,
 // 内部函数
 // --------------------------------------------------------------------------------------------------
 func (mdev *CustomProtocolDevice) ctrl(args []byte) ([]byte, error) {
-	glogger.GLogger.Debug("Custom Protocol Device Request:", string(args))
 	hexs, err1 := hex.DecodeString(string(args))
 	if err1 != nil {
 		glogger.GLogger.Error(err1)
 		return nil, err1
 	}
+	glogger.GLogger.Debug("Custom Protocol Device Request:", hexs)
 	result := [__DEFAULT_BUFFER_SIZE]byte{}
 	ctx, cancel := context.WithTimeout(context.Background(),
 		time.Duration(mdev.mainConfig.UartConfig.Timeout)*time.Millisecond)

@@ -22,7 +22,7 @@ AppDESCRIPTION = "A demo app"
 -- 必须包含 APPMain(arg) 函数作为 app 启动点
 function Main(arg)
 	while true do
-		local value, err = eekit:GPIOGet(6)
+		local value, err = eekith3:GPIOGet(6)
 		if err ~= nil
 		then
 			print(err)

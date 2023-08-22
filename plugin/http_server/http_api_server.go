@@ -10,6 +10,7 @@ import (
 	common "github.com/hootrhino/rulex/plugin/http_server/common"
 	sqlitedao "github.com/hootrhino/rulex/plugin/http_server/dao/sqlite"
 	"github.com/hootrhino/rulex/plugin/http_server/model"
+	"github.com/hootrhino/rulex/plugin/http_server/service"
 
 	"github.com/gin-contrib/static"
 
@@ -65,6 +66,8 @@ func (s *HttpApiServer) registerModel() {
 		&model.MGenericGroup{},
 		&model.MGenericGroupRelation{},
 		&model.MProtocolApp{},
+		&model.MNetworkConfig{},
+		&model.MWifiConfig{},
 	)
 }
 
@@ -92,11 +95,28 @@ func (hs *HttpApiServer) Init(config *ini.Section) error {
 	}
 	hs.registerModel()
 	hs.configHttpServer()
+	hs.InitializeNetWorkConfigData()
 	//
 	// WebSocket server
 	//
 	hs.ginEngine.GET("/ws", glogger.WsLogger)
 	return nil
+}
+
+/*
+*
+* 初始化网络配置
+*
+ */
+func (hs *HttpApiServer) InitializeNetWorkConfigData() {
+	// 初始化有线网口配置
+	if !service.CheckIfAlreadyInitNetWorkConfig() {
+		service.InitNetWorkConfig()
+	}
+	// 初始化WIFI配置
+	if !service.CheckIfAlreadyInitWlanConfig() {
+		service.InitWlanConfig()
+	}
 }
 
 /*
@@ -326,7 +346,10 @@ func (hs *HttpApiServer) LoadRoute() {
 		screenApi.PUT("/update", hs.addRoute(UpdateVisual))
 		screenApi.GET("/list", hs.addRoute(ListVisual))
 	}
-
+	//
+	// 系统设置
+	//
+	hs.LoadSystemSettingsAPI()
 }
 
 // HttpApiServer Start

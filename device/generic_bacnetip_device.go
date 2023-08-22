@@ -28,7 +28,7 @@ type bacnetIpNodeConfig struct {
 	Type     int    `json:"type,omitempty" title:"object类型"`
 	Id       int    `json:"id,omitempty" title:"object的id"`
 
-	property btypes.PropertyData `json:"ignore"`
+	property btypes.PropertyData
 }
 
 type BacnetIpConfig struct {
@@ -41,8 +41,6 @@ type GenericBacnetIpDevice struct {
 	status         typex.DeviceState
 	RuleEngine     typex.RuleX
 	bacnetIpConfig BacnetIpConfig
-	devId          string
-
 	// Bacnet
 	bacnetClient bacnet.Client
 	remoteDev    btypes.Device
@@ -59,7 +57,7 @@ func NewGenericBacnetIpDevice(e typex.RuleX) typex.XDevice {
 }
 
 func (dev *GenericBacnetIpDevice) Init(devId string, configMap map[string]interface{}) error {
-	dev.devId = devId
+	dev.PointId = devId
 	err := utils.BindSourceConfig(configMap, &dev.bacnetIpConfig)
 	if err != nil {
 		return err
@@ -68,17 +66,19 @@ func (dev *GenericBacnetIpDevice) Init(devId string, configMap map[string]interf
 }
 
 func (dev *GenericBacnetIpDevice) Start(cctx typex.CCTX) error {
+	dev.CancelCTX = cctx.CancelCTX
+	dev.Ctx = cctx.Ctx
 	// 创建一个bacnetip的本地网络
 	client, err := bacnet.NewClient(&bacnet.ClientBuilder{
 		Ip:         "0.0.0.0",
 		Port:       dev.bacnetIpConfig.CommonConfig.LocalPort,
 		SubnetCIDR: 10, // 随便填一个，主要为了能够创建Client
 	})
+
 	if err != nil {
 		return err
 	}
-	dev.bacnetClient = client
-	go client.ClientRun()
+	client.SetLogger(glogger.GLogger.Logger)
 
 	// 将nodeConfig对应的配置信息
 	for idx, v := range dev.bacnetIpConfig.NodeConfig {
@@ -110,6 +110,8 @@ func (dev *GenericBacnetIpDevice) Start(cctx typex.CCTX) error {
 			Mac:    mac,
 		},
 	}
+	dev.bacnetClient = client
+	go dev.bacnetClient.ClientRun()
 
 	go func(ctx context.Context) {
 		interval := dev.bacnetIpConfig.CommonConfig.Interval
@@ -134,7 +136,7 @@ func (dev *GenericBacnetIpDevice) Start(cctx typex.CCTX) error {
 			}
 			<-ticker.C
 		}
-	}(cctx.Ctx)
+	}(dev.Ctx)
 
 	dev.status = typex.DEV_UP
 	return nil
@@ -154,7 +156,7 @@ func (dev *GenericBacnetIpDevice) read() ([]byte, error) {
 	for _, v := range dev.bacnetIpConfig.NodeConfig {
 		property, err := dev.bacnetClient.ReadProperty(dev.remoteDev, v.property)
 		if err != nil {
-			glogger.GLogger.Error("read failed. tag = %v, err=%v", v.Tag, err)
+			glogger.GLogger.Errorf("read failed. tag = %v, err=%v", v.Tag, err)
 			continue
 		}
 		value := fmt.Sprintf("%v", property.Object.Properties[0].Data)
@@ -179,6 +181,7 @@ func (dev *GenericBacnetIpDevice) Status() typex.DeviceState {
 }
 
 func (dev *GenericBacnetIpDevice) Stop() {
+	dev.CancelCTX()
 	if dev.bacnetClient != nil {
 		dev.bacnetClient.Close()
 	}
