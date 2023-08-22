@@ -41,8 +41,6 @@ type GenericBacnetIpDevice struct {
 	status         typex.DeviceState
 	RuleEngine     typex.RuleX
 	bacnetIpConfig BacnetIpConfig
-	devId          string
-
 	// Bacnet
 	bacnetClient bacnet.Client
 	remoteDev    btypes.Device
@@ -59,7 +57,7 @@ func NewGenericBacnetIpDevice(e typex.RuleX) typex.XDevice {
 }
 
 func (dev *GenericBacnetIpDevice) Init(devId string, configMap map[string]interface{}) error {
-	dev.devId = devId
+	dev.PointId = devId
 	err := utils.BindSourceConfig(configMap, &dev.bacnetIpConfig)
 	if err != nil {
 		return err
