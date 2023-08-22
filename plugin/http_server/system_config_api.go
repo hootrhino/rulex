@@ -143,9 +143,11 @@ func SetWifi(c *gin.Context, hh *HttpApiServer) {
 	}
 	if NetCfgType == "NETPLAN" { // Ubuntu18极其以后
 		ApplyNewestNetplanWlanConfig()
+		service.NetplanApply()
 	}
-	if NetCfgType == "NETWORK_ETC" { // Ubuntu18极其以后
+	if NetCfgType == "NETWORK_ETC" { // Ubuntu16
 		ApplyNewestEtcWlanConfig()
+		service.EtcApply()
 	}
 
 	// 保存到数据库, 并且写入配置
