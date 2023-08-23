@@ -186,7 +186,7 @@ func ApplyNewestEtcEthConfig() error {
 		DHCPEnabled: *MEth1.DHCPEnabled,
 	}
 	loopBack := "# DON'T EDIT THIS FILE!\nauto lo\niface lo inet loopback\n"
-	return os.WriteFile("/etc/interfaces",
+	return os.WriteFile("/etc/network/interfaces",
 		[]byte(
 			loopBack+
 				EtcEth0Cfg.GenEtcConfig()+
