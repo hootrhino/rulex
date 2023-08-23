@@ -21,7 +21,11 @@ local Devices = {
     PH = {
         Req = "010300000001840A",
         Decode = function(Hexs)
-            return Hexs
+            local Value, error = applib:MatchUInt("ph:[0,2]", Hexs)
+            if error ~= nil then
+                return 0
+            end
+            return Value
         end
     },
     -- 溶解氧传感器有4个寄存器，从0开始计算
@@ -29,14 +33,22 @@ local Devices = {
     O2 = {
         Req = "020300000004443A",
         Decode = function(Hexs)
-            return Hexs
+            local Value, error = applib:MatchUInt("oxygen:[0,2];temperature:[2,4];current:[4,6];warn:[6,7]", Hexs)
+            if error ~= nil then
+                return 0
+            end
+            return Value
         end
     },
     -- 水温传感器有1个寄存器，从0开始计算
     TEMP = {
         Req = "03030000000185E8",
         Decode = function(Hexs)
-            return Hexs
+            local Value, error = applib:MatchUInt("temperature:[0,2]", Hexs)
+            if error ~= nil then
+                return 0
+            end
+            return Value
         end
     },
     -- 盐度传感器有5个寄存器，从0开始计算
@@ -44,7 +56,11 @@ local Devices = {
     SALT = {
         Req = "040300000005859C",
         Decode = function(Hexs)
-            return Hexs
+            local Value, error = applib:MatchUInt("c1:[0,2];c2:[2,4];temperature:[4,6];dts:[6,8];dts:[8,10]", Hexs)
+            if error ~= nil then
+                return 0
+            end
+            return Value
         end
     },
 }

@@ -39,30 +39,30 @@ windows:
 .PHONY: arm32
 arm32:
 	CGO_ENABLED=1 GOOS=linux GOARCH=arm CC=arm-linux-gnueabi-gcc\
-	    go build -ldflags "-s -w -linkmode external -extldflags -static" -o ${APP}-arm32
+	    go build -ldflags "-s -w -linkmode external -extldflags -static" -o ${APP}-arm32linux
 
 .PHONY: arm64
 arm64:
 	CGO_ENABLED=1 GOOS=linux GOARCH=arm64 CC=aarch64-linux-gnu-gcc\
-	    go build -ldflags "-s -w -linkmode external -extldflags -static" -o ${APP}-arm64
+	    go build -ldflags "-s -w -linkmode external -extldflags -static" -o ${APP}-arm64linux
 
 .PHONY: mips32
 mips32:
 	# sudo apt-get install gcc-mips-linux-gnu
 	GOOS=linux GOARCH=mips CGO_ENABLED=1 CC=mips-linux-gnu-gcc\
-	    go build -ldflags "-s -w -linkmode external -extldflags -static" -o ${APP}-mips32
+	    go build -ldflags "-s -w -linkmode external -extldflags -static" -o ${APP}-mips32linux
 
 .PHONY: mips64
 mips64:
 	# sudo apt-get install gcc-mips-linux-gnu
 	GOOS=linux GOARCH=mips64 CGO_ENABLED=1 CC=mips-linux-gnu-gcc\
-	    go build -ldflags "-s -w -linkmode external -extldflags -static" -o ${APP}-mips64
+	    go build -ldflags "-s -w -linkmode external -extldflags -static" -o ${APP}-mips64linux
 
 .PHONY: mipsel
 mipsle:
 	# sudo apt-get install gcc-mipsel-linux-gnu
 	GOOS=linux GOARCH=mipsle CGO_ENABLED=1 GOMIPS=softfloat CC=mipsel-linux-gnu-gcc\
-	    go build -ldflags "-s -w -linkmode external -extldflags -static" -o ${APP}-mipsle
+	    go build -ldflags "-s -w -linkmode external -extldflags -static" -o ${APP}-mipslelinux
 
 .PHONY: run
 run:

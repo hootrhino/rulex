@@ -7,19 +7,13 @@ RESPOSITORY="https://github.com/hootrhino"
 create_pkg() {
     VERSION=$(git describe --tags --always --abbrev=0)
     echo "Create package: ${rulex-$1-${VERSION}}"
-    if [ "$1" == "x64windows" ]; then
-        zip -r _release/rulex-$1-${VERSION}.zip \
-        ./rulex.exe \
-        ./conf/rulex.ini
-        rm -rf ./rulex.exe
-    else
-        zip -r _release/rulex-$1-${VERSION}.zip \
-        ./rulex-* \
-        ./script/crulex.sh \
-        ./conf/rulex.ini
-        rm -rf ./rulex-*
-    fi
-
+    zip -r _release/rulex-$1-${VERSION}.zip \
+    ./rulex-$1 \
+    ./script/setup.sh \
+    ./script/run.sh \
+    ./script/stop.sh \
+    ./LICENSE \
+    ./conf/rulex.ini
 }
 
 #
@@ -31,11 +25,6 @@ make_zip() {
         exit 1
     fi
 
-}
-
-#
-build_x64windows() {
-    make windows
 }
 
 build_x64linux() {
@@ -59,7 +48,7 @@ build_mips32linux() {
 }
 #------------------------------------------
 cross_compile() {
-    ARCHS=("x64windows" "x64linux" "arm64linux" "arm32linux")
+    ARCHS=("x64linux" "arm64linux" "arm32linux")
     if [ ! -d "./_release/" ]; then
         mkdir -p ./_release/
     else
@@ -68,12 +57,6 @@ cross_compile() {
     fi
     for arch in ${ARCHS[@]}; do
         echo -e "\033[34m [★] Compile target =>\033[43;34m ["$arch"]. \033[0m"
-        if [[ "${arch}" == "x64windows" ]]; then
-            # sudo apt install gcc-mingw-w64-x86-64 -y
-            build_x64windows $arch
-            make_zip $arch
-            echo -e "\033[33m [√] Compile target => ["$arch"] Ok. \033[0m"
-        fi
         if [[ "${arch}" == "x86linux" ]]; then
             build_x86linux $arch
             make_zip $arch
@@ -106,11 +89,31 @@ cross_compile() {
 # fetch dashboard
 #
 fetch_dashboard() {
-    VERSION=$(git describe --tags --always --abbrev=0)
-    wget -q --show-progress ${RESPOSITORY}/rulex-dashboard/releases/download/${VERSION}/${VERSION}.zip
-    unzip -q ${VERSION}.zip
-    cp -r ./dist/* ./plugin/http_server/www
+    local www_zip="./www.zip"
+    local http_server_dir="./plugin/http_server/www"
+
+    # 检查文件是否存在
+    if [ -f "$www_zip" ]; then
+        echo -e "\033[44;32m [√] File www.zip already downloaded \033[0m"
+        unzip -q "$www_zip" -d "$http_server_dir"
+    else
+        local VERSION=$(git describe --tags --always --abbrev=0)
+        local URL="${RESPOSITORY}/hootrhino-eekit-web/releases/download/${VERSION}/www.zip"
+        echo -e "\033[41;37m [*] Fetch www.zip from: ${URL}\033[0m"
+        # 发送HEAD请求来检查URL是否存在
+        response=$(curl -s --head -w %{http_code} "$URL" -o /dev/null)
+
+        if [ "$response" = "200" ]; then
+            echo -e "\033[40;32m [*] Unzip www.zip to:${http_server_dir} \033[0m"
+            wget -q --show-progress "$URL"
+            unzip -q "$www_zip" -d "$http_server_dir"
+        else
+            echo -e "\033[41;30m [x] Error with http code 404, check if ${URL} exists \033[0m"
+            exit 1
+        fi
+    fi
 }
+
 #
 # gen_changelog
 #
@@ -159,6 +162,6 @@ check_cmd
 init_env
 cp -r $(ls | egrep -v '^_build$') ./_build/
 cd ./_build/
-# fetch_dashboard
+fetch_dashboard
 cross_compile
 gen_changelog

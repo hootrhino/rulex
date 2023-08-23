@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"gopkg.in/ini.v1"
 	"os"
 	"os/exec"
 	"strings"
@@ -135,7 +136,7 @@ func GetSystemDevices() (SystemDevices, error) {
 *
 * Linux: cat /etc/os-release
 *
-*/
+ */
 func CatOsRelease() (map[string]string, error) {
 	returnMap := map[string]string{}
 	cfg, err := ini.ShadowLoad("/etc/os-release")
