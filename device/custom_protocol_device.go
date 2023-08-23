@@ -261,7 +261,9 @@ func (mdev *CustomProtocolDevice) ctrl(args []byte) ([]byte, error) {
 	}
 	dataMap := map[string]string{}
 	dataMap["in"] = string(args)
-	dataMap["out"] = hex.EncodeToString(result[:count])
+	out := hex.EncodeToString(result[:count])
+	glogger.GLogger.Debug("Custom Protocol Device Response:", out)
+	dataMap["out"] = out
 	bytes, _ := json.Marshal(dataMap)
 	return []byte(bytes), nil
 }

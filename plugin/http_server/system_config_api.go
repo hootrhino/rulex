@@ -107,14 +107,13 @@ func SetWifi(c *gin.Context, hh *HttpApiServer) {
 		c.JSON(common.HTTP_OK, common.Error400(err0))
 		return
 	}
-	if !strings.Contains("wpa2-psk wpa3-psk", DtoCfg.Security) {
+	if !utils.SContains([]string{"wpa2-psk", "wpa3-psk"}, DtoCfg.Security) {
 		c.JSON(common.HTTP_OK,
 			common.Error(("Only support 2 valid security algorithm:wpa2-psk,wpa3-psk")))
 		return
 	}
-	if !strings.Contains("wlan0", DtoCfg.Interface) {
-		c.JSON(common.HTTP_OK,
-			common.Error(("Only support wlan0")))
+	if !utils.SContains([]string{"wlan0"}, DtoCfg.Interface) {
+		c.JSON(common.HTTP_OK, common.Error(("Only support wlan0")))
 		return
 	}
 	UbuntuVersion, err := utils.GetUbuntuVersion()
@@ -344,7 +343,7 @@ func SetEthNetwork(c *gin.Context, hh *HttpApiServer) {
 		c.JSON(common.HTTP_OK, common.Error400(err0))
 		return
 	}
-	if !strings.Contains("eth1 eth0", DtoCfg.Interface) {
+	if !utils.SContains([]string{"eth1", "eth0"}, DtoCfg.Interface) {
 		c.JSON(common.HTTP_OK,
 			common.Error(("Only have 2 valid interface:eth1 and eth0")))
 		return
