@@ -130,3 +130,26 @@ func GetSystemDevices() (SystemDevices, error) {
 	}
 	return SystemDevices, nil
 }
+
+/*
+*
+* Linux: cat /etc/os-release
+*
+*/
+func CatOsRelease() (map[string]string, error) {
+	returnMap := map[string]string{}
+	cfg, err := ini.ShadowLoad("/etc/os-release")
+	if err != nil {
+		return nil, err
+	}
+	DefaultSection, err := cfg.GetSection("DEFAULT")
+	if err != nil {
+		return nil, err
+	}
+	for _, Key := range DefaultSection.KeyStrings() {
+		V, _ := DefaultSection.GetKey(Key)
+		returnMap[Key] = V.String()
+	}
+	return returnMap, nil
+
+}
