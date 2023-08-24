@@ -18,7 +18,6 @@ package core
 import (
 	"errors"
 
-	"github.com/antonmedv/expr"
 	lua "github.com/hootrhino/gopher-lua"
 	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/typex"
@@ -39,16 +38,6 @@ func ExecuteSuccess(vm *lua.LState) (interface{}, error) {
 
 func ExecuteFailed(vm *lua.LState, arg lua.LValue) (interface{}, error) {
 	return typex.Execute(vm, FAILED_KEY, arg)
-}
-
-/*
-*
-* Execute Expression
-* https://expr.medv.io/docs/Getting-Started
-*
- */
-func ExecuteExpression(rule *typex.Rule, env map[string]interface{}) (interface{}, error) {
-	return expr.Run(rule.ExprVM, env)
 }
 
 /*
@@ -82,9 +71,9 @@ func ExecuteActions(rule *typex.Rule, arg lua.LValue) (lua.LValue, error) {
 		glogger.GLogger.Warn("Rule has stopped:" + rule.UUID)
 		return lua.LNil, nil
 
-	} else {
-		return nil, errors.New("'Actions' not a lua table or not exist")
 	}
+	return nil, errors.New("'Actions' not a lua table or not exist")
+
 }
 
 // VerifyLuaSyntax Verify Lua Syntax
@@ -139,19 +128,5 @@ func VerifyLuaSyntax(r *typex.Rule) error {
 	r.LuaVM.DoString(r.Success)
 	r.LuaVM.DoString(r.Actions)
 	r.LuaVM.DoString(r.Failed)
-	return nil
-}
-
-/*
-*
-* 验证expr表达式的语法
-*
- */
-func VerifyExprSyntax(r *typex.Rule) error {
-	env := map[string]interface{}{}
-	_, err := expr.Compile(r.Expression, expr.Env(env))
-	if err != nil {
-		return err
-	}
 	return nil
 }

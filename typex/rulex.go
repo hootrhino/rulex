@@ -33,13 +33,7 @@ type RuleX interface {
 	// 启动规则引擎
 	//
 	Start() *RulexConfig
-	//
-	// 消息推到队列
-	//
-	PushQueue(QueueData) error
-	PushInQueue(in *InEnd, data string) error
-	PushOutQueue(out *OutEnd, data string) error
-	PushDeviceQueue(device *Device, data string) error
+
 	//
 	// 执行任务
 	//
