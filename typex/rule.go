@@ -1,8 +1,6 @@
 package typex
 
 import (
-	"github.com/antonmedv/expr"
-	"github.com/antonmedv/expr/vm"
 	lua "github.com/hootrhino/gopher-lua"
 )
 
@@ -20,52 +18,20 @@ const RULE_RUNNING RuleStatus = 1
 
 // 规则描述
 type Rule struct {
-	Id         string     `json:"id"`
-	UUID       string     `json:"uuid"`
-	Type       string     `json:"type"` // 脚本类型，目前支持"lua"和"expr"两种
-	Status     RuleStatus `json:"status"`
-	Name       string     `json:"name"`
-	FromSource []string   `json:"fromSource"` // 来自数据源
-	FromDevice []string   `json:"fromDevice"` // 来自设备
-	Actions    string     `json:"actions"`
-	// 0.5 新增功能：支持另一种脚本来筛选数据:https://github.com/antonmedv/expr
-	// 该字段只有在Type=="expr"的时候有效
-	Expression  string      `json:"expression"` // Expr脚本
+	Id          string      `json:"id"`
+	UUID        string      `json:"uuid"`
+	Type        string      `json:"type"` // 脚本类型，目前支持"lua"
+	Status      RuleStatus  `json:"status"`
+	Name        string      `json:"name"`
+	FromSource  []string    `json:"fromSource"` // 来自数据源
+	FromDevice  []string    `json:"fromDevice"` // 来自设备
+	Actions     string      `json:"actions"`
 	Success     string      `json:"success"`
 	Failed      string      `json:"failed"`
 	Description string      `json:"description"`
 	LuaVM       *lua.LState `json:"-"` // Lua VM
-	ExprVM      *vm.Program `json:"-"` // Expr Vm
 }
 
-func NewExprRule(e RuleX,
-	uuid string,
-	name string,
-	Type string,
-	Expression string,
-	description string,
-	fromSource []string,
-	fromDevice []string,
-	success string,
-	actions string,
-	failed string) *Rule {
-	rule := NewRule(e,
-		uuid,
-		name,
-		description,
-		fromSource,
-		fromDevice,
-		success,
-		actions,
-		failed)
-	rule.Type = "expr"
-	program, err := expr.Compile(Expression, expr.Env(map[string]interface{}{}))
-	if err != nil {
-		panic(err)
-	}
-	rule.ExprVM = program
-	return rule
-}
 func NewLuaRule(e RuleX,
 	uuid string,
 	name string,

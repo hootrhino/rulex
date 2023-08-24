@@ -28,6 +28,7 @@ import (
 	"github.com/hootrhino/rulex/core"
 	"github.com/hootrhino/rulex/device"
 	"github.com/hootrhino/rulex/glogger"
+	"github.com/hootrhino/rulex/interqueue"
 	"github.com/hootrhino/rulex/source"
 	"github.com/hootrhino/rulex/target"
 	"github.com/hootrhino/rulex/trailer"
@@ -76,6 +77,8 @@ func NewRuleEngine(config typex.RulexConfig) typex.RuleX {
 	re.AppStack = appstack.NewAppStack(re)
 	// current only support Internal ai
 	re.AiBaseRuntime = aibase.NewAIRuntime(re)
+	// Queue
+	interqueue.InitDataCacheQueue(re, core.GlobalConfig.MaxQueueSize)
 	return re
 }
 func (e *RuleEngine) GetMetricStatistics() *typex.MetricStatistics {
@@ -85,78 +88,18 @@ func (e *RuleEngine) GetAiBase() typex.XAiRuntime {
 	return e.AiBaseRuntime
 }
 func (e *RuleEngine) Start() *typex.RulexConfig {
-	typex.StartQueue(core.GlobalConfig.MaxQueueSize)
 	e.InitDeviceTypeManager()
 	e.InitSourceTypeManager()
 	e.InitTargetTypeManager()
+	// 内部队列
+	interqueue.InitDataCacheQueue(e, core.GlobalConfig.MaxQueueSize)
+	interqueue.StartDataCacheQueue()
+	interqueue.InitInteractQueue(e, core.GlobalConfig.MaxQueueSize)
+	interqueue.StartInteractQueue()
+	// 前后交互组件
+	core.InitWebDataPipe(e)
+	go core.StartWebDataPipe()
 	return e.Config
-}
-
-func (e *RuleEngine) PushQueue(qd typex.QueueData) error {
-	err := typex.DefaultDataCacheQueue.Push(qd)
-	if err != nil {
-		glogger.GLogger.Error("PushQueue error:", err)
-		e.MetricStatistics.IncInFailed()
-	} else {
-		e.MetricStatistics.IncIn()
-	}
-	return err
-}
-func (e *RuleEngine) PushInQueue(in *typex.InEnd, data string) error {
-	qd := typex.QueueData{
-		E:    e,
-		I:    in,
-		O:    nil,
-		Data: data,
-	}
-	err := typex.DefaultDataCacheQueue.Push(qd)
-	if err != nil {
-		glogger.GLogger.Error("PushInQueue error:", err)
-		e.MetricStatistics.IncInFailed()
-	} else {
-		e.MetricStatistics.IncIn()
-	}
-	return err
-}
-
-/*
-*
-* 设备数据入流引擎
-*
- */
-func (e *RuleEngine) PushDeviceQueue(Device *typex.Device, data string) error {
-	qd := typex.QueueData{
-		D:    Device,
-		E:    e,
-		I:    nil,
-		O:    nil,
-		Data: data,
-	}
-	err := typex.DefaultDataCacheQueue.Push(qd)
-	if err != nil {
-		glogger.GLogger.Error("PushInQueue error:", err)
-		e.MetricStatistics.IncInFailed()
-	} else {
-		e.MetricStatistics.IncIn()
-	}
-	return err
-}
-func (e *RuleEngine) PushOutQueue(out *typex.OutEnd, data string) error {
-	qd := typex.QueueData{
-		E:    e,
-		D:    nil,
-		I:    nil,
-		O:    out,
-		Data: data,
-	}
-	err := typex.DefaultDataCacheQueue.Push(qd)
-	if err != nil {
-		glogger.GLogger.Error("PushOutQueue error:", err)
-		e.MetricStatistics.IncInFailed()
-	} else {
-		e.MetricStatistics.IncIn()
-	}
-	return err
 }
 
 func (e *RuleEngine) GetPlugins() *sync.Map {
@@ -230,7 +173,7 @@ func (e *RuleEngine) Stop() {
 
 // 核心功能: Work, 主要就是推流进队列
 func (e *RuleEngine) WorkInEnd(in *typex.InEnd, data string) (bool, error) {
-	if err := e.PushInQueue(in, data); err != nil {
+	if err := interqueue.DefaultDataCacheQueue.PushInQueue(in, data); err != nil {
 		return false, err
 	}
 	return true, nil
@@ -238,7 +181,7 @@ func (e *RuleEngine) WorkInEnd(in *typex.InEnd, data string) (bool, error) {
 
 // 核心功能: Work, 主要就是推流进队列
 func (e *RuleEngine) WorkDevice(Device *typex.Device, data string) (bool, error) {
-	if err := e.PushDeviceQueue(Device, data); err != nil {
+	if err := interqueue.DefaultDataCacheQueue.PushDeviceQueue(Device, data); err != nil {
 		return false, err
 	}
 	return true, nil
@@ -253,15 +196,6 @@ func (e *RuleEngine) RunSourceCallbacks(in *typex.InEnd, callbackArgs string) {
 	// 执行来自资源的脚本
 	for _, rule := range in.BindRules {
 		if rule.Status == typex.RULE_RUNNING {
-			if rule.Type == "expr" {
-				// 0.5 增加expr库
-				// Expr 不执行 lua 的回调脚本
-				// ENV 暂时不加库, 留到后期扩展
-				_, err := core.ExecuteExpression(&rule, map[string]interface{}{})
-				if err != nil {
-					glogger.GLogger.Error("RunLuaCallbacks error:", err)
-				}
-			}
 			if rule.Type == "lua" {
 				_, err := core.ExecuteActions(&rule, lua.LString(callbackArgs))
 				if err != nil {
@@ -290,9 +224,6 @@ func (e *RuleEngine) RunSourceCallbacks(in *typex.InEnd, callbackArgs string) {
 func (e *RuleEngine) RunDeviceCallbacks(Device *typex.Device, callbackArgs string) {
 	for _, rule := range Device.BindRules {
 		if rule.Status == typex.RULE_RUNNING {
-			if rule.Type == "expr" {
-				// 5.0 增加expr的库
-			}
 			if rule.Type == "lua" {
 				_, err := core.ExecuteActions(&rule, lua.LString(callbackArgs))
 				if err != nil {

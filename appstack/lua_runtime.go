@@ -200,5 +200,9 @@ func LoadAppLib(app *typex.Application, e typex.RuleX) {
 	//------------------------------------------------------------------------
 	addAppLib(app, e, "misc", "XOR", rulexlib.XOR(e))
 	addAppLib(app, e, "misc", "CRC16", rulexlib.CRC16(e))
+	//------------------------------------------------------------------------
+	// yqueue
+	//------------------------------------------------------------------------
+	addAppLib(app, e, "pipe", "Output", rulexlib.Output(e))
 
 }

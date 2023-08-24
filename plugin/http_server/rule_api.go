@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/hootrhino/rulex/glogger"
+	"github.com/hootrhino/rulex/interqueue"
 	common "github.com/hootrhino/rulex/plugin/http_server/common"
 	"github.com/hootrhino/rulex/plugin/http_server/model"
 	"github.com/sirupsen/logrus"
@@ -114,8 +115,8 @@ func CreateRule(c *gin.Context, hh *HttpApiServer) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	if !utils.SContains([]string{"lua", "expr"}, form.Type) {
-		c.JSON(common.HTTP_OK, common.Error(`rule type must one of 'lua' or 'expr':`+form.Type))
+	if !utils.SContains([]string{"lua"}, form.Type) {
+		c.JSON(common.HTTP_OK, common.Error(`rule type must be 'lua' but now is:`+form.Type))
 		return
 	}
 	lenSources := len(form.FromSource)
@@ -142,18 +143,12 @@ func CreateRule(c *gin.Context, hh *HttpApiServer) {
 	// tmpRule 是一个一次性的临时rule，用来验证规则，这么做主要是为了防止真实Lua Vm 被污染
 	tmpRule := typex.NewRule(nil, "_", "_", "_", []string{}, []string{},
 		form.Success, form.Actions, form.Failed)
-	if form.Type == "lua" {
-		if err := core.VerifyLuaSyntax(tmpRule); err != nil {
-			c.JSON(common.HTTP_OK, common.Error400(err))
-			return
-		}
+
+	if err := core.VerifyLuaSyntax(tmpRule); err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
 	}
-	if form.Type == "expr" {
-		if err := core.VerifyExprSyntax(tmpRule); err != nil {
-			c.JSON(common.HTTP_OK, common.Error400(err))
-			return
-		}
-	}
+
 	//
 	mRule := &model.MRule{
 		Name:        form.Name,
@@ -289,8 +284,8 @@ func UpdateRule(c *gin.Context, hh *HttpApiServer) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	if !utils.SContains([]string{"lua", "expr"}, form.Type) {
-		c.JSON(common.HTTP_OK, common.Error(`rule type must one of 'lua' or 'expr':`+form.Type))
+	if !utils.SContains([]string{"lua"}, form.Type) {
+		c.JSON(common.HTTP_OK, common.Error(`rule type must be 'lua' but now is:`+form.Type))
 		return
 	}
 	lenSources := len(form.FromSource)
@@ -318,17 +313,9 @@ func UpdateRule(c *gin.Context, hh *HttpApiServer) {
 	tmpRule := typex.NewRule(nil, "_", "_", "_", []string{}, []string{},
 		form.Success, form.Actions, form.Failed)
 
-	if form.Type == "lua" {
-		if err := core.VerifyLuaSyntax(tmpRule); err != nil {
-			c.JSON(common.HTTP_OK, common.Error400(err))
-			return
-		}
-	}
-	if form.Type == "expr" {
-		if err := core.VerifyExprSyntax(tmpRule); err != nil {
-			c.JSON(common.HTTP_OK, common.Error400(err))
-			return
-		}
+	if err := core.VerifyLuaSyntax(tmpRule); err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
 	}
 
 	if form.Type == "lua" {
@@ -578,7 +565,7 @@ func TestSourceCallback(c *gin.Context, hh *HttpApiServer) {
 	glogger.GLogger.WithFields(logrus.Fields{
 		"topic": "rule/test/" + form.UUID,
 	}).Debug(form.TestData)
-	err1 := hh.ruleEngine.PushInQueue(inend, form.TestData)
+	err1 := interqueue.DefaultDataCacheQueue.PushInQueue(inend, form.TestData)
 	if err1 != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err1))
 		return
@@ -610,7 +597,7 @@ func TestOutEndCallback(c *gin.Context, hh *HttpApiServer) {
 	glogger.GLogger.WithFields(logrus.Fields{
 		"topic": "rule/test/" + form.UUID,
 	}).Debug(form.TestData)
-	err1 := hh.ruleEngine.PushOutQueue(outend, form.TestData)
+	err1 := interqueue.DefaultDataCacheQueue.PushOutQueue(outend, form.TestData)
 	if err1 != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err1))
 		return
@@ -641,7 +628,7 @@ func TestDeviceCallback(c *gin.Context, hh *HttpApiServer) {
 		c.JSON(common.HTTP_OK, common.Error(fmt.Sprintf("'Device' not exists: %v", form.UUID)))
 		return
 	}
-	err1 := hh.ruleEngine.PushDeviceQueue(device, form.TestData)
+	err1 := interqueue.DefaultDataCacheQueue.PushDeviceQueue(device, form.TestData)
 	if err1 != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err1))
 		return
