@@ -21,6 +21,7 @@ jobs:
                gcc-mingw-w64-x86-64 \
                gcc-arm-linux-gnueabi \
                gcc-mips-linux-gnu \
+               gcc-mingw-w64 \
                gcc-aarch64-linux-gnu -y
           curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -
           sudo apt-get install -y nodejs

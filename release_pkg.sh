@@ -5,16 +5,20 @@ RESPOSITORY="https://github.com/hootrhino"
 
 #
 create_pkg() {
-    VERSION=$(git describe --tags --always --abbrev=0)
-    echo "Create package: ${rulex-$1-${VERSION}}"
-    zip -r _release/rulex-$1-${VERSION}.zip \
-    ./rulex-$1 \
-    ./script/setup.sh \
-    ./script/run.sh \
-    ./script/stop.sh \
-    ./LICENSE \
-    ./conf/rulex.ini
+    local target=$1
+    local version=$(git describe --tags --always --abbrev=0)
+    local release_dir="_release"
+    local pkg_name="rulex-$target-$version.zip"
+    local files_to_include="./rulex-$target.exe ./LICENSE ./conf/rulex.ini"
+
+    if [[ "$target" != "windows" ]]; then
+        files_to_include="$files_to_include ./script/setup.sh ./script/run.sh ./script/stop.sh"
+    fi
+
+    echo "Create package: $pkg_name"
+    zip -r "$release_dir/$pkg_name" $files_to_include
 }
+
 
 #
 make_zip() {
@@ -27,6 +31,9 @@ make_zip() {
 
 }
 
+build_windows() {
+    make windows
+}
 build_x64linux() {
     make x64linux
 }
@@ -48,7 +55,7 @@ build_mips32linux() {
 }
 #------------------------------------------
 cross_compile() {
-    ARCHS=("x64linux" "arm64linux" "arm32linux")
+    ARCHS=("windows" "x64linux" "arm64linux" "arm32linux")
     if [ ! -d "./_release/" ]; then
         mkdir -p ./_release/
     else
@@ -57,11 +64,15 @@ cross_compile() {
     fi
     for arch in ${ARCHS[@]}; do
         echo -e "\033[34m [★] Compile target =>\033[43;34m ["$arch"]. \033[0m"
+        if [[ "${arch}" == "windows" ]]; then
+            build_windows $arch
+            make_zip $arch
+            echo -e "\033[33m [√] Compile target => ["$arch"] Ok. \033[0m"
+        fi
         if [[ "${arch}" == "x86linux" ]]; then
             build_x86linux $arch
             make_zip $arch
             echo -e "\033[33m [√] Compile target => ["$arch"] Ok. \033[0m"
-
         fi
         if [[ "${arch}" == "x64linux" ]]; then
             build_x64linux $arch
@@ -143,7 +154,7 @@ init_env() {
 # 检查是否安装了这些软件
 #
 check_cmd() {
-    DEPS=("git" "jq" "gcc" "make")
+    DEPS=("bash" "git" "jq" "gcc" "make" "x86_64-w64-mingw32-gcc")
     for dep in ${DEPS[@]}; do
         echo -e "\033[34m [*] Check dependcy command: $dep. \033[0m"
         if ! [ -x "$(command -v $dep)" ]; then
@@ -162,6 +173,6 @@ check_cmd
 init_env
 cp -r $(ls | egrep -v '^_build$') ./_build/
 cd ./_build/
-fetch_dashboard
+# fetch_dashboard
 cross_compile
 gen_changelog
