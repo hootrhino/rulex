@@ -1,15 +1,13 @@
 package archsupport
 
-import "fmt"
-
 /*
 *
-* Linux 特定实现
+* Windows 不支持 特定实现
 *
  */
 
 func init() {
-	fmt.Println("WKYS805 RGB GPIO not support Windows")
+	//fmt.Println("WKYS805 RGB GPIO not support Windows")
 }
 
 /*

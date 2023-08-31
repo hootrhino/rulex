@@ -535,7 +535,7 @@ func (e *RuleEngine) InitDeviceTypeManager() error {
 	e.DeviceTypeManager.Register(typex.GENERIC_AIS,
 		&typex.XConfig{
 			Engine:    e,
-			NewDevice: device.NewAISDevice,
+			NewDevice: device.NewAISDeviceMaster,
 		},
 	)
 	e.DeviceTypeManager.Register(typex.GENERIC_BACNET_IP,
