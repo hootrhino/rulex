@@ -15,7 +15,6 @@
 #!/bin/bash
 #!/bin/bash
 
-# 定义变量
 service_file="/etc/systemd/system/rulex.service"
 zip_file="app.zip"
 extracted_folder="extracted_files"

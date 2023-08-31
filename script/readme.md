@@ -1,20 +1,4 @@
-<!--
- Copyright (C) 2023 wwhai
-
- This program is free software: you can redistribute it and/or modify
- it under the terms of the GNU Affero General Public License as
- published by the Free Software Foundation, either version 3 of the
- License, or (at your option) any later version.
-
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU Affero General Public License for more details.
-
- You should have received a copy of the GNU Affero General Public License
- along with this program.  If not, see <http://www.gnu.org/licenses/>.
--->
-
+## Linux script
 下面是一个示例的 Linux 守护进程脚本，用于管理名为 "rulex" 的程序。这个脚本可以启动、停止、重启和检查程序的状态。
 
 ```bash
@@ -106,3 +90,46 @@ chmod +x rulex_daemon.sh
   ```
 
 请根据实际情况进行适当的调整，并确保你了解每个函数的作用。
+
+## Systemctl
+Systemctl是Ubuntu系自带的进程管理器，这也是大部分人能接触到的最简单的一种，下面给出个示例。
+1. 配置脚本
+    ```ini
+    [Unit]
+    Description=rulex
+    After=network-online.target rc-local.service nss-user-lookup.target
+    Wants=network-online.target
+
+    [Service]
+    User=root
+    Type=simple
+    WorkingDirectory=/usr/local/rulexapp
+    ExecStart=/usr/local/rulexapp/rulex
+    Restart=on-failure
+    RestartSec=5s
+    [Install]
+    WantedBy=multi-user.target
+
+    ```
+2. 操作指令
+    ```sh
+    sudo systemctl start rulex
+    sudo systemctl enable rulex
+    sudo systemctl status rulex
+    ```
+
+## Linux 原生脚本
+Linux 原生脚本一半放在 `/etc/network/interfaces.d`目录下。
+```sh
+#! /bin/sh
+APP_NAME="/root/rulex"
+while true; do
+    APP_PROCESS_COUNT=`ps aux | grep ${APP_NAME} | grep -v grep |wc -l`
+    if [ "${APP_PROCESS_COUNT}" -lt "1" ];then
+        ${APP_NAME} -c 1 &
+        elif [ "${APP_PROCESS_COUNT}" -gt "1" ];then
+        killall -9 $APP_NAME
+    fi
+    sleep 5
+done
+```
