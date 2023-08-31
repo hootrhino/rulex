@@ -33,6 +33,42 @@ AIS报文的前导部分是位于报文开头的一部分，它通常包含了�
 
 需要注意的是，前导部分的含义和格式可以因特定的应用、系统或设备而有所不同。为了准确理解前导部分的含义，建议参考相关的应用或系统文档，或联系相关的设备制造商或开发者以获取详细信息。
 
+## 消息类型
+AIS（Automatic Identification System）是一种用于船舶自动识别和通信的系统，它可以通过无线电信号在船舶之间传递信息。以下是一些常见的AIS消息类型及其示例：
+
+1. **位置报告消息 (Position Report)**:
+   - 消息类型: 1, 2, 3
+   - 示例: `!AIVDM,1,1,,A,13aG;2P001G?U<jDUBEP1wUoP06,0*54`
+
+2. **静态和船位信息消息 (Static and Voyage-Related Data)**:
+   - 消息类型: 5, 24
+   - 示例: `!AIVDM,2,1,2,B,55MsP00kLC7L7R?v8d4d<fn` 或 `!AIVDM,1,1,,B,H3OUnT@0T3Uto9w`
+
+3. **航行状态消息 (Voyage-Related Data)**:
+   - 消息类型: 5, 24
+   - 示例: `!AIVDM,2,1,2,B,55MsP00kLC7L7R?v8d4d<fn` 或 `!AIVDM,1,1,,B,H3OUnT@0T3Uto9w`
+
+4. **标准地区通知消息 (Standard SAR Aircraft Position Report)**:
+   - 消息类型: 9
+   - 示例: `!AIVDM,1,1,,A,963OwjP000G?P0bEmoV00000000,0*7A`
+
+5. **AIS Base Station Broadcast消息**:
+   - 消息类型: 4
+   - 示例: `!AIVDM,1,1,,B,400jlu?P00G@0pQKWs6QGwvL0H0;,0*7F`
+
+6. **AIS Binary Message消息**:
+   - 消息类型: 6
+   - 示例: `!AIVDM,1,1,,A,63Rjpm0<1` 或 `!AIVDM,1,1,,A,8D5Mm9h0,2*5F`
+
+7. **AIS Broadcast消息**:
+   - 消息类型: 14
+   - 示例: `!AIVDM,1,1,,A,H4aOvj0026aIpj`:
+
+8. **目标状态消息 (Safety-Related Message)**:
+   - 消息类型: 18
+   - 示例: `!AIVDM,1,1,,A,853OvPP02F91ACPFJ5Dr:0<4h@E`
+
+以上只是一些常见的AIS消息类型及其示例。实际上，AIS有多种不同类型的消息，每种消息类型都包含特定的信息，例如船舶位置、速度、航向、船名等。消息的格式和字段根据AIS规范进行编码。
 ## 配置
 本插件是基于TCP来传输AIS报文，公共配置如下：
 ```go
