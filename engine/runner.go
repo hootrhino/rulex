@@ -140,51 +140,37 @@ func loadPlugin(engine typex.RuleX) {
 	sections := cfg.ChildSections("plugin")
 	for _, section := range sections {
 		name := strings.TrimPrefix(section.Name(), "plugin.")
-		key, err1 := section.GetKey("enable")
-		if err1 != nil {
-			glogger.GLogger.Error(err1)
-			continue
+		enable, err := section.GetKey("enable")
+		if err != nil {
+			glogger.GLogger.Fatal(err)
 		}
-		enable, err2 := key.Bool()
-		if err2 != nil {
-			glogger.GLogger.Error(err2)
-			continue
-		}
-		if !enable {
+		if !enable.MustBool(false) {
 			glogger.GLogger.Warnf("Plugin is disable:%s", name)
 			continue
 		}
 		var plugin typex.XPlugin
 		if name == "mqtt_server" {
 			plugin = mqttserver.NewMqttServer()
-			goto lab
 		}
 		if name == "usbmonitor" {
 			plugin = usbmonitor.NewUsbMonitor()
-			goto lab
 		}
 		if name == "icmpsender" {
 			plugin = icmpsender.NewICMPSender()
-			goto lab
 		}
 		if name == "netdiscover" {
 			plugin = netdiscover.NewNetDiscover()
-			goto lab
 		}
 		if name == "modbus_scanner" {
 			plugin = modbusscanner.NewModbusScanner()
-			goto lab
 		}
 		if name == "ttyd" {
 			plugin = ttyterminal.NewWebTTYPlugin()
-			goto lab
-		} else {
-			continue
 		}
-	lab:
-		if err := engine.LoadPlugin(section.Name(), plugin); err != nil {
-			glogger.GLogger.Error(err)
-			return
+		if plugin != nil {
+			if err := engine.LoadPlugin(section.Name(), plugin); err != nil {
+				glogger.GLogger.Error(err)
+			}
 		}
 	}
 }
