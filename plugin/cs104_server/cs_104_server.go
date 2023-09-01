@@ -93,7 +93,7 @@ func (cs *cs104Server) PluginMetaInfo() typex.XPluginMetaInfo {
 	return typex.XPluginMetaInfo{
 		UUID:     cs.uuid,
 		Name:     "IEC104 server Plugin",
-		Version:  "0.0.1",
+		Version:  "v0.0.1",
 		Homepage: "https://hootrhino.github.io",
 		HelpLink: "https://hootrhino.github.io",
 		Author:   "wwhai",

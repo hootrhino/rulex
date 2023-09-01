@@ -36,7 +36,7 @@ func PluginService(c *gin.Context, hh *HttpApiServer) {
 		c.JSON(common.HTTP_OK, common.OkWithData(result.Out))
 		return
 	}
-	c.JSON(common.HTTP_OK, common.Error("plugin not exists"))
+	c.JSON(common.HTTP_OK, common.Error("plugin not exists:"+form.UUID))
 }
 
 /*

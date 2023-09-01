@@ -91,7 +91,7 @@ func (hh *WebTTYPlugin) PluginMetaInfo() typex.XPluginMetaInfo {
 	return typex.XPluginMetaInfo{
 		UUID:     hh.uuid,
 		Name:     "WebTTYPlugin",
-		Version:  "0.0.1",
+		Version:  "v0.0.1",
 		Homepage: "https://github.com/tsl0922/ttyd",
 		HelpLink: "https://github.com/tsl0922/ttyd",
 		Author:   "wwhai",

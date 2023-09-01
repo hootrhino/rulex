@@ -45,7 +45,7 @@ func (hh *SensorServer) PluginMetaInfo() typex.XPluginMetaInfo {
 	return typex.XPluginMetaInfo{
 		UUID:     hh.uuid,
 		Name:     "GenericSensorServer",
-		Version:  "0.0.1",
+		Version:  "v0.0.1",
 		Homepage: "https://hootrhino.github.io",
 		HelpLink: "https://hootrhino.github.io",
 		Author:   "wwhai",
