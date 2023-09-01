@@ -50,11 +50,31 @@ func init() {
 explain:init all gpio
 */
 func _EEKIT_GPIOAllInit() int {
-	_EEKIT_GPIOInit(eekit_DO1, eekit_Out)
-	_EEKIT_GPIOInit(eekit_DO2, eekit_Out)
-	_EEKIT_GPIOInit(eekit_DI1, eekit_In)
-	_EEKIT_GPIOInit(eekit_DI2, eekit_In)
-	_EEKIT_GPIOInit(eekit_DI3, eekit_In)
+	gpio6 := "/sys/class/gpio/gpio6/value"
+	gpio7 := "/sys/class/gpio/gpio7/value"
+	gpio8 := "/sys/class/gpio/gpio8/value"
+	gpio9 := "/sys/class/gpio/gpio9/value"
+	gpio10 := "/sys/class/gpio/gpio10/value"
+	_, err1 := os.Stat(gpio6)
+	_, err2 := os.Stat(gpio7)
+	_, err3 := os.Stat(gpio8)
+	_, err4 := os.Stat(gpio9)
+	_, err5 := os.Stat(gpio10)
+	if err1 != nil {
+		_EEKIT_GPIOInit(eekit_DO1, eekit_Out)
+	}
+	if err2 != nil {
+		_EEKIT_GPIOInit(eekit_DO2, eekit_Out)
+	}
+	if err3 != nil {
+		_EEKIT_GPIOInit(eekit_DI1, eekit_In)
+	}
+	if err4 != nil {
+		_EEKIT_GPIOInit(eekit_DI2, eekit_In)
+	}
+	if err5 != nil {
+		_EEKIT_GPIOInit(eekit_DI3, eekit_In)
+	}
 	// 返回值无用
 	return 1
 }

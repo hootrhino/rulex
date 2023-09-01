@@ -1,4 +1,3 @@
----@diagnostic disable: undefined-global
 -- Copyright (C) 2023 wwhai
 --
 -- This program is free software: you can redistribute it and/or modify
@@ -14,22 +13,17 @@
 -- You should have received a copy of the GNU Affero General Public License
 -- along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-AppNAME = "每1000ms交替式控制DO"
-AppVERSION = "1.0.0"
-AppDESCRIPTION = ""
---
--- Main
---
-
 function Main(arg)
-    local gpio = { 6, 7 }
     while true do
-        for _, value in ipairs(gpio) do
-            eekith3:GPIOSet(value, 0)
-            applib:Sleep(1000)
-            eekith3:GPIOSet(value, 1)
-            applib:Sleep(1000)
-        end
+        eekith3:H3DO1Set(0)
+        applib:Sleep(1000)
+        eekith3:H3DO1Set(1)
+        applib:Sleep(1000)
+        --
+        eekith3:H3DO2Set(1)
+        applib:Sleep(1000)
+        eekith3:H3DO2Set(0)
+        applib:Sleep(1000)
     end
     return 0
 end

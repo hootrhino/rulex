@@ -44,3 +44,47 @@ func EEKIT_GPIOSet(rx typex.RuleX) func(*lua.LState) int {
 		return 1
 	}
 }
+
+/*
+*
+*  DI1(0/1)
+*
+ */
+func H3DO1Set(rx typex.RuleX) func(*lua.LState) int {
+	return func(l *lua.LState) int {
+		value := l.ToNumber(2)
+		if value == 0 || value == 1 {
+			_, e := vendor3rd.EEKIT_GPIOSet(6, int(value))
+			if e != nil {
+				l.Push(lua.LString(e.Error()))
+			} else {
+				l.Push(lua.LNil)
+			}
+		} else {
+			l.Push(lua.LString("DO1 Only can set '0' or '1'."))
+		}
+		return 1
+	}
+}
+
+/*
+*
+* DI2(0/1)
+*
+ */
+func H3DO2Set(rx typex.RuleX) func(*lua.LState) int {
+	return func(l *lua.LState) int {
+		value := l.ToNumber(2)
+		if value == 0 || value == 1 {
+			_, e := vendor3rd.EEKIT_GPIOSet(7, int(value))
+			if e != nil {
+				l.Push(lua.LString(e.Error()))
+			} else {
+				l.Push(lua.LNil)
+			}
+		} else {
+			l.Push(lua.LString("DO2 Only can set '0' or '1'."))
+		}
+		return 1
+	}
+}

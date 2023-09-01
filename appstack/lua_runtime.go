@@ -35,29 +35,29 @@ func ValidateLuaSyntax(bytes []byte) error {
 	if err := tempVm.DoString(string(bytes)); err != nil {
 		return err
 	}
-	// 检查名称
-	AppNAME := tempVm.GetGlobal("AppNAME")
-	if AppNAME == nil {
-		return fmt.Errorf("'AppNAME' field not exists")
-	}
-	if AppNAME.Type() != lua.LTString {
-		return fmt.Errorf("'AppNAME' must be string")
-	}
-	// 检查类型
-	AppVERSION := tempVm.GetGlobal("AppVERSION")
-	if AppVERSION == nil {
-		return fmt.Errorf("'AppVERSION' field not exists")
-	}
-	if AppVERSION.Type() != lua.LTString {
-		return fmt.Errorf("'AppVERSION' must be string")
-	}
-	// 检查描述信息
-	AppDESCRIPTION := tempVm.GetGlobal("AppDESCRIPTION")
-	if AppDESCRIPTION == nil {
-		if AppDESCRIPTION.Type() != lua.LTString {
-			return fmt.Errorf("'AppDESCRIPTION' must be string")
-		}
-	}
+	// // 检查名称
+	// AppNAME := tempVm.GetGlobal("AppNAME")
+	// if AppNAME == nil {
+	// 	return fmt.Errorf("'AppNAME' field not exists")
+	// }
+	// if AppNAME.Type() != lua.LTString {
+	// 	return fmt.Errorf("'AppNAME' must be string")
+	// }
+	// // 检查类型
+	// AppVERSION := tempVm.GetGlobal("AppVERSION")
+	// if AppVERSION == nil {
+	// 	return fmt.Errorf("'AppVERSION' field not exists")
+	// }
+	// if AppVERSION.Type() != lua.LTString {
+	// 	return fmt.Errorf("'AppVERSION' must be string")
+	// }
+	// // 检查描述信息
+	// AppDESCRIPTION := tempVm.GetGlobal("AppDESCRIPTION")
+	// if AppDESCRIPTION == nil {
+	// 	if AppDESCRIPTION.Type() != lua.LTString {
+	// 		return fmt.Errorf("'AppDESCRIPTION' must be string")
+	// 	}
+	// }
 
 	// 检查函数入口
 	AppMain := tempVm.GetGlobal("Main")
@@ -189,10 +189,13 @@ func LoadAppLib(app *typex.Application, e typex.RuleX) {
 	// EEKIT H3
 	addAppLib(app, e, "eekith3", "GPIOGet", rulexlib.EEKIT_GPIOGet(e))
 	addAppLib(app, e, "eekith3", "GPIOSet", rulexlib.EEKIT_GPIOSet(e))
+	// DO1 DO2
+	addAppLib(app, e, "eekith3", "H3DO1Set", rulexlib.H3DO1Set(e))
+	addAppLib(app, e, "eekith3", "H3DO2Set", rulexlib.H3DO2Set(e))
 	// 树莓派4B
 	addAppLib(app, e, "raspi4b", "GPIOGet", rulexlib.RASPI4_GPIOGet(e))
 	addAppLib(app, e, "raspi4b", "GPIOSet", rulexlib.RASPI4_GPIOSet(e))
-	// 玩客云WS1508
+	// 玩客云WS1608
 	addAppLib(app, e, "ws1608", "GPIOGet", rulexlib.WKYWS1608_GPIOGet(e))
 	addAppLib(app, e, "ws1608", "GPIOSet", rulexlib.WKYWS1608_GPIOSet(e))
 	//------------------------------------------------------------------------
