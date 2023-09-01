@@ -161,7 +161,7 @@ func (usbm *usbMonitor) PluginMetaInfo() typex.XPluginMetaInfo {
 	return typex.XPluginMetaInfo{
 		UUID:     usbm.uuid,
 		Name:     "USB Monitor",
-		Version:  "0.0.1",
+		Version:  "v0.0.1",
 		Homepage: "https://hootrhino.github.io",
 		HelpLink: "https://hootrhino.github.io",
 		Author:   "wwhai",

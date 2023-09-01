@@ -39,7 +39,7 @@ func (usbm *usbMonitor) PluginMetaInfo() typex.XPluginMetaInfo {
 	return typex.XPluginMetaInfo{
 		UUID:     usbm.uuid,
 		Name:     "USB Monitor",
-		Version:  "0.0.1",
+		Version:  "v0.0.1",
 		Homepage: "https://github.com/hootrhino/rulex.git",
 		HelpLink: "https://github.com/hootrhino/rulex.git",
 		Author:   "wwhai",

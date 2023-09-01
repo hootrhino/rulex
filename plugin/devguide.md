@@ -78,7 +78,7 @@ func (hh *DemoPlugin) PluginMetaInfo() typex.XPluginMetaInfo {
 	return typex.XPluginMetaInfo{
 		UUID:     hh.uuid,
 		Name:     "DemoPlugin",
-		Version:  "0.0.1",
+		Version:  "v0.0.1",
 		Homepage: "https://hootrhino.github.io",
 		HelpLink: "https://hootrhino.github.io",
 		Author:   "wwhai",

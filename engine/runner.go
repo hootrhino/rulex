@@ -21,6 +21,7 @@ import (
 	"strings"
 	"syscall"
 
+	modbusscanner "github.com/hootrhino/rulex/plugin/modbus_scanner"
 	mqttserver "github.com/hootrhino/rulex/plugin/mqtt_server"
 	netdiscover "github.com/hootrhino/rulex/plugin/net_discover"
 	ttyterminal "github.com/hootrhino/rulex/plugin/ttyd_terminal"
@@ -150,7 +151,7 @@ func loadPlugin(engine typex.RuleX) {
 			continue
 		}
 		if !enable {
-			glogger.GLogger.Infof("Plugin is not enable:%s", name)
+			glogger.GLogger.Warnf("Plugin is disable:%s", name)
 			continue
 		}
 		var plugin typex.XPlugin
@@ -168,6 +169,10 @@ func loadPlugin(engine typex.RuleX) {
 		}
 		if name == "netdiscover" {
 			plugin = netdiscover.NewNetDiscover()
+			goto lab
+		}
+		if name == "modbus_scanner" {
+			plugin = modbusscanner.NewModbusScanner()
 			goto lab
 		}
 		if name == "ttyd" {
