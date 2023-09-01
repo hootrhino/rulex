@@ -16,6 +16,8 @@
 package modbusscanner
 
 import (
+	"context"
+	"encoding/binary"
 	"encoding/json"
 	"fmt"
 	"time"
@@ -32,23 +34,35 @@ import (
 * CRC 计算
 *
  */
-func calculateCRC(data []byte) [2]byte {
-	poly := uint16(0x8005)
-	// CRC-16 多项式
-	crc := uint16(0xFFFF) // 初始值为全 1
-	for _, b := range data {
-		crc ^= uint16(b) // 按位异或
-		for i := 0; i < 8; i++ {
-			if crc&0x0001 == 0x0001 {
-				crc >>= 1
 
-				crc ^= poly
-			} else {
-				crc >>= 1
+/*
+*
+* CRC 计算
+*
+ */
+
+func calculateCRC16(data []byte) uint16 {
+	var crc uint16 = 0xFFFF
+
+	for _, b := range data {
+		crc ^= uint16(b)
+
+		for i := 0; i < 8; i++ {
+			lsb := crc & 0x0001
+			crc >>= 1
+
+			if lsb == 1 {
+				crc ^= 0xA001 // 0xA001 是Modbus CRC16多项式的表示
 			}
 		}
 	}
-	return [2]byte{byte(crc & 0xFF), byte((crc >> 8) & 0xFF)}
+
+	return crc
+}
+func uint16ToBytes(val uint16) [2]byte {
+	bytes := [2]byte{}
+	binary.LittleEndian.PutUint16(bytes[:], val)
+	return bytes
 }
 
 /*
@@ -58,9 +72,16 @@ func calculateCRC(data []byte) [2]byte {
  */
 func (cs *modbusScanner) Service(arg typex.ServiceArg) typex.ServiceResult {
 	if cs.busying {
+		if arg.Name == "stop" {
+			if cs.cancel != nil {
+				cs.cancel()
+				cs.busying = false
+				return typex.ServiceResult{Out: "Stop Success"}
+			}
+		}
 		return typex.ServiceResult{Out: "Modbus Scanner Busing now"}
 	}
-	// 配置
+
 	if arg.Name == "scan" {
 		cs.busying = true
 		switch s := arg.Args.(type) {
@@ -68,9 +89,11 @@ func (cs *modbusScanner) Service(arg typex.ServiceArg) typex.ServiceResult {
 			{
 				err := json.Unmarshal([]byte(s), &cs.UartConfig)
 				if err != nil {
+					cs.busying = false
 					return typex.ServiceResult{Out: err.Error()}
 				}
 				if !utils.SContains([]string{"N", "E", "O"}, cs.UartConfig.Parity) {
+					cs.busying = false
 					return typex.ServiceResult{Out: "parity value only one of 'N','O','E'"}
 				}
 				config := serial.Config{
@@ -79,23 +102,27 @@ func (cs *modbusScanner) Service(arg typex.ServiceArg) typex.ServiceResult {
 					DataBits: cs.UartConfig.DataBits,
 					Parity:   cs.UartConfig.Parity,
 					StopBits: cs.UartConfig.StopBits,
-					Timeout:  time.Duration(cs.UartConfig.Timeout) * time.Second,
+					Timeout:  1 * time.Second,
 				}
 				serialPort, err := serial.Open(&config)
 				if err != nil {
 					glogger.GLogger.WithFields(logrus.Fields{
 						"topic": "plugin/ModbusScanner/" + cs.uuid,
 					}).Info("Serial port open failed:", err)
+					cs.busying = false
 					return typex.ServiceResult{Out: err.Error()}
 				}
+				ctx, cancel := context.WithCancel(typex.GCTX)
+				cs.ctx = ctx
+				cs.cancel = cancel
 				go func(p serial.Port, cs *modbusScanner) {
 					defer p.Close()
 					defer func() {
 						cs.busying = false
 					}()
-					for i := 0; i <= 255; i++ {
+					for i := 1; i <= 255; i++ {
 						select {
-						case <-typex.GCTX.Done():
+						case <-cs.ctx.Done():
 							{
 								return
 							}
@@ -107,25 +134,29 @@ func (cs *modbusScanner) Service(arg typex.ServiceArg) typex.ServiceResult {
 							"topic": "plugin/ModbusScanner/" + cs.uuid,
 						}).Info(fmt.Sprintf("Start Scan Addr [%v]", i))
 						test_data := [8]byte{byte(i), 0x03, 0x00, 0x00, 0x00, 0x01, 0, 0}
-						crc16 := calculateCRC(test_data[:6])
-						test_data[6] = crc16[1]
-						test_data[7] = crc16[0]
+						crc16 := uint16ToBytes(calculateCRC16(test_data[:6]))
+						test_data[6] = crc16[0]
+						test_data[7] = crc16[1]
+						glogger.GLogger.WithFields(logrus.Fields{
+							"topic": "plugin/ModbusScanner/" + cs.uuid,
+						}).Info("Send test packet:", test_data)
 						_, err := serialPort.Write(test_data[:])
 						if err != nil {
 							glogger.GLogger.WithFields(logrus.Fields{
 								"topic": "plugin/ModbusScanner/" + cs.uuid,
-							}).Info("Serial port write error:", err)
+							}).Error("Serial port write error:", err)
 							continue
 						}
-						received_buffer := []byte{}
-						n, err := serialPort.Read(received_buffer)
+						time.Sleep(300 * time.Millisecond)
+						received_buffer := [6]byte{}
+						n, err := serialPort.Read(received_buffer[:])
 						if err != nil {
 							glogger.GLogger.WithFields(logrus.Fields{
 								"topic": "plugin/ModbusScanner/" + cs.uuid,
-							}).Info("Serial port read error:", err)
+							}).Error("Serial port read error:", err)
 							continue
 						}
-						if n == 6 {
+						if n > 0 {
 							glogger.GLogger.WithFields(logrus.Fields{
 								"topic": "plugin/ModbusScanner/" + cs.uuid,
 							}).Info(fmt.Sprintf("Addr [%d] Receive response:%v",
@@ -136,8 +167,9 @@ func (cs *modbusScanner) Service(arg typex.ServiceArg) typex.ServiceResult {
 				}(serialPort, cs)
 			}
 		default:
+			cs.busying = false
 			return typex.ServiceResult{Out: "Invalid Uart config"}
 		}
 	}
-	return typex.ServiceResult{}
+	return typex.ServiceResult{Out: "Success"}
 }

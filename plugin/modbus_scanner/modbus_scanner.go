@@ -16,6 +16,8 @@
 package modbusscanner
 
 import (
+	"context"
+
 	"github.com/hootrhino/rulex/typex"
 	"gopkg.in/ini.v1"
 )
@@ -37,9 +39,12 @@ type modbusScanner struct {
 	uuid       string
 	UartConfig __UartConfig
 	busying    bool
+	ctx        context.Context
+	cancel     context.CancelFunc
 }
 
 func NewModbusScanner() *modbusScanner {
+
 	return &modbusScanner{
 		uuid:       "MODBUS_SCANNER",
 		UartConfig: __UartConfig{},
