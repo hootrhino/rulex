@@ -207,5 +207,9 @@ func LoadAppLib(app *typex.Application, e typex.RuleX) {
 	// yqueue
 	//------------------------------------------------------------------------
 	addAppLib(app, e, "pipe", "Output", rulexlib.Output(e))
+	//------------------------------------------------------------------------
+	// Audio
+	//------------------------------------------------------------------------
+	addAppLib(app, e, "audio", "PlayMusic", rulexlib.PlayMusic(e))
 
 }
