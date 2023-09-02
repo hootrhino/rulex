@@ -1,4 +1,4 @@
-// Copyright (C) 2023 wangwenhai
+// Copyright (C) 2023 wwhai
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -25,8 +25,52 @@ import (
 )
 
 //--------------------------------------------------------------------------------------
-// 注意: 这些设置主要是针对Ubuntu的，有可能在不同的发行版有不同的指令，不一定通用
+// 注意: 这些设置主要是针对RhinoH3 Ubuntu16.04 的，有可能在不同的发行版有不同的指令，不一定通用
 //--------------------------------------------------------------------------------------
+/*
+*
+* 专门针对H3的一些系统指令封装
+*
+ */
+func GetWlanList() ([]string, error) {
+	// 执行 nmcli 命令来获取WIFI列表
+	cmd := exec.Command("nmcli", "--fields", "SSID,MODE,FREQ,SIGNAL,BARS,SECURITY", "device", "wifi", "list")
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return nil, fmt.Errorf("Error executing nmcli: %v", err)
+	}
+	lines := strings.Split(string(output), "\n")
+	var wifiList []string
+	wifiList = append(wifiList, lines...)
+	return wifiList, nil
+}
+
+/*
+*
+* 关闭WIFI开关
+*
+ */
+func DisableWifi() error {
+	cmd := exec.Command("nmcli", "radio", "wifi", "off")
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("Error disabling Wi-Fi: %v", err)
+	}
+	return nil
+}
+
+/*
+*
+* 打开WIFI开关
+*
+ */
+func EnableWifi() error {
+	cmd := exec.Command("nmcli", "radio", "wifi", "on")
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("Error enabling Wi-Fi: %v", err)
+	}
+	return nil
+}
+
 /*
 *
 * 验证时间格式 YYYY-MM-DD HH:MM:SS
@@ -68,11 +112,11 @@ func SetSystemTime(newTime string) error {
 
 /*
 * amixer 设置音量, 输入参数是个数值, 每次增加或者减少1%
-*        amixer set Master 1%- | grep 'Front Left:' | awk -F '[][]' '{print $2}'
+*        amixer set 'Line Out' 1 | grep 'Front Left:' | awk -F '[][]' '{print $2}'
 *
  */
 func SetVolume(v int) (string, error) {
-	shellCmd := "amixer set Master %s | grep 'Front Left:' | awk -F '[][]' '{print $2}'"
+	shellCmd := "amixer set 'Line Out' %s | grep 'Front Left:' | awk -F '[][]' '{print $2}'"
 	if v > -100 && v < 100 {
 		var cmd *exec.Cmd
 		if v < 0 {
@@ -102,7 +146,7 @@ func SetVolume(v int) (string, error) {
 func GetVolume() (string, error) {
 	// 创建一个 Command 对象，执行多个命令通过管道连接
 	cmd := exec.Command("sh", "-c",
-		"amixer get Master | grep 'Front Left:' | awk -F '[][]' '{print $2}'")
+		"amixer get 'Line Out' | grep 'Front Left:' | awk -F '[][]' '{print $2}'")
 	output, err := cmd.Output()
 	if err != nil {
 		return "", err

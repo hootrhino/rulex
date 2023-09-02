@@ -452,9 +452,10 @@ func ApplyNewestEtcWlanConfig() error {
 	if err != nil {
 		return err
 	}
-	s := "nmcli dev wifi connect \"%s\" password \"%s\" iface %s"
+	// nmcli dev wifi connect SSID password pwd
+	s := "nmcli dev wifi connect \"%s\" password \"%s\""
 	cmd := exec.Command("sh", "-c",
-		fmt.Sprintf(s, MWlan0.SSID, MWlan0.Password, MWlan0.Interface))
+		fmt.Sprintf(s, MWlan0.SSID, MWlan0.Password))
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		glogger.GLogger.Error(err)
