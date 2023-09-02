@@ -26,6 +26,7 @@ import (
 
 //--------------------------------------------------------------------------------------
 // 注意: 这些设置主要是针对RhinoH3 Ubuntu16.04 的，有可能在不同的发行版有不同的指令，不一定通用
+// ！！！！ Warning: MUST RUN WITH SUDO or ROOT USER  ！！！！
 //--------------------------------------------------------------------------------------
 /*
 *
@@ -190,5 +191,39 @@ func SetTimeZone(timezone string) error {
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+/*
+*
+* Ubuntu16.04 刷新DNS，
+*
+ */
+func ReloadDNS16() error {
+	// 执行 /etc/init.d/networking 命令来重新加载DNS缓存
+	cmd := exec.Command("/etc/init.d/networking", "restart")
+
+	// 执行命令
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("Error reloading DNS: %v", err)
+	}
+
+	return nil
+}
+
+/*
+*
+* Ubuntu18+ 刷新DNS，
+*
+ */
+func ReloadDNS18xx() error {
+	// 执行 systemd-resolved 命令来重新加载DNS缓存
+	cmd := exec.Command("systemctl", "reload", "systemd-resolved.service")
+
+	// 执行命令
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("Error reloading DNS: %v", err)
+	}
+
 	return nil
 }
