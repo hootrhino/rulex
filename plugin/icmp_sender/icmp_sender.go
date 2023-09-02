@@ -56,51 +56,54 @@ func (icmp *ICMPSender) Service(arg typex.ServiceArg) typex.ServiceResult {
 	Fields := logrus.Fields{
 		"topic": "plugin/ICMPSenderPing/ICMPSender",
 	}
-	if arg.Name == "ping" {
-		if icmp.pinging {
-			glogger.GLogger.WithFields(Fields).Info("ICMPSender pinging now:", arg.Args)
-			return typex.ServiceResult{Out: []map[string]interface{}{}}
-		}
+	out := typex.ServiceResult{Out: []map[string]interface{}{}}
+	if icmp.pinging {
+		glogger.GLogger.WithFields(Fields).Info("ICMPSender pinging now:", arg.Args)
+		return out
 	}
-	go func(cs *ICMPSender) {
-		select {
-		case <-typex.GCTX.Done():
-			{
-				return
-			}
-		default:
-			{
-			}
-		}
-		switch tt := arg.Args.(type) {
-		case []interface{}:
-			if len(tt) < 1 {
-				break
-			}
-			cs.pinging = true
-			for i := 0; i < 5; i++ {
-				switch ip := tt[0].(type) {
-				case string:
-					if Duration, err := pingQ(ip, 3000*time.Millisecond); err != nil {
-						glogger.GLogger.WithFields(Fields).Info(fmt.Sprintf(
-							"[Count:%d] Ping Error:%s", i,
-							err.Error()))
-					} else {
-						glogger.GLogger.WithFields(Fields).Info(fmt.Sprintf(
-							"[Count:%d] Ping Reply From %s: time=%v ms TTL=128", i,
-							tt, Duration))
-					}
-					time.Sleep(1 * time.Second)
+	if arg.Name == "ping" {
+		icmp.pinging = true
+		go func(cs *ICMPSender) {
+			defer func() {
+				cs.pinging = false
+			}()
+			select {
+			case <-typex.GCTX.Done():
+				{
+					return
 				}
-
+			default:
+				{
+				}
 			}
-			cs.pinging = false
-		default:
-			{
-				glogger.GLogger.WithFields(Fields).Info("Unknown service name:", arg.Name)
-			}
-		}
-	}(icmp)
+			switch tt := arg.Args.(type) {
+			case []interface{}:
+				if len(tt) < 1 {
+					break
+				}
+				for i := 0; i < 5; i++ {
+					switch ip := tt[0].(type) {
+					case string:
+						if Duration, err := pingQ(ip, 2000*time.Millisecond); err != nil {
+							glogger.GLogger.WithFields(Fields).Info(fmt.Sprintf(
+								"[Count:%d] Ping Error:%s", i,
+								err.Error()))
+						} else {
+							glogger.GLogger.WithFields(Fields).Info(fmt.Sprintf(
+								"[Count:%d] Ping Reply From %s: time=%v ms TTL=128", i,
+								tt, Duration))
+						}
+						time.Sleep(1 * time.Second)
+					}
 
-	return typex.ServiceResult{Out: []map[string]interface{}{}}
+				}
+			default:
+				{
+					glogger.GLogger.WithFields(Fields).Info("Unknown service name:", arg.Name)
+				}
+			}
+		}(icmp)
+
+	}
+	return out
 }
