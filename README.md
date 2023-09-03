@@ -55,6 +55,8 @@ end
 
 除此之外，还可以在 Armbian、OpenWrt 等小众平台上编译成功。
 
+**！！！注意：现阶段只针对Ubuntu16.04和Ubuntu18.04做了大量支持，其他的系统也许能编译成功但是没测试功能是否可用**
+
 ## 规则引擎
 
 ### 规则定义
@@ -140,16 +142,11 @@ end
 - 博客2：https://wwhai.github.io
 
 ## 贡献者
-鸣谢各位给RULEX贡献代码的大佬。
+鸣谢各位给RULEX贡献代码的社区开发者。
 
-### RULEX
-<a href="https://github.com/hootrhino/rulex/graphs/contributors">
+<a href="#">
   <img src="https://contributors-img.web.app/image?repo=hootrhino/rulex" />
-</a>
-
-### RULEX Other
-<a href="https://github.com/hootrhino/rulex-dashboard/graphs/contributors">
-  <img src="https://contributors-img.web.app/image?repo=hootrhino/rulex-dashboard" />
+  <img src="https://contributors-img.web.app/image?repo=hootrhino/rulex-dashboard-vue-old" />
 </a>
 
 ## Star
