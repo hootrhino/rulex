@@ -20,6 +20,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"time"
 )
@@ -166,31 +167,25 @@ func GetTimeZone() string {
 	return currentZone
 
 }
+
+// SetTimeZone 设置系统时区
+// timezone := "Asia/Shanghai"
 func SetTimeZone(timezone string) error {
-	// 获取时区文件的路径
-	timezonePath := filepath.Join("/usr/share/zoneinfo", timezone)
 
-	// 检查时区文件是否存在
-	if _, err := os.Stat(timezonePath); os.IsNotExist(err) {
-		return err
-	}
+	// 设置要执行的命令和参数
+	cmd := exec.Command("timedatectl", "set-timezone", timezone)
 
-	// 读取时区文件内容
-	_, err := os.ReadFile(timezonePath)
+	// 执行命令并捕获输出
+	output, err := cmd.CombinedOutput()
+
 	if err != nil {
-		return err
+		// 如果发生错误，返回错误信息
+		return fmt.Errorf("Error: %v\nOutput: %s", err, string(output))
 	}
 
-	// 更新系统的 /etc/localtime 符号链接
-	err = os.Remove("/etc/localtime")
-	if err != nil {
-		return err
-	}
+	// 打印命令的输出结果
+	fmt.Println(string(output))
 
-	err = os.Symlink(timezonePath, "/etc/localtime")
-	if err != nil {
-		return err
-	}
 	return nil
 }
 

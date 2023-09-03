@@ -211,5 +211,9 @@ func LoadAppLib(app *typex.Application, e typex.RuleX) {
 	// Audio
 	//------------------------------------------------------------------------
 	addAppLib(app, e, "audio", "PlayMusic", rulexlib.PlayMusic(e))
+	//------------------------------------------------------------------------
+	// Math
+	//------------------------------------------------------------------------
+	addAppLib(app, e, "math", "TFloat", rulexlib.TruncateFloat(e))
 
 }

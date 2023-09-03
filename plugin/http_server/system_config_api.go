@@ -5,6 +5,7 @@ import (
 	"net"
 	"os"
 	"os/exec"
+	"regexp"
 	"runtime"
 	"strconv"
 	"strings"
@@ -213,6 +214,7 @@ func SetSystemTime(c *gin.Context, hh *HttpApiServer) {
 		c.JSON(common.HTTP_OK, common.Error400(err0))
 		return
 	}
+
 	err := service.SetSystemTime(DtoCfg.Time)
 	if err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
@@ -243,7 +245,22 @@ func TestGenEtcNetCfg(c *gin.Context, hh *HttpApiServer) {
 *
  */
 func SetSystemTimeZone(c *gin.Context, hh *HttpApiServer) {
-	// TODO
+	type Form struct {
+		Timezone string `json:"timezone"`
+	}
+	DtoCfg := Form{}
+	if err0 := c.ShouldBindJSON(&DtoCfg); err0 != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err0))
+		return
+	}
+
+	if !validTimeZone(DtoCfg.Timezone) {
+		c.JSON(common.HTTP_OK, common.Error("Invalid timezone:"+DtoCfg.Timezone))
+
+	}
+	if err := service.SetTimeZone(DtoCfg.Timezone); err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+	}
 	c.JSON(common.HTTP_OK, common.Ok())
 
 }
@@ -283,6 +300,15 @@ func GetSystemTime(c *gin.Context, hh *HttpApiServer) {
 func isValidIP(ip string) bool {
 	parsedIP := net.ParseIP(ip)
 	return parsedIP != nil
+}
+func validTimeZone(timezone string) bool {
+	// 使用正则表达式来匹配时区格式
+	// 时区格式应该类似于 "America/New_York" 或 "Asia/Shanghai"
+	// 这里使用了简单的正则表达式，你可以根据需要进行调整
+	regexPattern := `^[A-Za-z]+/[A-Za-z_]+$`
+	regex := regexp.MustCompile(regexPattern)
+
+	return regex.MatchString(timezone)
 }
 
 /*
