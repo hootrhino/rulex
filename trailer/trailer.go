@@ -64,12 +64,9 @@ func (scm *TrailerManager) Fork(goods typex.Goods) error {
 		Ctx:         ctx,
 		Cancel:      Cancel,
 	}
-	wg := sync.WaitGroup{}
-	wg.Add(2)
 	scm.Save(goodsProcess)
-	go scm.run(&wg, goodsProcess)
-	go scm.probe(&wg, goodsProcess)
-	wg.Wait()
+	go scm.run(goodsProcess)
+	go scm.probe(goodsProcess)
 	return nil
 }
 
@@ -106,16 +103,16 @@ func (scm *TrailerManager) Stop() {
 }
 
 // Cmd.Wait() 会阻塞, 但是当控制的子进程停止的时候会继续执行, 因此可以在defer里面释放资源
-func (scm *TrailerManager) run(wg *sync.WaitGroup, goodsProcess *typex.GoodsProcess) error {
+func (scm *TrailerManager) run(goodsProcess *typex.GoodsProcess) error {
 	defer func() {
 		goodsProcess.Cancel()
 	}()
 	if err := goodsProcess.Cmd.Start(); err != nil {
 		glogger.GLogger.Error("exec command error:", err)
-		wg.Done()
+
 		return err
 	}
-	wg.Done()
+
 	goodsProcess.Running = true
 	glogger.GLogger.Infof("goods process(pid = %v, uuid = %v, addr = %v, args = %v) fork and started",
 		goodsProcess.Cmd.Process.Pid,
@@ -124,7 +121,7 @@ func (scm *TrailerManager) run(wg *sync.WaitGroup, goodsProcess *typex.GoodsProc
 		goodsProcess.Args)
 	if err := goodsProcess.Cmd.Wait(); err != nil {
 		glogger.GLogger.Error("Cmd Wait error:", err)
-		wg.Done()
+
 		return err
 	}
 	goodsProcess.Running = false
@@ -132,10 +129,10 @@ func (scm *TrailerManager) run(wg *sync.WaitGroup, goodsProcess *typex.GoodsProc
 }
 
 // 探针
-func (scm *TrailerManager) probe(wg *sync.WaitGroup, goodsProcess *typex.GoodsProcess) {
+func (scm *TrailerManager) probe(goodsProcess *typex.GoodsProcess) {
 	defer func() {
 	}()
-	wg.Done()
+
 	for {
 		select {
 		case <-goodsProcess.Ctx.Done():
