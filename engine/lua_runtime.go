@@ -132,6 +132,10 @@ func LoadBuildInLuaLib(e typex.RuleX, r *typex.Rule) {
 	// yqueue
 	//------------------------------------------------------------------------
 	r.AddLib(e, "pipe", "Output", rulexlib.Output(e))
+	//------------------------------------------------------------------------
+	// Math
+	//------------------------------------------------------------------------
+	r.AddLib(e, "math", "TFloat", rulexlib.TruncateFloat(e))
 
 }
 
