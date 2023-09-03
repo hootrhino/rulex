@@ -2,6 +2,7 @@ package ttyd_terminal
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
 	"runtime"
 
@@ -31,7 +32,7 @@ type WebTTYPlugin struct {
 
 func NewWebTTYPlugin() *WebTTYPlugin {
 	return &WebTTYPlugin{
-		uuid:       utils.PluginUuid(),
+		uuid:       "WEB_TTYD_TERMINAL",
 		mainConfig: _ttydConfig{},
 	}
 }
@@ -83,6 +84,7 @@ func (tty *WebTTYPlugin) Stop() error {
 	}
 	if tty.ttydCmd.ProcessState != nil {
 		tty.ttydCmd.Process.Kill()
+		tty.ttydCmd.Process.Signal(os.Kill)
 	}
 	return nil
 }
