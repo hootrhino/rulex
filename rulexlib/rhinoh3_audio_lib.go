@@ -17,7 +17,6 @@ package rulexlib
 
 import (
 	"fmt"
-	"os"
 	"os/exec"
 	"time"
 
@@ -38,9 +37,9 @@ func __MPVPlay(filePath string, duration time.Duration) error {
 	}
 	__mkv_playing = true
 	cmd := exec.Command("mpv", filePath)
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+	cmd.Stdin = nil
+	cmd.Stdout = nil
+	cmd.Stderr = nil
 	if err := cmd.Start(); err != nil {
 		return fmt.Errorf("Error starting MP3 playback: %v", err)
 	}
