@@ -24,7 +24,7 @@ type usbMonitor struct {
 }
 
 func NewUsbMonitor() typex.XPlugin {
-	return &usbMonitor{uuid: "USB-MONITOR"}
+	return &usbMonitor{uuid: "USB_EVENT_MONITOR"}
 }
 func (usbm *usbMonitor) Init(_ *ini.Section) error {
 	return nil
@@ -160,7 +160,7 @@ func (usbm *usbMonitor) Stop() error {
 func (usbm *usbMonitor) PluginMetaInfo() typex.XPluginMetaInfo {
 	return typex.XPluginMetaInfo{
 		UUID:     usbm.uuid,
-		Name:     "USB Monitor",
+		Name:     "USB Hot Plugin Monitor",
 		Version:  "v0.0.1",
 		Homepage: "https://hootrhino.github.io",
 		HelpLink: "https://hootrhino.github.io",

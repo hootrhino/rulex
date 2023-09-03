@@ -86,8 +86,8 @@ func (*Telemetry) Stop() error {
 
 func (p *Telemetry) PluginMetaInfo() typex.XPluginMetaInfo {
 	return typex.XPluginMetaInfo{
-		UUID:     p.uuid,
-		Name:     "Telemetry",
+		UUID:     "BUSINESS_TELEMETRY",
+		Name:     "Business Telemetry",
 		Version:  "v0.0.1",
 		Homepage: "https://github.com/dropliu/rulex",
 		HelpLink: "https://github.com/dropliu/rulex",
