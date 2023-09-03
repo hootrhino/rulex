@@ -50,7 +50,7 @@ type NetDiscover struct {
 func NewNetDiscover() typex.XPlugin {
 	ctx, cancel := context.WithCancel(context.Background())
 	return &NetDiscover{mainConfig: _serverConfig{},
-		ctx: ctx, cancel: cancel, uuid: "NewNetDiscover"}
+		ctx: ctx, cancel: cancel, uuid: "NWT_DISCOVER"}
 }
 
 func (dm *NetDiscover) Init(config *ini.Section) error {

@@ -29,5 +29,40 @@
 
 ## 使用
 选择串口配置以后，会持续向整个地址范围发送一个探针包，当收到设备的回信时，评估其存在的可能性。
+## 支持服务
+### 开启扫描
+请求:
+```json
+{
+    "uuid": "MODBUS_SCANNER",
+    "name": "scan",
+    "args": "{\"uart\":\"/dev/ttyS1\",\"dataBits\":8,\"parity\":\"N\",\"stopBits\":1,\"baudRate\":4800,\"timeout\":1000}"
+}
+```
+返回：
+```json
+{
+    "code": 200,
+    "msg": "Success",
+    "data": {}
+}
+```
+### 停止扫描
+请求：
+```json
+{
+    "uuid": "MODBUS_SCANNER",
+    "name": "stop",
+    "args": ""
+}
+```
+返回：
+```json
+{
+    "code": 200,
+    "msg": "Success",
+    "data": {}
+}
+```
 ## 注意
 串口配置需要正确选择。

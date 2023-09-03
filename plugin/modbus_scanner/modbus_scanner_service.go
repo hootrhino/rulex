@@ -35,12 +35,6 @@ import (
 *
  */
 
-/*
-*
-* CRC 计算
-*
- */
-
 func calculateCRC16(data []byte) uint16 {
 	var crc uint16 = 0xFFFF
 
@@ -76,10 +70,14 @@ func (cs *modbusScanner) Service(arg typex.ServiceArg) typex.ServiceResult {
 			if cs.cancel != nil {
 				cs.cancel()
 				cs.busying = false
-				return typex.ServiceResult{Out: "Stop Success"}
+				return typex.ServiceResult{Out: []map[string]interface{}{
+					{"error": "Device busying now"},
+				}}
 			}
 		}
-		return typex.ServiceResult{Out: "Modbus Scanner Busing now"}
+		return typex.ServiceResult{Out: []map[string]interface{}{
+			{"error": "Modbus Scanner Busing now"},
+		}}
 	}
 
 	if arg.Name == "scan" {
@@ -90,11 +88,15 @@ func (cs *modbusScanner) Service(arg typex.ServiceArg) typex.ServiceResult {
 				err := json.Unmarshal([]byte(s), &cs.UartConfig)
 				if err != nil {
 					cs.busying = false
-					return typex.ServiceResult{Out: err.Error()}
+					return typex.ServiceResult{Out: []map[string]interface{}{
+						{"error": err.Error()},
+					}}
 				}
 				if !utils.SContains([]string{"N", "E", "O"}, cs.UartConfig.Parity) {
 					cs.busying = false
-					return typex.ServiceResult{Out: "parity value only one of 'N','O','E'"}
+					return typex.ServiceResult{Out: []map[string]interface{}{
+						{"error": "parity value only one of 'N','O','E'"},
+					}}
 				}
 				config := serial.Config{
 					Address:  cs.UartConfig.Uart,
@@ -110,7 +112,9 @@ func (cs *modbusScanner) Service(arg typex.ServiceArg) typex.ServiceResult {
 						"topic": "plugin/ModbusScanner/" + cs.uuid,
 					}).Info("Serial port open failed:", err)
 					cs.busying = false
-					return typex.ServiceResult{Out: err.Error()}
+					return typex.ServiceResult{Out: []map[string]interface{}{
+						{"error": err.Error()},
+					}}
 				}
 				ctx, cancel := context.WithCancel(typex.GCTX)
 				cs.ctx = ctx
@@ -168,8 +172,10 @@ func (cs *modbusScanner) Service(arg typex.ServiceArg) typex.ServiceResult {
 			}
 		default:
 			cs.busying = false
-			return typex.ServiceResult{Out: "Invalid Uart config"}
+			return typex.ServiceResult{Out: []map[string]interface{}{
+				{"error": "Invalid Uart config"},
+			}}
 		}
 	}
-	return typex.ServiceResult{Out: "Success"}
+	return typex.ServiceResult{Out: []map[string]interface{}{}}
 }

@@ -13,60 +13,38 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package modbusscanner
+package modbuscrctools
 
 import (
-	"context"
-
 	"github.com/hootrhino/rulex/typex"
 	"gopkg.in/ini.v1"
 )
 
-/*
-*
-* 串口配置
-*
- */
-type __UartConfig struct {
-	Timeout  int    `json:"timeout" validate:"required"`
-	Uart     string `json:"uart" validate:"required"`
-	BaudRate int    `json:"baudRate" validate:"required"`
-	DataBits int    `json:"dataBits" validate:"required"`
-	Parity   string `json:"parity" validate:"required"`
-	StopBits int    `json:"stopBits" validate:"required"`
-}
-type modbusScanner struct {
-	uuid       string
-	UartConfig __UartConfig
-	busying    bool
-	ctx        context.Context
-	cancel     context.CancelFunc
+type modbusCRCCalculator struct {
+	uuid string
 }
 
-func NewModbusScanner() *modbusScanner {
-
-	return &modbusScanner{
-		uuid:       "MODBUS_SCANNER",
-		UartConfig: __UartConfig{},
-		busying:    false,
+func NewModbusCrcCalculator() typex.XPlugin {
+	return &modbusCRCCalculator{
+		uuid: "MODBUS_CRC_CALCULATOR",
 	}
 }
 
-func (ms *modbusScanner) Init(config *ini.Section) error {
+func (ms *modbusCRCCalculator) Init(config *ini.Section) error {
 	return nil
 }
 
-func (ms *modbusScanner) Start(typex.RuleX) error {
+func (ms *modbusCRCCalculator) Start(typex.RuleX) error {
 	return nil
 }
-func (ms *modbusScanner) Stop() error {
+func (ms *modbusCRCCalculator) Stop() error {
 	return nil
 }
 
-func (hh *modbusScanner) PluginMetaInfo() typex.XPluginMetaInfo {
+func (hh *modbusCRCCalculator) PluginMetaInfo() typex.XPluginMetaInfo {
 	return typex.XPluginMetaInfo{
 		UUID:     hh.uuid,
-		Name:     "Modbus Device Scanner",
+		Name:     "Modbus CRC Calculator",
 		Version:  "v0.0.1",
 		Homepage: "https://hootrhino.github.io",
 		HelpLink: "https://hootrhino.github.io",

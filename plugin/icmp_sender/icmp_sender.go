@@ -36,7 +36,7 @@ func (dm *ICMPSender) Stop() error {
 func (hh *ICMPSender) PluginMetaInfo() typex.XPluginMetaInfo {
 	return typex.XPluginMetaInfo{
 		UUID:     hh.uuid,
-		Name:     "ICMPSender",
+		Name:     "ICMP Sender",
 		Version:  "v1.0.0",
 		Homepage: "https://hootrhino.github.io",
 		HelpLink: "https://hootrhino.github.io",
