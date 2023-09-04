@@ -144,6 +144,27 @@ func (cs *DemoPlugin) Service(arg typex.ServiceArg) typex.ServiceResult {
     glogger.GLogger.WithFields(Fields).Info("ICMPSender pinging now:", arg.Args)
     ```
     通过这个特殊的 Fields 可以让前端选择日志打印形式。
+## 请求响应
+Service接口的请求结构如下：
+```json
+{
+    "uuid": "MODBUS_SCANNER",
+    "name": "stop",
+    "args": {}
+}
+```
+其中`args`是泛型参数，其值类型可能是`string | object | array`。
+Service接口的返回结构如下：
+```json
+{
+    "code": 200,
+    "msg": "Success",
+    "data": {}
+}
+```
+其中`data`是泛型参数，其值类型可能是`string | object | array`。
+
+> 注意：一般泛型类型只和具体插件有关，也就是“到底是什么类型只有插件自己知道”。
 
 ## 注册插件
 目前注册插件是硬编码形式，是故意这么设计的，具体注册看这个函数即可：https://vscode.dev/github/hootrhino/rulex/blob/dev-v0.6.2/engine/runner.go#L137。
