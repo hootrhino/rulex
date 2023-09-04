@@ -12,16 +12,22 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 #!/bin/bash
+working_directory="/usr/local"
+
 if [ "$(id -u)" != "0" ]; then
-    echo "This script must be run as root"
-    exit 1
+   echo "This script must be run as root"
+   exit 1
 fi
 
+systemctl stop rulex
+systemctl disable rulex
+rm /etc/systemd/system/rulex.service
+rm $working_directory/rulex
+rm $working_directory/rulex.ini
+rm $working_directory/rulex.db
+rm $working_directory/*rulex-log.txt
+rm $working_directory/*rulex-lua-log.txt
 systemctl daemon-reload
-systemctl start rulex
-
-echo "RULEX started as a daemon."
-
-exit 0
+systemctl reset-failed
+echo "Rulex uninstalled."
