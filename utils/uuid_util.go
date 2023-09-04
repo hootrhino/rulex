@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"strings"
+
 	"github.com/lithammer/shortuuid/v4"
 )
 
@@ -44,5 +46,5 @@ func RuleUuid() string {
 
 // MakeUUID
 func MakeUUID(prefix string) string {
-	return prefix + shortuuid.New()
+	return prefix + strings.ToUpper(shortuuid.New()[:6])
 }

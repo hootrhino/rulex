@@ -39,11 +39,8 @@ type Registers struct {
 *
  */
 type RegisterRW struct {
-	Tag string `json:"tag" validate:"required" title:"数据Tag"`
-	// 用来给值增加初始值和权重系数，即: Value = Value *Weight + Offset
-	Weight    float64 `json:"weight" validate:"required" title:"权重系数"`
-	InitValue float64 `json:"initValue" validate:"required" title:"权重初始值"`
-	//
+	Tag      string `json:"tag" validate:"required" title:"数据Tag"`         // 数据Tag
+	Alias    string `json:"alias" validate:"required" title:"别名"`          // 别名
 	Function int    `json:"function" validate:"required" title:"Modbus功能"` // Function
 	SlaverId byte   `json:"slaverId" validate:"required" title:"从机ID"`     // 从机ID
 	Address  uint16 `json:"address" validate:"required" title:"地址"`        // Address

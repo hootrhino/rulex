@@ -10,17 +10,19 @@ create_pkg() {
     local release_dir="_release"
     local pkg_name="rulex-$target-$version.zip"
     local common_files="./LICENSE ./conf/rulex.ini"
-    local files_to_include="./rulex-$target $common_files"
-    local files_to_include_exe="./rulex-$target.exe $common_files"
+    local files_to_include="./rulex $common_files"
+    local files_to_include_exe="./rulex.exe $common_files"
 
     if [[ "$target" != "windows" ]]; then
-        files_to_include="$files_to_include ./script/setup.sh ./script/run.sh ./script/stop.sh"
+        files_to_include="$files_to_include ./script/*.sh"
+        mv ./rulex-$target ./rulex
     else
         files_to_include="$files_to_include_exe"
+        mv ./rulex-$target.exe ./rulex
     fi
 
     echo "Create package: $pkg_name"
-    zip -r "$release_dir/$pkg_name" $files_to_include
+    zip -j "$release_dir/$pkg_name" $files_to_include
 }
 
 
