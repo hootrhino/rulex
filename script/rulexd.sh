@@ -22,6 +22,7 @@ Group=root
 [Install]
 WantedBy=multi-user.target
 EOL
+    chmod +x $source_dir/rulex
     cp "$source_dir/rulex" "$executable"
     cp "$source_dir/rulex.ini" "$config_file"
     systemctl daemon-reload
