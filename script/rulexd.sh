@@ -69,12 +69,28 @@ uninstall(){
     systemctl reset-failed
     echo "Rulex has been uninstalled."
 }
+# create a default user
+create_user(){
+    response=$(curl -X POST -H "Content-Type: application/json" -d '{
+    "role": "admin",
+    "username": "admin",
+    "password": "admin",
+    "description": "system admin"
+    }' http://127.0.0.1:2580/api/v1/users -w "%{http_code}")
+
+    if [ "$response" = "201" ]; then
+        echo "User created"
+    else
+        echo "User creation failed"
+    fi
+
+}
 #
 #
 #
 main(){
     case "$1" in
-        "install" | "start" | "restart" | "stop" | "uninstall" | "status")
+        "install" | "start" | "restart" | "stop" | "uninstall" | "create_user" | "status")
             $1
         ;;
         *)
