@@ -22,14 +22,14 @@ Actions =
             return true, data
         end
         for key, value in pairs(dataT) do
-            local MatchHexS = rulexlib:MatchUInt("temp:[0,1];hum:[2,3]", value['value'])
-            local ts = rulexlib:TsUnixNano()
+            local MatchHexS = rulexlib:MatchUInt("hum:[0,1];temp:[2,3]", value['value'])
+            local ts = rulexlib:Time()
             local Json = rulexlib:T2J(
                 {
                     tag = key,
                     ts = ts,
-                    temp = MatchHexS['temp'] * 0.1,
-                    hum = MatchHexS['hum'] * 0.1,
+                    hum = rulexlib:TFloat(MatchHexS['hum'] * 0.1, 2),
+                    temp = rulexlib:TFloat(MatchHexS['temp'] * 0.1, 2),
                 }
             )
             rulexlib:Debug(Json)
