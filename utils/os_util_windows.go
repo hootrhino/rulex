@@ -37,3 +37,6 @@ func GetSystemDevices() (SystemDevices, error) {
 	}
 	return SystemDevices, nil
 }
+func CatOsRelease() (map[string]string, error) {
+	return map[string]string{"os": "windows"}, nil
+}
