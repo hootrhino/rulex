@@ -8,6 +8,7 @@ import (
 	"time"
 
 	common "github.com/hootrhino/rulex/plugin/http_server/common"
+	"github.com/hootrhino/rulex/utils"
 
 	"github.com/hootrhino/rulex/device"
 	"github.com/hootrhino/rulex/source"
@@ -26,8 +27,7 @@ import (
 *
  */
 func Ping(c *gin.Context, hh *HttpApiServer) {
-	c.Writer.Write([]byte("PONG"))
-	c.Writer.Flush()
+	c.JSON(common.HTTP_OK, common.OkWithData("PONG"))
 }
 
 // Get all plugins
@@ -51,7 +51,8 @@ func source_count(e typex.RuleX) map[string]int {
 	allOutEnd := e.AllOutEnd()
 	allRule := e.AllRule()
 	plugins := e.AllPlugins()
-	var c1, c2, c3, c4 int
+	devices := e.AllDevices()
+	var c1, c2, c3, c4, c5 int
 	allInEnd.Range(func(key, value interface{}) bool {
 		c1 += 1
 		return true
@@ -68,11 +69,17 @@ func source_count(e typex.RuleX) map[string]int {
 		c4 += 1
 		return true
 	})
+	devices.Range(func(key, value interface{}) bool {
+		c5 += 1
+		return true
+	})
 	return map[string]int{
 		"inends":  c1,
 		"outends": c2,
 		"rules":   c3,
 		"plugins": c4,
+		"devices": c5,
+		"apps":    len(e.AllApp()),
 	}
 }
 
@@ -98,24 +105,6 @@ func System(c *gin.Context, hh *HttpApiServer) {
 		"osArch":      hh.ruleEngine.Version().Arch,
 		"osDist":      hh.ruleEngine.Version().Dist,
 		"startedTime": StartedTime,
-		// "ip": func() []string {
-		// 	if err0 != nil {
-		// 		glogger.GLogger. common.Error(err0)
-		// 		return []string{"127.0.0.1"}
-		// 	}
-		// 	return ip
-		// }(),
-		// "wsUrl": func() []string {
-		// 	if err0 != nil {
-		// 		glogger.GLogger. common.Error(err0)
-		// 		return []string{"ws://127.0.0.1:2580/ws"}
-		// 	}
-		// 	ips := []string{}
-		// 	for _, ipp := range ip {
-		// 		ips = append(ips, fmt.Sprintf("ws://%s:2580/ws", ipp))
-		// 	}
-		// 	return ips
-		// }(),
 	}
 	c.JSON(common.HTTP_OK, common.OkWithData(gin.H{
 		"hardWareInfo": hardWareInfo,
@@ -329,4 +318,12 @@ func getAvailableInterfaces() ([]NetInterfaceInfo, error) {
 	}
 
 	return netInterfaces, nil
+}
+func CatOsRelease(c *gin.Context, hh *HttpApiServer) {
+	r, err := utils.CatOsRelease()
+	if err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
+	c.JSON(common.HTTP_OK, common.OkWithData(r))
 }

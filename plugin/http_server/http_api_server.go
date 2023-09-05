@@ -255,28 +255,38 @@ func (hs *HttpApiServer) LoadRoute() {
 	//
 	// 网络适配器列表
 	//
-	hs.ginEngine.GET(url("netInterfaces"), hs.addRoute(GetNetInterfaces))
-	//
-	// 获取服务启动时间
-	//
-	hs.ginEngine.GET(url("startedAt"), hs.addRoute(StartedAt))
+	osApi := hs.ginEngine.Group(url("/os"))
+	{
+		osApi.GET(("/netInterfaces"), hs.addRoute(GetNetInterfaces))
+		osApi.GET(("/osRelease"), hs.addRoute(CatOsRelease))
+		osApi.GET(("/uarts"), hs.addRoute(GetUarts))
+		osApi.GET(("/system"), hs.addRoute(System))
+		osApi.GET(("/startedAt"), hs.addRoute(StartedAt))
+
+	}
 	//
 	// 设备管理
 	//
-	hs.ginEngine.GET(url("devices"), hs.addRoute(Devices))
-	hs.ginEngine.GET(url("devices/detail"), hs.addRoute(DeviceDetail))
-	hs.ginEngine.POST(url("devices"), hs.addRoute(CreateDevice))
-	hs.ginEngine.PUT(url("devices"), hs.addRoute(UpdateDevice))
-	hs.ginEngine.DELETE(url("devices"), hs.addRoute(DeleteDevice))
-	hs.ginEngine.POST(url("devices/modbus/sheetImport"), hs.addRoute(ModbusSheetImport))
-	hs.ginEngine.PUT(url("devices/modbus/point"), hs.addRoute(UpdateModbusPoint))
-	hs.ginEngine.GET(url("devices/modbus"), hs.addRoute(ModbusPoints))
+	deviceApi := hs.ginEngine.Group(url("/devices"))
+	{
+		deviceApi.GET(("/"), hs.addRoute(Devices))
+		deviceApi.POST(("/"), hs.addRoute(CreateDevice))
+		deviceApi.PUT(("/"), hs.addRoute(UpdateDevice))
+		deviceApi.DELETE(("/"), hs.addRoute(DeleteDevice))
+		deviceApi.GET(("/detail"), hs.addRoute(DeviceDetail))
+		deviceApi.POST(("/modbus/sheetImport"), hs.addRoute(ModbusSheetImport))
+		deviceApi.PUT(("/modbus/point"), hs.addRoute(UpdateModbusPoint))
+		deviceApi.GET(("/modbus"), hs.addRoute(ModbusPoints))
+	}
+	goodsApi := hs.ginEngine.Group(url("/goods"))
+	{
+		// 外挂管理
+		goodsApi.GET(("/"), hs.addRoute(Goods))
+		goodsApi.POST(("/"), hs.addRoute(CreateGoods))
+		goodsApi.PUT(("/"), hs.addRoute(UpdateGoods))
+		goodsApi.DELETE(("/"), hs.addRoute(DeleteGoods))
+	}
 
-	// 外挂管理
-	hs.ginEngine.GET(url("goods"), hs.addRoute(Goods))
-	hs.ginEngine.POST(url("goods"), hs.addRoute(CreateGoods))
-	hs.ginEngine.PUT(url("goods"), hs.addRoute(UpdateGoods))
-	hs.ginEngine.DELETE(url("goods"), hs.addRoute(DeleteGoods))
 	// 加载资源类型
 	source.LoadSt()
 	target.LoadTt()
