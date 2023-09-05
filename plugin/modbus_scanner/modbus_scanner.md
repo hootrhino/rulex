@@ -64,5 +64,8 @@
     "data": {}
 }
 ```
+## 输出
+日志输出topic：`plugin/ModbusScanner/MODBUS_SCANNER`。
 ## 注意
-串口配置需要正确选择。
+- 串口配置需要正确选择。
+- http请求的结果仅仅作为请求成功与否的依据，而扫描的结果则需要看日志。
