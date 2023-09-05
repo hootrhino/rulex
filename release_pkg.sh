@@ -19,7 +19,7 @@ create_pkg() {
         chmod +x ./rulex
     else
         files_to_include="$files_to_include_exe"
-        mv ./rulex-$target.exe ./rulex
+        mv ./rulex-$target.exe ./rulex.exe
     fi
 
     echo "Create package: $pkg_name"
