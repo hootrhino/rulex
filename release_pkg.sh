@@ -16,6 +16,7 @@ create_pkg() {
     if [[ "$target" != "windows" ]]; then
         files_to_include="$files_to_include ./script/*.sh"
         mv ./rulex-$target ./rulex
+        chmod +x ./rulex
     else
         files_to_include="$files_to_include_exe"
         mv ./rulex-$target.exe ./rulex
