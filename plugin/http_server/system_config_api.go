@@ -91,6 +91,12 @@ func GetWifi(c *gin.Context, hh *HttpApiServer) {
 	c.JSON(common.HTTP_OK, common.OkWithData(Cfg))
 
 }
+
+/*
+*
+*
+*通过nmcli配置WIFI
+ */
 func SetWifi(c *gin.Context, hh *HttpApiServer) {
 	if runtime.GOOS != "linux" {
 		c.JSON(common.HTTP_OK, common.Error("OS Not Support:"+runtime.GOOS))
@@ -117,18 +123,7 @@ func SetWifi(c *gin.Context, hh *HttpApiServer) {
 		c.JSON(common.HTTP_OK, common.Error(("Only support wlan0")))
 		return
 	}
-	UbuntuVersion, err := utils.GetUbuntuVersion()
-	if err != nil {
-		c.JSON(common.HTTP_OK, common.Error400(err))
-		return
-	}
-	NetCfgType := "NETWORK_ETC"
-	if (UbuntuVersion == "ubuntu18") ||
-		UbuntuVersion == "ubuntu20" ||
-		UbuntuVersion == "ubuntu22" ||
-		(UbuntuVersion == "ubuntu24") {
-		NetCfgType = "NETPLAN"
-	}
+
 	MNetCfg := model.MWifiConfig{
 		Interface: DtoCfg.Interface,
 		SSID:      DtoCfg.SSID,
@@ -141,14 +136,13 @@ func SetWifi(c *gin.Context, hh *HttpApiServer) {
 			return
 		}
 	}
-	if NetCfgType == "NETPLAN" { // Ubuntu18极其以后
-		ApplyNewestNetplanWlanConfig()
-		service.NetplanApply()
-	}
-	if NetCfgType == "NETWORK_ETC" { // Ubuntu16
-		ApplyNewestEtcWlanConfig()
-		service.EtcApply()
-	}
+	/*
+	*
+	* 全部使用nmcli操作
+	*
+	 */
+	ApplyNewestEtcWlanConfig()
+	service.EtcApply()
 
 	// 保存到数据库, 并且写入配置
 	c.JSON(common.HTTP_OK, common.Ok())
@@ -172,16 +166,16 @@ func ApplyNewestEtcEthConfig() error {
 	EtcEth0Cfg := service.EtcNetworkConfig{
 		Interface:   MEth0.Interface,
 		Address:     MEth0.Address,
-		Netmask:     MEth0.Address,
-		Gateway:     MEth0.Address,
+		Netmask:     MEth0.Netmask,
+		Gateway:     MEth0.Gateway,
 		DNS:         MEth0.DNS,
 		DHCPEnabled: *MEth0.DHCPEnabled,
 	}
 	EtcEth1Cfg := service.EtcNetworkConfig{
 		Interface:   MEth1.Interface,
 		Address:     MEth1.Address,
-		Netmask:     MEth1.Address,
-		Gateway:     MEth1.Address,
+		Netmask:     MEth1.Netmask,
+		Gateway:     MEth1.Gateway,
 		DNS:         MEth1.DNS,
 		DHCPEnabled: *MEth1.DHCPEnabled,
 	}
@@ -230,11 +224,7 @@ func SetSystemTime(c *gin.Context, hh *HttpApiServer) {
 *
  */
 func TestGenEtcNetCfg(c *gin.Context, hh *HttpApiServer) {
-	ApplyNewestEtcEthConfig()
-	// ApplyNewestEtcWlanConfig()
-	//
-	ApplyNewestNetplanEthConfig()
-	ApplyNewestNetplanWlanConfig()
+
 	c.JSON(common.HTTP_OK, common.Ok())
 
 }
@@ -433,15 +423,13 @@ func SetEthNetwork(c *gin.Context, hh *HttpApiServer) {
 			}
 		}
 	}
-	if NetCfgType == "NETWORK_ETC" { // Ubuntu1604
-		ApplyNewestEtcEthConfig()
-		service.EtcApply()
-	}
-	if NetCfgType == "NETPLAN" { // Ubuntu18极其以后
-		ApplyNewestNetplanEthConfig()
-		service.NetplanApply()
-	}
-	// 保存到数据库, 并且写入配置
+	/*
+	*
+	* 全部采用nmcli
+	*
+	 */
+	ApplyNewestEtcEthConfig()
+	service.EtcApply()
 	c.JSON(common.HTTP_OK, common.Ok())
 
 }
@@ -513,13 +501,13 @@ func ApplyNewestNetplanEthConfig() error {
 			Ethernets: service.EthInterface{
 				Eth0: service.HwInterface{
 					Dhcp4:       Eth0.DHCPEnabled,
-					Addresses:   []string{Eth0.Address},
+					Addresses:   []string{Eth0.Address + "/24"},
 					Gateway4:    Eth0.Gateway,
 					Nameservers: Eth0.DNS,
 				},
 				Eth1: service.HwInterface{
 					Dhcp4:       Eth1.DHCPEnabled,
-					Addresses:   []string{Eth1.Address},
+					Addresses:   []string{Eth1.Address + "/24"},
 					Gateway4:    Eth1.Gateway,
 					Nameservers: Eth1.DNS,
 				},

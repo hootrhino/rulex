@@ -175,6 +175,17 @@ func NetplanApply() error {
 	return nil
 }
 
+// RestartNetworkManager 用于重启 NetworkManager 服务
+func RestartNetworkManager() error {
+	cmd := exec.Command("systemctl", "restart", "NetworkManager")
+	err := cmd.Run()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 /*
 *
 * Ubuntu16 ETC 配置应用
