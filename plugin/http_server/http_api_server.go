@@ -360,6 +360,25 @@ func (hs *HttpApiServer) LoadRoute() {
 	// 系统设置
 	//
 	hs.LoadSystemSettingsAPI()
+
+	/**
+	 * 定时任务
+	 */
+	scheduletaskApi := hs.ginEngine.Group(url("/crontask"))
+	{
+		// TODO
+		scheduletaskApi.POST("/create", hs.addRouteV2(CreateScheduleTask))
+		scheduletaskApi.DELETE("/delete")
+		scheduletaskApi.PUT("/update")
+		scheduletaskApi.GET("/page")
+		scheduletaskApi.GET("/start")
+		scheduletaskApi.GET("/stop")
+
+		scheduletaskApi.GET("/listRunningTask")
+		scheduletaskApi.GET("/terminateRunningTask")
+
+		scheduletaskApi.GET("/cleanLog")
+	}
 }
 
 // HttpApiServer Start
@@ -402,6 +421,18 @@ func (hs *HttpApiServer) addRoute(f func(*gin.Context, *HttpApiServer)) func(*gi
 		f(c, hs)
 	}
 }
+
+func (hs *HttpApiServer) addRouteV2(f func(*gin.Context, *HttpApiServer) (error, any)) func(*gin.Context) {
+	return func(c *gin.Context) {
+		err, data := f(c, hs)
+		if err != nil {
+			c.JSON(common.HTTP_OK, common.Error400(err))
+		} else {
+			c.JSON(common.HTTP_OK, common.OkWithData(data))
+		}
+	}
+}
+
 func (hs *HttpApiServer) Authorize() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Next()

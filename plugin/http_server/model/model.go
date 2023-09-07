@@ -259,3 +259,31 @@ type MWifiConfig struct {
 	Password  string `gorm:"not null"`
 	Security  string `gorm:"not null"` // wpa2-psk wpa3-psk
 }
+
+/**
+ * 定时任务
+ */
+type MScheduleTask struct {
+	RulexModel
+	Name      string `gorm:"not null"`
+	CronExpr  string
+	Enable    int8
+	TaskType  int
+	Command   string
+	IsRoot    int8
+	WorkDir   string
+	Env       string
+	UpdatedAt time.Time
+}
+
+/**
+ * 任务结果
+ */
+type MScheduleResult struct {
+	RulexModel
+	TaskId    uint
+	ErrCode   int
+	LogPath   string
+	StartTime time.Time
+	EndTime   time.Time
+}
