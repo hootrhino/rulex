@@ -141,7 +141,7 @@ func SetWifi(c *gin.Context, hh *HttpApiServer) {
 	* 全部使用nmcli操作
 	*
 	 */
-	ApplyNewestEtcWlanConfig()
+	applyNewestEtcWlanConfig()
 	service.EtcApply()
 
 	// 保存到数据库, 并且写入配置
@@ -340,6 +340,47 @@ func GetEthNetwork(c *gin.Context, hh *HttpApiServer) {
 	}))
 
 }
+
+/*
+*
+* 获取当前网络情况
+*
+ */
+func GetCurrentNetConnection(c *gin.Context, hh *HttpApiServer) {
+	nmcliOutput, err := service.GetCurrentNetConnection()
+	if err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
+	c.JSON(common.HTTP_OK, common.OkWithData(nmcliOutput))
+}
+
+/*
+*
+* 设置默认路由
+*
+ */
+func SetDefaultRoute(c *gin.Context, hh *HttpApiServer) {
+	type Form struct {
+		Ip string `json:"ip"`
+	}
+	DtoCfg := Form{}
+	if err0 := c.ShouldBindJSON(&DtoCfg); err0 != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err0))
+		return
+	}
+	if err := service.SetDefaultRoute(DtoCfg.Ip); err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
+	c.JSON(common.HTTP_OK, common.Ok())
+}
+
+/*
+*
+* 设置两个网口
+*
+ */
 func SetEthNetwork(c *gin.Context, hh *HttpApiServer) {
 	if runtime.GOOS != "linux" {
 		c.JSON(common.HTTP_OK, common.Error("OS Not Support:"+runtime.GOOS))
@@ -439,29 +480,28 @@ func SetEthNetwork(c *gin.Context, hh *HttpApiServer) {
 * 生成最新的无线配置
 *
  */
-func ApplyNewestNetplanWlanConfig() error {
-	MWlan0, err := service.GetWlan0Config()
-	if err != nil {
-		return err
-	}
-	Wlan0Config := service.WlanConfig{
-		Wlan0: service.WLANInterface{
-			Interface: MWlan0.Interface,
-			SSID:      MWlan0.SSID,
-			Password:  MWlan0.Password,
-			Security:  MWlan0.Security,
-		},
-	}
-	// fmt.Println(Wlan0Config.YAMLString())
-	return Wlan0Config.ApplyWlan0Config()
-}
+// func applyNewestNetplanWlanConfig() error {
+// 	MWlan0, err := service.GetWlan0Config()
+// 	if err != nil {
+// 		return err
+// 	}
+// 	Wlan0Config := service.WlanConfig{
+// 		Wlan0: service.WLANInterface{
+// 			Interface: MWlan0.Interface,
+// 			SSID:      MWlan0.SSID,
+// 			Password:  MWlan0.Password,
+// 			Security:  MWlan0.Security,
+// 		},
+// 	}
+// 	return Wlan0Config.ApplyWlan0Config()
+// }
 
 /*
 *
 * ubuntu1604网络, 使用一个 nmcli 指令
 *
  */
-func ApplyNewestEtcWlanConfig() error {
+func applyNewestEtcWlanConfig() error {
 	MWlan0, err := service.GetWlan0Config()
 	if err != nil {
 		return err
@@ -484,40 +524,40 @@ func ApplyNewestEtcWlanConfig() error {
 * 生成YAML
 *
  */
-func ApplyNewestNetplanEthConfig() error {
-	Eth0, err := service.GetEth0Config()
-	if err != nil {
-		return err
-	}
-	Eth1, err := service.GetEth1Config()
-	if err != nil {
-		return err
-	}
+// func ApplyNewestNetplanEthConfig() error {
+// 	Eth0, err := service.GetEth0Config()
+// 	if err != nil {
+// 		return err
+// 	}
+// 	Eth1, err := service.GetEth1Config()
+// 	if err != nil {
+// 		return err
+// 	}
 
-	NetplanConfig := service.NetplanConfig{
-		Network: service.Network{
-			Version:  2,
-			Renderer: "NetworkManager",
-			Ethernets: service.EthInterface{
-				Eth0: service.HwInterface{
-					Dhcp4:       Eth0.DHCPEnabled,
-					Addresses:   []string{Eth0.Address + "/24"},
-					Gateway4:    Eth0.Gateway,
-					Nameservers: Eth0.DNS,
-				},
-				Eth1: service.HwInterface{
-					Dhcp4:       Eth1.DHCPEnabled,
-					Addresses:   []string{Eth1.Address + "/24"},
-					Gateway4:    Eth1.Gateway,
-					Nameservers: Eth1.DNS,
-				},
-			},
-		},
-	}
-	// fmt.Println(NetplanConfig.YAMLString())
-	return NetplanConfig.ApplyEthConfig()
+// 	NetplanConfig := service.NetplanConfig{
+// 		Network: service.Network{
+// 			Version:  2,
+// 			Renderer: "NetworkManager",
+// 			Ethernets: service.EthInterface{
+// 				Eth0: service.HwInterface{
+// 					Dhcp4:       Eth0.DHCPEnabled,
+// 					Addresses:   []string{Eth0.Address + "/24"},
+// 					Gateway4:    Eth0.Gateway,
+// 					Nameservers: Eth0.DNS,
+// 				},
+// 				Eth1: service.HwInterface{
+// 					Dhcp4:       Eth1.DHCPEnabled,
+// 					Addresses:   []string{Eth1.Address + "/24"},
+// 					Gateway4:    Eth1.Gateway,
+// 					Nameservers: Eth1.DNS,
+// 				},
+// 			},
+// 		},
+// 	}
+// 	// fmt.Println(NetplanConfig.YAMLString())
+// 	return NetplanConfig.ApplyEthConfig()
 
-}
+// }
 
 func isValidSubnetMask(mask string) bool {
 	// 分割子网掩码为4个整数

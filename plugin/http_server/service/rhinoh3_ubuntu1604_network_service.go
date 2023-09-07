@@ -61,6 +61,9 @@ func (iface *EtcNetworkConfig) GenEtcConfig() string {
 			return "static"
 		}(iface.DHCPEnabled)),
 	}
+	if iface.DHCPEnabled {
+		return strings.Join(configLines, "\n")
+	}
 	configLines = append(configLines, fmt.Sprintf("    address %s", iface.Address))
 	configLines = append(configLines, fmt.Sprintf("    netmask %s", iface.Netmask))
 	configLines = append(configLines, fmt.Sprintf("    gateway %s", iface.Gateway))

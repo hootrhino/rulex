@@ -161,8 +161,8 @@ func GetVolume() (string, error) {
 *
  */
 func GetTimeZone() string {
-	currentZone, _ := time.Now().Zone()
-	return currentZone
+	z, _ := time.Now().Zone()
+	return z
 
 }
 
@@ -207,4 +207,93 @@ func ReloadDNS18xx() error {
 	}
 
 	return nil
+}
+
+/*
+*
+* 设置默认网卡
+*
+ */
+func SetDefaultRoute(newGatewayIP string) error {
+	cmd := exec.Command("ip", "route", "add", "default", "via", newGatewayIP)
+	err := cmd.Run()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+/*
+*
+rer@revb-h3:~$ nmcli device status
+
+	DEVICE           TYPE      STATE         CONNECTION
+	usb0             ethernet  connected     Wired connection 1
+	wlx0cc6551c5026  wifi      connected     AABBCC
+	eth1             ethernet  connected     eth1
+	eth0             ethernet  disconnected  --
+	lo               loopback  unmanaged     --
+
+*
+*/
+type DeviceStatus struct {
+	DEVICE     string `json:"device"`
+	TYPE       string `json:"type"`
+	STATE      string `json:"state"`
+	CONNECTION string `json:"connection"`
+}
+
+func GetCurrentNetConnection() ([]DeviceStatus, error) {
+	nmcliCmd := exec.Command("nmcli", "device", "status")
+	nmcliOutput, err := nmcliCmd.Output()
+	if err != nil {
+		return nil, err
+	}
+	nmcliOutputStr := string(nmcliOutput)
+	deviceStatuses := parseNmcliOutput(nmcliOutputStr)
+	return deviceStatuses, nil
+}
+func parseNmcliOutput(output string) []DeviceStatus {
+	var deviceStatuses []DeviceStatus
+
+	// 按行分割输出
+	lines := strings.Split(output, "\n")
+
+	// 如果没有输出行，返回空切片
+	if len(lines) == 0 {
+		return deviceStatuses
+	}
+
+	// 获取列名
+	headers := strings.Fields(lines[0])
+
+	// 遍历剩余的行，每行是一个设备状态
+	for _, line := range lines[1:] {
+		fields := strings.Fields(line)
+
+		// 如果列数不匹配列名数，跳过该行
+		if len(fields) != len(headers) {
+			continue
+		}
+
+		// 创建一个新的设备状态结构体，并填充数据
+		var status DeviceStatus
+		for i, header := range headers {
+			switch header {
+			case "DEVICE":
+				status.DEVICE = fields[i]
+			case "TYPE":
+				status.TYPE = fields[i]
+			case "STATE":
+				status.STATE = fields[i]
+			case "CONNECTION":
+				status.CONNECTION = fields[i]
+			}
+		}
+
+		// 将设备状态添加到切片
+		deviceStatuses = append(deviceStatuses, status)
+	}
+
+	return deviceStatuses
 }
