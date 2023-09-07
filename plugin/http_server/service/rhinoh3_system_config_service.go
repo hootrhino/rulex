@@ -17,6 +17,7 @@ package service
 
 import (
 	"fmt"
+	"math"
 	"os/exec"
 	"strings"
 	"time"
@@ -119,10 +120,10 @@ func SetVolume(v int) (string, error) {
 	if v > -100 && v < 100 {
 		var cmd *exec.Cmd
 		if v < 0 {
-			cmd = exec.Command("sh", "-c", fmt.Sprintf(shellCmd, fmt.Sprintf("%v%%-", v)))
+			cmd = exec.Command("sh", "-c", fmt.Sprintf(shellCmd, fmt.Sprintf("%v%%-", math.Abs(float64(v)))))
 		}
 		if v > 0 {
-			cmd = exec.Command("sh", "-c", fmt.Sprintf(shellCmd, fmt.Sprintf("%v%%+", v)))
+			cmd = exec.Command("sh", "-c", fmt.Sprintf(shellCmd, fmt.Sprintf("%v%%+", math.Abs(float64(v)))))
 		}
 		output, err := cmd.Output()
 		if err != nil {
@@ -168,21 +169,11 @@ func GetTimeZone() string {
 // SetTimeZone 设置系统时区
 // timezone := "Asia/Shanghai"
 func SetTimeZone(timezone string) error {
-
-	// 设置要执行的命令和参数
 	cmd := exec.Command("timedatectl", "set-timezone", timezone)
-
-	// 执行命令并捕获输出
 	output, err := cmd.CombinedOutput()
-
 	if err != nil {
-		// 如果发生错误，返回错误信息
 		return fmt.Errorf("Error: %v\nOutput: %s", err, string(output))
 	}
-
-	// 打印命令的输出结果
-	fmt.Println(string(output))
-
 	return nil
 }
 
@@ -194,8 +185,6 @@ func SetTimeZone(timezone string) error {
 func ReloadDNS16() error {
 	// 执行 /etc/init.d/networking 命令来重新加载DNS缓存
 	cmd := exec.Command("/etc/init.d/networking", "restart")
-
-	// 执行命令
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("Error reloading DNS: %v", err)
 	}

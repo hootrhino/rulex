@@ -32,7 +32,8 @@ func (hs *HttpApiServer) LoadSystemSettingsAPI() {
 		//
 		settingsApi.GET("/volume", hs.addRoute(GetVolume))
 		settingsApi.POST("/volume", hs.addRoute(SetVolume))
-		// TODO: 仅开发做测试用, 完了会删除这个接口
-		// settingsApi.POST("/test", hs.addRoute(TestGenEtcNetCfg))
+		//
+		settingsApi.POST("/timezone", hs.addRoute(SetSystemTimeZone))
+		settingsApi.GET("/timezone", hs.addRoute(GetSystemTimeZone))
 	}
 }
