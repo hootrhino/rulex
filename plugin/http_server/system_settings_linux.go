@@ -23,6 +23,7 @@ func (hs *HttpApiServer) LoadSystemSettingsAPI() {
 	{
 		settingsApi.POST("/eth", hs.addRoute(SetEthNetwork))
 		settingsApi.GET("/eth", hs.addRoute(GetEthNetwork))
+		settingsApi.GET("/connection", hs.addRoute(GetCurrentNetConnection))
 		//
 		settingsApi.GET("/time", hs.addRoute(GetSystemTime))
 		settingsApi.POST("/time", hs.addRoute(SetSystemTime))
@@ -35,5 +36,6 @@ func (hs *HttpApiServer) LoadSystemSettingsAPI() {
 		//
 		settingsApi.POST("/timezone", hs.addRoute(SetSystemTimeZone))
 		settingsApi.GET("/timezone", hs.addRoute(GetSystemTimeZone))
+		settingsApi.POST("/iproute", hs.addRoute(SetDefaultRoute))
 	}
 }
