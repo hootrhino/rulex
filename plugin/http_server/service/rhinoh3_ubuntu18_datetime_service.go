@@ -144,9 +144,9 @@ func getTimeZoneInfo() (TimeZoneInfo, error) {
 // timezone := "Asia/Shanghai"
 func SetTimeZone(timezone string) error {
 	cmd := exec.Command("timedatectl", "set-timezone", timezone)
-	output, err := cmd.CombinedOutput()
+	_, err := cmd.CombinedOutput()
 	if err != nil {
-		return fmt.Errorf("Error: %v\nOutput: %s", err, string(output))
+		return err
 	}
 	return nil
 }
