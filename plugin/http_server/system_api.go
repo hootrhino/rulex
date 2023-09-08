@@ -242,6 +242,37 @@ func GetUarts(c *gin.Context, hh *HttpApiServer) {
 
 /*
 *
+* apiV2
+*
+ */
+func GetUartList(c *gin.Context, hh *HttpApiServer) {
+	ports, _ := serial.GetPortsList()
+	List := []map[string]interface{}{}
+	for _, port := range ports {
+		if port == "/dev/ttyS0" {
+			continue
+		}
+		if port == "/dev/ttyS3" {
+			continue
+		}
+		List = append(List, map[string]interface{}{
+			"port": port,
+			"alias": func(port string) string {
+				if port == "/dev/ttyS1" {
+					return "RS485A1B1"
+				}
+				if port == "/dev/ttyS2" {
+					return "RS485A2B2"
+				}
+				return port
+			}(port)})
+
+	}
+	c.JSON(common.HTTP_OK, common.OkWithData(List))
+}
+
+/*
+*
 * 本地网卡
 *
  */

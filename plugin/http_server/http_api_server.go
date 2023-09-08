@@ -259,7 +259,7 @@ func (hs *HttpApiServer) LoadRoute() {
 	{
 		osApi.GET(("/netInterfaces"), hs.addRoute(GetNetInterfaces))
 		osApi.GET(("/osRelease"), hs.addRoute(CatOsRelease))
-		osApi.GET(("/uarts"), hs.addRoute(GetUarts))
+		osApi.GET(("/uarts"), hs.addRoute(GetUartList))
 		osApi.GET(("/system"), hs.addRoute(System))
 		osApi.GET(("/startedAt"), hs.addRoute(StartedAt))
 
