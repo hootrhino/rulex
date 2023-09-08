@@ -62,6 +62,7 @@ func LoadBuildInLuaLib(e typex.RuleX, r *typex.Rule) {
 	r.AddLib(e, "rulexlib", "DataToMongo", rulexlib.DataToMongo(e))
 	// 时间库
 	r.AddLib(e, "rulexlib", "Time", rulexlib.Time(e))
+	r.AddLib(e, "rulexlib", "TimeMs", rulexlib.TimeMs(e))
 	r.AddLib(e, "rulexlib", "TsUnix", rulexlib.TsUnix(e))
 	r.AddLib(e, "rulexlib", "TsUnixNano", rulexlib.TsUnixNano(e))
 	r.AddLib(e, "rulexlib", "NtpTime", rulexlib.NtpTime(e))

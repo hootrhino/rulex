@@ -59,6 +59,12 @@ func Time(rx typex.RuleX) func(l *lua.LState) int {
 		return 1
 	}
 }
+func TimeMs(rx typex.RuleX) func(l *lua.LState) int {
+	return func(l *lua.LState) int {
+		l.Push(lua.LString(time.Now().Format("2006-01-02 15:04:05.000")))
+		return 1
+	}
+}
 
 /*
 *
