@@ -37,7 +37,7 @@ type WebTTYPlugin struct {
 func NewWebTTYPlugin() *WebTTYPlugin {
 	return &WebTTYPlugin{
 		uuid:       "WEB_TTYD_TERMINAL",
-		mainConfig: _ttydConfig{},
+		mainConfig: _ttydConfig{ListenPort: 7681},
 		busying:    false,
 	}
 }
@@ -54,10 +54,6 @@ func (tty *WebTTYPlugin) Init(config *ini.Section) error {
 	if err := utils.InIMapToStruct(config, &tty.mainConfig); err != nil {
 		return err
 	}
-	if tty.mainConfig.ListenPort == 0 {
-		tty.mainConfig.ListenPort = 7681
-	}
-
 	return nil
 }
 
