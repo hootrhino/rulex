@@ -73,7 +73,6 @@ func RunTestEngine() typex.RuleX {
 		mainConfig.AppId, mainConfig.AppName,
 	)
 	glogger.StartNewRealTimeLogger(core.GlobalConfig.LogLevel)
-	glogger.StartLuaLogger(core.GlobalConfig.LuaLogPath)
 	//----------------------------------------------------------------------------------------------
 	// Init Component
 	//----------------------------------------------------------------------------------------------
