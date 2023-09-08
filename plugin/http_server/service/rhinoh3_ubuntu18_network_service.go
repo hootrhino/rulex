@@ -36,7 +36,7 @@ func GetWlanList() ([]string, error) {
 	cmd := exec.Command("nmcli", "--fields", "SSID,MODE,FREQ,SIGNAL,BARS,SECURITY", "device", "wifi", "list")
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		return nil, fmt.Errorf("Error executing nmcli: %v", err)
+		return nil, fmt.Errorf("Error executing nmcli: %s", err.Error()+":"+string(output))
 	}
 	lines := strings.Split(string(output), "\n")
 	var wifiList []string
@@ -51,8 +51,9 @@ func GetWlanList() ([]string, error) {
  */
 func DisableWifi() error {
 	cmd := exec.Command("nmcli", "radio", "wifi", "off")
-	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("Error disabling Wi-Fi: %v", err)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("Error executing nmcli: %s", err.Error()+":"+string(output))
 	}
 	return nil
 }
@@ -64,8 +65,9 @@ func DisableWifi() error {
  */
 func EnableWifi() error {
 	cmd := exec.Command("nmcli", "radio", "wifi", "on")
-	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("Error enabling Wi-Fi: %v", err)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("Error executing nmcli: %s", err.Error()+":"+string(output))
 	}
 	return nil
 }
@@ -85,9 +87,9 @@ func SetVolume(v int) (string, error) {
 		if v > 0 {
 			cmd = exec.Command("sh", "-c", fmt.Sprintf(shellCmd, fmt.Sprintf("%v%%+", math.Abs(float64(v)))))
 		}
-		output, err := cmd.Output()
+		output, err := cmd.CombinedOutput()
 		if err != nil {
-			return "", err
+			return "", fmt.Errorf("Error executing nmcli: %s", err.Error()+":"+string(output))
 		}
 		volume := strings.TrimSpace(string(output))
 		return volume, nil
@@ -107,9 +109,9 @@ func GetVolume() (string, error) {
 	// 创建一个 Command 对象，执行多个命令通过管道连接
 	cmd := exec.Command("sh", "-c",
 		"amixer get 'Line Out' | grep 'Front Left:' | awk -F '[][]' '{print $2}'")
-	output, err := cmd.Output()
+	output, err := cmd.CombinedOutput()
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("Error executing nmcli: %s", err.Error()+":"+string(output))
 	}
 	volume := strings.TrimSpace(string(output))
 	return volume, nil
@@ -123,10 +125,10 @@ func GetVolume() (string, error) {
 func ReloadDNS16() error {
 	// 执行 /etc/init.d/networking 命令来重新加载DNS缓存
 	cmd := exec.Command("/etc/init.d/networking", "restart")
-	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("Error reloading DNS: %v", err)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("Error executing nmcli: %s", err.Error()+":"+string(output))
 	}
-
 	return nil
 }
 
@@ -138,10 +140,9 @@ func ReloadDNS16() error {
 func ReloadDNS18xx() error {
 	// 执行 systemd-resolved 命令来重新加载DNS缓存
 	cmd := exec.Command("systemctl", "reload", "systemd-resolved.service")
-
-	// 执行命令
-	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("Error reloading DNS: %v", err)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("Error executing nmcli: %s", err.Error()+":"+string(output))
 	}
 
 	return nil
@@ -154,9 +155,9 @@ func ReloadDNS18xx() error {
  */
 func SetDefaultRoute(newGatewayIP string) error {
 	cmd := exec.Command("ip", "route", "add", "default", "via", newGatewayIP)
-	err := cmd.Run()
+	output, err := cmd.CombinedOutput()
 	if err != nil {
-		return err
+		return fmt.Errorf("Error executing nmcli: %s", err.Error()+":"+string(output))
 	}
 	return nil
 }
@@ -183,11 +184,11 @@ type DeviceStatus struct {
 
 func GetCurrentNetConnection() ([]DeviceStatus, error) {
 	nmcliCmd := exec.Command("nmcli", "device", "status")
-	nmcliOutput, err := nmcliCmd.Output()
+	output, err := nmcliCmd.CombinedOutput()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Error executing nmcli: %s", err.Error()+":"+string(output))
 	}
-	nmcliOutputStr := string(nmcliOutput)
+	nmcliOutputStr := string(output)
 	deviceStatuses := parseNmcliOutput(nmcliOutputStr)
 	return deviceStatuses, nil
 }

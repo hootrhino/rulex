@@ -1,8 +1,10 @@
 package utils
 
 import (
+	"fmt"
 	"net"
 	"os"
+	"os/exec"
 )
 
 /*
@@ -39,4 +41,18 @@ func GetSystemDevices() (SystemDevices, error) {
 }
 func CatOsRelease() (map[string]string, error) {
 	return map[string]string{"os": "windows"}, nil
+}
+
+/*
+*
+* 执行系统命令
+*
+ */
+func OsExecute(name string, arg ...string) error {
+	nmcliCmd := exec.Command(name, arg...)
+	output, err := nmcliCmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("error when executing[%s %v]:%s", name, arg, err.Error()+", output:"+string(output))
+	}
+	return nil
 }

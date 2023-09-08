@@ -91,9 +91,9 @@ func setNtp(v bool) error {
 		}
 		return "false"
 	}(v))
-	err := cmd.Run()
+	bytes, err := cmd.CombinedOutput()
 	if err != nil {
-		return err
+		return fmt.Errorf(err.Error() + ":" + string(bytes))
 	}
 	return nil
 }
@@ -121,7 +121,7 @@ func getTimeZoneInfo() (TimeZoneInfo, error) {
 	cmd := exec.Command("timedatectl", "status", "--no-pager")
 	output, err := cmd.Output()
 	if err != nil {
-		return timezoneInfo, err
+		return timezoneInfo, fmt.Errorf(err.Error() + ":" + string(output))
 	}
 	outputStr := string(output)
 	lines := strings.Split(outputStr, "\n")
@@ -144,9 +144,9 @@ func getTimeZoneInfo() (TimeZoneInfo, error) {
 // timezone := "Asia/Shanghai"
 func SetTimeZone(timezone string) error {
 	cmd := exec.Command("timedatectl", "set-timezone", timezone)
-	_, err := cmd.CombinedOutput()
+	output, err := cmd.CombinedOutput()
 	if err != nil {
-		return err
+		return fmt.Errorf(err.Error() + ":" + string(output))
 	}
 	return nil
 }

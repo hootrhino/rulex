@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"os/exec"
 
 	"github.com/hootrhino/rulex/glogger"
@@ -168,21 +169,19 @@ func NetplanApply() error {
 		"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		glogger.GLogger.Error(err)
+		glogger.GLogger.Error(err, string(out))
 		return err
 	}
-	glogger.GLogger.Info(out)
 	return nil
 }
 
 // RestartNetworkManager 用于重启 NetworkManager 服务
 func RestartNetworkManager() error {
 	cmd := exec.Command("systemctl", "restart", "NetworkManager")
-	err := cmd.Run()
+	output, err := cmd.CombinedOutput()
 	if err != nil {
-		return err
+		return fmt.Errorf(err.Error() + ":" + string(output))
 	}
-
 	return nil
 }
 
@@ -193,11 +192,9 @@ func RestartNetworkManager() error {
  */
 func EtcApply() error {
 	cmd := exec.Command("sh", "-c", `service networking restart`)
-	out, err := cmd.CombinedOutput()
+	output, err := cmd.CombinedOutput()
 	if err != nil {
-		glogger.GLogger.Error(err)
-		return err
+		return fmt.Errorf(err.Error() + ":" + string(output))
 	}
-	glogger.GLogger.Info(out)
 	return nil
 }
