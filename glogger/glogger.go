@@ -1,12 +1,11 @@
 package glogger
 
 import (
-	"github.com/sirupsen/logrus"
 	"os"
-	"time"
-)
 
-var private_local_logger *LogWriter
+	logrus "github.com/sirupsen/logrus"
+	"gopkg.in/natefinch/lumberjack.v2"
+)
 
 /*
 *
@@ -23,7 +22,6 @@ func StartGLogger(LogLevel string,
 	path string,
 	key string, value interface{}) {
 	GLogger = Logrus.WithField("appId", value)
-	private_local_logger = NewLogWriter("./" + time.Now().Format("2006-01-02-") + path)
 	Logrus.Formatter = new(logrus.JSONFormatter)
 	if AppDebugMode {
 		Logrus.SetReportCaller(true)
@@ -31,8 +29,15 @@ func StartGLogger(LogLevel string,
 	if EnableConsole {
 		Logrus.SetOutput(os.Stdout)
 	} else {
-		Logrus.SetOutput(private_local_logger)
+		Logrus.SetOutput(&lumberjack.Logger{
+			Filename:   path + ".txt",
+			MaxSize:    5,    // 超过5Mb备份
+			MaxBackups: 2,    // 最多备份2次
+			MaxAge:     7,    // 最大保留天数
+			Compress:   true, // 压缩备份
+		})
 	}
+
 	setLogLevel(LogLevel)
 }
 func setLogLevel(LogLevel string) {
@@ -59,11 +64,5 @@ func setLogLevel(LogLevel string) {
 *
  */
 func Close() error {
-	if err := private_local_logger.Close(); err != nil {
-		return err
-	}
-	if err := private_lua_logger.Close(); err != nil {
-		return err
-	}
 	return nil
 }

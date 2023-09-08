@@ -104,8 +104,6 @@ func LoadAppLib(app *typex.Application, e typex.RuleX) {
 	// JQ
 	addAppLib(app, e, "applib", "JqSelect", rulexlib.JqSelect(e))
 	addAppLib(app, e, "applib", "JQ", rulexlib.JqSelect(e))
-	// 日志
-	addAppLib(app, e, "applib", "log", rulexlib.Log(e))
 	addAppLib(app, e, "applib", "Debug", rulexlib.DebugAPP(e, app.UUID))
 	// 二进制操作
 	addAppLib(app, e, "applib", "MB", rulexlib.MatchBinary(e))
