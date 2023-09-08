@@ -36,11 +36,17 @@ func (tty *WebTTYPlugin) Service(arg typex.ServiceArg) typex.ServiceResult {
 		if arg.Name == "stop" {
 			if tty.cancel != nil {
 				tty.cancel()
-				tty.busying = false
-				return typex.ServiceResult{Out: "Stop Success"}
 			}
+			if tty.ttydCmd != nil {
+				if tty.ttydCmd.ProcessState != nil {
+					tty.ttydCmd.Process.Kill()
+					tty.ttydCmd.Process.Signal(os.Kill)
+				}
+			}
+			tty.busying = false
+			return typex.ServiceResult{Out: "Terminal Stop Success"}
 		}
-		return typex.ServiceResult{Out: "Modbus Scanner Busing now"}
+		return typex.ServiceResult{Out: "Terminal already running now"}
 	}
 
 	if arg.Name == "stop" {
@@ -54,6 +60,8 @@ func (tty *WebTTYPlugin) Service(arg typex.ServiceArg) typex.ServiceResult {
 			}
 		}
 		tty.busying = false
+		return typex.ServiceResult{Out: "Terminal Stop Success"}
+
 	}
 	if arg.Name == "start" {
 		tty.busying = true
@@ -65,7 +73,7 @@ func (tty *WebTTYPlugin) Service(arg typex.ServiceArg) typex.ServiceResult {
 			"-o", "-6", "bash")
 		if err1 := tty.ttydCmd.Start(); err1 != nil {
 			glogger.GLogger.Infof("cmd.Start error: %v", err1)
-			return typex.ServiceResult{}
+			return typex.ServiceResult{Out: err1.Error()}
 		}
 		go func(tty *WebTTYPlugin) {
 			defer func() {
@@ -75,6 +83,7 @@ func (tty *WebTTYPlugin) Service(arg typex.ServiceArg) typex.ServiceResult {
 			tty.ttydCmd.Process.Wait()
 			glogger.GLogger.Info("ttyd stopped")
 		}(tty)
+		return typex.ServiceResult{Out: "Terminal Start Success"}
 	}
-	return typex.ServiceResult{}
+	return typex.ServiceResult{Out: "Unknown service name:" + arg.Name}
 }
