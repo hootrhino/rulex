@@ -18,6 +18,7 @@ package service
 import (
 	"fmt"
 	"os/exec"
+	"strings"
 	"time"
 )
 
@@ -102,10 +103,41 @@ func setNtp(v bool) error {
 * 时区
 *
  */
-func GetTimeZone() string {
-	z, _ := time.Now().Zone()
-	return z
+type TimeZoneInfo struct {
+	CurrentTimezone string `json:"currentTimezone"`
+	NTPSynchronized string `json:"NTPSynchronized"`
+}
 
+func GetTimeZone() (TimeZoneInfo, error) {
+	timezoneInfo, err := getTimeZoneInfo()
+	if err != nil {
+		return TimeZoneInfo{}, err
+	}
+	return timezoneInfo, nil
+}
+func getTimeZoneInfo() (TimeZoneInfo, error) {
+	var timezoneInfo TimeZoneInfo
+
+	cmd := exec.Command("timedatectl", "status", "--no-pager")
+	output, err := cmd.Output()
+	if err != nil {
+		return timezoneInfo, err
+	}
+	outputStr := string(output)
+	lines := strings.Split(outputStr, "\n")
+	for _, line := range lines {
+		fields := strings.Split(line, ": ")
+		if len(fields) >= 2 {
+			switch strings.TrimSpace(fields[0]) {
+			case "Time zone":
+				timezoneInfo.CurrentTimezone = fields[1]
+			case "System clock synchronized":
+				timezoneInfo.NTPSynchronized = fields[1]
+			}
+		}
+	}
+
+	return timezoneInfo, nil
 }
 
 // SetTimeZone 设置系统时区
