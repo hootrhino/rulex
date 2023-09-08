@@ -37,5 +37,6 @@ func (hs *HttpApiServer) LoadSystemSettingsAPI() {
 		settingsApi.POST("/timezone", hs.addRoute(SetSystemTimeZone))
 		settingsApi.GET("/timezone", hs.addRoute(GetSystemTimeZone))
 		settingsApi.POST("/iproute", hs.addRoute(SetDefaultRoute))
+		settingsApi.PUT("/ntp", hs.addRoute(UpdateTimeByNtp))
 	}
 }

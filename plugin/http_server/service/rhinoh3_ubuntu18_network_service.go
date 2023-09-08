@@ -20,7 +20,6 @@ import (
 	"math"
 	"os/exec"
 	"strings"
-	"time"
 )
 
 //--------------------------------------------------------------------------------------
@@ -72,45 +71,6 @@ func EnableWifi() error {
 }
 
 /*
-*
-* 验证时间格式 YYYY-MM-DD HH:MM:SS
-*
- */
-func isValidTimeFormat(input string) bool {
-	expectedFormat := "2006-01-02 15:04:05"
-	_, err := time.Parse(expectedFormat, input)
-	return err == nil
-}
-
-/*
-*
-* 获取当前系统时间
-*
- */
-func GetSystemTime() string {
-	return time.Now().Format("2006-01-02 15:04:05")
-}
-
-/*
-*
-*
-设置时间，格式为 "YYYY-MM-DD HH:MM:SS"
-*
-*/
-func SetSystemTime(newTime string) error {
-	if !isValidTimeFormat(newTime) {
-		return fmt.Errorf("Invalid time format:%s, must be 'YYYY-MM-DD HH:MM:SS'", newTime)
-	}
-	// newTime := "2023-08-10 15:30:00"
-	cmd := exec.Command("date", "-s", newTime)
-	_, err := cmd.CombinedOutput()
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-/*
 * amixer 设置音量, 输入参数是个数值, 每次增加或者减少1%
 *        amixer set 'Line Out' 1 | grep 'Front Left:' | awk -F '[][]' '{print $2}'
 *
@@ -153,28 +113,6 @@ func GetVolume() (string, error) {
 	}
 	volume := strings.TrimSpace(string(output))
 	return volume, nil
-}
-
-/*
-*
-* 时区
-*
- */
-func GetTimeZone() string {
-	z, _ := time.Now().Zone()
-	return z
-
-}
-
-// SetTimeZone 设置系统时区
-// timezone := "Asia/Shanghai"
-func SetTimeZone(timezone string) error {
-	cmd := exec.Command("timedatectl", "set-timezone", timezone)
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		return fmt.Errorf("Error: %v\nOutput: %s", err, string(output))
-	}
-	return nil
 }
 
 /*
