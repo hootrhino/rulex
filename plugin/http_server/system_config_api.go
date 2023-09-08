@@ -246,16 +246,22 @@ func SetSystemTimeZone(c *gin.Context, hh *HttpApiServer) {
 
 	if !validTimeZone(DtoCfg.Timezone) {
 		c.JSON(common.HTTP_OK, common.Error("Invalid timezone:"+DtoCfg.Timezone))
-
+		return
 	}
 	if err := service.SetTimeZone(DtoCfg.Timezone); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
 	}
 	c.JSON(common.HTTP_OK, common.Ok())
 
 }
 func GetSystemTimeZone(c *gin.Context, hh *HttpApiServer) {
-	c.JSON(common.HTTP_OK, common.OkWithData(service.GetTimeZone()))
+	Info, err := service.GetTimeZone()
+	if err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
+	c.JSON(common.HTTP_OK, common.OkWithData(Info))
 
 }
 
