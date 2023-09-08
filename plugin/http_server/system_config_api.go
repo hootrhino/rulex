@@ -477,6 +477,20 @@ func SetEthNetwork(c *gin.Context, hh *HttpApiServer) {
 
 /*
 *
+* 更新时间
+*
+ */
+func UpdateTimeByNtp(c *gin.Context, hh *HttpApiServer) {
+	if err := service.UpdateTimeByNtp(); err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
+	c.JSON(common.HTTP_OK, common.Ok())
+
+}
+
+/*
+*
 * 生成最新的无线配置
 *
  */
