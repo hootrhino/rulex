@@ -132,6 +132,7 @@ func LoadAppLib(app *typex.Application, e typex.RuleX) {
 	addAppLib(app, e, "applib", "DataToMongo", rulexlib.DataToMongo(e))
 	// 时间库
 	addAppLib(app, e, "applib", "Time", rulexlib.Time(e))
+	addAppLib(app, e, "applib", "TimeMs", rulexlib.TimeMs(e))
 	addAppLib(app, e, "applib", "TsUnix", rulexlib.TsUnix(e))
 	addAppLib(app, e, "applib", "TsUnixNano", rulexlib.TsUnixNano(e))
 	addAppLib(app, e, "applib", "NtpTime", rulexlib.NtpTime(e))
