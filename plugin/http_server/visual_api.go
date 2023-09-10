@@ -9,9 +9,10 @@ import (
 )
 
 type VisualVo struct {
-	UUID    string `json:"uuid" validate:"required"`    // 名称
+	Gid     string `json:"gid"`                         // 分组ID
+	UUID    string `json:"uuid"`                        // 名称
 	Name    string `json:"name" validate:"required"`    // 名称
-	Type    string `json:"type" validate:"required"`    // 类型
+	Type    string `json:"type"`                        // 类型
 	Content string `json:"content" validate:"required"` // 大屏的内容
 }
 
@@ -27,6 +28,11 @@ func CreateVisual(c *gin.Context, hh *HttpApiServer) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
+	_, err0 := service.GetGenericGroupWithUUID(vvo.Gid)
+	if err0 != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err0))
+		return
+	}
 	MVisual := model.MVisual{
 		UUID:    utils.VisualUuid(),
 		Name:    vvo.Name,
@@ -34,6 +40,11 @@ func CreateVisual(c *gin.Context, hh *HttpApiServer) {
 		Content: vvo.Content,
 	}
 	if err := service.InsertVisual(MVisual); err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
+	// 新建大屏的时候必须给一个分组
+	if err := service.BindResource(vvo.Gid, MVisual.UUID); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
