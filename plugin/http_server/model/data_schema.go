@@ -17,7 +17,7 @@ package model
 
 /*
 *
-* UI 组件选择的数据模型
+* Type: SIMPLE_LINE(简单一线),COMPLEX_LINE(复杂多线)
 *
  */
 type MDataSchema struct {
