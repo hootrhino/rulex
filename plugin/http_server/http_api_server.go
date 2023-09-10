@@ -335,6 +335,8 @@ func (hs *HttpApiServer) LoadRoute() {
 		schemaApi.DELETE("/delete", hs.addRoute(DeleteDataSchema))
 		schemaApi.PUT("/update", hs.addRoute(UpdateDataSchema))
 		schemaApi.GET("/list", hs.addRoute(ListDataSchema))
+		schemaApi.GET(("/detail"), hs.addRoute(DataSchemaDetail))
+
 	}
 	//
 	// 系统设置

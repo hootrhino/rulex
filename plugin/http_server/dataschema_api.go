@@ -28,10 +28,10 @@ type DataSchemaVo struct {
 *
  */
 type DataDefine struct {
-	Name    string
-	Type    string // number,string
-	Default interface{}
-	Label   string
+	Name    string      `json:"name,omitempty"`
+	Type    string      `json:"type,omitempty"` // number,string
+	Default interface{} `json:"default,omitempty"`
+	Label   string      `json:"label,omitempty"`
 }
 
 /*
@@ -51,6 +51,26 @@ func CreateDataSchema(c *gin.Context, hh *HttpApiServer) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
+	if len(vo.Schema) < 1 {
+		c.JSON(common.HTTP_OK, common.Error("Must contain less 1 Filed"))
+		return
+	}
+	/*
+	*
+	* Type: SIMPLE_LINE(简单一线),COMPLEX_LINE(复杂多线)
+	*
+	 */
+	if !utils.SContains([]string{"SIMPLE_LINE", "COMPLEX_LINE"}, vo.Type) {
+		c.JSON(common.HTTP_OK, common.Error("'Type' Must one of [SIMPLE_LINE, COMPLEX_LINE]"))
+		return
+	}
+	if vo.Type == "SIMPLE_LINE" {
+		if len(vo.Schema) > 1 {
+			c.JSON(common.HTTP_OK, common.Error("'SIMPLE_LINE' Type Only Can Have 1 Filed"))
+			return
+		}
+	}
+
 	MDataSchema := model.MDataSchema{
 		UUID:   utils.DataSchemaUuid(),
 		Name:   vo.Name,
@@ -143,6 +163,7 @@ func DataSchemaDetail(c *gin.Context, hh *HttpApiServer) {
 	mDataSchema, err := service.GetDataSchemaWithUUID(uuid)
 	if err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
 	}
 	dataDefine := []DataDefine{}
 	err1 := json.Unmarshal([]byte(mDataSchema.Schema), &dataDefine)
