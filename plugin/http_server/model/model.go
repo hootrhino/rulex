@@ -265,15 +265,16 @@ type MWifiConfig struct {
  */
 type MScheduleTask struct {
 	RulexModel
-	Name      string `gorm:"not null"`
-	CronExpr  string
-	Enable    int8
-	TaskType  int
-	Command   string
-	IsRoot    int8
-	WorkDir   string
-	Env       string
-	UpdatedAt time.Time
+	Name      string    `gorm:"not null" json:"name"`
+	CronExpr  string    `json:"cronExpr"` // Quartz standard
+	Enable    int8      `json:"enable"`
+	TaskType  int       `json:"taskType"` // 1-shell script
+	Command   string    `json:"command"`  // ./cron_task/{id}/a.sh
+	Args      string    `json:"args"`     // param1 param2 param3
+	IsRoot    int8      `json:"isRoot"`
+	WorkDir   string    `json:"workDir"` // /root
+	Env       string    `json:"env"`     // A=e1;B=e2;C=e3
+	UpdatedAt time.Time `json:"updatedAt"`
 }
 
 /**
@@ -281,9 +282,22 @@ type MScheduleTask struct {
  */
 type MScheduleResult struct {
 	RulexModel
-	TaskId    uint
-	ErrCode   int
-	LogPath   string
-	StartTime time.Time
-	EndTime   time.Time
+	TaskId    uint      `json:"taskId,omitempty"`
+	ErrCode   int       `json:"errCode,omitempty"`
+	LogPath   string    `json:"logPath,omitempty"`
+	StartTime time.Time `json:"startTime"`
+	EndTime   time.Time `json:"endTime"`
+}
+
+type PageRequest struct {
+	Current     int  `json:"current,omitempty"`
+	Size        int  `json:"size,omitempty"`
+	SearchCount bool `json:"searchCount,omitempty"`
+}
+
+type PageResult struct {
+	Current int `json:"current"`
+	Size    int `json:"size"`
+	Total   int `json:"total"`
+	Records any `json:"records"`
 }

@@ -368,14 +368,15 @@ func (hs *HttpApiServer) LoadRoute() {
 	{
 		// TODO
 		scheduletaskApi.POST("/create", hs.addRouteV2(CreateScheduleTask))
-		scheduletaskApi.DELETE("/delete")
-		scheduletaskApi.PUT("/update")
-		scheduletaskApi.GET("/page")
-		scheduletaskApi.GET("/start")
-		scheduletaskApi.GET("/stop")
+		scheduletaskApi.DELETE("/delete", hs.addRouteV2(DeleteScheduleTask))
+		scheduletaskApi.PUT("/update", hs.addRouteV2(UpdateScheduleTask))
+		scheduletaskApi.GET("/page", hs.addRouteV2(PageScheduleTask))
+		scheduletaskApi.GET("/getResult", hs.addRouteV2(GetTaskResult))
 
-		scheduletaskApi.GET("/listRunningTask")
-		scheduletaskApi.GET("/terminateRunningTask")
+		scheduletaskApi.GET("/start", hs.addRouteV2(StartTask))
+		scheduletaskApi.GET("/stop", hs.addRouteV2(StopTask))
+		scheduletaskApi.GET("/listRunningTask", hs.addRouteV2(ListRunningTask))
+		scheduletaskApi.GET("/terminateRunningTask", hs.addRouteV2(TerminateRunningTask))
 
 		scheduletaskApi.GET("/cleanLog")
 	}
@@ -422,9 +423,9 @@ func (hs *HttpApiServer) addRoute(f func(*gin.Context, *HttpApiServer)) func(*gi
 	}
 }
 
-func (hs *HttpApiServer) addRouteV2(f func(*gin.Context, *HttpApiServer) (error, any)) func(*gin.Context) {
+func (hs *HttpApiServer) addRouteV2(f func(*gin.Context, *HttpApiServer) (any, error)) func(*gin.Context) {
 	return func(c *gin.Context) {
-		err, data := f(c, hs)
+		data, err := f(c, hs)
 		if err != nil {
 			c.JSON(common.HTTP_OK, common.Error400(err))
 		} else {
