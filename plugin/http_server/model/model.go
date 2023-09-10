@@ -200,7 +200,7 @@ type MVisual struct {
  */
 type MGenericGroup struct {
 	RulexModel
-	UUID   string `gorm:"not null"` // 名称
+	UUID   string `gorm:"not null"`
 	Name   string `gorm:"not null"` // 名称
 	Type   string `gorm:"not null"` // 组的类型, DEVICE: 设备分组
 	Parent string `gorm:"not null"` // 上级, 如果是0表示根节点

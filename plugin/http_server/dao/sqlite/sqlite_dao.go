@@ -1,12 +1,12 @@
 package sqlitedao
 
 import (
-	"os"
 	"runtime"
 
 	"github.com/hootrhino/rulex/core"
 	"github.com/hootrhino/rulex/glogger"
 	dao "github.com/hootrhino/rulex/plugin/http_server/dao"
+	"github.com/hootrhino/rulex/plugin/http_server/model"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -101,9 +101,23 @@ func (s *SqliteDAO) Name() string {
 * 注册数据模型
 *
  */
-func (s *SqliteDAO) RegisterModel(dist ...interface{}) {
-	if err := s.DB().AutoMigrate(dist); err != nil {
-		glogger.GLogger.Fatal(err)
-		os.Exit(1)
-	}
+func (s *SqliteDAO) RegisterModel() {
+	s.DB().AutoMigrate(
+		&model.MInEnd{},
+		&model.MOutEnd{},
+		&model.MRule{},
+		&model.MUser{},
+		&model.MDevice{},
+		&model.MGoods{},
+		&model.MApp{},
+		&model.MAiBase{},
+		&model.MModbusPointPosition{},
+		&model.MVisual{},
+		&model.MGenericGroup{},
+		&model.MGenericGroupRelation{},
+		&model.MProtocolApp{},
+		&model.MNetworkConfig{},
+		&model.MWifiConfig{},
+		&model.MDataSchema{},
+	)
 }

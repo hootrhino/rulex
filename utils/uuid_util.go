@@ -38,6 +38,9 @@ func AppUuid() string {
 func AiBaseUuid() string {
 	return MakeUUID("AIBASE")
 }
+func DataSchemaUuid() string {
+	return MakeUUID("SCHEMA")
+}
 
 // MakeUUID
 func RuleUuid() string {

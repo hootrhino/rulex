@@ -18,6 +18,7 @@ _release*
 _build*
 lua-log*
 *.txt
+*.txt.gz
 plugin/http_server/www/*
 dist/
 apps/*.lua

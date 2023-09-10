@@ -86,4 +86,4 @@ cover:
 clean:
 	go clean
 	rm _release -rf
-	rm *.db *log.txt -rf
+	rm *.db *log.txt  *.txt.gz -rf

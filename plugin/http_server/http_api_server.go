@@ -9,7 +9,6 @@ import (
 
 	common "github.com/hootrhino/rulex/plugin/http_server/common"
 	sqlitedao "github.com/hootrhino/rulex/plugin/http_server/dao/sqlite"
-	"github.com/hootrhino/rulex/plugin/http_server/model"
 	"github.com/hootrhino/rulex/plugin/http_server/service"
 
 	"github.com/gin-contrib/static"
@@ -46,31 +45,6 @@ type HttpApiServer struct {
 	mainConfig _serverConfig
 }
 
-/*
-*
-* 初始化数据库
-*
- */
-func (s *HttpApiServer) registerModel() {
-	sqlitedao.Sqlite.DB().AutoMigrate(
-		&model.MInEnd{},
-		&model.MOutEnd{},
-		&model.MRule{},
-		&model.MUser{},
-		&model.MDevice{},
-		&model.MGoods{},
-		&model.MApp{},
-		&model.MAiBase{},
-		&model.MModbusPointPosition{},
-		&model.MVisual{},
-		&model.MGenericGroup{},
-		&model.MGenericGroupRelation{},
-		&model.MProtocolApp{},
-		&model.MNetworkConfig{},
-		&model.MWifiConfig{},
-	)
-}
-
 func NewHttpApiServer() *HttpApiServer {
 	return &HttpApiServer{
 		uuid:       "HTTP-API-SERVER",
@@ -89,11 +63,10 @@ func (hs *HttpApiServer) Init(config *ini.Section) error {
 	}
 	if hs.mainConfig.DbPath == "" {
 		sqlitedao.Load(_DEFAULT_DB_PATH)
-
 	} else {
 		sqlitedao.Load(hs.mainConfig.DbPath)
 	}
-	hs.registerModel()
+	sqlitedao.Sqlite.RegisterModel()
 	hs.configHttpServer()
 	hs.InitializeNetWorkConfigData()
 	//
@@ -355,6 +328,13 @@ func (hs *HttpApiServer) LoadRoute() {
 		screenApi.DELETE("/delete", hs.addRoute(DeleteVisual))
 		screenApi.PUT("/update", hs.addRoute(UpdateVisual))
 		screenApi.GET("/list", hs.addRoute(ListVisual))
+	}
+	schemaApi := hs.ginEngine.Group(url("/schema"))
+	{
+		schemaApi.POST("/create", hs.addRoute(CreateDataSchema))
+		schemaApi.DELETE("/delete", hs.addRoute(DeleteDataSchema))
+		schemaApi.PUT("/update", hs.addRoute(UpdateDataSchema))
+		schemaApi.GET("/list", hs.addRoute(ListDataSchema))
 	}
 	//
 	// 系统设置
