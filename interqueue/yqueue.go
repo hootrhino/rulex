@@ -16,10 +16,8 @@
 package interqueue
 
 import (
-	"context"
 	"encoding/json"
 
-	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/typex"
 )
 
@@ -79,29 +77,4 @@ func InQueue() chan InteractQueueData {
 }
 func OutQueue() chan InteractQueueData {
 	return __DefaultInteractQueue.outQueue
-}
-
-/*
-*
-* 启动双管道
-*
- */
-func StartInteractQueue() {
-	// 监听管道
-	go func(ctx context.Context, Interact InteractQueue) {
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case d := <-InQueue():
-				{
-					glogger.GLogger.Debug("DefaultInteractQueue InQueue:", d.String())
-				}
-			case d := <-OutQueue():
-				{
-					glogger.GLogger.Debug("DefaultInteractQueue OutQueue:", d.String())
-				}
-			}
-		}
-	}(typex.GCTX, __DefaultInteractQueue)
 }
