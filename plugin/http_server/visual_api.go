@@ -129,3 +129,13 @@ func VisualDetail(c *gin.Context, hh *HttpApiServer) {
 	}
 	c.JSON(common.HTTP_OK, common.OkWithData(vo))
 }
+
+/*
+*
+* 生成随机数
+*
+ */
+func GenComponentUUID(c *gin.Context, hh *HttpApiServer) {
+	c.JSON(common.HTTP_OK, common.OkWithData(utils.MakeUUID("WEIGHT")))
+
+}

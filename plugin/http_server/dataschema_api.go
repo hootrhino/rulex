@@ -4,35 +4,13 @@ import (
 	"encoding/json"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hootrhino/rulex/core"
 	common "github.com/hootrhino/rulex/plugin/http_server/common"
 	"github.com/hootrhino/rulex/plugin/http_server/model"
 	"github.com/hootrhino/rulex/plugin/http_server/service"
+	"github.com/hootrhino/rulex/typex"
 	"github.com/hootrhino/rulex/utils"
 )
-
-/*
-*
-* Type: SIMPLE_LINE(简单一线),COMPLEX_LINE(复杂多线)
-*
- */
-type DataSchemaVo struct {
-	UUID   string       `json:"uuid" validate:"required"`
-	Name   string       `json:"name" validate:"required"`
-	Type   string       `json:"type" validate:"required"`
-	Schema []DataDefine `json:"schema" validate:"required"`
-}
-
-/*
-*
-* 单个数据行的定义
-*
- */
-type DataDefine struct {
-	Name    string      `json:"name,omitempty"`
-	Type    string      `json:"type,omitempty"` // number,string
-	Default interface{} `json:"default,omitempty"`
-	Label   string      `json:"label,omitempty"`
-}
 
 /*
 *
@@ -41,7 +19,7 @@ type DataDefine struct {
  */
 
 func CreateDataSchema(c *gin.Context, hh *HttpApiServer) {
-	vo := DataSchemaVo{}
+	vo := typex.DataSchema{}
 	if err := c.ShouldBindJSON(&vo); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
@@ -60,7 +38,11 @@ func CreateDataSchema(c *gin.Context, hh *HttpApiServer) {
 	* Type: SIMPLE_LINE(简单一线),COMPLEX_LINE(复杂多线)
 	*
 	 */
-	if !utils.SContains([]string{"SIMPLE_LINE", "COMPLEX_LINE"}, vo.Type) {
+	if !utils.SContains([]string{
+		"SIMPLE_DATE_LINE",
+		"COMPLEX_DATE_LINE",
+		"COMPLEX_CROSS_LINE",
+	}, vo.Type) {
 		c.JSON(common.HTTP_OK, common.Error("'Type' Must one of [SIMPLE_LINE, COMPLEX_LINE]"))
 		return
 	}
@@ -81,6 +63,13 @@ func CreateDataSchema(c *gin.Context, hh *HttpApiServer) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
+	// 缓冲进内存
+	core.SchemaSet(MDataSchema.UUID, typex.DataSchema{
+		UUID:   MDataSchema.UUID,
+		Name:   MDataSchema.Name,
+		Type:   MDataSchema.Type,
+		Schema: vo.Schema,
+	})
 	c.JSON(common.HTTP_OK, common.Ok())
 }
 
@@ -90,7 +79,8 @@ func CreateDataSchema(c *gin.Context, hh *HttpApiServer) {
 *
  */
 func UpdateDataSchema(c *gin.Context, hh *HttpApiServer) {
-	vo := DataSchemaVo{}
+	vo := typex.DataSchema{}
+
 	if err := c.ShouldBindJSON(&vo); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
@@ -110,6 +100,13 @@ func UpdateDataSchema(c *gin.Context, hh *HttpApiServer) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
+	// 缓冲进内存
+	core.SchemaSet(MDataSchema.UUID, typex.DataSchema{
+		UUID:   MDataSchema.UUID,
+		Name:   MDataSchema.Name,
+		Type:   MDataSchema.Type,
+		Schema: vo.Schema,
+	})
 	c.JSON(common.HTTP_OK, common.Ok())
 
 }
@@ -123,7 +120,10 @@ func DeleteDataSchema(c *gin.Context, hh *HttpApiServer) {
 	uuid, _ := c.GetQuery("uuid")
 	if err := service.DeleteDataSchema(uuid); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
 	}
+	// 同步删除内存
+	core.SchemaDelete(uuid)
 	c.JSON(common.HTTP_OK, common.Ok())
 
 }
@@ -134,15 +134,15 @@ func DeleteDataSchema(c *gin.Context, hh *HttpApiServer) {
 *
  */
 func ListDataSchema(c *gin.Context, hh *HttpApiServer) {
-	DataSchemas := []DataSchemaVo{}
+	DataSchemas := []typex.DataSchema{}
 	for _, vv := range service.AllDataSchema() {
-		dataDefine := []DataDefine{}
+		dataDefine := []typex.DataDefine{}
 		err := json.Unmarshal([]byte(vv.Schema), &dataDefine)
 		if err != nil {
 			c.JSON(common.HTTP_OK, common.Error400(err))
 			return
 		}
-		DataSchemas = append(DataSchemas, DataSchemaVo{
+		DataSchemas = append(DataSchemas, typex.DataSchema{
 			UUID:   vv.UUID,
 			Name:   vv.Name,
 			Type:   vv.Type,
@@ -165,14 +165,14 @@ func DataSchemaDetail(c *gin.Context, hh *HttpApiServer) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	dataDefine := []DataDefine{}
+	dataDefine := []typex.DataDefine{}
 	err1 := json.Unmarshal([]byte(mDataSchema.Schema), &dataDefine)
-	if err != nil {
+	if err1 != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err1))
 		return
 	}
 	c.JSON(common.HTTP_OK, common.OkWithData(
-		DataSchemaVo{
+		typex.DataSchema{
 			UUID:   mDataSchema.UUID,
 			Name:   mDataSchema.Name,
 			Type:   mDataSchema.Type,

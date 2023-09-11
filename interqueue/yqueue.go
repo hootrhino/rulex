@@ -31,9 +31,9 @@ var DefaultInteractQueue InteractQueue
 *
  */
 type InteractQueueData struct {
-	Topic string      `json:"topic"`
-	Type  string      `json:"type"`
-	Data  interface{} `json:"data"`
+	Topic       string      `json:"topic"`
+	ComponentId string      `json:"componentId"`
+	Data        interface{} `json:"data"`
 }
 
 /*
@@ -42,7 +42,8 @@ type InteractQueueData struct {
 *
  */
 type XInteract interface {
-	PushData(InteractQueueData)
+	SendData(InteractQueueData)
+	ReceiveData(InteractQueueData)
 	InQueue() chan InteractQueueData
 	OutQueue() chan InteractQueueData
 }
@@ -66,8 +67,11 @@ func InitInteractQueue(rulex typex.RuleX, maxQueueSize int) XInteract {
 * 给前端推送数据
 *
  */
-func (iq InteractQueue) PushData(data InteractQueueData) {
-
+func (iq InteractQueue) SendData(data InteractQueueData) {
+	iq.outQueue <- data
+}
+func (iq InteractQueue) ReceiveData(data InteractQueueData) {
+	iq.inQueue <- data
 }
 
 /*
@@ -96,11 +100,11 @@ func StartInteractQueue() {
 				return
 			case d := <-Interact.InQueue():
 				{
-					glogger.GLogger.Debug("InQueue:", d)
+					glogger.GLogger.Debug("DefaultInteractQueue InQueue:", d)
 				}
 			case d := <-Interact.OutQueue():
 				{
-					glogger.GLogger.Debug("OutQueue:", d)
+					glogger.GLogger.Debug("DefaultInteractQueue OutQueue:", d)
 				}
 			}
 		}
