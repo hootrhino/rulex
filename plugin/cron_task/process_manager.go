@@ -1,28 +1,30 @@
+//go:build linux
+
 package cron_task
 
 import (
 	"errors"
 	"github.com/hootrhino/rulex/plugin/http_server/model"
-	"log"
+	"io"
 	"os/exec"
 	"strings"
 	"sync"
+	"syscall"
 )
 
-// LinuxProcessManager
-// Linux进程管理器
-type LinuxProcessManager struct {
+// ProcessManager
+type ProcessManager struct {
 	runningProcess sync.Map
 }
 
-func NewProcessManager() *LinuxProcessManager {
-	manager := LinuxProcessManager{
+func NewProcessManager() *ProcessManager {
+	manager := ProcessManager{
 		runningProcess: sync.Map{},
 	}
 	return &manager
 }
 
-func (pm *LinuxProcessManager) RunProcess(task model.MScheduleTask) (int32, error) {
+func (pm *ProcessManager) RunProcess(file io.Writer, task model.MScheduleTask) (int32, error) {
 	// 0. arguments
 	// 1. working directory
 	// 2. environment
@@ -39,12 +41,9 @@ func (pm *LinuxProcessManager) RunProcess(task model.MScheduleTask) (int32, erro
 		return 0, errors.New("unknown taskType")
 	}
 	command = exec.Command(name, args...)
-
-	// if linux
-	//command.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
-	// TODO 设置指定的logger文件
-	command.Stderr = log.Default().Writer()
-	command.Stdout = log.Default().Writer()
+	command.SysProcAttr = GetSysProcAttr()
+	command.Stderr = file
+	command.Stdout = file
 	command.Dir = task.WorkDir
 	command.Env = strings.Split(task.Env, ";")
 
@@ -53,33 +52,30 @@ func (pm *LinuxProcessManager) RunProcess(task model.MScheduleTask) (int32, erro
 		return 0, err
 	}
 	pm.runningProcess.Store(task.ID, command)
+	defer pm.runningProcess.Delete(task.ID)
 
 	err = command.Wait()
 	if err != nil {
-		log.Println("process return error, error=", err.Error())
-		// TODO update DB
-	} else {
-		// TODO update DB
+		return 0, err
 	}
-	return 0, err
+	return 0, nil
 }
 
-func (pm *LinuxProcessManager) KillProcess(id int) error {
+func (pm *ProcessManager) KillProcess(id int) error {
 	value, ok := pm.runningProcess.Load(id)
 	if !ok {
-		// no exist, return success
+		// not exist, return success
 		return nil
 	}
 	cmd := value.(*exec.Cmd)
-	err := cmd.Process.Kill()
+	err := syscall.Kill(-cmd.Process.Pid, syscall.SIGKILL)
 	if err != nil {
 		return err
 	}
-	pm.runningProcess.Delete(id)
 	return nil
 }
 
-func (pm *LinuxProcessManager) ListProcess() map[int32]*exec.Cmd {
+func (pm *ProcessManager) ListProcess() map[int32]*exec.Cmd {
 	m := make(map[int32]*exec.Cmd)
 	f := func(key, value any) bool {
 		k := key.(int32)
