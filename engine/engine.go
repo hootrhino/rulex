@@ -98,6 +98,7 @@ func (e *RuleEngine) Start() *typex.RulexConfig {
 	interqueue.StartInteractQueue()
 	// 前后交互组件
 	core.InitWebDataPipe(e)
+	core.InitInternalSchemaCache()
 	go core.StartWebDataPipe()
 	return e.Config
 }

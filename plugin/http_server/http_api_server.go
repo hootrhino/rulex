@@ -328,7 +328,13 @@ func (hs *HttpApiServer) LoadRoute() {
 		screenApi.DELETE("/delete", hs.addRoute(DeleteVisual))
 		screenApi.PUT("/update", hs.addRoute(UpdateVisual))
 		screenApi.GET("/list", hs.addRoute(ListVisual))
+		screenApi.GET("/GenComponentUUID", hs.addRoute(GenComponentUUID))
 	}
+	/*
+	*
+	* 模型管理
+	*
+	 */
 	schemaApi := hs.ginEngine.Group(url("/schema"))
 	{
 		schemaApi.POST("/create", hs.addRoute(CreateDataSchema))

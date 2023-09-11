@@ -51,3 +51,6 @@ func RuleUuid() string {
 func MakeUUID(prefix string) string {
 	return prefix + strings.ToUpper(shortuuid.New()[:6])
 }
+func MakeLongUUID(prefix string) string {
+	return prefix + strings.ToUpper(shortuuid.New())
+}

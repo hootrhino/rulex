@@ -136,6 +136,5 @@ func VisualDetail(c *gin.Context, hh *HttpApiServer) {
 *
  */
 func GenComponentUUID(c *gin.Context, hh *HttpApiServer) {
-	c.JSON(common.HTTP_OK, common.OkWithData(utils.MakeUUID("WEIGHT")))
-
+	c.JSON(common.HTTP_OK, common.OkWithData(utils.MakeLongUUID("WEIGHT")))
 }

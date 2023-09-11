@@ -214,5 +214,8 @@ func LoadAppLib(app *typex.Application, e typex.RuleX) {
 	// Math
 	//------------------------------------------------------------------------
 	addAppLib(app, e, "math", "TFloat", rulexlib.TruncateFloat(e))
-
+	//------------------------------------------------------------------------
+	// UI 数据写入
+	//------------------------------------------------------------------------
+	addAppLib(app, e, "ui", "LoadData", rulexlib.DataToUiComponent(e))
 }
