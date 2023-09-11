@@ -17,6 +17,8 @@ package core
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"net/http"
 	"sync"
 	"time"
@@ -24,18 +26,23 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"github.com/hootrhino/rulex/glogger"
+	"github.com/hootrhino/rulex/interqueue"
 	"github.com/hootrhino/rulex/typex"
 )
 
-// 前端管道
-var DefaultWebDataPipe *WebDataPipe
+/*
+*
+* WebsocketDataPipe 主要用来解决大屏的数据交互以及数据推送问题，不涉及别的业务
+*
+ */
+var __DefaultWebDataPipe *WebsocketDataPipe
 
 /*
 *
 * Websocket 管道
 *
  */
-type WebDataPipe struct {
+type WebsocketDataPipe struct {
 	rulex    typex.RuleX
 	WsServer websocket.Upgrader
 	Clients  map[string]*websocket.Conn
@@ -44,11 +51,11 @@ type WebDataPipe struct {
 
 /*
 *
-* 初始化
+* 初始化缓冲器
 *
  */
-func InitWebDataPipe(rulex typex.RuleX) *WebDataPipe {
-	DefaultWebDataPipe = &WebDataPipe{
+func InitWebDataPipe(rulex typex.RuleX) *WebsocketDataPipe {
+	__DefaultWebDataPipe = &WebsocketDataPipe{
 		rulex:   rulex,
 		Clients: map[string]*websocket.Conn{},
 		lock:    sync.Mutex{},
@@ -59,7 +66,7 @@ func InitWebDataPipe(rulex typex.RuleX) *WebDataPipe {
 			},
 		},
 	}
-	return DefaultWebDataPipe
+	return __DefaultWebDataPipe
 }
 
 /*
@@ -71,8 +78,35 @@ func StartWebDataPipe() error {
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.New()
 	router.GET("/ws", dataPipLoop)
-	glogger.GLogger.Info("WebDataPipe started on: 0.0.0.0:3580")
-	router.Run(":3580")
+	glogger.GLogger.Info("WebsocketDataPipe started on: 0.0.0.0:2579")
+	router.Run(":2579")
+	/*
+	*
+	*从管道里面拿写到前端的数据
+	*
+	 */
+	go func(ctx context.Context, WebsocketDataPipe *WebsocketDataPipe) {
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case d := <-interqueue.OutQueue():
+				{
+					glogger.GLogger.Debug("DefaultInteractQueue OutQueue:", d.String())
+					for _, wsClient := range WebsocketDataPipe.Clients {
+						wsClient.WriteMessage(websocket.TextMessage, []byte(d.String()))
+					}
+				}
+			case d := <-interqueue.InQueue():
+				{
+					//
+					// TODO 交互事件数据
+					// v0.8 规划
+					glogger.GLogger.Debug("DefaultInteractQueue InQueue:", d.String())
+				}
+			}
+		}
+	}(typex.GCTX, __DefaultWebDataPipe)
 	return nil
 }
 
@@ -82,7 +116,7 @@ func StartWebDataPipe() error {
 *
  */
 func dataPipLoop(c *gin.Context) {
-	wsConn, err := DefaultWebDataPipe.WsServer.Upgrade(c.Writer, c.Request, nil)
+	wsConn, err := __DefaultWebDataPipe.WsServer.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		return
 	}
@@ -93,22 +127,22 @@ func dataPipLoop(c *gin.Context) {
 	}
 	wsConn.SetReadDeadline(time.Time{})
 	token := string(b)
-	if token != "WebDataPipe" {
+	if token != "WebsocketDataPipe" {
 		wsConn.WriteMessage(1, []byte("Invalid client token"))
 		wsConn.Close()
 		return
 	}
 	// 最多允许连接10个客户端，实际情况下根本用不了那么多
-	if len(DefaultWebDataPipe.Clients) >= 10 {
+	if len(__DefaultWebDataPipe.Clients) >= 10 {
 		wsConn.WriteMessage(websocket.TextMessage, []byte("Reached max client connections"))
 		wsConn.Close()
 		return
 	}
-	DefaultWebDataPipe.Clients[wsConn.RemoteAddr().String()] = wsConn
+	__DefaultWebDataPipe.Clients[wsConn.RemoteAddr().String()] = wsConn
 	wsConn.WriteMessage(websocket.TextMessage, []byte("Connected"))
-	glogger.GLogger.Info("DefaultWebDataPipe Terminal connected:" + wsConn.RemoteAddr().String())
+	glogger.GLogger.Info("__DefaultWebDataPipe Terminal connected:" + wsConn.RemoteAddr().String())
 	wsConn.SetCloseHandler(func(code int, text string) error {
-		glogger.GLogger.Info("DefaultWebDataPipe CloseHandler:", wsConn.RemoteAddr().String())
+		glogger.GLogger.Info("__DefaultWebDataPipe CloseHandler:", wsConn.RemoteAddr().String())
 		return nil
 	})
 	// ping
@@ -126,7 +160,7 @@ func dataPipLoop(c *gin.Context) {
 			_, _, err1 := wsConn.ReadMessage()
 			err2 := wsConn.WriteMessage(websocket.PingMessage, []byte{})
 			if err1 != nil || err2 != nil {
-				glogger.GLogger.Error("DefaultWebDataPipe error:",
+				glogger.GLogger.Error("__DefaultWebDataPipe error:",
 					wsConn.RemoteAddr().String(), ", Error:", func(e1, e2 error) error {
 						if e1 != nil {
 							return e1
@@ -137,15 +171,19 @@ func dataPipLoop(c *gin.Context) {
 						return nil
 					}(err1, err2))
 				wsConn.Close()
-				DefaultWebDataPipe.lock.Lock()
-				delete(DefaultWebDataPipe.Clients, wsConn.RemoteAddr().String())
-				DefaultWebDataPipe.lock.Unlock()
+				__DefaultWebDataPipe.lock.Lock()
+				delete(__DefaultWebDataPipe.Clients, wsConn.RemoteAddr().String())
+				__DefaultWebDataPipe.lock.Unlock()
 				return
 			}
 		}
 
 	}(context.Background(), wsConn)
-	// Read
+	/*
+	*
+	* 来自前端的事件
+	*
+	 */
 	go func(ctx context.Context, wsConn *websocket.Conn) {
 		for {
 			select {
@@ -159,20 +197,25 @@ func dataPipLoop(c *gin.Context) {
 			}
 			Type, Data, err := wsConn.ReadMessage()
 			if err != nil {
-				glogger.GLogger.Error("DefaultWebDataPipe error:",
+				glogger.GLogger.Error("__DefaultWebDataPipe error:",
 					wsConn.RemoteAddr().String(), ", Error:", err)
 				wsConn.Close()
-				DefaultWebDataPipe.lock.Lock()
-				delete(DefaultWebDataPipe.Clients, wsConn.RemoteAddr().String())
-				DefaultWebDataPipe.lock.Unlock()
+				__DefaultWebDataPipe.lock.Lock()
+				delete(__DefaultWebDataPipe.Clients, wsConn.RemoteAddr().String())
+				__DefaultWebDataPipe.lock.Unlock()
 				return
 			}
-
-			// TODO
-			// 对前端的要求是Text数据,解码成一套事件系统,处理交互组件 但是这块估计到0.9以后再考虑了
-			//
-			glogger.GLogger.Info("DefaultWebDataPipe Receive Data From UI:",
-				wsConn.RemoteAddr().String(), Type, Data)
+			if Type == websocket.TextMessage {
+				uiData := interqueue.InteractQueueData{}
+				if err := json.Unmarshal(Data, &uiData); err != nil {
+					glogger.GLogger.Error(err)
+					continue
+				}
+				interqueue.ReceiveData(uiData)
+			} else {
+				glogger.GLogger.Error(fmt.Errorf("Message type not support:%v", Type))
+			}
 		}
 	}(context.Background(), wsConn)
+
 }

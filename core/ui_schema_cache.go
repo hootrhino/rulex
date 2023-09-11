@@ -28,7 +28,12 @@ import (
 var __InternalSchemaCache map[string]typex.DataSchema
 var __lock sync.Mutex
 
-func init() {
+/*
+*
+* 初始化缓冲器
+*
+ */
+func InitInternalSchemaCache() {
 	__InternalSchemaCache = make(map[string]typex.DataSchema)
 	__lock = sync.Mutex{}
 }

@@ -16,11 +16,8 @@
 package rulexlib
 
 import (
-	"encoding/json"
-
 	lua "github.com/hootrhino/gopher-lua"
 	"github.com/hootrhino/rulex/core"
-	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/interqueue"
 	"github.com/hootrhino/rulex/typex"
 )
@@ -36,10 +33,10 @@ func FilterSingleDataWithSchema(map[string]interface{}, []typex.DataDefine) map[
 	}
 */
 
-func DatToUiComponent(rx typex.RuleX) func(l *lua.LState) int {
+func DataToUiComponent(rx typex.RuleX) func(l *lua.LState) int {
 	return func(l *lua.LState) int {
 		ComponentId := l.ToString(2)
-		SchemaId := l.ToString(2)
+		SchemaId := l.ToString(3)
 		Data := l.ToTable(4)
 		InMap := map[string]interface{}{}
 		Data.ForEach(func(l1, l2 lua.LValue) {
@@ -77,14 +74,9 @@ func DatToUiComponent(rx typex.RuleX) func(l *lua.LState) int {
 	}
 */
 func dataToUiComponent(ComponentId string, data map[string]interface{}) {
-	bytes, err := json.Marshal(data)
-	if err != nil {
-		interqueue.DefaultInteractQueue.SendData(interqueue.InteractQueueData{
-			Topic:       "/visual/tocomponent/" + ComponentId,
-			ComponentId: ComponentId,
-			Data:        string(bytes),
-		})
-	} else {
-		glogger.GLogger.Error(err)
-	}
+	interqueue.SendData(interqueue.InteractQueueData{
+		Topic:       "/visual/component/" + ComponentId,
+		ComponentId: ComponentId,
+		Data:        data,
+	})
 }

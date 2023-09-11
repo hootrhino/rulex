@@ -17,13 +17,14 @@ package interqueue
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/typex"
 )
 
 // Default InteractQueue
-var DefaultInteractQueue InteractQueue
+var __DefaultInteractQueue InteractQueue
 
 /*
 *
@@ -31,35 +32,29 @@ var DefaultInteractQueue InteractQueue
 *
  */
 type InteractQueueData struct {
-	Topic       string      `json:"topic"`
-	ComponentId string      `json:"componentId"`
-	Data        interface{} `json:"data"`
+	Topic       string                 `json:"topic"`
+	ComponentId string                 `json:"componentId"`
+	Data        map[string]interface{} `json:"data"`
 }
 
-/*
-*
-* 前后端交互总线
-*
- */
-type XInteract interface {
-	SendData(InteractQueueData)
-	ReceiveData(InteractQueueData)
-	InQueue() chan InteractQueueData
-	OutQueue() chan InteractQueueData
+func (v InteractQueueData) String() string {
+	b, _ := json.Marshal(v)
+	return string(b)
 }
+
 type InteractQueue struct {
 	inQueue  chan InteractQueueData // 外面的数据进来后进此管道
 	outQueue chan InteractQueueData // 任何发到这个管道的数据都会被发到外部Pipe
 	rulex    typex.RuleX
 }
 
-func InitInteractQueue(rulex typex.RuleX, maxQueueSize int) XInteract {
-	DefaultInteractQueue = InteractQueue{
+func InitInteractQueue(rulex typex.RuleX, maxQueueSize int) *InteractQueue {
+	__DefaultInteractQueue = InteractQueue{
 		inQueue:  make(chan InteractQueueData, maxQueueSize),
 		outQueue: make(chan InteractQueueData, maxQueueSize),
 		rulex:    rulex,
 	}
-	return &DefaultInteractQueue
+	return &__DefaultInteractQueue
 }
 
 /*
@@ -67,11 +62,11 @@ func InitInteractQueue(rulex typex.RuleX, maxQueueSize int) XInteract {
 * 给前端推送数据
 *
  */
-func (iq InteractQueue) SendData(data InteractQueueData) {
-	iq.outQueue <- data
+func SendData(data InteractQueueData) {
+	__DefaultInteractQueue.outQueue <- data
 }
-func (iq InteractQueue) ReceiveData(data InteractQueueData) {
-	iq.inQueue <- data
+func ReceiveData(data InteractQueueData) {
+	__DefaultInteractQueue.inQueue <- data
 }
 
 /*
@@ -79,11 +74,11 @@ func (iq InteractQueue) ReceiveData(data InteractQueueData) {
 * GetQueue
 *
  */
-func (iq InteractQueue) InQueue() chan InteractQueueData {
-	return iq.inQueue
+func InQueue() chan InteractQueueData {
+	return __DefaultInteractQueue.inQueue
 }
-func (iq InteractQueue) OutQueue() chan InteractQueueData {
-	return iq.outQueue
+func OutQueue() chan InteractQueueData {
+	return __DefaultInteractQueue.outQueue
 }
 
 /*
@@ -93,20 +88,20 @@ func (iq InteractQueue) OutQueue() chan InteractQueueData {
  */
 func StartInteractQueue() {
 	// 监听管道
-	go func(ctx context.Context, Interact XInteract) {
+	go func(ctx context.Context, Interact InteractQueue) {
 		for {
 			select {
 			case <-ctx.Done():
 				return
-			case d := <-Interact.InQueue():
+			case d := <-InQueue():
 				{
-					glogger.GLogger.Debug("DefaultInteractQueue InQueue:", d)
+					glogger.GLogger.Debug("DefaultInteractQueue InQueue:", d.String())
 				}
-			case d := <-Interact.OutQueue():
+			case d := <-OutQueue():
 				{
-					glogger.GLogger.Debug("DefaultInteractQueue OutQueue:", d)
+					glogger.GLogger.Debug("DefaultInteractQueue OutQueue:", d.String())
 				}
 			}
 		}
-	}(typex.GCTX, DefaultInteractQueue)
+	}(typex.GCTX, __DefaultInteractQueue)
 }
