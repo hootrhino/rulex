@@ -16,11 +16,13 @@
 package engine
 
 import (
+	"encoding/json"
 	"os"
 	"os/signal"
 	"strings"
 	"syscall"
 
+	"github.com/hootrhino/rulex/plugin/http_server/service"
 	modbusscanner "github.com/hootrhino/rulex/plugin/modbus_scanner"
 	modbusscrc "github.com/hootrhino/rulex/plugin/modbuscrc_tools"
 	mqttserver "github.com/hootrhino/rulex/plugin/mqtt_server"
@@ -69,6 +71,26 @@ func RunRulex(iniPath string) {
 	if err := engine.LoadPlugin("plugin.http_server", httpServer); err != nil {
 		glogger.GLogger.Error(err)
 		return
+	}
+	/*
+	*
+	* 加载schema到内存中
+	*
+	 */
+	for _, mDataSchema := range service.AllDataSchema() {
+		dataDefine := []typex.DataDefine{}
+		err := json.Unmarshal([]byte(mDataSchema.Schema), &dataDefine)
+		if err != nil {
+			glogger.GLogger.Error(err)
+			continue
+		}
+		// 初始化装入ne
+		core.SchemaSet(mDataSchema.UUID, typex.DataSchema{
+			UUID:   mDataSchema.UUID,
+			Name:   mDataSchema.Name,
+			Type:   mDataSchema.Type,
+			Schema: dataDefine,
+		})
 	}
 	//
 	// Load inend from sqlite

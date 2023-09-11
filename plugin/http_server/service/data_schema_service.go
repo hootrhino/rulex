@@ -20,7 +20,6 @@ import (
 	"github.com/hootrhino/rulex/plugin/http_server/model"
 )
 
-
 // 获取DataSchema列表
 func AllDataSchema() []model.MDataSchema {
 	m := []model.MDataSchema{}

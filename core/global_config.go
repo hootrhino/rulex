@@ -36,7 +36,7 @@ var INIPath string
 
 // Init config
 func InitGlobalConfig(path string) typex.RulexConfig {
-	log.Println("Init rulex config")
+	log.Println("Init rulex config:", path)
 	cfg, err := ini.ShadowLoad(path)
 	if err != nil {
 		log.Fatalf("Fail to read config file: %v", err)
