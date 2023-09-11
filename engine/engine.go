@@ -94,9 +94,8 @@ func (e *RuleEngine) Start() *typex.RulexConfig {
 	// 内部队列
 	interqueue.InitDataCacheQueue(e, core.GlobalConfig.MaxQueueSize)
 	interqueue.StartDataCacheQueue()
-	interqueue.InitInteractQueue(e, core.GlobalConfig.MaxQueueSize)
-	interqueue.StartInteractQueue()
 	// 前后交互组件
+	interqueue.InitInteractQueue(e, core.GlobalConfig.MaxQueueSize)
 	core.InitWebDataPipe(e)
 	core.InitInternalSchemaCache()
 	go core.StartWebDataPipe()

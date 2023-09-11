@@ -78,8 +78,7 @@ func StartWebDataPipe() error {
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.New()
 	router.GET("/ws", dataPipLoop)
-	glogger.GLogger.Info("WebsocketDataPipe started on: 0.0.0.0:2579")
-	router.Run(":2579")
+
 	/*
 	*
 	*从管道里面拿写到前端的数据
@@ -97,6 +96,14 @@ func StartWebDataPipe() error {
 						wsClient.WriteMessage(websocket.TextMessage, []byte(d.String()))
 					}
 				}
+			}
+		}
+	}(typex.GCTX, __DefaultWebDataPipe)
+	go func(ctx context.Context, WebsocketDataPipe *WebsocketDataPipe) {
+		for {
+			select {
+			case <-ctx.Done():
+				return
 			case d := <-interqueue.InQueue():
 				{
 					//
@@ -107,6 +114,8 @@ func StartWebDataPipe() error {
 			}
 		}
 	}(typex.GCTX, __DefaultWebDataPipe)
+	glogger.GLogger.Info("WebsocketDataPipe started on: 0.0.0.0:2579")
+	router.Run(":2579")
 	return nil
 }
 
@@ -205,7 +214,7 @@ func dataPipLoop(c *gin.Context) {
 				__DefaultWebDataPipe.lock.Unlock()
 				return
 			}
-			if Type == websocket.TextMessage {
+			if Type == websocket.BinaryMessage {
 				uiData := interqueue.InteractQueueData{}
 				if err := json.Unmarshal(Data, &uiData); err != nil {
 					glogger.GLogger.Error(err)
