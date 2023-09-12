@@ -139,7 +139,7 @@ func StartTestServer(t *testing.T) {
 	engine := RunTestEngine()
 	engine.Start()
 	// HttpApiServer loaded default
-	if err := engine.LoadPlugin("plugin.http_server", httpserver.NewHttpApiServer()); err != nil {
+	if err := engine.LoadPlugin("plugin.http_server", httpserver.NewHttpApiServer(engine)); err != nil {
 		t.Fatal(err)
 	}
 }

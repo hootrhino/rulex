@@ -9,6 +9,7 @@ import (
 	"github.com/hootrhino/rulex/glogger"
 	httpserver "github.com/hootrhino/rulex/plugin/http_server"
 	"github.com/hootrhino/rulex/plugin/http_server/model"
+	"github.com/hootrhino/rulex/plugin/http_server/service"
 	"github.com/hootrhino/rulex/typex"
 )
 
@@ -16,7 +17,7 @@ import (
 func TestInitData(t *testing.T) {
 	engine := engine.InitRuleEngine(core.InitGlobalConfig("conf/rulex.ini"))
 	engine.Start()
-	hh := httpserver.NewHttpApiServer()
+	hh := httpserver.NewHttpApiServer(engine)
 	// HttpApiServer loaded default
 	if err := engine.LoadPlugin("plugin.http_server", hh); err != nil {
 		glogger.GLogger.Fatal("Rule load failed:", err)
@@ -26,7 +27,7 @@ func TestInitData(t *testing.T) {
 		"port": "2581",
 	})
 	b1, _ := json.Marshal(grpcInend.Config)
-	hh.InsertMInEnd(&model.MInEnd{
+	service.InsertMInEnd(&model.MInEnd{
 		UUID:        grpcInend.UUID,
 		Type:        grpcInend.Type.String(),
 		Name:        grpcInend.Name,
@@ -38,7 +39,7 @@ func TestInitData(t *testing.T) {
 		"port": "2582",
 	})
 	b2, _ := json.Marshal(coapInend.Config)
-	hh.InsertMInEnd(&model.MInEnd{
+	service.InsertMInEnd(&model.MInEnd{
 		UUID:        coapInend.UUID,
 		Type:        coapInend.Type.String(),
 		Name:        coapInend.Name,
@@ -50,7 +51,7 @@ func TestInitData(t *testing.T) {
 		"port": "2583",
 	})
 	b3, _ := json.Marshal(httpInend.Config)
-	hh.InsertMInEnd(&model.MInEnd{
+	service.InsertMInEnd(&model.MInEnd{
 		UUID:        httpInend.UUID,
 		Type:        httpInend.Type.String(),
 		Name:        httpInend.Name,
@@ -63,7 +64,7 @@ func TestInitData(t *testing.T) {
 		"port": "2584",
 	})
 	b4, _ := json.Marshal(udpInend.Config)
-	hh.InsertMInEnd(&model.MInEnd{
+	service.InsertMInEnd(&model.MInEnd{
 		UUID:        udpInend.UUID,
 		Type:        udpInend.Type.String(),
 		Name:        udpInend.Name,
@@ -86,7 +87,7 @@ func TestInitData(t *testing.T) {
 				end
 			}`,
 		`function Failed(error) print("[LUA Failed]OK", error) end`)
-	hh.InsertMRule(&model.MRule{
+	service.InsertMRule(&model.MRule{
 		Name:        rule.Name,
 		Description: rule.Description,
 		FromSource:  rule.FromSource,

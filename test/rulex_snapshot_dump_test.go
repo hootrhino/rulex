@@ -28,16 +28,16 @@ import (
 func Test_snapshot_dump(t *testing.T) {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, syscall.SIGINT, syscall.SIGABRT)
-	e := engine.InitRuleEngine(core.InitGlobalConfig("conf/rulex.ini"))
-	e.Start()
-	hh := httpserver.NewHttpApiServer()
+	engine := engine.InitRuleEngine(core.InitGlobalConfig("conf/rulex.ini"))
+	engine.Start()
+	hh := httpserver.NewHttpApiServer(engine)
 
 	// HttpApiServer loaded default
-	if err := e.LoadPlugin("plugin.http_server", hh); err != nil {
+	if err := engine.LoadPlugin("plugin.http_server", hh); err != nil {
 		glogger.GLogger.Fatal("Rule load failed:", err)
 	}
 	// Load a demo plugin
-	if err := e.LoadPlugin("plugin.demo", demo_plugin.NewDemoPlugin()); err != nil {
+	if err := engine.LoadPlugin("plugin.demo", demo_plugin.NewDemoPlugin()); err != nil {
 		glogger.GLogger.Error("Rule load failed:", err)
 	}
 	// Grpc Inend
@@ -45,11 +45,11 @@ func Test_snapshot_dump(t *testing.T) {
 		"port": 2581,
 	})
 	ctx, cancelF := typex.NewCCTX() // ,ctx, cancelF
-	if err := e.LoadInEndWithCtx(grpcInend, ctx, cancelF); err != nil {
+	if err := engine.LoadInEndWithCtx(grpcInend, ctx, cancelF); err != nil {
 		glogger.GLogger.Error("Rule load failed:", err)
 	}
 
-	rule := typex.NewRule(e,
+	rule := typex.NewRule(engine,
 		"uuid",
 		"Just a test",
 		"Just a test",
@@ -69,7 +69,7 @@ func Test_snapshot_dump(t *testing.T) {
 			end
 		}`,
 		`function Failed(error) print("[LUA Failed Callback]", error) end`)
-	if err := e.LoadRule(rule); err != nil {
+	if err := engine.LoadRule(rule); err != nil {
 		glogger.GLogger.Error(err)
 	}
 	conn, err := grpc.Dial("127.0.0.1:2581", grpc.WithTransportCredentials(insecure.NewCredentials()))
@@ -87,7 +87,7 @@ func Test_snapshot_dump(t *testing.T) {
 		glogger.GLogger.Error(err)
 	}
 	glogger.GLogger.Infof("Rulex Rpc Call Result ====>>: %v", resp.GetMessage())
-	t.Log(e.SnapshotDump())
+	t.Log(engine.SnapshotDump())
 	time.Sleep(1 * time.Second)
-	e.Stop()
+	engine.Stop()
 }
