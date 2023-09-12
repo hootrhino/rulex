@@ -1,4 +1,4 @@
-package httpserver
+package apis
 
 import (
 	"encoding/json"
@@ -18,7 +18,7 @@ import (
 *
  */
 
-func CreateDataSchema(c *gin.Context, hh *HttpApiServer) {
+func CreateDataSchema(c *gin.Context, ruleEngine typex.RuleX) {
 	vo := typex.DataSchema{}
 	if err := c.ShouldBindJSON(&vo); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
@@ -78,7 +78,7 @@ func CreateDataSchema(c *gin.Context, hh *HttpApiServer) {
 * 更新模型
 *
  */
-func UpdateDataSchema(c *gin.Context, hh *HttpApiServer) {
+func UpdateDataSchema(c *gin.Context, ruleEngine typex.RuleX) {
 	vo := typex.DataSchema{}
 
 	if err := c.ShouldBindJSON(&vo); err != nil {
@@ -116,7 +116,7 @@ func UpdateDataSchema(c *gin.Context, hh *HttpApiServer) {
 * 删除模型
 *
  */
-func DeleteDataSchema(c *gin.Context, hh *HttpApiServer) {
+func DeleteDataSchema(c *gin.Context, ruleEngine typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
 	if err := service.DeleteDataSchema(uuid); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
@@ -133,7 +133,7 @@ func DeleteDataSchema(c *gin.Context, hh *HttpApiServer) {
 * 模型列表
 *
  */
-func ListDataSchema(c *gin.Context, hh *HttpApiServer) {
+func ListDataSchema(c *gin.Context, ruleEngine typex.RuleX) {
 	DataSchemas := []typex.DataSchema{}
 	for _, vv := range service.AllDataSchema() {
 		dataDefine := []typex.DataDefine{}
@@ -158,7 +158,7 @@ func ListDataSchema(c *gin.Context, hh *HttpApiServer) {
 * 模型详情
 *
  */
-func DataSchemaDetail(c *gin.Context, hh *HttpApiServer) {
+func DataSchemaDetail(c *gin.Context, ruleEngine typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
 	mDataSchema, err := service.GetDataSchemaWithUUID(uuid)
 	if err != nil {

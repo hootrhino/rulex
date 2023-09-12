@@ -1,4 +1,4 @@
-package httpserver
+package apis
 
 import (
 	"fmt"
@@ -7,6 +7,7 @@ import (
 	common "github.com/hootrhino/rulex/plugin/http_server/common"
 	"github.com/hootrhino/rulex/plugin/http_server/model"
 	"github.com/hootrhino/rulex/plugin/http_server/service"
+	"github.com/hootrhino/rulex/typex"
 	"github.com/hootrhino/rulex/utils"
 )
 
@@ -26,7 +27,7 @@ type MGenericGroupRelationVo struct {
 * 新建大屏
 *
  */
-func CreateGroup(c *gin.Context, hh *HttpApiServer) {
+func CreateGroup(c *gin.Context, ruleEngine typex.RuleX) {
 	vvo := MGenericGroupVo{}
 	if err := c.ShouldBindJSON(&vvo); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
@@ -54,7 +55,7 @@ func CreateGroup(c *gin.Context, hh *HttpApiServer) {
 * 更新大屏
 *
  */
-func UpdateGroup(c *gin.Context, hh *HttpApiServer) {
+func UpdateGroup(c *gin.Context, ruleEngine typex.RuleX) {
 	vvo := MGenericGroupVo{}
 	if err := c.ShouldBindJSON(&vvo); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
@@ -78,7 +79,7 @@ func UpdateGroup(c *gin.Context, hh *HttpApiServer) {
 * 删除大屏
 *
  */
-func DeleteGroup(c *gin.Context, hh *HttpApiServer) {
+func DeleteGroup(c *gin.Context, ruleEngine typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
 	count, err := service.CheckBindResource(uuid)
 	if err != nil {
@@ -103,7 +104,7 @@ func DeleteGroup(c *gin.Context, hh *HttpApiServer) {
 * 大屏列表
 *
  */
-func ListGroup(c *gin.Context, hh *HttpApiServer) {
+func ListGroup(c *gin.Context, ruleEngine typex.RuleX) {
 	visuals := []MGenericGroupVo{}
 	for _, vv := range service.AllGenericGroup() {
 		visuals = append(visuals, MGenericGroupVo{
@@ -122,7 +123,7 @@ func ListGroup(c *gin.Context, hh *HttpApiServer) {
 * 大屏详情
 *
  */
-func GroupDetail(c *gin.Context, hh *HttpApiServer) {
+func GroupDetail(c *gin.Context, ruleEngine typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
 	mG, err := service.GetGenericGroupWithUUID(uuid)
 	if err != nil {
@@ -142,7 +143,7 @@ func GroupDetail(c *gin.Context, hh *HttpApiServer) {
 * 绑定资源
 *
  */
-func BindResource(c *gin.Context, hh *HttpApiServer) {
+func BindResource(c *gin.Context, ruleEngine typex.RuleX) {
 	type FormDto struct {
 		Gid string `json:"gid"`
 		Rid string `json:"rid"`
@@ -175,7 +176,7 @@ func BindResource(c *gin.Context, hh *HttpApiServer) {
 * 取消绑定
 *
  */
-func UnBindResource(c *gin.Context, hh *HttpApiServer) {
+func UnBindResource(c *gin.Context, ruleEngine typex.RuleX) {
 	gid, _ := c.GetQuery("gid")
 	rid, _ := c.GetQuery("rid")
 	if err := service.UnBindResource(gid, rid); err != nil {
@@ -191,7 +192,7 @@ func UnBindResource(c *gin.Context, hh *HttpApiServer) {
 * 设备
 *
  */
-func FindDeviceByGroup(c *gin.Context, hh *HttpApiServer) {
+func FindDeviceByGroup(c *gin.Context, ruleEngine typex.RuleX) {
 	Type, _ := c.GetQuery("type")
 	Gid, _ := c.GetQuery("gid")
 	vv2 := []model.MDevice{}
@@ -216,7 +217,7 @@ func FindDeviceByGroup(c *gin.Context, hh *HttpApiServer) {
 * 大屏
 *
  */
-func FindVisualByGroup(c *gin.Context, hh *HttpApiServer) {
+func FindVisualByGroup(c *gin.Context, ruleEngine typex.RuleX) {
 	Type, _ := c.GetQuery("type")
 	Gid, _ := c.GetQuery("gid")
 	vv1 := []model.MVisual{}

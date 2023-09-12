@@ -1,4 +1,4 @@
-package httpserver
+package apis
 
 import (
 	"errors"
@@ -7,6 +7,8 @@ import (
 
 	common "github.com/hootrhino/rulex/plugin/http_server/common"
 	"github.com/hootrhino/rulex/plugin/http_server/model"
+	"github.com/hootrhino/rulex/plugin/http_server/server"
+	"github.com/hootrhino/rulex/plugin/http_server/service"
 
 	"github.com/xuri/excelize/v2"
 
@@ -22,14 +24,14 @@ import (
 * 列表先读数据库，然后读内存，合并状态后输出
 *
  */
-func DeviceDetail(c *gin.Context, hs *HttpApiServer) {
+func DeviceDetail(c *gin.Context, ruleEngine typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
-	mdev, err := hs.GetMDeviceWithUUID(uuid)
+	mdev, err := service.GetMDeviceWithUUID(uuid)
 	if err != nil {
 		c.JSON(common.HTTP_OK, common.Error400EmptyObj(err))
 		return
 	}
-	device := hs.ruleEngine.GetDevice(mdev.UUID)
+	device := ruleEngine.GetDevice(mdev.UUID)
 	if device == nil {
 		// 如果内存里面没有就给安排一个死设备
 		tDevice := new(typex.Device)
@@ -46,12 +48,12 @@ func DeviceDetail(c *gin.Context, hs *HttpApiServer) {
 	device.State = device.Device.Status()
 	c.JSON(common.HTTP_OK, common.OkWithData(device))
 }
-func Devices(c *gin.Context, hs *HttpApiServer) {
+func Devices(c *gin.Context, ruleEngine typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
 	if uuid == "" {
 		devices := []*typex.Device{}
-		for _, mdev := range hs.AllDevices() {
-			device := hs.ruleEngine.GetDevice(mdev.UUID)
+		for _, mdev := range service.AllDevices() {
+			device := ruleEngine.GetDevice(mdev.UUID)
 			if device == nil {
 				tDevice := new(typex.Device)
 				tDevice.UUID = mdev.UUID
@@ -71,12 +73,12 @@ func Devices(c *gin.Context, hs *HttpApiServer) {
 		c.JSON(common.HTTP_OK, common.OkWithData(devices))
 		return
 	}
-	mdev, err := hs.GetMDeviceWithUUID(uuid)
+	mdev, err := service.GetMDeviceWithUUID(uuid)
 	if err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	device := hs.ruleEngine.GetDevice(mdev.UUID)
+	device := ruleEngine.GetDevice(mdev.UUID)
 	if device == nil {
 		// 如果内存里面没有就给安排一个死设备
 		tDevice := new(typex.Device)
@@ -95,9 +97,9 @@ func Devices(c *gin.Context, hs *HttpApiServer) {
 }
 
 // 删除设备
-func DeleteDevice(c *gin.Context, hs *HttpApiServer) {
+func DeleteDevice(c *gin.Context, ruleEngine typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
-	Mdev, err := hs.GetMDeviceWithUUID(uuid)
+	Mdev, err := service.GetMDeviceWithUUID(uuid)
 	if err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
@@ -110,7 +112,7 @@ func DeleteDevice(c *gin.Context, hs *HttpApiServer) {
 	// 检查是否有规则被绑定了
 	for _, ruleId := range Mdev.BindRules {
 		if ruleId != "" {
-			_, err0 := hs.GetMRuleWithUUID(ruleId)
+			_, err0 := service.GetMRuleWithUUID(ruleId)
 			if err0 != nil {
 				c.JSON(common.HTTP_OK, common.Error400(err0))
 				return
@@ -121,31 +123,31 @@ func DeleteDevice(c *gin.Context, hs *HttpApiServer) {
 
 	// 检查是否通用Modbus设备.需要同步删除点位表记录
 	if Mdev.Type == "GENERIC_MODBUS_POINT_EXCEL" {
-		if err := hs.DeleteModbusPointAndDevice(uuid); err != nil {
+		if err := service.DeleteModbusPointAndDevice(uuid); err != nil {
 			c.JSON(common.HTTP_OK, common.Error400(err))
 			return
 		}
 	} else {
-		if err := hs.DeleteDevice(uuid); err != nil {
+		if err := service.DeleteDevice(uuid); err != nil {
 			c.JSON(common.HTTP_OK, common.Error400(err))
 			return
 		}
 	}
 
-	old := hs.ruleEngine.GetDevice(uuid)
+	old := ruleEngine.GetDevice(uuid)
 	if old != nil {
 		if old.Device.Status() == typex.DEV_UP {
 			old.Device.Stop()
 		}
 	}
 
-	hs.ruleEngine.RemoveDevice(uuid)
+	ruleEngine.RemoveDevice(uuid)
 	c.JSON(common.HTTP_OK, common.Ok())
 
 }
 
 // 创建设备
-func CreateDevice(c *gin.Context, hs *HttpApiServer) {
+func CreateDevice(c *gin.Context, ruleEngine typex.RuleX) {
 	type Form struct {
 		UUID         string                 `json:"uuid"`
 		Name         string                 `json:"name"`
@@ -165,7 +167,7 @@ func CreateDevice(c *gin.Context, hs *HttpApiServer) {
 		return
 	}
 	newUUID := utils.DeviceUuid()
-	if err := hs.InsertDevice(&model.MDevice{
+	if err := service.InsertDevice(&model.MDevice{
 		UUID:        newUUID,
 		Type:        form.Type,
 		Name:        form.Name,
@@ -176,7 +178,7 @@ func CreateDevice(c *gin.Context, hs *HttpApiServer) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	if err := hs.LoadNewestDevice(newUUID); err != nil {
+	if err := server.LoadNewestDevice(newUUID, ruleEngine); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
@@ -185,7 +187,7 @@ func CreateDevice(c *gin.Context, hs *HttpApiServer) {
 }
 
 // 更新设备
-func UpdateDevice(c *gin.Context, hs *HttpApiServer) {
+func UpdateDevice(c *gin.Context, ruleEngine typex.RuleX) {
 	type Form struct {
 		UUID        string                 `json:"uuid"`
 		Name        string                 `json:"name"`
@@ -208,13 +210,13 @@ func UpdateDevice(c *gin.Context, hs *HttpApiServer) {
 		return
 	}
 	// 更新的时候从数据库往外面拿
-	Device, err := hs.GetMDeviceWithUUID(form.UUID)
+	Device, err := service.GetMDeviceWithUUID(form.UUID)
 	if err != nil {
 		c.JSON(common.HTTP_OK, err)
 		return
 	}
 
-	if err := hs.UpdateDevice(Device.UUID, &model.MDevice{
+	if err := service.UpdateDevice(Device.UUID, &model.MDevice{
 		Type:        form.Type,
 		Name:        form.Name,
 		Description: form.Description,
@@ -224,7 +226,7 @@ func UpdateDevice(c *gin.Context, hs *HttpApiServer) {
 		return
 	}
 
-	if err := hs.LoadNewestDevice(form.UUID); err != nil {
+	if err := server.LoadNewestDevice(form.UUID, ruleEngine); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
@@ -233,9 +235,9 @@ func UpdateDevice(c *gin.Context, hs *HttpApiServer) {
 }
 
 // ModbusPoints 获取modbus_excel类型的点位数据
-func ModbusPoints(c *gin.Context, hs *HttpApiServer) {
+func ModbusPoints(c *gin.Context, ruleEngine typex.RuleX) {
 	deviceUuid := c.GetString("deviceUuid")
-	list, err := hs.AllModbusPointByDeviceUuid(deviceUuid)
+	list, err := service.AllModbusPointByDeviceUuid(deviceUuid)
 	if err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
@@ -244,7 +246,7 @@ func ModbusPoints(c *gin.Context, hs *HttpApiServer) {
 }
 
 // UpdateModbusPoint 更新modbus_excel类型的点位数据
-func UpdateModbusPoint(c *gin.Context, hs *HttpApiServer) {
+func UpdateModbusPoint(c *gin.Context, ruleEngine typex.RuleX) {
 	type Form struct {
 		Id           uint
 		DeviceUuid   string `json:"deviceUuid"    gorm:"not null"`
@@ -261,7 +263,7 @@ func UpdateModbusPoint(c *gin.Context, hs *HttpApiServer) {
 		return
 	}
 
-	err := hs.UpdateModbusPoint(model.MModbusPointPosition{
+	err := service.UpdateModbusPoint(model.MModbusPointPosition{
 		RulexModel: model.RulexModel{
 			ID: form.Id,
 		},
@@ -283,7 +285,7 @@ func UpdateModbusPoint(c *gin.Context, hs *HttpApiServer) {
 }
 
 // ModbusSheetImport 上传Excel文件
-func ModbusSheetImport(c *gin.Context, hs *HttpApiServer) {
+func ModbusSheetImport(c *gin.Context, ruleEngine typex.RuleX) {
 	// 解析 multipart/form-data 类型的请求体
 	err := c.Request.ParseMultipartForm(32 << 20) // 限制上传文件大小为 512MB
 	if err != nil {
@@ -321,7 +323,7 @@ func ModbusSheetImport(c *gin.Context, hs *HttpApiServer) {
 		return
 	}
 
-	err = hs.InsertModbusPointPosition(list)
+	err = service.InsertModbusPointPosition(list)
 	if err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return

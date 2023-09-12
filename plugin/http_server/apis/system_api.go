@@ -1,4 +1,4 @@
-package httpserver
+package apis
 
 import (
 	"fmt"
@@ -21,19 +21,22 @@ import (
 	"go.bug.st/serial"
 )
 
+// 启动时间
+var StartedTime = time.Unix(time.Now().Unix(), 0).Format("2006-01-02 15:04:05")
+
 /*
 *
 * 健康检查接口, 一般用来监视是否工作
 *
  */
-func Ping(c *gin.Context, hh *HttpApiServer) {
+func Ping(c *gin.Context, ruleEngine typex.RuleX) {
 	c.JSON(common.HTTP_OK, common.OkWithData("PONG"))
 }
 
 // Get all plugins
-func Plugins(c *gin.Context, hh *HttpApiServer) {
+func Plugins(c *gin.Context, ruleEngine typex.RuleX) {
 	data := []interface{}{}
-	plugins := hh.ruleEngine.AllPlugins()
+	plugins := ruleEngine.AllPlugins()
 	plugins.Range(func(key, value interface{}) bool {
 		pi := value.(typex.XPlugin).PluginMetaInfo()
 		data = append(data, pi)
@@ -88,7 +91,7 @@ func source_count(e typex.RuleX) map[string]int {
 * 获取系统指标, Go 自带这个不准, 后期版本需要更换跨平台实现
 *
  */
-func System(c *gin.Context, hh *HttpApiServer) {
+func System(c *gin.Context, ruleEngine typex.RuleX) {
 	cpuPercent, _ := cpu.Percent(time.Duration(1)*time.Second, true)
 	diskInfo, _ := disk.Usage("/")
 	// For info on each, see: https://golang.org/pkg/runtime/#MemStats
@@ -96,20 +99,20 @@ func System(c *gin.Context, hh *HttpApiServer) {
 	runtime.ReadMemStats(&m)
 	// ip, err0 := utils.HostNameI()
 	hardWareInfo := map[string]interface{}{
-		"version":     hh.ruleEngine.Version().Version,
+		"version":     ruleEngine.Version().Version,
 		"diskInfo":    calculateDiskInfo(diskInfo),
 		"systemMem":   bToMb(m.Sys),
 		"allocMem":    bToMb(m.Alloc),
 		"totalMem":    bToMb(m.TotalAlloc),
 		"cpuPercent":  calculateCpuPercent(cpuPercent),
-		"osArch":      hh.ruleEngine.Version().Arch,
-		"osDist":      hh.ruleEngine.Version().Dist,
+		"osArch":      ruleEngine.Version().Arch,
+		"osDist":      ruleEngine.Version().Dist,
 		"startedTime": StartedTime,
 	}
 	c.JSON(common.HTTP_OK, common.OkWithData(gin.H{
 		"hardWareInfo": hardWareInfo,
-		"statistic":    hh.ruleEngine.GetMetricStatistics(),
-		"sourceCount":  source_count(hh.ruleEngine),
+		"statistic":    ruleEngine.GetMetricStatistics(),
+		"sourceCount":  source_count(ruleEngine),
 	}))
 }
 
@@ -118,15 +121,15 @@ func System(c *gin.Context, hh *HttpApiServer) {
 * SnapshotDump
 *
  */
-func SnapshotDump(c *gin.Context, hh *HttpApiServer) {
-	c.JSON(common.HTTP_OK, common.OkWithData(hh.ruleEngine.SnapshotDump()))
+func SnapshotDump(c *gin.Context, ruleEngine typex.RuleX) {
+	c.JSON(common.HTTP_OK, common.OkWithData(ruleEngine.SnapshotDump()))
 }
 
 // Get all Drivers
-func Drivers(c *gin.Context, hh *HttpApiServer) {
+func Drivers(c *gin.Context, ruleEngine typex.RuleX) {
 	data := []interface{}{}
 	id := 0
-	hh.ruleEngine.AllInEnd().Range(func(key, value interface{}) bool {
+	ruleEngine.AllInEnd().Range(func(key, value interface{}) bool {
 		drivers := value.(*typex.InEnd).Source.Driver()
 		if drivers != nil {
 			dd := drivers.DriverDetail()
@@ -136,7 +139,7 @@ func Drivers(c *gin.Context, hh *HttpApiServer) {
 		}
 		return true
 	})
-	hh.ruleEngine.AllDevices().Range(func(key, value interface{}) bool {
+	ruleEngine.AllDevices().Range(func(key, value interface{}) bool {
 		drivers := value.(*typex.Device).Device.Driver()
 		if drivers != nil {
 			dd := drivers.DriverDetail()
@@ -150,16 +153,16 @@ func Drivers(c *gin.Context, hh *HttpApiServer) {
 }
 
 // Get statistics data
-func Statistics(c *gin.Context, hh *HttpApiServer) {
-	c.JSON(common.HTTP_OK, common.OkWithData(hh.ruleEngine.GetMetricStatistics()))
+func Statistics(c *gin.Context, ruleEngine typex.RuleX) {
+	c.JSON(common.HTTP_OK, common.OkWithData(ruleEngine.GetMetricStatistics()))
 }
 
 // Get statistics data
-func SourceCount(c *gin.Context, hh *HttpApiServer) {
-	allInEnd := hh.ruleEngine.AllInEnd()
-	allOutEnd := hh.ruleEngine.AllOutEnd()
-	allRule := hh.ruleEngine.AllRule()
-	plugins := hh.ruleEngine.AllPlugins()
+func SourceCount(c *gin.Context, ruleEngine typex.RuleX) {
+	allInEnd := ruleEngine.AllInEnd()
+	allOutEnd := ruleEngine.AllOutEnd()
+	allRule := ruleEngine.AllRule()
+	plugins := ruleEngine.AllPlugins()
 	var c1, c2, c3, c4 int
 	allInEnd.Range(func(key, value interface{}) bool {
 		c1 += 1
@@ -190,7 +193,7 @@ func SourceCount(c *gin.Context, hh *HttpApiServer) {
 * 输入类型配置
 *
  */
-func RType(c *gin.Context, hh *HttpApiServer) {
+func RType(c *gin.Context, ruleEngine typex.RuleX) {
 	Type, _ := c.GetQuery("type")
 	if Type == "" {
 		c.JSON(common.HTTP_OK, common.OkWithData(source.SM.All()))
@@ -205,7 +208,7 @@ func RType(c *gin.Context, hh *HttpApiServer) {
 * 输出类型配置
 *
  */
-func TType(c *gin.Context, hh *HttpApiServer) {
+func TType(c *gin.Context, ruleEngine typex.RuleX) {
 	Type, _ := c.GetQuery("type")
 	if Type == "" {
 		c.JSON(common.HTTP_OK, common.OkWithData(target.TM.All()))
@@ -220,7 +223,7 @@ func TType(c *gin.Context, hh *HttpApiServer) {
 * 设备配置
 *
  */
-func DType(c *gin.Context, hh *HttpApiServer) {
+func DType(c *gin.Context, ruleEngine typex.RuleX) {
 	Type, _ := c.GetQuery("type")
 	if Type == "" {
 		c.JSON(common.HTTP_OK, common.OkWithData(device.DM.All()))
@@ -235,7 +238,7 @@ func DType(c *gin.Context, hh *HttpApiServer) {
 * 获取本地的串口列表
 *
  */
-func GetUarts(c *gin.Context, hh *HttpApiServer) {
+func GetUarts(c *gin.Context, ruleEngine typex.RuleX) {
 	ports, _ := serial.GetPortsList()
 	c.JSON(common.HTTP_OK, common.OkWithData(ports))
 }
@@ -245,24 +248,35 @@ func GetUarts(c *gin.Context, hh *HttpApiServer) {
 * apiV2
 *
  */
-func GetUartList(c *gin.Context, hh *HttpApiServer) {
+func GetUartList(c *gin.Context, ruleEngine typex.RuleX) {
 	ports, _ := serial.GetPortsList()
 	List := []map[string]interface{}{}
 	for _, port := range ports {
+		// 明确知道有这么多端口，啰嗦代码是为了标记以免以后忘记
 		if port == "/dev/ttyS0" {
 			continue
 		}
 		if port == "/dev/ttyS3" {
 			continue
 		}
+		if port == "/dev/ttyUSB0" {
+			continue
+		}
+		if port == "/dev/ttyUSB1" {
+			continue
+		}
+		if port == "/dev/ttyUSB2" {
+			continue
+		}
+
 		List = append(List, map[string]interface{}{
 			"port": port,
 			"alias": func(port string) string {
 				if port == "/dev/ttyS1" {
-					return "RS485A1B1"
+					return "RS4851(A1B1)"
 				}
 				if port == "/dev/ttyS2" {
-					return "RS485A2B2"
+					return "RS4851(A2B2)"
 				}
 				return port
 			}(port)})
@@ -276,7 +290,7 @@ func GetUartList(c *gin.Context, hh *HttpApiServer) {
 * 本地网卡
 *
  */
-func GetNetInterfaces(c *gin.Context, hh *HttpApiServer) {
+func GetNetInterfaces(c *gin.Context, ruleEngine typex.RuleX) {
 	interfaces, err := getAvailableInterfaces()
 	if err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
@@ -290,7 +304,7 @@ func GetNetInterfaces(c *gin.Context, hh *HttpApiServer) {
 * 计算开机时间
 *
  */
-func StartedAt(c *gin.Context, hh *HttpApiServer) {
+func StartedAt(c *gin.Context, ruleEngine typex.RuleX) {
 	c.JSON(common.HTTP_OK, common.OkWithData(StartedTime))
 }
 
@@ -350,7 +364,7 @@ func getAvailableInterfaces() ([]NetInterfaceInfo, error) {
 
 	return netInterfaces, nil
 }
-func CatOsRelease(c *gin.Context, hh *HttpApiServer) {
+func CatOsRelease(c *gin.Context, ruleEngine typex.RuleX) {
 	r, err := utils.CatOsRelease()
 	if err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))

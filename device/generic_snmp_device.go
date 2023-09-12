@@ -141,7 +141,9 @@ func (sd *genericSnmpDevice) Status() typex.DeviceState {
 // 停止设备
 func (sd *genericSnmpDevice) Stop() {
 	sd.status = typex.DEV_STOP
-	sd.CancelCTX()
+	if sd.CancelCTX != nil {
+		sd.CancelCTX()
+	}
 }
 
 // 设备属性，是一系列属性描述

@@ -1,4 +1,4 @@
-package httpserver
+package apis
 
 import (
 	"fmt"
@@ -7,6 +7,8 @@ import (
 	"github.com/hootrhino/rulex/interqueue"
 	common "github.com/hootrhino/rulex/plugin/http_server/common"
 	"github.com/hootrhino/rulex/plugin/http_server/model"
+	"github.com/hootrhino/rulex/plugin/http_server/server"
+	"github.com/hootrhino/rulex/plugin/http_server/service"
 	"github.com/sirupsen/logrus"
 
 	"github.com/hootrhino/rulex/core"
@@ -30,9 +32,9 @@ type ruleVo struct {
 	Failed      string   `json:"failed"`
 }
 
-func RuleDetail(c *gin.Context, hh *HttpApiServer) {
+func RuleDetail(c *gin.Context, ruleEngine typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
-	rule, err := hh.GetMRuleWithUUID(uuid)
+	rule, err := service.GetMRuleWithUUID(uuid)
 	if err != nil {
 		c.JSON(common.HTTP_OK, common.Error400EmptyObj(err))
 		return
@@ -53,11 +55,11 @@ func RuleDetail(c *gin.Context, hh *HttpApiServer) {
 }
 
 // Get all rules
-func Rules(c *gin.Context, hh *HttpApiServer) {
+func Rules(c *gin.Context, ruleEngine typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
 	if uuid == "" {
 		DataList := []ruleVo{}
-		allRules, _ := hh.GetAllMRule()
+		allRules, _ := service.GetAllMRule()
 		for _, rule := range allRules {
 			DataList = append(DataList, ruleVo{
 				UUID:        rule.UUID,
@@ -75,7 +77,7 @@ func Rules(c *gin.Context, hh *HttpApiServer) {
 		}
 		c.JSON(common.HTTP_OK, common.OkWithData(DataList))
 	} else {
-		rule, err := hh.GetMRuleWithUUID(uuid)
+		rule, err := service.GetMRuleWithUUID(uuid)
 		if err != nil {
 			c.JSON(common.HTTP_OK, common.Error400(err))
 			return
@@ -97,7 +99,7 @@ func Rules(c *gin.Context, hh *HttpApiServer) {
 }
 
 // Create rule
-func CreateRule(c *gin.Context, hh *HttpApiServer) {
+func CreateRule(c *gin.Context, ruleEngine typex.RuleX) {
 	type Form struct {
 		FromSource  []string `json:"fromSource" binding:"required"`
 		FromDevice  []string `json:"fromDevice" binding:"required"`
@@ -123,7 +125,7 @@ func CreateRule(c *gin.Context, hh *HttpApiServer) {
 	lenDevices := len(form.FromDevice)
 	if lenSources > 0 {
 		for _, id := range form.FromSource {
-			in, _ := hh.GetMInEndWithUUID(id)
+			in, _ := service.GetMInEndWithUUID(id)
 			if in == nil {
 				c.JSON(common.HTTP_OK, common.Error(`inend not exists: `+id))
 				return
@@ -133,7 +135,7 @@ func CreateRule(c *gin.Context, hh *HttpApiServer) {
 
 	if lenDevices > 0 {
 		for _, id := range form.FromDevice {
-			in, _ := hh.GetMDeviceWithUUID(id)
+			in, _ := service.GetMDeviceWithUUID(id)
 			if in == nil {
 				c.JSON(common.HTTP_OK, common.Error(`device not exists: `+id))
 				return
@@ -166,7 +168,8 @@ func CreateRule(c *gin.Context, hh *HttpApiServer) {
 	if form.Type != "lua" {
 		// 未来可能支持别的脚本
 	}
-	rule := typex.NewLuaRule(hh.ruleEngine,
+	rule := typex.NewLuaRule(
+		ruleEngine,
 		mRule.UUID,
 		mRule.Name,
 		mRule.Description,
@@ -175,14 +178,14 @@ func CreateRule(c *gin.Context, hh *HttpApiServer) {
 		mRule.Success,
 		mRule.Actions,
 		mRule.Failed)
-	hh.ruleEngine.RemoveRule(rule.UUID)
-	if err := hh.ruleEngine.LoadRule(rule); err != nil {
+	ruleEngine.RemoveRule(rule.UUID)
+	if err := ruleEngine.LoadRule(rule); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
 	// 更新FromSource RULE到Device表中
 	for _, inId := range form.FromSource {
-		InEnd, _ := hh.GetMInEndWithUUID(inId)
+		InEnd, _ := service.GetMInEndWithUUID(inId)
 		if InEnd == nil {
 			c.JSON(common.HTTP_OK, common.Error(`inend not exists: `+inId))
 			return
@@ -200,19 +203,19 @@ func CreateRule(c *gin.Context, hh *HttpApiServer) {
 			BindRules = append(BindRules, iid)
 		}
 		InEnd.BindRules = BindRules
-		if err := hh.UpdateMInEnd(InEnd.UUID, &model.MInEnd{
+		if err := service.UpdateMInEnd(InEnd.UUID, &model.MInEnd{
 			BindRules: BindRules,
 		}); err != nil {
 			c.JSON(common.HTTP_OK, common.Error400(err))
 			return
 		}
 		// SaveDB
-		if err := hh.InsertMRule(mRule); err != nil {
+		if err := service.InsertMRule(mRule); err != nil {
 			c.JSON(common.HTTP_OK, common.Error400(err))
 			return
 		}
 		// LoadNewest!!!
-		if err := hh.LoadNewestInEnd(inId); err != nil {
+		if err := server.LoadNewestInEnd(inId, ruleEngine); err != nil {
 			c.JSON(common.HTTP_OK, common.Error400(err))
 			return
 		}
@@ -221,7 +224,7 @@ func CreateRule(c *gin.Context, hh *HttpApiServer) {
 
 	// FromDevice
 	for _, devId := range form.FromDevice {
-		Device, _ := hh.GetMDeviceWithUUID(devId)
+		Device, _ := service.GetMDeviceWithUUID(devId)
 		if Device == nil {
 			c.JSON(common.HTTP_OK, common.Error(`device not exists: `+devId))
 			return
@@ -239,19 +242,19 @@ func CreateRule(c *gin.Context, hh *HttpApiServer) {
 			BindRules = append(BindRules, iid)
 		}
 		Device.BindRules = BindRules
-		if err := hh.UpdateDevice(Device.UUID, &model.MDevice{
+		if err := service.UpdateDevice(Device.UUID, &model.MDevice{
 			BindRules: BindRules,
 		}); err != nil {
 			c.JSON(common.HTTP_OK, common.Error400(err))
 			return
 		}
 		// SaveDB
-		if err := hh.InsertMRule(mRule); err != nil {
+		if err := service.InsertMRule(mRule); err != nil {
 			c.JSON(common.HTTP_OK, common.Error400(err))
 			return
 		}
 		// LoadNewest!!!
-		if err := hh.LoadNewestDevice(devId); err != nil {
+		if err := server.LoadNewestDevice(devId, ruleEngine); err != nil {
 			c.JSON(common.HTTP_OK, common.Error400(err))
 			return
 		}
@@ -265,7 +268,7 @@ func CreateRule(c *gin.Context, hh *HttpApiServer) {
 * Update
 *
  */
-func UpdateRule(c *gin.Context, hh *HttpApiServer) {
+func UpdateRule(c *gin.Context, ruleEngine typex.RuleX) {
 	type Form struct {
 		UUID        string   `json:"uuid" binding:"required"` // 如果空串就是新建，非空就是更新
 		FromSource  []string `json:"fromSource" binding:"required"`
@@ -292,7 +295,7 @@ func UpdateRule(c *gin.Context, hh *HttpApiServer) {
 	lenDevices := len(form.FromDevice)
 	if lenSources > 0 {
 		for _, id := range form.FromSource {
-			in := hh.ruleEngine.GetInEnd(id)
+			in := ruleEngine.GetInEnd(id)
 			if in == nil {
 				c.JSON(common.HTTP_OK, common.Error(`inend not exists: `+id))
 				return
@@ -302,7 +305,7 @@ func UpdateRule(c *gin.Context, hh *HttpApiServer) {
 
 	if lenDevices > 0 {
 		for _, id := range form.FromDevice {
-			in := hh.ruleEngine.GetDevice(id)
+			in := ruleEngine.GetDevice(id)
 			if in == nil {
 				c.JSON(common.HTTP_OK, common.Error(`device not exists: `+id))
 				return
@@ -319,12 +322,13 @@ func UpdateRule(c *gin.Context, hh *HttpApiServer) {
 	}
 
 	if form.Type == "lua" {
-		mRule, err := hh.GetMRuleWithUUID(form.UUID)
+		mRule, err := service.GetMRuleWithUUID(form.UUID)
 		if err != nil {
 			c.JSON(common.HTTP_OK, common.Error400(err))
 			return
 		}
-		rule := typex.NewLuaRule(hh.ruleEngine,
+		rule := typex.NewLuaRule(
+			ruleEngine,
 			mRule.UUID,
 			mRule.Name,
 			mRule.Description,
@@ -333,14 +337,14 @@ func UpdateRule(c *gin.Context, hh *HttpApiServer) {
 			mRule.Success,
 			mRule.Actions,
 			mRule.Failed)
-		hh.ruleEngine.RemoveRule(rule.UUID)
-		if err := hh.ruleEngine.LoadRule(rule); err != nil {
+		ruleEngine.RemoveRule(rule.UUID)
+		if err := ruleEngine.LoadRule(rule); err != nil {
 			c.JSON(common.HTTP_OK, common.Error400(err))
 			return
 		}
 		// SaveDB
 		//
-		if err := hh.UpdateMRule(mRule.UUID, &model.MRule{
+		if err := service.UpdateMRule(mRule.UUID, &model.MRule{
 			Name:        form.Name,
 			Type:        form.Type,
 			Expression:  form.Expression,
@@ -357,7 +361,7 @@ func UpdateRule(c *gin.Context, hh *HttpApiServer) {
 		// 更新FromSource RULE到Device表中
 		for _, inId := range form.FromSource {
 			if inId != "" {
-				InEnd, _ := hh.GetMInEndWithUUID(inId)
+				InEnd, _ := service.GetMInEndWithUUID(inId)
 				if InEnd == nil {
 					c.JSON(common.HTTP_OK, common.Error(`inend not exists: `+inId))
 					return
@@ -375,14 +379,14 @@ func UpdateRule(c *gin.Context, hh *HttpApiServer) {
 					BindRules = append(BindRules, iid)
 				}
 				InEnd.BindRules = BindRules
-				if err := hh.UpdateMInEnd(InEnd.UUID, &model.MInEnd{
+				if err := service.UpdateMInEnd(InEnd.UUID, &model.MInEnd{
 					BindRules: BindRules,
 				}); err != nil {
 					c.JSON(common.HTTP_OK, common.Error400(err))
 					return
 				}
 				// LoadNewest!!!
-				if err := hh.LoadNewestInEnd(inId); err != nil {
+				if err := server.LoadNewestInEnd(inId, ruleEngine); err != nil {
 					c.JSON(common.HTTP_OK, common.Error400(err))
 					return
 				}
@@ -392,7 +396,7 @@ func UpdateRule(c *gin.Context, hh *HttpApiServer) {
 		// FromDevice
 		for _, devId := range form.FromDevice {
 			if devId != "" {
-				Device, _ := hh.GetMDeviceWithUUID(devId)
+				Device, _ := service.GetMDeviceWithUUID(devId)
 				if Device == nil {
 					c.JSON(common.HTTP_OK, common.Error(`device not exists: `+devId))
 					return
@@ -410,14 +414,14 @@ func UpdateRule(c *gin.Context, hh *HttpApiServer) {
 					BindRules = append(BindRules, iid)
 				}
 				Device.BindRules = BindRules
-				if err := hh.UpdateDevice(Device.UUID, &model.MDevice{
+				if err := service.UpdateDevice(Device.UUID, &model.MDevice{
 					BindRules: BindRules,
 				}); err != nil {
 					c.JSON(common.HTTP_OK, common.Error400(err))
 					return
 				}
 				// LoadNewest!!!
-				if err := hh.LoadNewestDevice(devId); err != nil {
+				if err := server.LoadNewestDevice(devId, ruleEngine); err != nil {
 					c.JSON(common.HTTP_OK, common.Error400(err))
 					return
 				}
@@ -432,16 +436,16 @@ func UpdateRule(c *gin.Context, hh *HttpApiServer) {
 }
 
 // Delete rule by UUID
-func DeleteRule(c *gin.Context, hh *HttpApiServer) {
+func DeleteRule(c *gin.Context, ruleEngine typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
-	mRule, err0 := hh.GetMRule(uuid)
+	mRule, err0 := service.GetMRule(uuid)
 	if err0 != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err0))
 		return
 	}
 	// 更新FromSource RULE到Device表中
 	for _, id := range mRule.FromSource {
-		InEnd, _ := hh.GetMInEndWithUUID(id)
+		InEnd, _ := service.GetMInEndWithUUID(id)
 		if InEnd == nil {
 			c.JSON(common.HTTP_OK, common.Error(`inend not exists: `+id))
 			return
@@ -453,7 +457,7 @@ func DeleteRule(c *gin.Context, hh *HttpApiServer) {
 				BindRules = append(BindRules, iid)
 			}
 		}
-		if err := hh.UpdateMInEnd(InEnd.UUID, &model.MInEnd{
+		if err := service.UpdateMInEnd(InEnd.UUID, &model.MInEnd{
 			BindRules: BindRules,
 		}); err != nil {
 			c.JSON(common.HTTP_OK, common.Error400(err))
@@ -462,7 +466,7 @@ func DeleteRule(c *gin.Context, hh *HttpApiServer) {
 	}
 	// FromDevice
 	for _, devId := range mRule.FromDevice {
-		Device, _ := hh.GetMDeviceWithUUID(devId)
+		Device, _ := service.GetMDeviceWithUUID(devId)
 		if Device == nil {
 			c.JSON(common.HTTP_OK, common.Error(`device not exists: `+devId))
 			return
@@ -474,7 +478,7 @@ func DeleteRule(c *gin.Context, hh *HttpApiServer) {
 				BindRules = append(BindRules, iid)
 			}
 		}
-		if err := hh.UpdateDevice(Device.UUID, &model.MDevice{
+		if err := service.UpdateDevice(Device.UUID, &model.MDevice{
 			BindRules: BindRules,
 		}); err != nil {
 			c.JSON(common.HTTP_OK, common.Error400(err))
@@ -482,22 +486,22 @@ func DeleteRule(c *gin.Context, hh *HttpApiServer) {
 		}
 
 	}
-	if err := hh.DeleteMRule(uuid); err != nil {
+	if err := service.DeleteMRule(uuid); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	hh.ruleEngine.RemoveRule(uuid)
+	ruleEngine.RemoveRule(uuid)
 	//
 	// 内存里的数据刷新完了以后更新数据库，最后重启
 	//
 	for _, devId := range mRule.FromDevice {
-		if err := hh.LoadNewestDevice(devId); err != nil {
+		if err := server.LoadNewestDevice(devId, ruleEngine); err != nil {
 			c.JSON(common.HTTP_OK, common.Error400(err))
 			return
 		}
 	}
 	for _, devId := range mRule.FromSource {
-		if err := hh.LoadNewestInEnd(devId); err != nil {
+		if err := server.LoadNewestInEnd(devId, ruleEngine); err != nil {
 			c.JSON(common.HTTP_OK, common.Error400(err))
 			return
 		}
@@ -510,7 +514,7 @@ func DeleteRule(c *gin.Context, hh *HttpApiServer) {
 * 验证lua语法
 *
  */
-func ValidateLuaSyntax(c *gin.Context, hh *HttpApiServer) {
+func ValidateLuaSyntax(c *gin.Context, ruleEngine typex.RuleX) {
 	type Form struct {
 		FromSource []string `json:"fromSource" binding:"required"`
 		FromDevice []string `json:"fromDevice" binding:"required"`
@@ -546,7 +550,7 @@ func ValidateLuaSyntax(c *gin.Context, hh *HttpApiServer) {
 * 测试脚本执行效果
 *
  */
-func TestSourceCallback(c *gin.Context, hh *HttpApiServer) {
+func TestSourceCallback(c *gin.Context, ruleEngine typex.RuleX) {
 	type Form struct {
 		UUID     string `json:"uuid"`
 		TestData string `json:"testData"`
@@ -557,7 +561,7 @@ func TestSourceCallback(c *gin.Context, hh *HttpApiServer) {
 		return
 	}
 
-	inend := hh.ruleEngine.GetInEnd(form.UUID)
+	inend := ruleEngine.GetInEnd(form.UUID)
 	if inend == nil {
 		c.JSON(common.HTTP_OK, common.Error(fmt.Sprintf("'InEnd' not exists: %v", form.UUID)))
 		return
@@ -578,7 +582,7 @@ func TestSourceCallback(c *gin.Context, hh *HttpApiServer) {
 * 测试 OutEnd 的结果
 *
  */
-func TestOutEndCallback(c *gin.Context, hh *HttpApiServer) {
+func TestOutEndCallback(c *gin.Context, ruleEngine typex.RuleX) {
 	type Form struct {
 		UUID     string `json:"uuid"`
 		TestData string `json:"testData"`
@@ -589,7 +593,7 @@ func TestOutEndCallback(c *gin.Context, hh *HttpApiServer) {
 		return
 	}
 
-	outend := hh.ruleEngine.GetOutEnd(form.UUID)
+	outend := ruleEngine.GetOutEnd(form.UUID)
 	if outend == nil {
 		c.JSON(common.HTTP_OK, common.Error(fmt.Sprintf("'OutEnd' not exists: %v", form.UUID)))
 		return
@@ -610,7 +614,7 @@ func TestOutEndCallback(c *gin.Context, hh *HttpApiServer) {
 * Device
 *
  */
-func TestDeviceCallback(c *gin.Context, hh *HttpApiServer) {
+func TestDeviceCallback(c *gin.Context, ruleEngine typex.RuleX) {
 	type Form struct {
 		UUID     string `json:"uuid"`
 		TestData string `json:"testData"`
@@ -623,7 +627,7 @@ func TestDeviceCallback(c *gin.Context, hh *HttpApiServer) {
 	glogger.GLogger.WithFields(logrus.Fields{
 		"topic": "rule/test/" + form.UUID,
 	}).Debug(form.TestData)
-	device := hh.ruleEngine.GetDevice(form.UUID)
+	device := ruleEngine.GetDevice(form.UUID)
 	if device == nil {
 		c.JSON(common.HTTP_OK, common.Error(fmt.Sprintf("'Device' not exists: %v", form.UUID)))
 		return

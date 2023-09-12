@@ -23,7 +23,7 @@ import (
 func Test_Modbus_LUA_Parse(t *testing.T) {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, syscall.SIGINT, syscall.SIGABRT)
-	engine := engine.NewRuleEngine(core.InitGlobalConfig("conf/rulex.ini"))
+	engine := engine.InitRuleEngine(core.InitGlobalConfig("conf/rulex.ini"))
 	engine.Start()
 	hh := httpserver.NewHttpApiServer()
 	// HttpApiServer loaded default

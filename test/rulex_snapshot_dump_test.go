@@ -28,7 +28,7 @@ import (
 func Test_snapshot_dump(t *testing.T) {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, syscall.SIGINT, syscall.SIGABRT)
-	e := engine.NewRuleEngine(core.InitGlobalConfig("conf/rulex.ini"))
+	e := engine.InitRuleEngine(core.InitGlobalConfig("conf/rulex.ini"))
 	e.Start()
 	hh := httpserver.NewHttpApiServer()
 

@@ -1,4 +1,4 @@
-package httpserver
+package apis
 
 import (
 	"crypto/md5"
@@ -8,6 +8,8 @@ import (
 
 	common "github.com/hootrhino/rulex/plugin/http_server/common"
 	"github.com/hootrhino/rulex/plugin/http_server/model"
+	"github.com/hootrhino/rulex/plugin/http_server/service"
+	"github.com/hootrhino/rulex/typex"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
@@ -24,12 +26,12 @@ type user struct {
 	Description string `json:"description"`
 }
 
-func UserDetail(c *gin.Context, hh *HttpApiServer) {
-	Info(c, hh)
+func UserDetail(c *gin.Context, ruleEngine typex.RuleX) {
+	Info(c, ruleEngine)
 }
-func Users(c *gin.Context, hh *HttpApiServer) {
+func Users(c *gin.Context, ruleEngine typex.RuleX) {
 	users := []user{}
-	for _, u := range hh.AllMUser() {
+	for _, u := range service.AllMUser() {
 		users = append(users, user{
 			Role:        u.Role,
 			Username:    u.Username,
@@ -40,7 +42,7 @@ func Users(c *gin.Context, hh *HttpApiServer) {
 }
 
 // CreateUser
-func CreateUser(c *gin.Context, hh *HttpApiServer) {
+func CreateUser(c *gin.Context, ruleEngine typex.RuleX) {
 	type Form struct {
 		Role        string `json:"role" binding:"required"`
 		Username    string `json:"username" binding:"required"`
@@ -53,8 +55,8 @@ func CreateUser(c *gin.Context, hh *HttpApiServer) {
 		return
 	}
 
-	if _, err := hh.GetMUser(form.Username, md5Hash(form.Password)); err != nil {
-		hh.InsertMUser(&model.MUser{
+	if _, err := service.GetMUser(form.Username, md5Hash(form.Password)); err != nil {
+		service.InsertMUser(&model.MUser{
 			Role:        form.Role,
 			Username:    form.Username,
 			Password:    md5Hash(form.Password),
@@ -79,7 +81,7 @@ func md5Hash(str string) string {
 
 // Login
 // TODO: 下个版本实现用户基础管理
-func Login(c *gin.Context, hh *HttpApiServer) {
+func Login(c *gin.Context, ruleEngine typex.RuleX) {
 	type _user struct {
 		Username string `json:"username" binding:"required"`
 		Password string `json:"password" binding:"required"`
@@ -89,7 +91,7 @@ func Login(c *gin.Context, hh *HttpApiServer) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	if _, err := hh.GetMUser(u.Username, md5Hash(u.Password)); err != nil {
+	if _, err := service.GetMUser(u.Username, md5Hash(u.Password)); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
@@ -106,7 +108,7 @@ func Login(c *gin.Context, hh *HttpApiServer) {
 * 日志管理
 *
  */
-func Logs(c *gin.Context, hh *HttpApiServer) {
+func Logs(c *gin.Context, ruleEngine typex.RuleX) {
 	type Data struct {
 		Id      int    `json:"id" binding:"required"`
 		Content string `json:"content" binding:"required"`
@@ -116,7 +118,7 @@ func Logs(c *gin.Context, hh *HttpApiServer) {
 	c.JSON(common.HTTP_OK, common.OkWithData(logs))
 }
 
-func LogOut(c *gin.Context, hh *HttpApiServer) {
+func LogOut(c *gin.Context, ruleEngine typex.RuleX) {
 	c.JSON(common.HTTP_OK, common.Ok())
 }
 
@@ -125,7 +127,7 @@ func LogOut(c *gin.Context, hh *HttpApiServer) {
 * TODO：用户信息, 当前版本写死 下个版本实现数据库查找
 *
  */
-func Info(c *gin.Context, hh *HttpApiServer) {
+func Info(c *gin.Context, ruleEngine typex.RuleX) {
 	token := c.GetHeader("token")
 	if claims, err := parseToken(token); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))

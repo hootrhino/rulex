@@ -4,9 +4,11 @@ import (
 	"runtime"
 
 	"github.com/hootrhino/rulex/core"
+
 	"github.com/hootrhino/rulex/glogger"
 	dao "github.com/hootrhino/rulex/plugin/http_server/dao"
 	"github.com/hootrhino/rulex/plugin/http_server/model"
+
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -55,6 +57,7 @@ func (s *SqliteDAO) Init(dbPath string) error {
 	if err != nil {
 		glogger.GLogger.Fatal(err)
 	}
+	s.RegisterModel()
 	return err
 }
 
@@ -91,7 +94,7 @@ func (s *SqliteDAO) Name() string {
 * 注册数据模型
 *
  */
-func (s *SqliteDAO) RegisterModel(dst ...interface{}) {
+func (s *SqliteDAO) RegisterModel() {
 	s.DB().AutoMigrate(
 		&model.MInEnd{},
 		&model.MOutEnd{},

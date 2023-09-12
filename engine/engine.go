@@ -37,27 +37,37 @@ import (
 	"github.com/shirou/gopsutil/v3/disk"
 )
 
+/*
+*
+* 全局默认引擎，未来主要留给外部使用
+*
+ */
+var DefaultRuleEngine typex.RuleX
+
 // 规则引擎
 type RuleEngine struct {
-	Hooks             *sync.Map            `json:"hooks"`
-	Rules             *sync.Map            `json:"rules"`
-	Plugins           *sync.Map            `json:"plugins"`
-	InEnds            *sync.Map            `json:"inends"`
-	OutEnds           *sync.Map            `json:"outends"`
-	Drivers           *sync.Map            `json:"drivers"`
-	Devices           *sync.Map            `json:"devices"`
-	Config            *typex.RulexConfig   `json:"config"`
-	Trailer           typex.XTrailer       `json:"-"`
-	AppStack          typex.XAppStack      `json:"-"`
-	AiBaseRuntime     typex.XAiRuntime     `json:"-"`
-	DeviceTypeManager typex.DeviceRegistry `json:"-"`
-	SourceTypeManager typex.SourceRegistry `json:"-"`
-	TargetTypeManager typex.TargetRegistry `json:"-"`
-	MetricStatistics  *typex.MetricStatistics
+	Hooks   *sync.Map          `json:"hooks"`
+	Rules   *sync.Map          `json:"rules"`
+	Plugins *sync.Map          `json:"plugins"`
+	InEnds  *sync.Map          `json:"inends"`
+	OutEnds *sync.Map          `json:"outends"`
+	Drivers *sync.Map          `json:"drivers"`
+	Devices *sync.Map          `json:"devices"`
+	Config  *typex.RulexConfig `json:"config"`
+	// 规划在0.7的时候将下面这些组件和RULE Engine解耦合
+	// |||||||||||||||||||||||||||||||||||||||||||||
+	// vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+	Trailer           typex.XTrailer          `json:"-"` // 待迁移组件
+	AppStack          typex.XAppStack         `json:"-"` // 待迁移组件
+	AiBaseRuntime     typex.XAiRuntime        `json:"-"` // 待迁移组件
+	DeviceTypeManager typex.DeviceRegistry    `json:"-"` // 待迁移组件
+	SourceTypeManager typex.SourceRegistry    `json:"-"` // 待迁移组件
+	TargetTypeManager typex.TargetRegistry    `json:"-"` // 待迁移组件
+	MetricStatistics  *typex.MetricStatistics // 待迁移组件
 }
 
-func NewRuleEngine(config typex.RulexConfig) typex.RuleX {
-	re := &RuleEngine{
+func InitRuleEngine(config typex.RulexConfig) typex.RuleX {
+	DefaultRuleEngine := &RuleEngine{
 		DeviceTypeManager: core.NewDeviceTypeManager(),
 		SourceTypeManager: core.NewSourceTypeManager(),
 		TargetTypeManager: core.NewTargetTypeManager(),
@@ -72,14 +82,14 @@ func NewRuleEngine(config typex.RulexConfig) typex.RuleX {
 		MetricStatistics:  typex.NewMetricStatistics(),
 	}
 	// trailer
-	re.Trailer = trailer.NewTrailerManager(re)
+	DefaultRuleEngine.Trailer = trailer.NewTrailerManager(DefaultRuleEngine)
 	// lua appstack manager
-	re.AppStack = appstack.NewAppStack(re)
+	DefaultRuleEngine.AppStack = appstack.NewAppStack(DefaultRuleEngine)
 	// current only support Internal ai
-	re.AiBaseRuntime = aibase.NewAIRuntime(re)
+	DefaultRuleEngine.AiBaseRuntime = aibase.NewAIRuntime(DefaultRuleEngine)
 	// Queue
-	interqueue.InitDataCacheQueue(re, core.GlobalConfig.MaxQueueSize)
-	return re
+	interqueue.InitDataCacheQueue(DefaultRuleEngine, core.GlobalConfig.MaxQueueSize)
+	return DefaultRuleEngine
 }
 func (e *RuleEngine) GetMetricStatistics() *typex.MetricStatistics {
 	return e.MetricStatistics

@@ -14,6 +14,7 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 
+	archsupport "github.com/hootrhino/rulex/bspsupport"
 	"github.com/hootrhino/rulex/common"
 	"github.com/hootrhino/rulex/core"
 	"github.com/hootrhino/rulex/driver"
@@ -173,7 +174,11 @@ func (mdev *generic_modbus_excel_device) Init(devId string, configMap map[string
 	if !utils.SContains([]string{"RTU", "TCP"}, mdev.mainConfig.CommonConfig.Mode) {
 		return errors.New("unsupported mode, only can be one of 'TCP' or 'RTU'")
 	}
-
+	// 做端口管理
+	Port := archsupport.GetUart(mdev.mainConfig.RtuConfig.Uart)
+	if Port.Busy {
+		return errors.New(Port.BusyingInfo())
+	}
 	return nil
 }
 
@@ -224,6 +229,7 @@ func (mdev *generic_modbus_excel_device) Start(cctx typex.CCTX) error {
 	// ---------------------------------------------------------------------------------
 	if !mdev.mainConfig.CommonConfig.AutoRequest {
 		mdev.status = typex.DEV_UP
+		archsupport.UARTBusy(mdev.mainConfig.RtuConfig.Uart)
 		return nil
 	}
 	mdev.retryTimes = 0
@@ -291,17 +297,17 @@ func (mdev *generic_modbus_excel_device) Status() typex.DeviceState {
 
 // 停止设备
 func (mdev *generic_modbus_excel_device) Stop() {
+	mdev.status = typex.DEV_DOWN
 	if mdev.CancelCTX != nil {
 		mdev.CancelCTX()
 	}
 	if mdev.driver != nil {
 		mdev.driver.Stop()
 	}
-
 	if mdev.sqliteDb != nil {
 		mdev.sqliteDb = nil
 	}
-	mdev.status = typex.DEV_DOWN
+	archsupport.UARTFree(mdev.mainConfig.RtuConfig.Uart)
 }
 
 // 设备属性，是一系列属性描述

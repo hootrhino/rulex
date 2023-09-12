@@ -1,4 +1,4 @@
-package httpserver
+package apis
 
 import (
 	"fmt"
@@ -15,7 +15,7 @@ import (
 *
  */
 
-func PluginService(c *gin.Context, hh *HttpApiServer) {
+func PluginService(c *gin.Context, ruleEngine typex.RuleX) {
 	type Form struct {
 		UUID string      `json:"uuid" binding:"required"`
 		Name string      `json:"name" binding:"required"`
@@ -26,7 +26,7 @@ func PluginService(c *gin.Context, hh *HttpApiServer) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	plugin, ok := hh.ruleEngine.AllPlugins().Load(form.UUID)
+	plugin, ok := ruleEngine.AllPlugins().Load(form.UUID)
 	if ok {
 		result := plugin.(typex.XPlugin).Service(typex.ServiceArg{
 			Name: form.Name,
@@ -44,9 +44,9 @@ func PluginService(c *gin.Context, hh *HttpApiServer) {
 * 插件详情
 *
  */
-func PluginDetail(c *gin.Context, hh *HttpApiServer) {
+func PluginDetail(c *gin.Context, ruleEngine typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
-	plugin, ok := hh.ruleEngine.AllPlugins().Load(uuid)
+	plugin, ok := ruleEngine.AllPlugins().Load(uuid)
 	if ok {
 		result := plugin.(typex.XPlugin)
 		c.JSON(common.HTTP_OK, common.OkWithData(result.PluginMetaInfo()))

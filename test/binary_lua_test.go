@@ -17,7 +17,7 @@ import (
 )
 
 func Test_Binary_LUA_Parse(t *testing.T) {
-	engine := engine.NewRuleEngine(core.InitGlobalConfig("conf/rulex.ini"))
+	engine := engine.InitRuleEngine(core.InitGlobalConfig("conf/rulex.ini"))
 	engine.Start()
 
 	hh := httpserver.NewHttpApiServer()

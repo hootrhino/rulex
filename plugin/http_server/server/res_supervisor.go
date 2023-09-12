@@ -1,4 +1,4 @@
-package httpserver
+package server
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 	"github.com/hootrhino/rulex/typex"
 )
 
-func (hh *HttpApiServer) StartInSupervisor(ctx context.Context, in *typex.InEnd) {
+func StartInSupervisor(ctx context.Context, in *typex.InEnd, ruleEngine typex.RuleX) {
 	UUID := in.UUID
 	ticker := time.NewTicker(time.Duration(time.Second * 5))
 	defer func() {
@@ -30,7 +30,7 @@ func (hh *HttpApiServer) StartInSupervisor(ctx context.Context, in *typex.InEnd)
 			{
 			}
 		}
-		currentIn := hh.ruleEngine.GetInEnd(UUID)
+		currentIn := ruleEngine.GetInEnd(UUID)
 		if currentIn == nil {
 			glogger.GLogger.Debugf("Source:%v Deleted, supervisor exit", UUID)
 			return
@@ -43,14 +43,14 @@ func (hh *HttpApiServer) StartInSupervisor(ctx context.Context, in *typex.InEnd)
 		if currentIn.Source.Status() == typex.SOURCE_DOWN {
 			glogger.GLogger.Debugf("Source:%v DOWN, supervisor try to Restart", UUID)
 			time.Sleep(2 * time.Second)
-			go hh.LoadNewestInEnd(UUID)
+			go LoadNewestInEnd(UUID, ruleEngine)
 			return
 		}
 		// glogger.GLogger.Debugf("Supervisor Get Source :%v state:%v", UUID, currentIn.Source.Status().String())
 		<-ticker.C
 	}
 }
-func (hh *HttpApiServer) StartOutSupervisor(ctx context.Context, out *typex.OutEnd) {
+func StartOutSupervisor(ctx context.Context, out *typex.OutEnd, ruleEngine typex.RuleX) {
 	UUID := out.UUID
 	ticker := time.NewTicker(time.Duration(time.Second * 5))
 	defer func() {
@@ -72,7 +72,7 @@ func (hh *HttpApiServer) StartOutSupervisor(ctx context.Context, out *typex.OutE
 			{
 			}
 		}
-		currentOut := hh.ruleEngine.GetOutEnd(UUID)
+		currentOut := ruleEngine.GetOutEnd(UUID)
 		if currentOut == nil {
 			glogger.GLogger.Debugf("OutEnd:%v Deleted, supervisor exit", UUID)
 			return
@@ -85,14 +85,14 @@ func (hh *HttpApiServer) StartOutSupervisor(ctx context.Context, out *typex.OutE
 		if currentOut.Target.Status() == typex.SOURCE_DOWN {
 			glogger.GLogger.Debugf("OutEnd:%v DOWN, supervisor try to Restart", UUID)
 			time.Sleep(5 * time.Second)
-			go hh.LoadNewestOutEnd(UUID)
+			go LoadNewestOutEnd(UUID, ruleEngine)
 			return
 		}
 		// glogger.GLogger.Debugf("Supervisor Get OutEnd :%v state:%v", UUID, currentOut.Target.Status().String())
 		<-ticker.C
 	}
 }
-func (hh *HttpApiServer) StartDeviceSupervisor(ctx context.Context, device *typex.Device) {
+func StartDeviceSupervisor(ctx context.Context, device *typex.Device, ruleEngine typex.RuleX) {
 	UUID := device.UUID
 	ticker := time.NewTicker(time.Duration(time.Second * 5))
 	defer func() {
@@ -114,7 +114,7 @@ func (hh *HttpApiServer) StartDeviceSupervisor(ctx context.Context, device *type
 			{
 			}
 		}
-		currentDevice := hh.ruleEngine.GetDevice(UUID)
+		currentDevice := ruleEngine.GetDevice(UUID)
 		if currentDevice == nil {
 			glogger.GLogger.Debugf("Device:%v Deleted, supervisor exit", UUID)
 			return
@@ -127,7 +127,7 @@ func (hh *HttpApiServer) StartDeviceSupervisor(ctx context.Context, device *type
 		if currentDevice.Device.Status() == typex.DEV_DOWN {
 			glogger.GLogger.Debugf("Device:%v DOWN, supervisor try to Restart", UUID)
 			time.Sleep(2 * time.Second)
-			go hh.LoadNewestDevice(UUID)
+			go LoadNewestDevice(UUID, ruleEngine)
 			return
 		}
 		// glogger.GLogger.Debugf("Supervisor Get Device :%v state:%v", UUID, currentDevice.Device.Status().String())
