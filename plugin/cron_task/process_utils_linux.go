@@ -10,6 +10,9 @@ import (
 func GetSysProcAttr() *syscall.SysProcAttr {
 	return &syscall.SysProcAttr{
 		Setpgid: true,
+		Credential: &syscall.Credential{
+			Uid: 0,
+		},
 	}
 }
 

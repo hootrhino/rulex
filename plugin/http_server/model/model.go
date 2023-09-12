@@ -268,12 +268,12 @@ type MScheduleTask struct {
 	Name      string    `gorm:"not null" json:"name"`
 	CronExpr  string    `json:"cronExpr"` // Quartz standard
 	Enable    int8      `json:"enable"`
-	TaskType  int       `json:"taskType"` // 1-shell script
-	Command   string    `json:"command"`  // ./cron_task/{id}/a.sh
-	Args      string    `json:"args"`     // param1 param2 param3
-	IsRoot    int8      `json:"isRoot"`
-	WorkDir   string    `json:"workDir"` // /root
-	Env       string    `json:"env"`     // A=e1;B=e2;C=e3
+	TaskType  int       `json:"taskType"` // 1-shell 2-cmd
+	Command   string    `json:"command"`  // ./cron_assets/{id}/a.sh
+	Args      string    `json:"args"`     // "param1 param2 param3"
+	IsRoot    int8      `json:"isRoot"`   // 0-false 1-true
+	WorkDir   string    `json:"workDir"`  // /root
+	Env       []string  `json:"env"`      // ["A=e1", "B=e2", "C=e3"]
 	UpdatedAt time.Time `json:"updatedAt"`
 }
 

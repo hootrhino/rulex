@@ -1,5 +1,3 @@
-//go:build linux
-
 package cron_task
 
 import (
@@ -9,7 +7,6 @@ import (
 	"os/exec"
 	"strings"
 	"sync"
-	"syscall"
 )
 
 // ProcessManager
@@ -45,7 +42,7 @@ func (pm *ProcessManager) RunProcess(file io.Writer, task model.MScheduleTask) (
 	command.Stderr = file
 	command.Stdout = file
 	command.Dir = task.WorkDir
-	command.Env = strings.Split(task.Env, ";")
+	command.Env = task.Env
 
 	err := command.Start()
 	if err != nil {
@@ -68,7 +65,7 @@ func (pm *ProcessManager) KillProcess(id int) error {
 		return nil
 	}
 	cmd := value.(*exec.Cmd)
-	err := syscall.Kill(-cmd.Process.Pid, syscall.SIGKILL)
+	err := KillProcess(cmd)
 	if err != nil {
 		return err
 	}
