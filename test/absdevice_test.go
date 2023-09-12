@@ -11,7 +11,7 @@ import (
 )
 
 func Test_ABS_device1(t *testing.T) {
-	engine := engine.NewRuleEngine(core.InitGlobalConfig("conf/rulex.ini"))
+	engine := engine.InitRuleEngine(core.InitGlobalConfig("conf/rulex.ini"))
 	engine.Start()
 	demoDev := &typex.Device{
 		UUID:        "Test1",
@@ -31,7 +31,7 @@ func Test_ABS_device1(t *testing.T) {
 	engine.Stop()
 }
 func Test_ABS_device2(t *testing.T) {
-	engine := engine.NewRuleEngine(core.InitGlobalConfig("conf/rulex.ini"))
+	engine := engine.InitRuleEngine(core.InitGlobalConfig("conf/rulex.ini"))
 	engine.Start()
 	demoDev := &typex.Device{
 		UUID:        "Test1",
@@ -43,7 +43,7 @@ func Test_ABS_device2(t *testing.T) {
 		},
 	}
 	ctx, cancelF := typex.NewCCTX()
-	if err := engine.LoadDeviceWithCtx(demoDev,ctx, cancelF); err != nil {
+	if err := engine.LoadDeviceWithCtx(demoDev, ctx, cancelF); err != nil {
 		t.Log(err)
 	}
 	time.Sleep(1 * time.Second)

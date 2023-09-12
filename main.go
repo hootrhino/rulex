@@ -41,7 +41,7 @@ func init() {
 /*
 *
 * ！！！注意：这个 main 函数仅仅是用来做启动测试用，并非真正的应用，具体的应用需要开发者自己去开发。
-* 详情需要关注：http://rulex.pages.dev
+* 详情需要关注：http://www.hootrhino.com
 *
  */
 
@@ -52,7 +52,7 @@ func main() {
 	//--------------------------------------
 	app := &cli.App{
 		Name:  "RULEX FrameWork",
-		Usage: "Goto Document: http://rulex.pages.dev",
+		Usage: "Goto Document: http://www.hootrhino.com",
 		Commands: []*cli.Command{
 			{
 				Name:  "run",

@@ -1,10 +1,11 @@
-package httpserver
+package apis
 
 import (
 	"github.com/gin-gonic/gin"
 	common "github.com/hootrhino/rulex/plugin/http_server/common"
 	"github.com/hootrhino/rulex/plugin/http_server/model"
 	"github.com/hootrhino/rulex/plugin/http_server/service"
+	"github.com/hootrhino/rulex/typex"
 	"github.com/hootrhino/rulex/utils"
 )
 
@@ -22,7 +23,7 @@ type VisualVo struct {
 *
  */
 
-func CreateVisual(c *gin.Context, hh *HttpApiServer) {
+func CreateVisual(c *gin.Context, ruleEngine typex.RuleX) {
 	vvo := VisualVo{}
 	if err := c.ShouldBindJSON(&vvo); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
@@ -57,7 +58,7 @@ func CreateVisual(c *gin.Context, hh *HttpApiServer) {
 * 更新大屏
 *
  */
-func UpdateVisual(c *gin.Context, hh *HttpApiServer) {
+func UpdateVisual(c *gin.Context, ruleEngine typex.RuleX) {
 	vvo := VisualVo{}
 	if err := c.ShouldBindJSON(&vvo); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
@@ -82,7 +83,7 @@ func UpdateVisual(c *gin.Context, hh *HttpApiServer) {
 * 删除大屏
 *
  */
-func DeleteVisual(c *gin.Context, hh *HttpApiServer) {
+func DeleteVisual(c *gin.Context, ruleEngine typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
 	if err := service.DeleteVisual(uuid); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
@@ -96,7 +97,7 @@ func DeleteVisual(c *gin.Context, hh *HttpApiServer) {
 * 大屏列表
 *
  */
-func ListVisual(c *gin.Context, hh *HttpApiServer) {
+func ListVisual(c *gin.Context, ruleEngine typex.RuleX) {
 	visuals := []VisualVo{}
 	for _, vv := range service.AllVisual() {
 		visuals = append(visuals, VisualVo{
@@ -115,7 +116,7 @@ func ListVisual(c *gin.Context, hh *HttpApiServer) {
 * 大屏详情
 *
  */
-func VisualDetail(c *gin.Context, hh *HttpApiServer) {
+func VisualDetail(c *gin.Context, ruleEngine typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
 	mVisual, err := service.GetVisualWithUUID(uuid)
 	if err != nil {
@@ -135,6 +136,6 @@ func VisualDetail(c *gin.Context, hh *HttpApiServer) {
 * 生成随机数
 *
  */
-func GenComponentUUID(c *gin.Context, hh *HttpApiServer) {
+func GenComponentUUID(c *gin.Context, ruleEngine typex.RuleX) {
 	c.JSON(common.HTTP_OK, common.OkWithData(utils.MakeLongUUID("WEIGHT")))
 }

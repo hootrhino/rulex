@@ -1,4 +1,4 @@
-package httpserver
+package service
 
 import (
 	"errors"
@@ -10,7 +10,7 @@ import (
 )
 
 // -----------------------------------------------------------------------------------
-func (s *HttpApiServer) GetMRule(uuid string) (*model.MRule, error) {
+func GetMRule(uuid string) (*model.MRule, error) {
 	m := new(model.MRule)
 	if err := sqlitedao.Sqlite.DB().Where("uuid=?", uuid).First(m).Error; err != nil {
 		return nil, err
@@ -18,7 +18,7 @@ func (s *HttpApiServer) GetMRule(uuid string) (*model.MRule, error) {
 		return m, nil
 	}
 }
-func (s *HttpApiServer) GetAllMRule() ([]model.MRule, error) {
+func GetAllMRule() ([]model.MRule, error) {
 	m := []model.MRule{}
 	if err := sqlitedao.Sqlite.DB().Find(&m).Error; err != nil {
 		return nil, err
@@ -27,7 +27,7 @@ func (s *HttpApiServer) GetAllMRule() ([]model.MRule, error) {
 	}
 }
 
-func (s *HttpApiServer) GetMRuleWithUUID(uuid string) (*model.MRule, error) {
+func GetMRuleWithUUID(uuid string) (*model.MRule, error) {
 	m := new(model.MRule)
 	if err := sqlitedao.Sqlite.DB().Where("uuid=?", uuid).First(m).Error; err != nil {
 		return nil, err
@@ -36,18 +36,18 @@ func (s *HttpApiServer) GetMRuleWithUUID(uuid string) (*model.MRule, error) {
 	}
 }
 
-func (s *HttpApiServer) InsertMRule(r *model.MRule) error {
+func InsertMRule(r *model.MRule) error {
 	return sqlitedao.Sqlite.DB().Table("m_rules").Create(r).Error
 }
 
-func (s *HttpApiServer) DeleteMRule(uuid string) error {
+func DeleteMRule(uuid string) error {
 	if sqlitedao.Sqlite.DB().Table("m_rules").Where("uuid=?", uuid).Delete(&model.MRule{}).RowsAffected == 0 {
 		return errors.New("not found:" + uuid)
 	}
 	return nil
 }
 
-func (s *HttpApiServer) UpdateMRule(uuid string, r *model.MRule) error {
+func UpdateMRule(uuid string, r *model.MRule) error {
 	m := model.MRule{}
 	if err := sqlitedao.Sqlite.DB().Where("uuid=?", uuid).First(&m).Error; err != nil {
 		return err
@@ -58,7 +58,7 @@ func (s *HttpApiServer) UpdateMRule(uuid string, r *model.MRule) error {
 }
 
 // -----------------------------------------------------------------------------------
-func (s *HttpApiServer) GetMInEnd(uuid string) (*model.MInEnd, error) {
+func GetMInEnd(uuid string) (*model.MInEnd, error) {
 	m := new(model.MInEnd)
 	if err := sqlitedao.Sqlite.DB().Table("m_in_ends").Where("uuid=?", uuid).First(m).Error; err != nil {
 		return nil, err
@@ -66,7 +66,7 @@ func (s *HttpApiServer) GetMInEnd(uuid string) (*model.MInEnd, error) {
 		return m, nil
 	}
 }
-func (s *HttpApiServer) GetMInEndWithUUID(uuid string) (*model.MInEnd, error) {
+func GetMInEndWithUUID(uuid string) (*model.MInEnd, error) {
 	m := new(model.MInEnd)
 	if err := sqlitedao.Sqlite.DB().Table("m_in_ends").Where("uuid=?", uuid).First(m).Error; err != nil {
 		return nil, err
@@ -75,18 +75,18 @@ func (s *HttpApiServer) GetMInEndWithUUID(uuid string) (*model.MInEnd, error) {
 	}
 }
 
-func (s *HttpApiServer) InsertMInEnd(i *model.MInEnd) error {
+func InsertMInEnd(i *model.MInEnd) error {
 	return sqlitedao.Sqlite.DB().Table("m_in_ends").Create(i).Error
 }
 
-func (s *HttpApiServer) DeleteMInEnd(uuid string) error {
+func DeleteMInEnd(uuid string) error {
 	if sqlitedao.Sqlite.DB().Where("uuid=?", uuid).Delete(&model.MInEnd{}).RowsAffected == 0 {
 		return errors.New("not found:" + uuid)
 	}
 	return nil
 }
 
-func (s *HttpApiServer) UpdateMInEnd(uuid string, i *model.MInEnd) error {
+func UpdateMInEnd(uuid string, i *model.MInEnd) error {
 	m := model.MInEnd{}
 	if err := sqlitedao.Sqlite.DB().Where("uuid=?", uuid).First(&m).Error; err != nil {
 		return err
@@ -97,7 +97,7 @@ func (s *HttpApiServer) UpdateMInEnd(uuid string, i *model.MInEnd) error {
 }
 
 // -----------------------------------------------------------------------------------
-func (s *HttpApiServer) GetMOutEnd(id string) (*model.MOutEnd, error) {
+func GetMOutEnd(id string) (*model.MOutEnd, error) {
 	m := new(model.MOutEnd)
 	if err := sqlitedao.Sqlite.DB().First(m).Error; err != nil {
 		return nil, err
@@ -105,7 +105,7 @@ func (s *HttpApiServer) GetMOutEnd(id string) (*model.MOutEnd, error) {
 		return m, nil
 	}
 }
-func (s *HttpApiServer) GetMOutEndWithUUID(uuid string) (*model.MOutEnd, error) {
+func GetMOutEndWithUUID(uuid string) (*model.MOutEnd, error) {
 	m := new(model.MOutEnd)
 	if err := sqlitedao.Sqlite.DB().Where("uuid=?", uuid).First(m).Error; err != nil {
 		return nil, err
@@ -114,18 +114,18 @@ func (s *HttpApiServer) GetMOutEndWithUUID(uuid string) (*model.MOutEnd, error) 
 	}
 }
 
-func (s *HttpApiServer) InsertMOutEnd(o *model.MOutEnd) error {
+func InsertMOutEnd(o *model.MOutEnd) error {
 	return sqlitedao.Sqlite.DB().Table("m_out_ends").Create(o).Error
 }
 
-func (s *HttpApiServer) DeleteMOutEnd(uuid string) error {
+func DeleteMOutEnd(uuid string) error {
 	if sqlitedao.Sqlite.DB().Where("uuid=?", uuid).Delete(&model.MOutEnd{}).RowsAffected == 0 {
 		return errors.New("not found:" + uuid)
 	}
 	return nil
 }
 
-func (s *HttpApiServer) UpdateMOutEnd(uuid string, o *model.MOutEnd) error {
+func UpdateMOutEnd(uuid string, o *model.MOutEnd) error {
 	m := model.MOutEnd{}
 	if err := sqlitedao.Sqlite.DB().Where("uuid=?", uuid).First(&m).Error; err != nil {
 		return err
@@ -138,7 +138,7 @@ func (s *HttpApiServer) UpdateMOutEnd(uuid string, o *model.MOutEnd) error {
 // -----------------------------------------------------------------------------------
 // USER
 // -----------------------------------------------------------------------------------
-func (s *HttpApiServer) GetMUser(username string, password string) (*model.MUser, error) {
+func GetMUser(username string, password string) (*model.MUser, error) {
 	m := new(model.MUser)
 	if err := sqlitedao.Sqlite.DB().Where("Username=?", username).Where("Password=?",
 		password).First(m).Error; err != nil {
@@ -148,11 +148,11 @@ func (s *HttpApiServer) GetMUser(username string, password string) (*model.MUser
 	}
 }
 
-func (s *HttpApiServer) InsertMUser(o *model.MUser) {
+func InsertMUser(o *model.MUser) {
 	sqlitedao.Sqlite.DB().Table("m_users").Create(o)
 }
 
-func (s *HttpApiServer) UpdateMUser(uuid string, o *model.MUser) error {
+func UpdateMUser(uuid string, o *model.MUser) error {
 	m := model.MUser{}
 	if err := sqlitedao.Sqlite.DB().Where("uuid=?", uuid).First(&m).Error; err != nil {
 		return err
@@ -163,31 +163,31 @@ func (s *HttpApiServer) UpdateMUser(uuid string, o *model.MUser) error {
 }
 
 // -----------------------------------------------------------------------------------
-func (s *HttpApiServer) AllMRules() []model.MRule {
+func AllMRules() []model.MRule {
 	rules := []model.MRule{}
 	sqlitedao.Sqlite.DB().Table("m_rules").Find(&rules)
 	return rules
 }
 
-func (s *HttpApiServer) AllMInEnd() []model.MInEnd {
+func AllMInEnd() []model.MInEnd {
 	inends := []model.MInEnd{}
 	sqlitedao.Sqlite.DB().Table("m_in_ends").Find(&inends)
 	return inends
 }
 
-func (s *HttpApiServer) AllMOutEnd() []model.MOutEnd {
+func AllMOutEnd() []model.MOutEnd {
 	outends := []model.MOutEnd{}
 	sqlitedao.Sqlite.DB().Table("m_out_ends").Find(&outends)
 	return outends
 }
 
-func (s *HttpApiServer) AllMUser() []model.MUser {
+func AllMUser() []model.MUser {
 	users := []model.MUser{}
 	sqlitedao.Sqlite.DB().Find(&users)
 	return users
 }
 
-func (s *HttpApiServer) AllDevices() []model.MDevice {
+func AllDevices() []model.MDevice {
 	devices := []model.MDevice{}
 	sqlitedao.Sqlite.DB().Find(&devices)
 	return devices
@@ -196,7 +196,7 @@ func (s *HttpApiServer) AllDevices() []model.MDevice {
 // -------------------------------------------------------------------------------------
 
 // 获取设备列表
-func (s *HttpApiServer) GetMDeviceWithUUID(uuid string) (*model.MDevice, error) {
+func GetMDeviceWithUUID(uuid string) (*model.MDevice, error) {
 	m := new(model.MDevice)
 	if err := sqlitedao.Sqlite.DB().Where("uuid=?", uuid).First(m).Error; err != nil {
 		return nil, err
@@ -206,7 +206,7 @@ func (s *HttpApiServer) GetMDeviceWithUUID(uuid string) (*model.MDevice, error) 
 }
 
 // 删除设备
-func (s *HttpApiServer) DeleteDevice(uuid string) error {
+func DeleteDevice(uuid string) error {
 	if sqlitedao.Sqlite.DB().Where("uuid=?", uuid).Delete(&model.MDevice{}).RowsAffected == 0 {
 		return errors.New("not found:" + uuid)
 	}
@@ -214,12 +214,12 @@ func (s *HttpApiServer) DeleteDevice(uuid string) error {
 }
 
 // 创建设备
-func (s *HttpApiServer) InsertDevice(o *model.MDevice) error {
+func InsertDevice(o *model.MDevice) error {
 	return sqlitedao.Sqlite.DB().Table("m_devices").Create(o).Error
 }
 
 // 更新设备信息
-func (s *HttpApiServer) UpdateDevice(uuid string, o *model.MDevice) error {
+func UpdateDevice(uuid string, o *model.MDevice) error {
 	m := model.MDevice{}
 	if err := sqlitedao.Sqlite.DB().Where("uuid=?", uuid).First(&m).Error; err != nil {
 		return err
@@ -234,13 +234,13 @@ func (s *HttpApiServer) UpdateDevice(uuid string, o *model.MDevice) error {
 // -------------------------------------------------------------------------------------
 
 // InsertModbusPointPosition 插入modbus点位表
-func (s *HttpApiServer) InsertModbusPointPosition(list []model.MModbusPointPosition) error {
+func InsertModbusPointPosition(list []model.MModbusPointPosition) error {
 	m := model.MModbusPointPosition{}
 	return sqlitedao.Sqlite.DB().Model(m).Create(list).Error
 }
 
 // DeleteModbusPointAndDevice 删除modbus点位与设备
-func (s *HttpApiServer) DeleteModbusPointAndDevice(deviceUuid string) error {
+func DeleteModbusPointAndDevice(deviceUuid string) error {
 	return sqlitedao.Sqlite.DB().Transaction(func(tx *gorm.DB) (err error) {
 
 		err = tx.Where("device_uuid = ?", deviceUuid).Delete(&model.MModbusPointPosition{}).Error
@@ -257,7 +257,7 @@ func (s *HttpApiServer) DeleteModbusPointAndDevice(deviceUuid string) error {
 }
 
 // UpdateModbusPoint 更新modbus点位
-func (s *HttpApiServer) UpdateModbusPoint(mm model.MModbusPointPosition) error {
+func UpdateModbusPoint(mm model.MModbusPointPosition) error {
 	m := model.MDevice{}
 	if err := sqlitedao.Sqlite.DB().Where("id = ?", mm.ID).First(&m).Error; err != nil {
 		return err
@@ -268,7 +268,7 @@ func (s *HttpApiServer) UpdateModbusPoint(mm model.MModbusPointPosition) error {
 }
 
 // AllModbusPointByDeviceUuid 根据设备UUID查询设备点位
-func (s *HttpApiServer) AllModbusPointByDeviceUuid(deviceUuid string) (list []model.MModbusPointPosition, err error) {
+func AllModbusPointByDeviceUuid(deviceUuid string) (list []model.MModbusPointPosition, err error) {
 
 	err = sqlitedao.Sqlite.DB().Where("device_uuid = ?", deviceUuid).Find(&list).Error
 	return
@@ -279,13 +279,13 @@ func (s *HttpApiServer) AllModbusPointByDeviceUuid(deviceUuid string) (list []mo
 // -------------------------------------------------------------------------------------
 
 // 获取Goods列表
-func (s *HttpApiServer) AllGoods() []model.MGoods {
+func AllGoods() []model.MGoods {
 	m := []model.MGoods{}
 	sqlitedao.Sqlite.DB().Find(&m)
 	return m
 
 }
-func (s *HttpApiServer) GetGoodsWithUUID(uuid string) (*model.MGoods, error) {
+func GetGoodsWithUUID(uuid string) (*model.MGoods, error) {
 	m := model.MGoods{}
 	if err := sqlitedao.Sqlite.DB().Where("uuid=?", uuid).First(&m).Error; err != nil {
 		return nil, err
@@ -295,7 +295,7 @@ func (s *HttpApiServer) GetGoodsWithUUID(uuid string) (*model.MGoods, error) {
 }
 
 // 删除Goods
-func (s *HttpApiServer) DeleteGoods(uuid string) error {
+func DeleteGoods(uuid string) error {
 	if sqlitedao.Sqlite.DB().Where("uuid=?", uuid).Delete(&model.MGoods{}).RowsAffected == 0 {
 		return errors.New("not found:" + uuid)
 	}
@@ -303,12 +303,12 @@ func (s *HttpApiServer) DeleteGoods(uuid string) error {
 }
 
 // 创建Goods
-func (s *HttpApiServer) InsertGoods(goods *model.MGoods) error {
+func InsertGoods(goods *model.MGoods) error {
 	return sqlitedao.Sqlite.DB().Table("m_goods").Create(goods).Error
 }
 
 // 更新Goods
-func (s *HttpApiServer) UpdateGoods(uuid string, goods *model.MGoods) error {
+func UpdateGoods(uuid string, goods *model.MGoods) error {
 	m := model.MGoods{}
 	if err := sqlitedao.Sqlite.DB().Where("uuid=?", uuid).First(&m).Error; err != nil {
 		return err
@@ -323,13 +323,13 @@ func (s *HttpApiServer) UpdateGoods(uuid string, goods *model.MGoods) error {
 // -------------------------------------------------------------------------------------
 
 // 获取App列表
-func (s *HttpApiServer) AllApp() []model.MApp {
+func AllApp() []model.MApp {
 	m := []model.MApp{}
 	sqlitedao.Sqlite.DB().Find(&m)
 	return m
 
 }
-func (s *HttpApiServer) GetMAppWithUUID(uuid string) (*model.MApp, error) {
+func GetMAppWithUUID(uuid string) (*model.MApp, error) {
 	m := model.MApp{}
 	if err := sqlitedao.Sqlite.DB().Where("uuid=?", uuid).First(&m).Error; err != nil {
 		return nil, err
@@ -339,17 +339,17 @@ func (s *HttpApiServer) GetMAppWithUUID(uuid string) (*model.MApp, error) {
 }
 
 // 删除App
-func (s *HttpApiServer) DeleteApp(uuid string) error {
+func DeleteApp(uuid string) error {
 	return sqlitedao.Sqlite.DB().Where("uuid=?", uuid).Delete(&model.MApp{}).Error
 }
 
 // 创建App
-func (s *HttpApiServer) InsertApp(app *model.MApp) error {
+func InsertApp(app *model.MApp) error {
 	return sqlitedao.Sqlite.DB().Create(app).Error
 }
 
 // 更新App
-func (s *HttpApiServer) UpdateApp(app *model.MApp) error {
+func UpdateApp(app *model.MApp) error {
 	m := model.MApp{}
 	if err := sqlitedao.Sqlite.DB().Where("uuid=?", app.UUID).First(&m).Error; err != nil {
 		return err
@@ -360,13 +360,13 @@ func (s *HttpApiServer) UpdateApp(app *model.MApp) error {
 }
 
 // 获取AiBase列表
-func (s *HttpApiServer) AllAiBase() []model.MAiBase {
+func AllAiBase() []model.MAiBase {
 	m := []model.MAiBase{}
 	sqlitedao.Sqlite.DB().Find(&m)
 	return m
 
 }
-func (s *HttpApiServer) GetAiBaseWithUUID(uuid string) (*model.MAiBase, error) {
+func GetAiBaseWithUUID(uuid string) (*model.MAiBase, error) {
 	m := model.MAiBase{}
 	if err := sqlitedao.Sqlite.DB().Where("uuid=?", uuid).First(&m).Error; err != nil {
 		return nil, err
@@ -376,17 +376,17 @@ func (s *HttpApiServer) GetAiBaseWithUUID(uuid string) (*model.MAiBase, error) {
 }
 
 // 删除AiBase
-func (s *HttpApiServer) DeleteAiBase(uuid string) error {
+func DeleteAiBase(uuid string) error {
 	return sqlitedao.Sqlite.DB().Where("uuid=?", uuid).Delete(&model.MAiBase{}).Error
 }
 
 // 创建AiBase
-func (s *HttpApiServer) InsertAiBase(AiBase *model.MAiBase) error {
+func InsertAiBase(AiBase *model.MAiBase) error {
 	return sqlitedao.Sqlite.DB().Create(AiBase).Error
 }
 
 // 更新AiBase
-func (s *HttpApiServer) UpdateAiBase(AiBase *model.MAiBase) error {
+func UpdateAiBase(AiBase *model.MAiBase) error {
 	m := model.MAiBase{}
 	if err := sqlitedao.Sqlite.DB().Where("uuid=?", AiBase.UUID).First(&m).Error; err != nil {
 		return err

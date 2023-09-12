@@ -1,4 +1,4 @@
-package httpserver
+package apis
 
 import (
 	"fmt"
@@ -15,6 +15,7 @@ import (
 	common "github.com/hootrhino/rulex/plugin/http_server/common"
 	"github.com/hootrhino/rulex/plugin/http_server/model"
 	"github.com/hootrhino/rulex/plugin/http_server/service"
+	"github.com/hootrhino/rulex/typex"
 	"github.com/hootrhino/rulex/utils"
 )
 
@@ -23,7 +24,7 @@ import (
 * 设置音量
 *
  */
-func SetVolume(c *gin.Context, hh *HttpApiServer) {
+func SetVolume(c *gin.Context, ruleEngine typex.RuleX) {
 	if runtime.GOOS != "linux" {
 		c.JSON(common.HTTP_OK, common.Error("OS Not Support:"+runtime.GOOS))
 		return
@@ -50,7 +51,7 @@ func SetVolume(c *gin.Context, hh *HttpApiServer) {
 * 获取音量的值
 *
  */
-func GetVolume(c *gin.Context, hh *HttpApiServer) {
+func GetVolume(c *gin.Context, ruleEngine typex.RuleX) {
 	if runtime.GOOS != "linux" {
 		c.JSON(common.HTTP_OK, common.Error("OS Not Support:"+runtime.GOOS))
 		return
@@ -74,7 +75,7 @@ func GetVolume(c *gin.Context, hh *HttpApiServer) {
 * WIFI
 *
  */
-func GetWifi(c *gin.Context, hh *HttpApiServer) {
+func GetWifi(c *gin.Context, ruleEngine typex.RuleX) {
 	MWifiConfig, err := service.GetWlan0Config()
 	if err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
@@ -97,7 +98,7 @@ func GetWifi(c *gin.Context, hh *HttpApiServer) {
 *
 *通过nmcli配置WIFI
  */
-func SetWifi(c *gin.Context, hh *HttpApiServer) {
+func SetWifi(c *gin.Context, ruleEngine typex.RuleX) {
 	if runtime.GOOS != "linux" {
 		c.JSON(common.HTTP_OK, common.Error("OS Not Support:"+runtime.GOOS))
 		return
@@ -195,7 +196,7 @@ func ApplyNewestEtcEthConfig() error {
   - sudo date -s "2023-08-07 15:30:00"
     获取时间: date "+%Y-%m-%d %H:%M:%S" -> 2023-08-07 15:30:00
 */
-func SetSystemTime(c *gin.Context, hh *HttpApiServer) {
+func SetSystemTime(c *gin.Context, ruleEngine typex.RuleX) {
 	if runtime.GOOS != "linux" {
 		c.JSON(common.HTTP_OK, common.Error("OS Not Support:"+runtime.GOOS))
 		return
@@ -223,7 +224,7 @@ func SetSystemTime(c *gin.Context, hh *HttpApiServer) {
 * 用来测试生成各种网络配置
 *
  */
-func TestGenEtcNetCfg(c *gin.Context, hh *HttpApiServer) {
+func TestGenEtcNetCfg(c *gin.Context, ruleEngine typex.RuleX) {
 
 	c.JSON(common.HTTP_OK, common.Ok())
 
@@ -234,7 +235,7 @@ func TestGenEtcNetCfg(c *gin.Context, hh *HttpApiServer) {
 * 时区设置
 *
  */
-func SetSystemTimeZone(c *gin.Context, hh *HttpApiServer) {
+func SetSystemTimeZone(c *gin.Context, ruleEngine typex.RuleX) {
 	type Form struct {
 		Timezone string `json:"timezone"`
 	}
@@ -255,7 +256,7 @@ func SetSystemTimeZone(c *gin.Context, hh *HttpApiServer) {
 	c.JSON(common.HTTP_OK, common.Ok())
 
 }
-func GetSystemTimeZone(c *gin.Context, hh *HttpApiServer) {
+func GetSystemTimeZone(c *gin.Context, ruleEngine typex.RuleX) {
 	Info, err := service.GetTimeZone()
 	if err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
@@ -270,7 +271,7 @@ func GetSystemTimeZone(c *gin.Context, hh *HttpApiServer) {
 * 获取系统时间
 *
  */
-func GetSystemTime(c *gin.Context, hh *HttpApiServer) {
+func GetSystemTime(c *gin.Context, ruleEngine typex.RuleX) {
 	if runtime.GOOS != "linux" {
 		c.JSON(common.HTTP_OK, common.Error("OS Not Support:"+runtime.GOOS))
 		return
@@ -312,7 +313,7 @@ func validTimeZone(timezone string) bool {
 * 展示网络配置信息
 *
  */
-func GetEthNetwork(c *gin.Context, hh *HttpApiServer) {
+func GetEthNetwork(c *gin.Context, ruleEngine typex.RuleX) {
 	MEth0, err := service.GetEth0Config()
 	if err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
@@ -352,7 +353,7 @@ func GetEthNetwork(c *gin.Context, hh *HttpApiServer) {
 * 获取当前网络情况
 *
  */
-func GetCurrentNetConnection(c *gin.Context, hh *HttpApiServer) {
+func GetCurrentNetConnection(c *gin.Context, ruleEngine typex.RuleX) {
 	nmcliOutput, err := service.GetCurrentNetConnection()
 	if err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
@@ -366,7 +367,7 @@ func GetCurrentNetConnection(c *gin.Context, hh *HttpApiServer) {
 * 设置默认路由
 *
  */
-func SetDefaultRoute(c *gin.Context, hh *HttpApiServer) {
+func SetDefaultRoute(c *gin.Context, ruleEngine typex.RuleX) {
 	type Form struct {
 		Ip string `json:"ip"`
 	}
@@ -387,7 +388,7 @@ func SetDefaultRoute(c *gin.Context, hh *HttpApiServer) {
 * 设置两个网口
 *
  */
-func SetEthNetwork(c *gin.Context, hh *HttpApiServer) {
+func SetEthNetwork(c *gin.Context, ruleEngine typex.RuleX) {
 	if runtime.GOOS != "linux" {
 		c.JSON(common.HTTP_OK, common.Error("OS Not Support:"+runtime.GOOS))
 		return
@@ -486,7 +487,7 @@ func SetEthNetwork(c *gin.Context, hh *HttpApiServer) {
 * 更新时间
 *
  */
-func UpdateTimeByNtp(c *gin.Context, hh *HttpApiServer) {
+func UpdateTimeByNtp(c *gin.Context, ruleEngine typex.RuleX) {
 	if err := service.UpdateTimeByNtp(); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return

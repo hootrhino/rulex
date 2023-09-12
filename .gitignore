@@ -20,6 +20,7 @@ lua-log*
 *.txt
 *.txt.gz
 plugin/http_server/www/*
+plugin/http_server/server/www/*
 dist/
 apps/*.lua
 plugin/http_server/www/index.html

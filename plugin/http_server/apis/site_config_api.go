@@ -13,13 +13,14 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package httpserver
+package apis
 
 import (
 	"github.com/gin-gonic/gin"
 	common "github.com/hootrhino/rulex/plugin/http_server/common"
 	"github.com/hootrhino/rulex/plugin/http_server/model"
 	"github.com/hootrhino/rulex/plugin/http_server/service"
+	"github.com/hootrhino/rulex/typex"
 )
 
 type SiteConfigVo struct {
@@ -28,7 +29,7 @@ type SiteConfigVo struct {
 	AppName  string `json:"app_name"`
 }
 
-func UpdateSiteConfig(c *gin.Context, hs *HttpApiServer) {
+func UpdateSiteConfig(c *gin.Context, ruleEngine typex.RuleX) {
 
 	form := SiteConfigVo{}
 	if err := c.ShouldBindJSON(&form); err != nil {
@@ -45,7 +46,7 @@ func UpdateSiteConfig(c *gin.Context, hs *HttpApiServer) {
 	}
 	c.JSON(common.HTTP_OK, common.Ok())
 }
-func GetSiteConfig(c *gin.Context, hs *HttpApiServer) {
+func GetSiteConfig(c *gin.Context, ruleEngine typex.RuleX) {
 	Model, err := service.GetSiteConfig()
 	if err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))

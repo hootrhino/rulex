@@ -80,7 +80,7 @@ func RunTestEngine() typex.RuleX {
 	core.SetDebugMode(mainConfig.EnablePProf)
 	core.SetGomaxProcs(mainConfig.GomaxProcs)
 	// engine
-	engine := engine.NewRuleEngine(mainConfig)
+	engine := engine.InitRuleEngine(mainConfig)
 	return engine
 }
 
