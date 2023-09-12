@@ -109,5 +109,6 @@ func (s *SqliteDAO) RegisterModel(dst ...interface{}) {
 		&model.MNetworkConfig{},
 		&model.MWifiConfig{},
 		&model.MDataSchema{},
+		&model.MSiteConfig{},
 	)
 }
