@@ -128,7 +128,7 @@ func TestCustomTCP(t *testing.T) {
 	engine := RunTestEngine()
 	engine.Start()
 	// go StartCustomTCPServer()
-	hh := httpserver.NewHttpApiServer()
+	hh := httpserver.NewHttpApiServer(engine)
 
 	// HttpApiServer loaded default
 	if err := engine.LoadPlugin("plugin.http_server", hh); err != nil {

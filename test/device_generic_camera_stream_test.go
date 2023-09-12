@@ -21,7 +21,7 @@ func Test_Generic_Local_camera(t *testing.T) {
 	engine := RunTestEngine()
 	engine.Start()
 
-	hh := httpserver.NewHttpApiServer()
+	hh := httpserver.NewHttpApiServer(engine)
 	// HttpApiServer loaded default
 	if err := engine.LoadPlugin("plugin.http_server", hh); err != nil {
 		glogger.GLogger.Fatal("Rule load failed:", err)
@@ -55,7 +55,7 @@ func Test_Generic_RTSP_camera(t *testing.T) {
 	engine := RunTestEngine()
 	engine.Start()
 
-	hh := httpserver.NewHttpApiServer()
+	hh := httpserver.NewHttpApiServer(engine)
 	if err := engine.LoadPlugin("plugin.http_server", hh); err != nil {
 		glogger.GLogger.Fatal("Rule load failed:", err)
 		t.Fatal(err)

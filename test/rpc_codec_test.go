@@ -56,7 +56,7 @@ func Test_Codec(t *testing.T) {
 	engine.Start()
 
 	_startServer()
-	hh := httpserver.NewHttpApiServer()
+	hh := httpserver.NewHttpApiServer(engine)
 	// HttpApiServer loaded default
 	if err := engine.LoadPlugin("plugin.http_server", hh); err != nil {
 		glogger.GLogger.Fatal("Rule load failed:", err)

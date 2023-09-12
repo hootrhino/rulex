@@ -107,7 +107,7 @@ func Test_generic_ais_txrx_device(t *testing.T) {
 	engine := RunTestEngine()
 	engine.Start()
 
-	hh := httpserver.NewHttpApiServer()
+	hh := httpserver.NewHttpApiServer(engine)
 	// HttpApiServer loaded default
 	if err := engine.LoadPlugin("plugin.http_server", hh); err != nil {
 		t.Fatal(err)

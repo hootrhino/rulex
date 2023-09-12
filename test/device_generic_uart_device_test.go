@@ -19,7 +19,7 @@ func Test_UART_Device(t *testing.T) {
 	engine := RunTestEngine()
 	engine.Start()
 
-	if err := engine.LoadPlugin("plugin.http_server", httpserver.NewHttpApiServer()); err != nil {
+	if err := engine.LoadPlugin("plugin.http_server", httpserver.NewHttpApiServer(engine)); err != nil {
 		t.Fatal("HttpServer load failed:", err)
 	}
 
@@ -38,7 +38,7 @@ func Test_UART_Device(t *testing.T) {
 		})
 	GUART.UUID = "GUART1"
 	ctx, cancelF := typex.NewCCTX()
-	if err := engine.LoadDeviceWithCtx(GUART,ctx, cancelF); err != nil {
+	if err := engine.LoadDeviceWithCtx(GUART, ctx, cancelF); err != nil {
 		t.Fatal("GUART load failed:", err)
 	}
 
