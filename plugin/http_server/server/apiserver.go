@@ -71,9 +71,9 @@ func StartRulexApiServer(ruleEngine typex.RuleX) {
 		glogger.GLogger.Error(err)
 		c.JSON(200, response.Error500(err1crash))
 	}))
-	// server.ginEngine.NoRoute(func(c *gin.Context) {
-	// 	c.Redirect(302, "/")
-	// })
+	server.ginEngine.NoRoute(func(c *gin.Context) {
+		c.Redirect(302, "/")
+	})
 	//
 	// Http server
 	//

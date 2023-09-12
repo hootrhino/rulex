@@ -13,6 +13,7 @@ Description=Rulex Daemon
 After=network.target
 
 [Service]
+Environment="ARCHSUPPORT=EEKITH3"
 WorkingDirectory=$working_directory
 ExecStart=$executable run -config=$config_file -db=$db_file
 Restart=always
