@@ -34,6 +34,22 @@ type serverConfig struct {
 
 var err1crash = errors.New("http server crash, try to recovery")
 
+/*
+*
+* 拼接URL
+*
+ */
+const _API_V2_ROOT string = "/api/v2/"
+
+func url(path string) string {
+	return _API_V2_ROOT + path
+}
+
+/*
+*
+* 开启Server
+*
+ */
 func StartRulexApiServer(ruleEngine typex.RuleX) {
 	gin.SetMode(gin.ReleaseMode)
 	server := RulexApiServer{
@@ -65,8 +81,12 @@ func StartRulexApiServer(ruleEngine typex.RuleX) {
 	}(typex.GCTX, server.config.Port)
 	DefaultApiServer = &server
 }
-func (s *RulexApiServer) AddRoute(f func(c *gin.Context, ruleEngine typex.RuleX)) func(*gin.Context) {
+func (s *RulexApiServer) AddRoute(f func(c *gin.Context,
+	ruleEngine typex.RuleX)) func(*gin.Context) {
 	return func(c *gin.Context) {
 		f(c, s.ruleEngine)
 	}
+}
+func (s *RulexApiServer) GetGroup(name string) *gin.RouterGroup {
+	return s.ginEngine.Group("name")
 }

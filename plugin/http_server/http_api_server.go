@@ -9,6 +9,7 @@ import (
 
 	common "github.com/hootrhino/rulex/plugin/http_server/common"
 	sqlitedao "github.com/hootrhino/rulex/plugin/http_server/dao/sqlite"
+	"github.com/hootrhino/rulex/plugin/http_server/model"
 	"github.com/hootrhino/rulex/plugin/http_server/service"
 
 	"github.com/gin-contrib/static"
@@ -68,7 +69,7 @@ func (hs *HttpApiServer) Init(config *ini.Section) error {
 	}
 	sqlitedao.Sqlite.RegisterModel()
 	hs.configHttpServer()
-	hs.InitializeNetWorkConfigData()
+	hs.InitializeData()
 	//
 	// WebSocket server
 	//
@@ -81,7 +82,7 @@ func (hs *HttpApiServer) Init(config *ini.Section) error {
 * 初始化网络配置
 *
  */
-func (hs *HttpApiServer) InitializeNetWorkConfigData() {
+func (hs *HttpApiServer) InitializeData() {
 	// 初始化有线网口配置
 	if !service.CheckIfAlreadyInitNetWorkConfig() {
 		service.InitNetWorkConfig()
@@ -90,6 +91,12 @@ func (hs *HttpApiServer) InitializeNetWorkConfigData() {
 	if !service.CheckIfAlreadyInitWlanConfig() {
 		service.InitWlanConfig()
 	}
+	// 初始化网站配置
+	service.InitSiteConfig(model.MSiteConfig{
+		SiteName: "RhinoEEKIT",
+		Logo:     "RhinoEEKIT",
+		AppName:  "RhinoEEKIT",
+	})
 }
 
 /*
@@ -343,6 +350,12 @@ func (hs *HttpApiServer) LoadRoute() {
 		schemaApi.GET("/list", hs.addRoute(ListDataSchema))
 		schemaApi.GET(("/detail"), hs.addRoute(DataSchemaDetail))
 
+	}
+	siteConfigApi := hs.ginEngine.Group(url("/site"))
+	{
+
+		siteConfigApi.PUT("/update", hs.addRoute(UpdateSiteConfig))
+		siteConfigApi.GET("/detail", hs.addRoute(GetSiteConfig))
 	}
 	//
 	// 系统设置
