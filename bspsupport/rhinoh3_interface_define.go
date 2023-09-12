@@ -18,16 +18,13 @@ package archsupport
 import (
 	"encoding/json"
 	"fmt"
-	"os"
 )
 
 var __RhinoH3HwInterfaces map[string]*RhinoH3HwInterface
 
 func init() {
-	env := os.Getenv("ARCHSUPPORT")
-	if env == "EEKITH3" {
-		_InterfaceInit()
-	}
+	_InterfaceInit()
+
 }
 
 /*
