@@ -56,8 +56,13 @@ func isValidTimeFormat(input string) bool {
 * 获取当前系统时间
 *
  */
-func GetSystemTime() string {
-	return time.Now().Format("2006-01-02 15:04:05")
+func GetSystemTime() (string, error) {
+	cmd := exec.Command("date", "+%Y-%m-%d %H:%M:%S")
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return "", err
+	}
+	return strings.Trim(string(output), "\n"), nil
 }
 
 /*

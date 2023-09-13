@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"net/http"
 
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
@@ -71,8 +72,21 @@ func StartRulexApiServer(ruleEngine typex.RuleX) {
 		glogger.GLogger.Error(err)
 		c.JSON(200, response.Error500(err1crash))
 	}))
+	/*
+	*
+	* 解决浏览器刷新被重定向问题
+	*
+	 */
 	server.ginEngine.NoRoute(func(c *gin.Context) {
-		c.Redirect(302, "/")
+		if c.ContentType() == "application/json" {
+			c.Writer.WriteHeader(http.StatusNotFound)
+			c.JSON(404, response.Error("No such Route:"+c.Request.URL.Path))
+			return
+		}
+		c.Writer.WriteHeader(http.StatusOK)
+		c.Writer.Header().Add("Accept", "text/html")
+		c.Writer.Write(indexHTML)
+		c.Writer.Flush()
 	})
 	//
 	// Http server
