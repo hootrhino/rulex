@@ -276,7 +276,11 @@ func GetSystemTime(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error("OS Not Support:"+runtime.GOOS))
 		return
 	}
-	SysTime := service.GetSystemTime()
+	SysTime, err := service.GetSystemTime()
+	if err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
 	c.JSON(common.HTTP_OK, common.OkWithData(SysTime))
 }
 

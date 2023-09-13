@@ -16,6 +16,9 @@ import (
 //go:embed  www/*
 var files embed.FS
 
+//go:embed  www/index.html
+var indexHTML []byte
+
 type WWWFS struct {
 	http.FileSystem
 }
