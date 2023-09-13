@@ -470,6 +470,12 @@ func (e *RuleEngine) RestartDevice(uuid string) error {
 *
  */
 func (e *RuleEngine) InitDeviceTypeManager() error {
+	e.DeviceTypeManager.Register(typex.RHINOPI_IR,
+		&typex.XConfig{
+			Engine:    e,
+			NewDevice: device.NewIRDevice,
+		},
+	)
 	e.DeviceTypeManager.Register(typex.TSS200V02,
 		&typex.XConfig{
 			Engine:    e,
