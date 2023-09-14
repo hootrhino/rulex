@@ -150,20 +150,6 @@ func ReloadDNS18xx() error {
 
 /*
 *
-* 设置默认网卡
-*
- */
-func SetDefaultRoute(newGatewayIP string) error {
-	cmd := exec.Command("ip", "route", "add", "default", "via", newGatewayIP)
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		return fmt.Errorf("Error executing nmcli: %s", err.Error()+":"+string(output))
-	}
-	return nil
-}
-
-/*
-*
 rer@revb-h3:~$ nmcli device status
 
 	DEVICE           TYPE      STATE         CONNECTION

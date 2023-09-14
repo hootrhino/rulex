@@ -18,6 +18,15 @@ import (
 )
 
 func init() {
+	if runtime.GOOS == "linux" {
+		uid := os.Getuid()
+		if uid != 0 {
+			fmt.Println("Run failed, Rulex MUST run with ROOT permission!")
+			os.Exit(1)
+			return
+		}
+	}
+
 	go func() {
 		for {
 			select {

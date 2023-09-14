@@ -113,5 +113,6 @@ func (s *SqliteDAO) RegisterModel() {
 		&model.MWifiConfig{},
 		&model.MDataSchema{},
 		&model.MSiteConfig{},
+		&model.MIpRoute{},
 	)
 }
