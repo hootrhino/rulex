@@ -5,8 +5,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/hootrhino/rulex/plugin/cron_task"
 	sqlitedao "github.com/hootrhino/rulex/plugin/http_server/dao/sqlite"
+	"github.com/hootrhino/rulex/plugin/http_server/dto"
 	"github.com/hootrhino/rulex/plugin/http_server/model"
 	"github.com/hootrhino/rulex/plugin/http_server/service/scheduletask_service"
+	"os"
+	"path"
 	"strconv"
 )
 
@@ -14,18 +17,41 @@ import (
 // 创建定时任务
 func CreateScheduleTask(c *gin.Context, hs *HttpApiServer) (any, error) {
 	// 1. 从c中取出数据
-	dto := model.MScheduleTask{}
-	err := c.ShouldBindJSON(&dto)
+	dto2 := dto.CronTaskCreateDTO{}
+	err := c.ShouldBind(&dto2)
 	if err != nil {
 		return nil, err
 	}
-	// TODO 同时处理文件
 	// 2. 新增到数据库
-	err = scheduletask_service.CreateScheduleTask(&dto)
+	task, err := scheduletask_service.CreateScheduleTask(&dto2)
 	if err != nil {
 		return nil, err
 	}
-	return dto.ID, nil
+	// 3. 保存文件
+	dir := path.Join("cron_assets", strconv.Itoa(int(task.ID)))
+	err = os.MkdirAll(dir, 0666)
+	if err != nil {
+		return nil, err
+	}
+	filepath := path.Join(dir, dto2.File.Filename)
+	err = c.SaveUploadedFile(dto2.File, filepath)
+	if err != nil {
+		return nil, err
+	}
+	// 4. 更新数据库
+	updateTask := model.MScheduleTask{
+		Command: filepath,
+		WorkDir: dir,
+	}
+	updateTask.ID = task.ID
+
+	db := sqlitedao.Sqlite.DB()
+	tx := db.Updates(&updateTask)
+	if tx.Error != nil {
+		return nil, err
+	}
+
+	return 0, nil
 }
 
 func DeleteScheduleTask(c *gin.Context, hs *HttpApiServer) (any, error) {
@@ -63,7 +89,7 @@ func UpdateScheduleTask(c *gin.Context, hs *HttpApiServer) (any, error) {
 	return nil, nil
 }
 
-func StartTask(c *gin.Context, hs *HttpApiServer) (any, error) {
+func EnableTask(c *gin.Context, hs *HttpApiServer) (any, error) {
 	id, ok := c.GetQuery("id")
 	if !ok {
 		return nil, errors.New("id must not be null")
@@ -76,13 +102,12 @@ func StartTask(c *gin.Context, hs *HttpApiServer) (any, error) {
 	db := sqlitedao.Sqlite.DB()
 	task := model.MScheduleTask{}
 	task.ID = uint(idNum)
-	tx := db.Model(&model.MScheduleTask{}).Save(&task)
+	task.Enable = "1"
+	tx := db.Updates(&task)
 	if tx.Error != nil {
 		return nil, tx.Error
 	}
-	condition := &model.MScheduleTask{}
-	condition.ID = task.ID
-	find := db.Where(condition).Find(&task)
+	find := db.Find(&task)
 	if find.Error != nil {
 		return nil, find.Error
 	}
@@ -96,7 +121,7 @@ func StartTask(c *gin.Context, hs *HttpApiServer) (any, error) {
 	return nil, nil
 }
 
-func StopTask(c *gin.Context, hs *HttpApiServer) (any, error) {
+func DisableTask(c *gin.Context, hs *HttpApiServer) (any, error) {
 	id, ok := c.GetQuery("id")
 	if !ok {
 		return nil, errors.New("id must not be null")
@@ -108,11 +133,10 @@ func StopTask(c *gin.Context, hs *HttpApiServer) (any, error) {
 
 	// 0. 更新数据库
 	db := sqlitedao.Sqlite.DB()
-	tx := db.Model(&model.MScheduleTask{
-		RulexModel: model.RulexModel{
-			ID: uint(idNum),
-		},
-	}).Update("enable", 0)
+	task := model.MScheduleTask{}
+	task.ID = uint(idNum)
+	task.Enable = "0"
+	tx := db.Updates(&task)
 	if tx.Error != nil {
 		return nil, tx.Error
 	}

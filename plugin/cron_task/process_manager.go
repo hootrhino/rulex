@@ -1,6 +1,7 @@
 package cron_task
 
 import (
+	"encoding/json"
 	"errors"
 	"github.com/hootrhino/rulex/plugin/http_server/model"
 	"io"
@@ -21,7 +22,7 @@ func NewProcessManager() *ProcessManager {
 	return &manager
 }
 
-func (pm *ProcessManager) RunProcess(file io.Writer, task model.MScheduleTask) (int32, error) {
+func (pm *ProcessManager) RunProcess(file io.Writer, task model.MScheduleTask) error {
 	// 0. arguments
 	// 1. working directory
 	// 2. environment
@@ -35,27 +36,29 @@ func (pm *ProcessManager) RunProcess(file io.Writer, task model.MScheduleTask) (
 		args = append(args, task.Command)
 		args = append(args, split...)
 	} else {
-		return 0, errors.New("unknown taskType")
+		return errors.New("unknown taskType")
 	}
 	command = exec.Command(name, args...)
 	command.SysProcAttr = GetSysProcAttr()
 	command.Stderr = file
 	command.Stdout = file
 	command.Dir = task.WorkDir
-	command.Env = task.Env
-
-	err := command.Start()
+	envSlice := make([]string, 0)
+	err := json.Unmarshal([]byte(task.Env), &envSlice)
 	if err != nil {
-		return 0, err
+		return err
 	}
+	command.Env = envSlice
+
 	pm.runningProcess.Store(task.ID, command)
 	defer pm.runningProcess.Delete(task.ID)
 
-	err = command.Wait()
+	err = command.Run()
 	if err != nil {
-		return 0, err
+		return err
 	}
-	return 0, nil
+
+	return nil
 }
 
 func (pm *ProcessManager) KillProcess(id int) error {

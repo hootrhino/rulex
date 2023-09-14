@@ -1,15 +1,35 @@
 package scheduletask_service
 
 import (
+	"encoding/json"
 	sqlitedao "github.com/hootrhino/rulex/plugin/http_server/dao/sqlite"
+	"github.com/hootrhino/rulex/plugin/http_server/dto"
 	"github.com/hootrhino/rulex/plugin/http_server/model"
 	"gorm.io/gorm"
 )
 
-func CreateScheduleTask(dto *model.MScheduleTask) error {
+func CreateScheduleTask(data *dto.CronTaskCreateDTO) (*model.MScheduleTask, error) {
 	db := sqlitedao.Sqlite.DB()
-	tx := db.Create(&dto)
-	return tx.Error
+	task := model.MScheduleTask{
+		Name:     data.Name,
+		CronExpr: data.CronExpr,
+		Enable:   "0",
+		TaskType: data.TaskType,
+		Args:     data.Args,
+		IsRoot:   data.IsRoot,
+	}
+	if data.Env != nil {
+		marshal, _ := json.Marshal(data.Env)
+		task.Env = string(marshal)
+	} else {
+		task.Env = "[]"
+	}
+
+	tx := db.Create(&task)
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+	return &task, nil
 }
 
 func DeleteScheduleTask(id uint) error {

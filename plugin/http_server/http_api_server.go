@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"net/http"
 	"time"
 
 	common "github.com/hootrhino/rulex/plugin/http_server/common"
@@ -364,19 +365,21 @@ func (hs *HttpApiServer) LoadRoute() {
 	/**
 	 * 定时任务
 	 */
+	hs.ginEngine.StaticFS("api/cron_assets", http.Dir("cron_asserts"))
+	hs.ginEngine.StaticFS("api/cron_logs", http.Dir("cron_logs"))
 	scheduletaskApi := hs.ginEngine.Group(url("/crontask"))
 	{
-		// TODO
 		scheduletaskApi.POST("/create", hs.addRouteV2(CreateScheduleTask))
 		scheduletaskApi.DELETE("/delete", hs.addRouteV2(DeleteScheduleTask))
 		scheduletaskApi.PUT("/update", hs.addRouteV2(UpdateScheduleTask))
 		scheduletaskApi.GET("/page", hs.addRouteV2(PageScheduleTask))
-		scheduletaskApi.GET("/getResult", hs.addRouteV2(GetTaskResult))
 
-		scheduletaskApi.GET("/start", hs.addRouteV2(StartTask))
-		scheduletaskApi.GET("/stop", hs.addRouteV2(StopTask))
+		scheduletaskApi.GET("/start", hs.addRouteV2(EnableTask))
+		scheduletaskApi.GET("/stop", hs.addRouteV2(DisableTask))
 		scheduletaskApi.GET("/listRunningTask", hs.addRouteV2(ListRunningTask))
 		scheduletaskApi.GET("/terminateRunningTask", hs.addRouteV2(TerminateRunningTask))
+
+		scheduletaskApi.GET("/results/page", hs.addRouteV2(PageScheduleTaskResult))
 
 		scheduletaskApi.GET("/cleanLog")
 	}
