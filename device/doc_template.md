@@ -46,17 +46,17 @@
 
 ### commonConfig
 
-| 字段名  |  类型  | 必填  | 说明  |
-| ------------ | ------------ | ------------ | ------------ |
-| endpoint  |  string  |  √  | OPC UA服务端的地址，对应gopcua库中的ClientEndpoint  |
-| policy  |  Enum  |  √  | 安全策略URL，可以是None、Basic128Rsa15、Basic256、Basic256Sha256中的任意一个，对应gopcua库中的ClientSecurityPolicyURI  |
-| mode  |  Enum  |  √  | 安全模式，可以是None、Sign、SignAndEncrypt中的任意一个，对应gopcua库中的ClientSecurityMode |
-| auth  |  Enum  |  √  | 认证模式，可以是Anonymous、UserName、Certificate中的任意一个，对应gopcua库中的ClientAuthMode |
-| username  |  string  |  √  | 用户名，对应gopcua库中的ClientUsername |
-| password  |  string  |  √  |密码，对应gopcua库中的ClientPassword |
-| timeout  |  string  |  √  | 超时时间，对应gopcua库中的RequestTimeout (毫秒)  |
-| frequency  |  string  |  √  | 采集频率(毫秒)  |
-| retryTime  |  string  |  √  | 出错重试次数  |
+| 字段名    | 类型   | 必填 | 说明                                                                                                                  |
+| --------- | ------ | ---- | --------------------------------------------------------------------------------------------------------------------- |
+| endpoint  | string | √    | OPC UA服务端的地址，对应gopcua库中的ClientEndpoint                                                                    |
+| policy    | Enum   | √    | 安全策略URL，可以是None、Basic128Rsa15、Basic256、Basic256Sha256中的任意一个，对应gopcua库中的ClientSecurityPolicyURI |
+| mode      | Enum   | √    | 安全模式，可以是None、Sign、SignAndEncrypt中的任意一个，对应gopcua库中的ClientSecurityMode                            |
+| auth      | Enum   | √    | 认证模式，可以是Anonymous、UserName、Certificate中的任意一个，对应gopcua库中的ClientAuthMode                          |
+| username  | string | √    | 用户名，对应gopcua库中的ClientUsername                                                                                |
+| password  | string | √    | 密码，对应gopcua库中的ClientPassword                                                                                  |
+| timeout   | string | √    | 超时时间，对应gopcua库中的RequestTimeout (毫秒)                                                                       |
+| frequency | string | √    | 采集频率(毫秒)                                                                                                        |
+| retryTime | string | √    | 出错重试次数                                                                                                          |
 
 ## 设备数据读取
 
