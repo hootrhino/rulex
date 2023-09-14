@@ -23,22 +23,26 @@ func LoadSystemSettingsAPI() {
 	//
 	settingsApi := server.DefaultApiServer.GetGroup(server.ContextUrl("/settings"))
 	{
+		// ethnet
 		settingsApi.POST("/eth", server.DefaultApiServer.AddRoute(SetEthNetwork))
 		settingsApi.GET("/eth", server.DefaultApiServer.AddRoute(GetEthNetwork))
 		settingsApi.GET("/connection", server.DefaultApiServer.AddRoute(GetCurrentNetConnection))
-		//
+		// time
 		settingsApi.GET("/time", server.DefaultApiServer.AddRoute(GetSystemTime))
 		settingsApi.POST("/time", server.DefaultApiServer.AddRoute(SetSystemTime))
-		//
+		// wifi
 		settingsApi.GET("/wifi", server.DefaultApiServer.AddRoute(GetWifi))
 		settingsApi.POST("/wifi", server.DefaultApiServer.AddRoute(SetWifi))
-		//
+		// volume
 		settingsApi.GET("/volume", server.DefaultApiServer.AddRoute(GetVolume))
 		settingsApi.POST("/volume", server.DefaultApiServer.AddRoute(SetVolume))
-		//
+		// timezone
 		settingsApi.POST("/timezone", server.DefaultApiServer.AddRoute(SetSystemTimeZone))
 		settingsApi.GET("/timezone", server.DefaultApiServer.AddRoute(GetSystemTimeZone))
-		settingsApi.POST("/iproute", server.DefaultApiServer.AddRoute(SetDefaultRoute))
 		settingsApi.PUT("/ntp", server.DefaultApiServer.AddRoute(UpdateTimeByNtp))
+		// ip route
+		settingsApi.POST("/iproute", server.DefaultApiServer.AddRoute(SetNewDefaultIpRoute))
+		settingsApi.GET("/iproute", server.DefaultApiServer.AddRoute(GetOldDefaultIpRoute))
+
 	}
 }

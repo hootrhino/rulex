@@ -140,4 +140,6 @@ func (s *RulexApiServer) InitializeData() {
 		Logo:     "RhinoEEKIT",
 		AppName:  "RhinoEEKIT",
 	})
+	// 初始化默认路由
+	service.InitDefaultIpRoute()
 }

@@ -368,27 +368,6 @@ func GetCurrentNetConnection(c *gin.Context, ruleEngine typex.RuleX) {
 
 /*
 *
-* 设置默认路由
-*
- */
-func SetDefaultRoute(c *gin.Context, ruleEngine typex.RuleX) {
-	type Form struct {
-		Ip string `json:"ip"`
-	}
-	DtoCfg := Form{}
-	if err0 := c.ShouldBindJSON(&DtoCfg); err0 != nil {
-		c.JSON(common.HTTP_OK, common.Error400(err0))
-		return
-	}
-	if err := service.SetDefaultRoute(DtoCfg.Ip); err != nil {
-		c.JSON(common.HTTP_OK, common.Error400(err))
-		return
-	}
-	c.JSON(common.HTTP_OK, common.Ok())
-}
-
-/*
-*
 * 设置两个网口
 *
  */
