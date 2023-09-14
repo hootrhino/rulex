@@ -135,11 +135,14 @@ func (ird *IR) Status() typex.DeviceState {
 // 停止设备
 func (ird *IR) Stop() {
 	ird.status = typex.DEV_DOWN
-	ird.CancelCTX()
+	if ird.CancelCTX != nil {
+		ird.CancelCTX()
+	}
 	if ird.irFd != 0 {
 		syscall.Close(ird.irFd)
 	}
 	archsupport.HwPortFree(__IR_DEV)
+
 }
 
 // 设备属性，是一系列属性描述
