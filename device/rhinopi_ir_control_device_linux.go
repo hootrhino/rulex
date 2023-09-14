@@ -59,8 +59,8 @@ type timeval struct {
 	USecond int32 `json:"uSecond,omitempty"`
 }
 type irInputEvent struct {
-	Time  timeval `json:"time"`
-	Type  uint16  `json:"type,omitempty"`
+	Time  timeval `json:"-"`
+	Type  uint16  `json:"-"`
 	Code  uint16  `json:"code,omitempty"`
 	Value int32   `json:"value,omitempty"`
 }
