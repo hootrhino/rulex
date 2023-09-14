@@ -4,11 +4,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	archsupport "github.com/hootrhino/rulex/bspsupport"
 	"syscall"
 	"time"
 	"unsafe"
 
+	archsupport "github.com/hootrhino/rulex/bspsupport"
 	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/typex"
 )
@@ -31,9 +31,8 @@ Found /sys/class/rc/rc0/ (/dev/input/event1) with:
 */
 type IR struct {
 	typex.XStatus
-	status typex.DeviceState
-	irFd   int
-	// irFd       syscall.Handle windows
+	status     typex.DeviceState
+	irFd       syscall.Handle
 	RuleEngine typex.RuleX
 }
 
@@ -59,8 +58,8 @@ type timeval struct {
 	USecond int32 `json:"uSecond,omitempty"`
 }
 type irInputEvent struct {
-	Time  timeval `json:"time"`
-	Type  uint16  `json:"type,omitempty"`
+	Time  timeval `json:"-"`
+	Type  uint16  `json:"-"`
 	Code  uint16  `json:"code,omitempty"`
 	Value int32   `json:"value,omitempty"`
 }
@@ -75,7 +74,7 @@ func (ird *IR) Start(cctx typex.CCTX) error {
 	ird.Ctx = cctx.Ctx
 	ird.CancelCTX = cctx.CancelCTX
 
-	fd, err := syscall.Open("/dev/input/event1", syscall.O_RDONLY, 0777)
+	fd, err := syscall.Open(__IR_DEV, syscall.O_RDONLY, 0777)
 	if err != nil {
 		fmt.Printf("device open failed\r\n")
 		syscall.Close(fd)
@@ -124,7 +123,7 @@ func (ird *IR) OnRead(cmd []byte, data []byte) (int, error) {
 }
 
 func (ird *IR) OnWrite(cmd []byte, b []byte) (int, error) {
-	return 0, nil
+	return 0, fmt.Errorf("IR not support write data")
 }
 
 // 设备当前状态
@@ -141,7 +140,6 @@ func (ird *IR) Stop() {
 		syscall.Close(ird.irFd)
 	}
 	archsupport.HwPortFree(__IR_DEV)
-
 }
 
 // 设备属性，是一系列属性描述

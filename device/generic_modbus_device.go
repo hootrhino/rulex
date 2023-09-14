@@ -138,7 +138,7 @@ func (mdev *generic_modbus_device) Init(devId string, configMap map[string]inter
 		return errors.New("unsupported mode, only can be one of 'TCP' or 'RTU'")
 	}
 	// 做端口管理
-	Port := archsupport.GetUart(mdev.mainConfig.RtuConfig.Uart)
+	Port := archsupport.GetHwPort(mdev.mainConfig.RtuConfig.Uart)
 	if Port.Busy {
 		return errors.New(Port.BusyingInfo())
 	}
@@ -193,7 +193,7 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 	//---------------------------------------------------------------------------------
 	if !mdev.mainConfig.CommonConfig.AutoRequest {
 		mdev.status = typex.DEV_UP
-		archsupport.UARTBusy(mdev.mainConfig.RtuConfig.Uart)
+		archsupport.HwPortBusy(mdev.mainConfig.RtuConfig.Uart, mdev.PointId)
 		return nil
 	}
 	mdev.retryTimes = 0
@@ -258,7 +258,7 @@ func (mdev *generic_modbus_device) Stop() {
 	if mdev.driver != nil {
 		mdev.driver.Stop()
 	}
-	archsupport.UARTFree(mdev.mainConfig.RtuConfig.Uart)
+	archsupport.HwPortFree(mdev.mainConfig.RtuConfig.Uart)
 }
 
 // 设备属性，是一系列属性描述

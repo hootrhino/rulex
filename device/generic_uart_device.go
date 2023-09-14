@@ -69,7 +69,7 @@ func (uart *genericUartDevice) Init(devId string, configMap map[string]interface
 		return errors.New("parity value only one of 'N','O','E'")
 	}
 	// 做端口管理
-	Port := archsupport.GetUart(uart.mainConfig.UartConfig.Uart)
+	Port := archsupport.GetHwPort(uart.mainConfig.UartConfig.Uart)
 	if Port.Busy {
 		return errors.New(Port.BusyingInfo())
 	}
@@ -100,7 +100,7 @@ func (uart *genericUartDevice) Start(cctx typex.CCTX) error {
 		return nil
 	}
 	uart.status = typex.DEV_UP
-	archsupport.UARTBusy(uart.mainConfig.UartConfig.Uart)
+	archsupport.HwPortBusy(uart.mainConfig.UartConfig.Uart, uart.PointId)
 	return nil
 }
 
@@ -163,7 +163,7 @@ func (uart *genericUartDevice) Stop() {
 		uart.driver.Stop()
 		uart.driver = nil
 	}
-	archsupport.UARTFree(uart.mainConfig.UartConfig.Uart)
+	archsupport.HwPortFree(uart.mainConfig.UartConfig.Uart)
 }
 
 // 设备属性，是一系列属性描述
