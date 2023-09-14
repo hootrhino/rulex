@@ -65,7 +65,7 @@ uninstall(){
     rm $working_directory/rulex.ini
     rm $working_directory/rulex.db
     rm $working_directory/*.txt
-    rm $working_directory/*.txt..gz
+    rm $working_directory/*.txt.gz
     systemctl daemon-reload
     systemctl reset-failed
     echo "Rulex has been uninstalled."
