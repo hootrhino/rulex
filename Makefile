@@ -76,14 +76,14 @@ run:
 
 .PHONY: test
 test:
-	go test rulex/test -v
+	go test ${APP}/test -v
 
 .PHONY: cover
 cover:
-	go test rulex/test -v -cover
+	go test ${APP}/test -v -cover
 
 .PHONY: clean
 clean:
 	go clean
 	rm _release -rf
-	rm rulex-arm32linux rulex-arm64linux *.db *.txt  *.txt.gz -rf
+	rm ${APP}-arm32linux ${APP}-arm64linux *.db *.txt  *.txt.gz -rf
