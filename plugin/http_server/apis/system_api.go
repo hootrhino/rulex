@@ -3,11 +3,12 @@ package apis
 import (
 	"fmt"
 	"net"
-	"runtime"
+	// "runtime"
 	"strconv"
 	"time"
 
 	common "github.com/hootrhino/rulex/plugin/http_server/common"
+	"github.com/hootrhino/rulex/plugin/http_server/service"
 	"github.com/hootrhino/rulex/utils"
 
 	"github.com/hootrhino/rulex/device"
@@ -43,9 +44,6 @@ func Plugins(c *gin.Context, ruleEngine typex.RuleX) {
 		return true
 	})
 	c.JSON(common.HTTP_OK, common.OkWithData(data))
-}
-func bToMb(b uint64) uint64 {
-	return b / 1024 / 1024
 }
 
 // 计算资源数据
@@ -95,15 +93,17 @@ func System(c *gin.Context, ruleEngine typex.RuleX) {
 	cpuPercent, _ := cpu.Percent(time.Duration(1)*time.Second, true)
 	diskInfo, _ := disk.Usage("/")
 	// For info on each, see: https://golang.org/pkg/runtime/#MemStats
-	var m runtime.MemStats
-	runtime.ReadMemStats(&m)
+	// var m runtime.MemStats
+	// runtime.ReadMemStats(&m)
 	// ip, err0 := utils.HostNameI()
+	memPercent, _ := service.GetMemPercent()
 	hardWareInfo := map[string]interface{}{
-		"version":     ruleEngine.Version().Version,
-		"diskInfo":    calculateDiskInfo(diskInfo),
-		"systemMem":   bToMb(m.Sys),
-		"allocMem":    bToMb(m.Alloc),
-		"totalMem":    bToMb(m.TotalAlloc),
+		"version":  ruleEngine.Version().Version,
+		"diskInfo": calculateDiskInfo(diskInfo),
+		// "systemMem":   bToMb(m.Sys),
+		// "allocMem":    bToMb(m.Alloc),
+		// "totalMem":    bToMb(m.TotalAlloc),
+		"memPercent":  memPercent,
 		"cpuPercent":  calculateCpuPercent(cpuPercent),
 		"osArch":      ruleEngine.Version().Arch,
 		"osDist":      ruleEngine.Version().Dist,
