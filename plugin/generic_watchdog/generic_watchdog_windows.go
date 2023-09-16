@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package softwatchdog
+package genericwatchdog
 
 import (
 	"fmt"
@@ -28,29 +28,29 @@ import (
 * 软件看门狗
 *
  */
-type softWatchDog struct {
+type genericWatchDog struct {
 	uuid string
 }
 
-func NewSoftWatchDog() *softWatchDog {
-	return &softWatchDog{
+func NewGenericWatchDog() *genericWatchDog {
+	return &genericWatchDog{
 		uuid: "SOFT_WATCHDOG",
 	}
 }
 
-func (dog *softWatchDog) Init(config *ini.Section) error {
+func (dog *genericWatchDog) Init(config *ini.Section) error {
 	return fmt.Errorf("OS support Wdog:%s", runtime.GOOS)
 }
 
-func (dog *softWatchDog) Start(typex.RuleX) error {
+func (dog *genericWatchDog) Start(typex.RuleX) error {
 
 	return nil
 }
-func (dog *softWatchDog) Stop() error {
+func (dog *genericWatchDog) Stop() error {
 	return nil
 }
 
-func (hh *softWatchDog) PluginMetaInfo() typex.XPluginMetaInfo {
+func (hh *genericWatchDog) PluginMetaInfo() typex.XPluginMetaInfo {
 	return typex.XPluginMetaInfo{
 		UUID:     hh.uuid,
 		Name:     "Soft WatchDog",
@@ -68,6 +68,6 @@ func (hh *softWatchDog) PluginMetaInfo() typex.XPluginMetaInfo {
 * 服务调用接口
 *
  */
-func (cs *softWatchDog) Service(arg typex.ServiceArg) typex.ServiceResult {
+func (cs *genericWatchDog) Service(arg typex.ServiceArg) typex.ServiceResult {
 	return typex.ServiceResult{}
 }

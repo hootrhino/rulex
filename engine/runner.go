@@ -21,13 +21,13 @@ import (
 	"strings"
 	"syscall"
 
+	wdog "github.com/hootrhino/rulex/plugin/generic_watchdog"
 	modbusscanner "github.com/hootrhino/rulex/plugin/modbus_scanner"
 	modbusscrc "github.com/hootrhino/rulex/plugin/modbuscrc_tools"
 	mqttserver "github.com/hootrhino/rulex/plugin/mqtt_server"
 	netdiscover "github.com/hootrhino/rulex/plugin/net_discover"
 	ttyterminal "github.com/hootrhino/rulex/plugin/ttyd_terminal"
 	usbmonitor "github.com/hootrhino/rulex/plugin/usb_monitor"
-	softwdog "github.com/hootrhino/rulex/plugin/soft_watchdog"
 	"gopkg.in/ini.v1"
 
 	"github.com/hootrhino/rulex/core"
@@ -114,7 +114,7 @@ func loadPlugin(engine typex.RuleX) {
 			plugin = modbusscrc.NewModbusCrcCalculator()
 		}
 		if name == "soft_wdog" {
-			plugin = softwdog.NewSoftWatchDog()
+			plugin = wdog.NewGenericWatchDog()
 		}
 		if plugin != nil {
 			if err := engine.LoadPlugin(section.Name(), plugin); err != nil {

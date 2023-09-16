@@ -1,8 +1,8 @@
 // Copyright (C) 2023 wwhai
 //
-// This program is free software: you can redistribute it and/or modify
+// This program is free genericWatchDogare: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
-// published by the Free Software Foundation, either version 3 of the
+// published by the Free genericWatchDogare Foundation, either version 3 of the
 // License, or (at your option) any later version.
 //
 // This program is distributed in the hope that it will be useful,
@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package softwatchdog
+package genericwatchdog
 
 import (
 	"context"
@@ -66,17 +66,17 @@ func (w watchdogInfo) ToString() string {
 * 软件看门狗
 *
  */
-type softWatchDog struct {
+type genericWatchDog struct {
 	uuid string
 }
 
-func NewSoftWatchDog() *softWatchDog {
-	return &softWatchDog{
+func NewGenericWatchDog() *genericWatchDog {
+	return &genericWatchDog{
 		uuid: "SOFT_WATCHDOG",
 	}
 }
 
-func (dog *softWatchDog) Init(config *ini.Section) error {
+func (dog *genericWatchDog) Init(config *ini.Section) error {
 	info, err := getWdogInfo()
 	if err != nil {
 		glogger.GLogger.Error(err)
@@ -86,7 +86,7 @@ func (dog *softWatchDog) Init(config *ini.Section) error {
 	return nil
 }
 
-func (dog *softWatchDog) Start(typex.RuleX) error {
+func (dog *genericWatchDog) Start(typex.RuleX) error {
 	go func() {
 		defer stopWatchdog()
 		for {
@@ -101,11 +101,11 @@ func (dog *softWatchDog) Start(typex.RuleX) error {
 	}()
 	return nil
 }
-func (dog *softWatchDog) Stop() error {
+func (dog *genericWatchDog) Stop() error {
 	return stopWatchdog()
 }
 
-func (hh *softWatchDog) PluginMetaInfo() typex.XPluginMetaInfo {
+func (hh *genericWatchDog) PluginMetaInfo() typex.XPluginMetaInfo {
 	return typex.XPluginMetaInfo{
 		UUID:     hh.uuid,
 		Name:     "Linux Soft WatchDog",
@@ -123,7 +123,7 @@ func (hh *softWatchDog) PluginMetaInfo() typex.XPluginMetaInfo {
 * 服务调用接口
 *
  */
-func (cs *softWatchDog) Service(arg typex.ServiceArg) typex.ServiceResult {
+func (cs *genericWatchDog) Service(arg typex.ServiceArg) typex.ServiceResult {
 	return typex.ServiceResult{}
 }
 
