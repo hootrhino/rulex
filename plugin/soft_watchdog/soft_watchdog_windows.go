@@ -16,6 +16,9 @@
 package softwatchdog
 
 import (
+	"fmt"
+	"runtime"
+
 	"github.com/hootrhino/rulex/typex"
 	"gopkg.in/ini.v1"
 )
@@ -36,10 +39,11 @@ func NewSoftWatchDog() *softWatchDog {
 }
 
 func (dog *softWatchDog) Init(config *ini.Section) error {
-	return nil
+	return fmt.Errorf("OS support Wdog:%s", runtime.GOOS)
 }
 
 func (dog *softWatchDog) Start(typex.RuleX) error {
+
 	return nil
 }
 func (dog *softWatchDog) Stop() error {
