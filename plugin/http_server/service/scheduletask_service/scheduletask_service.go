@@ -8,9 +8,9 @@ import (
 	"gorm.io/gorm"
 )
 
-func CreateScheduleTask(data *dto.CronTaskCreateDTO) (*model.MScheduleTask, error) {
+func CreateScheduleTask(data *dto.CronTaskCreateDTO) (*model.MCronTask, error) {
 	db := sqlitedao.Sqlite.DB()
-	task := model.MScheduleTask{
+	task := model.MCronTask{
 		Name:     data.Name,
 		CronExpr: data.CronExpr,
 		Enable:   "0",
@@ -34,17 +34,17 @@ func CreateScheduleTask(data *dto.CronTaskCreateDTO) (*model.MScheduleTask, erro
 
 func DeleteScheduleTask(id uint) error {
 	db := sqlitedao.Sqlite.DB()
-	task := model.MScheduleTask{}
+	task := model.MCronTask{}
 	task.ID = id
 	tx := db.Delete(&task)
 	return tx.Error
 }
 
-func PageScheduleTask(page model.PageRequest, task model.MScheduleTask) (any, error) {
+func PageScheduleTask(page model.PageRequest, task model.MCronTask) (any, error) {
 	db := sqlitedao.Sqlite.DB()
-	var records []model.MScheduleTask
+	var records []model.MCronTask
 	var count int64
-	t := db.Model(&model.MScheduleTask{}).Where(&model.MScheduleTask{}, &task).Count(&count)
+	t := db.Model(&model.MCronTask{}).Where(&model.MCronTask{}, &task).Count(&count)
 	if t.Error != nil {
 		return nil, t.Error
 	}

@@ -16,6 +16,7 @@
 package engine
 
 import (
+	"github.com/hootrhino/rulex/plugin/cron_task"
 	"os"
 	"os/signal"
 	"strings"
@@ -127,6 +128,15 @@ func RunRulex(iniPath string) {
 			if err1 := engine.StartApp(app.UUID); err1 != nil {
 				glogger.GLogger.Error("App autoStart failed:", err1)
 			}
+		}
+	}
+	//
+	// load Cron Task
+	//
+	for _, task := range httpServer.AllEnabledCronTask() {
+		if err := cron_task.GetCronManager().AddTask(task); err != nil {
+			glogger.GLogger.Error(err)
+			continue
 		}
 	}
 	s := <-c

@@ -29,7 +29,7 @@ func CreateScheduleTask(c *gin.Context, hs *HttpApiServer) (any, error) {
 	}
 	// 3. 保存文件
 	dir := path.Join("cron_assets", strconv.Itoa(int(task.ID)))
-	err = os.MkdirAll(dir, 0666)
+	err = os.MkdirAll(dir, 0777)
 	if err != nil {
 		return nil, err
 	}
@@ -39,7 +39,7 @@ func CreateScheduleTask(c *gin.Context, hs *HttpApiServer) (any, error) {
 		return nil, err
 	}
 	// 4. 更新数据库
-	updateTask := model.MScheduleTask{
+	updateTask := model.MCronTask{
 		Command: filepath,
 		WorkDir: dir,
 	}
@@ -55,7 +55,7 @@ func CreateScheduleTask(c *gin.Context, hs *HttpApiServer) (any, error) {
 }
 
 func DeleteScheduleTask(c *gin.Context, hs *HttpApiServer) (any, error) {
-	dto := model.MScheduleTask{}
+	dto := model.MCronTask{}
 	err := c.ShouldBindJSON(&dto)
 	if err != nil {
 		return nil, err
@@ -79,7 +79,7 @@ func PageScheduleTask(c *gin.Context, hs *HttpApiServer) (any, error) {
 		return nil, err
 	}
 
-	condition := model.MScheduleTask{}
+	condition := model.MCronTask{}
 	scheduleTask, err := scheduletask_service.PageScheduleTask(page, condition)
 	return scheduleTask, err
 }
@@ -100,7 +100,7 @@ func EnableTask(c *gin.Context, hs *HttpApiServer) (any, error) {
 	}
 	// 0. 更新数据库
 	db := sqlitedao.Sqlite.DB()
-	task := model.MScheduleTask{}
+	task := model.MCronTask{}
 	task.ID = uint(idNum)
 	task.Enable = "1"
 	tx := db.Updates(&task)
@@ -133,7 +133,7 @@ func DisableTask(c *gin.Context, hs *HttpApiServer) (any, error) {
 
 	// 0. 更新数据库
 	db := sqlitedao.Sqlite.DB()
-	task := model.MScheduleTask{}
+	task := model.MCronTask{}
 	task.ID = uint(idNum)
 	task.Enable = "0"
 	tx := db.Updates(&task)

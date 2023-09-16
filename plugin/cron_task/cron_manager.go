@@ -42,14 +42,20 @@ func NewCronManager() *CronManager {
 	return &manager
 }
 
-func (m *CronManager) AddTask(task model.MScheduleTask) error {
+func (m *CronManager) AddTask(task model.MCronTask) error {
 	cronExpr := task.CronExpr
 	id := task.ID
+	dir, _ := os.Getwd()
+	task.WorkDir = path.Join(dir, task.WorkDir)
+	task.Command = path.Join(dir, task.Command)
 	entryId, err := m.cronEngine.AddFunc(cronExpr, func() {
 		// 打开一个新的logger
 		now := time.Now()
 		logPath := fmt.Sprintf("cron_logs/%s/%v", now.Format("2006-01-02"), id)
-		os.MkdirAll(logPath, 0666)
+		err := os.MkdirAll(logPath, 0777)
+		if err != nil {
+			glogger.GLogger.Error(err)
+		}
 		logTask := logrus.New()
 		filePath := path.Join(logPath, now.Format("15-04-05")+".log")
 		file, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
@@ -66,7 +72,7 @@ func (m *CronManager) AddTask(task model.MScheduleTask) error {
 		}()
 
 		//save
-		result := model.MScheduleResult{
+		result := model.MCronResult{
 			TaskId:    id,
 			Status:    "1",
 			LogPath:   filePath,
@@ -105,7 +111,7 @@ func (m *CronManager) AddTask(task model.MScheduleTask) error {
 	return nil
 }
 
-func saveResults(m *model.MScheduleResult) {
+func saveResults(m *model.MCronResult) {
 	db := sqlitedao.Sqlite.DB()
 	if m.ID == 0 {
 		db.Create(m)
@@ -131,10 +137,10 @@ func (m *CronManager) KillTask(id int) error {
 	return m.processManager.KillProcess(id)
 }
 
-func (m *CronManager) ListRunningTask() []model.MScheduleTask {
-	tasks := make([]model.MScheduleTask, 0)
+func (m *CronManager) ListRunningTask() []model.MCronTask {
+	tasks := make([]model.MCronTask, 0)
 	m.runningTask.Range(func(key, value any) bool {
-		task := value.(model.MScheduleTask)
+		task := value.(model.MCronTask)
 		tasks = append(tasks, task)
 		return true
 	})

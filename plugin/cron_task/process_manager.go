@@ -6,7 +6,6 @@ import (
 	"github.com/hootrhino/rulex/plugin/http_server/model"
 	"io"
 	"os/exec"
-	"strings"
 	"sync"
 )
 
@@ -22,19 +21,18 @@ func NewProcessManager() *ProcessManager {
 	return &manager
 }
 
-func (pm *ProcessManager) RunProcess(file io.Writer, task model.MScheduleTask) error {
+func (pm *ProcessManager) RunProcess(file io.Writer, task model.MCronTask) error {
 	// 0. arguments
 	// 1. working directory
 	// 2. environment
 
-	split := strings.Split(task.Args, " ")
 	var command *exec.Cmd
 	args := make([]string, 0)
 	var name string
 	if task.TaskType == 1 {
 		name = "/bin/bash"
 		args = append(args, task.Command)
-		args = append(args, split...)
+		args = append(args, task.Args)
 	} else {
 		return errors.New("unknown taskType")
 	}

@@ -69,6 +69,8 @@ func (s *HttpApiServer) registerModel() {
 		&model.MProtocolApp{},
 		&model.MNetworkConfig{},
 		&model.MWifiConfig{},
+		&model.MCronTask{},
+		&model.MCronResult{},
 	)
 }
 
