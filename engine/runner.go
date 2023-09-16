@@ -27,6 +27,7 @@ import (
 	netdiscover "github.com/hootrhino/rulex/plugin/net_discover"
 	ttyterminal "github.com/hootrhino/rulex/plugin/ttyd_terminal"
 	usbmonitor "github.com/hootrhino/rulex/plugin/usb_monitor"
+	softwdog "github.com/hootrhino/rulex/plugin/soft_watchdog"
 	"gopkg.in/ini.v1"
 
 	"github.com/hootrhino/rulex/core"
@@ -111,6 +112,9 @@ func loadPlugin(engine typex.RuleX) {
 		}
 		if name == "modbuscrc_tools" {
 			plugin = modbusscrc.NewModbusCrcCalculator()
+		}
+		if name == "soft_wdog" {
+			plugin = softwdog.NewSoftWatchDog()
 		}
 		if plugin != nil {
 			if err := engine.LoadPlugin(section.Name(), plugin); err != nil {
