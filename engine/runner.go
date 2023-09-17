@@ -16,6 +16,8 @@
 package engine
 
 import (
+	"github.com/hootrhino/rulex/plugin/cron_task"
+	"github.com/hootrhino/rulex/plugin/http_server/service"
 	"os"
 	"os/signal"
 	"strings"
@@ -70,6 +72,13 @@ func RunRulex(iniPath string) {
 	if err := engine.LoadPlugin("plugin.http_server", httpServer); err != nil {
 		glogger.GLogger.Error(err)
 		return
+	}
+	// load Cron Task
+	for _, task := range service.AllEnabledCronTask() {
+		if err := cron_task.GetCronManager().AddTask(task); err != nil {
+			glogger.GLogger.Error(err)
+			continue
+		}
 	}
 	s := <-c
 	glogger.GLogger.Warn("Received stop signal:", s)
