@@ -16,7 +16,7 @@
 package engine
 
 import (
-	"github.com/hootrhino/rulex/plugin/cron_task"
+	"github.com/hootrhino/rulex/cron_task"
 	"github.com/hootrhino/rulex/plugin/http_server/service"
 	"os"
 	"os/signal"

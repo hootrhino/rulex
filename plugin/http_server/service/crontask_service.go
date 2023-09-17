@@ -1,11 +1,10 @@
-package scheduletask_service
+package service
 
 import (
 	"encoding/json"
 	sqlitedao "github.com/hootrhino/rulex/plugin/http_server/dao/sqlite"
 	"github.com/hootrhino/rulex/plugin/http_server/dto"
 	"github.com/hootrhino/rulex/plugin/http_server/model"
-	"github.com/hootrhino/rulex/plugin/http_server/service"
 )
 
 func CreateScheduleTask(data *dto.CronTaskCreateDTO) (*model.MCronTask, error) {
@@ -48,11 +47,11 @@ func PageScheduleTask(page model.PageRequest, task model.MCronTask) (any, error)
 	if t.Error != nil {
 		return nil, t.Error
 	}
-	tx := db.Scopes(service.Paginate(page)).Find(&records, &task)
+	tx := db.Scopes(Paginate(page)).Find(&records, &task)
 	if tx.Error != nil {
 		return nil, tx.Error
 	}
-	return service.WrapPageResult(page, records, count), nil
+	return WrapPageResult(page, records, count), nil
 }
 
 func UpdateScheduleTask(data *dto.CronTaskUpdateDTO) (*model.MCronTask, error) {
