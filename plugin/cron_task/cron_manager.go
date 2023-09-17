@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"path/filepath"
 	"strconv"
 	"sync"
 	"time"
@@ -38,6 +39,39 @@ func NewCronManager() *CronManager {
 		crontab:        make(map[uint]cron.EntryID),
 		processManager: NewProcessManager(),
 	}
+	// 每天0点10分清理日志
+	engine.AddFunc("0 10 0 * * *", func() {
+		thirtyDaysAgo := time.Now().AddDate(0, 0, -30)
+		// 指定文件夹路径
+		folderPath := "cron_logs"
+		// 遍历文件夹下的所有文件
+		err := filepath.Walk(folderPath, func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			// 检查是否为文件夹
+			if info.IsDir() {
+				// 解析文件夹名称为日期
+				dirName := filepath.Base(path)
+				date, err := time.Parse("2006-01-02", dirName)
+				if err != nil {
+					return err
+				}
+
+				// 检查是否为 30 天前的文件夹
+				if date.Before(thirtyDaysAgo) {
+					// 删除文件夹及其内容
+					err := os.RemoveAll(path)
+					if err != nil {
+						return err
+					}
+					glogger.GLogger.Info("Deleted folder: %s", path)
+				}
+			}
+			return nil
+		})
+		glogger.GLogger.Error("clean cron logs failed, err=", err)
+	})
 	engine.Start()
 	return &manager
 }

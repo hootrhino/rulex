@@ -5,7 +5,7 @@ import (
 	sqlitedao "github.com/hootrhino/rulex/plugin/http_server/dao/sqlite"
 	"github.com/hootrhino/rulex/plugin/http_server/dto"
 	"github.com/hootrhino/rulex/plugin/http_server/model"
-	"gorm.io/gorm"
+	"github.com/hootrhino/rulex/plugin/http_server/service"
 )
 
 func CreateScheduleTask(data *dto.CronTaskCreateDTO) (*model.MCronTask, error) {
@@ -48,28 +48,39 @@ func PageScheduleTask(page model.PageRequest, task model.MCronTask) (any, error)
 	if t.Error != nil {
 		return nil, t.Error
 	}
-	tx := db.Scopes(Paginate(page)).Find(&records, &task)
+	tx := db.Scopes(service.Paginate(page)).Find(&records, &task)
 	if tx.Error != nil {
 		return nil, tx.Error
 	}
-	return WrapPageResult(page, records, count), nil
+	return service.WrapPageResult(page, records, count), nil
 }
 
-func Paginate(page model.PageRequest) func(db *gorm.DB) *gorm.DB {
-	return func(db *gorm.DB) *gorm.DB {
-		current := page.Current
-		size := page.Size
-
-		offset := (current - 1) * size
-		return db.Offset(offset).Limit(size)
+func UpdateScheduleTask(data *dto.CronTaskUpdateDTO) (*model.MCronTask, error) {
+	task := &model.MCronTask{
+		Name:     data.Name,
+		CronExpr: data.CronExpr,
+		TaskType: data.TaskType,
+		IsRoot:   data.IsRoot,
 	}
-}
 
-func WrapPageResult(page model.PageRequest, records any, count int64) model.PageResult {
-	return model.PageResult{
-		Current: page.Current,
-		Size:    page.Size,
-		Total:   int(count),
-		Records: records,
+	db := sqlitedao.Sqlite.DB()
+	t := db.Model(&task)
+	if data.Args != nil {
+		task.Args = *data.Args
+		// 为了能更新为空
+		if task.Args == "" {
+			task.Args = " "
+		}
 	}
+	task.ID = uint(data.ID)
+	if data.Env != nil {
+		marshal, _ := json.Marshal(data.Env)
+		task.Env = string(marshal)
+	}
+
+	tx := t.Updates(task)
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+	return task, nil
 }
