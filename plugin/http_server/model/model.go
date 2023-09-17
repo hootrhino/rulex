@@ -259,3 +259,46 @@ type MWifiConfig struct {
 	Password  string `gorm:"not null"`
 	Security  string `gorm:"not null"` // wpa2-psk wpa3-psk
 }
+
+/**
+ * 定时任务
+ */
+type MCronTask struct {
+	RulexModel
+	Name      string    `gorm:"not null" json:"name"`
+	CronExpr  string    `json:"cronExpr"` // Quartz standard
+	Enable    string    `json:"enable"`
+	TaskType  int       `json:"taskType"` // 1-shell 2-cmd
+	Command   string    `json:"command"`  // cron_assets/{id}/a.sh
+	Args      string    `json:"args"`     // "param1 param2 param3"
+	IsRoot    string    `json:"isRoot"`   // 0-false 1-true
+	WorkDir   string    `json:"workDir"`  // cron_assets/{id}
+	Env       string    `json:"env"`      // ["A=e1", "B=e2", "C=e3"]
+	UpdatedAt time.Time `json:"updatedAt"`
+}
+
+/**
+ * 任务结果
+ */
+type MCronResult struct {
+	RulexModel
+	TaskId    uint      `json:"taskId,omitempty"`
+	Status    string    `json:"status"`             // 1-running 2-end
+	ExitCode  string    `json:"ExitCode,omitempty"` // 0-success other-failed
+	LogPath   string    `json:"logPath,omitempty"`
+	StartTime time.Time `json:"startTime"`
+	EndTime   time.Time `json:"endTime"`
+}
+
+type PageRequest struct {
+	Current     int  `json:"current,omitempty"`
+	Size        int  `json:"size,omitempty"`
+	SearchCount bool `json:"searchCount,omitempty"`
+}
+
+type PageResult struct {
+	Current int `json:"current"`
+	Size    int `json:"size"`
+	Total   int `json:"total"`
+	Records any `json:"records"`
+}

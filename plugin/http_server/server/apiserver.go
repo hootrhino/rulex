@@ -108,6 +108,16 @@ func (s *RulexApiServer) AddRoute(f func(c *gin.Context,
 		f(c, s.ruleEngine)
 	}
 }
+func (s *RulexApiServer) AddRouteV2(f func(*gin.Context, typex.RuleX) (any, error)) func(*gin.Context) {
+	return func(c *gin.Context) {
+		data, err := f(c, s.ruleEngine)
+		if err != nil {
+			c.JSON(response.HTTP_OK, response.Error400(err))
+		} else {
+			c.JSON(response.HTTP_OK, response.OkWithData(data))
+		}
+	}
+}
 
 func (s *RulexApiServer) GetGroup(name string) *gin.RouterGroup {
 	return s.ginEngine.Group(name)

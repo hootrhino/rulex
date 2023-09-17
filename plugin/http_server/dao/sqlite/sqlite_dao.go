@@ -114,5 +114,7 @@ func (s *SqliteDAO) RegisterModel() {
 		&model.MDataSchema{},
 		&model.MSiteConfig{},
 		&model.MIpRoute{},
+		&model.MCronTask{},
+		&model.MCronResult{},
 	)
 }
