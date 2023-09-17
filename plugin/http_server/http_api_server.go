@@ -429,19 +429,17 @@ func (hs *ApiServerPlugin) LoadRoute() {
 	route.StaticFS("api/cron_logs", http.Dir("cron_logs"))
 	scheduletaskApi := server.DefaultApiServer.GetGroup(server.ContextUrl("/crontask"))
 	{
-		scheduletaskApi.POST("/create", server.DefaultApiServer.AddRouteV2(CreateScheduleTask))
-		scheduletaskApi.DELETE("/delete", server.DefaultApiServer.AddRouteV2(DeleteScheduleTask))
-		scheduletaskApi.PUT("/update", server.DefaultApiServer.AddRouteV2(UpdateScheduleTask))
-		scheduletaskApi.GET("/page", server.DefaultApiServer.AddRouteV2(PageScheduleTask))
+		scheduletaskApi.POST("/create", server.DefaultApiServer.AddRouteV2(apis.CreateScheduleTask))
+		scheduletaskApi.DELETE("/delete", server.DefaultApiServer.AddRouteV2(apis.DeleteScheduleTask))
+		scheduletaskApi.PUT("/update", server.DefaultApiServer.AddRouteV2(apis.UpdateScheduleTask))
+		scheduletaskApi.GET("/page", server.DefaultApiServer.AddRouteV2(apis.PageScheduleTask))
 
-		scheduletaskApi.GET("/start", server.DefaultApiServer.AddRouteV2(EnableTask))
-		scheduletaskApi.GET("/stop", server.DefaultApiServer.AddRouteV2(DisableTask))
-		scheduletaskApi.GET("/listRunningTask", server.DefaultApiServer.AddRouteV2(ListRunningTask))
-		scheduletaskApi.GET("/terminateRunningTask", server.DefaultApiServer.AddRouteV2(TerminateRunningTask))
+		scheduletaskApi.GET("/start", server.DefaultApiServer.AddRouteV2(apis.EnableTask))
+		scheduletaskApi.GET("/stop", server.DefaultApiServer.AddRouteV2(apis.DisableTask))
+		scheduletaskApi.GET("/listRunningTask", server.DefaultApiServer.AddRouteV2(apis.ListRunningTask))
+		scheduletaskApi.GET("/terminateRunningTask", server.DefaultApiServer.AddRouteV2(apis.TerminateRunningTask))
 
-		scheduletaskApi.GET("/results/page", server.DefaultApiServer.AddRouteV2(PageScheduleTaskResult))
-
-		scheduletaskApi.GET("/cleanLog")
+		scheduletaskApi.GET("/results/page", server.DefaultApiServer.AddRouteV2(apis.PageCronTaskResult))
 	}
 }
 

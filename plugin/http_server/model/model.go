@@ -291,9 +291,9 @@ type MCronResult struct {
 }
 
 type PageRequest struct {
-	Current     int  `json:"current,omitempty"`
-	Size        int  `json:"size,omitempty"`
-	SearchCount bool `json:"searchCount,omitempty"`
+	Current     int `json:"current,omitempty"`
+	Size        int `json:"size,omitempty"`
+	SearchCount int `json:"searchCount,omitempty"`
 }
 
 type PageResult struct {

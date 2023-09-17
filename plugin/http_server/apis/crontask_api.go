@@ -1,4 +1,4 @@
-package httpserver
+package apis
 
 import (
 	"errors"
@@ -86,8 +86,41 @@ func PageScheduleTask(c *gin.Context, ruleEngine typex.RuleX) (any, error) {
 }
 
 func UpdateScheduleTask(c *gin.Context, ruleEngine typex.RuleX) (any, error) {
-	// TODO 更新其他信息
-	return nil, nil
+	dto2 := dto.CronTaskUpdateDTO{}
+	err := c.ShouldBind(&dto2)
+	if err != nil {
+		return nil, err
+	}
+
+	task, err := scheduletask_service.UpdateScheduleTask(&dto2)
+	if err != nil {
+		return nil, err
+	}
+	if dto2.File != nil {
+		dir := path.Join("cron_assets", strconv.Itoa(int(task.ID)))
+		err = os.MkdirAll(dir, 0777)
+		if err != nil {
+			return nil, err
+		}
+		filepath := path.Join(dir, dto2.File.Filename)
+		err = c.SaveUploadedFile(dto2.File, filepath)
+		if err != nil {
+			return nil, err
+		}
+		// 4. 更新数据库
+		updateTask := model.MCronTask{
+			Command: filepath,
+			WorkDir: dir,
+		}
+		updateTask.ID = task.ID
+
+		db := sqlitedao.Sqlite.DB()
+		tx := db.Updates(&updateTask)
+		if tx.Error != nil {
+			return nil, err
+		}
+	}
+	return task, err
 }
 
 func EnableTask(c *gin.Context, ruleEngine typex.RuleX) (any, error) {
