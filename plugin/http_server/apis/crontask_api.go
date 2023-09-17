@@ -3,11 +3,11 @@ package apis
 import (
 	"errors"
 	"github.com/gin-gonic/gin"
-	"github.com/hootrhino/rulex/plugin/cron_task"
+	"github.com/hootrhino/rulex/cron_task"
 	sqlitedao "github.com/hootrhino/rulex/plugin/http_server/dao/sqlite"
 	"github.com/hootrhino/rulex/plugin/http_server/dto"
 	"github.com/hootrhino/rulex/plugin/http_server/model"
-	"github.com/hootrhino/rulex/plugin/http_server/service/scheduletask_service"
+	"github.com/hootrhino/rulex/plugin/http_server/service"
 	"github.com/hootrhino/rulex/typex"
 	"os"
 	"path"
@@ -24,7 +24,7 @@ func CreateScheduleTask(c *gin.Context, ruleEngine typex.RuleX) (any, error) {
 		return nil, err
 	}
 	// 2. 新增到数据库
-	task, err := scheduletask_service.CreateScheduleTask(&dto2)
+	task, err := service.CreateScheduleTask(&dto2)
 	if err != nil {
 		return nil, err
 	}
@@ -61,7 +61,7 @@ func DeleteScheduleTask(c *gin.Context, ruleEngine typex.RuleX) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = scheduletask_service.DeleteScheduleTask(dto.ID)
+	err = service.DeleteScheduleTask(dto.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -81,7 +81,7 @@ func PageScheduleTask(c *gin.Context, ruleEngine typex.RuleX) (any, error) {
 	}
 
 	condition := model.MCronTask{}
-	scheduleTask, err := scheduletask_service.PageScheduleTask(page, condition)
+	scheduleTask, err := service.PageScheduleTask(page, condition)
 	return scheduleTask, err
 }
 
@@ -92,7 +92,7 @@ func UpdateScheduleTask(c *gin.Context, ruleEngine typex.RuleX) (any, error) {
 		return nil, err
 	}
 
-	task, err := scheduletask_service.UpdateScheduleTask(&dto2)
+	task, err := service.UpdateScheduleTask(&dto2)
 	if err != nil {
 		return nil, err
 	}
