@@ -34,6 +34,7 @@ require (
 	github.com/nats-io/nats.go v1.26.0
 	github.com/patrikeh/go-deep v0.0.0-20230427173908-a2775168ab3d
 	github.com/plgd-dev/go-coap/v2 v2.6.0
+	github.com/robfig/cron/v3 v3.0.1
 	github.com/robinson/gos7 v0.0.0-20230421131203-d20ac6ca08cd
 	github.com/rs/zerolog v1.28.0
 	github.com/shirou/gopsutil v3.21.11+incompatible
@@ -67,7 +68,6 @@ require (
 	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826 // indirect
 	github.com/richardlehane/mscfb v1.0.4 // indirect
 	github.com/richardlehane/msoleps v1.0.3 // indirect
-	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/stretchr/testify v1.8.4 // indirect
 	github.com/xuri/efp v0.0.0-20220603152613-6918739fd470 // indirect
 	github.com/xuri/nfp v0.0.0-20220409054826-5e722a1d9e22 // indirect
