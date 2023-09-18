@@ -12,6 +12,7 @@ import (
 	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/typex"
 	"github.com/hootrhino/rulex/utils"
+	"github.com/jinzhu/copier"
 )
 
 // --------------------------------------------------------------------------------------------------
@@ -279,17 +280,23 @@ func (aism *AISDeviceMaster) handleIO(session *AISDeviceSession) {
 		}
 		// glogger.GLogger.Info("Received data:", sentence.DataType(), sentence)
 		if sentence.DataType() == nmea.TypeRMC {
-			rmc := sentence.(RMC)
+			rmc1 := sentence.(nmea.RMC)
+			rmc := RMC{}
+			copier.Copy(&rmc, &rmc1)
 			glogger.GLogger.Debug("Received RMC data:", rmc.String())
 			aism.RuleEngine.WorkDevice(aism.Details(), rmc.String())
 		}
 		if sentence.DataType() == nmea.TypeGNS {
-			rmc := sentence.(nmea.GNS)
-			glogger.GLogger.Debug("Received GNS data:", rmc.String())
-			aism.RuleEngine.WorkDevice(aism.Details(), rmc.String())
+			gns1 := sentence.(nmea.GNS)
+			gns := GNS{}
+			copier.Copy(&gns, &gns1)
+			glogger.GLogger.Debug("Received GNS data:", gns.String())
+			aism.RuleEngine.WorkDevice(aism.Details(), gns.String())
 		}
 		if sentence.DataType() == nmea.TypeVDM {
-			vdmo := sentence.(VDMVDO)
+			vdmo1 := sentence.(nmea.VDMVDO)
+			vdmo := VDMVDO{}
+			copier.Copy(&vdmo, &vdmo1)
 			glogger.GLogger.Debug("Received VDM data:", vdmo.String())
 			aism.RuleEngine.WorkDevice(aism.Details(), vdmo.String())
 		}

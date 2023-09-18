@@ -24,6 +24,7 @@ require (
 	github.com/hootrhino/gopher-lua v1.0.0
 	github.com/hootrhino/wmi v0.0.0-20230603082700-cfa077a8cf01
 	github.com/itchyny/gojq v0.12.13
+	github.com/jinzhu/copier v0.3.5
 	github.com/lithammer/shortuuid/v4 v4.0.0
 	github.com/makiuchi-d/gozxing v0.1.1
 	github.com/mattn/go-sqlite3 v1.14.17
