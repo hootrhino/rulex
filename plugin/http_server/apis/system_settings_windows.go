@@ -1,5 +1,7 @@
 package apis
 
+import "github.com/hootrhino/rulex/plugin/http_server/server"
+
 // Copyright (C) 2023 wwhai
 //
 // This program is free software: you can redistribute it and/or modify
@@ -16,5 +18,9 @@ package apis
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 func LoadSystemSettingsAPI() {
+	settingsApi := server.DefaultApiServer.GetGroup(server.ContextUrl("/settings"))
+
+	// 4g module
+	settingsApi.GET("/4gcsq", server.DefaultApiServer.AddRoute(Get4GCSQ))
 
 }

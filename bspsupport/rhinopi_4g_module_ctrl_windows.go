@@ -13,15 +13,8 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package apis
+package archsupport
 
-import (
-	"github.com/gin-gonic/gin"
-	archsupport "github.com/hootrhino/rulex/bspsupport"
-	common "github.com/hootrhino/rulex/plugin/http_server/common"
-	"github.com/hootrhino/rulex/typex"
-)
-
-func Get4GCSQ(c *gin.Context, ruleEngine typex.RuleX) {
-	c.JSON(common.HTTP_OK, common.OkWithData(archsupport.RhinoPiGet4GCSQ()))
+func RhinoPiGet4GCSQ() int {
+	return 0
 }

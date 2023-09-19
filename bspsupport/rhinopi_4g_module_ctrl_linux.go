@@ -16,13 +16,12 @@
 package archsupport
 
 import (
-	"bufio"
+	"fmt"
+	"io"
 	"os"
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/hootrhino/rulex/glogger"
 )
 
 /*
@@ -38,15 +37,18 @@ const (
 	__DIAL_AT_CMD        = "AT+QNETDEVCTL=3,1,1\r\n"
 	__NET_MODE_AT_CMD    = "AT+QCFG=\"nat\",1 \r\n"
 	__RESET_AT_CMD       = "AT+CFUN=1,1\r\n"
+	__CSQ                = "AT+CSQ\r\n"
 	__SAVE_CONFIG        = "AT&W\r\n"
 	__TURN_OFF_ECHO      = "ATE0\r\n"
-	__ATTimeout          = 300 //ms
+	__ATTimeout          = 300 * time.Millisecond //ms
 )
 
 func init() {
 	env := os.Getenv("ARCHSUPPORT")
 	if env == "EEKITH3" {
+		fmt.Println("RhinoPi Init 4G")
 		__RhinoPiInit4G()
+		fmt.Println("RhinoPi Init Ok.")
 	}
 }
 
@@ -61,46 +63,57 @@ func init() {
     RhinoPiGet4GCSQ: 返回值代表信号格
 */
 func RhinoPiGet4GCSQ() int {
-	csq := __Get4GCSQ()
-	if csq == 0 {
-		return 0
-	}
-	if csq > 0 && csq <= 9 {
-		return 1
-	}
-	if csq > 9 && csq <= 14 {
-		return 2
-
-	}
-	if csq > 15 && csq <= 19 {
-		return 3
-
-	}
-	if csq > 19 && csq <= 31 {
-		return 4
-	}
-	return 0
+	return __Get4GCSQ()
 }
 func __Get4GCSQ() int {
-	result, err := __EC200A_AT("AT+CSQ\r\n", __ATTimeout)
+	csq := 0
+	devicePath := "/dev/ttyUSB1"
+	file, err := os.OpenFile(devicePath, os.O_RDWR, os.ModePerm)
 	if err != nil {
-		glogger.GLogger.Error(err)
-		return 0
+		return csq
 	}
-
-	for _, v := range result {
-		if v[:6] == "+CSQ: " {
-			parts := strings.Split(string(v[6:]), ",")
-			if len(parts) == 2 {
-				v, err := strconv.Atoi(parts[0])
-				if err != nil {
-					return 0
-				}
-				return v
+	defer file.Close()
+	_, err = file.WriteString(__CSQ)
+	if err != nil {
+		return csq
+	}
+	timeout := 300 * time.Millisecond
+	buffer := [1]byte{}
+	var responseData []byte
+	b1 := 0
+	for {
+		if b1 == 4 {
+			break
+		}
+		deadline := time.Now().Add(timeout)
+		file.SetReadDeadline(deadline)
+		n, err := file.Read(buffer[:])
+		if err != nil {
+			if err == io.EOF {
+				break
+			} else {
+				break
+			}
+		}
+		if n > 0 {
+			if buffer[0] == 10 {
+				b1++
+			}
+			if buffer[0] != 10 {
+				responseData = append(responseData, buffer[0])
 			}
 		}
 	}
-	return 0
+	// +CSQ: 30,99
+	response := string(responseData[6:])
+	parts := strings.Split(response, ",")
+	if len(parts) == 2 {
+		v, err := strconv.Atoi(parts[0])
+		if err == nil {
+			csq = v
+		}
+	}
+	return csq
 }
 
 /*
@@ -110,30 +123,30 @@ func __Get4GCSQ() int {
  */
 func __RhinoPiInit4G() {
 	if err := turnOffEcho(); err != nil {
-		glogger.GLogger.Error("RhinoPiInit4G turnOffEcho error:", err)
+		fmt.Println("RhinoPiInit4G turnOffEcho error:", err)
 		return
 	}
-	glogger.GLogger.Info("RhinoPiInit4G turnOffEcho ok.")
+	fmt.Println("RhinoPiInit4G turnOffEcho ok.")
 	if err := setDriverMode(); err != nil {
-		glogger.GLogger.Error("RhinoPiInit4G setDriverMode error:", err)
+		fmt.Println("RhinoPiInit4G setDriverMode error:", err)
 		return
 	}
-	glogger.GLogger.Info("RhinoPiInit4G setDriverMode ok.")
+	fmt.Println("RhinoPiInit4G setDriverMode ok.")
 	if err := setDial(); err != nil {
-		glogger.GLogger.Error("RhinoPiInit4G setDial error:", err)
+		fmt.Println("RhinoPiInit4G setDial error:", err)
 		return
 	}
-	glogger.GLogger.Info("RhinoPiInit4G setDial ok.")
+	fmt.Println("RhinoPiInit4G setDial ok.")
 	if err := setNetMode(); err != nil {
-		glogger.GLogger.Error("RhinoPiInit4G setNetMode error:", err)
+		fmt.Println("RhinoPiInit4G setNetMode error:", err)
 		return
 	}
-	glogger.GLogger.Info("RhinoPiInit4G setNetMode ok.")
+	fmt.Println("RhinoPiInit4G setNetMode ok.")
 	if err := resetCard(); err != nil {
-		glogger.GLogger.Error("RhinoPiInit4G resetCard error:", err)
+		fmt.Println("RhinoPiInit4G resetCard error:", err)
 		return
 	}
-	glogger.GLogger.Info("RhinoPiInit4G resetCard ok.")
+	fmt.Println("RhinoPiInit4G resetCard ok.")
 
 }
 func turnOffEcho() error {
@@ -152,16 +165,13 @@ func resetCard() error {
 	return __ExecuteAT(__RESET_AT_CMD)
 }
 func __ExecuteAT(cmd string) error {
-	result, err := __EC200A_AT(cmd, __ATTimeout)
-	if err != nil {
-		return err
+	_, err0 := __EC200A_AT(cmd, __ATTimeout)
+	if err0 != nil {
+		return err0
 	}
 	_, err1 := __EC200A_AT(__SAVE_CONFIG, __ATTimeout)
 	if err1 != nil {
-		return err
-	}
-	if !atOK(result) {
-		return err
+		return err1
 	}
 	return nil
 }
@@ -186,67 +196,47 @@ func __ExecuteAT(cmd string) error {
 
 *
 */
-func __EC200A_AT(command string, timeout time.Duration) ([]string, error) {
+func __EC200A_AT(command string, timeout time.Duration) (string, error) {
 	// 打开设备文件以供读写
 	device := "/dev/ttyUSB1"
 	file, err := os.OpenFile(device, os.O_RDWR, os.ModePerm)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 	defer file.Close()
 
 	// 写入AT指令
 	_, err = file.WriteString(command + "\r\n")
 	if err != nil {
-		return nil, err
+		return "", err
 	}
-	file.Sync()
-
-	// 设置读取超时时间
-	readTimeout := time.After(timeout)
-
-	// 读取响应并以"\r\n"分割
-	scanner := bufio.NewScanner(file)
-	scanner.Split(scanCRLF)
-
-	var responseLines []string
+	buffer := [1]byte{}
+	var responseData []byte
+	b1 := 0
 	for {
-		select {
-		case <-readTimeout:
-			return responseLines, nil
-		default:
-			if scanner.Scan() {
-				line := scanner.Text()
-				// 过滤掉换行
-				if line == "\n\r" {
-					continue
-				}
-				responseLines = append(responseLines, line)
-			} else if scanner.Err() != nil {
-				return nil, scanner.Err()
+		if b1 == 4 {
+			break
+		}
+		deadline := time.Now().Add(timeout)
+		file.SetReadDeadline(deadline)
+		n, err := file.Read(buffer[:])
+		if err != nil {
+			if err == io.EOF {
+				break
 			} else {
-				// 所有行已读取完毕
-				return responseLines, nil
+				break
+			}
+		}
+		if n > 0 {
+			if buffer[0] == 10 {
+				b1++
+			}
+			if buffer[0] != 10 {
+				responseData = append(responseData, buffer[0])
 			}
 		}
 	}
-}
-
-// 自定义分割函数，用于将输入按"\r\n"分割
-func scanCRLF(data []byte, atEOF bool) (int, []byte, error) {
-	if atEOF && len(data) == 0 {
-		return 0, nil, nil
-	}
-
-	if i := strings.Index(string(data), "\r\n"); i >= 0 {
-		return i + 2, data[:i+2], nil
-	}
-
-	if atEOF {
-		return len(data), data, nil
-	}
-
-	return 0, nil, nil
+	return string(responseData), nil
 }
 
 /*
@@ -254,14 +244,9 @@ func scanCRLF(data []byte, atEOF bool) (int, []byte, error) {
 * 判断是否成功
 *
  */
-func atOK(parts []string) bool {
-	for _, part := range parts {
-		if part == "OK" {
-			return true
-		}
-		if part == "ERROR" {
-			return false
-		}
+func atOK(parts string) bool {
+	if strings.Contains(parts, "ERROR") {
+		return false
 	}
-	return false
+	return true
 }
