@@ -18,3 +18,9 @@ package archsupport
 func RhinoPiGet4GCSQ() int {
 	return 0
 }
+func RhinoPiGetCOPS() (string, error) {
+	return "", nil
+}
+func RhinoPiGetICCID() (string, error) {
+	return "", nil
+}

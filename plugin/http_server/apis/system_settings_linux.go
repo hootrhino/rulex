@@ -43,8 +43,13 @@ func LoadSystemSettingsAPI() {
 		// ip route
 		settingsApi.POST("/iproute", server.DefaultApiServer.AddRoute(SetNewDefaultIpRoute))
 		settingsApi.GET("/iproute", server.DefaultApiServer.AddRoute(GetOldDefaultIpRoute))
-		// 4g module
-		settingsApi.GET("/4gcsq", server.DefaultApiServer.AddRoute(Get4GCSQ))
 
+	}
+	// 4g module
+	settings4GApi := server.DefaultApiServer.GetGroup(server.ContextUrl("/4g"))
+	{
+		settings4GApi.GET("/csq", server.DefaultApiServer.AddRoute(Get4GCSQ))
+		settings4GApi.GET("/cops", server.DefaultApiServer.AddRoute(Get4GCOPS))
+		settings4GApi.GET("/iccid", server.DefaultApiServer.AddRoute(Get4GICCID))
 	}
 }

@@ -16,12 +16,52 @@
 package apis
 
 import (
+	"strings"
+
 	"github.com/gin-gonic/gin"
 	archsupport "github.com/hootrhino/rulex/bspsupport"
 	common "github.com/hootrhino/rulex/plugin/http_server/common"
 	"github.com/hootrhino/rulex/typex"
 )
 
+/*
+*
+* 信号强度
+*
+ */
 func Get4GCSQ(c *gin.Context, ruleEngine typex.RuleX) {
 	c.JSON(common.HTTP_OK, common.OkWithData(archsupport.RhinoPiGet4GCSQ()))
+}
+
+// (1,"CHINA MOBILE","CMCC","46000",0),
+// (3,"CHN-UNICOM","UNICOM","46001",7),
+// +COPS: 0,0,\"CHINA MOBILE\",7
+func Get4GCOPS(c *gin.Context, ruleEngine typex.RuleX) {
+	result, err := archsupport.RhinoPiGetCOPS()
+	if err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+	} else {
+		cm := "UNKNOWN"
+		if strings.Contains(result, "CMCC") {
+			cm = "中国移动"
+		}
+		if strings.Contains(result, "UNICOM") {
+			cm = "中国联通"
+		}
+		c.JSON(common.HTTP_OK, common.OkWithData(cm))
+	}
+}
+
+/*
+*
+* 获取电话卡ICCID
+*
+ */
+func Get4GICCID(c *gin.Context, ruleEngine typex.RuleX) {
+	result, err := archsupport.RhinoPiGetCOPS()
+	if err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+	} else {
+		c.JSON(common.HTTP_OK, common.OkWithData(result))
+	}
 }

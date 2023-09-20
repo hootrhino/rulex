@@ -40,7 +40,10 @@ const (
 	__CSQ                = "AT+CSQ\r\n"
 	__SAVE_CONFIG        = "AT&W\r\n"
 	__TURN_OFF_ECHO      = "ATE0\r\n"
+	__CURRENT_COPS_CMD   = "AT+COPS?\r\n"
+	__GET_ICCID_CMD      = "AT+QCCID\r\n"
 	__ATTimeout          = 300 * time.Millisecond //ms
+	__USB_4GDEV          = "/dev/ttyUSB1"
 )
 
 func init() {
@@ -65,10 +68,35 @@ func init() {
 func RhinoPiGet4GCSQ() int {
 	return __Get4GCSQ()
 }
+
+/*
+*
+* 获取运营商
++COPS:
+(2,"CHINA MOBILE","CMCC","46000",7),
+(1,"CHINA MOBILE","CMCC","46000",0),
+(3,"CHN-UNICOM","UNICOM","46001",7),
+(3,"CHN-CT","CT","46011",7),
+(1,"460 15","460 15","46015",7),,(0-4),(0-2)
+*/
+func RhinoPiGetCOPS() (string, error) {
+	// +COPS: 0,0,"CHINA MOBILE",7
+	// +COPS: 0,0,"CHIN-UNICOM",7
+	return __EC200A_AT(__CURRENT_COPS_CMD, __ATTimeout)
+}
+
+/*
+*
+* 获取ICCID, 用户查询电话卡号
+* +QCCID: 89860025128306012474
+ */
+func RhinoPiGetICCID() (string, error) {
+	return __EC200A_AT(__GET_ICCID_CMD, __ATTimeout)
+
+}
 func __Get4GCSQ() int {
 	csq := 0
-	devicePath := "/dev/ttyUSB1"
-	file, err := os.OpenFile(devicePath, os.O_RDWR, os.ModePerm)
+	file, err := os.OpenFile(__USB_4GDEV, os.O_RDWR, os.ModePerm)
 	if err != nil {
 		return csq
 	}
@@ -104,15 +132,18 @@ func __Get4GCSQ() int {
 			}
 		}
 	}
-	// +CSQ: 30,99
-	response := string(responseData[6:])
-	parts := strings.Split(response, ",")
-	if len(parts) == 2 {
-		v, err := strconv.Atoi(parts[0])
-		if err == nil {
-			csq = v
+	if len(responseData) > 6 {
+		// +CSQ: 30,99
+		response := string(responseData[6:])
+		parts := strings.Split(response, ",")
+		if len(parts) == 2 {
+			v, err := strconv.Atoi(parts[0])
+			if err == nil {
+				csq = v
+			}
 		}
 	}
+
 	return csq
 }
 
