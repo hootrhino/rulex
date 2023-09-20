@@ -32,47 +32,37 @@ import (
 * iptables -A FORWARD -i wlan0 -o eth0 -m state --state ESTABLISHED,RELATED -j ACCEPT
 * iptables -t nat -A POSTROUTING -o wlan0 -j MASQUERADE
  */
+var __FLUSH_IP_TABLE_TEMPLATE = `
+iptables -F
+iptables -X
+iptables -t nat -F
+iptables -t nat -X
+iptables -t mangle -F
+iptables -t mangle -X
+iptables -P INPUT DROP
+iptables -P FORWARD DROP
+iptables -P OUTPUT ACCEPT
+`
 var __IP_TABLE_TEMPLATE = `
+iptables -A FORWARD -i %s -o eth1 -j ACCEPT
 iptables -A FORWARD -i eth1 -o %s -j ACCEPT
-iptables -A FORWARD -i %s -o eth1 -m state --state ESTABLISHED,RELATED -j ACCEPT
 iptables -t nat -A POSTROUTING -o %s -j MASQUERADE
+
 `
 
 /*
 *
-
-  - 初始化路由表，默认选择WAN作为出口
-    在此之前会将LAN的IP设置为静态IP：
-    auto eth1
-    iface eth1 inet static
-		address 192.168.64.100
-		gateway 192.168.64.1
-		netmask 255.255.255.0
-		dns-nameservers 8.8.8.8
-
+* 重构ip table
 *
-*/
-func InitSoftRouter() {
-
-}
-func __fillIpTables(iface string) string {
-	return fmt.Sprintf(__IP_TABLE_TEMPLATE, iface, iface, iface)
-}
-func Set4GOutLink() error {
-	return __execIpTables(__fillIpTables("usb0"))
-}
-func SetWIFIOutLink() error {
-	return __execIpTables(__fillIpTables("wlan0"))
-}
-func SetEth1OutLink() error {
-	return __execIpTables(__fillIpTables("eth1"))
-}
-
-func __execIpTables(shell string) error {
-	cmd := exec.Command("sh", "-c", shell)
+ */
+func ReInitForwardRule(iface string) error {
+	if err := __FlushForwardRule(); err != nil {
+		return err
+	}
+	cmd := exec.Command("sh", "-c", __fillIpTables(iface))
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		return fmt.Errorf("Exec IpTables error:%s,%s", string(output), err)
+		return fmt.Errorf("Flush IpTables error:%s,%s", string(output), err)
 	}
 	return nil
 }
@@ -121,12 +111,37 @@ Chain OUTPUT (policy ACCEPT)
 target     prot opt source               destination
 *
 */
-func FlushForwardRule() error {
-	// sudo iptables -F FORWARD
-	cmd := exec.Command("sh", "-c", "iptables -F FORWARD")
+
+/*
+*
+* 清空ip table
+*
+*
+ */
+func __FlushForwardRule() error {
+	cmd := exec.Command("sh", "-c", __FLUSH_IP_TABLE_TEMPLATE)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("Flush IpTables error:%s,%s", string(output), err)
 	}
 	return nil
+}
+
+/*
+*
+
+  - 初始化路由表，默认选择WAN作为出口
+    在此之前会将LAN的IP设置为静态IP：
+    auto eth1
+    iface eth1 inet static
+    address 192.168.64.100
+    gateway 192.168.64.1
+    netmask 255.255.255.0
+    dns-nameservers 8.8.8.8
+
+*
+*/
+
+func __fillIpTables(iface string) string {
+	return fmt.Sprintf(__IP_TABLE_TEMPLATE, iface, iface, iface)
 }

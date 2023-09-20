@@ -128,7 +128,7 @@ func (s *RulexApiServer) Route() *gin.Engine {
 
 /*
 *
-* 初始化网络配置
+* 初始化网络配置, 后期分一个windows版本
 *
  */
 func (s *RulexApiServer) InitializeData() {
@@ -150,6 +150,10 @@ func (s *RulexApiServer) InitializeData() {
 		Logo:     "RhinoEEKIT",
 		AppName:  "RhinoEEKIT",
 	})
-	// 初始化默认路由
+	// 初始化默认路由, 如果没有配置会在数据库生成关于eth1的一个默认路由数据
 	service.InitDefaultIpRoute()
+	// 初始化默认路由表: ip route
+	service.InitDefaultIpTable()
+	// 初始化默认DHCP
+	service.InitDefaultDhcp()
 }

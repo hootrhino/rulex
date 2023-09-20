@@ -122,27 +122,29 @@ func TruncateConfig() error {
 func InitNetWorkConfig() error {
 
 	// 默认给DHCP
+	dhcp0 := true
+	dhcp1 := false
 	eth0 := model.MNetworkConfig{
 		Interface: "eth0",
-		Address:   "192.168.128.100",
+		Address:   "192.168.1.100",
 		Netmask:   "255.255.255.0",
-		Gateway:   "192.168.128.1",
+		Gateway:   "192.168.1.1",
 		DNS: model.StringList{
 			"8.8.8.8",
 			"114.114.114.114",
 		},
-		DHCPEnabled: new(bool),
+		DHCPEnabled: &dhcp0,
 	}
 	eth1 := model.MNetworkConfig{
 		Interface: "eth1",
-		Address:   "192.168.128.100",
+		Address:   "192.168.64.100",
 		Netmask:   "255.255.255.0",
-		Gateway:   "192.168.128.1",
+		Gateway:   "192.168.64.1",
 		DNS: model.StringList{
 			"8.8.8.8",
 			"114.114.114.114",
 		},
-		DHCPEnabled: new(bool),
+		DHCPEnabled: &dhcp1,
 	}
 	var err error
 	err = sqlitedao.Sqlite.DB().Where("interface=? and id=1", "eth0").FirstOrCreate(&eth0).Error

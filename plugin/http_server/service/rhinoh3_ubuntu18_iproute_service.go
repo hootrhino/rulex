@@ -15,13 +15,87 @@
 package service
 
 import (
+	"bytes"
 	"fmt"
 	"os/exec"
 	"strings"
 
+	archsupport "github.com/hootrhino/rulex/bspsupport"
 	sqlitedao "github.com/hootrhino/rulex/plugin/http_server/dao/sqlite"
 	"github.com/hootrhino/rulex/plugin/http_server/model"
 )
+
+/*
+*
+* 删除原来的垃圾路由，换成最新的配置
+*
+ */
+func UpdateDefaultRoute(newGatewayIP, newIface string) error {
+	DefaultRoutes := getDefaultRoute()
+	for _, route := range DefaultRoutes {
+		if err := delDefaultRoute(route); err != nil {
+			return err
+		}
+	}
+
+	if err := addDefaultRoute(newGatewayIP, newIface); err != nil {
+		return err
+	}
+	return nil
+}
+
+func IpRouteDetail() (model.MIpRoute, error) {
+	m := model.MIpRoute{}
+	if err := sqlitedao.Sqlite.DB().Where("uuid=?", "0").First(&m).Error; err != nil {
+		return model.MIpRoute{}, err
+	} else {
+		return m, nil
+	}
+}
+func GetDefaultIpRoute() (model.MIpRoute, error) {
+	return IpRouteDetail()
+}
+
+// 更新 IpRoute
+func UpdateIpRoute(IpRoute model.MIpRoute) error {
+	return sqlitedao.Sqlite.DB().Model(IpRoute).Where("uuid=?", "0").Updates(IpRoute).Error
+}
+
+// 每次启动的时候换成最新配置的路由, 默认是ETH1 192.168.64.0
+func InitDefaultIpRoute() error {
+	m := model.MIpRoute{
+		UUID:  "0",
+		Ip:    "192.168.64.1",
+		Iface: "eth1",
+	}
+	if err := sqlitedao.Sqlite.DB().Model(m).
+		Where("uuid=?", "0").
+		FirstOrCreate(&m).Error; err != nil {
+		return err
+	}
+	return UpdateDefaultRoute(m.Ip, m.Iface)
+}
+
+// getDefaultRoute 返回默认路由的信息作为字符串切片
+func getDefaultRoute() []string {
+	cmd := exec.Command("ip", "route", "show", "default")
+	var stdout bytes.Buffer
+	cmd.Stdout = &stdout
+	// 执行命令
+	err := cmd.Run()
+	if err != nil {
+		return []string{}
+	}
+	output := stdout.String()
+	lines := strings.Split(output, "\n")
+	var result []string
+	for _, line := range lines {
+		if strings.TrimSpace(line) != "" {
+			result = append(result, line)
+		}
+	}
+	return result
+}
 
 /*
 *
@@ -37,9 +111,9 @@ func addDefaultRoute(newGatewayIP, iface string) error {
 	}
 	return nil
 }
-func delDefaultRoute(ip, iface string) error {
+func delDefaultRoute(route string) error {
 	// sudo ip route del default via 192.168.43.1 dev usb0
-	cmd := exec.Command("ip", "route", "del", "default", "via", ip, "dev", iface)
+	cmd := exec.Command("sh", "-c", "ip route del %s", route)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("Error executing del: %s", err.Error()+":"+string(output))
@@ -47,64 +121,19 @@ func delDefaultRoute(ip, iface string) error {
 	return nil
 }
 
-func UpdateDefaultRoute(oldGatewayIP, oldIface, newGatewayIP, newIface string) error {
-	existsDefaultRoute, err := checkDefaultRoute(oldGatewayIP, oldIface)
+/*
+
+  - 每次初始化软路由配置表
+  - 1 数据库查上一次配置的网卡参数
+    2 清除当前配置
+    3 应用最新的
+*/
+
+func InitDefaultIpTable() error {
+	MIpRoute, err := GetDefaultIpRoute()
 	if err != nil {
 		return err
 	}
-	if existsDefaultRoute {
-		if err := delDefaultRoute(oldGatewayIP, oldIface); err != nil {
-			return err
-		}
-	}
-	if err := addDefaultRoute(newGatewayIP, newIface); err != nil {
-		return err
-	}
-	return nil
-}
+	return archsupport.ReInitForwardRule(MIpRoute.Iface)
 
-func IpRouteDetail() (model.MIpRoute, error) {
-	m := model.MIpRoute{}
-	if err := sqlitedao.Sqlite.DB().Where("uuid=?", "0").First(&m).Error; err != nil {
-		return model.MIpRoute{}, err
-	} else {
-		return m, nil
-	}
-}
-
-// 更新 IpRoute
-func UpdateIpRoute(IpRoute model.MIpRoute) error {
-	return sqlitedao.Sqlite.DB().Model(IpRoute).Where("uuid=?", "0").Updates(IpRoute).Error
-}
-
-// Init
-func InitDefaultIpRoute() error {
-	m := model.MIpRoute{
-		UUID:  "0",
-		Ip:    "192.168.200.0",
-		Iface: "eth1",
-	}
-	return sqlitedao.Sqlite.DB().Model(m).Where("uuid=?", "0").FirstOrCreate(&m).Error
-}
-
-// checkDefaultRoute 检查是否存在默认路由
-func checkDefaultRoute(oldIp, oldIface string) (bool, error) {
-	// 执行命令
-	cmd := exec.Command("sh", "-c", "ip route | awk 'NR==1 {print $1 ,$2, $3, $4, $5}'")
-	// 捕获命令的标准输出
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		return false, fmt.Errorf("checkDefaultRoute error: %s", string(output))
-	}
-	outputStr := string(output)
-	//
-	// ip route | awk 'NR==1 {print $1 ,$2, $3, $4, $5}'
-	// default via 192.168.199.1 dev wlx0cc6551c5026
-	// default via %s dev %s
-	//
-	// 将 AWK 输出转换为字符串并去除空白字符
-	awkResult := strings.TrimSpace(outputStr)
-
-	// 检查是否为 "default"
-	return awkResult == fmt.Sprintf("default via %s dev %s", oldIp, oldIface), nil
 }

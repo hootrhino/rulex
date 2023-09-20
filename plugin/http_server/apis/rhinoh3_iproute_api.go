@@ -39,8 +39,8 @@ import (
 */
 type IpRouteVo struct {
 	UUID  string `json:"uuid,omitempty"`
-	Ip    string `json:"ip"`
-	Iface string `json:"iface"`
+	Ip    string `json:"ip" validate:"required"`
+	Iface string `json:"iface" validate:"required"`
 }
 
 /*
@@ -82,11 +82,6 @@ func SetNewDefaultIpRoute(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(fmt.Errorf("Only support iface:%v", ifaces)))
 		return
 	}
-	oldRoute, err := service.IpRouteDetail()
-	if err != nil {
-		c.JSON(common.HTTP_OK, common.Error400(err))
-		return
-	}
 	err3 := service.UpdateIpRoute(model.MIpRoute{
 		Ip:    form.Ip,
 		Iface: form.Iface,
@@ -95,7 +90,7 @@ func SetNewDefaultIpRoute(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err3))
 		return
 	}
-	err2 := service.UpdateDefaultRoute(oldRoute.Ip, oldRoute.Iface, form.Ip, form.Iface)
+	err2 := service.UpdateDefaultRoute(form.Ip, form.Iface)
 	if err2 != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err2))
 		return
