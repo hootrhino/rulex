@@ -23,7 +23,7 @@ import (
 )
 
 // 启动时间
-var StartedTime = time.Unix(time.Now().Unix(), 0).Format("2006-01-02 15:04:05")
+var __StartedAt = time.Unix(time.Now().Unix(), 0).Format("2006-01-02 15:04:05")
 
 /*
 *
@@ -98,16 +98,20 @@ func System(c *gin.Context, ruleEngine typex.RuleX) {
 	// ip, err0 := utils.HostNameI()
 	memPercent, _ := service.GetMemPercent()
 	hardWareInfo := map[string]interface{}{
-		"version":  ruleEngine.Version().Version,
-		"diskInfo": calculateDiskInfo(diskInfo),
-		// "systemMem":   bToMb(m.Sys),
-		// "allocMem":    bToMb(m.Alloc),
-		// "totalMem":    bToMb(m.TotalAlloc),
-		"memPercent":  memPercent,
-		"cpuPercent":  calculateCpuPercent(cpuPercent),
-		"osArch":      ruleEngine.Version().Arch,
-		"osDist":      ruleEngine.Version().Dist,
-		"startedTime": StartedTime,
+		"version":    ruleEngine.Version().Version,
+		"diskInfo":   calculateDiskInfo(diskInfo),
+		"memPercent": memPercent,
+		"cpuPercent": calculateCpuPercent(cpuPercent),
+		"osArch":     ruleEngine.Version().Arch,
+		"osDist":     ruleEngine.Version().Dist,
+		"startedAt":  __StartedAt,
+		"osUpTime": func() string {
+			result, err := service.GetUptime()
+			if err != nil {
+				return "0 days 0 hours 0 minutes"
+			}
+			return result
+		}(),
 	}
 	c.JSON(common.HTTP_OK, common.OkWithData(gin.H{
 		"hardWareInfo": hardWareInfo,
@@ -305,7 +309,7 @@ func GetNetInterfaces(c *gin.Context, ruleEngine typex.RuleX) {
 *
  */
 func StartedAt(c *gin.Context, ruleEngine typex.RuleX) {
-	c.JSON(common.HTTP_OK, common.OkWithData(StartedTime))
+	c.JSON(common.HTTP_OK, common.OkWithData(__StartedAt))
 }
 
 func calculateDiskInfo(diskInfo *disk.UsageStat) float64 {

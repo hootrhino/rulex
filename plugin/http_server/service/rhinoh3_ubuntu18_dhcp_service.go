@@ -16,6 +16,7 @@
 package service
 
 import (
+	"fmt"
 	"os"
 )
 
@@ -62,7 +63,7 @@ func __InitDefaultDHCPd() error {
 
 * 这个初始化特殊在咬对两个软件的配置进行刷新，一个是 dnsmasq， 一个是isc-dhcp-server
 */
-func InitDefaultDhcp() error {
+func ConfigDefaultDhcp() error {
 	MIpRoute, err := GetDefaultIpRoute()
 	if err != nil {
 		return err
@@ -75,5 +76,36 @@ func InitDefaultDhcp() error {
 	if err0 := __InitDefaultDHCPd(); err0 != nil {
 		return err0
 	}
+	return nil
+}
+
+/*
+*
+
+	subnet 192.168.64.0 netmask 255.255.255.0 {
+	   range 192.168.64.100 192.168.64.200;          # 开放的地址池
+	   option domain-name-servers 192.168.64.100;    # DNS域名服务器，如果没有就注释掉
+	   #option domain-name "internal.example.org";   # 域名
+	   option routers 192.168.64.100;                # 网关地址
+	   option broadcast-address 192.168.64.255;      # 广播地址
+	   default-lease-time 600;                       # 默认租期，单位：秒
+	   max-lease-time 7200;                          # 最大租期
+	}
+
+*isc-dhcp-server 会加载 /etc/dhcp/dhcpd.conf 配置文件
+这里需要注意一下，此处配置衣服那个要和网卡的配置一致
+*/
+func ConfigDefaultNat() error {
+	ss := `
+subnet 192.168.64.0 netmask 255.255.255.0 {
+    range 192.168.64.100 192.168.64.200;
+    option routers 192.168.64.100;
+    option broadcast-address 192.168.64.255;
+    default-lease-time 600;
+    max-lease-time 7200;
+}
+
+`
+	fmt.Println(ss)
 	return nil
 }

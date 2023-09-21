@@ -62,11 +62,14 @@ func UpdateIpRoute(IpRoute model.MIpRoute) error {
 }
 
 // 每次启动的时候换成最新配置的路由, 默认是ETH1 192.168.64.0
+// 这个初始化的目的是为了配合软路由使用, 和isc-dhcp-server、dnsmasq 两个DHCP服务有关
 func InitDefaultIpRoute() error {
 	m := model.MIpRoute{
-		UUID:  "0",
-		Ip:    "192.168.64.1",
-		Iface: "eth1",
+		UUID:    "0",
+		Iface:   "eth1",
+		Ip:      "192.168.64.100",
+		Gateway: "192.168.64.100",
+		Netmask: "255.255.255.0",
 	}
 	if err := sqlitedao.Sqlite.DB().Model(m).
 		Where("uuid=?", "0").
@@ -129,7 +132,7 @@ func delDefaultRoute(route string) error {
     3 应用最新的
 */
 
-func InitDefaultIpTable() error {
+func ConfigDefaultIpTable() error {
 	MIpRoute, err := GetDefaultIpRoute()
 	if err != nil {
 		return err

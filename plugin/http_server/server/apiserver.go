@@ -152,8 +152,15 @@ func (s *RulexApiServer) InitializeData() {
 	})
 	// 初始化默认路由, 如果没有配置会在数据库生成关于eth1的一个默认路由数据
 	service.InitDefaultIpRoute()
-	// 初始化默认路由表: ip route
-	service.InitDefaultIpTable()
-	// 初始化默认DHCP
-	service.InitDefaultDhcp()
+	// 一组操作, 主要用来初始化 DHCP和DNS、网卡配置等
+	// 1 2 3 的目的是为了每次重启的时候初始化软路由
+	{
+		// 1 初始化默认路由表: ip route
+		service.ConfigDefaultIpTable()
+		// 2 初始化默认DHCP
+		service.ConfigDefaultDhcp()
+		// 3 初始化Eth1的静态IP地址
+		service.ConfigDefaultNat()
+	}
+
 }

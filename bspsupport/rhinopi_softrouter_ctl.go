@@ -52,7 +52,7 @@ iptables -t nat -A POSTROUTING -o %s -j MASQUERADE
 
 /*
 *
-* 重构ip table
+* 重构ip table, 目前默认以Eth1
 *
  */
 func ReInitForwardRule(iface string) error {
@@ -144,4 +144,42 @@ func __FlushForwardRule() error {
 
 func __fillIpTables(iface string) string {
 	return fmt.Sprintf(__IP_TABLE_TEMPLATE, iface, iface, iface)
+}
+
+/*
+*
+* 开启软路由
+*
+ */
+func StartSoftRoute() error {
+	shell := `
+service dnsmasq start
+service isc-dhcp-server start
+`
+	cmd := exec.Command("sh", "-c", shell)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("Stop dnsmasq error:%s,%s", string(output), err)
+	}
+	return nil
+}
+
+/*
+*
+* 关闭软路由
+service dnsmasq stop
+service isc-dhcp-server stop
+*
+*/
+func StopSoftRoute() error {
+	shell := `
+service dnsmasq stop
+service isc-dhcp-server stop
+`
+	cmd := exec.Command("sh", "-c", shell)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("Start dnsmasq error:%s,%s", string(output), err)
+	}
+	return nil
 }

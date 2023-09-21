@@ -155,3 +155,20 @@ func SetTimeZone(timezone string) error {
 	}
 	return nil
 }
+
+/*
+*
+* 获取开机时间
+*
+ */
+func GetUptime() (string, error) {
+	shell := `
+awk '{print int($1 / 86400) " days " int(($1 % 86400) / 3600) " hours " int(($1 % 3600) / 60) " minutes"}' /proc/uptime
+`
+	cmd := exec.Command("sh", "-c", shell)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return "", fmt.Errorf("GetUptime error:%s,%s", string(output), err.Error())
+	}
+	return strings.Trim(string(output), "\n"), nil
+}
