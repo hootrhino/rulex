@@ -105,6 +105,7 @@ func __Get4GCSQ() int {
 	if err != nil {
 		return csq
 	}
+	// 4G 模组的绝大多数指令都是100毫秒
 	timeout := 300 * time.Millisecond
 	buffer := [1]byte{}
 	var responseData []byte

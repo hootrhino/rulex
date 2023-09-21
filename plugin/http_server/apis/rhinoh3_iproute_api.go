@@ -97,3 +97,17 @@ func SetNewDefaultIpRoute(c *gin.Context, ruleEngine typex.RuleX) {
 	}
 	c.JSON(common.HTTP_OK, common.Ok())
 }
+
+/*
+*
+* 获取当前在线的DHCP主机列表
+*
+ */
+func GetDhcpClients(c *gin.Context, ruleEngine typex.RuleX) {
+	GetDhcpClients, err := service.GetDhcpList()
+	if err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
+	c.JSON(common.HTTP_OK, common.OkWithData(GetDhcpClients))
+}

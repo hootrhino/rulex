@@ -51,5 +51,6 @@ func LoadSystemSettingsAPI() {
 		settings4GApi.GET("/csq", server.DefaultApiServer.AddRoute(Get4GCSQ))
 		settings4GApi.GET("/cops", server.DefaultApiServer.AddRoute(Get4GCOPS))
 		settings4GApi.GET("/iccid", server.DefaultApiServer.AddRoute(Get4GICCID))
+		settings4GApi.GET("/dhcpClients", server.DefaultApiServer.AddRoute(GetDhcpClients))
 	}
 }

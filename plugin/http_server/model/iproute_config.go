@@ -22,9 +22,12 @@ package model
  */
 type MIpRoute struct {
 	RulexModel
-	UUID    string `gorm:"not null"`
-	Ip      string `gorm:"not null"`
-	Iface   string `gorm:"not null"`
-	Gateway string `gorm:"not null"`
-	Netmask string `gorm:"not null"`
+	UUID        string `gorm:"not null"`
+	Ip          string `gorm:"not null"`
+	Iface       string `gorm:"not null"`
+	Network     string `gorm:"not null"`
+	Gateway     string `gorm:"not null"`
+	Netmask     string `gorm:"not null"`
+	IpPoolBegin string `gorm:"not null"`
+	IpPoolEnd   string `gorm:"not null"`
 }
