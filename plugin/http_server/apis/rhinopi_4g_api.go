@@ -36,6 +36,16 @@ func Get4GBaseInfo(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err1))
 		return
 	}
+	cm := "UNKNOWN"
+	if strings.Contains(cops, "CMCC") {
+		cm = "中国移动"
+	}
+	if strings.Contains(cops, "MOBILE") {
+		cm = "中国移动"
+	}
+	if strings.Contains(cops, "UNICOM") {
+		cm = "中国联通"
+	}
 	iccid, err2 := archsupport.RhinoPiGetICCID()
 	if err2 != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err2))
@@ -44,8 +54,8 @@ func Get4GBaseInfo(c *gin.Context, ruleEngine typex.RuleX) {
 	c.JSON(common.HTTP_OK, common.OkWithData(
 		map[string]interface{}{
 			"csq":   csq,
-			"cops":  cops,
-			"iccid": iccid,
+			"cops":  cm,
+			"iccid": strings.TrimLeft(iccid, "+QCCID: "),
 		},
 	))
 
@@ -92,6 +102,8 @@ func Get4GICCID(c *gin.Context, ruleEngine typex.RuleX) {
 	if err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 	} else {
-		c.JSON(common.HTTP_OK, common.OkWithData(result))
+		// +QCCID: 89860426102180397625
+		iccid := strings.TrimLeft(result, "+QCCID: ")
+		c.JSON(common.HTTP_OK, common.OkWithData(iccid))
 	}
 }
