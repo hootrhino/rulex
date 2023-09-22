@@ -72,6 +72,9 @@ func Get4GCOPS(c *gin.Context, ruleEngine typex.RuleX) {
 		if strings.Contains(result, "CMCC") {
 			cm = "中国移动"
 		}
+		if strings.Contains(result, "MOBILE") {
+			cm = "中国移动"
+		}
 		if strings.Contains(result, "UNICOM") {
 			cm = "中国联通"
 		}
