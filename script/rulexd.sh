@@ -61,11 +61,34 @@ uninstall(){
     systemctl stop rulex
     systemctl disable rulex
     rm /etc/systemd/system/rulex.service
-    rm $working_directory/rulex
-    rm $working_directory/rulex.ini
-    rm $working_directory/rulex.db
-    rm $working_directory/*.txt
-    rm $working_directory/*.txt.gz
+    if [ -d "$working_directory" ]; then
+        cd "$working_directory" || exit 1
+        if [ -e "rulex" ]; then
+            rm "rulex"
+            echo "Deleted 'rulex' in $working_directory"
+        fi
+
+        if [ -e "rulex.ini" ]; then
+            rm "rulex.ini"
+            echo "Deleted 'rulex.ini' in $working_directory"
+        fi
+
+        if [ -e "rulex.db" ]; then
+            rm "rulex.db"
+            echo "Deleted 'rulex.db' in $working_directory"
+        fi
+
+        if [ -n "$(find . -maxdepth 1 -name '*.txt' -print -quit)" ]; then
+            rm *.txt
+            echo "Deleted .txt files in $working_directory"
+        fi
+
+        if [ -n "$(find . -maxdepth 1 -name '*.txt.gz' -print -quit)" ]; then
+            rm *.txt.gz
+            echo "Deleted .txt.gz files in $working_directory"
+        fi
+
+    fi
     systemctl daemon-reload
     systemctl reset-failed
     echo "Rulex has been uninstalled."
