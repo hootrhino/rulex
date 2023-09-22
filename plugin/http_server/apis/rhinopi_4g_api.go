@@ -26,6 +26,33 @@ import (
 
 /*
 *
+* 获取4G基本信息
+*
+ */
+func Get4GBaseInfo(c *gin.Context, ruleEngine typex.RuleX) {
+	csq := archsupport.RhinoPiGet4GCSQ()
+	cops, err1 := archsupport.RhinoPiGetCOPS()
+	if err1 != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err1))
+		return
+	}
+	iccid, err2 := archsupport.RhinoPiGetICCID()
+	if err2 != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err2))
+		return
+	}
+	c.JSON(common.HTTP_OK, common.OkWithData(
+		map[string]interface{}{
+			"csq":   csq,
+			"cops":  cops,
+			"iccid": iccid,
+		},
+	))
+
+}
+
+/*
+*
 * 信号强度
 *
  */
@@ -58,7 +85,7 @@ func Get4GCOPS(c *gin.Context, ruleEngine typex.RuleX) {
 *
  */
 func Get4GICCID(c *gin.Context, ruleEngine typex.RuleX) {
-	result, err := archsupport.RhinoPiGetCOPS()
+	result, err := archsupport.RhinoPiGetICCID()
 	if err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 	} else {

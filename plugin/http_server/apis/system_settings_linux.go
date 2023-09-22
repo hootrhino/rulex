@@ -48,9 +48,15 @@ func LoadSystemSettingsAPI() {
 	// 4g module
 	settings4GApi := server.DefaultApiServer.GetGroup(server.ContextUrl("/4g"))
 	{
+		settings4GApi.GET("/info", server.DefaultApiServer.AddRoute(Get4GBaseInfo))
 		settings4GApi.GET("/csq", server.DefaultApiServer.AddRoute(Get4GCSQ))
 		settings4GApi.GET("/cops", server.DefaultApiServer.AddRoute(Get4GCOPS))
 		settings4GApi.GET("/iccid", server.DefaultApiServer.AddRoute(Get4GICCID))
-		settings4GApi.GET("/dhcpClients", server.DefaultApiServer.AddRoute(GetDhcpClients))
 	}
+	// 软路由相关
+	settingsSoftRouterApi := server.DefaultApiServer.GetGroup(server.ContextUrl("/softRouter"))
+	{
+		settingsSoftRouterApi.GET("/dhcpClients", server.DefaultApiServer.AddRoute(GetDhcpClients))
+	}
+
 }
