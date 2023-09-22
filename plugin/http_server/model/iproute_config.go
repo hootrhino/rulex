@@ -17,17 +17,20 @@ package model
 
 /*
 *
-* Linux默认路由
-*
- */
+* Linux默认路由，该配置主要用来处理软路由相关功能
+// 每次启动的时候换成最新配置的路由, 默认是ETH1 192.168.64.0
+// 这个初始化的目的是为了配合软路由使用, 和isc-dhcp-server、dnsmasq 两个DHCP服务有关
+*/
 type MIpRoute struct {
 	RulexModel
 	UUID        string `gorm:"not null"`
-	Ip          string `gorm:"not null"`
-	Iface       string `gorm:"not null"`
+	Iface       string `gorm:"not null"` // 用来做子网的那个网卡的网卡名
+	Ip          string `gorm:"not null"` // 用来做子网的那个网卡的IP地址
 	Network     string `gorm:"not null"`
-	Gateway     string `gorm:"not null"`
+	Gateway     string `gorm:"not null"` // 用来做子网的那个网卡的网关
 	Netmask     string `gorm:"not null"`
-	IpPoolBegin string `gorm:"not null"`
-	IpPoolEnd   string `gorm:"not null"`
+	IpPoolBegin string `gorm:"not null"` // IP地址池起始
+	IpPoolEnd   string `gorm:"not null"` // IP地址池结束
+	IfaceFrom   string `gorm:"not null"` // 流量入口
+	IfaceTo     string `gorm:"not null"` // 流量出口
 }

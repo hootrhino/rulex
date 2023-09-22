@@ -65,11 +65,15 @@ func UpdateIpRoute(IpRoute model.MIpRoute) error {
 // 这个初始化的目的是为了配合软路由使用, 和isc-dhcp-server、dnsmasq 两个DHCP服务有关
 func InitDefaultIpRoute() error {
 	m := model.MIpRoute{
-		UUID:    "0",
-		Iface:   "eth1",
-		Ip:      "192.168.64.100",
-		Gateway: "192.168.64.100",
-		Netmask: "255.255.255.0",
+		UUID:        "0",
+		Iface:       "eth1",
+		Ip:          "192.168.64.100",
+		Gateway:     "192.168.64.100",
+		Netmask:     "255.255.255.0",
+		IpPoolBegin: "192.168.64.100",
+		IpPoolEnd:   "192.168.64.150",
+		IfaceFrom:   "eth1", // 默认将Eth1网口和USB 4G网卡桥接起来, 这样就可以实现4G上网
+		IfaceTo:     "usb0",
 	}
 	if err := sqlitedao.Sqlite.DB().Model(m).
 		Where("uuid=?", "0").
@@ -137,6 +141,6 @@ func ConfigDefaultIpTable() error {
 	if err != nil {
 		return err
 	}
-	return archsupport.ReInitForwardRule(MIpRoute.Iface)
+	return archsupport.ReInitForwardRule(MIpRoute.Iface, "eth1")
 
 }

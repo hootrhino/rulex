@@ -33,33 +33,37 @@ import (
 * iptables -t nat -A POSTROUTING -o wlan0 -j MASQUERADE
  */
 var __FLUSH_IP_TABLE_TEMPLATE = `
-iptables -F
-iptables -X
-iptables -t nat -F
-iptables -t nat -X
-iptables -t mangle -F
-iptables -t mangle -X
-iptables -P INPUT DROP
-iptables -P FORWARD DROP
-iptables -P OUTPUT ACCEPT
+sudo iptables -F
+sudo iptables -X
+sudo iptables -t nat -F
+sudo iptables -t nat -X
+sudo iptables -t mangle -F
+sudo iptables -t mangle -X
+sudo iptables -P INPUT DROP
+sudo iptables -P FORWARD DROP
+sudo iptables -P OUTPUT DROP
+sudo iptables -P INPUT ACCEPT
+sudo iptables -P FORWARD ACCEPT
+sudo iptables -P OUTPUT ACCEPT
+
 `
 var __IP_TABLE_TEMPLATE = `
-iptables -A FORWARD -i %s -o eth1 -j ACCEPT
-iptables -A FORWARD -i eth1 -o %s -j ACCEPT
+iptables -A FORWARD -i %s -o %s -j ACCEPT
+iptables -A FORWARD -i %s -o %s -j ACCEPT
 iptables -t nat -A POSTROUTING -o %s -j MASQUERADE
 
 `
 
 /*
 *
-* 重构ip table, 目前默认以Eth1
+* 重构ip table, 目前默认以Eth1 <--> 4G
 *
  */
-func ReInitForwardRule(iface string) error {
+func ReInitForwardRule(ifaceFrom, ifaceTo string) error {
 	if err := __FlushForwardRule(); err != nil {
 		return err
 	}
-	cmd := exec.Command("sh", "-c", __fillIpTables(iface))
+	cmd := exec.Command("sh", "-c", __fillIpTables(ifaceFrom, ifaceTo))
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("Flush IpTables error:%s,%s", string(output), err)
@@ -142,8 +146,8 @@ func __FlushForwardRule() error {
 *
 */
 
-func __fillIpTables(iface string) string {
-	return fmt.Sprintf(__IP_TABLE_TEMPLATE, iface, iface, iface)
+func __fillIpTables(from, to string) string {
+	return fmt.Sprintf(__IP_TABLE_TEMPLATE, from, to, to, from)
 }
 
 /*
