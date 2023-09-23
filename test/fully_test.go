@@ -5,7 +5,7 @@ import (
 
 	"github.com/hootrhino/rulex/glogger"
 	httpserver "github.com/hootrhino/rulex/plugin/http_server"
-	"github.com/hootrhino/rulex/rulexrpc"
+	"github.com/hootrhino/rulex/component/rulexrpc"
 	"github.com/hootrhino/rulex/typex"
 
 	"testing"

@@ -3,7 +3,7 @@ package test
 import (
 	"context"
 
-	"github.com/hootrhino/rulex/rulexrpc"
+	"github.com/hootrhino/rulex/component/rulexrpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 

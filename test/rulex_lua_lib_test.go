@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hootrhino/rulex/rulexrpc"
+	"github.com/hootrhino/rulex/component/rulexrpc"
 	"github.com/hootrhino/rulex/typex"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"

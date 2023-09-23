@@ -162,7 +162,7 @@ func TestCustomTCP(t *testing.T) {
 	}
 
 	if err := appstack.LoadApp(typex.NewApplication(
-		"Test1", "Name", "Version", "./apps/custom_tcp.lua")); err != nil {
+		"Test1", "Name", "Version"), ""); err != nil {
 		t.Fatal("app Load failed:", err)
 		return
 	}

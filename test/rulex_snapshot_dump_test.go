@@ -8,12 +8,12 @@ import (
 	"testing"
 	"time"
 
+	"github.com/hootrhino/rulex/component/rulexrpc"
 	"github.com/hootrhino/rulex/core"
 	"github.com/hootrhino/rulex/engine"
 	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/plugin/demo_plugin"
 	httpserver "github.com/hootrhino/rulex/plugin/http_server"
-	"github.com/hootrhino/rulex/rulexrpc"
 	"github.com/hootrhino/rulex/typex"
 
 	"google.golang.org/grpc"
