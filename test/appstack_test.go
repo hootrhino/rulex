@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hootrhino/rulex/appstack"
+	"github.com/hootrhino/rulex/component/appstack"
 	"github.com/hootrhino/rulex/typex"
 )
 
@@ -12,8 +12,8 @@ import (
 func Test_appStack(t *testing.T) {
 	engine := RunTestEngine()
 	engine.Start()
-	as := appstack.NewAppStack(engine)
-	err := as.LoadApp(typex.NewApplication("test-uuid-1", "test-name",
+	as := appstack.InitAppStack(engine)
+	err := appstack.LoadApp(typex.NewApplication("test-uuid-1", "test-name",
 		"1.0.1", "./apps/hello_world.lua"))
 	if err != nil {
 		t.Fatal(err)

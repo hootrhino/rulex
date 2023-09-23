@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/hootrhino/rulex/component/trailer"
 	"github.com/hootrhino/rulex/glogger"
 	httpserver "github.com/hootrhino/rulex/plugin/http_server"
 	"github.com/hootrhino/rulex/typex"
@@ -30,7 +31,7 @@ func Test_Trailer_load(t *testing.T) {
 	if runtime.GOOS == "windows" {
 		path += ".exe"
 	}
-	if err := engine.LoadGoods(typex.Goods{
+	if err := trailer.Fork(typex.Goods{
 		UUID:        "grpc_driver_hello_go",
 		Addr:        path,
 		Description: "grpc_driver_hello_go",

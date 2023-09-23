@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/hootrhino/rulex/component/appstack"
 	httpserver "github.com/hootrhino/rulex/plugin/http_server"
 	"github.com/hootrhino/rulex/typex"
 )
@@ -160,12 +161,12 @@ func TestCustomTCP(t *testing.T) {
 		t.Fatal("Test1 load failed:", err)
 	}
 
-	if err := engine.LoadApp(typex.NewApplication(
+	if err := appstack.LoadApp(typex.NewApplication(
 		"Test1", "Name", "Version", "./apps/custom_tcp.lua")); err != nil {
 		t.Fatal("app Load failed:", err)
 		return
 	}
-	if err2 := engine.StartApp("Test1"); err2 != nil {
+	if err2 := appstack.StartApp("Test1"); err2 != nil {
 		t.Fatal("app Load failed:", err2)
 		return
 	}
