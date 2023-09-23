@@ -2,7 +2,6 @@ package apis
 
 import (
 	"fmt"
-	"os"
 	"regexp"
 
 	common "github.com/hootrhino/rulex/plugin/http_server/common"
@@ -21,16 +20,15 @@ import (
 * 其实这个结构体扮演的角色VO层
 *
  */
-type web_data_app struct {
-	UUID        string `json:"uuid"`      // 名称
-	Name        string `json:"name"`      // 名称
-	Version     string `json:"version"`   // 版本号
-	AutoStart   bool   `json:"autoStart"` // 自动启动
-	AppState    int    `json:"appState"`  // 状态: 1 运行中, 0 停止
-	Type        string `json:"type"`      // 默认就是lua, 留个扩展以后可能支持别的
-	Filepath    string `json:"filepath"`  // 文件路径, 是相对于main的apps目录
-	LuaSource   string `json:"luaSource"`
-	Description string `json:"description"`
+type appStackDto struct {
+	UUID        string `json:"uuid,omitempty"`      // 名称
+	Name        string `json:"name,omitempty"`      // 名称
+	Version     string `json:"version,omitempty"`   // 版本号
+	AutoStart   *bool  `json:"autoStart,omitempty"` // 自动启动
+	AppState    int    `json:"appState,omitempty"`  // 状态: 1 运行中, 0 停止
+	Type        string `json:"type,omitempty"`      // 默认就是lua, 留个扩展以后可能支持别的
+	LuaSource   string `json:"luaSource,omitempty"`
+	Description string `json:"description,omitempty"`
 }
 
 /*
@@ -46,11 +44,11 @@ func AppDetail(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400EmptyObj(err1))
 		return
 	}
-	web_data := web_data_app{
+	web_data := appStackDto{
 		UUID:      appInfo.UUID,
 		Name:      appInfo.Name,
 		Version:   appInfo.Version,
-		AutoStart: *appInfo.AutoStart,
+		AutoStart: appInfo.AutoStart,
 		Type:      "lua",
 		AppState: func() int {
 			if a := appstack.GetApp(appInfo.UUID); a != nil {
@@ -58,16 +56,8 @@ func AppDetail(c *gin.Context, ruleEngine typex.RuleX) {
 			}
 			return 0
 		}(),
-		Filepath:    appInfo.Filepath,
 		Description: appInfo.Description,
-		LuaSource: func() string {
-			path := "./apps/" + appInfo.UUID + ".lua"
-			bytes, err := os.ReadFile(path)
-			if err != nil {
-				return err.Error()
-			}
-			return string(bytes)
-		}(),
+		LuaSource:   appInfo.LuaSource,
 	}
 	c.JSON(common.HTTP_OK, common.OkWithData(web_data))
 }
@@ -77,13 +67,13 @@ func Apps(c *gin.Context, ruleEngine typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
 	// 从配置拿App
 	if uuid == "" {
-		result := []web_data_app{}
+		result := []appStackDto{}
 		for _, app := range appstack.AllApp() {
-			web_data := web_data_app{
+			web_data := appStackDto{
 				UUID:      app.UUID,
 				Name:      app.Name,
 				Version:   app.Version,
-				AutoStart: app.AutoStart,
+				AutoStart: &app.AutoStart,
 				Type:      "lua",
 				AppState: func() int {
 					if a := appstack.GetApp(app.UUID); a != nil {
@@ -91,7 +81,6 @@ func Apps(c *gin.Context, ruleEngine typex.RuleX) {
 					}
 					return 0
 				}(),
-				Filepath:    app.Filepath,
 				Description: "",
 			}
 			result = append(result, web_data)
@@ -105,11 +94,11 @@ func Apps(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err1))
 		return
 	}
-	web_data := web_data_app{
+	web_data := appStackDto{
 		UUID:      appInfo.UUID,
 		Name:      appInfo.Name,
 		Version:   appInfo.Version,
-		AutoStart: *appInfo.AutoStart,
+		AutoStart: appInfo.AutoStart,
 		Type:      "lua",
 		AppState: func() int {
 			if a := appstack.GetApp(appInfo.UUID); a != nil {
@@ -117,16 +106,8 @@ func Apps(c *gin.Context, ruleEngine typex.RuleX) {
 			}
 			return 0
 		}(),
-		Filepath:    appInfo.Filepath,
 		Description: appInfo.Description,
-		LuaSource: func() string {
-			path := "./apps/" + appInfo.UUID + ".lua"
-			bytes, err := os.ReadFile(path)
-			if err != nil {
-				return err.Error()
-			}
-			return string(bytes)
-		}(),
+		LuaSource:   appInfo.LuaSource,
 	}
 	c.JSON(common.HTTP_OK, common.OkWithData(web_data))
 
@@ -159,13 +140,7 @@ end
 `
 
 func CreateApp(c *gin.Context, ruleEngine typex.RuleX) {
-	type Form struct {
-		Name        string `json:"name"`        // 名称
-		Version     string `json:"version"`     // 版本号
-		AutoStart   bool   `json:"autoStart"`   // 自动启动
-		Description string `json:"description"` // 描述文本
-	}
-	form := Form{}
+	form := appStackDto{}
 	if err := c.ShouldBindJSON(&form); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
@@ -175,48 +150,29 @@ func CreateApp(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(fmt.Errorf("version not match server style:%s", form.Version)))
 		return
 	}
-	_, errStat := os.Stat("./apps/")
-	if os.IsNotExist(errStat) {
-		err := os.Mkdir("./apps/", 0777)
-		if err != nil {
-			c.JSON(common.HTTP_OK, common.Error400(err))
-			return
-		}
-	}
 	newUUID := utils.AppUuid()
-	// 开始在 ./apps目录下 新建文件
-	path := "./apps/" + newUUID + ".lua"
-	_, err := os.Create(path)
-	if err != nil {
-		c.JSON(common.HTTP_OK, common.Error400(err))
-		return
-	}
-	err1 := os.WriteFile(path, []byte(fmt.Sprintf(luaTemplate,
-		newUUID, form.Name, form.Version, form.Description, defaultLuaMain)), 0777)
-	if err1 != nil {
-		c.JSON(common.HTTP_OK, common.Error400(err1))
-		return
-	}
-	if err := service.InsertApp(&model.MApp{
-		UUID:        newUUID,
-		Name:        form.Name,
-		Version:     form.Version,
-		Filepath:    path,
-		AutoStart:   &form.AutoStart,
+	mAPP := &model.MApp{
+		UUID:    newUUID,
+		Name:    form.Name,
+		Version: form.Version,
+		LuaSource: fmt.Sprintf(luaTemplate,
+			newUUID, form.Name, form.Version, form.Description, defaultLuaMain),
+		AutoStart:   form.AutoStart,
 		Description: form.Description,
-	}); err != nil {
+	}
+	if err := service.InsertApp(mAPP); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
 	// 立即加载
-	if err := appstack.LoadApp(typex.NewApplication(
-		newUUID, form.Name, form.Version, path)); err != nil {
+	if err := appstack.LoadApp(
+		typex.NewApplication(newUUID, form.Name, form.Version), mAPP.LuaSource); err != nil {
 		glogger.GLogger.Error("app Load failed:", err)
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
 	// 自启动立即运行
-	if form.AutoStart {
+	if *form.AutoStart {
 		glogger.GLogger.Debugf("App autoStart allowed:%s-%s-%s", newUUID, form.Version, form.Name)
 		if err2 := appstack.StartApp(newUUID); err2 != nil {
 			glogger.GLogger.Error("App autoStart failed:", err2)
@@ -231,16 +187,7 @@ func CreateApp(c *gin.Context, ruleEngine typex.RuleX) {
 *
  */
 func UpdateApp(c *gin.Context, ruleEngine typex.RuleX) {
-	type Form struct {
-		UUID        string `json:"uuid"`        // uuid
-		Name        string `json:"name"`        // 名称
-		Version     string `json:"version"`     // 版本号
-		AutoStart   bool   `json:"autoStart"`   // 自动启动
-		LuaSource   string `json:"luaSource"`   // lua 源码
-		Description string `json:"description"` // 描述文本
-
-	}
-	form := Form{}
+	form := appStackDto{}
 	if err := c.ShouldBindJSON(&form); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
@@ -261,17 +208,11 @@ func UpdateApp(c *gin.Context, ruleEngine typex.RuleX) {
 		UUID:        form.UUID,
 		Name:        form.Name,
 		Version:     form.Version,
-		AutoStart:   &form.AutoStart,
+		AutoStart:   form.AutoStart,
+		LuaSource:   form.LuaSource,
 		Description: form.Description,
 	}); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
-		return
-	}
-	// 最后把文件内容改变了
-	path := "./apps/" + form.UUID + ".lua"
-	err1 := os.WriteFile(path, []byte(form.LuaSource), 0644)
-	if err1 != nil {
-		c.JSON(common.HTTP_OK, common.Error400(err1))
 		return
 	}
 	// 如果内存里面有, 先把内存里的清理了
@@ -284,11 +225,11 @@ func UpdateApp(c *gin.Context, ruleEngine typex.RuleX) {
 		appstack.RemoveApp(app.UUID)
 	}
 	//
-	if form.AutoStart {
+	if *form.AutoStart {
 		glogger.GLogger.Debugf("App autoStart allowed:%s-%s-%s", form.UUID, form.Version, form.Name)
 		// 必须先load后start
 		if err := appstack.LoadApp(typex.NewApplication(
-			form.UUID, form.Name, form.Version, path)); err != nil {
+			form.UUID, form.Name, form.Version), form.LuaSource); err != nil {
 			c.JSON(common.HTTP_OK, common.Error400(err))
 			return
 		}
@@ -334,7 +275,7 @@ func StartApp(c *gin.Context, ruleEngine typex.RuleX) {
 	// 如果内存里面没有，尝试从配置加载
 	glogger.GLogger.Debug("No loaded, will try to load:", uuid)
 	if err := appstack.LoadApp(typex.NewApplication(
-		mApp.UUID, mApp.Name, mApp.Version, mApp.Filepath)); err != nil {
+		mApp.UUID, mApp.Name, mApp.Version), mApp.LuaSource); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
@@ -383,10 +324,5 @@ func RemoveApp(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	// lua的文件也删了
-	if err := os.Remove("./apps/" + uuid + ".lua"); err != nil {
-		c.JSON(common.HTTP_OK, common.Error400(err))
-		return
-	}
-	c.JSON(common.HTTP_OK, common.OkWithData(fmt.Errorf("remove app successfully:%s", uuid)))
+	c.JSON(common.HTTP_OK, common.OkWithData(fmt.Sprintf("remove app successfully:%s", uuid)))
 }

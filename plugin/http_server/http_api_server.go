@@ -113,9 +113,8 @@ func initRulex(engine typex.RuleX) {
 			mApp.UUID,
 			mApp.Name,
 			mApp.Version,
-			mApp.Filepath,
 		)
-		if err := appstack.LoadApp(app); err != nil {
+		if err := appstack.LoadApp(app, mApp.LuaSource); err != nil {
 			glogger.GLogger.Error(err)
 			continue
 		}

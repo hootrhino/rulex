@@ -18,7 +18,6 @@ package appstack
 import (
 	"context"
 	"fmt"
-	"os"
 
 	lua "github.com/hootrhino/gopher-lua"
 	"github.com/hootrhino/rulex/glogger"
@@ -43,13 +42,10 @@ func AppRuntime() *AppStackRuntime {
 * 加载本地文件到lua虚拟机, 但是并不执行
 *
  */
-func LoadApp(app *typex.Application) error {
-	bytes, err := os.ReadFile(app.Filepath)
-	if err != nil {
-		return err
-	}
+func LoadApp(app *typex.Application, luaSource string) error {
+
 	// 重新读
-	app.VM().DoString(string(bytes))
+	app.VM().DoString(string(luaSource))
 	// 检查函数入口
 	AppMainVM := app.VM().GetGlobal("Main")
 	if AppMainVM == nil {

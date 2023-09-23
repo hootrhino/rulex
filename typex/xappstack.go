@@ -25,19 +25,17 @@ type Application struct {
 	Version     string             `json:"version"`   // 版本号
 	AutoStart   bool               `json:"autoStart"` // 自动启动
 	AppState    AppState           `json:"appState"`  // 状态: 1 运行中, 0 停止
-	Filepath    string             `json:"filepath"`  // 文件路径, 是相对于main的apps目录
 	luaMainFunc *lua.LFunction     `json:"-"`
 	vm          *lua.LState        `json:"-"` // lua 环境
 	ctx         context.Context    `json:"-"`
 	cancel      context.CancelFunc `json:"-"`
 }
 
-func NewApplication(uuid, Name, Version, Filepath string) *Application {
+func NewApplication(uuid, Name, Version string) *Application {
 	app := new(Application)
 	app.Name = Name
 	app.UUID = uuid
 	app.Version = Version
-	app.Filepath = Filepath
 	app.vm = lua.NewState(lua.Options{
 		RegistrySize:     p_VM_Registry_Size,
 		RegistryMaxSize:  p_VM_Registry_MaxSize,

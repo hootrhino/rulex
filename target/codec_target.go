@@ -19,7 +19,7 @@ import (
 	"fmt"
 
 	"github.com/hootrhino/rulex/common"
-	"github.com/hootrhino/rulex/rulexrpc"
+	"github.com/hootrhino/rulex/component/rulexrpc"
 	"github.com/hootrhino/rulex/typex"
 	"github.com/hootrhino/rulex/utils"
 
