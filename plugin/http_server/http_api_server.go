@@ -4,12 +4,14 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/hootrhino/rulex/component/appstack"
+	"github.com/hootrhino/rulex/component/interdb"
 	"github.com/hootrhino/rulex/core"
 	"github.com/hootrhino/rulex/plugin/http_server/apis"
-	sqlitedao "github.com/hootrhino/rulex/plugin/http_server/dao/sqlite"
 	"github.com/hootrhino/rulex/plugin/http_server/model"
 	"github.com/hootrhino/rulex/plugin/http_server/server"
 	"github.com/hootrhino/rulex/plugin/http_server/service"
+	"github.com/hootrhino/rulex/trailer"
 
 	"github.com/hootrhino/rulex/device"
 	"github.com/hootrhino/rulex/glogger"
@@ -99,7 +101,7 @@ func initRulex(engine typex.RuleX) {
 			Description: mGoods.Description,
 			Args:        mGoods.Args,
 		}
-		if err := engine.LoadGoods(newGoods); err != nil {
+		if err := trailer.Fork(newGoods); err != nil {
 			glogger.GLogger.Error("Goods load failed:", err)
 		}
 	}
@@ -113,13 +115,13 @@ func initRulex(engine typex.RuleX) {
 			mApp.Version,
 			mApp.Filepath,
 		)
-		if err := engine.LoadApp(app); err != nil {
+		if err := appstack.LoadApp(app); err != nil {
 			glogger.GLogger.Error(err)
 			continue
 		}
 		if *mApp.AutoStart {
 			glogger.GLogger.Debug("App autoStart allowed:", app.UUID, app.Version, app.Name)
-			if err1 := engine.StartApp(app.UUID); err1 != nil {
+			if err1 := appstack.StartApp(app.UUID); err1 != nil {
 				glogger.GLogger.Error("App autoStart failed:", err1)
 			}
 		}
@@ -129,13 +131,29 @@ func (hs *ApiServerPlugin) Init(config *ini.Section) error {
 	if err := utils.InIMapToStruct(config, &hs.mainConfig); err != nil {
 		return err
 	}
-	if hs.mainConfig.DbPath == "" {
-		sqlitedao.Load(server.DEFAULT_DB_PATH)
-	} else {
-		sqlitedao.Load(hs.mainConfig.DbPath)
-	}
 	server.StartRulexApiServer(hs.ruleEngine)
-	sqlitedao.Sqlite.RegisterModel()
+	interdb.RegisterModel(
+		&model.MInEnd{},
+		&model.MOutEnd{},
+		&model.MRule{},
+		&model.MUser{},
+		&model.MDevice{},
+		&model.MGoods{},
+		&model.MApp{},
+		&model.MAiBase{},
+		&model.MModbusPointPosition{},
+		&model.MVisual{},
+		&model.MGenericGroup{},
+		&model.MGenericGroupRelation{},
+		&model.MProtocolApp{},
+		&model.MNetworkConfig{},
+		&model.MWifiConfig{},
+		&model.MDataSchema{},
+		&model.MSiteConfig{},
+		&model.MIpRoute{},
+		&model.MCronTask{},
+		&model.MCronResult{},
+	)
 	server.DefaultApiServer.InitializeData()
 	initRulex(hs.ruleEngine)
 	return nil

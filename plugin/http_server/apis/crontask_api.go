@@ -2,16 +2,17 @@ package apis
 
 import (
 	"errors"
+	"os"
+	"path"
+	"strconv"
+
 	"github.com/gin-gonic/gin"
-	"github.com/hootrhino/rulex/cron_task"
-	sqlitedao "github.com/hootrhino/rulex/plugin/http_server/dao/sqlite"
+	"github.com/hootrhino/rulex/component/cron_task"
+	"github.com/hootrhino/rulex/component/interdb"
 	"github.com/hootrhino/rulex/plugin/http_server/dto"
 	"github.com/hootrhino/rulex/plugin/http_server/model"
 	"github.com/hootrhino/rulex/plugin/http_server/service"
 	"github.com/hootrhino/rulex/typex"
-	"os"
-	"path"
-	"strconv"
 )
 
 // CreateScheduleTask
@@ -46,7 +47,7 @@ func CreateScheduleTask(c *gin.Context, ruleEngine typex.RuleX) (any, error) {
 	}
 	updateTask.ID = task.ID
 
-	db := sqlitedao.Sqlite.DB()
+	db := interdb.DB()
 	tx := db.Updates(&updateTask)
 	if tx.Error != nil {
 		return nil, err
@@ -114,7 +115,7 @@ func UpdateScheduleTask(c *gin.Context, ruleEngine typex.RuleX) (any, error) {
 		}
 		updateTask.ID = task.ID
 
-		db := sqlitedao.Sqlite.DB()
+		db := interdb.DB()
 		tx := db.Updates(&updateTask)
 		if tx.Error != nil {
 			return nil, err
@@ -133,7 +134,7 @@ func EnableTask(c *gin.Context, ruleEngine typex.RuleX) (any, error) {
 		return nil, err
 	}
 	// 0. 更新数据库
-	db := sqlitedao.Sqlite.DB()
+	db := interdb.DB()
 	task := model.MCronTask{}
 	task.ID = uint(idNum)
 	task.Enable = "1"
@@ -166,7 +167,7 @@ func DisableTask(c *gin.Context, ruleEngine typex.RuleX) (any, error) {
 	}
 
 	// 0. 更新数据库
-	db := sqlitedao.Sqlite.DB()
+	db := interdb.DB()
 	task := model.MCronTask{}
 	task.ID = uint(idNum)
 	task.Enable = "0"

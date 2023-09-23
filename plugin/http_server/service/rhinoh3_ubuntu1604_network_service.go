@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	sqlitedao "github.com/hootrhino/rulex/plugin/http_server/dao/sqlite"
+	"github.com/hootrhino/rulex/component/interdb"
 	"github.com/hootrhino/rulex/plugin/http_server/model"
 )
 
@@ -80,7 +80,7 @@ func (iface *EtcNetworkConfig) GenEtcConfig() string {
 func GetAllNetConfig() ([]model.MNetworkConfig, error) {
 	// 查出前两个网卡的配置
 	ethCfg := []model.MNetworkConfig{}
-	err := sqlitedao.Sqlite.DB().
+	err := interdb.DB().
 		Where("interface=? or interface=?", "eth0", "eth1").
 		Find(&ethCfg).Error
 	return ethCfg, err

@@ -25,21 +25,17 @@ import (
 	"github.com/hootrhino/rulex/typex"
 )
 
-/*
-*
-* 管理器
-*
- */
-type AppStack struct {
-	re           typex.RuleX
-	applications map[string]*typex.Application
-}
+var __DefaultAppStackRuntime *AppStackRuntime
 
-func NewAppStack(re typex.RuleX) typex.XAppStack {
-	as := new(AppStack)
-	as.re = re
-	as.applications = map[string]*typex.Application{}
-	return as
+func InitAppStack(re typex.RuleX) *AppStackRuntime {
+	__DefaultAppStackRuntime = &AppStackRuntime{
+		RuleEngine:   re,
+		Applications: make(map[string]*typex.Application),
+	}
+	return __DefaultAppStackRuntime
+}
+func AppRuntime() *AppStackRuntime {
+	return __DefaultAppStackRuntime
 }
 
 /*
@@ -47,7 +43,7 @@ func NewAppStack(re typex.RuleX) typex.XAppStack {
 * 加载本地文件到lua虚拟机, 但是并不执行
 *
  */
-func (as *AppStack) LoadApp(app *typex.Application) error {
+func LoadApp(app *typex.Application) error {
 	bytes, err := os.ReadFile(app.Filepath)
 	if err != nil {
 		return err
@@ -66,9 +62,9 @@ func (as *AppStack) LoadApp(app *typex.Application) error {
 	fMain := *AppMainVM.(*lua.LFunction)
 	app.SetMainFunc(&fMain)
 	// 加载库
-	LoadAppLib(app, as.re)
+	LoadAppLib(app, __DefaultAppStackRuntime.RuleEngine)
 	// 加载到内存里
-	as.applications[app.UUID] = app
+	__DefaultAppStackRuntime.Applications[app.UUID] = app
 	return nil
 }
 
@@ -77,8 +73,8 @@ func (as *AppStack) LoadApp(app *typex.Application) error {
 * 启动 function Main(args) --do-some-thing-- return 0 end
 *
  */
-func (as *AppStack) StartApp(uuid string) error {
-	app, ok := as.applications[uuid]
+func StartApp(uuid string) error {
+	app, ok := __DefaultAppStackRuntime.Applications[uuid]
 	if !ok {
 		return fmt.Errorf("app not exists:%s", uuid)
 	}
@@ -122,10 +118,10 @@ func (as *AppStack) StartApp(uuid string) error {
 * 从内存里面删除APP
 *
  */
-func (as *AppStack) RemoveApp(uuid string) error {
-	if app, ok := as.applications[uuid]; ok {
+func RemoveApp(uuid string) error {
+	if app, ok := __DefaultAppStackRuntime.Applications[uuid]; ok {
 		app.Remove()
-		delete(as.applications, uuid)
+		delete(__DefaultAppStackRuntime.Applications, uuid)
 	}
 	glogger.GLogger.Info("App removed:", uuid)
 	return nil
@@ -136,10 +132,10 @@ func (as *AppStack) RemoveApp(uuid string) error {
 * 停止应用并不删除应用, 将其进程结束，状态置0
 *
  */
-func (as *AppStack) StopApp(uuid string) error {
-	if app, ok := as.applications[uuid]; ok {
+func StopApp(uuid string) error {
+	if app, ok := __DefaultAppStackRuntime.Applications[uuid]; ok {
 		app.Remove()
-		delete(as.applications, uuid)
+		delete(__DefaultAppStackRuntime.Applications, uuid)
 	}
 	glogger.GLogger.Info("App removed:", uuid)
 	return nil
@@ -150,8 +146,8 @@ func (as *AppStack) StopApp(uuid string) error {
 * 更新应用信息
 *
  */
-func (as *AppStack) UpdateApp(app typex.Application) error {
-	if oldApp, ok := as.applications[app.UUID]; ok {
+func UpdateApp(app typex.Application) error {
+	if oldApp, ok := __DefaultAppStackRuntime.Applications[app.UUID]; ok {
 		oldApp.Name = app.Name
 		oldApp.Version = app.Version
 		glogger.GLogger.Info("App updated:", app.UUID)
@@ -160,8 +156,8 @@ func (as *AppStack) UpdateApp(app typex.Application) error {
 	return fmt.Errorf("update failed, app not exists:%s", app.UUID)
 
 }
-func (as *AppStack) GetApp(uuid string) *typex.Application {
-	if app, ok := as.applications[uuid]; ok {
+func GetApp(uuid string) *typex.Application {
+	if app, ok := __DefaultAppStackRuntime.Applications[uuid]; ok {
 		return app
 	}
 	return nil
@@ -172,16 +168,19 @@ func (as *AppStack) GetApp(uuid string) *typex.Application {
 * 获取列表
 *
  */
-func (as *AppStack) ListApp() []*typex.Application {
+func AllApp() []*typex.Application {
+	return ListApp()
+}
+func ListApp() []*typex.Application {
 	apps := []*typex.Application{}
-	for _, v := range as.applications {
+	for _, v := range __DefaultAppStackRuntime.Applications {
 		apps = append(apps, v)
 	}
 	return apps
 }
 
-func (as *AppStack) Stop() {
-	for _, app := range as.applications {
+func Stop() {
+	for _, app := range __DefaultAppStackRuntime.Applications {
 		glogger.GLogger.Info("Stop App:", app.UUID)
 		app.Stop()
 		glogger.GLogger.Info("Stop App:", app.UUID, " Successfully")
@@ -189,6 +188,6 @@ func (as *AppStack) Stop() {
 	glogger.GLogger.Info("Appstack stopped")
 
 }
-func (as *AppStack) GetRuleX() typex.RuleX {
-	return as.re
+func GetRuleX() typex.RuleX {
+	return __DefaultAppStackRuntime.RuleEngine
 }

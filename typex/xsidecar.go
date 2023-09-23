@@ -4,17 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"os/exec"
-	"sync"
 )
-
-type XTrailer interface {
-	Fork(Goods) error
-	Get(addr string) *GoodsProcess
-	Save(*GoodsProcess)
-	Remove(uuid string)
-	AllGoods() *sync.Map
-	Stop()
-}
 
 /*
 *

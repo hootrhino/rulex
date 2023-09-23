@@ -2,7 +2,7 @@ package service
 
 import (
 	"github.com/hootrhino/rulex/glogger"
-	sqlitedao "github.com/hootrhino/rulex/plugin/http_server/dao/sqlite"
+	"github.com/hootrhino/rulex/component/interdb"
 	"github.com/hootrhino/rulex/plugin/http_server/model"
 )
 
@@ -13,7 +13,7 @@ import (
  */
 func UpdateWlan0Config(MNetworkConfig model.MWifiConfig) error {
 	Model := model.MWifiConfig{Interface: "wlan0"}
-	return sqlitedao.Sqlite.DB().
+	return interdb.DB().
 		Model(Model).
 		Where("interface=? and id = 1", "wlan0").
 		Updates(MNetworkConfig).Error
@@ -26,7 +26,7 @@ func UpdateWlan0Config(MNetworkConfig model.MWifiConfig) error {
  */
 func GetWlan0Config() (model.MWifiConfig, error) {
 	MWifiConfig := model.MWifiConfig{}
-	err := sqlitedao.Sqlite.DB().
+	err := interdb.DB().
 		Where("interface=? and id = 1", "wlan0").
 		Find(&MWifiConfig).Error
 	return MWifiConfig, err
@@ -40,7 +40,7 @@ func GetWlan0Config() (model.MWifiConfig, error) {
 func CheckIfAlreadyInitWlanConfig() bool {
 	sql := `SELECT count(*) FROM m_wifi_configs;`
 	count := 0
-	err := sqlitedao.Sqlite.DB().Raw(sql).Find(&count).Error
+	err := interdb.DB().Raw(sql).Find(&count).Error
 	if err != nil {
 		glogger.GLogger.Error(err)
 		return false
@@ -59,7 +59,7 @@ func CheckIfAlreadyInitWlanConfig() bool {
 func TruncateWifiConfig() error {
 	sql := `DELETE FROM m_wifi_configs;DELETE FROM sqlite_sequence WHERE name='m_wifi_configs';`
 	count := 0
-	err := sqlitedao.Sqlite.DB().Raw(sql).Find(&count).Error
+	err := interdb.DB().Raw(sql).Find(&count).Error
 	if err != nil {
 		glogger.GLogger.Error(err)
 		return err
@@ -81,7 +81,7 @@ func InitWlanConfig() error {
 		Password:  "123456",
 		Security:  "wpa2-psk",
 	}
-	err := sqlitedao.Sqlite.DB().
+	err := interdb.DB().
 		Where("interface=? and id=1", "wlan0").
 		FirstOrCreate(&wlan0).Error
 	if err != nil {

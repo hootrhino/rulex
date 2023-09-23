@@ -16,20 +16,20 @@
 package service
 
 import (
-	sqlitedao "github.com/hootrhino/rulex/plugin/http_server/dao/sqlite"
+	"github.com/hootrhino/rulex/component/interdb"
 	"github.com/hootrhino/rulex/plugin/http_server/model"
 )
 
 // 获取DataSchema列表
 func AllDataSchema() []model.MDataSchema {
 	m := []model.MDataSchema{}
-	sqlitedao.Sqlite.DB().Find(&m)
+	interdb.DB().Find(&m)
 	return m
 
 }
 func GetDataSchemaWithUUID(uuid string) (*model.MDataSchema, error) {
 	m := model.MDataSchema{}
-	if err := sqlitedao.Sqlite.DB().Where("uuid=?", uuid).First(&m).Error; err != nil {
+	if err := interdb.DB().Where("uuid=?", uuid).First(&m).Error; err != nil {
 		return nil, err
 	} else {
 		return &m, nil
@@ -38,21 +38,21 @@ func GetDataSchemaWithUUID(uuid string) (*model.MDataSchema, error) {
 
 // 删除DataSchema
 func DeleteDataSchema(uuid string) error {
-	return sqlitedao.Sqlite.DB().Where("uuid=?", uuid).Delete(&model.MDataSchema{}).Error
+	return interdb.DB().Where("uuid=?", uuid).Delete(&model.MDataSchema{}).Error
 }
 
 // 创建DataSchema
 func InsertDataSchema(DataSchema model.MDataSchema) error {
-	return sqlitedao.Sqlite.DB().Create(&DataSchema).Error
+	return interdb.DB().Create(&DataSchema).Error
 }
 
 // 更新DataSchema
 func UpdateDataSchema(DataSchema model.MDataSchema) error {
 	m := model.MDataSchema{}
-	if err := sqlitedao.Sqlite.DB().Where("uuid=?", DataSchema.UUID).First(&m).Error; err != nil {
+	if err := interdb.DB().Where("uuid=?", DataSchema.UUID).First(&m).Error; err != nil {
 		return err
 	} else {
-		sqlitedao.Sqlite.DB().Model(m).Updates(DataSchema)
+		interdb.DB().Model(m).Updates(DataSchema)
 		return nil
 	}
 }

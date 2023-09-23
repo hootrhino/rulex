@@ -24,22 +24,25 @@ import (
 	"github.com/hootrhino/rulex/typex"
 )
 
+var __DefaultTrailerRuntime *TrailerRuntime
+
 //--------------------------------------------------------------------------------------------------
 // Trailer 接口
 //--------------------------------------------------------------------------------------------------
 
-type TrailerManager struct {
+type TrailerRuntime struct {
 	ctx             context.Context
 	re              typex.RuleX
 	goodsProcessMap *sync.Map // Key: UUID, Value: GoodsProcess
 }
 
-func NewTrailerManager(re typex.RuleX) typex.XTrailer {
-	return &TrailerManager{
+func InitTrailerRuntime(re typex.RuleX) *TrailerRuntime {
+	__DefaultTrailerRuntime = &TrailerRuntime{
 		ctx:             typex.GCTX,
 		re:              re,
 		goodsProcessMap: &sync.Map{},
 	}
+	return __DefaultTrailerRuntime
 }
 
 /*
@@ -47,14 +50,14 @@ func NewTrailerManager(re typex.RuleX) typex.XTrailer {
 * 执行外
 *
  */
-func (scm *TrailerManager) Fork(goods typex.Goods) error {
+func Fork(goods typex.Goods) error {
 	glogger.GLogger.Infof("fork goods process, (uuid = %v, addr = %v, args = %v)", goods.UUID, goods.Addr, goods.Args)
 	Cmd := exec.Command(goods.Addr, goods.Args...)
 	Cmd.SysProcAttr = NewSysProcAttr()
 	Cmd.Stdin = os.Stdin
 	Cmd.Stdout = os.Stdout
 	Cmd.Stderr = os.Stderr
-	ctx, Cancel := context.WithCancel(scm.ctx)
+	ctx, Cancel := context.WithCancel(__DefaultTrailerRuntime.ctx)
 	goodsProcess := &typex.GoodsProcess{
 		Addr:        goods.Addr,
 		Uuid:        goods.UUID,
@@ -64,15 +67,15 @@ func (scm *TrailerManager) Fork(goods typex.Goods) error {
 		Ctx:         ctx,
 		Cancel:      Cancel,
 	}
-	scm.Save(goodsProcess)
-	go scm.run(goodsProcess)
-	go scm.probe(goodsProcess)
+	Save(goodsProcess)
+	go run(goodsProcess)
+	go probe(goodsProcess)
 	return nil
 }
 
 // 获取某个外挂
-func (scm *TrailerManager) Get(uuid string) *typex.GoodsProcess {
-	v, ok := scm.goodsProcessMap.Load(uuid)
+func Get(uuid string) *typex.GoodsProcess {
+	v, ok := __DefaultTrailerRuntime.goodsProcessMap.Load(uuid)
 	if ok {
 		return v.(*typex.GoodsProcess)
 	}
@@ -80,30 +83,30 @@ func (scm *TrailerManager) Get(uuid string) *typex.GoodsProcess {
 }
 
 // 保存进内存
-func (scm *TrailerManager) Save(goodsProcess *typex.GoodsProcess) {
-	scm.goodsProcessMap.Store(goodsProcess.Uuid, goodsProcess)
+func Save(goodsProcess *typex.GoodsProcess) {
+	__DefaultTrailerRuntime.goodsProcessMap.Store(goodsProcess.Uuid, goodsProcess)
 }
 
 // 从内存里删除, 删除后记得停止挂件, 通常外部配置表也要删除, 比如Sqlite
-func (scm *TrailerManager) Remove(uuid string) {
-	v, ok := scm.goodsProcessMap.Load(uuid)
+func Remove(uuid string) {
+	v, ok := __DefaultTrailerRuntime.goodsProcessMap.Load(uuid)
 	if ok {
 		(v.(*typex.GoodsProcess)).Stop()
-		scm.goodsProcessMap.Delete(uuid)
+		__DefaultTrailerRuntime.goodsProcessMap.Delete(uuid)
 	}
 }
 
 // 停止外挂运行时管理器, 这个要是停了基本上就是程序结束了
-func (scm *TrailerManager) Stop() {
-	scm.goodsProcessMap.Range(func(key, value interface{}) bool {
+func Stop() {
+	__DefaultTrailerRuntime.goodsProcessMap.Range(func(key, value interface{}) bool {
 		(value.(*typex.GoodsProcess)).Stop()
 		return true
 	})
-	scm = nil
+	__DefaultTrailerRuntime = nil
 }
 
 // Cmd.Wait() 会阻塞, 但是当控制的子进程停止的时候会继续执行, 因此可以在defer里面释放资源
-func (scm *TrailerManager) run(goodsProcess *typex.GoodsProcess) error {
+func run(goodsProcess *typex.GoodsProcess) error {
 	defer func() {
 		goodsProcess.Cancel()
 	}()
@@ -129,7 +132,7 @@ func (scm *TrailerManager) run(goodsProcess *typex.GoodsProcess) error {
 }
 
 // 探针
-func (scm *TrailerManager) probe(goodsProcess *typex.GoodsProcess) {
+func probe(goodsProcess *typex.GoodsProcess) {
 	defer func() {
 	}()
 
@@ -154,7 +157,7 @@ func (scm *TrailerManager) probe(goodsProcess *typex.GoodsProcess) {
 							goodsProcess.Args)
 					}
 				}
-				scm.Remove(goodsProcess.Uuid)
+				Remove(goodsProcess.Uuid)
 				return
 			}
 		default:
@@ -177,6 +180,6 @@ func (scm *TrailerManager) probe(goodsProcess *typex.GoodsProcess) {
 * 返回外挂MAP
 *
  */
-func (scm *TrailerManager) AllGoods() *sync.Map {
-	return scm.goodsProcessMap
+func AllGoods() *sync.Map {
+	return __DefaultTrailerRuntime.goodsProcessMap
 }

@@ -156,27 +156,6 @@ type RuleX interface {
 	//
 	RemoveDevice(string)
 	//
-	// 取一个进程
-	//
-	PickUpProcess(uuid string) *GoodsProcess
-
-	//
-	// 加载外部驱动
-	//
-	LoadGoods(goods Goods) error
-	//
-	// 删除外部驱动
-	//
-	RemoveGoods(uuid string) error
-	//
-	// 所有外部驱动
-	//
-	AllGoods() *sync.Map
-	//
-	// 获取某个外部驱动
-	//
-	GetGoods(uuid string) *Goods
-	//
 	// 重启源
 	//
 	RestartInEnd(uuid string) error
@@ -188,20 +167,6 @@ type RuleX interface {
 	// 重启设备
 	//
 	RestartDevice(uuid string) error
-	//----------------------------------------
-	// App
-	//----------------------------------------
-	AllApp() []*Application
-	LoadApp(*Application) error
-	GetApp(uuid string) *Application
-	StartApp(uuid string) error
-	StopApp(uuid string) error
-	RemoveApp(uuid string) error
-	//----------------------------------------
-	// AiBase
-	//----------------------------------------
-	GetAiBase() XAiRuntime
-	GetMetricStatistics() *MetricStatistics
 }
 
 // 拓扑接入点，比如 modbus 检测点等

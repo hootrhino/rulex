@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/hootrhino/rulex/glogger"
+	"github.com/hootrhino/rulex/component/intermetric"
 	"github.com/hootrhino/rulex/typex"
 )
 
@@ -128,9 +129,9 @@ func StartDataCacheQueue() {
 							}
 							if _, err := target.To(qd.Data); err != nil {
 								glogger.GLogger.Error(err)
-								qd.E.GetMetricStatistics().IncOutFailed()
+								intermetric.IncOutFailed()
 							} else {
-								qd.E.GetMetricStatistics().IncOut()
+								intermetric.IncOut()
 							}
 						}
 					}

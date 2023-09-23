@@ -3,10 +3,13 @@ package apis
 import (
 	"fmt"
 	"net"
+
 	// "runtime"
 	"strconv"
 	"time"
 
+	"github.com/hootrhino/rulex/component/appstack"
+	"github.com/hootrhino/rulex/component/intermetric"
 	common "github.com/hootrhino/rulex/plugin/http_server/common"
 	"github.com/hootrhino/rulex/plugin/http_server/service"
 	"github.com/hootrhino/rulex/utils"
@@ -80,7 +83,7 @@ func source_count(e typex.RuleX) map[string]int {
 		"rules":   c3,
 		"plugins": c4,
 		"devices": c5,
-		"apps":    len(e.AllApp()),
+		"apps":    len(appstack.AllApp()),
 	}
 }
 
@@ -115,7 +118,7 @@ func System(c *gin.Context, ruleEngine typex.RuleX) {
 	}
 	c.JSON(common.HTTP_OK, common.OkWithData(gin.H{
 		"hardWareInfo": hardWareInfo,
-		"statistic":    ruleEngine.GetMetricStatistics(),
+		"statistic":    intermetric.GetMetric(),
 		"sourceCount":  source_count(ruleEngine),
 	}))
 }
@@ -158,7 +161,7 @@ func Drivers(c *gin.Context, ruleEngine typex.RuleX) {
 
 // Get statistics data
 func Statistics(c *gin.Context, ruleEngine typex.RuleX) {
-	c.JSON(common.HTTP_OK, common.OkWithData(ruleEngine.GetMetricStatistics()))
+	c.JSON(common.HTTP_OK, common.OkWithData(intermetric.GetMetric()))
 }
 
 // Get statistics data

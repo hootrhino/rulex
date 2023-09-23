@@ -10,12 +10,10 @@ import (
 
 	"github.com/plgd-dev/kit/v2/log"
 	modbus "github.com/wwhai/gomodbus"
-	"gorm.io/driver/sqlite"
-	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 
 	archsupport "github.com/hootrhino/rulex/bspsupport"
 	"github.com/hootrhino/rulex/common"
+	"github.com/hootrhino/rulex/component/interdb"
 	"github.com/hootrhino/rulex/core"
 	"github.com/hootrhino/rulex/driver"
 	"github.com/hootrhino/rulex/glogger"
@@ -88,7 +86,6 @@ type generic_modbus_excel_device struct {
 	mainConfig    _GMODExcelConfig
 	locker        sync.Locker
 	retryTimes    int
-	sqliteDb      *gorm.DB
 }
 
 /*
@@ -136,17 +133,8 @@ func (mdev *generic_modbus_excel_device) Init(devId string, configMap map[string
 
 	}
 
-	// 初始哈DB
-	mdev.sqliteDb, err = gorm.Open(sqlite.Open(DEFAULT_DB_PATH), &gorm.Config{
-		Logger:                 logger.Default.LogMode(logger.Info),
-		SkipDefaultTransaction: false,
-	})
-	if err != nil {
-		return errors.New(fmt.Sprintf("Initializing sqliteDB exception: %s", err.Error()))
-	}
-
 	var list []modbusPointPosition
-	err = mdev.sqliteDb.Table("m_modbus_point_position").Where("device_uuid = ?", devId).Find(&list).Error
+	err = interdb.DB().Table("m_modbus_point_position").Where("device_uuid = ?", devId).Find(&list).Error
 	if err != nil {
 		return err
 	}
@@ -303,9 +291,6 @@ func (mdev *generic_modbus_excel_device) Stop() {
 	}
 	if mdev.driver != nil {
 		mdev.driver.Stop()
-	}
-	if mdev.sqliteDb != nil {
-		mdev.sqliteDb = nil
 	}
 	archsupport.HwPortFree(mdev.mainConfig.RtuConfig.Uart)
 }

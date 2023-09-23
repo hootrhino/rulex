@@ -6,7 +6,7 @@ import (
 
 	lua "github.com/hootrhino/gopher-lua"
 	"github.com/hootrhino/rulex/glogger"
-	"github.com/hootrhino/rulex/interqueue"
+	"github.com/hootrhino/rulex/component/interqueue"
 	"github.com/hootrhino/rulex/typex"
 )
 

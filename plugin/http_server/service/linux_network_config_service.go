@@ -5,7 +5,7 @@ import (
 	"os/exec"
 
 	"github.com/hootrhino/rulex/glogger"
-	sqlitedao "github.com/hootrhino/rulex/plugin/http_server/dao/sqlite"
+	"github.com/hootrhino/rulex/component/interdb"
 	"github.com/hootrhino/rulex/plugin/http_server/model"
 )
 
@@ -32,7 +32,7 @@ import (
  */
 func GetEth0Config() (model.MNetworkConfig, error) {
 	MNetworkConfig := model.MNetworkConfig{}
-	err := sqlitedao.Sqlite.DB().
+	err := interdb.DB().
 		Where("interface=?", "eth0").
 		Find(&MNetworkConfig).Error
 	return MNetworkConfig, err
@@ -45,7 +45,7 @@ func GetEth0Config() (model.MNetworkConfig, error) {
  */
 func GetEth1Config() (model.MNetworkConfig, error) {
 	MNetworkConfig := model.MNetworkConfig{}
-	err := sqlitedao.Sqlite.DB().
+	err := interdb.DB().
 		Where("interface=?", "eth1").
 		Find(&MNetworkConfig).Error
 	return MNetworkConfig, err
@@ -58,7 +58,7 @@ func GetEth1Config() (model.MNetworkConfig, error) {
  */
 func UpdateEth0Config(MNetworkConfig model.MNetworkConfig) error {
 	Model := model.MNetworkConfig{}
-	return sqlitedao.Sqlite.DB().
+	return interdb.DB().
 		Model(Model).
 		Where("interface=?", "eth0").
 		Updates(MNetworkConfig).Error
@@ -71,7 +71,7 @@ func UpdateEth0Config(MNetworkConfig model.MNetworkConfig) error {
  */
 func UpdateEth1Config(MNetworkConfig model.MNetworkConfig) error {
 	Model := model.MNetworkConfig{}
-	return sqlitedao.Sqlite.DB().
+	return interdb.DB().
 		Model(Model).
 		Where("interface=?", "eth1").
 		Updates(MNetworkConfig).Error
@@ -85,7 +85,7 @@ func UpdateEth1Config(MNetworkConfig model.MNetworkConfig) error {
 func CheckIfAlreadyInitNetWorkConfig() bool {
 	sql := `SELECT count(*) FROM m_network_configs;`
 	count := 0
-	err := sqlitedao.Sqlite.DB().Raw(sql).Find(&count).Error
+	err := interdb.DB().Raw(sql).Find(&count).Error
 	if err != nil {
 		glogger.GLogger.Error(err)
 		return false
@@ -106,7 +106,7 @@ func CheckIfAlreadyInitNetWorkConfig() bool {
 func TruncateConfig() error {
 	sql := `DELETE FROM m_network_configs;DELETE FROM sqlite_sequence WHERE name='m_network_configs';`
 	count := 0
-	err := sqlitedao.Sqlite.DB().Raw(sql).Find(&count).Error
+	err := interdb.DB().Raw(sql).Find(&count).Error
 	if err != nil {
 		glogger.GLogger.Error(err)
 		return err
@@ -147,11 +147,11 @@ func InitNetWorkConfig() error {
 		DHCPEnabled: &dhcp1,
 	}
 	var err error
-	err = sqlitedao.Sqlite.DB().Where("interface=? and id=1", "eth0").FirstOrCreate(&eth0).Error
+	err = interdb.DB().Where("interface=? and id=1", "eth0").FirstOrCreate(&eth0).Error
 	if err != nil {
 		return err
 	}
-	err = sqlitedao.Sqlite.DB().Where("interface=? and id=2", "eth1").FirstOrCreate(&eth1).Error
+	err = interdb.DB().Where("interface=? and id=2", "eth1").FirstOrCreate(&eth1).Error
 	if err != nil {
 		return err
 	}

@@ -2,11 +2,6 @@ package cron_task
 
 import (
 	"fmt"
-	"github.com/hootrhino/rulex/glogger"
-	sqlitedao "github.com/hootrhino/rulex/plugin/http_server/dao/sqlite"
-	"github.com/hootrhino/rulex/plugin/http_server/model"
-	"github.com/robfig/cron/v3"
-	"github.com/sirupsen/logrus"
 	"os"
 	"os/exec"
 	"path"
@@ -14,6 +9,12 @@ import (
 	"strconv"
 	"sync"
 	"time"
+
+	"github.com/hootrhino/rulex/glogger"
+	"github.com/hootrhino/rulex/component/interdb"
+	"github.com/hootrhino/rulex/plugin/http_server/model"
+	"github.com/robfig/cron/v3"
+	"github.com/sirupsen/logrus"
 )
 
 var cronManager *CronManager
@@ -146,7 +147,7 @@ func (m *CronManager) AddTask(task model.MCronTask) error {
 }
 
 func saveResults(m *model.MCronResult) {
-	db := sqlitedao.Sqlite.DB()
+	db := interdb.DB()
 	if m.ID == 0 {
 		db.Create(m)
 	} else {

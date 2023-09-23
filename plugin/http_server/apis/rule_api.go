@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/hootrhino/rulex/glogger"
-	"github.com/hootrhino/rulex/interqueue"
+	"github.com/hootrhino/rulex/component/interqueue"
 	common "github.com/hootrhino/rulex/plugin/http_server/common"
 	"github.com/hootrhino/rulex/plugin/http_server/model"
 	"github.com/hootrhino/rulex/plugin/http_server/server"

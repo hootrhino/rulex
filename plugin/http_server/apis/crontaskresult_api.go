@@ -1,12 +1,13 @@
 package apis
 
 import (
+	"strconv"
+
 	"github.com/gin-gonic/gin"
-	sqlitedao "github.com/hootrhino/rulex/plugin/http_server/dao/sqlite"
+	"github.com/hootrhino/rulex/component/interdb"
 	"github.com/hootrhino/rulex/plugin/http_server/model"
 	"github.com/hootrhino/rulex/plugin/http_server/service"
 	"github.com/hootrhino/rulex/typex"
-	"strconv"
 )
 
 func PageCronTaskResult(c *gin.Context, ruleEngine typex.RuleX) (any, error) {
@@ -25,7 +26,7 @@ func PageCronTaskResult(c *gin.Context, ruleEngine typex.RuleX) (any, error) {
 		cronResult.TaskId = uint(atoi)
 	}
 
-	db := sqlitedao.Sqlite.DB()
+	db := interdb.DB()
 	var count int64
 	t := db.Model(&model.MCronResult{}).Where(&model.MCronResult{}, &cronResult).Count(&count)
 	if t.Error != nil {

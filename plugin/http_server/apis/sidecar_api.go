@@ -4,6 +4,7 @@ import (
 	common "github.com/hootrhino/rulex/plugin/http_server/common"
 	"github.com/hootrhino/rulex/plugin/http_server/model"
 	"github.com/hootrhino/rulex/plugin/http_server/service"
+	"github.com/hootrhino/rulex/trailer"
 	"github.com/hootrhino/rulex/typex"
 	"github.com/hootrhino/rulex/utils"
 
@@ -19,14 +20,14 @@ func Goods(c *gin.Context, ruleEngine typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
 	if uuid == "" {
 		data := []*typex.Goods{}
-		ruleEngine.AllGoods().Range(func(key, value interface{}) bool {
+		trailer.AllGoods().Range(func(key, value interface{}) bool {
 			v := value.(*typex.Goods)
 			data = append(data, v)
 			return true
 		})
 		c.JSON(common.HTTP_OK, common.OkWithData(data))
 	} else {
-		c.JSON(common.HTTP_OK, common.OkWithData(ruleEngine.GetGoods(uuid)))
+		c.JSON(common.HTTP_OK, common.OkWithData(trailer.Get(uuid)))
 	}
 }
 
@@ -43,7 +44,7 @@ func DeleteGoods(c *gin.Context, ruleEngine typex.RuleX) {
 	} else {
 		// 数据库和内存都要删除
 		service.DeleteGoods(goods.UUID)
-		ruleEngine.RemoveGoods(goods.UUID)
+		trailer.Remove(goods.UUID)
 		c.JSON(common.HTTP_OK, common.Ok())
 	}
 }
@@ -81,7 +82,7 @@ func CreateGoods(c *gin.Context, ruleEngine typex.RuleX) {
 		Description: mGoods.Description,
 		Args:        mGoods.Args,
 	}
-	if err := ruleEngine.LoadGoods(goods); err != nil {
+	if err := trailer.Fork(goods); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}

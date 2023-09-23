@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	lua "github.com/hootrhino/gopher-lua"
+	"github.com/hootrhino/rulex/component/aibase"
 	"github.com/hootrhino/rulex/typex"
 )
 
@@ -49,7 +50,7 @@ func Infer(rx typex.RuleX) func(*lua.LState) int {
 				inputTensor = append(inputTensor, row)
 			}
 		})
-		ai := rx.GetAiBase()
+		ai := aibase.AIBaseRuntime()
 		if err != nil {
 			l.Push(lua.LNil)                 // data
 			l.Push(lua.LString(err.Error())) //err
@@ -57,7 +58,7 @@ func Infer(rx typex.RuleX) func(*lua.LState) int {
 		}
 		InferResult := [][]float64{}
 		if ai != nil {
-			if xai := ai.GetAi(uuid); xai != nil {
+			if xai := aibase.GetAi(uuid); xai != nil {
 				InferResult = xai.XAI.Infer(inputTensor)
 			}
 		}

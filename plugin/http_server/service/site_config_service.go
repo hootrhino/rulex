@@ -16,13 +16,13 @@
 package service
 
 import (
-	sqlitedao "github.com/hootrhino/rulex/plugin/http_server/dao/sqlite"
+	"github.com/hootrhino/rulex/component/interdb"
 	"github.com/hootrhino/rulex/plugin/http_server/model"
 )
 
 func GetSiteConfig() (model.MSiteConfig, error) {
 	m := model.MSiteConfig{}
-	if err := sqlitedao.Sqlite.DB().Where("uuid=0").First(&m).Error; err != nil {
+	if err := interdb.DB().Where("uuid=0").First(&m).Error; err != nil {
 		return model.MSiteConfig{}, err
 	} else {
 		return m, nil
@@ -32,16 +32,16 @@ func GetSiteConfig() (model.MSiteConfig, error) {
 // 创建 SiteConfig
 func InitSiteConfig(SiteConfig model.MSiteConfig) error {
 	SiteConfig.UUID = "0" // 默认就一个配置
-	return sqlitedao.Sqlite.DB().FirstOrCreate(&SiteConfig).Error
+	return interdb.DB().FirstOrCreate(&SiteConfig).Error
 }
 
 // 更新 SiteConfig
 func UpdateSiteConfig(SiteConfig model.MSiteConfig) error {
 	m := model.MSiteConfig{}
-	if err := sqlitedao.Sqlite.DB().Where("uuid=0").First(&m).Error; err != nil {
+	if err := interdb.DB().Where("uuid=0").First(&m).Error; err != nil {
 		return err
 	} else {
-		sqlitedao.Sqlite.DB().Model(m).Updates(SiteConfig)
+		interdb.DB().Model(m).Updates(SiteConfig)
 		return nil
 	}
 }

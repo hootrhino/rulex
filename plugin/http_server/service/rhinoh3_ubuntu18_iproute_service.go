@@ -21,7 +21,7 @@ import (
 	"strings"
 
 	archsupport "github.com/hootrhino/rulex/bspsupport"
-	sqlitedao "github.com/hootrhino/rulex/plugin/http_server/dao/sqlite"
+	"github.com/hootrhino/rulex/component/interdb"
 	"github.com/hootrhino/rulex/plugin/http_server/model"
 )
 
@@ -46,7 +46,7 @@ func UpdateDefaultRoute(newGatewayIP, newIface string) error {
 
 func IpRouteDetail() (model.MIpRoute, error) {
 	m := model.MIpRoute{}
-	if err := sqlitedao.Sqlite.DB().Where("uuid=?", "0").First(&m).Error; err != nil {
+	if err := interdb.DB().Where("uuid=?", "0").First(&m).Error; err != nil {
 		return model.MIpRoute{}, err
 	} else {
 		return m, nil
@@ -58,7 +58,7 @@ func GetDefaultIpRoute() (model.MIpRoute, error) {
 
 // 更新 IpRoute
 func UpdateIpRoute(IpRoute model.MIpRoute) error {
-	return sqlitedao.Sqlite.DB().Model(IpRoute).Where("uuid=?", "0").Updates(IpRoute).Error
+	return interdb.DB().Model(IpRoute).Where("uuid=?", "0").Updates(IpRoute).Error
 }
 
 // 每次启动的时候换成最新配置的路由, 默认是ETH1 192.168.64.0
@@ -75,7 +75,7 @@ func InitDefaultIpRoute() error {
 		IfaceFrom:   "eth1", // 默认将Eth1网口和USB 4G网卡桥接起来, 这样就可以实现4G上网
 		IfaceTo:     "usb0",
 	}
-	if err := sqlitedao.Sqlite.DB().Model(m).
+	if err := interdb.DB().Model(m).
 		Where("uuid=?", "0").
 		FirstOrCreate(&m).Error; err != nil {
 		return err

@@ -23,12 +23,14 @@ import (
 	"sync"
 
 	lua "github.com/hootrhino/gopher-lua"
-	"github.com/hootrhino/rulex/aibase"
-	"github.com/hootrhino/rulex/appstack"
+	"github.com/hootrhino/rulex/component/aibase"
+	"github.com/hootrhino/rulex/component/appstack"
 	"github.com/hootrhino/rulex/core"
 	"github.com/hootrhino/rulex/device"
 	"github.com/hootrhino/rulex/glogger"
-	"github.com/hootrhino/rulex/interqueue"
+	"github.com/hootrhino/rulex/component/interdb"
+	"github.com/hootrhino/rulex/component/intermetric"
+	"github.com/hootrhino/rulex/component/interqueue"
 	"github.com/hootrhino/rulex/source"
 	"github.com/hootrhino/rulex/target"
 	"github.com/hootrhino/rulex/trailer"
@@ -42,32 +44,27 @@ import (
 * 全局默认引擎，未来主要留给外部使用
 *
  */
-var DefaultRuleEngine typex.RuleX
+var __DefaultRuleEngine typex.RuleX
+
+const __DEFAULT_DB_PATH string = "./rulex.db"
 
 // 规则引擎
 type RuleEngine struct {
-	Hooks   *sync.Map          `json:"hooks"`
-	Rules   *sync.Map          `json:"rules"`
-	Plugins *sync.Map          `json:"plugins"`
-	InEnds  *sync.Map          `json:"inends"`
-	OutEnds *sync.Map          `json:"outends"`
-	Drivers *sync.Map          `json:"drivers"`
-	Devices *sync.Map          `json:"devices"`
-	Config  *typex.RulexConfig `json:"config"`
-	// 规划在0.7的时候将下面这些组件和RULE Engine解耦合
-	// |||||||||||||||||||||||||||||||||||||||||||||
-	// vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-	Trailer           typex.XTrailer          `json:"-"` // 待迁移组件
-	AppStack          typex.XAppStack         `json:"-"` // 待迁移组件
-	AiBaseRuntime     typex.XAiRuntime        `json:"-"` // 待迁移组件
-	DeviceTypeManager typex.DeviceRegistry    `json:"-"` // 待迁移组件
-	SourceTypeManager typex.SourceRegistry    `json:"-"` // 待迁移组件
-	TargetTypeManager typex.TargetRegistry    `json:"-"` // 待迁移组件
-	MetricStatistics  *typex.MetricStatistics // 待迁移组件
+	Hooks             *sync.Map            `json:"hooks"`
+	Rules             *sync.Map            `json:"rules"`
+	Plugins           *sync.Map            `json:"plugins"`
+	InEnds            *sync.Map            `json:"inends"`
+	OutEnds           *sync.Map            `json:"outends"`
+	Drivers           *sync.Map            `json:"drivers"`
+	Devices           *sync.Map            `json:"devices"`
+	Config            *typex.RulexConfig   `json:"config"`
+	DeviceTypeManager typex.DeviceRegistry `json:"-"` // 待迁移组件
+	SourceTypeManager typex.SourceRegistry `json:"-"` // 待迁移组件
+	TargetTypeManager typex.TargetRegistry `json:"-"` // 待迁移组件
 }
 
 func InitRuleEngine(config typex.RulexConfig) typex.RuleX {
-	DefaultRuleEngine := &RuleEngine{
+	__DefaultRuleEngine := &RuleEngine{
 		DeviceTypeManager: core.NewDeviceTypeManager(),
 		SourceTypeManager: core.NewSourceTypeManager(),
 		TargetTypeManager: core.NewTargetTypeManager(),
@@ -79,24 +76,22 @@ func InitRuleEngine(config typex.RulexConfig) typex.RuleX {
 		Drivers:           &sync.Map{},
 		Devices:           &sync.Map{},
 		Config:            &config,
-		MetricStatistics:  typex.NewMetricStatistics(),
 	}
+	// Internal DB
+	interdb.Init(__DefaultRuleEngine, __DEFAULT_DB_PATH)
+	// Internal Metric
+	intermetric.InitInternalMetric()
 	// trailer
-	DefaultRuleEngine.Trailer = trailer.NewTrailerManager(DefaultRuleEngine)
+	trailer.InitTrailerRuntime(__DefaultRuleEngine)
 	// lua appstack manager
-	DefaultRuleEngine.AppStack = appstack.NewAppStack(DefaultRuleEngine)
+	appstack.InitAppStack(__DefaultRuleEngine)
 	// current only support Internal ai
-	DefaultRuleEngine.AiBaseRuntime = aibase.NewAIRuntime(DefaultRuleEngine)
-	// Queue
-	interqueue.InitDataCacheQueue(DefaultRuleEngine, core.GlobalConfig.MaxQueueSize)
-	return DefaultRuleEngine
+	aibase.InitAIRuntime(__DefaultRuleEngine)
+	// Internal Queue
+	interqueue.InitDataCacheQueue(__DefaultRuleEngine, core.GlobalConfig.MaxQueueSize)
+	return __DefaultRuleEngine
 }
-func (e *RuleEngine) GetMetricStatistics() *typex.MetricStatistics {
-	return e.MetricStatistics
-}
-func (e *RuleEngine) GetAiBase() typex.XAiRuntime {
-	return e.AiBaseRuntime
-}
+
 func (e *RuleEngine) Start() *typex.RulexConfig {
 	e.InitDeviceTypeManager()
 	e.InitSourceTypeManager()
@@ -172,9 +167,9 @@ func (e *RuleEngine) Stop() {
 		return true
 	})
 	// 外挂停了
-	e.Trailer.Stop()
+	trailer.Stop()
 	// 所有的APP停了
-	e.AppStack.Stop()
+	appstack.Stop()
 	glogger.GLogger.Info("[√] Stop Rulex successfully")
 	if err := glogger.Close(); err != nil {
 		fmt.Println("Close logger error: ", err)
@@ -389,7 +384,7 @@ func (e *RuleEngine) SnapshotDump() string {
 		"outends":    outends,
 		"devices":    devices,
 		"drivers":    drivers,
-		"statistics": e.MetricStatistics,
+		"statistics": intermetric.GetMetric(),
 		"system":     system,
 		"config":     core.GlobalConfig,
 	}
@@ -398,46 +393,6 @@ func (e *RuleEngine) SnapshotDump() string {
 		glogger.GLogger.Error(err)
 	}
 	return string(b)
-}
-
-/*
-*
-* 加载外部程序
-*
- */
-func (e *RuleEngine) LoadGoods(goods typex.Goods) error {
-	return e.Trailer.Fork(goods)
-}
-
-// 删除外部驱动
-func (e *RuleEngine) RemoveGoods(uuid string) error {
-	if e.GetGoods(uuid) != nil {
-		e.Trailer.Remove(uuid)
-		return nil
-	}
-	return fmt.Errorf("goods %v not exists", uuid)
-}
-
-// 所有外部驱动
-func (e *RuleEngine) AllGoods() *sync.Map {
-	return e.Trailer.AllGoods()
-}
-
-// 获取某个外部驱动信息
-func (e *RuleEngine) GetGoods(uuid string) *typex.Goods {
-	goodsProcess := e.Trailer.Get(uuid)
-	goods := typex.Goods{
-		UUID:        goodsProcess.Uuid,
-		Addr:        goodsProcess.Addr,
-		Description: goodsProcess.Description,
-		Args:        goodsProcess.Args,
-	}
-	return &goods
-}
-
-// 取一个进程
-func (e *RuleEngine) PickUpProcess(uuid string) *typex.GoodsProcess {
-	return e.Trailer.Get(uuid)
 }
 
 // 重启源

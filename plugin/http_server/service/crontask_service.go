@@ -2,13 +2,14 @@ package service
 
 import (
 	"encoding/json"
-	sqlitedao "github.com/hootrhino/rulex/plugin/http_server/dao/sqlite"
+
+	"github.com/hootrhino/rulex/component/interdb"
 	"github.com/hootrhino/rulex/plugin/http_server/dto"
 	"github.com/hootrhino/rulex/plugin/http_server/model"
 )
 
 func CreateScheduleTask(data *dto.CronTaskCreateDTO) (*model.MCronTask, error) {
-	db := sqlitedao.Sqlite.DB()
+	db := interdb.DB()
 	task := model.MCronTask{
 		Name:     data.Name,
 		CronExpr: data.CronExpr,
@@ -32,7 +33,7 @@ func CreateScheduleTask(data *dto.CronTaskCreateDTO) (*model.MCronTask, error) {
 }
 
 func DeleteScheduleTask(id uint) error {
-	db := sqlitedao.Sqlite.DB()
+	db := interdb.DB()
 	task := model.MCronTask{}
 	task.ID = id
 	tx := db.Delete(&task)
@@ -40,7 +41,7 @@ func DeleteScheduleTask(id uint) error {
 }
 
 func PageScheduleTask(page model.PageRequest, task model.MCronTask) (any, error) {
-	db := sqlitedao.Sqlite.DB()
+	db := interdb.DB()
 	var records []model.MCronTask
 	var count int64
 	t := db.Model(&model.MCronTask{}).Where(&model.MCronTask{}, &task).Count(&count)
@@ -62,7 +63,7 @@ func UpdateScheduleTask(data *dto.CronTaskUpdateDTO) (*model.MCronTask, error) {
 		IsRoot:   data.IsRoot,
 	}
 
-	db := sqlitedao.Sqlite.DB()
+	db := interdb.DB()
 	t := db.Model(&task)
 	if data.Args != nil {
 		task.Args = *data.Args

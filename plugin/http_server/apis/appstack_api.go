@@ -10,7 +10,7 @@ import (
 	"github.com/hootrhino/rulex/plugin/http_server/service"
 
 	"github.com/gin-gonic/gin"
-	"github.com/hootrhino/rulex/appstack"
+	"github.com/hootrhino/rulex/component/appstack"
 	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/typex"
 	"github.com/hootrhino/rulex/utils"
@@ -53,7 +53,7 @@ func AppDetail(c *gin.Context, ruleEngine typex.RuleX) {
 		AutoStart: *appInfo.AutoStart,
 		Type:      "lua",
 		AppState: func() int {
-			if a := ruleEngine.GetApp(appInfo.UUID); a != nil {
+			if a := appstack.GetApp(appInfo.UUID); a != nil {
 				return int(a.AppState)
 			}
 			return 0
@@ -78,7 +78,7 @@ func Apps(c *gin.Context, ruleEngine typex.RuleX) {
 	// 从配置拿App
 	if uuid == "" {
 		result := []web_data_app{}
-		for _, app := range ruleEngine.AllApp() {
+		for _, app := range appstack.AllApp() {
 			web_data := web_data_app{
 				UUID:      app.UUID,
 				Name:      app.Name,
@@ -86,7 +86,7 @@ func Apps(c *gin.Context, ruleEngine typex.RuleX) {
 				AutoStart: app.AutoStart,
 				Type:      "lua",
 				AppState: func() int {
-					if a := ruleEngine.GetApp(app.UUID); a != nil {
+					if a := appstack.GetApp(app.UUID); a != nil {
 						return int(a.AppState)
 					}
 					return 0
@@ -112,7 +112,7 @@ func Apps(c *gin.Context, ruleEngine typex.RuleX) {
 		AutoStart: *appInfo.AutoStart,
 		Type:      "lua",
 		AppState: func() int {
-			if a := ruleEngine.GetApp(appInfo.UUID); a != nil {
+			if a := appstack.GetApp(appInfo.UUID); a != nil {
 				return int(a.AppState)
 			}
 			return 0
@@ -209,7 +209,7 @@ func CreateApp(c *gin.Context, ruleEngine typex.RuleX) {
 		return
 	}
 	// 立即加载
-	if err := ruleEngine.LoadApp(typex.NewApplication(
+	if err := appstack.LoadApp(typex.NewApplication(
 		newUUID, form.Name, form.Version, path)); err != nil {
 		glogger.GLogger.Error("app Load failed:", err)
 		c.JSON(common.HTTP_OK, common.Error400(err))
@@ -218,7 +218,7 @@ func CreateApp(c *gin.Context, ruleEngine typex.RuleX) {
 	// 自启动立即运行
 	if form.AutoStart {
 		glogger.GLogger.Debugf("App autoStart allowed:%s-%s-%s", newUUID, form.Version, form.Name)
-		if err2 := ruleEngine.StartApp(newUUID); err2 != nil {
+		if err2 := appstack.StartApp(newUUID); err2 != nil {
 			glogger.GLogger.Error("App autoStart failed:", err2)
 		}
 	}
@@ -275,24 +275,24 @@ func UpdateApp(c *gin.Context, ruleEngine typex.RuleX) {
 		return
 	}
 	// 如果内存里面有, 先把内存里的清理了
-	if app := ruleEngine.GetApp(form.UUID); app != nil {
+	if app := appstack.GetApp(form.UUID); app != nil {
 		glogger.GLogger.Debug("Already loaded, will try to stop:", form.UUID)
 		// 已经启动了就不能再启动
 		if app.AppState == 1 {
-			ruleEngine.StopApp(form.UUID)
+			appstack.StopApp(form.UUID)
 		}
-		ruleEngine.RemoveApp(app.UUID)
+		appstack.RemoveApp(app.UUID)
 	}
 	//
 	if form.AutoStart {
 		glogger.GLogger.Debugf("App autoStart allowed:%s-%s-%s", form.UUID, form.Version, form.Name)
 		// 必须先load后start
-		if err := ruleEngine.LoadApp(typex.NewApplication(
+		if err := appstack.LoadApp(typex.NewApplication(
 			form.UUID, form.Name, form.Version, path)); err != nil {
 			c.JSON(common.HTTP_OK, common.Error400(err))
 			return
 		}
-		if err2 := ruleEngine.StartApp(form.UUID); err2 != nil {
+		if err2 := appstack.StartApp(form.UUID); err2 != nil {
 			glogger.GLogger.Error("App autoStart failed:", err2)
 			c.JSON(common.HTTP_OK, common.Error400(err2))
 			return
@@ -316,14 +316,14 @@ func StartApp(c *gin.Context, ruleEngine typex.RuleX) {
 		return
 	}
 	// 如果内存里面有, 判断状态
-	if app := ruleEngine.GetApp(uuid); app != nil {
+	if app := appstack.GetApp(uuid); app != nil {
 		glogger.GLogger.Debug("Already loaded, will try to start:", uuid)
 		// 已经启动了就不能再启动
 		if app.AppState == 1 {
 			c.JSON(common.HTTP_OK, common.Error400(fmt.Errorf("app is running now:%s", uuid)))
 		}
 		if app.AppState == 0 {
-			if err := ruleEngine.StartApp(uuid); err != nil {
+			if err := appstack.StartApp(uuid); err != nil {
 				c.JSON(common.HTTP_OK, common.Error400(err))
 			} else {
 				c.JSON(common.HTTP_OK, common.OkWithData("app start successfully:"+uuid))
@@ -333,13 +333,13 @@ func StartApp(c *gin.Context, ruleEngine typex.RuleX) {
 	}
 	// 如果内存里面没有，尝试从配置加载
 	glogger.GLogger.Debug("No loaded, will try to load:", uuid)
-	if err := ruleEngine.LoadApp(typex.NewApplication(
+	if err := appstack.LoadApp(typex.NewApplication(
 		mApp.UUID, mApp.Name, mApp.Version, mApp.Filepath)); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
 	glogger.GLogger.Debug("app loaded, will try to start:", uuid)
-	if err := ruleEngine.StartApp(uuid); err != nil {
+	if err := appstack.StartApp(uuid); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
@@ -349,13 +349,13 @@ func StartApp(c *gin.Context, ruleEngine typex.RuleX) {
 // 停止, 但是不删除，仅仅是把虚拟机进程给杀死
 func StopApp(c *gin.Context, ruleEngine typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
-	if app := ruleEngine.GetApp(uuid); app != nil {
+	if app := appstack.GetApp(uuid); app != nil {
 		if app.AppState == 0 {
 			c.JSON(common.HTTP_OK, common.Error400(fmt.Errorf("app is stopping now:%s", uuid)))
 			return
 		}
 		if app.AppState == 1 {
-			if err := ruleEngine.StopApp(uuid); err != nil {
+			if err := appstack.StopApp(uuid); err != nil {
 				c.JSON(common.HTTP_OK, common.Error400(err))
 				return
 			}
@@ -370,11 +370,11 @@ func StopApp(c *gin.Context, ruleEngine typex.RuleX) {
 func RemoveApp(c *gin.Context, ruleEngine typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
 	// 先把正在运行的给停了
-	if app := ruleEngine.GetApp(uuid); app != nil {
+	if app := appstack.GetApp(uuid); app != nil {
 		app.Remove()
 	}
 	// 内存给清理了
-	if err := ruleEngine.RemoveApp(uuid); err != nil {
+	if err := appstack.RemoveApp(uuid); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}

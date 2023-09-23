@@ -22,12 +22,17 @@ import (
 	"github.com/hootrhino/rulex/typex"
 )
 
-func NewAIRuntime(re typex.RuleX) typex.XAiRuntime {
-	ai := new(AIRuntime)
-	ai.re = re
-	ai.aiBases = make(map[string]*typex.AI)
+var __DefaultAIRuntime *AIRuntime
+
+func AIBaseRuntime() *AIRuntime {
+	return __DefaultAIRuntime
+}
+func InitAIRuntime(re typex.RuleX) *AIRuntime {
+	__DefaultAIRuntime = new(AIRuntime)
+	__DefaultAIRuntime.RuleEngine = re
+	__DefaultAIRuntime.AiBases = make(map[string]*typex.AI)
 	// 预加载内置模型
-	ai.LoadAi(&typex.AI{
+	LoadAi(&typex.AI{
 		UUID:      "BODY_POSE_RECOGNITION",
 		Name:      "人体姿态识别",
 		Type:      typex.BODY_POSE_RECOGNITION,
@@ -43,7 +48,7 @@ func NewAIRuntime(re typex.RuleX) typex.XAiRuntime {
 		},
 		Description: "一个轻量级人体姿态识别模型",
 	})
-	return ai
+	return __DefaultAIRuntime
 }
 
 /*
@@ -53,58 +58,58 @@ func NewAIRuntime(re typex.RuleX) typex.XAiRuntime {
  */
 
 type AIRuntime struct {
-	re      typex.RuleX
-	aiBases map[string]*typex.AI
+	RuleEngine typex.RuleX
+	AiBases    map[string]*typex.AI
 }
 
-func (airt *AIRuntime) GetRuleX() typex.RuleX {
-	return airt.re
+func GetRuleX() typex.RuleX {
+	return __DefaultAIRuntime.RuleEngine
 }
-func (airt *AIRuntime) ListAi() []*typex.AI {
+func ListAi() []*typex.AI {
 	ll := []*typex.AI{}
-	for _, v := range airt.aiBases {
+	for _, v := range __DefaultAIRuntime.AiBases {
 		ll = append(ll, v)
 	}
 	return ll
 }
-func (airt *AIRuntime) LoadAi(Ai *typex.AI) error {
+func LoadAi(Ai *typex.AI) error {
 	if Ai.Type == typex.BODY_POSE_RECOGNITION {
-		Ai.XAI = NewBodyPoseRecognition(airt.re)
-		airt.aiBases[Ai.UUID] = Ai
+		Ai.XAI = NewBodyPoseRecognition(__DefaultAIRuntime.RuleEngine)
+		__DefaultAIRuntime.AiBases[Ai.UUID] = Ai
 	}
 	return fmt.Errorf("not support:%s", Ai.Type)
 }
-func (airt *AIRuntime) GetAi(uuid string) *typex.AI {
-	return airt.aiBases[uuid]
+func GetAi(uuid string) *typex.AI {
+	return __DefaultAIRuntime.AiBases[uuid]
 }
-func (airt *AIRuntime) RemoveAi(uuid string) error {
-	if v, ok := airt.aiBases[uuid]; ok {
+func RemoveAi(uuid string) error {
+	if v, ok := __DefaultAIRuntime.AiBases[uuid]; ok {
 		// 内建类型不可删除
 		if v.IsBuildIn {
 			return fmt.Errorf("can not remove build-in aibase")
 		}
-		delete(airt.aiBases, uuid)
+		delete(__DefaultAIRuntime.AiBases, uuid)
 		glogger.GLogger.Error("XAI.Start deleted")
 		return nil
 	}
 	return fmt.Errorf("aibase not exists:" + uuid)
 
 }
-func (airt *AIRuntime) UpdateAi(Ai *typex.AI) error {
-	if v, ok := airt.aiBases[Ai.UUID]; ok {
+func UpdateAi(Ai *typex.AI) error {
+	if v, ok := __DefaultAIRuntime.AiBases[Ai.UUID]; ok {
 		// 内建类型不可修改
 		if v.IsBuildIn {
 			return fmt.Errorf("can not change 'BUILDIN' aibase")
 		}
-		airt.aiBases[Ai.UUID] = Ai
+		__DefaultAIRuntime.AiBases[Ai.UUID] = Ai
 		glogger.GLogger.Error("XAI.Start updated")
 
 		return nil
 	}
 	return fmt.Errorf("aibase not exists:" + Ai.UUID)
 }
-func (airt *AIRuntime) StartAi(uuid string) error {
-	if ai, ok := airt.aiBases[uuid]; ok {
+func StartAi(uuid string) error {
+	if ai, ok := __DefaultAIRuntime.AiBases[uuid]; ok {
 		// 内建类型不可修改
 		if ai.IsBuildIn {
 			return fmt.Errorf("can not change 'BUILDIN' aibase")
@@ -117,8 +122,8 @@ func (airt *AIRuntime) StartAi(uuid string) error {
 	}
 	return nil
 }
-func (airt *AIRuntime) StopAi(uuid string) error {
-	if ai, ok := airt.aiBases[uuid]; ok {
+func StopAi(uuid string) error {
+	if ai, ok := __DefaultAIRuntime.AiBases[uuid]; ok {
 		// 内建类型不可修改
 		if ai.IsBuildIn {
 			return fmt.Errorf("can not change 'BUILDIN' aibase")
@@ -129,6 +134,6 @@ func (airt *AIRuntime) StopAi(uuid string) error {
 	}
 	return nil
 }
-func (airt *AIRuntime) Stop() {
+func Stop() {
 	glogger.GLogger.Info("AIRuntime stopped")
 }

@@ -30,7 +30,6 @@ func ContextUrl(path string) string {
 }
 
 const API_V1_ROOT string = "/api/v1/"
-const DEFAULT_DB_PATH string = "./rulex.db"
 
 // 全局API Server
 var DefaultApiServer *RulexApiServer
