@@ -5,7 +5,7 @@ import (
 	"context"
 
 	"github.com/hootrhino/rulex/glogger"
-	"github.com/hootrhino/rulex/trailer"
+	"github.com/hootrhino/rulex/component/trailer"
 	"github.com/hootrhino/rulex/typex"
 
 	"google.golang.org/grpc"

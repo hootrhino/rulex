@@ -6,12 +6,12 @@ import (
 
 	"github.com/hootrhino/rulex/component/appstack"
 	"github.com/hootrhino/rulex/component/interdb"
+	"github.com/hootrhino/rulex/component/trailer"
 	"github.com/hootrhino/rulex/core"
 	"github.com/hootrhino/rulex/plugin/http_server/apis"
 	"github.com/hootrhino/rulex/plugin/http_server/model"
 	"github.com/hootrhino/rulex/plugin/http_server/server"
 	"github.com/hootrhino/rulex/plugin/http_server/service"
-	"github.com/hootrhino/rulex/trailer"
 
 	"github.com/hootrhino/rulex/device"
 	"github.com/hootrhino/rulex/glogger"

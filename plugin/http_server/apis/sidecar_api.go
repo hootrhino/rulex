@@ -1,10 +1,10 @@
 package apis
 
 import (
+	"github.com/hootrhino/rulex/component/trailer"
 	common "github.com/hootrhino/rulex/plugin/http_server/common"
 	"github.com/hootrhino/rulex/plugin/http_server/model"
 	"github.com/hootrhino/rulex/plugin/http_server/service"
-	"github.com/hootrhino/rulex/trailer"
 	"github.com/hootrhino/rulex/typex"
 	"github.com/hootrhino/rulex/utils"
 

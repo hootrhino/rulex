@@ -29,7 +29,7 @@ protoc -I ./rulexrpc --go_out ./rulexrpc --go_opt paths=source_relative \
 echo ">>> Generate Codec Proto OK."
 # Trailer
 echo ">>> Generate Trailer Proto."
-protoc -I ./trailer --go_out ./trailer --go_opt paths=source_relative \
-    --go-grpc_out=./trailer --go-grpc_opt paths=source_relative \
-    ./trailer/trailer.proto
+protoc -I ./component/trailer --go_out ./component/trailer --go_opt paths=source_relative \
+    --go-grpc_out=./component/trailer --go-grpc_opt paths=source_relative \
+    ./component/trailer/trailer.proto
 echo ">>> Generate Trailer Proto OK."

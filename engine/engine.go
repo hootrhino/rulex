@@ -33,7 +33,7 @@ import (
 	"github.com/hootrhino/rulex/component/interqueue"
 	"github.com/hootrhino/rulex/source"
 	"github.com/hootrhino/rulex/target"
-	"github.com/hootrhino/rulex/trailer"
+	"github.com/hootrhino/rulex/component/trailer"
 	"github.com/hootrhino/rulex/typex"
 	"github.com/hootrhino/rulex/utils"
 	"github.com/shirou/gopsutil/v3/disk"
