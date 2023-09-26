@@ -218,4 +218,12 @@ func LoadAppLib(app *typex.Application, e typex.RuleX) {
 	// UI 数据写入
 	//------------------------------------------------------------------------
 	addAppLib(app, e, "ui", "LoadData", rulexlib.DataToUiComponent(e))
+	//------------------------------------------------------------------------
+	// Modbus
+	//------------------------------------------------------------------------
+	addAppLib(app, e, "modbus", "F5", rulexlib.F5(e))
+	addAppLib(app, e, "modbus", "F6", rulexlib.F6(e))
+	addAppLib(app, e, "modbus", "F15", rulexlib.F15(e))
+	addAppLib(app, e, "modbus", "F16", rulexlib.F16(e))
+
 }

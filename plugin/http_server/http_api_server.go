@@ -386,6 +386,7 @@ func (hs *ApiServerPlugin) LoadRoute() {
 		groupApi.DELETE("/delete", server.DefaultApiServer.AddRoute(apis.DeleteGroup))
 		groupApi.PUT("/update", server.DefaultApiServer.AddRoute(apis.UpdateGroup))
 		groupApi.GET("/list", server.DefaultApiServer.AddRoute(apis.ListGroup))
+		groupApi.GET("/detail", server.DefaultApiServer.AddRoute(apis.GroupDetail))
 		groupApi.POST("/bind", server.DefaultApiServer.AddRoute(apis.BindResource))
 		groupApi.PUT("/unbind", server.DefaultApiServer.AddRoute(apis.UnBindResource))
 		groupApi.GET("/devices", server.DefaultApiServer.AddRoute(apis.FindDeviceByGroup))

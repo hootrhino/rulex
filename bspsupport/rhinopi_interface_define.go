@@ -109,5 +109,5 @@ func GetHwPort(name string) RhinoH3HwInterface {
 	if ok {
 		return *Port
 	}
-	return *Port
+	return RhinoH3HwInterface{Busy: false}
 }

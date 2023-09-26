@@ -223,6 +223,12 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 	return nil
 }
 
+type modbus_cmd struct {
+	Start uint16 `json:"start"`
+	Count uint16 `json:"count"`
+	Value string `json:"value"`
+}
+
 // 从设备里面读数据出来
 func (mdev *generic_modbus_device) OnRead(cmd []byte, data []byte) (int, error) {
 

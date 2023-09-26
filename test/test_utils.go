@@ -65,6 +65,9 @@ func HttpGet(api string) string {
  */
 func RunTestEngine() typex.RuleX {
 	mainConfig := core.InitGlobalConfig("conf/rulex.ini")
+	//----------------------------------------------------------------------------------------------
+	// Init logger
+	//----------------------------------------------------------------------------------------------
 	glogger.StartGLogger(
 		core.GlobalConfig.LogLevel,
 		mainConfig.EnableConsole,
@@ -79,9 +82,7 @@ func RunTestEngine() typex.RuleX {
 	core.StartStore(core.GlobalConfig.MaxQueueSize)
 	core.SetDebugMode(mainConfig.EnablePProf)
 	core.SetGomaxProcs(mainConfig.GomaxProcs)
-	// engine
-	engine := engine.InitRuleEngine(mainConfig)
-	return engine
+	return engine.InitRuleEngine(mainConfig)
 }
 
 /*

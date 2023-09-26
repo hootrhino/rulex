@@ -1,7 +1,12 @@
 package rulexlib
 
 import (
+	"encoding/hex"
+	"encoding/json"
+
 	lua "github.com/hootrhino/gopher-lua"
+	"github.com/hootrhino/rulex/common"
+	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/typex"
 )
 
@@ -61,6 +66,198 @@ func F3(rx typex.RuleX) func(l *lua.LState) int {
 func F4(rx typex.RuleX) func(l *lua.LState) int {
 	return func(l *lua.LState) int {
 
+		return 1
+	}
+}
+
+/*
+*
+  - Modbus Function5
+    local error = modbus:F5("uuid1", 0, 1, "0001020304")
+
+*
+*/
+
+func F5(rx typex.RuleX) func(l *lua.LState) int {
+	return func(l *lua.LState) int {
+		devUUID := l.ToString(2)
+		slaverId := l.ToNumber(3)
+		Address := l.ToNumber(4)
+		Values := l.ToString(5)
+		HexValues, err := hex.DecodeString(Values)
+		if err != nil {
+			l.Push(lua.LString(err.Error()))
+			return 1
+		}
+		Device := rx.GetDevice(devUUID)
+		if Device != nil {
+			if Device.Type != typex.GENERIC_MODBUS {
+				l.Push(lua.LString("Only support GENERIC_PROTOCOL device"))
+				return 1
+			}
+			if Device.Device.Status() == typex.DEV_UP {
+				args, _ := json.Marshal([]common.RegisterW{
+					{
+						Function: 5,
+						SlaverId: byte(slaverId),
+						Address:  uint16(Address),
+						Values:   HexValues,
+					},
+				})
+				_, err := Device.Device.OnWrite([]byte("F5"), args)
+				if err != nil {
+					glogger.GLogger.Error(err)
+					l.Push(lua.LString(err.Error()))
+					return 1
+				} else {
+					l.Push(lua.LString(err.Error()))
+					return 1
+				}
+			} else {
+				l.Push(lua.LString("device down:" + devUUID))
+				return 1
+			}
+
+		}
+		l.Push(lua.LNil)
+		return 1
+	}
+}
+
+/*
+*
+* Modbus Function4
+*
+ */
+func F6(rx typex.RuleX) func(l *lua.LState) int {
+	return func(l *lua.LState) int {
+		devUUID := l.ToString(2)
+		slaverId := l.ToNumber(3)
+		Address := l.ToNumber(4)
+		Values := l.ToString(5)
+		HexValues, err := hex.DecodeString(Values)
+		if err != nil {
+			l.Push(lua.LString(err.Error()))
+			return 1
+		}
+		Device := rx.GetDevice(devUUID)
+		if Device != nil {
+			if Device.Device.Status() == typex.DEV_UP {
+				args, _ := json.Marshal(common.RegisterW{
+					Function: 6,
+					SlaverId: byte(slaverId),
+					Address:  uint16(Address),
+					Values:   HexValues,
+				})
+				_, err := Device.Device.OnWrite([]byte("F6"), args)
+				if err != nil {
+					glogger.GLogger.Error(err)
+					l.Push(lua.LString(err.Error()))
+					return 1
+				} else {
+					l.Push(lua.LString(err.Error()))
+					return 1
+				}
+			} else {
+				l.Push(lua.LNil)
+				l.Push(lua.LString("device down:" + devUUID))
+				return 2
+			}
+
+		}
+		l.Push(lua.LNil)
+		return 1
+	}
+}
+
+/*
+*
+* Modbus Function15
+*
+ */
+func F15(rx typex.RuleX) func(l *lua.LState) int {
+	return func(l *lua.LState) int {
+		devUUID := l.ToString(2)
+		slaverId := l.ToNumber(3)
+		Address := l.ToNumber(4)
+		Values := l.ToString(5)
+		HexValues, err := hex.DecodeString(Values)
+		if err != nil {
+			l.Push(lua.LString(err.Error()))
+			return 1
+		}
+		Device := rx.GetDevice(devUUID)
+		if Device != nil {
+			if Device.Device.Status() == typex.DEV_UP {
+				args, _ := json.Marshal(common.RegisterW{
+					Function: 15,
+					SlaverId: byte(slaverId),
+					Address:  uint16(Address),
+					Values:   HexValues,
+				})
+				_, err := Device.Device.OnWrite([]byte("F15"), args)
+				if err != nil {
+					glogger.GLogger.Error(err)
+					l.Push(lua.LString(err.Error()))
+					return 1
+				} else {
+					l.Push(lua.LString(err.Error()))
+					return 1
+				}
+			} else {
+				l.Push(lua.LNil)
+				l.Push(lua.LString("device down:" + devUUID))
+				return 2
+			}
+
+		}
+		l.Push(lua.LNil)
+		return 1
+	}
+}
+
+/*
+*
+* Modbus Function16
+*
+ */
+func F16(rx typex.RuleX) func(l *lua.LState) int {
+	return func(l *lua.LState) int {
+		devUUID := l.ToString(2)
+		slaverId := l.ToNumber(3)
+		Address := l.ToNumber(4)
+		Values := l.ToString(5)
+		HexValues, err := hex.DecodeString(Values)
+		if err != nil {
+			l.Push(lua.LString(err.Error()))
+			return 1
+		}
+		Device := rx.GetDevice(devUUID)
+		if Device != nil {
+			if Device.Device.Status() == typex.DEV_UP {
+				args, _ := json.Marshal(common.RegisterW{
+					Function: 16,
+					SlaverId: byte(slaverId),
+					Address:  uint16(Address),
+					Values:   HexValues,
+				})
+				_, err := Device.Device.OnWrite([]byte("F16"), args)
+				if err != nil {
+					glogger.GLogger.Error(err)
+					l.Push(lua.LString(err.Error()))
+					return 1
+				} else {
+					l.Push(lua.LString(err.Error()))
+					return 1
+				}
+			} else {
+				l.Push(lua.LNil)
+				l.Push(lua.LString("device down:" + devUUID))
+				return 2
+			}
+
+		}
+		l.Push(lua.LNil)
 		return 1
 	}
 }
