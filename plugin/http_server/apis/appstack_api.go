@@ -64,53 +64,26 @@ func AppDetail(c *gin.Context, ruleEngine typex.RuleX) {
 
 // 列表
 func Apps(c *gin.Context, ruleEngine typex.RuleX) {
-	uuid, _ := c.GetQuery("uuid")
-	// 从配置拿App
-	if uuid == "" {
-		result := []appStackDto{}
-		for _, app := range appstack.AllApp() {
-			web_data := appStackDto{
-				UUID:      app.UUID,
-				Name:      app.Name,
-				Version:   app.Version,
-				AutoStart: &app.AutoStart,
-				Type:      "lua",
-				AppState: func() int {
-					if a := appstack.GetApp(app.UUID); a != nil {
-						return int(a.AppState)
-					}
-					return 0
-				}(),
-				Description: "",
-			}
-			result = append(result, web_data)
+	result := []appStackDto{}
+	for _, app := range appstack.AllApp() {
+		web_data := appStackDto{
+			UUID:      app.UUID,
+			Name:      app.Name,
+			Version:   app.Version,
+			AutoStart: &app.AutoStart,
+			Type:      "lua",
+			AppState: func() int {
+				if a := appstack.GetApp(app.UUID); a != nil {
+					return int(a.AppState)
+				}
+				return 0
+			}(),
+			Description: app.Description,
 		}
-		c.JSON(common.HTTP_OK, common.OkWithData(result))
-		return
+		result = append(result, web_data)
 	}
-	// uuid
-	appInfo, err1 := service.GetMAppWithUUID(uuid)
-	if err1 != nil {
-		c.JSON(common.HTTP_OK, common.Error400(err1))
-		return
-	}
-	web_data := appStackDto{
-		UUID:      appInfo.UUID,
-		Name:      appInfo.Name,
-		Version:   appInfo.Version,
-		AutoStart: appInfo.AutoStart,
-		Type:      "lua",
-		AppState: func() int {
-			if a := appstack.GetApp(appInfo.UUID); a != nil {
-				return int(a.AppState)
-			}
-			return 0
-		}(),
-		Description: appInfo.Description,
-		LuaSource:   appInfo.LuaSource,
-	}
-	c.JSON(common.HTTP_OK, common.OkWithData(web_data))
-
+	c.JSON(common.HTTP_OK, common.OkWithData(result))
+	return
 }
 
 /*
@@ -203,15 +176,15 @@ func UpdateApp(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err1))
 		return
 	}
-
-	if err := service.UpdateApp(&model.MApp{
+	mApp := model.MApp{
 		UUID:        form.UUID,
 		Name:        form.Name,
 		Version:     form.Version,
 		AutoStart:   form.AutoStart,
 		LuaSource:   form.LuaSource,
 		Description: form.Description,
-	}); err != nil {
+	}
+	if err := service.UpdateApp(&mApp); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
@@ -224,22 +197,26 @@ func UpdateApp(c *gin.Context, ruleEngine typex.RuleX) {
 		}
 		appstack.RemoveApp(app.UUID)
 	}
-	//
-	if *form.AutoStart {
-		glogger.GLogger.Debugf("App autoStart allowed:%s-%s-%s", form.UUID, form.Version, form.Name)
-		// 必须先load后start
-		if err := appstack.LoadApp(typex.NewApplication(
-			form.UUID, form.Name, form.Version), form.LuaSource); err != nil {
-			c.JSON(common.HTTP_OK, common.Error400(err))
-			return
-		}
-		if err2 := appstack.StartApp(form.UUID); err2 != nil {
+	// 必须先load后start
+	newAPP := typex.NewApplication(mApp.UUID, mApp.Name, mApp.Version)
+	newAPP.AutoStart = *mApp.AutoStart
+	newAPP.Description = mApp.Description
+	if err := appstack.LoadApp(newAPP, mApp.LuaSource); err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
+	// 自启动
+	if *mApp.AutoStart {
+		glogger.GLogger.Debugf("App autoStart allowed:%s-%s-%s", mApp.UUID, mApp.Version, mApp.Name)
+		if err2 := appstack.StartApp(mApp.UUID); err2 != nil {
 			glogger.GLogger.Error("App autoStart failed:", err2)
 			c.JSON(common.HTTP_OK, common.Error400(err2))
 			return
 		}
+	} else {
+		glogger.GLogger.Debugf("App autoStart not allowed:%s-%s-%s", mApp.UUID, mApp.Version, mApp.Name)
 	}
-	c.JSON(common.HTTP_OK, common.OkWithData("app update successfully:"+form.UUID))
+	c.JSON(common.HTTP_OK, common.OkWithData("app update successfully:"+mApp.UUID))
 }
 
 /*

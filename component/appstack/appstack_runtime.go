@@ -130,8 +130,7 @@ func RemoveApp(uuid string) error {
  */
 func StopApp(uuid string) error {
 	if app, ok := __DefaultAppStackRuntime.Applications[uuid]; ok {
-		app.Remove()
-		delete(__DefaultAppStackRuntime.Applications, uuid)
+		app.Stop()
 	}
 	glogger.GLogger.Info("App removed:", uuid)
 	return nil
@@ -145,6 +144,7 @@ func StopApp(uuid string) error {
 func UpdateApp(app typex.Application) error {
 	if oldApp, ok := __DefaultAppStackRuntime.Applications[app.UUID]; ok {
 		oldApp.Name = app.Name
+		oldApp.AutoStart = app.AutoStart
 		oldApp.Version = app.Version
 		glogger.GLogger.Info("App updated:", app.UUID)
 		return nil

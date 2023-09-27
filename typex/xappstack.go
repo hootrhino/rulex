@@ -20,11 +20,12 @@ type AppState int
 *
  */
 type Application struct {
-	UUID        string             `json:"uuid"`      // 名称
-	Name        string             `json:"name"`      // 名称
-	Version     string             `json:"version"`   // 版本号
-	AutoStart   bool               `json:"autoStart"` // 自动启动
-	AppState    AppState           `json:"appState"`  // 状态: 1 运行中, 0 停止
+	UUID        string             `json:"uuid"`        // 名称
+	Name        string             `json:"name"`        // 名称
+	Version     string             `json:"version"`     // 版本号
+	Description string             `json:"description"` // 版本号
+	AutoStart   bool               `json:"autoStart"`   // 自动启动
+	AppState    AppState           `json:"appState"`    // 状态: 1 运行中, 0 停止
 	luaMainFunc *lua.LFunction     `json:"-"`
 	vm          *lua.LState        `json:"-"` // lua 环境
 	ctx         context.Context    `json:"-"`
@@ -82,8 +83,7 @@ func (app *Application) Stop() {
 *
  */
 func (app *Application) Remove() {
-	app.cancel()
-	// app.VM().Close()
+	app.Stop()
 	runtime.GC()
 }
 
