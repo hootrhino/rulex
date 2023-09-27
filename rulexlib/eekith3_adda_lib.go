@@ -2,6 +2,7 @@ package rulexlib
 
 import (
 	lua "github.com/hootrhino/gopher-lua"
+	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/typex"
 	"github.com/hootrhino/rulex/vendor3rd"
 )
@@ -66,6 +67,20 @@ func H3DO1Set(rx typex.RuleX) func(*lua.LState) int {
 		return 1
 	}
 }
+func H3DO1Get(rx typex.RuleX) func(*lua.LState) int {
+	return func(l *lua.LState) int {
+		v, e := vendor3rd.EEKIT_GPIOGet(6)
+		glogger.GLogger.Debug("H3DO1Get", v, e)
+		if e != nil {
+			l.Push(lua.LNil)
+			l.Push(lua.LString(e.Error()))
+		} else {
+			l.Push(lua.LNumber(v))
+			l.Push(lua.LNil)
+		}
+		return 1
+	}
+}
 
 /*
 *
@@ -84,6 +99,20 @@ func H3DO2Set(rx typex.RuleX) func(*lua.LState) int {
 			}
 		} else {
 			l.Push(lua.LString("DO2 Only can set '0' or '1'."))
+		}
+		return 1
+	}
+}
+func H3DO2Get(rx typex.RuleX) func(*lua.LState) int {
+	return func(l *lua.LState) int {
+		v, e := vendor3rd.EEKIT_GPIOGet(7)
+		glogger.GLogger.Debug("H3DO2Get", v, e)
+		if e != nil {
+			l.Push(lua.LNil)
+			l.Push(lua.LString(e.Error()))
+		} else {
+			l.Push(lua.LNumber(v))
+			l.Push(lua.LNil)
 		}
 		return 1
 	}

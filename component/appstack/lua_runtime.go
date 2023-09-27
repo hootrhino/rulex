@@ -190,7 +190,10 @@ func LoadAppLib(app *typex.Application, e typex.RuleX) {
 	addAppLib(app, e, "eekith3", "GPIOSet", rulexlib.EEKIT_GPIOSet(e))
 	// DO1 DO2
 	addAppLib(app, e, "eekith3", "H3DO1Set", rulexlib.H3DO1Set(e))
+	addAppLib(app, e, "eekith3", "H3DO1Get", rulexlib.H3DO1Get(e))
+	//
 	addAppLib(app, e, "eekith3", "H3DO2Set", rulexlib.H3DO2Set(e))
+	addAppLib(app, e, "eekith3", "H3DO2Get", rulexlib.H3DO2Get(e))
 	// 树莓派4B
 	addAppLib(app, e, "raspi4b", "GPIOGet", rulexlib.RASPI4_GPIOGet(e))
 	addAppLib(app, e, "raspi4b", "GPIOSet", rulexlib.RASPI4_GPIOSet(e))

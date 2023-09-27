@@ -86,6 +86,7 @@ func StartApp(uuid string) error {
 			if err := recover(); err != nil {
 				glogger.GLogger.Error("App recover:", err)
 			}
+			app.AppState = 0
 		}()
 		glogger.GLogger.Debugf("Ready to run app:%s", app.UUID)
 		app.AppState = 1

@@ -137,14 +137,16 @@ func CreateApp(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	// 立即加载
-	if err := appstack.LoadApp(
-		typex.NewApplication(newUUID, form.Name, form.Version), mAPP.LuaSource); err != nil {
+	// 立即加载但是不运行，主要是要加入内存
+	newAPP := typex.NewApplication(newUUID, form.Name, form.Version)
+	newAPP.AutoStart = *form.AutoStart
+	newAPP.Description = form.Description
+	if err := appstack.LoadApp(newAPP, mAPP.LuaSource); err != nil {
 		glogger.GLogger.Error("app Load failed:", err)
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	// 自启动立即运行
+	// 是否开启自启动立即运行
 	if *form.AutoStart {
 		glogger.GLogger.Debugf("App autoStart allowed:%s-%s-%s", newUUID, form.Version, form.Name)
 		if err2 := appstack.StartApp(newUUID); err2 != nil {
