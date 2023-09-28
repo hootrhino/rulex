@@ -65,25 +65,24 @@ func AppDetail(c *gin.Context, ruleEngine typex.RuleX) {
 // 列表
 func Apps(c *gin.Context, ruleEngine typex.RuleX) {
 	result := []appStackDto{}
-	for _, app := range appstack.AllApp() {
+	for _, mApp := range service.AllApp() {
 		web_data := appStackDto{
-			UUID:      app.UUID,
-			Name:      app.Name,
-			Version:   app.Version,
-			AutoStart: &app.AutoStart,
+			UUID:      mApp.UUID,
+			Name:      mApp.Name,
+			Version:   mApp.Version,
+			AutoStart: mApp.AutoStart,
 			Type:      "lua",
 			AppState: func() int {
-				if a := appstack.GetApp(app.UUID); a != nil {
+				if a := appstack.GetApp(mApp.UUID); a != nil {
 					return int(a.AppState)
 				}
 				return 0
 			}(),
-			Description: app.Description,
+			Description: mApp.Description,
 		}
 		result = append(result, web_data)
 	}
 	c.JSON(common.HTTP_OK, common.OkWithData(result))
-	return
 }
 
 /*
