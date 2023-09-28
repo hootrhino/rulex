@@ -191,6 +191,10 @@ func LoadAppLib(app *typex.Application, e typex.RuleX) {
 	// DO1 DO2
 	addAppLib(app, e, "eekith3", "H3DO1Set", rulexlib.H3DO1Set(e))
 	addAppLib(app, e, "eekith3", "H3DO1Get", rulexlib.H3DO1Get(e))
+	// DI1 DI2
+	addAppLib(app, e, "eekith3", "H3DI1Get", rulexlib.H3DI1Get(e))
+	addAppLib(app, e, "eekith3", "H3DI2Get", rulexlib.H3DI2Get(e))
+	addAppLib(app, e, "eekith3", "H3DI3Get", rulexlib.H3DI3Get(e))
 	//
 	addAppLib(app, e, "eekith3", "H3DO2Set", rulexlib.H3DO2Set(e))
 	addAppLib(app, e, "eekith3", "H3DO2Get", rulexlib.H3DO2Get(e))

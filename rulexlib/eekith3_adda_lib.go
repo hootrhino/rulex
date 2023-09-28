@@ -78,7 +78,7 @@ func H3DO1Get(rx typex.RuleX) func(*lua.LState) int {
 			l.Push(lua.LNumber(v))
 			l.Push(lua.LNil)
 		}
-		return 1
+		return 2
 	}
 }
 
@@ -114,6 +114,54 @@ func H3DO2Get(rx typex.RuleX) func(*lua.LState) int {
 			l.Push(lua.LNumber(v))
 			l.Push(lua.LNil)
 		}
-		return 1
+		return 2
+	}
+}
+
+/*
+*
+* DI 1,2,3 -> gpio 8-9-10
+*
+ */
+func H3DI1Get(rx typex.RuleX) func(*lua.LState) int {
+	return func(l *lua.LState) int {
+		v, e := vendor3rd.EEKIT_GPIOGet(8)
+		glogger.GLogger.Debug("H3DI1Get", v, e)
+		if e != nil {
+			l.Push(lua.LNil)
+			l.Push(lua.LString(e.Error()))
+		} else {
+			l.Push(lua.LNumber(v))
+			l.Push(lua.LNil)
+		}
+		return 2
+	}
+}
+func H3DI2Get(rx typex.RuleX) func(*lua.LState) int {
+	return func(l *lua.LState) int {
+		v, e := vendor3rd.EEKIT_GPIOGet(9)
+		glogger.GLogger.Debug("H3DI2Get", v, e)
+		if e != nil {
+			l.Push(lua.LNil)
+			l.Push(lua.LString(e.Error()))
+		} else {
+			l.Push(lua.LNumber(v))
+			l.Push(lua.LNil)
+		}
+		return 2
+	}
+}
+func H3DI3Get(rx typex.RuleX) func(*lua.LState) int {
+	return func(l *lua.LState) int {
+		v, e := vendor3rd.EEKIT_GPIOGet(10)
+		glogger.GLogger.Debug("H3DI2Get", v, e)
+		if e != nil {
+			l.Push(lua.LNil)
+			l.Push(lua.LString(e.Error()))
+		} else {
+			l.Push(lua.LNumber(v))
+			l.Push(lua.LNil)
+		}
+		return 2
 	}
 }
