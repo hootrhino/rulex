@@ -134,6 +134,12 @@ func WsLogger(c *gin.Context) {
 		return nil
 	})
 	go func(ctx context.Context, wsConn *websocket.Conn) {
+		defer func() {
+			wsConn.Close()
+			lock.Lock()
+			delete(private_GRealtimeLogger.Clients, wsConn.RemoteAddr().String())
+			lock.Unlock()
+		}()
 		for {
 			select {
 			case <-ctx.Done():
@@ -148,10 +154,6 @@ func WsLogger(c *gin.Context) {
 			wsConn.WriteMessage(websocket.PingMessage, []byte{})
 			if err != nil {
 				GLogger.Info("WsConn error:", wsConn.RemoteAddr().String(), ", Error:", err)
-				wsConn.Close()
-				lock.Lock()
-				delete(private_GRealtimeLogger.Clients, wsConn.RemoteAddr().String())
-				lock.Unlock()
 				return
 			}
 
