@@ -92,7 +92,7 @@ function Main(arg)
     return 0
 end
 `
-	appstack.LoadApp(&typex.Application{
+	appstack.LoadApp(&appstack.Application{
 		UUID:      "uuid1",
 		Name:      "uuid1",
 		Version:   "uuid1",

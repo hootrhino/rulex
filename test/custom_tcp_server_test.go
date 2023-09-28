@@ -161,7 +161,7 @@ func TestCustomTCP(t *testing.T) {
 		t.Fatal("Test1 load failed:", err)
 	}
 
-	if err := appstack.LoadApp(typex.NewApplication(
+	if err := appstack.LoadApp(appstack.NewApplication(
 		"Test1", "Name", "Version"), ""); err != nil {
 		t.Fatal("app Load failed:", err)
 		return
