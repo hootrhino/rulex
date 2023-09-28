@@ -8,10 +8,10 @@ package archsupport
 
 import (
 	"fmt"
-	"github.com/hootrhino/rulex/glogger"
 	"log"
 	"os"
 	"os/exec"
+	"strings"
 )
 
 //-----------------------------------------------
@@ -61,21 +61,45 @@ func _EEKIT_GPIOAllInit() int {
 	_, err3 := os.Stat(gpio8)
 	_, err4 := os.Stat(gpio9)
 	_, err5 := os.Stat(gpio10)
-	glogger.GLogger.Debugf("_EEKIT_GPIOAllInit: %s,%s,%s,%s,%s", err1, err2, err3, err4, err5)
-	if err1 == nil {
-		_EEKIT_GPIOInit(eekit_DO1, eekit_Out)
+	if err1 != nil {
+		if strings.Contains(err1.Error(), "no such file or directory") {
+			_EEKIT_GPIOInit(eekit_DO1, eekit_Out)
+			fmt.Println("EEKIT_GPIOAllInit DO1 Out Mode Ok")
+		}
+	} else {
+		fmt.Println("EEKIT_GPIOAllInit DO1 Out Mode Error:", err1)
 	}
-	if err2 == nil {
-		_EEKIT_GPIOInit(eekit_DO2, eekit_Out)
+	if err2 != nil {
+		if strings.Contains(err2.Error(), "no such file or directory") {
+			_EEKIT_GPIOInit(eekit_DO2, eekit_Out)
+			fmt.Println("EEKIT_GPIOAllInit DO2 Out Mode Ok")
+		}
+	} else {
+		fmt.Println("EEKIT_GPIOAllInit DO2 Out Mode Error:", err2)
 	}
-	if err3 == nil {
-		_EEKIT_GPIOInit(eekit_DI1, eekit_In)
+	if err3 != nil {
+		if strings.Contains(err3.Error(), "no such file or directory") {
+			_EEKIT_GPIOInit(eekit_DI1, eekit_In)
+			fmt.Println("EEKIT_GPIOAllInit DI1 In Mode Ok")
+		}
+	} else {
+		fmt.Println("EEKIT_GPIOAllInit DI1 In Mode Error:", err3)
 	}
-	if err4 == nil {
-		_EEKIT_GPIOInit(eekit_DI2, eekit_In)
+	if err4 != nil {
+		if strings.Contains(err4.Error(), "no such file or directory") {
+			_EEKIT_GPIOInit(eekit_DI2, eekit_In)
+			fmt.Println("EEKIT_GPIOAllInit DI2 In Mode Ok")
+		}
+	} else {
+		fmt.Println("EEKIT_GPIOAllInit DI2 In Mode Error:", err4)
 	}
-	if err5 == nil {
-		_EEKIT_GPIOInit(eekit_DI3, eekit_In)
+	if err5 != nil {
+		if strings.Contains(err5.Error(), "no such file or directory") {
+			_EEKIT_GPIOInit(eekit_DI3, eekit_In)
+			fmt.Println("EEKIT_GPIOAllInit DI3 In Mode Ok")
+		}
+	} else {
+		fmt.Println("EEKIT_GPIOAllInit DI3 In Mode Error:", err5)
 	}
 	// 返回值无用
 	return 1
@@ -110,7 +134,6 @@ Value:gpio level 1 is high 0 is low
 func EEKIT_GPIOSet(pin, value int) (bool, error) {
 	cmd := fmt.Sprintf("echo %d > /sys/class/gpio/gpio%d/value", value, pin)
 	output, err := exec.Command("sh", "-c", cmd).Output()
-	glogger.GLogger.Debug("EEKIT_GPIOSet cmd", cmd, string(output), err)
 	if err != nil {
 		log.Println("[EEKIT_GPIOSet] error", err, string(output))
 		return false, err
@@ -130,7 +153,6 @@ return:1 is high 0 is low
 func EEKIT_GPIOGet(pin int) (int, error) {
 	cmd := fmt.Sprintf("cat /sys/class/gpio/gpio%d/value", pin)
 	output, err := exec.Command("sh", "-c", cmd).Output()
-	glogger.GLogger.Debug("EEKIT_GPIOGet cmd", cmd, string(output), err)
 	if err != nil {
 		return -1, err
 	}

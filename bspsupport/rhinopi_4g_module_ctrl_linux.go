@@ -51,7 +51,7 @@ func init() {
 	if env == "EEKITH3" {
 		fmt.Println("RhinoPi Init 4G")
 		__RhinoPiInit4G()
-		fmt.Println("RhinoPi Init Ok.")
+		fmt.Println("RhinoPi Init 4G Ok.")
 	}
 }
 
