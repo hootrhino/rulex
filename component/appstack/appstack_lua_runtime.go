@@ -79,7 +79,7 @@ func ValidateLuaSyntax(bytes []byte) error {
 *  - Global: 命名空间
 *   - funcName: 函数名称
  */
-func addAppLib(app *typex.Application,
+func addAppLib(app *Application,
 	rx typex.RuleX, Global string, funcName string,
 	f func(l *lua.LState) int) {
 	rulexTb := app.VM().G.Global
@@ -95,7 +95,7 @@ func addAppLib(app *typex.Application,
 * 加载app库函数, 注意这里的库函数和规则引擎的并不是完全一样的，有一些差别
 *
  */
-func LoadAppLib(app *typex.Application, e typex.RuleX) {
+func LoadAppLib(app *Application, e typex.RuleX) {
 	// 消息转发
 	addAppLib(app, e, "applib", "DataToHttp", rulexlib.DataToHttp(e))
 	addAppLib(app, e, "applib", "DataToMqtt", rulexlib.DataToMqtt(e))

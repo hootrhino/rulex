@@ -1,4 +1,4 @@
-package typex
+package interpipeline
 
 import (
 	"errors"

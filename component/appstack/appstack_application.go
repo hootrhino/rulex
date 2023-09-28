@@ -1,4 +1,4 @@
-package typex
+package appstack
 
 import (
 	"context"
@@ -6,6 +6,7 @@ import (
 	"runtime"
 
 	lua "github.com/hootrhino/gopher-lua"
+	"github.com/hootrhino/rulex/typex"
 )
 
 // lua 虚拟机的参数
@@ -93,7 +94,7 @@ func (app *Application) Remove() {
 *
  */
 type XAppStack interface {
-	GetRuleX() RuleX
+	GetRuleX() typex.RuleX
 	ListApp() []*Application
 	// 把配置里的应用信息加载到内存里
 	LoadApp(app *Application) error

@@ -137,7 +137,7 @@ func CreateApp(c *gin.Context, ruleEngine typex.RuleX) {
 		return
 	}
 	// 立即加载但是不运行，主要是要加入内存
-	newAPP := typex.NewApplication(newUUID, form.Name, form.Version)
+	newAPP := appstack.NewApplication(newUUID, form.Name, form.Version)
 	newAPP.AutoStart = *form.AutoStart
 	newAPP.Description = form.Description
 	if err := appstack.LoadApp(newAPP, mAPP.LuaSource); err != nil {
@@ -199,7 +199,7 @@ func UpdateApp(c *gin.Context, ruleEngine typex.RuleX) {
 		appstack.RemoveApp(app.UUID)
 	}
 	// 必须先load后start
-	newAPP := typex.NewApplication(mApp.UUID, mApp.Name, mApp.Version)
+	newAPP := appstack.NewApplication(mApp.UUID, mApp.Name, mApp.Version)
 	newAPP.AutoStart = *mApp.AutoStart
 	newAPP.Description = mApp.Description
 	if err := appstack.LoadApp(newAPP, mApp.LuaSource); err != nil {
@@ -252,7 +252,7 @@ func StartApp(c *gin.Context, ruleEngine typex.RuleX) {
 	}
 	// 如果内存里面没有，尝试从配置加载
 	glogger.GLogger.Debug("No loaded, will try to load:", uuid)
-	if err := appstack.LoadApp(typex.NewApplication(
+	if err := appstack.LoadApp(appstack.NewApplication(
 		mApp.UUID, mApp.Name, mApp.Version), mApp.LuaSource); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return

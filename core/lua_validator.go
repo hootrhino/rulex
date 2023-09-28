@@ -19,6 +19,7 @@ import (
 	"errors"
 
 	lua "github.com/hootrhino/gopher-lua"
+	"github.com/hootrhino/rulex/component/interpipeline"
 	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/typex"
 )
@@ -31,13 +32,13 @@ const (
 
 // LUA Callback : Success
 func ExecuteSuccess(vm *lua.LState) (interface{}, error) {
-	return typex.Execute(vm, SUCCESS_KEY)
+	return interpipeline.Execute(vm, SUCCESS_KEY)
 }
 
 // LUA Callback : Failed
 
 func ExecuteFailed(vm *lua.LState, arg lua.LValue) (interface{}, error) {
-	return typex.Execute(vm, FAILED_KEY, arg)
+	return interpipeline.Execute(vm, FAILED_KEY, arg)
 }
 
 /*
@@ -65,7 +66,7 @@ func ExecuteActions(rule *typex.Rule, arg lua.LValue) (lua.LValue, error) {
 			return nil, err
 		}
 		if rule.Status != typex.RULE_STOP {
-			return typex.RunPipline(rule.LuaVM, funcs, arg)
+			return interpipeline.RunPipline(rule.LuaVM, funcs, arg)
 		}
 		// if stopped, log warning information
 		glogger.GLogger.Warn("Rule has stopped:" + rule.UUID)

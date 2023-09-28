@@ -24,5 +24,5 @@ import "github.com/hootrhino/rulex/typex"
  */
 type AppStackRuntime struct {
 	RuleEngine   typex.RuleX
-	Applications map[string]*typex.Application
+	Applications map[string]*Application
 }

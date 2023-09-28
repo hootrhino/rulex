@@ -29,7 +29,7 @@ var __DefaultAppStackRuntime *AppStackRuntime
 func InitAppStack(re typex.RuleX) *AppStackRuntime {
 	__DefaultAppStackRuntime = &AppStackRuntime{
 		RuleEngine:   re,
-		Applications: make(map[string]*typex.Application),
+		Applications: make(map[string]*Application),
 	}
 	return __DefaultAppStackRuntime
 }
@@ -42,7 +42,7 @@ func AppRuntime() *AppStackRuntime {
 * 加载本地文件到lua虚拟机, 但是并不执行
 *
  */
-func LoadApp(app *typex.Application, luaSource string) error {
+func LoadApp(app *Application, luaSource string) error {
 
 	// 重新读
 	app.VM().DoString(string(luaSource))
@@ -80,7 +80,7 @@ func StartApp(uuid string) error {
 	// args := lua.LBool(false) // Main的参数，未来准备扩展
 	ctx, cancel := context.WithCancel(typex.GCTX)
 	app.SetCnC(ctx, cancel)
-	go func(app *typex.Application) {
+	go func(app *Application) {
 		defer func() {
 			glogger.GLogger.Debug("App exit:", app.UUID)
 			if err := recover(); err != nil {
@@ -142,7 +142,7 @@ func StopApp(uuid string) error {
 * 更新应用信息
 *
  */
-func UpdateApp(app typex.Application) error {
+func UpdateApp(app Application) error {
 	if oldApp, ok := __DefaultAppStackRuntime.Applications[app.UUID]; ok {
 		oldApp.Name = app.Name
 		oldApp.AutoStart = app.AutoStart
@@ -153,7 +153,7 @@ func UpdateApp(app typex.Application) error {
 	return fmt.Errorf("update failed, app not exists:%s", app.UUID)
 
 }
-func GetApp(uuid string) *typex.Application {
+func GetApp(uuid string) *Application {
 	if app, ok := __DefaultAppStackRuntime.Applications[uuid]; ok {
 		return app
 	}
@@ -165,11 +165,11 @@ func GetApp(uuid string) *typex.Application {
 * 获取列表
 *
  */
-func AllApp() []*typex.Application {
+func AllApp() []*Application {
 	return ListApp()
 }
-func ListApp() []*typex.Application {
-	apps := []*typex.Application{}
+func ListApp() []*Application {
+	apps := []*Application{}
 	for _, v := range __DefaultAppStackRuntime.Applications {
 		apps = append(apps, v)
 	}

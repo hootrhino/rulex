@@ -109,7 +109,7 @@ func initRulex(engine typex.RuleX) {
 	// APP stack
 	//
 	for _, mApp := range service.AllApp() {
-		app := typex.NewApplication(
+		app := appstack.NewApplication(
 			mApp.UUID,
 			mApp.Name,
 			mApp.Version,
