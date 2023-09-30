@@ -1,6 +1,7 @@
 package cron_task
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"github.com/hootrhino/rulex/plugin/http_server/model"
@@ -29,10 +30,19 @@ func (pm *ProcessManager) RunProcess(file io.Writer, task model.MCronTask) error
 	var command *exec.Cmd
 	args := make([]string, 0)
 	var name string
-	if task.TaskType == 1 {
+	script, err := base64.StdEncoding.DecodeString(task.Script)
+	if err != nil {
+		return err
+	}
+	if task.TaskType == CRON_TASK_TYPE_LINUX_SHELL {
 		name = "/bin/bash"
-		args = append(args, task.Command)
-		args = append(args, task.Args)
+		args = append(args, "-c")
+		args = append(args, string(script))
+		args = append(args, "bash") // 占据$0位置
+		if task.Args != nil {
+			args = append(args, *task.Args) // 占据$1位置，此时$@与$1相同
+		}
+
 	} else {
 		return errors.New("unknown taskType")
 	}
@@ -42,7 +52,7 @@ func (pm *ProcessManager) RunProcess(file io.Writer, task model.MCronTask) error
 	command.Stdout = file
 	command.Dir = task.WorkDir
 	envSlice := make([]string, 0)
-	err := json.Unmarshal([]byte(task.Env), &envSlice)
+	err = json.Unmarshal([]byte(task.Env), &envSlice)
 	if err != nil {
 		return err
 	}
