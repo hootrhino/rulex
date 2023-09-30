@@ -266,14 +266,15 @@ type MWifiConfig struct {
 type MCronTask struct {
 	RulexModel
 	Name      string    `gorm:"not null" json:"name"`
-	CronExpr  string    `json:"cronExpr"` // Quartz standard
-	Enable    string    `json:"enable"`
+	CronExpr  string    `json:"cronExpr"` // linux cron standard
+	Enable    string    `json:"enable"`   // 0-disable 1-enable
 	TaskType  int       `json:"taskType"` // 1-shell 2-cmd
 	Command   string    `json:"command"`  // cron_assets/{id}/a.sh
-	Args      string    `json:"args"`     // "param1 param2 param3"
+	Args      *string   `json:"args"`     // "param1 param2 param3"
 	IsRoot    string    `json:"isRoot"`   // 0-false 1-true
 	WorkDir   string    `json:"workDir"`  // cron_assets/{id}
 	Env       string    `json:"env"`      // ["A=e1", "B=e2", "C=e3"]
+	Script    string    `json:"script"`   // 脚本内容
 	UpdatedAt time.Time `json:"updatedAt"`
 }
 

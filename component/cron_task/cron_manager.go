@@ -10,8 +10,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/component/interdb"
+	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/plugin/http_server/model"
 	"github.com/robfig/cron/v3"
 	"github.com/sirupsen/logrus"
@@ -21,6 +21,7 @@ var cronManager *CronManager
 
 type CronManager struct {
 	cronEngine     *cron.Cron
+	mtx            sync.Mutex
 	crontab        map[uint]cron.EntryID
 	runningTask    sync.Map
 	processManager *ProcessManager
@@ -34,11 +35,18 @@ func GetCronManager() *CronManager {
 }
 
 func NewCronManager() *CronManager {
-	engine := cron.New(cron.WithSeconds())
+	engine := cron.New(
+		cron.WithChain(
+			cron.SkipIfStillRunning(cron.DefaultLogger),
+			cron.Recover(cron.DefaultLogger),
+		),
+		cron.WithSeconds(),
+	)
 	manager := CronManager{
 		cronEngine:     engine,
 		crontab:        make(map[uint]cron.EntryID),
 		processManager: NewProcessManager(),
+		mtx:            sync.Mutex{},
 	}
 	// 每天0点10分清理日志
 	engine.AddFunc("0 10 0 * * *", func() {
@@ -80,14 +88,24 @@ func NewCronManager() *CronManager {
 func (m *CronManager) AddTask(task model.MCronTask) error {
 	cronExpr := task.CronExpr
 	id := task.ID
+
+	m.mtx.Lock()
+	defer m.mtx.Unlock()
+	if _, ok := m.crontab[id]; ok {
+		return nil
+	}
 	dir, _ := os.Getwd()
 	task.WorkDir = path.Join(dir, task.WorkDir)
 	task.Command = path.Join(dir, task.Command)
+	err := os.MkdirAll(dir, PERM_0777)
+	if err != nil {
+		return err
+	}
 	entryId, err := m.cronEngine.AddFunc(cronExpr, func() {
 		// 打开一个新的logger
 		now := time.Now()
 		logPath := fmt.Sprintf("cron_logs/%s/%v", now.Format("2006-01-02"), id)
-		err := os.MkdirAll(logPath, 0777)
+		err := os.MkdirAll(logPath, PERM_0777)
 		if err != nil {
 			glogger.GLogger.Error(err)
 		}
@@ -128,7 +146,6 @@ func (m *CronManager) AddTask(task model.MCronTask) error {
 				// 进程退出时返回非零状态码
 				exitCode = exitError.ExitCode()
 			} else {
-				fmt.Println("执行命令出错:", err)
 				exitCode = -1
 			}
 		}
