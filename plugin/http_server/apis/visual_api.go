@@ -100,6 +100,10 @@ func PublishVisual(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
+	if MVisual.Status == "PUBLISH" {
+		c.JSON(common.HTTP_OK, common.Error("Already published:"+MVisual.Name))
+		return
+	}
 	MVisual.Status = "PUBLISH"
 	if err := service.UpdateVisual(*MVisual); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
@@ -117,6 +121,7 @@ func DeleteVisual(c *gin.Context, ruleEngine typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
 	if err := service.DeleteVisual(uuid); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
 	}
 	c.JSON(common.HTTP_OK, common.Ok())
 

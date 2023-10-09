@@ -81,6 +81,10 @@ func UpdateGroup(c *gin.Context, ruleEngine typex.RuleX) {
  */
 func DeleteGroup(c *gin.Context, ruleEngine typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
+	if uuid == "ROOT" {
+		c.JSON(common.HTTP_OK, common.Error("Default group can't delete"))
+		return
+	}
 	count, err := service.CheckBindResource(uuid)
 	if err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
