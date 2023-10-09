@@ -18,6 +18,8 @@ import (
 * 建议试试这个脚本: test\script\clone.sh
 *
  */
+//  go test -timeout 30s -run ^Test_Trailer_load github.com/hootrhino/rulex/test -v -count=1
+
 func Test_Trailer_load(t *testing.T) {
 	engine := RunTestEngine()
 	engine.Start()

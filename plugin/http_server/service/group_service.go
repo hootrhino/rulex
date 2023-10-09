@@ -78,6 +78,11 @@ func InsertGenericGroup(GenericGroup *model.MGenericGroup) error {
 	return interdb.DB().Create(GenericGroup).Error
 }
 
+// 创建GenericGroup
+func InitGenericGroup(GenericGroup *model.MGenericGroup) error {
+	return interdb.DB().FirstOrCreate(GenericGroup).Error
+}
+
 // 更新GenericGroup
 func UpdateGenericGroup(GenericGroup *model.MGenericGroup) error {
 	m := model.MGenericGroup{}

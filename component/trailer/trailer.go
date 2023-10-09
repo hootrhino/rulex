@@ -91,15 +91,19 @@ func Save(goodsProcess *typex.GoodsProcess) {
 func Remove(uuid string) {
 	v, ok := __DefaultTrailerRuntime.goodsProcessMap.Load(uuid)
 	if ok {
-		(v.(*typex.GoodsProcess)).Stop()
+		gp := (v.(*typex.GoodsProcess))
+		gp.Cancel()
+		gp.Stop()
 		__DefaultTrailerRuntime.goodsProcessMap.Delete(uuid)
 	}
 }
 
 // 停止外挂运行时管理器, 这个要是停了基本上就是程序结束了
 func Stop() {
-	__DefaultTrailerRuntime.goodsProcessMap.Range(func(key, value interface{}) bool {
-		(value.(*typex.GoodsProcess)).Stop()
+	__DefaultTrailerRuntime.goodsProcessMap.Range(func(key, v interface{}) bool {
+		gp := (v.(*typex.GoodsProcess))
+		gp.Cancel()
+		gp.Stop()
 		return true
 	})
 	__DefaultTrailerRuntime = nil
@@ -108,11 +112,11 @@ func Stop() {
 // Cmd.Wait() 会阻塞, 但是当控制的子进程停止的时候会继续执行, 因此可以在defer里面释放资源
 func run(goodsProcess *typex.GoodsProcess) error {
 	defer func() {
+		goodsProcess.Running = false
 		goodsProcess.Cancel()
 	}()
 	if err := goodsProcess.Cmd.Start(); err != nil {
 		glogger.GLogger.Error("exec command error:", err)
-
 		return err
 	}
 
@@ -133,9 +137,6 @@ func run(goodsProcess *typex.GoodsProcess) error {
 
 // 探针
 func probe(goodsProcess *typex.GoodsProcess) {
-	defer func() {
-	}()
-
 	for {
 		select {
 		case <-goodsProcess.Ctx.Done():
@@ -157,7 +158,6 @@ func probe(goodsProcess *typex.GoodsProcess) {
 							goodsProcess.Args)
 					}
 				}
-				Remove(goodsProcess.Uuid)
 				return
 			}
 		default:

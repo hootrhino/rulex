@@ -178,5 +178,12 @@ func (s *RulexApiServer) InitializeData() {
 		// 3 初始化Eth1的静态IP地址
 		service.ConfigDefaultNat()
 	}
+	// 配置一个默认分组
+	service.InitGenericGroup(&model.MGenericGroup{
+		UUID:   "ROOT",
+		Type:   "VISUAL",
+		Name:   "默认分组",
+		Parent: "NULL",
+	})
 
 }
