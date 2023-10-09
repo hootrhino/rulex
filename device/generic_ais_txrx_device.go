@@ -74,7 +74,7 @@ type AISDeviceMaster struct {
 	RuleEngine  typex.RuleX
 	tcpListener net.Listener // TCP 接收端
 	// session
-	DevicesSessionMap map[string]*AISDeviceSession
+	DevicesSessionMap map[string]*__AISDeviceSession
 }
 
 /*
@@ -90,7 +90,7 @@ func NewAISDeviceMaster(e typex.RuleX) typex.XDevice {
 		Host: "0.0.0.0",
 		Port: 2600,
 	}
-	aism.DevicesSessionMap = map[string]*AISDeviceSession{}
+	aism.DevicesSessionMap = map[string]*__AISDeviceSession{}
 	return aism
 }
 
@@ -204,7 +204,7 @@ func (aism *AISDeviceMaster) handleConnect(listener net.Listener) {
 			continue
 		}
 		ctx, cancel := context.WithCancel(aism.Ctx)
-		go aism.handleAuth(ctx, cancel, &AISDeviceSession{
+		go aism.handleAuth(ctx, cancel, &__AISDeviceSession{
 			Transport: tcpcon,
 		})
 
@@ -218,14 +218,14 @@ func (aism *AISDeviceMaster) handleConnect(listener net.Listener) {
 * 注意：Auth只针对AIS主机，来自AIS的数据只解析不做验证
 *
  */
-type AISDeviceSession struct {
+type __AISDeviceSession struct {
 	SN        string   // 注册包里的序列号, 必须是:SN-$AA-$BB-$CC-$DD
 	Ip        string   // 注册包里的序列号
 	Transport net.Conn // TCP连接
 }
 
 func (aism *AISDeviceMaster) handleAuth(ctx context.Context,
-	cancel context.CancelFunc, session *AISDeviceSession) {
+	cancel context.CancelFunc, session *__AISDeviceSession) {
 	// 5秒内读一个SN
 	session.Transport.SetDeadline(time.Now().Add(5 * time.Second))
 	reader := bufio.NewReader(session.Transport)
@@ -262,7 +262,7 @@ func (aism *AISDeviceMaster) handleAuth(ctx context.Context,
 * 数据处理
 *
  */
-func (aism *AISDeviceMaster) handleIO(session *AISDeviceSession) {
+func (aism *AISDeviceMaster) handleIO(session *__AISDeviceSession) {
 
 	reader := bufio.NewReader(session.Transport)
 	for {
