@@ -193,246 +193,246 @@ func (hs *ApiServerPlugin) LoadRoute() {
 	//
 	// Get all plugins
 	//
-	server.DefaultApiServer.Route().GET(server.ContextUrl("plugins"), server.DefaultApiServer.AddRoute(apis.Plugins))
+	server.DefaultApiServer.Route().GET(server.ContextUrl("plugins"), server.AddRoute(apis.Plugins))
 	//
 	// Get system information
 	//
-	server.DefaultApiServer.Route().GET(server.ContextUrl("system"), server.DefaultApiServer.AddRoute(apis.System))
+	server.DefaultApiServer.Route().GET(server.ContextUrl("system"), server.AddRoute(apis.System))
 	//
 	// Ping -> Pong
 	//
-	server.DefaultApiServer.Route().GET(server.ContextUrl("ping"), server.DefaultApiServer.AddRoute(apis.Ping))
+	server.DefaultApiServer.Route().GET(server.ContextUrl("ping"), server.AddRoute(apis.Ping))
 	//
 	//
 	//
-	server.DefaultApiServer.Route().GET(server.ContextUrl("sourceCount"), server.DefaultApiServer.AddRoute(apis.SourceCount))
+	server.DefaultApiServer.Route().GET(server.ContextUrl("sourceCount"), server.AddRoute(apis.SourceCount))
 	//
 	//
 	//
-	server.DefaultApiServer.Route().GET(server.ContextUrl("logs"), server.DefaultApiServer.AddRoute(apis.Logs))
+	server.DefaultApiServer.Route().GET(server.ContextUrl("logs"), server.AddRoute(apis.Logs))
 	//
 	//
 	//
-	server.DefaultApiServer.Route().POST(server.ContextUrl("logout"), server.DefaultApiServer.AddRoute(apis.LogOut))
+	server.DefaultApiServer.Route().POST(server.ContextUrl("logout"), server.AddRoute(apis.LogOut))
 	//
 	// Get all inends
 	//
-	server.DefaultApiServer.Route().GET(server.ContextUrl("inends"), server.DefaultApiServer.AddRoute(apis.InEnds))
-	server.DefaultApiServer.Route().GET(server.ContextUrl("inends/detail"), server.DefaultApiServer.AddRoute(apis.InEndDetail))
+	server.DefaultApiServer.Route().GET(server.ContextUrl("inends"), server.AddRoute(apis.InEnds))
+	server.DefaultApiServer.Route().GET(server.ContextUrl("inends/detail"), server.AddRoute(apis.InEndDetail))
 	//
 	//
 	//
-	server.DefaultApiServer.Route().GET(server.ContextUrl("drivers"), server.DefaultApiServer.AddRoute(apis.Drivers))
+	server.DefaultApiServer.Route().GET(server.ContextUrl("drivers"), server.AddRoute(apis.Drivers))
 	//
 	// Get all outends
 	//
-	server.DefaultApiServer.Route().GET(server.ContextUrl("outends"), server.DefaultApiServer.AddRoute(apis.OutEnds))
-	server.DefaultApiServer.Route().GET(server.ContextUrl("outends/detail"), server.DefaultApiServer.AddRoute(apis.OutEndDetail))
+	server.DefaultApiServer.Route().GET(server.ContextUrl("outends"), server.AddRoute(apis.OutEnds))
+	server.DefaultApiServer.Route().GET(server.ContextUrl("outends/detail"), server.AddRoute(apis.OutEndDetail))
 	//
 	// Get all rules
 	//
-	server.DefaultApiServer.Route().GET(server.ContextUrl("rules"), server.DefaultApiServer.AddRoute(apis.Rules))
-	server.DefaultApiServer.Route().GET(server.ContextUrl("rules/detail"), server.DefaultApiServer.AddRoute(apis.RuleDetail))
+	server.DefaultApiServer.Route().GET(server.ContextUrl("rules"), server.AddRoute(apis.Rules))
+	server.DefaultApiServer.Route().GET(server.ContextUrl("rules/detail"), server.AddRoute(apis.RuleDetail))
 	//
 	// Get statistics data
 	//
-	server.DefaultApiServer.Route().GET(server.ContextUrl("statistics"), server.DefaultApiServer.AddRoute(apis.Statistics))
-	server.DefaultApiServer.Route().GET(server.ContextUrl("snapshot"), server.DefaultApiServer.AddRoute(apis.SnapshotDump))
+	server.DefaultApiServer.Route().GET(server.ContextUrl("statistics"), server.AddRoute(apis.Statistics))
+	server.DefaultApiServer.Route().GET(server.ContextUrl("snapshot"), server.AddRoute(apis.SnapshotDump))
 	//
 	// Auth
 	//
-	userApi := server.DefaultApiServer.GetGroup(server.ContextUrl("/users"))
+	userApi := server.RouteGroup(server.ContextUrl("/users"))
 	{
-		userApi.GET(("/"), server.DefaultApiServer.AddRoute(apis.Users))
-		userApi.GET(("/detail"), server.DefaultApiServer.AddRoute(apis.UserDetail))
-		userApi.POST(("/"), server.DefaultApiServer.AddRoute(apis.CreateUser))
+		userApi.GET(("/"), server.AddRoute(apis.Users))
+		userApi.GET(("/detail"), server.AddRoute(apis.UserDetail))
+		userApi.POST(("/"), server.AddRoute(apis.CreateUser))
 	}
 
 	//
 	//
 	//
-	server.DefaultApiServer.Route().POST(server.ContextUrl("login"), server.DefaultApiServer.AddRoute(apis.Login))
+	server.DefaultApiServer.Route().POST(server.ContextUrl("login"), server.AddRoute(apis.Login))
 	//
 	//
 	//
-	server.DefaultApiServer.Route().GET(server.ContextUrl("info"), server.DefaultApiServer.AddRoute(apis.Info))
+	server.DefaultApiServer.Route().GET(server.ContextUrl("info"), server.AddRoute(apis.Info))
 	//
 	// Create InEnd
 	//
-	server.DefaultApiServer.Route().POST(server.ContextUrl("inends"), server.DefaultApiServer.AddRoute(apis.CreateInend))
+	server.DefaultApiServer.Route().POST(server.ContextUrl("inends"), server.AddRoute(apis.CreateInend))
 	//
 	// Update Inend
 	//
-	server.DefaultApiServer.Route().PUT(server.ContextUrl("inends"), server.DefaultApiServer.AddRoute(apis.UpdateInend))
+	server.DefaultApiServer.Route().PUT(server.ContextUrl("inends"), server.AddRoute(apis.UpdateInend))
 	//
 	// 配置表
 	//
-	server.DefaultApiServer.Route().GET(server.ContextUrl("inends/config"), server.DefaultApiServer.AddRoute(apis.GetInEndConfig))
+	server.DefaultApiServer.Route().GET(server.ContextUrl("inends/config"), server.AddRoute(apis.GetInEndConfig))
 	//
 	// 数据模型表
 	//
-	server.DefaultApiServer.Route().GET(server.ContextUrl("inends/models"), server.DefaultApiServer.AddRoute(apis.GetInEndModels))
+	server.DefaultApiServer.Route().GET(server.ContextUrl("inends/models"), server.AddRoute(apis.GetInEndModels))
 	//
 	// Create OutEnd
 	//
-	server.DefaultApiServer.Route().POST(server.ContextUrl("outends"), server.DefaultApiServer.AddRoute(apis.CreateOutEnd))
+	server.DefaultApiServer.Route().POST(server.ContextUrl("outends"), server.AddRoute(apis.CreateOutEnd))
 	//
 	// Update OutEnd
 	//
-	server.DefaultApiServer.Route().PUT(server.ContextUrl("outends"), server.DefaultApiServer.AddRoute(apis.UpdateOutEnd))
-	rulesApi := server.DefaultApiServer.GetGroup(server.ContextUrl("/rules"))
+	server.DefaultApiServer.Route().PUT(server.ContextUrl("outends"), server.AddRoute(apis.UpdateOutEnd))
+	rulesApi := server.RouteGroup(server.ContextUrl("/rules"))
 	{
-		rulesApi.POST(("/"), server.DefaultApiServer.AddRoute(apis.CreateRule))
-		rulesApi.PUT(("/"), server.DefaultApiServer.AddRoute(apis.UpdateRule))
-		rulesApi.DELETE(("/"), server.DefaultApiServer.AddRoute(apis.DeleteRule))
-		rulesApi.POST(("/testIn"), server.DefaultApiServer.AddRoute(apis.TestSourceCallback))
-		rulesApi.POST(("/testOut"), server.DefaultApiServer.AddRoute(apis.TestOutEndCallback))
-		rulesApi.POST(("/testDevice"), server.DefaultApiServer.AddRoute(apis.TestDeviceCallback))
+		rulesApi.POST(("/"), server.AddRoute(apis.CreateRule))
+		rulesApi.PUT(("/"), server.AddRoute(apis.UpdateRule))
+		rulesApi.DELETE(("/"), server.AddRoute(apis.DeleteRule))
+		rulesApi.POST(("/testIn"), server.AddRoute(apis.TestSourceCallback))
+		rulesApi.POST(("/testOut"), server.AddRoute(apis.TestOutEndCallback))
+		rulesApi.POST(("/testDevice"), server.AddRoute(apis.TestDeviceCallback))
 	}
 
 	//
 	// Delete inend by UUID
 	//
-	server.DefaultApiServer.Route().DELETE(server.ContextUrl("inends"), server.DefaultApiServer.AddRoute(apis.DeleteInEnd))
+	server.DefaultApiServer.Route().DELETE(server.ContextUrl("inends"), server.AddRoute(apis.DeleteInEnd))
 	//
 	// Delete outEnd by UUID
 	//
-	server.DefaultApiServer.Route().DELETE(server.ContextUrl("outends"), server.DefaultApiServer.AddRoute(apis.DeleteOutEnd))
+	server.DefaultApiServer.Route().DELETE(server.ContextUrl("outends"), server.AddRoute(apis.DeleteOutEnd))
 
 	//
 	// 验证 lua 语法
 	//
-	server.DefaultApiServer.Route().POST(server.ContextUrl("validateRule"), server.DefaultApiServer.AddRoute(apis.ValidateLuaSyntax))
+	server.DefaultApiServer.Route().POST(server.ContextUrl("validateRule"), server.AddRoute(apis.ValidateLuaSyntax))
 	//
 	// 获取配置表
 	//
-	resourceTypeApi := server.DefaultApiServer.GetGroup(server.ContextUrl("/"))
+	resourceTypeApi := server.RouteGroup(server.ContextUrl("/"))
 	{
-		resourceTypeApi.GET(("rType"), server.DefaultApiServer.AddRoute(apis.RType))
-		resourceTypeApi.GET(("tType"), server.DefaultApiServer.AddRoute(apis.TType))
-		resourceTypeApi.GET(("dType"), server.DefaultApiServer.AddRoute(apis.DType))
+		resourceTypeApi.GET(("rType"), server.AddRoute(apis.RType))
+		resourceTypeApi.GET(("tType"), server.AddRoute(apis.TType))
+		resourceTypeApi.GET(("dType"), server.AddRoute(apis.DType))
 	}
 	//
 	// 网络适配器列表
 	//
-	osApi := server.DefaultApiServer.GetGroup(server.ContextUrl("/os"))
+	osApi := server.RouteGroup(server.ContextUrl("/os"))
 	{
-		osApi.GET(("/netInterfaces"), server.DefaultApiServer.AddRoute(apis.GetNetInterfaces))
-		osApi.GET(("/osRelease"), server.DefaultApiServer.AddRoute(apis.CatOsRelease))
-		osApi.GET(("/uarts"), server.DefaultApiServer.AddRoute(apis.GetUartList))
-		osApi.GET(("/system"), server.DefaultApiServer.AddRoute(apis.System))
-		osApi.GET(("/startedAt"), server.DefaultApiServer.AddRoute(apis.StartedAt))
+		osApi.GET(("/netInterfaces"), server.AddRoute(apis.GetNetInterfaces))
+		osApi.GET(("/osRelease"), server.AddRoute(apis.CatOsRelease))
+		osApi.GET(("/uarts"), server.AddRoute(apis.GetUartList))
+		osApi.GET(("/system"), server.AddRoute(apis.System))
+		osApi.GET(("/startedAt"), server.AddRoute(apis.StartedAt))
 
 	}
 	//
 	// 设备管理
 	//
-	deviceApi := server.DefaultApiServer.GetGroup(server.ContextUrl("/devices"))
+	deviceApi := server.RouteGroup(server.ContextUrl("/devices"))
 	{
-		deviceApi.GET(("/"), server.DefaultApiServer.AddRoute(apis.Devices))
-		deviceApi.POST(("/"), server.DefaultApiServer.AddRoute(apis.CreateDevice))
-		deviceApi.PUT(("/"), server.DefaultApiServer.AddRoute(apis.UpdateDevice))
-		deviceApi.DELETE(("/"), server.DefaultApiServer.AddRoute(apis.DeleteDevice))
-		deviceApi.GET(("/detail"), server.DefaultApiServer.AddRoute(apis.DeviceDetail))
-		deviceApi.POST(("/modbus/sheetImport"), server.DefaultApiServer.AddRoute(apis.ModbusSheetImport))
-		deviceApi.PUT(("/modbus/point"), server.DefaultApiServer.AddRoute(apis.UpdateModbusPoint))
-		deviceApi.GET(("/modbus"), server.DefaultApiServer.AddRoute(apis.ModbusPoints))
+		deviceApi.GET(("/"), server.AddRoute(apis.Devices))
+		deviceApi.POST(("/"), server.AddRoute(apis.CreateDevice))
+		deviceApi.PUT(("/"), server.AddRoute(apis.UpdateDevice))
+		deviceApi.DELETE(("/"), server.AddRoute(apis.DeleteDevice))
+		deviceApi.GET(("/detail"), server.AddRoute(apis.DeviceDetail))
+		deviceApi.POST(("/modbus/sheetImport"), server.AddRoute(apis.ModbusSheetImport))
+		deviceApi.PUT(("/modbus/point"), server.AddRoute(apis.UpdateModbusPoint))
+		deviceApi.GET(("/modbus"), server.AddRoute(apis.ModbusPoints))
 	}
-	goodsApi := server.DefaultApiServer.GetGroup(server.ContextUrl("/goods"))
+	goodsApi := server.RouteGroup(server.ContextUrl("/goods"))
 	{
 		// 外挂管理
-		goodsApi.GET(("/"), server.DefaultApiServer.AddRoute(apis.Goods))
-		goodsApi.POST(("/"), server.DefaultApiServer.AddRoute(apis.CreateGoods))
-		goodsApi.PUT(("/"), server.DefaultApiServer.AddRoute(apis.UpdateGoods))
-		goodsApi.DELETE(("/"), server.DefaultApiServer.AddRoute(apis.DeleteGoods))
+		goodsApi.GET(("/"), server.AddRoute(apis.Goods))
+		goodsApi.POST(("/"), server.AddRoute(apis.CreateGoods))
+		goodsApi.PUT(("/"), server.AddRoute(apis.UpdateGoods))
+		goodsApi.DELETE(("/"), server.AddRoute(apis.DeleteGoods))
 	}
 
 	// ----------------------------------------------------------------------------------------------
 	// APP
 	// ----------------------------------------------------------------------------------------------
-	appApi := server.DefaultApiServer.GetGroup(server.ContextUrl("/app"))
+	appApi := server.RouteGroup(server.ContextUrl("/app"))
 	{
-		appApi.GET(("/"), server.DefaultApiServer.AddRoute(apis.Apps))
-		appApi.POST(("/"), server.DefaultApiServer.AddRoute(apis.CreateApp))
-		appApi.PUT(("/"), server.DefaultApiServer.AddRoute(apis.UpdateApp))
-		appApi.DELETE(("/"), server.DefaultApiServer.AddRoute(apis.RemoveApp))
-		appApi.PUT(("/start"), server.DefaultApiServer.AddRoute(apis.StartApp))
-		appApi.PUT(("/stop"), server.DefaultApiServer.AddRoute(apis.StopApp))
-		appApi.GET(("/detail"), server.DefaultApiServer.AddRoute(apis.AppDetail))
+		appApi.GET(("/"), server.AddRoute(apis.Apps))
+		appApi.POST(("/"), server.AddRoute(apis.CreateApp))
+		appApi.PUT(("/"), server.AddRoute(apis.UpdateApp))
+		appApi.DELETE(("/"), server.AddRoute(apis.RemoveApp))
+		appApi.PUT(("/start"), server.AddRoute(apis.StartApp))
+		appApi.PUT(("/stop"), server.AddRoute(apis.StopApp))
+		appApi.GET(("/detail"), server.AddRoute(apis.AppDetail))
 	}
 	// ----------------------------------------------------------------------------------------------
 	// AI BASE
 	// ----------------------------------------------------------------------------------------------
-	aiApi := server.DefaultApiServer.GetGroup(server.ContextUrl("/aibase"))
+	aiApi := server.RouteGroup(server.ContextUrl("/aibase"))
 	{
-		aiApi.GET(("/"), server.DefaultApiServer.AddRoute(apis.AiBase))
-		aiApi.DELETE(("/"), server.DefaultApiServer.AddRoute(apis.DeleteAiBase))
+		aiApi.GET(("/"), server.AddRoute(apis.AiBase))
+		aiApi.DELETE(("/"), server.AddRoute(apis.DeleteAiBase))
 	}
 	// ----------------------------------------------------------------------------------------------
 	// Plugin
 	// ----------------------------------------------------------------------------------------------
-	pluginApi := server.DefaultApiServer.GetGroup(server.ContextUrl("/plugin"))
+	pluginApi := server.RouteGroup(server.ContextUrl("/plugin"))
 	{
-		pluginApi.POST(("/service"), server.DefaultApiServer.AddRoute(apis.PluginService))
-		pluginApi.GET(("/detail"), server.DefaultApiServer.AddRoute(apis.PluginDetail))
+		pluginApi.POST(("/service"), server.AddRoute(apis.PluginService))
+		pluginApi.GET(("/detail"), server.AddRoute(apis.PluginDetail))
 	}
 
 	//
 	// 分组管理
 	//
-	groupApi := server.DefaultApiServer.GetGroup(server.ContextUrl("/group"))
+	groupApi := server.RouteGroup(server.ContextUrl("/group"))
 	{
-		groupApi.POST("/create", server.DefaultApiServer.AddRoute(apis.CreateGroup))
-		groupApi.DELETE("/delete", server.DefaultApiServer.AddRoute(apis.DeleteGroup))
-		groupApi.PUT("/update", server.DefaultApiServer.AddRoute(apis.UpdateGroup))
-		groupApi.GET("/list", server.DefaultApiServer.AddRoute(apis.ListGroup))
-		groupApi.GET("/detail", server.DefaultApiServer.AddRoute(apis.GroupDetail))
-		groupApi.POST("/bind", server.DefaultApiServer.AddRoute(apis.BindResource))
-		groupApi.PUT("/unbind", server.DefaultApiServer.AddRoute(apis.UnBindResource))
-		groupApi.GET("/devices", server.DefaultApiServer.AddRoute(apis.FindDeviceByGroup))
-		groupApi.GET("/visuals", server.DefaultApiServer.AddRoute(apis.FindVisualByGroup))
+		groupApi.POST("/create", server.AddRoute(apis.CreateGroup))
+		groupApi.DELETE("/delete", server.AddRoute(apis.DeleteGroup))
+		groupApi.PUT("/update", server.AddRoute(apis.UpdateGroup))
+		groupApi.GET("/list", server.AddRoute(apis.ListGroup))
+		groupApi.GET("/detail", server.AddRoute(apis.GroupDetail))
+		groupApi.POST("/bind", server.AddRoute(apis.BindResource))
+		groupApi.PUT("/unbind", server.AddRoute(apis.UnBindResource))
+		groupApi.GET("/devices", server.AddRoute(apis.FindDeviceByGroup))
+		groupApi.GET("/visuals", server.AddRoute(apis.FindVisualByGroup))
 	}
 
 	//
 	// 协议应用管理
 	//
-	protoAppApi := server.DefaultApiServer.GetGroup(server.ContextUrl("/protoapp"))
+	protoAppApi := server.RouteGroup(server.ContextUrl("/protoapp"))
 	{
-		protoAppApi.POST("/create", server.DefaultApiServer.AddRoute(apis.CreateProtocolApp))
-		protoAppApi.DELETE("/delete", server.DefaultApiServer.AddRoute(apis.DeleteProtocolApp))
-		protoAppApi.PUT("/update", server.DefaultApiServer.AddRoute(apis.UpdateProtocolApp))
-		protoAppApi.GET("/list", server.DefaultApiServer.AddRoute(apis.ListProtocolApp))
+		protoAppApi.POST("/create", server.AddRoute(apis.CreateProtocolApp))
+		protoAppApi.DELETE("/delete", server.AddRoute(apis.DeleteProtocolApp))
+		protoAppApi.PUT("/update", server.AddRoute(apis.UpdateProtocolApp))
+		protoAppApi.GET("/list", server.AddRoute(apis.ListProtocolApp))
 	}
 	//
 	// 大屏应用管理
 	//
-	screenApi := server.DefaultApiServer.GetGroup(server.ContextUrl("/visual"))
+	screenApi := server.RouteGroup(server.ContextUrl("/visual"))
 	{
-		screenApi.POST("/create", server.DefaultApiServer.AddRoute(apis.CreateVisual))
-		screenApi.DELETE("/delete", server.DefaultApiServer.AddRoute(apis.DeleteVisual))
-		screenApi.PUT("/update", server.DefaultApiServer.AddRoute(apis.UpdateVisual))
-		screenApi.GET("/list", server.DefaultApiServer.AddRoute(apis.ListVisual))
-		screenApi.GET("/GenComponentUUID", server.DefaultApiServer.AddRoute(apis.GenComponentUUID))
+		screenApi.POST("/create", server.AddRoute(apis.CreateVisual))
+		screenApi.DELETE("/delete", server.AddRoute(apis.DeleteVisual))
+		screenApi.PUT("/update", server.AddRoute(apis.UpdateVisual))
+		screenApi.GET("/list", server.AddRoute(apis.ListVisual))
+		screenApi.GET("/GenComponentUUID", server.AddRoute(apis.GenComponentUUID))
 	}
 	/*
 	*
 	* 模型管理
 	*
 	 */
-	schemaApi := server.DefaultApiServer.GetGroup(server.ContextUrl("/schema"))
+	schemaApi := server.RouteGroup(server.ContextUrl("/schema"))
 	{
-		schemaApi.POST("/create", server.DefaultApiServer.AddRoute(apis.CreateDataSchema))
-		schemaApi.DELETE("/delete", server.DefaultApiServer.AddRoute(apis.DeleteDataSchema))
-		schemaApi.PUT("/update", server.DefaultApiServer.AddRoute(apis.UpdateDataSchema))
-		schemaApi.GET("/list", server.DefaultApiServer.AddRoute(apis.ListDataSchema))
-		schemaApi.GET(("/detail"), server.DefaultApiServer.AddRoute(apis.DataSchemaDetail))
+		schemaApi.POST("/create", server.AddRoute(apis.CreateDataSchema))
+		schemaApi.DELETE("/delete", server.AddRoute(apis.DeleteDataSchema))
+		schemaApi.PUT("/update", server.AddRoute(apis.UpdateDataSchema))
+		schemaApi.GET("/list", server.AddRoute(apis.ListDataSchema))
+		schemaApi.GET(("/detail"), server.AddRoute(apis.DataSchemaDetail))
 
 	}
-	siteConfigApi := server.DefaultApiServer.GetGroup(server.ContextUrl("/site"))
+	siteConfigApi := server.RouteGroup(server.ContextUrl("/site"))
 	{
 
-		siteConfigApi.PUT("/update", server.DefaultApiServer.AddRoute(apis.UpdateSiteConfig))
-		siteConfigApi.GET("/detail", server.DefaultApiServer.AddRoute(apis.GetSiteConfig))
+		siteConfigApi.PUT("/update", server.AddRoute(apis.UpdateSiteConfig))
+		siteConfigApi.GET("/detail", server.AddRoute(apis.GetSiteConfig))
 	}
 	//
 	// 系统设置
@@ -445,19 +445,19 @@ func (hs *ApiServerPlugin) LoadRoute() {
 	route := server.DefaultApiServer.Route()
 	route.StaticFS("api/cron_assets", http.Dir("cron_asserts"))
 	route.StaticFS("api/cron_logs", http.Dir("cron_logs"))
-	crontaskApi := server.DefaultApiServer.GetGroup(server.ContextUrl("/crontask"))
+	crontaskApi := server.RouteGroup(server.ContextUrl("/crontask"))
 	{
-		crontaskApi.POST("/create", server.DefaultApiServer.AddRouteV2(apis.CreateScheduleTask))
-		crontaskApi.DELETE("/delete", server.DefaultApiServer.AddRouteV2(apis.DeleteScheduleTask))
-		crontaskApi.PUT("/update", server.DefaultApiServer.AddRouteV2(apis.UpdateScheduleTask))
-		crontaskApi.GET("/page", server.DefaultApiServer.AddRouteV2(apis.PageScheduleTask))
+		crontaskApi.POST("/create", server.AddRouteV2(apis.CreateScheduleTask))
+		crontaskApi.DELETE("/delete", server.AddRouteV2(apis.DeleteScheduleTask))
+		crontaskApi.PUT("/update", server.AddRouteV2(apis.UpdateScheduleTask))
+		crontaskApi.GET("/page", server.AddRouteV2(apis.PageScheduleTask))
 
-		crontaskApi.GET("/start", server.DefaultApiServer.AddRouteV2(apis.EnableTask))
-		crontaskApi.GET("/stop", server.DefaultApiServer.AddRouteV2(apis.DisableTask))
-		crontaskApi.GET("/listRunningTask", server.DefaultApiServer.AddRouteV2(apis.ListRunningTask))
-		crontaskApi.GET("/terminateRunningTask", server.DefaultApiServer.AddRouteV2(apis.TerminateRunningTask))
+		crontaskApi.GET("/start", server.AddRouteV2(apis.EnableTask))
+		crontaskApi.GET("/stop", server.AddRouteV2(apis.DisableTask))
+		crontaskApi.GET("/listRunningTask", server.AddRouteV2(apis.ListRunningTask))
+		crontaskApi.GET("/terminateRunningTask", server.AddRouteV2(apis.TerminateRunningTask))
 
-		crontaskApi.GET("/results/page", server.DefaultApiServer.AddRouteV2(apis.PageCronTaskResult))
+		crontaskApi.GET("/results/page", server.AddRouteV2(apis.PageCronTaskResult))
 	}
 }
 

@@ -101,15 +101,27 @@ func StartRulexApiServer(ruleEngine typex.RuleX) {
 	}(typex.GCTX, server.config.Port)
 	DefaultApiServer = &server
 }
+
+// 即将废弃
 func (s *RulexApiServer) AddRoute(f func(c *gin.Context,
 	ruleEngine typex.RuleX)) func(*gin.Context) {
 	return func(c *gin.Context) {
 		f(c, s.ruleEngine)
 	}
 }
-func (s *RulexApiServer) AddRouteV2(f func(*gin.Context, typex.RuleX) (any, error)) func(*gin.Context) {
+
+// New api after 0.6.4
+func AddRoute(f func(c *gin.Context,
+	ruleEngine typex.RuleX)) func(*gin.Context) {
 	return func(c *gin.Context) {
-		data, err := f(c, s.ruleEngine)
+		f(c, DefaultApiServer.ruleEngine)
+	}
+}
+
+// AddRouteV2: Only for cron，It's redundant API， will refactor in feature
+func AddRouteV2(f func(*gin.Context, typex.RuleX) (any, error)) func(*gin.Context) {
+	return func(c *gin.Context) {
+		data, err := f(c, DefaultApiServer.ruleEngine)
 		if err != nil {
 			c.JSON(response.HTTP_OK, response.Error400(err))
 		} else {
@@ -120,6 +132,11 @@ func (s *RulexApiServer) AddRouteV2(f func(*gin.Context, typex.RuleX) (any, erro
 
 func (s *RulexApiServer) GetGroup(name string) *gin.RouterGroup {
 	return s.ginEngine.Group(name)
+}
+
+// new API
+func RouteGroup(name string) *gin.RouterGroup {
+	return DefaultApiServer.ginEngine.Group(name)
 }
 func (s *RulexApiServer) Route() *gin.Engine {
 	return s.ginEngine
