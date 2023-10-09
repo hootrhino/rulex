@@ -76,7 +76,6 @@ func UpdateVisual(c *gin.Context, ruleEngine typex.RuleX) {
 		Name:      form.Name,
 		Type:      form.Type,
 		Content:   form.Content,
-		Status:    form.Status,
 		Thumbnail: form.Thumbnail,
 	}
 	if err := service.UpdateVisual(MVisual); err != nil {
@@ -87,6 +86,26 @@ func UpdateVisual(c *gin.Context, ruleEngine typex.RuleX) {
 	c.JSON(common.HTTP_OK, common.OkWithData(map[string]string{
 		"uuid": MVisual.UUID,
 	}))
+}
+
+/*
+*
+* 发布
+*
+ */
+func PublishVisual(c *gin.Context, ruleEngine typex.RuleX) {
+	uuid, _ := c.GetQuery("uuid")
+	MVisual, err := service.GetVisualWithUUID(uuid)
+	if err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
+	MVisual.Status = "PUBLISH"
+	if err := service.UpdateVisual(*MVisual); err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
+	c.JSON(common.HTTP_OK, common.Ok())
 }
 
 /*
@@ -134,6 +153,7 @@ func VisualDetail(c *gin.Context, ruleEngine typex.RuleX) {
 	mVisual, err := service.GetVisualWithUUID(uuid)
 	if err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
 	}
 	vo := VisualVo{
 		UUID:      mVisual.UUID,

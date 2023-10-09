@@ -389,7 +389,6 @@ func (hs *ApiServerPlugin) LoadRoute() {
 		groupApi.GET("/detail", server.AddRoute(apis.GroupDetail))
 		groupApi.POST("/bind", server.AddRoute(apis.BindResource))
 		groupApi.PUT("/unbind", server.AddRoute(apis.UnBindResource))
-		groupApi.GET("/devices", server.AddRoute(apis.FindDeviceByGroup))
 		groupApi.GET("/visuals", server.AddRoute(apis.FindVisualByGroup))
 		groupApi.DELETE("/", server.AddRoute(apis.DeleteGroup))
 	}
@@ -410,8 +409,10 @@ func (hs *ApiServerPlugin) LoadRoute() {
 	screenApi := server.RouteGroup(server.ContextUrl("/visual"))
 	{
 		screenApi.POST("/create", server.AddRoute(apis.CreateVisual))
+		screenApi.PUT("/publish", server.AddRoute(apis.PublishVisual))
 		screenApi.PUT("/update", server.AddRoute(apis.UpdateVisual))
 		screenApi.GET("/list", server.AddRoute(apis.ListVisual))
+		screenApi.GET("/detail", server.AddRoute(apis.VisualDetail))
 		screenApi.DELETE("/", server.AddRoute(apis.DeleteVisual))
 	}
 	/*

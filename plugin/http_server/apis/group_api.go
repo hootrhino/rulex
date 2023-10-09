@@ -189,44 +189,22 @@ func UnBindResource(c *gin.Context, ruleEngine typex.RuleX) {
 
 /*
 *
-* 设备
-*
- */
-func FindDeviceByGroup(c *gin.Context, ruleEngine typex.RuleX) {
-	Type, _ := c.GetQuery("type")
-	Gid, _ := c.GetQuery("gid")
-	vv2 := []model.MDevice{}
-
-	if Type == "DEVICE" {
-		_, MDevices := service.FindByType(Gid, Type)
-		for _, mG := range MDevices {
-			vv2 = append(vv2, model.MDevice{
-				UUID: mG.UUID,
-				Name: mG.Name,
-				Type: mG.Type,
-			})
-		}
-		c.JSON(common.HTTP_OK, common.OkWithData(vv2))
-		return
-	}
-	c.JSON(common.HTTP_OK, common.Error400(fmt.Errorf("unsupported group type:%s", Type)))
-}
-
-/*
-*
 * 大屏
 *
  */
 func FindVisualByGroup(c *gin.Context, ruleEngine typex.RuleX) {
 	Gid, _ := c.GetQuery("gid")
-	vv1 := []model.MVisual{}
+	visuals := []VisualVo{}
 	MVisuals, _ := service.FindByType(Gid, "VISUAL")
-	for _, mG := range MVisuals {
-		vv1 = append(vv1, model.MVisual{
-			UUID: mG.UUID,
-			Name: mG.Name,
-			Type: mG.Type,
+	for _, vv := range MVisuals {
+		visuals = append(visuals, VisualVo{
+			UUID:      vv.UUID,
+			Name:      vv.Name,
+			Type:      vv.Type,
+			Content:   vv.Content,
+			Status:    vv.Status,
+			Thumbnail: vv.Thumbnail,
 		})
 	}
-	c.JSON(common.HTTP_OK, common.OkWithData(vv1))
+	c.JSON(common.HTTP_OK, common.OkWithData(visuals))
 }

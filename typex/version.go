@@ -12,7 +12,7 @@ type Version struct {
 
 var DefaultVersion = Version{
 	Version:   `v0.6.3`,
-	ReleaseTime: "2023-10-09 17:03:19",
+	ReleaseTime: "2023-10-09 18:03:23",
 }
 var Banner = `
  **  Welcome to RULEX framework world <'_'>
