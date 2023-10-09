@@ -10,11 +10,13 @@ import (
 )
 
 type VisualVo struct {
-	Gid     string `json:"gid,omitempty"`                         // 分组ID
-	UUID    string `json:"uuid,omitempty"`                        // 名称
-	Name    string `json:"name,omitempty" validate:"required"`    // 名称
-	Type    string `json:"type,omitempty"`                        // 类型
-	Content string `json:"content,omitempty" validate:"required"` // 大屏的内容
+	Gid       string `json:"gid,omitempty"`                         // 分组ID
+	UUID      string `json:"uuid,omitempty"`                        // 名称
+	Name      string `json:"name,omitempty" validate:"required"`    // 名称
+	Type      string `json:"type,omitempty"`                        // 类型
+	Content   string `json:"content,omitempty" validate:"required"` // 大屏的内容
+	Thumbnail string `json:"thumbnail,omitempty"`
+	Status    string `json:"status,omitempty"`
 }
 
 /*
@@ -35,10 +37,12 @@ func CreateVisual(c *gin.Context, ruleEngine typex.RuleX) {
 		return
 	}
 	MVisual := model.MVisual{
-		UUID:    utils.VisualUuid(),
-		Name:    form.Name,
-		Type:    form.Type,
-		Content: form.Content,
+		UUID:      utils.VisualUuid(),
+		Name:      form.Name,
+		Type:      form.Type,
+		Content:   form.Content,
+		Status:    "EDITING",
+		Thumbnail: form.Thumbnail,
 	}
 	if err := service.InsertVisual(MVisual); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
@@ -62,16 +66,18 @@ func CreateVisual(c *gin.Context, ruleEngine typex.RuleX) {
 *
  */
 func UpdateVisual(c *gin.Context, ruleEngine typex.RuleX) {
-	vvo := VisualVo{}
-	if err := c.ShouldBindJSON(&vvo); err != nil {
+	form := VisualVo{}
+	if err := c.ShouldBindJSON(&form); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
 	MVisual := model.MVisual{
-		UUID:    vvo.UUID,
-		Name:    vvo.Name,
-		Type:    vvo.Type,
-		Content: vvo.Content,
+		UUID:      form.UUID,
+		Name:      form.Name,
+		Type:      form.Type,
+		Content:   form.Content,
+		Status:    form.Status,
+		Thumbnail: form.Thumbnail,
 	}
 	if err := service.UpdateVisual(MVisual); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
@@ -106,10 +112,12 @@ func ListVisual(c *gin.Context, ruleEngine typex.RuleX) {
 	visuals := []VisualVo{}
 	for _, vv := range service.AllVisual() {
 		visuals = append(visuals, VisualVo{
-			UUID:    vv.UUID,
-			Name:    vv.Name,
-			Type:    vv.Type,
-			Content: vv.Content,
+			UUID:      vv.UUID,
+			Name:      vv.Name,
+			Type:      vv.Type,
+			Content:   vv.Content,
+			Status:    vv.Status,
+			Thumbnail: vv.Thumbnail,
 		})
 	}
 	c.JSON(common.HTTP_OK, common.OkWithData(visuals))
@@ -128,10 +136,12 @@ func VisualDetail(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 	}
 	vo := VisualVo{
-		UUID:    mVisual.UUID,
-		Name:    mVisual.Name,
-		Type:    mVisual.Type,
-		Content: mVisual.Content,
+		UUID:      mVisual.UUID,
+		Name:      mVisual.Name,
+		Type:      mVisual.Type,
+		Content:   mVisual.Content,
+		Status:    mVisual.Status,
+		Thumbnail: mVisual.Thumbnail,
 	}
 	c.JSON(common.HTTP_OK, common.OkWithData(vo))
 }
