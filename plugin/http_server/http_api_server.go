@@ -384,7 +384,6 @@ func (hs *ApiServerPlugin) LoadRoute() {
 	groupApi := server.RouteGroup(server.ContextUrl("/group"))
 	{
 		groupApi.POST("/create", server.AddRoute(apis.CreateGroup))
-		groupApi.DELETE("/delete", server.AddRoute(apis.DeleteGroup))
 		groupApi.PUT("/update", server.AddRoute(apis.UpdateGroup))
 		groupApi.GET("/list", server.AddRoute(apis.ListGroup))
 		groupApi.GET("/detail", server.AddRoute(apis.GroupDetail))
@@ -392,6 +391,7 @@ func (hs *ApiServerPlugin) LoadRoute() {
 		groupApi.PUT("/unbind", server.AddRoute(apis.UnBindResource))
 		groupApi.GET("/devices", server.AddRoute(apis.FindDeviceByGroup))
 		groupApi.GET("/visuals", server.AddRoute(apis.FindVisualByGroup))
+		groupApi.DELETE("/", server.AddRoute(apis.DeleteGroup))
 	}
 
 	//
@@ -410,10 +410,9 @@ func (hs *ApiServerPlugin) LoadRoute() {
 	screenApi := server.RouteGroup(server.ContextUrl("/visual"))
 	{
 		screenApi.POST("/create", server.AddRoute(apis.CreateVisual))
-		screenApi.DELETE("/delete", server.AddRoute(apis.DeleteVisual))
 		screenApi.PUT("/update", server.AddRoute(apis.UpdateVisual))
 		screenApi.GET("/list", server.AddRoute(apis.ListVisual))
-		screenApi.GET("/GenComponentUUID", server.AddRoute(apis.GenComponentUUID))
+		screenApi.DELETE("/", server.AddRoute(apis.DeleteVisual))
 	}
 	/*
 	*

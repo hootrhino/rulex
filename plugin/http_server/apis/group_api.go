@@ -218,20 +218,15 @@ func FindDeviceByGroup(c *gin.Context, ruleEngine typex.RuleX) {
 *
  */
 func FindVisualByGroup(c *gin.Context, ruleEngine typex.RuleX) {
-	Type, _ := c.GetQuery("type")
 	Gid, _ := c.GetQuery("gid")
 	vv1 := []model.MVisual{}
-	if Type == "VISUAL" {
-		MVisuals, _ := service.FindByType(Gid, Type)
-		for _, mG := range MVisuals {
-			vv1 = append(vv1, model.MVisual{
-				UUID: mG.UUID,
-				Name: mG.Name,
-				Type: mG.Type,
-			})
-		}
-		c.JSON(common.HTTP_OK, common.OkWithData(vv1))
-		return
+	MVisuals, _ := service.FindByType(Gid, "VISUAL")
+	for _, mG := range MVisuals {
+		vv1 = append(vv1, model.MVisual{
+			UUID: mG.UUID,
+			Name: mG.Name,
+			Type: mG.Type,
+		})
 	}
-	c.JSON(common.HTTP_OK, common.Error400(fmt.Errorf("unsupported group type:%s", Type)))
+	c.JSON(common.HTTP_OK, common.OkWithData(vv1))
 }

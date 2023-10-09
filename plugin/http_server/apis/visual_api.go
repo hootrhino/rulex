@@ -10,11 +10,11 @@ import (
 )
 
 type VisualVo struct {
-	Gid     string `json:"gid"`                         // 分组ID
-	UUID    string `json:"uuid"`                        // 名称
-	Name    string `json:"name" validate:"required"`    // 名称
-	Type    string `json:"type"`                        // 类型
-	Content string `json:"content" validate:"required"` // 大屏的内容
+	Gid     string `json:"gid,omitempty"`                         // 分组ID
+	UUID    string `json:"uuid,omitempty"`                        // 名称
+	Name    string `json:"name,omitempty" validate:"required"`    // 名称
+	Type    string `json:"type,omitempty"`                        // 类型
+	Content string `json:"content,omitempty" validate:"required"` // 大屏的内容
 }
 
 /*
@@ -24,28 +24,28 @@ type VisualVo struct {
  */
 
 func CreateVisual(c *gin.Context, ruleEngine typex.RuleX) {
-	vvo := VisualVo{}
-	if err := c.ShouldBindJSON(&vvo); err != nil {
+	form := VisualVo{Type: "BUILDIN"}
+	if err := c.ShouldBindJSON(&form); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	_, err0 := service.GetGenericGroupWithUUID(vvo.Gid)
+	_, err0 := service.GetGenericGroupWithUUID(form.Gid)
 	if err0 != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err0))
 		return
 	}
 	MVisual := model.MVisual{
 		UUID:    utils.VisualUuid(),
-		Name:    vvo.Name,
-		Type:    vvo.Type,
-		Content: vvo.Content,
+		Name:    form.Name,
+		Type:    form.Type,
+		Content: form.Content,
 	}
 	if err := service.InsertVisual(MVisual); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
 	// 新建大屏的时候必须给一个分组
-	if err := service.BindResource(vvo.Gid, MVisual.UUID); err != nil {
+	if err := service.BindResource(form.Gid, MVisual.UUID); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
