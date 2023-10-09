@@ -49,7 +49,10 @@ func CreateVisual(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	c.JSON(common.HTTP_OK, common.Ok())
+	// 返回新建的大屏字段 用来跳转编辑器
+	c.JSON(common.HTTP_OK, common.OkWithData(map[string]string{
+		"uuid": MVisual.UUID,
+	}))
 
 }
 
@@ -74,8 +77,10 @@ func UpdateVisual(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	c.JSON(common.HTTP_OK, common.Ok())
-
+	// 返回新建的大屏字段 用来跳转编辑器
+	c.JSON(common.HTTP_OK, common.OkWithData(map[string]string{
+		"uuid": MVisual.UUID,
+	}))
 }
 
 /*
