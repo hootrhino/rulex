@@ -13,6 +13,9 @@ import (
 * GRPC 解码
 *
  */
+func Request(rx typex.RuleX) func(*lua.LState) int {
+	return request(rx)
+}
 func RPCDecode(rx typex.RuleX) func(*lua.LState) int {
 	return request(rx)
 }
