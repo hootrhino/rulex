@@ -2,6 +2,7 @@ package httpserver
 
 import (
 	"encoding/json"
+	"github.com/hootrhino/rulex/component/cron_task"
 	"net/http"
 
 	"github.com/hootrhino/rulex/component/appstack"
@@ -443,21 +444,20 @@ func (hs *ApiServerPlugin) LoadRoute() {
 	 * 定时任务
 	 */
 	route := server.DefaultApiServer.Route()
-	route.StaticFS("api/cron_assets", http.Dir("cron_asserts"))
-	route.StaticFS("api/cron_logs", http.Dir("cron_logs"))
-	crontaskApi := server.RouteGroup(server.ContextUrl("/crontask"))
+	route.StaticFS("api/cron_assets", http.Dir(cron_task.CRON_ASSETS))
+	route.StaticFS("api/cron_logs", http.Dir(cron_task.CRON_LOGS))
+	crontaskApi := server.DefaultApiServer.GetGroup(server.ContextUrl("/crontask"))
 	{
 		crontaskApi.POST("/create", server.AddRouteV2(apis.CreateScheduleTask))
 		crontaskApi.DELETE("/delete", server.AddRouteV2(apis.DeleteScheduleTask))
 		crontaskApi.PUT("/update", server.AddRouteV2(apis.UpdateScheduleTask))
 		crontaskApi.GET("/page", server.AddRouteV2(apis.PageScheduleTask))
+		crontaskApi.GET("/results/page", server.AddRouteV2(apis.PageCronTaskResult))
 
 		crontaskApi.GET("/start", server.AddRouteV2(apis.EnableTask))
 		crontaskApi.GET("/stop", server.AddRouteV2(apis.DisableTask))
 		crontaskApi.GET("/listRunningTask", server.AddRouteV2(apis.ListRunningTask))
 		crontaskApi.GET("/terminateRunningTask", server.AddRouteV2(apis.TerminateRunningTask))
-
-		crontaskApi.GET("/results/page", server.AddRouteV2(apis.PageCronTaskResult))
 	}
 }
 

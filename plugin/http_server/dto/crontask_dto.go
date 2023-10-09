@@ -1,26 +1,25 @@
 package dto
 
-import (
-	"mime/multipart"
-)
+import "mime/multipart"
 
 type CronTaskCreateDTO struct {
-	Name     string                `form:"name" binding:"required"`
-	CronExpr string                `form:"cronExpr" binding:"required"`
-	TaskType int                   `form:"taskType" binding:"required"` // 1-shell 2-cmd
-	Args     string                `form:"args"`                        // "param1 param2 param3"
-	IsRoot   string                `form:"isRoot"`                      // 0-false 1-true
-	Env      []string              `form:"env"`                         // ["A=e1", "B=e2", "C=e3"]
-	File     *multipart.FileHeader `form:"file" binding:"required"`
+	Name     string   `form:"name" binding:"required" json:"name"`
+	CronExpr string   `form:"cronExpr" binding:"required" json:"cronExpr"`
+	TaskType int      `form:"taskType" binding:"required" json:"taskType"` // 1-shell 2-cmd
+	Args     *string  `form:"args" json:"args"`                            // "param1 param2 param3"
+	IsRoot   string   `form:"isRoot" json:"isRoot"`                        // 0-false 1-true
+	Env      []string `form:"env" json:"env"`                              // ["A=e1", "B=e2", "C=e3"]
+	Script   string   `form:"script" json:"script"`
 }
 
 type CronTaskUpdateDTO struct {
-	ID       int                   `form:"id" binding:"required"`
-	Name     string                `form:"name"`
-	CronExpr string                `form:"cronExpr"`
-	TaskType int                   `form:"taskType"` // 1-shell 2-cmd
-	Args     *string               `form:"args"`     // "param1 param2 param3"
-	IsRoot   string                `form:"isRoot"`   // 0-false 1-true
-	Env      []string              `form:"env"`      // ["A=e1", "B=e2", "C=e3"]
-	File     *multipart.FileHeader `form:"file"`
+	ID       int                   `form:"id" binding:"required" json:"id"`
+	Name     string                `form:"name" json:"name"`
+	CronExpr string                `form:"cronExpr" json:"cronExpr"`
+	TaskType int                   `form:"taskType" json:"taskType"` // 1-shell 2-cmd
+	Args     *string               `form:"args" json:"args"`         // "param1 param2 param3"
+	IsRoot   string                `form:"isRoot" json:"isRoot"`     // 0-false 1-true
+	Env      []string              `form:"env" json:"env"`           // ["A=e1", "B=e2", "C=e3"]
+	Script   string                `form:"script" json:"script"`
+	File     *multipart.FileHeader `form:"file"` // 暂时用不上
 }

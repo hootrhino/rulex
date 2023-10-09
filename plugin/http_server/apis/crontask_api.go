@@ -19,34 +19,44 @@ import (
 // 创建定时任务
 func CreateScheduleTask(c *gin.Context, ruleEngine typex.RuleX) (any, error) {
 	// 1. 从c中取出数据
-	dto2 := dto.CronTaskCreateDTO{}
-	err := c.ShouldBind(&dto2)
+	data := dto.CronTaskCreateDTO{}
+	err := c.ShouldBindJSON(&data)
 	if err != nil {
 		return nil, err
 	}
 	// 2. 新增到数据库
-	task, err := service.CreateScheduleTask(&dto2)
+	task, err := service.CreateScheduleTask(&data)
 	if err != nil {
 		return nil, err
 	}
-	// 3. 保存文件
-	dir := path.Join("cron_assets", strconv.Itoa(int(task.ID)))
-	err = os.MkdirAll(dir, 0777)
-	if err != nil {
-		return nil, err
-	}
-	filepath := path.Join(dir, dto2.File.Filename)
-	err = c.SaveUploadedFile(dto2.File, filepath)
-	if err != nil {
-		return nil, err
-	}
-	// 4. 更新数据库
-	updateTask := model.MCronTask{
-		Command: filepath,
-		WorkDir: dir,
-	}
-	updateTask.ID = task.ID
 
+	// 创建工作路径
+	updateTask := model.MCronTask{}
+	updateTask.ID = task.ID
+	dir := path.Join(cron_task.CRON_ASSETS, strconv.Itoa(int(task.ID)))
+	err = os.MkdirAll(dir, cron_task.PERM_0777)
+	if err != nil {
+		return nil, err
+	}
+	updateTask.WorkDir = dir
+
+	switch task.TaskType {
+	case cron_task.CRON_TASK_TYPE_LINUX_SHELL:
+		// 所有linuxshell都以bash -c
+		updateTask.Script = data.Script
+	case cron_task.CRON_TASK_TYPE_WINDOWS_CMD:
+		//filepath := path.Join(dir, data.File.Filename)
+		//err = c.SaveUploadedFile(data.File, filepath)
+		//if err != nil {
+		//	return nil, err
+		//}
+		//updateTask.Command = filepath
+		//updateTask.WorkDir = dir
+	default:
+		return nil, errors.New("error taskType")
+	}
+
+	// 4. 更新数据库
 	db := interdb.DB()
 	tx := db.Updates(&updateTask)
 	if tx.Error != nil {
@@ -98,8 +108,8 @@ func UpdateScheduleTask(c *gin.Context, ruleEngine typex.RuleX) (any, error) {
 		return nil, err
 	}
 	if dto2.File != nil {
-		dir := path.Join("cron_assets", strconv.Itoa(int(task.ID)))
-		err = os.MkdirAll(dir, 0777)
+		dir := path.Join(cron_task.CRON_ASSETS, strconv.Itoa(int(task.ID)))
+		err = os.MkdirAll(dir, cron_task.PERM_0777)
 		if err != nil {
 			return nil, err
 		}
