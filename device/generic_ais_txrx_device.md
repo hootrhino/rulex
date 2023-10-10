@@ -89,38 +89,29 @@ Actions =
 
 ```
 ## 数据样例
-假设有一个设备发送了报文：
-```
-\1G1:370208949,g:1,s:ABC,t:2320,c:1660780800,d:110*72\!ABVDM,1,1,5,B,H69EvShlTpID@TpMUG3COOL0000,2*14
-```
-经过RULEX解析以后，规则脚本里面的 data 格式如下:
+假设有一个设备发送了GNS报文,经过RULEX解析以后，规则脚本里面的 data 格式如下:
 ```json
 {
-    "Talker":"AB",
-    "Type":"VDM",
-    "Fields":[
-        "1",
-        "1",
-        "5",
-        "B",
-        "H69EvShlTpID@TpMUG3COOL0000",
-        "2"
-    ],
-    "Checksum":"14",
-    "Raw":"!ABVDM,1,1,5,B,H69EvShlTpID@TpMUG3COOL0000,2*14",
-    "TagBlock":{
-        "Time":1660780800,
-        "RelativeTime":0,
-        "Destination":"110",
-        "Grouping":"1",
-        "LineCount":0,
-        "Source":"ABC",
-        "Text":"2320"
+    "time":{
+        "valid":true,
+        "hour":15,
+        "minute":33,
+        "second":26,
+        "millisecond":0
     },
-    "NumFragments":1,
-    "FragmentNumber":1,
-    "MessageID":5,
-    "Channel":"B",
-    "Payload":"...."
+    "validity":"V",
+    "latitude":0,
+    "longitude":0,
+    "speed":0,
+    "course":0,
+    "date":{
+        "valid":true,
+        "dd":10,
+        "mm":10,
+        "yy":23
+    },
+    "variation":0,
+    "ffa_mode":"N",
+    "nav_status":""
 }
 ```
