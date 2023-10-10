@@ -6,61 +6,21 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
+	"strings"
 	"time"
 
 	"github.com/adrianmo/go-nmea"
+	aislib "github.com/hootrhino/go-ais"
 	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/typex"
 	"github.com/hootrhino/rulex/utils"
 	"github.com/jinzhu/copier"
 )
 
+var __AisCodec = aislib.CodecNew(false, false, false)
+
 // --------------------------------------------------------------------------------------------------
 // 把AIS包里面的几个结构体拿出来了，主要是适配JSON格式, 下面这些结构体和AIS包里面的完全一样
-// --------------------------------------------------------------------------------------------------
-/*
-*
-* 公共结构
-*
- */
-type _AISDeviceMasterBaseSentence struct {
-	Talker   string                   `json:"talker"`   // The talker id (e.g GP)
-	Type     string                   `json:"type"`     // The data type (e.g GSA)
-	Fields   []string                 `json:"fields"`   // Array of fields
-	Checksum string                   `json:"checksum"` // The Checksum
-	Raw      string                   `json:"raw"`      // The raw NMEA sentence received
-	TagBlock _AISDeviceMasterTagBlock `json:"tagBlock"` // NMEA tagblock
-}
-
-/*
-*
-* Tag
-*
- */
-type _AISDeviceMasterTagBlock struct {
-	Time         int64  `json:"time"`         // TypeUnixTime unix timestamp (unit is likely to be s, but might be ms, YMMV), parameter: -c
-	RelativeTime int64  `json:"relativeTime"` // TypeRelativeTime relative time, parameter: -r
-	Destination  string `json:"destination"`  // TypeDestinationID destination identification 15 char max, parameter: -d
-	Grouping     string `json:"grouping"`     // TypeGrouping sentence grouping, parameter: -g
-	LineCount    int64  `json:"lineCount"`    // TypeLineCount line count, parameter: -n
-	Source       string `json:"source"`       // TypeSourceID source identification 15 char max, parameter: -s
-	Text         string `json:"text"`         // TypeTextString valid character string, parameter -t
-}
-
-/*
-*
-* AIS包
-*
- */
-type _AISDeviceMasterPacket struct {
-	_AISDeviceMasterBaseSentence
-	NumFragments   int64  `json:"numFragments"`
-	FragmentNumber int64  `json:"fragmentNumber"`
-	MessageID      int64  `json:"messageID"`
-	Channel        string `json:"channel"`
-	Payload        []byte `json:"payload"`
-}
-
 // --------------------------------------------------------------------------------------------------
 type _AISDeviceMasterConfig struct {
 	Mode string `json:"mode"` // TCP UDP UART
@@ -88,7 +48,7 @@ func NewAISDeviceMaster(e typex.RuleX) typex.XDevice {
 	aism.mainConfig = _AISDeviceMasterConfig{
 		Mode: "TCP",
 		Host: "0.0.0.0",
-		Port: 2600,
+		Port: 6005,
 	}
 	aism.DevicesSessionMap = map[string]*__AISDeviceSession{}
 	return aism
@@ -233,7 +193,7 @@ func (aism *AISDeviceMaster) handleAuth(ctx context.Context,
 	session.Transport.SetDeadline(time.Time{})
 	//
 	if err != nil {
-		glogger.GLogger.Error(err)
+		glogger.GLogger.Error(session.Transport.RemoteAddr(), err)
 		session.Transport.Close()
 		return
 	}
@@ -254,7 +214,6 @@ func (aism *AISDeviceMaster) handleAuth(ctx context.Context,
 	session.Ip = session.Transport.RemoteAddr().String()
 	aism.DevicesSessionMap[sn] = session
 	go aism.handleIO(session)
-
 }
 
 /*
@@ -263,7 +222,6 @@ func (aism *AISDeviceMaster) handleAuth(ctx context.Context,
 *
  */
 func (aism *AISDeviceMaster) handleIO(session *__AISDeviceSession) {
-
 	reader := bufio.NewReader(session.Transport)
 	for {
 		s, err := reader.ReadString('\n')
@@ -272,6 +230,11 @@ func (aism *AISDeviceMaster) handleIO(session *__AISDeviceSession) {
 			delete(aism.DevicesSessionMap, session.SN)
 			session.Transport.Close()
 			return
+		}
+		// 可能会收到心跳包: !HRT710,Q,003,0*06
+		if strings.HasPrefix(s, "!HRT") {
+			glogger.GLogger.Debug("Heart beat from:", session.SN, session.Transport.RemoteAddr())
+			continue
 		}
 		sentence, err := nmea.Parse(s)
 		if err != nil {
@@ -297,7 +260,14 @@ func (aism *AISDeviceMaster) handleIO(session *__AISDeviceSession) {
 			vdmo1 := sentence.(nmea.VDMVDO)
 			vdmo := VDMVDO{}
 			copier.Copy(&vdmo, &vdmo1)
-			glogger.GLogger.Debug("Received VDM data:", vdmo.String())
+			glogger.GLogger.Debug("Received VDM data:", vdmo.PayloadInfo())
+			aism.RuleEngine.WorkDevice(aism.Details(), vdmo.String())
+		}
+		if sentence.DataType() == nmea.TypeVDO {
+			vdmo1 := sentence.(nmea.VDMVDO)
+			vdmo := VDMVDO{}
+			copier.Copy(&vdmo, &vdmo1)
+			glogger.GLogger.Debug("Received VDO data:", vdmo.PayloadInfo())
 			aism.RuleEngine.WorkDevice(aism.Details(), vdmo.String())
 		}
 
@@ -334,10 +304,10 @@ func (s BaseSentence) TalkerID() string {
 }
 
 // String formats the sentence into a string
-func (s BaseSentence) String() string {
-	bytes, _ := json.Marshal(s)
-	return string(bytes)
-}
+// func (s BaseSentence) String() string {
+// 	bytes, _ := json.Marshal(s)
+// 	return string(bytes)
+// }
 
 type TagBlock struct {
 	Time         int64  `json:"time"`          // TypeUnixTime unix timestamp (unit is likely to be s, but might be ms, YMMV), parameter: -c
@@ -349,36 +319,57 @@ type TagBlock struct {
 	Text         string `json:"text"`          // TypeTextString valid character string, parameter -t
 }
 type RMC struct {
-	BaseSentence `json:"base_sentence"`
-	Time         Time    `json:"time"`       // Time Stamp
-	Validity     string  `json:"validity"`   // validity - A-ok, V-invalid
-	Latitude     float64 `json:"latitude"`   // Latitude
-	Longitude    float64 `json:"longitude"`  // Longitude
-	Speed        float64 `json:"speed"`      // Speed in knots
-	Course       float64 `json:"course"`     // True course
-	Date         Date    `json:"date"`       // Date
-	Variation    float64 `json:"variation"`  // Magnetic variation
-	FFAMode      string  `json:"ffa_mode"`   // FAA mode indicator (filled in NMEA 2.3 and later)
-	NavStatus    string  `json:"nav_status"` // Nav Status (NMEA 4.1 and later)
+	// BaseSentence `json:"base_sentence"` // base_sentence
+	Time      Time    `json:"time"`       // Time Stamp
+	Validity  string  `json:"validity"`   // validity - A-ok, V-invalid
+	Latitude  float64 `json:"latitude"`   // Latitude
+	Longitude float64 `json:"longitude"`  // Longitude
+	Speed     float64 `json:"speed"`      // Speed in knots
+	Course    float64 `json:"course"`     // True course
+	Date      Date    `json:"date"`       // Date
+	Variation float64 `json:"variation"`  // Magnetic variation
+	FFAMode   string  `json:"ffa_mode"`   // FAA mode indicator (filled in NMEA 2.3 and later)
+	NavStatus string  `json:"nav_status"` // Nav Status (NMEA 4.1 and later)
 }
+
+func (s RMC) String() string {
+	bytes, err := json.Marshal(s)
+	if err != nil {
+		return ""
+	}
+	return string(bytes)
+}
+
+/*
+*
+* AIS消息结构体
+*
+ */
 type VDMVDO struct {
-	BaseSentence   `json:"base_sentence"`
-	NumFragments   int64  `json:"num_fragments"`
-	FragmentNumber int64  `json:"fragment_number"`
-	MessageID      int64  `json:"message_id"`
-	Channel        string `json:"channel"`
-	Payload        []byte `json:"payload"`
+	// BaseSentence   `json:"base_sentence"`
+	NumFragments   int64         `json:"numFragments"`
+	FragmentNumber int64         `json:"fragmentNumber"`
+	MessageID      int64         `json:"messageId"`
+	Channel        string        `json:"channel"`
+	Payload        []byte        `json:"-"`
+	MessageContent aislib.Packet `json:"messageContent"`
 }
+
+func (v VDMVDO) PayloadInfo() aislib.Packet {
+	__AisCodec.DropSpace = true
+	return __AisCodec.DecodePacket(v.Payload)
+}
+func (s VDMVDO) String() string {
+	bytes, _ := json.Marshal(s)
+	return string(bytes)
+}
+
 type Time struct {
 	Valid       bool `json:"valid"`
 	Hour        int  `json:"hour"`
 	Minute      int  `json:"minute"`
 	Second      int  `json:"second"`
 	Millisecond int  `json:"millisecond"`
-}
-
-func (t Time) MarshalJSON() ([]byte, error) {
-	return []byte(t.String()), nil
 }
 
 // String representation of Time
@@ -395,17 +386,13 @@ type Date struct {
 	YY    int  `json:"yy"`
 }
 
-func (d Date) MarshalJSON() ([]byte, error) {
-	return []byte(d.String()), nil
-}
-
 // String representation of date
 func (d Date) String() string {
 	return fmt.Sprintf("%02d/%02d/%02d", d.DD, d.MM, d.YY)
 }
 
 type GNS struct {
-	BaseSentence
+	// BaseSentence
 	Time      Time // UTC of position
 	Latitude  float64
 	Longitude float64
@@ -426,4 +413,9 @@ type GNS struct {
 	Age        float64 // Age of differential data
 	Station    int64   // Differential reference station ID
 	NavStatus  string  // Navigation status (NMEA 4.1+). See NavStats* (`NavStatusAutonomous` etc) constants for possible values.
+}
+
+func (s GNS) String() string {
+	bytes, _ := json.Marshal(s)
+	return string(bytes)
 }

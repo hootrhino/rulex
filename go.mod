@@ -21,6 +21,7 @@ require (
 	github.com/gopcua/opcua v0.3.15
 	github.com/gorilla/websocket v1.5.0
 	github.com/gosnmp/gosnmp v1.35.0
+	github.com/hootrhino/go-ais v1.0.0
 	github.com/hootrhino/gopher-lua v1.0.0
 	github.com/hootrhino/wmi v0.0.0-20230603082700-cfa077a8cf01
 	github.com/itchyny/gojq v0.12.13

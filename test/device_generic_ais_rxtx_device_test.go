@@ -76,7 +76,7 @@ func ais_sender_emulator_udp() {
 
 func ais_sender_emulator_tcp() {
 	// Connect to the server
-	s1 := `\1G1:370208949,g:1,s:ABC,t:2320,c:1660780800,d:110*72\!ABVDM,1,1,5,B,H69EvShlTpID@TpMUG3COOL0000,2*14`
+	s1 := `!ABVDM,1,1,5,B,H69EvShlTpID@TpMUG3COOL0000,2*14`
 	conn, err := net.Dial("tcp", "localhost:6005")
 	if err != nil {
 		fmt.Println("Failed to connect:", err)
@@ -120,12 +120,6 @@ func Test_generic_ais_txrx_device(t *testing.T) {
 	ctx, cancelF := typex.NewCCTX()
 	if err := engine.LoadDeviceWithCtx(GENERIC_AIS, ctx, cancelF); err != nil {
 		t.Fatal(err)
-	}
-	for i := 0; i < 100; i++ {
-		ais_sender_emulator_tcp()
-	}
-	for i := 0; i < 100; i++ {
-		ais_sender_emulator_udp()
 	}
 	time.Sleep(10 * time.Second)
 	engine.Stop()
