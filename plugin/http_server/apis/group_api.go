@@ -124,6 +124,36 @@ func ListGroup(c *gin.Context, ruleEngine typex.RuleX) {
 
 /*
 *
+* 查找分组
+*
+ */
+func ListVisualGroup(c *gin.Context, ruleEngine typex.RuleX) {
+	visuals := []MGenericGroupVo{}
+	for _, vv := range service.ListByGroupType("VISUAL") {
+		visuals = append(visuals, MGenericGroupVo{
+			UUID:   vv.UUID,
+			Name:   vv.Name,
+			Type:   vv.Type,
+			Parent: vv.Parent,
+		})
+	}
+	c.JSON(common.HTTP_OK, common.OkWithData(visuals))
+}
+func ListDeviceGroup(c *gin.Context, ruleEngine typex.RuleX) {
+	visuals := []MGenericGroupVo{}
+	for _, vv := range service.ListByGroupType("DEVICE") {
+		visuals = append(visuals, MGenericGroupVo{
+			UUID:   vv.UUID,
+			Name:   vv.Name,
+			Type:   vv.Type,
+			Parent: vv.Parent,
+		})
+	}
+	c.JSON(common.HTTP_OK, common.OkWithData(visuals))
+}
+
+/*
+*
 * 大屏详情
 *
  */
@@ -196,8 +226,8 @@ func UnBindResource(c *gin.Context, ruleEngine typex.RuleX) {
 * 大屏
 *
  */
-func FindVisualByGroup(c *gin.Context, ruleEngine typex.RuleX) {
-	Gid, _ := c.GetQuery("gid")
+func ListVisualByGroup(c *gin.Context, ruleEngine typex.RuleX) {
+	Gid, _ := c.GetQuery("uuid")
 	visuals := []VisualVo{}
 	MVisuals, _ := service.FindByType(Gid, "VISUAL")
 	for _, vv := range MVisuals {

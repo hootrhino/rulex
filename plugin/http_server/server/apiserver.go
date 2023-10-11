@@ -180,13 +180,13 @@ func (s *RulexApiServer) InitializeData() {
 	}
 	// 配置一个默认分组
 	service.InitGenericGroup(&model.MGenericGroup{
-		UUID:   "ROOT",
+		UUID:   "VROOT",
 		Type:   "VISUAL",
 		Name:   "默认分组",
 		Parent: "NULL",
 	})
 	service.InitGenericGroup(&model.MGenericGroup{
-		UUID:   "ROOT",
+		UUID:   "DROOT",
 		Type:   "DEVICE",
 		Name:   "默认分组",
 		Parent: "NULL",

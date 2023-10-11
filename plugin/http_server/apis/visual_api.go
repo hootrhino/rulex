@@ -171,6 +171,7 @@ func VisualDetail(c *gin.Context, ruleEngine typex.RuleX) {
 	c.JSON(common.HTTP_OK, common.OkWithData(vo))
 }
 
+
 /*
 *
 * 生成随机数

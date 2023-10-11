@@ -26,12 +26,17 @@ func AllGenericGroup() []model.MGenericGroup {
 	interdb.DB().Find(&m)
 	return m
 }
+func ListByGroupType(t string) []model.MGenericGroup {
+	m := []model.MGenericGroup{}
+	interdb.DB().Where("type=?", t).Find(&m)
+	return m
+}
 
 /*
 *
   - 根据分组类型查询:DEVICE, VISUAL
 
-*
+*~
 */
 func FindByType(uuid, t string) ([]model.MVisual, []model.MDevice) {
 	sql := `

@@ -247,6 +247,7 @@ func (hs *ApiServerPlugin) LoadRoute() {
 		userApi.GET(("/"), server.AddRoute(apis.Users))
 		userApi.GET(("/detail"), server.AddRoute(apis.UserDetail))
 		userApi.POST(("/"), server.AddRoute(apis.CreateUser))
+
 	}
 
 	//
@@ -338,6 +339,8 @@ func (hs *ApiServerPlugin) LoadRoute() {
 		deviceApi.POST(("/modbus/sheetImport"), server.AddRoute(apis.ModbusSheetImport))
 		deviceApi.PUT(("/modbus/point"), server.AddRoute(apis.UpdateModbusPoint))
 		deviceApi.GET(("/modbus"), server.AddRoute(apis.ModbusPoints))
+		deviceApi.GET("/group", server.AddRoute(apis.ListDeviceGroup))
+
 	}
 	goodsApi := server.RouteGroup(server.ContextUrl("/goods"))
 	{
@@ -389,7 +392,6 @@ func (hs *ApiServerPlugin) LoadRoute() {
 		groupApi.GET("/detail", server.AddRoute(apis.GroupDetail))
 		groupApi.POST("/bind", server.AddRoute(apis.BindResource))
 		groupApi.PUT("/unbind", server.AddRoute(apis.UnBindResource))
-		groupApi.GET("/visuals", server.AddRoute(apis.FindVisualByGroup))
 		groupApi.DELETE("/", server.AddRoute(apis.DeleteGroup))
 	}
 
@@ -406,14 +408,15 @@ func (hs *ApiServerPlugin) LoadRoute() {
 	//
 	// 大屏应用管理
 	//
-	screenApi := server.RouteGroup(server.ContextUrl("/visual"))
+	visualApi := server.RouteGroup(server.ContextUrl("/visual"))
 	{
-		screenApi.POST("/create", server.AddRoute(apis.CreateVisual))
-		screenApi.PUT("/publish", server.AddRoute(apis.PublishVisual))
-		screenApi.PUT("/update", server.AddRoute(apis.UpdateVisual))
-		screenApi.GET("/list", server.AddRoute(apis.ListVisual))
-		screenApi.GET("/detail", server.AddRoute(apis.VisualDetail))
-		screenApi.DELETE("/", server.AddRoute(apis.DeleteVisual))
+		visualApi.POST("/create", server.AddRoute(apis.CreateVisual))
+		visualApi.PUT("/publish", server.AddRoute(apis.PublishVisual))
+		visualApi.PUT("/update", server.AddRoute(apis.UpdateVisual))
+		visualApi.GET("/listByGroup", server.AddRoute(apis.ListVisualByGroup))
+		visualApi.GET("/detail", server.AddRoute(apis.VisualDetail))
+		visualApi.GET("/group", server.AddRoute(apis.ListVisualGroup))
+		visualApi.DELETE("/", server.AddRoute(apis.DeleteVisual))
 	}
 	/*
 	*
