@@ -78,7 +78,18 @@ func UpdateVisual(c *gin.Context, ruleEngine typex.RuleX) {
 		Content:   form.Content,
 		Thumbnail: form.Thumbnail,
 	}
+
 	if err := service.UpdateVisual(MVisual); err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
+	// 取消绑定分组
+	if err := service.UnBindResource(form.Gid, MVisual.UUID); err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
+	// 重新绑定分组
+	if err := service.BindResource(form.Gid, MVisual.UUID); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
