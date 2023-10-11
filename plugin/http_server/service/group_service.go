@@ -129,10 +129,9 @@ func BindResource(gid, rid string) error {
 *
  */
 func UnBindResource(gid, rid string) error {
-	model := model.MGenericGroupRelation{}
-	return interdb.DB().Model(model).
+	return interdb.DB().
 		Where("gid=? and rid =?", gid, rid).
-		Delete(&model).Error
+		Delete(&model.MGenericGroupRelation{}).Error
 }
 
 /*

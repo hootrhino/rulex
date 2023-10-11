@@ -48,8 +48,6 @@ func UpdateVisual(Visual model.MVisual) error {
 	m := model.MVisual{}
 	if err := interdb.DB().Where("uuid=?", Visual.UUID).First(&m).Error; err != nil {
 		return err
-	} else {
-		interdb.DB().Model(m).Updates(Visual)
-		return nil
 	}
+	return interdb.DB().Model(m).Updates(Visual).Error
 }

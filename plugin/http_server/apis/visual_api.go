@@ -83,8 +83,9 @@ func UpdateVisual(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	// 取消绑定分组
-	if err := service.UnBindResource(form.Gid, MVisual.UUID); err != nil {
+	// 取消绑定分组,删除原来旧的分组
+	Group := service.GetVisualGroup(MVisual.UUID)
+	if err := service.UnBindResource(Group.UUID, MVisual.UUID); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
