@@ -12,6 +12,18 @@ func AllVisual() []model.MVisual {
 	return m
 
 }
+func GetVisualGroup(rid string) model.MGenericGroup {
+	sql := `
+SELECT m_generic_groups.*
+  FROM m_generic_group_relations
+       LEFT JOIN
+       m_generic_groups ON (m_generic_groups.uuid = m_generic_group_relations.gid)
+ WHERE m_generic_group_relations.rid = ?;
+`
+	m := model.MGenericGroup{}
+	interdb.DB().Raw(sql, rid).Find(&m)
+	return m
+}
 func GetVisualWithUUID(uuid string) (*model.MVisual, error) {
 	m := model.MVisual{}
 	if err := interdb.DB().Where("uuid=?", uuid).First(&m).Error; err != nil {

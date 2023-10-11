@@ -231,14 +231,21 @@ func ListVisualByGroup(c *gin.Context, ruleEngine typex.RuleX) {
 	visuals := []VisualVo{}
 	MVisuals, _ := service.FindByType(Gid, "VISUAL")
 	for _, vv := range MVisuals {
-		visuals = append(visuals, VisualVo{
+		Vo := VisualVo{
 			UUID:      vv.UUID,
 			Name:      vv.Name,
 			Type:      vv.Type,
 			Content:   vv.Content,
 			Status:    &vv.Status,
 			Thumbnail: vv.Thumbnail,
-		})
+		}
+		Group := service.GetVisualGroup(vv.UUID)
+		if Group.UUID != "" {
+			Vo.Gid = Group.UUID
+		} else {
+			Vo.Gid = ""
+		}
+		visuals = append(visuals, Vo)
 	}
 	c.JSON(common.HTTP_OK, common.OkWithData(visuals))
 }

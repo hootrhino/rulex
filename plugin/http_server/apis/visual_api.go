@@ -10,13 +10,13 @@ import (
 )
 
 type VisualVo struct {
-	Gid       string `json:"gid,omitempty"`                         // 分组ID
-	UUID      string `json:"uuid,omitempty"`                        // 名称
-	Name      string `json:"name,omitempty" validate:"required"`    // 名称
-	Type      string `json:"type,omitempty"`                        // 类型
-	Content   string `json:"content,omitempty" validate:"required"` // 大屏的内容
-	Thumbnail string `json:"thumbnail,omitempty"`
-	Status    *bool  `json:"status,omitempty"`
+	Gid       string `json:"gid"`                         // 分组ID
+	UUID      string `json:"uuid"`                        // 名称
+	Name      string `json:"name" validate:"required"`    // 名称
+	Type      string `json:"type"`                        // 类型
+	Content   string `json:"content" validate:"required"` // 大屏的内容
+	Thumbnail string `json:"thumbnail"`
+	Status    *bool  `json:"status"`
 }
 
 /*
@@ -135,14 +135,21 @@ func DeleteVisual(c *gin.Context, ruleEngine typex.RuleX) {
 func ListVisual(c *gin.Context, ruleEngine typex.RuleX) {
 	visuals := []VisualVo{}
 	for _, vv := range service.AllVisual() {
-		visuals = append(visuals, VisualVo{
+		Vo := VisualVo{
 			UUID:      vv.UUID,
 			Name:      vv.Name,
 			Type:      vv.Type,
 			Content:   vv.Content,
 			Status:    &vv.Status,
 			Thumbnail: vv.Thumbnail,
-		})
+		}
+		Group := service.GetVisualGroup(vv.UUID)
+		if Group.UUID != "" {
+			Vo.Gid = Group.UUID
+		} else {
+			Vo.Gid = ""
+		}
+		visuals = append(visuals, Vo)
 	}
 	c.JSON(common.HTTP_OK, common.OkWithData(visuals))
 
@@ -160,7 +167,7 @@ func VisualDetail(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	vo := VisualVo{
+	Vo := VisualVo{
 		UUID:      mVisual.UUID,
 		Name:      mVisual.Name,
 		Type:      mVisual.Type,
@@ -168,7 +175,13 @@ func VisualDetail(c *gin.Context, ruleEngine typex.RuleX) {
 		Status:    &mVisual.Status,
 		Thumbnail: mVisual.Thumbnail,
 	}
-	c.JSON(common.HTTP_OK, common.OkWithData(vo))
+	Group := service.GetVisualGroup(mVisual.UUID)
+	if Group.UUID != "" {
+		Vo.Gid = Group.UUID
+	} else {
+		Vo.Gid = ""
+	}
+	c.JSON(common.HTTP_OK, common.OkWithData(Vo))
 }
 
 /*
