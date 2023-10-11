@@ -185,5 +185,10 @@ func (s *RulexApiServer) InitializeData() {
 		Name:   "默认分组",
 		Parent: "NULL",
 	})
-
+	service.InitGenericGroup(&model.MGenericGroup{
+		UUID:   "ROOT",
+		Type:   "DEVICE",
+		Name:   "默认分组",
+		Parent: "NULL",
+	})
 }
