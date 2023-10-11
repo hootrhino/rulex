@@ -190,7 +190,7 @@ type MVisual struct {
 	UUID      string `gorm:"not null"` // 名称
 	Name      string `gorm:"not null"` // 名称
 	Type      string `gorm:"not null"` // 类型
-	Status    string `gorm:"not null"` // 状态, EDITING, PUBLISH
+	Status    bool   `gorm:"not null"` // 状态, EDITING, PUBLISH
 	Content   string `gorm:"not null"` // 大屏的内容
 	Thumbnail string `gorm:"not null"` // 缩略图
 }

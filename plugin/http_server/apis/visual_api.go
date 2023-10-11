@@ -16,7 +16,7 @@ type VisualVo struct {
 	Type      string `json:"type,omitempty"`                        // 类型
 	Content   string `json:"content,omitempty" validate:"required"` // 大屏的内容
 	Thumbnail string `json:"thumbnail,omitempty"`
-	Status    string `json:"status,omitempty"`
+	Status    *bool  `json:"status,omitempty"`
 }
 
 /*
@@ -41,7 +41,7 @@ func CreateVisual(c *gin.Context, ruleEngine typex.RuleX) {
 		Name:      form.Name,
 		Type:      form.Type,
 		Content:   form.Content,
-		Status:    "EDITING",
+		Status:    false,
 		Thumbnail: form.Thumbnail,
 	}
 	if err := service.InsertVisual(MVisual); err != nil {
@@ -100,11 +100,11 @@ func PublishVisual(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	if MVisual.Status == "PUBLISH" {
+	if MVisual.Status {
 		c.JSON(common.HTTP_OK, common.Error("Already published:"+MVisual.Name))
 		return
 	}
-	MVisual.Status = "PUBLISH"
+	MVisual.Status = true
 	if err := service.UpdateVisual(*MVisual); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
@@ -140,7 +140,7 @@ func ListVisual(c *gin.Context, ruleEngine typex.RuleX) {
 			Name:      vv.Name,
 			Type:      vv.Type,
 			Content:   vv.Content,
-			Status:    vv.Status,
+			Status:    &vv.Status,
 			Thumbnail: vv.Thumbnail,
 		})
 	}
@@ -165,12 +165,11 @@ func VisualDetail(c *gin.Context, ruleEngine typex.RuleX) {
 		Name:      mVisual.Name,
 		Type:      mVisual.Type,
 		Content:   mVisual.Content,
-		Status:    mVisual.Status,
+		Status:    &mVisual.Status,
 		Thumbnail: mVisual.Thumbnail,
 	}
 	c.JSON(common.HTTP_OK, common.OkWithData(vo))
 }
-
 
 /*
 *

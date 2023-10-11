@@ -236,7 +236,7 @@ func ListVisualByGroup(c *gin.Context, ruleEngine typex.RuleX) {
 			Name:      vv.Name,
 			Type:      vv.Type,
 			Content:   vv.Content,
-			Status:    vv.Status,
+			Status:    &vv.Status,
 			Thumbnail: vv.Thumbnail,
 		})
 	}
