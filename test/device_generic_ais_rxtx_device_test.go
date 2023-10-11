@@ -121,6 +121,6 @@ func Test_generic_ais_txrx_device(t *testing.T) {
 	if err := engine.LoadDeviceWithCtx(GENERIC_AIS, ctx, cancelF); err != nil {
 		t.Fatal(err)
 	}
-	time.Sleep(10 * time.Second)
+	time.Sleep(25 * time.Second)
 	engine.Stop()
 }

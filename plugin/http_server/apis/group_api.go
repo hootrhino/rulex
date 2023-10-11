@@ -46,7 +46,9 @@ func CreateGroup(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	c.JSON(common.HTTP_OK, common.Ok())
+	c.JSON(common.HTTP_OK, common.OkWithData(map[string]string{
+		"gid": Model.UUID,
+	}))
 
 }
 

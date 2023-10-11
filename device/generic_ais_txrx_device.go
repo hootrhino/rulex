@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
+	"reflect"
 	"strings"
 	"time"
 
@@ -261,14 +262,14 @@ func (aism *AISDeviceMaster) handleIO(session *__AISDeviceSession) {
 			vdmo := VDMVDO{}
 			copier.Copy(&vdmo, &vdmo1)
 			glogger.GLogger.Debug("Received VDM data:", vdmo.PayloadInfo())
-			aism.RuleEngine.WorkDevice(aism.Details(), vdmo.String())
+			aism.RuleEngine.WorkDevice(aism.Details(), vdmo.PayloadInfo())
 		}
 		if sentence.DataType() == nmea.TypeVDO {
 			vdmo1 := sentence.(nmea.VDMVDO)
 			vdmo := VDMVDO{}
 			copier.Copy(&vdmo, &vdmo1)
 			glogger.GLogger.Debug("Received VDO data:", vdmo.PayloadInfo())
-			aism.RuleEngine.WorkDevice(aism.Details(), vdmo.String())
+			aism.RuleEngine.WorkDevice(aism.Details(), vdmo.PayloadInfo())
 		}
 
 	}
@@ -354,10 +355,64 @@ type VDMVDO struct {
 	Payload        []byte        `json:"-"`
 	MessageContent aislib.Packet `json:"messageContent"`
 }
+type __PositionReport struct {
+	MessageID uint8   `json:"message_id,omitempty"`
+	UserID    uint32  `json:"user_id,omitempty"`
+	Longitude float64 `json:"longitude,omitempty"`
+	Latitude  float64 `json:"latitude,omitempty"`
+	Timestamp uint8   `json:"timestamp,omitempty"`
+}
 
-func (v VDMVDO) PayloadInfo() aislib.Packet {
+// StaticDataReportA is the A part of message 24
+type __StaticDataReportA struct {
+	Valid bool   `json:"valid,omitempty"`
+	Name  string `json:"name,omitempty"`
+}
+
+// StaticDataReportB is the B part of message 24
+type __StaticDataReportB struct {
+	Valid          bool   `json:"valid,omitempty"`
+	ShipType       uint8  `json:"ship_type,omitempty"`
+	VendorIDName   string `json:"vendor_id_name,omitempty"`
+	VenderIDModel  uint8  `json:"vender_id_model,omitempty"`
+	VenderIDSerial uint32 `json:"vender_id_serial,omitempty"`
+	CallSign       string `json:"call_sign,omitempty"`
+	FixType        uint8  `json:"fix_type,omitempty"`
+	Spare          uint8  `json:"spare,omitempty"`
+}
+
+type __StaticDataReport struct {
+	MessageID  uint8               `json:"message_id,omitempty"`
+	UserID     uint32              `json:"user_id,omitempty"`
+	Valid      bool                `json:"valid,omitempty"`
+	Reserved   uint8               `json:"reserved,omitempty"`
+	PartNumber bool                `json:"part_number,omitempty"`
+	ReportA    __StaticDataReportA `json:"report_a,omitempty"`
+	ReportB    __StaticDataReportB `json:"report_b,omitempty"`
+}
+
+func (v VDMVDO) PayloadInfo() string {
 	__AisCodec.DropSpace = true
-	return __AisCodec.DecodePacket(v.Payload)
+	pkt := __AisCodec.DecodePacket(v.Payload)
+	// aislib.StandardClassBPositionReport
+	Type := reflect.TypeOf(pkt).Name()
+	// 上报位置
+	if Type == "StandardClassBPositionReport" {
+		spr := pkt.(aislib.StandardClassBPositionReport)
+		pos := __PositionReport{}
+		copier.Copy(&pos, &spr)
+		bytes, _ := json.Marshal(pos)
+		return string(bytes)
+	}
+	// "StaticDataReport"
+	if Type == "StaticDataReport" {
+		spr := pkt.(aislib.StaticDataReport)
+		data := __StaticDataReport{}
+		copier.Copy(&data, &spr)
+		bytes, _ := json.Marshal(data)
+		return string(bytes)
+	}
+	return ""
 }
 func (s VDMVDO) String() string {
 	bytes, _ := json.Marshal(s)
