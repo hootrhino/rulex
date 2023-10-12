@@ -1,6 +1,13 @@
 package apis
 
 import (
+	"fmt"
+	"net/http"
+	"os"
+	"path/filepath"
+	"strconv"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	common "github.com/hootrhino/rulex/plugin/http_server/common"
 	"github.com/hootrhino/rulex/plugin/http_server/model"
@@ -37,12 +44,11 @@ func CreateVisual(c *gin.Context, ruleEngine typex.RuleX) {
 		return
 	}
 	MVisual := model.MVisual{
-		UUID:      utils.VisualUuid(),
-		Name:      form.Name,
-		Type:      form.Type,
-		Content:   form.Content,
-		Status:    false,
-		Thumbnail: form.Thumbnail,
+		UUID:    utils.VisualUuid(),
+		Name:    form.Name,
+		Type:    form.Type,
+		Content: form.Content,
+		Status:  false,
 	}
 	if err := service.InsertVisual(MVisual); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
@@ -72,11 +78,10 @@ func UpdateVisual(c *gin.Context, ruleEngine typex.RuleX) {
 		return
 	}
 	MVisual := model.MVisual{
-		UUID:      form.UUID,
-		Name:      form.Name,
-		Type:      form.Type,
-		Content:   form.Content,
-		Thumbnail: form.Thumbnail,
+		UUID:    form.UUID,
+		Name:    form.Name,
+		Type:    form.Type,
+		Content: form.Content,
 	}
 
 	if err := service.UpdateVisual(MVisual); err != nil {
@@ -117,7 +122,7 @@ func PublishVisual(c *gin.Context, ruleEngine typex.RuleX) {
 		return
 	}
 	MVisual.Status = true
-	if err := service.UpdateVisual(*MVisual); err != nil {
+	if err := service.UpdateVisual(MVisual); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
@@ -198,9 +203,58 @@ func VisualDetail(c *gin.Context, ruleEngine typex.RuleX) {
 
 /*
 *
-* 生成随机数
+* 上传缩略图
 *
  */
-func GenComponentUUID(c *gin.Context, ruleEngine typex.RuleX) {
-	c.JSON(common.HTTP_OK, common.OkWithData(utils.MakeLongUUID("WEIGHT")))
+func UploadThumbnail(c *gin.Context, ruleEngine typex.RuleX) {
+	// single file
+	uuid, _ := c.GetPostForm("uuid")
+	MVisual, err := service.GetVisualWithUUID(uuid)
+	if err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
+	file, err := c.FormFile("thumbnail")
+	if err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
+	fileName := fmt.Sprintf("%s_%d.png", uuid, time.Now().UnixMicro())
+	dir := "./resource/VisualThumbnail/"
+	if err := os.MkdirAll(filepath.Dir(dir), os.ModePerm); err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
+	if err := c.SaveUploadedFile(file, dir+fileName); err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
+	MVisual.Thumbnail = fileName
+	service.UpdateVisual(MVisual)
+	c.JSON(common.HTTP_OK, common.Ok())
+}
+
+/*
+*
+* 加载缩略图
+*
+ */
+func GetThumbnail(c *gin.Context, ruleEngine typex.RuleX) {
+	uuid, _ := c.GetQuery("uuid")
+	MVisual, err := service.GetVisualWithUUID(uuid)
+	if err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
+	dir := "./resource/VisualThumbnail/"
+	fileBytes, err := os.ReadFile(fmt.Sprintf("%s%s", dir, MVisual.Thumbnail))
+	if err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
+	c.Writer.WriteHeader(http.StatusOK)
+	c.Writer.Header().Set("Content-Type", "image/jpeg")
+	c.Writer.Header().Set("Content-Length", strconv.Itoa(len(fileBytes)))
+	c.Writer.Write(fileBytes)
+	c.Writer.Flush()
 }

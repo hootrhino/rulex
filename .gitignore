@@ -25,3 +25,4 @@ dist/
 apps/*.lua
 plugin/http_server/www/index.html
 plugin/http_server/server/www/index.html
+resource/*

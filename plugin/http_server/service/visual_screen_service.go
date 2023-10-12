@@ -24,13 +24,10 @@ SELECT m_generic_groups.*
 	interdb.DB().Raw(sql, rid).Find(&m)
 	return m
 }
-func GetVisualWithUUID(uuid string) (*model.MVisual, error) {
+func GetVisualWithUUID(uuid string) (model.MVisual, error) {
 	m := model.MVisual{}
-	if err := interdb.DB().Where("uuid=?", uuid).First(&m).Error; err != nil {
-		return nil, err
-	} else {
-		return &m, nil
-	}
+	err := interdb.DB().Where("uuid=?", uuid).First(&m).Error
+	return m, err
 }
 
 // 删除Visual
@@ -45,9 +42,8 @@ func InsertVisual(Visual model.MVisual) error {
 
 // 更新Visual
 func UpdateVisual(Visual model.MVisual) error {
-	m := model.MVisual{}
-	if err := interdb.DB().Where("uuid=?", Visual.UUID).First(&m).Error; err != nil {
-		return err
-	}
-	return interdb.DB().Model(m).Updates(Visual).Error
+	return interdb.DB().
+		Model(Visual).
+		Where("uuid=?", Visual.UUID).
+		Updates(&Visual).Error
 }
