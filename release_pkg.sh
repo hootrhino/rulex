@@ -1,6 +1,6 @@
 #! /bin/bash
 set -e
-
+APP=rulex
 RESPOSITORY="https://github.com/hootrhino"
 
 #
@@ -8,18 +8,18 @@ create_pkg() {
     local target=$1
     local version=$(git describe --tags --always --abbrev=0)
     local release_dir="_release"
-    local pkg_name="rulex-$target-$version.zip"
-    local common_files="./LICENSE ./conf/rulex.ini"
-    local files_to_include="./rulex $common_files"
-    local files_to_include_exe="./rulex.exe $common_files"
+    local pkg_name="${APP}-$target-$version.zip"
+    local common_files="./LICENSE ./conf/${APP}.ini"
+    local files_to_include="./${APP} $common_files"
+    local files_to_include_exe="./${APP}.exe $common_files"
 
     if [[ "$target" != "windows" ]]; then
         files_to_include="$files_to_include ./script/*.sh"
-        mv ./rulex-$target ./rulex
-        chmod +x ./rulex
+        mv ./${APP}-$target ./${APP}
+        chmod +x ./${APP}
     else
         files_to_include="$files_to_include_exe"
-        mv ./rulex-$target.exe ./rulex.exe
+        mv ./${APP}-$target.exe ./${APP}.exe
     fi
 
     echo "Create package: $pkg_name"

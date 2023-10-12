@@ -206,20 +206,14 @@ func VisualDetail(c *gin.Context, ruleEngine typex.RuleX) {
 * 上传缩略图
 *
  */
-func UploadThumbnail(c *gin.Context, ruleEngine typex.RuleX) {
+func UploadFile(c *gin.Context, ruleEngine typex.RuleX) {
 	// single file
-	uuid, _ := c.GetPostForm("uuid")
-	MVisual, err := service.GetVisualWithUUID(uuid)
+	file, err := c.FormFile("file")
 	if err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	file, err := c.FormFile("thumbnail")
-	if err != nil {
-		c.JSON(common.HTTP_OK, common.Error400(err))
-		return
-	}
-	fileName := fmt.Sprintf("%s_%d.png", uuid, time.Now().UnixMicro())
+	fileName := fmt.Sprintf("file_%d.png", time.Now().UnixMicro())
 	dir := "./resource/VisualThumbnail/"
 	if err := os.MkdirAll(filepath.Dir(dir), os.ModePerm); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
@@ -229,9 +223,9 @@ func UploadThumbnail(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	MVisual.Thumbnail = fileName
-	service.UpdateVisual(MVisual)
-	c.JSON(common.HTTP_OK, common.Ok())
+	c.JSON(common.HTTP_OK, common.OkWithData(map[string]string{
+		"url": fileName,
+	}))
 }
 
 /*
@@ -240,14 +234,10 @@ func UploadThumbnail(c *gin.Context, ruleEngine typex.RuleX) {
 *
  */
 func GetThumbnail(c *gin.Context, ruleEngine typex.RuleX) {
-	uuid, _ := c.GetQuery("uuid")
-	MVisual, err := service.GetVisualWithUUID(uuid)
-	if err != nil {
-		c.JSON(common.HTTP_OK, common.Error400(err))
-		return
-	}
+	fileName, _ := c.GetQuery("fileName")
+
 	dir := "./resource/VisualThumbnail/"
-	fileBytes, err := os.ReadFile(fmt.Sprintf("%s%s", dir, MVisual.Thumbnail))
+	fileBytes, err := os.ReadFile(fmt.Sprintf("%s%s", dir, fileName))
 	if err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return

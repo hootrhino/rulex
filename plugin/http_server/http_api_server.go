@@ -418,7 +418,7 @@ func (hs *ApiServerPlugin) LoadRoute() {
 		visualApi.GET("/group", server.AddRoute(apis.ListVisualGroup))
 		visualApi.DELETE("/", server.AddRoute(apis.DeleteVisual))
 		// 缩略图
-		visualApi.PUT("/thumbnail", server.AddRoute(apis.UploadThumbnail))
+		visualApi.POST("/thumbnail", server.AddRoute(apis.UploadFile))
 		visualApi.GET("/thumbnail", server.AddRoute(apis.GetThumbnail))
 	}
 	/*
