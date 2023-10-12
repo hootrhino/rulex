@@ -282,16 +282,12 @@ func (aism *AISDeviceMaster) handleIO(session *__AISDeviceSession) {
 }
 
 //--------------------------------------------------------------------------------------------------
-// AIS 结构, 下面这些结构是从nema包里面拿过来的，为了方便JSON编码操作
+// AIS 结构, 下面这些结构是从nema包里面拿过来的，删除了一些无用字段，主要为了方便JSON编码操作
 //--------------------------------------------------------------------------------------------------
 
 type BaseSentence struct {
-	Talker   string   `json:"talker"`    // The talker id (e.g GP)
-	Type     string   `json:"type"`      // The data type (e.g GSA)
-	Fields   []string `json:"fields"`    // Array of fields
-	Checksum string   `json:"checksum"`  // The Checksum
-	Raw      string   `json:"raw"`       // The raw NMEA sentence received
-	TagBlock TagBlock `json:"tag_block"` // NMEA tagblock
+	Talker string `json:"talker"` // The talker id (e.g GP)
+	Type   string `json:"type"`   // The data type (e.g GSA)
 }
 
 // Prefix returns the talker and type of message
@@ -309,11 +305,6 @@ func (s BaseSentence) TalkerID() string {
 	return s.Talker
 }
 
-// String formats the sentence into a string
-// func (s BaseSentence) String() string {
-// 	bytes, _ := json.Marshal(s)
-// 	return string(bytes)
-// }
 
 type TagBlock struct {
 	Time         int64  `json:"time"`          // TypeUnixTime unix timestamp (unit is likely to be s, but might be ms, YMMV), parameter: -c
@@ -325,17 +316,17 @@ type TagBlock struct {
 	Text         string `json:"text"`          // TypeTextString valid character string, parameter -t
 }
 type RMC struct {
-	// BaseSentence `json:"base_sentence"` // base_sentence
-	Time      Time    `json:"time"`       // Time Stamp
-	Validity  string  `json:"validity"`   // validity - A-ok, V-invalid
-	Latitude  float64 `json:"latitude"`   // Latitude
-	Longitude float64 `json:"longitude"`  // Longitude
-	Speed     float64 `json:"speed"`      // Speed in knots
-	Course    float64 `json:"course"`     // True course
-	Date      Date    `json:"date"`       // Date
-	Variation float64 `json:"variation"`  // Magnetic variation
-	FFAMode   string  `json:"ffa_mode"`   // FAA mode indicator (filled in NMEA 2.3 and later)
-	NavStatus string  `json:"nav_status"` // Nav Status (NMEA 4.1 and later)
+	BaseSentence `json:"base"` // base
+	Time         Time          `json:"time"`       // Time Stamp
+	Validity     string        `json:"validity"`   // validity - A-ok, V-invalid
+	Latitude     float64       `json:"latitude"`   // Latitude
+	Longitude    float64       `json:"longitude"`  // Longitude
+	Speed        float64       `json:"speed"`      // Speed in knots
+	Course       float64       `json:"course"`     // True course
+	Date         Date          `json:"date"`       // Date
+	Variation    float64       `json:"variation"`  // Magnetic variation
+	FFAMode      string        `json:"ffa_mode"`   // FAA mode indicator (filled in NMEA 2.3 and later)
+	NavStatus    string        `json:"nav_status"` // Nav Status (NMEA 4.1 and later)
 }
 
 func (s RMC) String() string {
@@ -352,7 +343,7 @@ func (s RMC) String() string {
 *
  */
 type VDMVDO struct {
-	// BaseSentence   `json:"base_sentence"`
+	BaseSentence   `json:"base"`
 	NumFragments   int64         `json:"numFragments"`
 	FragmentNumber int64         `json:"fragmentNumber"`
 	MessageID      int64         `json:"messageId"`
@@ -452,7 +443,7 @@ func (d Date) String() string {
 }
 
 type GNS struct {
-	// BaseSentence
+	BaseSentence
 	Time      Time // UTC of position
 	Latitude  float64
 	Longitude float64
