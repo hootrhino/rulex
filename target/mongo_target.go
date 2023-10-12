@@ -17,6 +17,7 @@ package target
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/hootrhino/rulex/common"
@@ -118,12 +119,24 @@ func (m *mongoTarget) Stop() {
 }
 
 func (m *mongoTarget) To(data interface{}) (interface{}, error) {
-	document := bson.D{bson.E{Key: "data", Value: data}}
-	r, err := m.collection.InsertOne(m.Ctx, document)
-	if err != nil {
-		glogger.GLogger.Error("Mongo To Failed:", err)
+	switch t := data.(type) {
+	case string:
+		// 将 JSON 数据解析为 map
+		var data map[string]interface{}
+
+		if err := bson.UnmarshalExtJSON([]byte(t), false, &data); err != nil {
+			glogger.GLogger.Error("Mongo To Failed:", err)
+			return nil, err
+		}
+		r, err := m.collection.InsertOne(m.Ctx, data)
+		if err != nil {
+			glogger.GLogger.Error("Mongo To Failed:", err)
+			return nil, err
+		}
+		return r.InsertedID, nil
 	}
-	return r.InsertedID, err
+	return nil, fmt.Errorf("unsupported Bson type:%s", data)
+
 }
 func (m *mongoTarget) Details() *typex.OutEnd {
 	return m.RuleEngine.GetOutEnd(m.PointId)

@@ -32,10 +32,18 @@ type MongoConfig struct {
 - collection: 数据集合
 
 ## 示例
+
+快速启动一个Docker Mongo容器：
+
+```sh
+docker run -d -v "./data/db" -e MONGO_INITDB_ROOT_USERNAME=root -e MONGO_INITDB_ROOT_PASSWORD=123456 -p 27017:27017 --name mongodb-container mongo
+```
+编写脚本
+
 ```lua
-function(data)
-    local err = rulexlib:DataToMongo('mongoOut', data)
-	print("[LUA DataToMongo] ==>", err)
-	return true, data
+function(args)
+    local err = data:DToMongo('uuid', args)
+	return true, args
 end
 ```
+然后查看Mongodb的集合看是否有数据写入。

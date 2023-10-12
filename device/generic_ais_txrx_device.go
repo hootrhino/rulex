@@ -79,6 +79,7 @@ func (aism *AISDeviceMaster) Start(cctx typex.CCTX) error {
 	glogger.GLogger.Infof("AIS TCP server started on TCP://%s:%v",
 		aism.mainConfig.Host, aism.mainConfig.Port)
 	go aism.handleConnect(listener)
+	aism.status = typex.DEV_UP
 	return nil
 }
 
@@ -235,6 +236,10 @@ func (aism *AISDeviceMaster) handleIO(session *__AISDeviceSession) {
 		// 可能会收到心跳包: !HRT710,Q,003,0*06
 		if strings.HasPrefix(s, "!HRT") {
 			glogger.GLogger.Debug("Heart beat from:", session.SN, session.Transport.RemoteAddr())
+			continue
+		}
+		if strings.HasPrefix(s, "!DYA") {
+			glogger.GLogger.Debug("DYA Message from:", session.SN, session.Transport.RemoteAddr())
 			continue
 		}
 		sentence, err := nmea.Parse(s)
