@@ -19,7 +19,7 @@ Actions = {
             return true, data
         end
         for _k, entity in pairs(dataTable) do
-            rulexlib:DataToMongo("OUT8404b5afb7fe4baea335ebcb0d821491", rulexlib:T2J(entity["value"]))
+            data:ToMongo("OUT8404b5afb7fe4baea335ebcb0d821491", rulexlib:T2J(entity["value"]))
         end
         return true, data
     end

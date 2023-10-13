@@ -96,11 +96,11 @@ Actions = {
 Actions = {
     function(data)
         -- 持久化到 MongoDb:
-        rulexlib:DataToMongo("45dd0c90f56d", data)
+        data:ToMongo("45dd0c90f56d", data)
         -- 持久化到 Mysql:
-        rulexlib:DataToMysql("45dd0c90f56d", data)
+        data:ToMysql("45dd0c90f56d", data)
         -- 推送化到 Kafka:
-        rulexlib:DataToKafka("45dd0c90f56d", data)
+        data:ToKafka("45dd0c90f56d", data)
         return true, data
     end
 }

@@ -12,6 +12,6 @@ Actions = {
             }
         )
         print("Json ->:", Json)
-        print(rulexlib:DataToMqtt('UUID', Json))
+        print(data:ToMqtt('UUID', Json))
     end
 }

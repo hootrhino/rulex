@@ -13,7 +13,7 @@ end
 Actions = {
     function(data)
         print('Data ======> ', data)
-        rulexlib:DataToMqtt('OUTEND', data)
+        data:ToMqtt('OUTEND', data)
         return true, data
     end
 }

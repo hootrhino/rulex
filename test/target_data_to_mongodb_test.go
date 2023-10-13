@@ -58,7 +58,7 @@ func Test_DataToMongo(t *testing.T) {
 		`
 		Actions = {
 			function(data)
-			    local err = rulexlib:DataToMongo('mongoOut', data)
+			    local err = data:ToMongo('mongoOut', data)
 				print("[LUA DataToMongo] ==>", err)
 				return true, data
 			end

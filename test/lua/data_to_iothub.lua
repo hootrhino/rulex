@@ -22,6 +22,6 @@ Actions = {function(data)
         }
     }
     local jsons = rulexlib:T2J(t)
-    rulexlib:DataToIoTHub(jsons)
+    data:ToIoTHub(jsons)
     return true, data
 end}

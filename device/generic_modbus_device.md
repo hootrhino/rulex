@@ -112,7 +112,7 @@ Actions = {
 ​        value = entity.value
 ​      }
 ​      print('udpData => ', udpData)
-​      local err4 = rulexlib:DataToUdp(
+​      local err4 = data:ToUdp(
 ​               'OUT268b2ec7edc548719ab1b83ed3730105', udpData)
 ​      print('DataToUdp success? =>', err4 == nil)
 ​    end

@@ -62,7 +62,7 @@ Actions =
                 }
             )
             print("DataToMqtt-> OUT48320dfdeaaa4ec7971a37a922e17d93:", Json)
-            print(rulexlib:DataToMqtt('OUT48320dfdeaaa4ec7971a37a922e17d93', Json))
+            print(data:ToMqtt('OUT48320dfdeaaa4ec7971a37a922e17d93', Json))
         end
         return true, data
     end

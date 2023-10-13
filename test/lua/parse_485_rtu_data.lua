@@ -28,7 +28,7 @@ Actions = {function(data)
             timestamp = ts,
             params = v['value']
         }
-        rulexlib:DataToMqtt('mqttOutEnd', rulexlib:T2J(jsont))
+        data:ToMqtt('mqttOutEnd', rulexlib:T2J(jsont))
     end
     return true, data
 end}

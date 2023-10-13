@@ -23,7 +23,7 @@ Actions =
         result['c'] = rulexlib:B2I64(1, rulexlib:BS2B(tb["c"]))
         result['d1'] = rulexlib:B2I64(1, rulexlib:BS2B(tb["d1"]))
         print("rulexlib:MB 2:", json.encode(result))
-        rulexlib:DataToMqtt('OUTEND', json.encode(result))
+        data:ToMqtt('OUTEND', json.encode(result))
         return true, data
     end
 }

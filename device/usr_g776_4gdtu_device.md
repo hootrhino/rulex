@@ -50,7 +50,7 @@ Actions = {
             return true, data
         end
         for _k, entity in pairs(dataTable) do
-            rulexlib:DataToUsrG776DTU("uuid", "DATA" ,rulexlib:T2J(entity["value"]))
+            data:ToUsrG776DTU("uuid", "DATA" ,rulexlib:T2J(entity["value"]))
         end
         return true, data
     end

@@ -98,7 +98,7 @@ Actions = {function(data)
 			params = value
 		}
 		print('mqttOutEnd-iothub', rulexlib:T2J(jsont))
-		rulexlib:DataToMqtt('mqttOutEnd-iothub', rulexlib:T2J(jsont))
+		data:ToMqtt('mqttOutEnd-iothub', rulexlib:T2J(jsont))
 	end
 	return true, data
 end}

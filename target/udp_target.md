@@ -35,7 +35,7 @@ type HostConfig struct {
 ## 示例
 ```lua
 function(data)
-    local err = rulexlib:DataToUDP('UDPOut', data)
+    local err = data:ToUDP('UDPOut', data)
 	print("[LUA DataToUDP] ==>", err)
 	return true, data
 end

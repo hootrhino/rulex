@@ -8,7 +8,7 @@ import (
 
 /*
 *
-* 数据转发到 UDP：local err: = rulexlib:DataToUdp(uuid, data)
+* 数据转发到 UDP：local err: = data:ToUdp(uuid, data)
 *
  */
 func DataToUdp(rx typex.RuleX) func(*lua.LState) int {

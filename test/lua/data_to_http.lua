@@ -21,7 +21,7 @@ Actions =
             tag3 = data[2],
             tag4 = data[3],
         }
-        rulexlib:DataToHttp('OUTEND', rulexlib:T2J(jsont))
+        data:ToHttp('OUTEND', rulexlib:T2J(jsont))
         return true, data
     end
 }

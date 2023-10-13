@@ -8,7 +8,7 @@ import (
 
 /*
 *
-* 数据转发到HTTP：local err: = rulexlib:DataToHttp(uuid, data)
+* 数据转发到HTTP：local err: = data:ToHttp(uuid, data)
 *
  */
 func DataToHttp(rx typex.RuleX) func(*lua.LState) int {

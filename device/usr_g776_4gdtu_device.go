@@ -103,7 +103,7 @@ func (uart *UsrG776DTU) OnRead(cmd []byte, data []byte) (int, error) {
 /*
 *
 * 有人G776-DTU写入串口的数据会被不加修改的透传到上层
-* rulexlib:DataToUsrG776DTU("uuid", "DATA", "data-....")
+* data:ToUsrG776DTU("uuid", "DATA", "data-....")
 *
  */
 func (uart *UsrG776DTU) OnWrite(cmd []byte, b []byte) (int, error) {

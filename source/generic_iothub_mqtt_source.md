@@ -18,7 +18,7 @@ Actions = {
             }
         )
         print('Data to IotHUB:', Json)
-        rulexlib:DataToIotHUB('INe1e769cff3b9467394564ca78c7bc93b', Json)
+        data:ToIotHUB('INe1e769cff3b9467394564ca78c7bc93b', Json)
         return true, data
     end
 }

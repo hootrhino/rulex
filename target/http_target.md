@@ -32,7 +32,7 @@ type HTTPConfig struct {
 ## 示例
 ```lua
 function(data)
-    local err = rulexlib:DataToHttp('HttpOut', data)
+    local err = data:ToHttp('HttpOut', data)
 	print("[LUA DataToHttp] ==>", err)
 	return true, data
 end
