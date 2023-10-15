@@ -391,7 +391,7 @@ func (v VDMVDO) PayloadInfo() string {
 	pkt := __AisCodec.DecodePacket(v.Payload)
 	// aislib.StandardClassBPositionReport
 	var _Type reflect.Type
-	if _Type = reflect.TypeOf(pkt); _Type != nil {
+	if _Type = reflect.TypeOf(pkt); _Type == nil {
 		return ""
 	}
 	// 上报位置
