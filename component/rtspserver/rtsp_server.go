@@ -13,6 +13,7 @@ import (
 	"os/exec"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hootrhino/rulex/core"
 	"github.com/hootrhino/rulex/glogger"
 )
 
@@ -202,13 +203,25 @@ func StartFfmpegProcess(rtspUrl, pushAddr string) error {
 		PushAddr: pushAddr,
 		Process:  cmd,
 	}
+
 	// Run and Wait
 	AddVideoStreamEndpoint(rtspUrl, info)
 	defer DeleteVideoStreamEndpoint(rtspUrl)
 	glogger.GLogger.Info("start Video Stream Endpoint:", rtspUrl)
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		return fmt.Errorf(err.Error() + ":" + string(out))
+	// 启动 FFmpeg 推流
+	if err := cmd.Start(); err != nil {
+		fmt.Printf("无法启动 FFmpeg: %v\n", err)
+		return err
+	}
+	if core.GlobalConfig.AppDebugMode {
+		cmd.Stdin = nil
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+	}
+
+	// 等待 FFmpeg 进程完成
+	if err := cmd.Wait(); err != nil {
+		return err
 	}
 	glogger.GLogger.Info("stop Video Stream Endpoint:", rtspUrl)
 	return nil
