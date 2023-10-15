@@ -252,29 +252,41 @@ func (aism *AISDeviceMaster) handleIO(session *__AISDeviceSession) {
 			rmc1 := sentence.(nmea.RMC)
 			rmc := RMC{}
 			copier.Copy(&rmc, &rmc1)
-			glogger.GLogger.Debug("Received RMC data:", rmc.String())
-			aism.RuleEngine.WorkDevice(aism.Details(), rmc.String())
+			data := rmc.String()
+			glogger.GLogger.Debug("Received RMC data:", data)
+			if data != "" {
+				aism.RuleEngine.WorkDevice(aism.Details(), data)
+			}
 		}
 		if sentence.DataType() == nmea.TypeGNS {
 			gns1 := sentence.(nmea.GNS)
 			gns := GNS{}
 			copier.Copy(&gns, &gns1)
-			glogger.GLogger.Debug("Received GNS data:", gns.String())
-			aism.RuleEngine.WorkDevice(aism.Details(), gns.String())
+			data := gns.String()
+			glogger.GLogger.Debug("Received GNS data:", data)
+			if data != "" {
+				aism.RuleEngine.WorkDevice(aism.Details(), data)
+			}
 		}
 		if sentence.DataType() == nmea.TypeVDM {
 			vdmo1 := sentence.(nmea.VDMVDO)
 			vdmo := VDMVDO{}
 			copier.Copy(&vdmo, &vdmo1)
-			glogger.GLogger.Debug("Received VDM data:", vdmo.PayloadInfo())
-			aism.RuleEngine.WorkDevice(aism.Details(), vdmo.PayloadInfo())
+			data := vdmo.PayloadInfo()
+			glogger.GLogger.Debug("Received VDM data:", data)
+			if data != "" {
+				aism.RuleEngine.WorkDevice(aism.Details(), data)
+			}
 		}
 		if sentence.DataType() == nmea.TypeVDO {
 			vdmo1 := sentence.(nmea.VDMVDO)
 			vdmo := VDMVDO{}
 			copier.Copy(&vdmo, &vdmo1)
-			glogger.GLogger.Debug("Received VDO data:", vdmo.PayloadInfo())
-			aism.RuleEngine.WorkDevice(aism.Details(), vdmo.PayloadInfo())
+			data := vdmo.PayloadInfo()
+			glogger.GLogger.Debug("Received VDO data:", data)
+			if data != "" {
+				aism.RuleEngine.WorkDevice(aism.Details(), data)
+			}
 		}
 
 	}
