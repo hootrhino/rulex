@@ -305,7 +305,6 @@ func (s BaseSentence) TalkerID() string {
 	return s.Talker
 }
 
-
 type TagBlock struct {
 	Time         int64  `json:"time"`          // TypeUnixTime unix timestamp (unit is likely to be s, but might be ms, YMMV), parameter: -c
 	RelativeTime int64  `json:"relative_time"` // TypeRelativeTime relative time, parameter: -r
@@ -391,9 +390,12 @@ func (v VDMVDO) PayloadInfo() string {
 	__AisCodec.DropSpace = true
 	pkt := __AisCodec.DecodePacket(v.Payload)
 	// aislib.StandardClassBPositionReport
-	Type := reflect.TypeOf(pkt).Name()
+	var _Type reflect.Type
+	if _Type = reflect.TypeOf(pkt); _Type != nil {
+		return ""
+	}
 	// 上报位置
-	if Type == "StandardClassBPositionReport" {
+	if _Type.Name() == "StandardClassBPositionReport" {
 		spr := pkt.(aislib.StandardClassBPositionReport)
 		pos := __PositionReport{}
 		copier.Copy(&pos, &spr)
@@ -401,7 +403,7 @@ func (v VDMVDO) PayloadInfo() string {
 		return string(bytes)
 	}
 	// "StaticDataReport"
-	if Type == "StaticDataReport" {
+	if _Type.Name() == "StaticDataReport" {
 		spr := pkt.(aislib.StaticDataReport)
 		data := __StaticDataReport{}
 		copier.Copy(&data, &spr)
