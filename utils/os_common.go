@@ -151,3 +151,14 @@ func GetUbuntuVersion() (string, error) {
 	}
 	return "", fmt.Errorf("unsupported OS:%s", info)
 }
+
+/*
+*
+* 检查命令是否存在
+*
+ */
+
+func CommandExists(command string) bool {
+	_, err := exec.LookPath(command)
+	return err == nil
+}

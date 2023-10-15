@@ -25,15 +25,16 @@ import (
 	lua "github.com/hootrhino/gopher-lua"
 	"github.com/hootrhino/rulex/component/aibase"
 	"github.com/hootrhino/rulex/component/appstack"
-	"github.com/hootrhino/rulex/core"
-	"github.com/hootrhino/rulex/device"
-	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/component/interdb"
 	"github.com/hootrhino/rulex/component/intermetric"
 	"github.com/hootrhino/rulex/component/interqueue"
+	"github.com/hootrhino/rulex/component/rtspserver"
+	"github.com/hootrhino/rulex/component/trailer"
+	"github.com/hootrhino/rulex/core"
+	"github.com/hootrhino/rulex/device"
+	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/source"
 	"github.com/hootrhino/rulex/target"
-	"github.com/hootrhino/rulex/component/trailer"
 	"github.com/hootrhino/rulex/typex"
 	"github.com/hootrhino/rulex/utils"
 	"github.com/shirou/gopsutil/v3/disk"
@@ -103,6 +104,7 @@ func (e *RuleEngine) Start() *typex.RulexConfig {
 	interqueue.InitInteractQueue(e, core.GlobalConfig.MaxQueueSize)
 	core.InitWebDataPipe(e)
 	core.InitInternalSchemaCache()
+	rtspserver.InitRtspServer()
 	go core.StartWebDataPipe()
 	return e.Config
 }
