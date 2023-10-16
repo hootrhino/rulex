@@ -30,9 +30,11 @@ var __DefaultRtspServer *rtspServer
 *
  */
 type RtspCameraInfo struct {
-	PullAddr string    `json:"pullAddr"`
-	PushAddr string    `json:"pushAddr"`
-	Process  *exec.Cmd `json:"-"`
+	Type          string `json:"type,omitempty"`     // 1-RTSP,2-Local
+	LocalId       string `json:"local_id,omitempty"` // 本地ID
+	PullAddr      string `json:"pullAddr,omitempty"`
+	PushAddr      string `json:"pushAddr,omitempty"`
+	ffmpegProcess *exec.Cmd
 }
 type rtspServer struct {
 	webServer   *gin.Engine
@@ -82,7 +84,7 @@ func InitRtspServer() *rtspServer {
 		}
 		url1 := "http://127.0.0.1:9400/stream/ffmpegPush?liveId=" + calculateMD5(form.PullAddr)
 		url2 := "ws://127.0.0.1:9400/stream/live?liveId=" + calculateMD5(form.PullAddr)
-		go StartFfmpegProcess(form.PullAddr, url1)
+		go StartFfmpegffmpegProcess(form.PullAddr, url1)
 		ctx.JSON(200, map[string]interface{}{
 			"code": 200,
 			"msg":  "Success",
@@ -101,7 +103,7 @@ func InitRtspServer() *rtspServer {
 			})
 			return
 		}
-		StopFfmpegProcess((form.PullAddr))
+		StopFfmpegffmpegProcess((form.PullAddr))
 		ctx.JSON(200, map[string]interface{}{
 			"code": 200,
 			"msg":  "Success",
@@ -171,7 +173,7 @@ ffmpeg -rtsp_transport tcp -re
 *
 */
 
-func StartFfmpegProcess(rtspUrl, pushAddr string) error {
+func StartFfmpegffmpegProcess(rtspUrl, pushAddr string) error {
 	params := []string{
 		"-rtsp_transport",
 		"tcp",
@@ -195,18 +197,8 @@ func StartFfmpegProcess(rtspUrl, pushAddr string) error {
 	}
 
 	cmd := exec.Command("ffmpeg", params...)
-	glogger.GLogger.Info("Start FFMPEG process with:", cmd.String())
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	info := RtspCameraInfo{
-		PullAddr: rtspUrl,
-		PushAddr: pushAddr,
-		Process:  cmd,
-	}
+	glogger.GLogger.Info("Start FFMPEG ffmpegProcess with:", cmd.String())
 
-	// Run and Wait
-	AddVideoStreamEndpoint(rtspUrl, info)
-	defer DeleteVideoStreamEndpoint(rtspUrl)
 	glogger.GLogger.Info("start Video Stream Endpoint:", rtspUrl)
 	// 启动 FFmpeg 推流
 	if err := cmd.Start(); err != nil {
@@ -218,7 +210,17 @@ func StartFfmpegProcess(rtspUrl, pushAddr string) error {
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 	}
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	info := RtspCameraInfo{
+		PullAddr:      rtspUrl,
+		PushAddr:      pushAddr,
+		ffmpegProcess: cmd,
+	}
 
+	// Run and Wait
+	AddVideoStreamEndpoint(rtspUrl, info)
+	defer DeleteVideoStreamEndpoint(rtspUrl)
 	// 等待 FFmpeg 进程完成
 	if err := cmd.Wait(); err != nil {
 		return err
@@ -232,9 +234,9 @@ func StartFfmpegProcess(rtspUrl, pushAddr string) error {
 * 停止进程
 *
  */
-func StopFfmpegProcess(rtspUrl string) error {
-	if p := GetVideoStreamEndpoint(rtspUrl); p.Process != nil {
-		return p.Process.Process.Kill()
+func StopFfmpegffmpegProcess(rtspUrl string) error {
+	if p := GetVideoStreamEndpoint(rtspUrl); p.ffmpegProcess != nil {
+		return p.ffmpegProcess.ffmpegProcess.Kill()
 	}
-	return fmt.Errorf("no such process:" + rtspUrl)
+	return fmt.Errorf("no such ffmpegProcess:" + rtspUrl)
 }
