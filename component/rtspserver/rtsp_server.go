@@ -84,7 +84,7 @@ func InitRtspServer() *rtspServer {
 		}
 		url1 := "http://127.0.0.1:9400/stream/ffmpegPush?liveId=" + calculateMD5(form.PullAddr)
 		url2 := "ws://127.0.0.1:9400/stream/live?liveId=" + calculateMD5(form.PullAddr)
-		go StartFfmpegffmpegProcess(form.PullAddr, url1)
+		go StartFFMPEGProcess(form.PullAddr, url1)
 		ctx.JSON(200, map[string]interface{}{
 			"code": 200,
 			"msg":  "Success",
@@ -103,7 +103,7 @@ func InitRtspServer() *rtspServer {
 			})
 			return
 		}
-		StopFfmpegffmpegProcess((form.PullAddr))
+		StopFFMPEGProcess((form.PullAddr))
 		ctx.JSON(200, map[string]interface{}{
 			"code": 200,
 			"msg":  "Success",
@@ -173,7 +173,7 @@ ffmpeg -rtsp_transport tcp -re
 *
 */
 
-func StartFfmpegffmpegProcess(rtspUrl, pushAddr string) error {
+func StartFFMPEGProcess(rtspUrl, pushAddr string) error {
 	params := []string{
 		"-rtsp_transport",
 		"tcp",
@@ -234,7 +234,7 @@ func StartFfmpegffmpegProcess(rtspUrl, pushAddr string) error {
 * 停止进程
 *
  */
-func StopFfmpegffmpegProcess(rtspUrl string) error {
+func StopFFMPEGProcess(rtspUrl string) error {
 	if p := GetVideoStreamEndpoint(rtspUrl); p.ffmpegProcess != nil {
 		return p.ffmpegProcess.Process.Kill()
 	}
