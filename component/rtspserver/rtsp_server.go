@@ -236,7 +236,7 @@ func StartFfmpegffmpegProcess(rtspUrl, pushAddr string) error {
  */
 func StopFfmpegffmpegProcess(rtspUrl string) error {
 	if p := GetVideoStreamEndpoint(rtspUrl); p.ffmpegProcess != nil {
-		return p.ffmpegProcess.ffmpegProcess.Kill()
+		return p.ffmpegProcess.Process.Kill()
 	}
 	return fmt.Errorf("no such ffmpegProcess:" + rtspUrl)
 }
