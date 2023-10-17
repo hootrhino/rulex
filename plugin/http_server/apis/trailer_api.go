@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
+	"strings"
 	"time"
 
 	"github.com/hootrhino/rulex/component/trailer"
@@ -185,7 +187,7 @@ func UpdateGoods(c *gin.Context, ruleEngine typex.RuleX) {
 
 /*
 *
-* 上传缩略图
+* 上传文件，保存在 "./upload/goods/" 路径
 *
  */
 func UploadGoodsFile(c *gin.Context, ruleEngine typex.RuleX) {
@@ -195,8 +197,23 @@ func UploadGoodsFile(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	fileName := fmt.Sprintf("goods_%d", time.Now().UnixMicro())
-	dir := "./resource/goods/"
+	if runtime.GOOS == "windows" {
+		if !IsExecutableFileWin(file.Filename) {
+			c.JSON(common.HTTP_OK, common.Error("Invalid execute file"))
+			return
+		}
+	}
+	if runtime.GOOS == "linux" {
+		if !IsExecutableFileUnix(file.Filename) ||
+			IsExecutableFileWin(file.Filename) {
+			c.JSON(common.HTTP_OK, common.Error("Invalid execute file"))
+			return
+		}
+	}
+	dir := "./upload/TrailerGoods/"
+	OriginFileName := filepath.Base(file.Filename)
+	fileExt := filepath.Ext(OriginFileName)
+	fileName := fmt.Sprintf("goods_%d_%s", time.Now().UnixMicro(), fileExt)
 	if err := os.MkdirAll(filepath.Dir(dir), os.ModePerm); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
@@ -208,4 +225,30 @@ func UploadGoodsFile(c *gin.Context, ruleEngine typex.RuleX) {
 	c.JSON(common.HTTP_OK, common.OkWithData(map[string]string{
 		"url": fileName,
 	}))
+}
+
+/*
+*
+* 判断是否可执行(Linux Only)
+*
+ */
+func IsExecutableFileUnix(filePath string) bool {
+	fileInfo, err := os.Stat(filePath)
+	if err != nil {
+		return false
+	}
+	if fileInfo.Mode()&0111 != 0 {
+		return true
+	}
+
+	return false
+}
+func IsExecutableFileWin(filePath string) bool {
+	filePath = strings.ToLower(filePath)
+	return strings.HasSuffix(filePath, ".exe") ||
+		strings.HasSuffix(filePath, ".jar") ||
+		strings.HasSuffix(filePath, ".py") ||
+		strings.HasSuffix(filePath, ".js") ||
+		strings.HasSuffix(filePath, ".lua")
+
 }

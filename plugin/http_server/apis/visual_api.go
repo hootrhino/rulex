@@ -214,7 +214,7 @@ func UploadFile(c *gin.Context, ruleEngine typex.RuleX) {
 		return
 	}
 	fileName := fmt.Sprintf("file_%d.png", time.Now().UnixMicro())
-	dir := "./resource/VisualThumbnail/"
+	dir := "./upload/VisualThumbnail/"
 	if err := os.MkdirAll(filepath.Dir(dir), os.ModePerm); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
@@ -236,7 +236,7 @@ func UploadFile(c *gin.Context, ruleEngine typex.RuleX) {
 func GetThumbnail(c *gin.Context, ruleEngine typex.RuleX) {
 	fileName, _ := c.GetQuery("fileName")
 
-	dir := "./resource/VisualThumbnail/"
+	dir := "./upload/VisualThumbnail/"
 	fileBytes, err := os.ReadFile(fmt.Sprintf("%s%s", dir, fileName))
 	if err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))

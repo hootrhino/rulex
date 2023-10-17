@@ -259,29 +259,3 @@ func probe(client TrailerClient, goodsProcess *GoodsProcess) {
 func AllGoods() *sync.Map {
 	return __DefaultTrailerRuntime.goodsProcessMap
 }
-
-/*
-*
-* 判断是否可执行(Linux Only)
-*
- */
-func IsExecutableFileUnix(filePath string) bool {
-	fileInfo, err := os.Stat(filePath)
-	if err != nil {
-		return false
-	}
-	if fileInfo.Mode()&0111 != 0 {
-		return true
-	}
-
-	return false
-}
-func IsExecutableFileWin(filePath string) bool {
-	filePath = strings.ToLower(filePath)
-	return strings.HasSuffix(filePath, ".exe") ||
-		strings.HasSuffix(filePath, ".jar") ||
-		strings.HasSuffix(filePath, ".py") ||
-		strings.HasSuffix(filePath, ".js") ||
-		strings.HasSuffix(filePath, ".lua")
-
-}
