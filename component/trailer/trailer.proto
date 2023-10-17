@@ -13,10 +13,12 @@ service trailer {
   rpc Start (Request) returns (Response) {}
   // 获取状态
   rpc Status (Request) returns (Response) {}
-  // 读数据
-  rpc Read (ReadRequest) returns (ReadResponse) {}
-  // 写数据
-  rpc Write (WriteRequest) returns (WriteResponse) {}
+  // 服务调用
+  rpc Service (ServiceRequest) returns (ServiceResponse) {}
+  // 数据查询
+  rpc Query (DataRowsRequest) returns (DataRowsResponse) {}
+  // 数据模型
+  rpc Schema (SchemaRequest) returns (SchemaResponse) {}
   // 停止
   rpc Stop (Request) returns (Response) {}
 }
@@ -31,7 +33,14 @@ message Response {
     int32 code = 1;
     string message = 2;
 }
-
+message ServiceRequest{
+    bytes cmd = 1;
+    bytes args = 2;
+}
+message ServiceResponse{
+    int32 code = 1;
+    bytes data = 2;
+}
 message StatusResponse {
     enum Status {
         RUNNING = 0;
@@ -41,18 +50,31 @@ message StatusResponse {
     Status status = 1;
     string message = 2;
 }
-// 读
-message ReadRequest{
+
+message SchemaRequest{
 }
-message ReadResponse{
-    int32 len = 1;
-    bytes data = 2;
+message Column{
+    bytes name = 1;
+    bytes type = 2;
+    bytes description = 3;
 }
-// 写
-message WriteRequest{
-    bytes data = 1;
-}
-message WriteResponse{
+
+// 表结构返回
+message SchemaResponse{
     int32 code = 1;
     bytes message = 2;
+    repeated Column columns = 3;
+}
+// 查出来的数据列
+message ColumnValue{
+    bytes name = 1;
+    bytes value = 2;
+}
+// 请求查询
+message DataRowsRequest{
+    bytes query = 1; // SQL or other query
+}
+// 查询结果
+message DataRowsResponse{
+    repeated ColumnValue column = 1;
 }

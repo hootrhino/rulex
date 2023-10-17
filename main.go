@@ -54,8 +54,6 @@ func init() {
 *
  */
 
-//
-//go:generate ./gen_info.sh
 func main() {
 
 	//--------------------------------------

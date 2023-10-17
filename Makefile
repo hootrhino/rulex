@@ -23,8 +23,6 @@ all:
 
 .PHONY: build
 build:
-	chmod +x gen_info.sh
-	go generate
 	CGO_ENABLED=1 GOOS=linux
 	go build -v -ldflags "-s -w" -o ${APP}
 

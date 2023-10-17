@@ -14,7 +14,8 @@ package trailer
 // ---  ---   ---   ---   ---   ---   ------------
 import (
 	"context"
-	"syscall"
+	"strings"
+	"time"
 
 	"os"
 	"os/exec"
@@ -22,6 +23,8 @@ import (
 
 	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/typex"
+	grpc "google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 var __DefaultTrailerRuntime *TrailerRuntime
@@ -42,6 +45,26 @@ func InitTrailerRuntime(re typex.RuleX) *TrailerRuntime {
 		re:              re,
 		goodsProcessMap: &sync.Map{},
 	}
+	// 探针
+	go func() {
+		for {
+			AllGoods().Range(func(key, value any) bool {
+				goodsProcess := (value.(*GoodsProcess))
+				grpcConnection, err := grpc.Dial(goodsProcess.NetAddr,
+					grpc.WithTransportCredentials(insecure.NewCredentials()))
+				if err != nil {
+					glogger.GLogger.Error(err)
+				}
+				client := NewTrailerClient(grpcConnection)
+				probe(client, goodsProcess)
+				grpcConnection.Close()
+				return true
+			})
+			// 2秒停顿
+			time.Sleep(2 * time.Second)
+		}
+
+	}()
 	return __DefaultTrailerRuntime
 }
 
@@ -50,40 +73,41 @@ func InitTrailerRuntime(re typex.RuleX) *TrailerRuntime {
 * 执行外
 *
  */
-func Fork(goods typex.Goods) error {
-	glogger.GLogger.Infof("fork goods process, (uuid = %v, addr = %v, args = %v)", goods.UUID, goods.Addr, goods.Args)
-	Cmd := exec.Command(goods.Addr, goods.Args...)
+func Fork(goods Goods) error {
+	glogger.GLogger.Infof("fork goods process, (uuid = %v, addr = %v, args = %v)",
+		goods.UUID, goods.LocalPath, goods.Args)
+	Cmd := exec.Command(goods.LocalPath, goods.Args...)
 	Cmd.SysProcAttr = NewSysProcAttr()
 	Cmd.Stdin = os.Stdin
 	Cmd.Stdout = os.Stdout
 	Cmd.Stderr = os.Stderr
 	ctx, Cancel := context.WithCancel(__DefaultTrailerRuntime.ctx)
-	goodsProcess := &typex.GoodsProcess{
-		Addr:        goods.Addr,
+	goodsProcess := &GoodsProcess{
+		LocalPath:   goods.LocalPath,
+		NetAddr:     goods.NetAddr,
 		Uuid:        goods.UUID,
 		Description: goods.Description,
 		Args:        goods.Args,
-		Cmd:         Cmd,
-		Ctx:         ctx,
-		Cancel:      Cancel,
+		cmd:         Cmd,
+		ctx:         ctx,
+		cancel:      Cancel,
 	}
 	Save(goodsProcess)
-	go run(goodsProcess)
-	go probe(goodsProcess)
+	go run(goodsProcess) // 任务进程
 	return nil
 }
 
 // 获取某个外挂
-func Get(uuid string) *typex.GoodsProcess {
+func Get(uuid string) *GoodsProcess {
 	v, ok := __DefaultTrailerRuntime.goodsProcessMap.Load(uuid)
 	if ok {
-		return v.(*typex.GoodsProcess)
+		return v.(*GoodsProcess)
 	}
 	return nil
 }
 
 // 保存进内存
-func Save(goodsProcess *typex.GoodsProcess) {
+func Save(goodsProcess *GoodsProcess) {
 	__DefaultTrailerRuntime.goodsProcessMap.Store(goodsProcess.Uuid, goodsProcess)
 }
 
@@ -91,8 +115,7 @@ func Save(goodsProcess *typex.GoodsProcess) {
 func Remove(uuid string) {
 	v, ok := __DefaultTrailerRuntime.goodsProcessMap.Load(uuid)
 	if ok {
-		gp := (v.(*typex.GoodsProcess))
-		gp.Cancel()
+		gp := (v.(*GoodsProcess))
 		gp.Stop()
 		__DefaultTrailerRuntime.goodsProcessMap.Delete(uuid)
 	}
@@ -101,34 +124,61 @@ func Remove(uuid string) {
 // 停止外挂运行时管理器, 这个要是停了基本上就是程序结束了
 func Stop() {
 	__DefaultTrailerRuntime.goodsProcessMap.Range(func(key, v interface{}) bool {
-		gp := (v.(*typex.GoodsProcess))
-		gp.Cancel()
+		gp := (v.(*GoodsProcess))
 		gp.Stop()
 		return true
 	})
 	__DefaultTrailerRuntime = nil
 }
 
-// Cmd.Wait() 会阻塞, 但是当控制的子进程停止的时候会继续执行, 因此可以在defer里面释放资源
-func run(goodsProcess *typex.GoodsProcess) error {
+/*
+*
+* Cmd.Wait() 会阻塞, 但是当控制的子进程停止的时候会继续执行, 因此可以在defer里面释放资源
+*
+ */
+func run(goodsProcess *GoodsProcess) error {
 	defer func() {
 		goodsProcess.Running = false
-		goodsProcess.Cancel()
+		goodsProcess.cancel() // 当监督器结束的时候探针probe进程也会被中断
+		Remove(goodsProcess.Uuid)
 	}()
-	if err := goodsProcess.Cmd.Start(); err != nil {
+	if err := goodsProcess.cmd.Start(); err != nil {
 		glogger.GLogger.Error("exec command error:", err)
 		return err
 	}
-
 	goodsProcess.Running = true
 	glogger.GLogger.Infof("goods process(pid = %v, uuid = %v, addr = %v, args = %v) fork and started",
-		goodsProcess.Cmd.Process.Pid,
+		goodsProcess.cmd.Process.Pid,
 		goodsProcess.Uuid,
-		goodsProcess.Addr,
+		goodsProcess.LocalPath,
 		goodsProcess.Args)
-	if err := goodsProcess.Cmd.Wait(); err != nil {
-		glogger.GLogger.Error("Cmd Wait error:", err)
 
+	grpcConnection, err := grpc.Dial(goodsProcess.NetAddr,
+		grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		glogger.GLogger.Error(err)
+		return err
+	}
+	defer grpcConnection.Close()
+	client := NewTrailerClient(grpcConnection)
+	if _, err := client.Init(goodsProcess.ctx, &Config{
+		Kv: map[string]string{
+			"uuid":        goodsProcess.Uuid,
+			"description": goodsProcess.Description,
+		},
+	}); err != nil {
+		glogger.GLogger.Error(err)
+		return err
+	}
+	// Start
+	if _, err := client.Start(goodsProcess.ctx, &Request{}); err != nil {
+		glogger.GLogger.Error(err)
+		return err
+	}
+
+	if err := goodsProcess.cmd.Wait(); err != nil {
+		out, err1 := goodsProcess.cmd.Output()
+		glogger.GLogger.Error("Cmd Wait error:", err, err1, string(out))
 		return err
 	}
 	goodsProcess.Running = false
@@ -136,43 +186,34 @@ func run(goodsProcess *typex.GoodsProcess) error {
 }
 
 // 探针
-func probe(goodsProcess *typex.GoodsProcess) {
-	for {
-		select {
-		case <-goodsProcess.Ctx.Done():
-			{
-				if goodsProcess.Cmd != nil {
-					process := goodsProcess.Cmd.Process
-					if process != nil {
-						glogger.GLogger.Infof("goods process(pid = %v,uuid = %v, addr = %v, args = %v) stopped",
-							goodsProcess.Cmd.Process.Pid,
-							goodsProcess.Uuid,
-							goodsProcess.Addr,
-							goodsProcess.Args)
-						process.Kill()
-						process.Signal(syscall.SIGKILL)
-					} else {
-						glogger.GLogger.Infof("goods process(uuid = %v, addr = %v, args = %v) stopped",
-							goodsProcess.Uuid,
-							goodsProcess.Addr,
-							goodsProcess.Args)
-					}
-				}
-				return
-			}
-		default:
-			{
-				if goodsProcess.Cmd != nil {
-					if goodsProcess.Cmd.ProcessState != nil {
-						goodsProcess.Running = true
-					} else {
-						goodsProcess.Running = false
-					}
-				}
+func probe(client TrailerClient, goodsProcess *GoodsProcess) {
 
+	select {
+	case <-goodsProcess.ctx.Done():
+		{
+			goodsProcess.Stop()
+			glogger.GLogger.Infof("goods process(uuid = %v, addr = %v, args = %v) stopped",
+				goodsProcess.Uuid,
+				goodsProcess.NetAddr,
+				goodsProcess.Args)
+			return
+		}
+	default:
+		{
+			if goodsProcess.cmd != nil {
+				if _, err := client.Status(goodsProcess.ctx, &Request{}); err != nil {
+					glogger.GLogger.Error(err)
+					goodsProcess.Running = false
+				} else {
+					goodsProcess.Running = true
+					glogger.GLogger.Debug("goods Process is running:", goodsProcess.Uuid)
+				}
+			} else {
+				goodsProcess.Running = false
 			}
 		}
 	}
+
 }
 
 /*
@@ -182,4 +223,30 @@ func probe(goodsProcess *typex.GoodsProcess) {
  */
 func AllGoods() *sync.Map {
 	return __DefaultTrailerRuntime.goodsProcessMap
+}
+
+/*
+*
+* 判断是否可执行(Linux Only)
+*
+ */
+func IsExecutableFileUnix(filePath string) bool {
+	fileInfo, err := os.Stat(filePath)
+	if err != nil {
+		return false
+	}
+	if fileInfo.Mode()&0111 != 0 {
+		return true
+	}
+
+	return false
+}
+func IsExecutableFileWin(filePath string) bool {
+	filePath = strings.ToLower(filePath)
+	return strings.HasSuffix(filePath, ".exe") ||
+		strings.HasSuffix(filePath, ".jar") ||
+		strings.HasSuffix(filePath, ".py") ||
+		strings.HasSuffix(filePath, ".js") ||
+		strings.HasSuffix(filePath, ".lua")
+
 }

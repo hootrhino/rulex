@@ -1,9 +1,10 @@
-package typex
+package trailer
 
 import (
 	"context"
 	"encoding/json"
 	"os/exec"
+	"syscall"
 )
 
 /*
@@ -14,7 +15,8 @@ import (
 type Goods struct {
 	UUID string
 	// TCP or Unix Socket
-	Addr string
+	LocalPath string
+	NetAddr   string
 	// Description text
 	Description string
 	// Additional Args
@@ -26,21 +28,24 @@ type Goods struct {
 //--------------------------------------------------------------------------------------------------
 
 type GoodsProcess struct {
-	Running     bool
-	Uuid        string
-	Addr        string
-	Description string
-	Args        []string
-	Ctx         context.Context
-	Cmd         *exec.Cmd
-	Cancel      context.CancelFunc
+	Running bool   `json:"running,omitempty"`
+	Uuid    string `json:"uuid,omitempty"`
+	// 首先启动本地文件，然后用网络路径去发送RPC
+	LocalPath   string   `json:"local_path,omitempty"` // 文件路径
+	NetAddr     string   `json:"net_addr,omitempty"`   // RPC网络请求路径
+	Description string   `json:"description,omitempty"`
+	Args        []string `json:"args,omitempty"`
+	ctx         context.Context
+	cmd         *exec.Cmd
+	cancel      context.CancelFunc
 }
 
 func (t GoodsProcess) String() string {
 	r := map[string]interface{}{
 		"running":     t.Running,
 		"uuid":        t.Uuid,
-		"addr":        t.Addr,
+		"LocalPath":   t.LocalPath,
+		"NetAddr":     t.NetAddr,
 		"description": t.Description,
 		"args":        t.Args,
 	}
@@ -48,11 +53,11 @@ func (t GoodsProcess) String() string {
 	return string(b)
 }
 func (scm *GoodsProcess) Stop() {
-	if scm.Cmd != nil {
-		if scm.Cmd.Process != nil {
-			scm.Cmd.Process.Kill()
-			scm.Cmd = nil
-			scm.Cancel()
+	if scm.cmd != nil {
+		if scm.cmd.Process != nil {
+			scm.cancel()
+			scm.cmd.Process.Kill()
+			scm.cmd.Process.Signal(syscall.SIGKILL)
 		}
 	}
 }

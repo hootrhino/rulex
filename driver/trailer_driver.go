@@ -4,8 +4,8 @@ package driver
 import (
 	"context"
 
-	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/component/trailer"
+	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/typex"
 
 	"google.golang.org/grpc"
@@ -69,7 +69,8 @@ func (sc *TrailerDriver) State() typex.DriverState {
 *
  */
 func (sc *TrailerDriver) Read(cmd []byte, data []byte) (int, error) {
-	response, err := sc.client.Read(context.Background(), &trailer.ReadRequest{})
+	response, err := sc.client.Service(context.Background(),
+		&trailer.ServiceRequest{Cmd: cmd, Args: data})
 	if err != nil {
 		glogger.GLogger.Error(err)
 		return 0, err
@@ -84,9 +85,8 @@ func (sc *TrailerDriver) Read(cmd []byte, data []byte) (int, error) {
 *
  */
 func (sc *TrailerDriver) Write(cmd []byte, data []byte) (int, error) {
-	response, err := sc.client.Write(context.Background(), &trailer.WriteRequest{
-		Data: data,
-	})
+	response, err := sc.client.Service(context.Background(),
+		&trailer.ServiceRequest{Cmd: cmd, Args: data})
 	if err != nil {
 		glogger.GLogger.Error(err)
 		return 0, err

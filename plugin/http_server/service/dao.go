@@ -140,16 +140,16 @@ func UpdateMOutEnd(uuid string, o *model.MOutEnd) error {
 // -----------------------------------------------------------------------------------
 func GetMUser(username string, password string) (*model.MUser, error) {
 	m := new(model.MUser)
-	if err := interdb.DB().Where("Username=?", username).Where("Password=?",
-		password).First(m).Error; err != nil {
+	if err := interdb.DB().Where("username=? AND password=?",
+		username, password).First(m).Error; err != nil {
 		return nil, err
 	} else {
 		return m, nil
 	}
 }
 
-func InsertMUser(o *model.MUser) {
-	interdb.DB().Table("m_users").Create(o)
+func InsertMUser(o *model.MUser) error {
+	return interdb.DB().Table("m_users").Create(o).Error
 }
 
 func UpdateMUser(uuid string, o *model.MUser) error {

@@ -130,7 +130,8 @@ func (md MDevice) GetConfig() map[string]interface{} {
 type MGoods struct {
 	RulexModel
 	UUID        string     `gorm:"not null"`
-	Addr        string     `gorm:"not null"`
+	LocalPath   string     `gorm:"not null"`
+	NetAddr     string     `gorm:"not null"`
 	Description string     `gorm:"not null"`
 	Args        StringList `gorm:"not null"`
 }

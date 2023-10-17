@@ -2,8 +2,9 @@ package httpserver
 
 import (
 	"encoding/json"
-	"github.com/hootrhino/rulex/component/cron_task"
 	"net/http"
+
+	"github.com/hootrhino/rulex/component/cron_task"
 
 	"github.com/hootrhino/rulex/component/appstack"
 	"github.com/hootrhino/rulex/component/interdb"
@@ -96,9 +97,10 @@ func initRulex(engine typex.RuleX) {
 	}
 	// 加载外挂
 	for _, mGoods := range service.AllGoods() {
-		newGoods := typex.Goods{
+		newGoods := trailer.Goods{
 			UUID:        mGoods.UUID,
-			Addr:        mGoods.Addr,
+			LocalPath:   mGoods.LocalPath,
+			NetAddr:     mGoods.NetAddr,
 			Description: mGoods.Description,
 			Args:        mGoods.Args,
 		}
@@ -342,14 +344,6 @@ func (hs *ApiServerPlugin) LoadRoute() {
 		deviceApi.GET("/group", server.AddRoute(apis.ListDeviceGroup))
 
 	}
-	goodsApi := server.RouteGroup(server.ContextUrl("/goods"))
-	{
-		// 外挂管理
-		goodsApi.GET(("/"), server.AddRoute(apis.Goods))
-		goodsApi.POST(("/"), server.AddRoute(apis.CreateGoods))
-		goodsApi.PUT(("/"), server.AddRoute(apis.UpdateGoods))
-		goodsApi.DELETE(("/"), server.AddRoute(apis.DeleteGoods))
-	}
 
 	// ----------------------------------------------------------------------------------------------
 	// APP
@@ -440,6 +434,14 @@ func (hs *ApiServerPlugin) LoadRoute() {
 
 		siteConfigApi.PUT("/update", server.AddRoute(apis.UpdateSiteConfig))
 		siteConfigApi.GET("/detail", server.AddRoute(apis.GetSiteConfig))
+	}
+	trailerApi := server.RouteGroup(server.ContextUrl("/goods"))
+	{
+		trailerApi.GET("/list", server.AddRoute(apis.GoodsList))
+		trailerApi.GET(("/detail"), server.AddRoute(apis.GoodsDetail))
+		trailerApi.POST("/create", server.AddRoute(apis.CreateGoods))
+		trailerApi.POST("/upload", server.AddRoute(apis.UploadGoodsFile))
+		trailerApi.DELETE("/delete", server.AddRoute(apis.DeleteGoods))
 	}
 	//
 	// 系统设置

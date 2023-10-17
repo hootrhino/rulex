@@ -62,7 +62,7 @@ func CreateUser(c *gin.Context, ruleEngine typex.RuleX) {
 			Password:    md5Hash(form.Password),
 			Description: form.Description,
 		})
-		c.JSON(common.HTTP_OK, common.Error400(err))
+		c.JSON(common.HTTP_OK, common.Ok())
 		return
 	}
 	c.JSON(common.HTTP_OK, common.Error("user already exists:"+form.Username))
