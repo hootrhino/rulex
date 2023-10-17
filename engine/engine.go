@@ -25,6 +25,7 @@ import (
 	lua "github.com/hootrhino/gopher-lua"
 	"github.com/hootrhino/rulex/component/aibase"
 	"github.com/hootrhino/rulex/component/appstack"
+	"github.com/hootrhino/rulex/component/datacenter"
 	"github.com/hootrhino/rulex/component/interdb"
 	"github.com/hootrhino/rulex/component/intermetric"
 	"github.com/hootrhino/rulex/component/interqueue"
@@ -90,6 +91,8 @@ func InitRuleEngine(config typex.RulexConfig) typex.RuleX {
 	aibase.InitAIRuntime(__DefaultRuleEngine)
 	// Internal Queue
 	interqueue.InitDataCacheQueue(__DefaultRuleEngine, core.GlobalConfig.MaxQueueSize)
+	// Data center
+	datacenter.InitDataCenter()
 	return __DefaultRuleEngine
 }
 

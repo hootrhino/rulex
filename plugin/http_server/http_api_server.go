@@ -444,6 +444,13 @@ func (hs *ApiServerPlugin) LoadRoute() {
 		trailerApi.POST("/upload", server.AddRoute(apis.UploadGoodsFile))
 		trailerApi.DELETE("/delete", server.AddRoute(apis.DeleteGoods))
 	}
+	dataCenterApi := server.RouteGroup(server.ContextUrl("/dataCenter"))
+	{
+		dataCenterApi.GET("/schema/detail", server.AddRoute(apis.GetSchemaDetail))
+		dataCenterApi.GET("/schema/list", server.AddRoute(apis.GetSchemaList))
+		dataCenterApi.GET("/schema/defineList", server.AddRoute(apis.GetSchemaDefineList))
+		dataCenterApi.POST("/data/query", server.AddRoute(apis.GetQueryData))
+	}
 	//
 	// 系统设置
 	//

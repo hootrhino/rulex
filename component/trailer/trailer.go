@@ -188,7 +188,7 @@ func run(goodsProcess *GoodsProcess) error {
 			client = NewTrailerClient(grpcConnection)
 			// glogger.GLogger.Debug("Try to start:", goodsProcess.NetAddr)
 			// 等进程起来以后RPC调用
-			if goodsProcess.Running {
+			if goodsProcess.cmd != nil {
 				if _, err := client.Init(goodsProcess.ctx, &Config{
 					Kv: map[string]string{
 						"args": strings.Join(goodsProcess.Args, ","),
@@ -202,6 +202,7 @@ func run(goodsProcess *GoodsProcess) error {
 					glogger.GLogger.Error("Start error:", goodsProcess.NetAddr, ", error:", err)
 					continue
 				} else {
+					goodsProcess.rpcStarted = true
 					return
 				}
 			}
@@ -236,13 +237,17 @@ func probe(client TrailerClient, goodsProcess *GoodsProcess) {
 	default:
 		{
 			if goodsProcess.cmd != nil {
-				if _, err := client.Status(goodsProcess.ctx, &Request{}); err != nil {
-					glogger.GLogger.Error(err)
-					goodsProcess.Running = false
-				} else {
-					goodsProcess.Running = true
-					// glogger.GLogger.Debug("goods Process is running:", goodsProcess.Uuid)
+				if goodsProcess.rpcStarted {
+					if _, err := client.Status(goodsProcess.ctx, &Request{}); err != nil {
+						glogger.GLogger.Error(err)
+						goodsProcess.Running = false
+						goodsProcess.rpcStarted = false
+					} else {
+						goodsProcess.Running = true
+						// glogger.GLogger.Debug("goods Process is running:", goodsProcess.Uuid)
+					}
 				}
+
 			} else {
 				goodsProcess.Running = false
 			}
@@ -258,4 +263,30 @@ func probe(client TrailerClient, goodsProcess *GoodsProcess) {
  */
 func AllGoods() *sync.Map {
 	return __DefaultTrailerRuntime.goodsProcessMap
+}
+
+/*
+*
+* 判断是否可执行(Linux Only)
+*
+ */
+func IsExecutableFileUnix(filePath string) bool {
+	fileInfo, err := os.Stat(filePath)
+	if err != nil {
+		return false
+	}
+	if fileInfo.Mode()&0111 != 0 {
+		return true
+	}
+
+	return false
+}
+func IsExecutableFileWin(filePath string) bool {
+	filePath = strings.ToLower(filePath)
+	return strings.HasSuffix(filePath, ".exe") ||
+		strings.HasSuffix(filePath, ".jar") ||
+		strings.HasSuffix(filePath, ".py") ||
+		strings.HasSuffix(filePath, ".js") ||
+		strings.HasSuffix(filePath, ".lua")
+
 }

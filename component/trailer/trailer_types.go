@@ -29,12 +29,14 @@ type Goods struct {
 
 type GoodsProcess struct {
 	Running bool   `json:"running,omitempty"`
+	Name    string `json:"name,omitempty"`
 	Uuid    string `json:"uuid,omitempty"`
 	// 首先启动本地文件，然后用网络路径去发送RPC
 	LocalPath   string   `json:"local_path,omitempty"` // 文件路径
 	NetAddr     string   `json:"net_addr,omitempty"`   // RPC网络请求路径
 	Description string   `json:"description,omitempty"`
 	Args        []string `json:"args,omitempty"`
+	rpcStarted  bool     `json:"rpcStarted,omitempty"`
 	ctx         context.Context
 	cmd         *exec.Cmd
 	cancel      context.CancelFunc

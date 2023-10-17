@@ -13,17 +13,19 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package engine
+package test
 
 import (
 	"fmt"
 	"net/http"
 	"os"
+	"testing"
 
 	"github.com/gin-gonic/gin"
 )
 
-func main() {
+// go test -timeout 30s -run ^TestApp_Hot_update github.com/hootrhino/rulex/test -v -count=1
+func TestApp_Hot_update(t *testing.T) {
 	fmt.Println(os.Args[0])
 	s := gin.Default()
 	s.GET("/rulex", downloadRulex)
