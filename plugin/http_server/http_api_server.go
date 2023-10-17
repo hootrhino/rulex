@@ -440,6 +440,7 @@ func (hs *ApiServerPlugin) LoadRoute() {
 		trailerApi.GET("/list", server.AddRoute(apis.GoodsList))
 		trailerApi.GET(("/detail"), server.AddRoute(apis.GoodsDetail))
 		trailerApi.POST("/create", server.AddRoute(apis.CreateGoods))
+		trailerApi.PUT("/update", server.AddRoute(apis.UpdateGoods))
 		trailerApi.POST("/upload", server.AddRoute(apis.UploadGoodsFile))
 		trailerApi.DELETE("/delete", server.AddRoute(apis.DeleteGoods))
 	}

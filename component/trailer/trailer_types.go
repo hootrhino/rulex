@@ -41,23 +41,15 @@ type GoodsProcess struct {
 }
 
 func (t GoodsProcess) String() string {
-	r := map[string]interface{}{
-		"running":     t.Running,
-		"uuid":        t.Uuid,
-		"LocalPath":   t.LocalPath,
-		"NetAddr":     t.NetAddr,
-		"description": t.Description,
-		"args":        t.Args,
-	}
-	b, _ := json.Marshal(r)
+	b, _ := json.Marshal(t)
 	return string(b)
 }
-func (scm *GoodsProcess) Stop() {
-	if scm.cmd != nil {
-		if scm.cmd.Process != nil {
-			scm.cancel()
-			scm.cmd.Process.Kill()
-			scm.cmd.Process.Signal(syscall.SIGKILL)
+func (goodsPs *GoodsProcess) Stop() {
+	if goodsPs.cmd != nil {
+		if goodsPs.cmd.Process != nil {
+			goodsPs.cmd.Process.Kill()
+			goodsPs.cmd.Process.Signal(syscall.SIGTERM)
+			goodsPs.cancel()
 		}
 	}
 }

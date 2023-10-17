@@ -48,6 +48,16 @@ func InitTrailerRuntime(re typex.RuleX) *TrailerRuntime {
 	// 探针
 	go func() {
 		for {
+			select {
+			case <-typex.GCTX.Done():
+				{
+					return
+				}
+			default:
+				{
+				}
+			}
+			// glogger.GLogger.Debug("Start prob process.")
 			AllGoods().Range(func(key, value any) bool {
 				goodsProcess := (value.(*GoodsProcess))
 				grpcConnection, err := grpc.Dial(goodsProcess.NetAddr,
@@ -128,7 +138,6 @@ func Stop() {
 		gp.Stop()
 		return true
 	})
-	__DefaultTrailerRuntime = nil
 }
 
 /*
@@ -138,60 +147,86 @@ func Stop() {
  */
 func run(goodsProcess *GoodsProcess) error {
 	defer func() {
-		goodsProcess.Running = false
-		goodsProcess.cancel() // 当监督器结束的时候探针probe进程也会被中断
 		Remove(goodsProcess.Uuid)
 	}()
 	if err := goodsProcess.cmd.Start(); err != nil {
 		glogger.GLogger.Error("exec command error:", err)
 		return err
 	}
-	goodsProcess.Running = true
+
 	glogger.GLogger.Infof("goods process(pid = %v, uuid = %v, addr = %v, args = %v) fork and started",
 		goodsProcess.cmd.Process.Pid,
 		goodsProcess.Uuid,
 		goodsProcess.LocalPath,
 		goodsProcess.Args)
 
-	grpcConnection, err := grpc.Dial(goodsProcess.NetAddr,
-		grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		glogger.GLogger.Error(err)
-		return err
-	}
-	defer grpcConnection.Close()
-	client := NewTrailerClient(grpcConnection)
-	if _, err := client.Init(goodsProcess.ctx, &Config{
-		Kv: map[string]string{
-			"uuid":        goodsProcess.Uuid,
-			"description": goodsProcess.Description,
-		},
-	}); err != nil {
-		glogger.GLogger.Error(err)
-		return err
-	}
-	// Start
-	if _, err := client.Start(goodsProcess.ctx, &Request{}); err != nil {
-		glogger.GLogger.Error(err)
-		return err
-	}
-
+	var client TrailerClient
+	go func() {
+		// defer func() {
+		// 	glogger.GLogger.Debug("Exit supervisor:", goodsProcess.NetAddr)
+		// }()
+		// glogger.GLogger.Debug("Wait process running:", goodsProcess.NetAddr)
+		for {
+			select {
+			case <-goodsProcess.ctx.Done():
+				{
+					glogger.GLogger.Debug("goodsProcess.ctx.Done():", goodsProcess.NetAddr)
+					return
+				}
+			default:
+				{
+				}
+			}
+			time.Sleep(2 * time.Second)
+			//
+			grpcConnection, err := grpc.Dial(goodsProcess.NetAddr,
+				grpc.WithTransportCredentials(insecure.NewCredentials()))
+			if err != nil {
+				glogger.GLogger.Error(err)
+			}
+			defer grpcConnection.Close()
+			client = NewTrailerClient(grpcConnection)
+			// glogger.GLogger.Debug("Try to start:", goodsProcess.NetAddr)
+			// 等进程起来以后RPC调用
+			if goodsProcess.Running {
+				if _, err := client.Init(goodsProcess.ctx, &Config{
+					Kv: map[string]string{
+						"args": strings.Join(goodsProcess.Args, ","),
+					},
+				}); err != nil {
+					glogger.GLogger.Error("Init error:", goodsProcess.NetAddr, ", error:", err)
+					continue
+				}
+				// Start
+				if _, err := client.Start(goodsProcess.ctx, &Request{}); err != nil {
+					glogger.GLogger.Error("Start error:", goodsProcess.NetAddr, ", error:", err)
+					continue
+				} else {
+					return
+				}
+			}
+		}
+	}()
 	if err := goodsProcess.cmd.Wait(); err != nil {
+		State := goodsProcess.cmd.ProcessState
+		if !State.Success() {
+			glogger.GLogger.Error("Cmd Exit With State:", State)
+		}
 		out, err1 := goodsProcess.cmd.Output()
-		glogger.GLogger.Error("Cmd Wait error:", err, err1, string(out))
+		glogger.GLogger.Error("Cmd Wait error:", err, err1, string(out), ",State:", State)
 		return err
 	}
-	goodsProcess.Running = false
+	if client != nil {
+		client.Stop(goodsProcess.ctx, &Request{})
+	}
 	return nil
 }
 
-// 探针
+// 探针,主要用来检测是否存活
 func probe(client TrailerClient, goodsProcess *GoodsProcess) {
-
 	select {
 	case <-goodsProcess.ctx.Done():
 		{
-			goodsProcess.Stop()
 			glogger.GLogger.Infof("goods process(uuid = %v, addr = %v, args = %v) stopped",
 				goodsProcess.Uuid,
 				goodsProcess.NetAddr,
@@ -206,7 +241,7 @@ func probe(client TrailerClient, goodsProcess *GoodsProcess) {
 					goodsProcess.Running = false
 				} else {
 					goodsProcess.Running = true
-					glogger.GLogger.Debug("goods Process is running:", goodsProcess.Uuid)
+					// glogger.GLogger.Debug("goods Process is running:", goodsProcess.Uuid)
 				}
 			} else {
 				goodsProcess.Running = false

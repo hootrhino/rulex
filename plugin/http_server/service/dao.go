@@ -1,8 +1,6 @@
 package service
 
 import (
-	"errors"
-
 	"github.com/hootrhino/rulex/component/interdb"
 	"github.com/hootrhino/rulex/plugin/http_server/model"
 
@@ -41,20 +39,11 @@ func InsertMRule(r *model.MRule) error {
 }
 
 func DeleteMRule(uuid string) error {
-	if interdb.DB().Table("m_rules").Where("uuid=?", uuid).Delete(&model.MRule{}).RowsAffected == 0 {
-		return errors.New("not found:" + uuid)
-	}
-	return nil
+	return interdb.DB().Table("m_rules").Where("uuid=?", uuid).Delete(&model.MRule{}).Error
 }
 
 func UpdateMRule(uuid string, r *model.MRule) error {
-	m := model.MRule{}
-	if err := interdb.DB().Where("uuid=?", uuid).First(&m).Error; err != nil {
-		return err
-	} else {
-		interdb.DB().Model(m).Updates(*r)
-		return nil
-	}
+	return interdb.DB().Model(r).Where("uuid=?", uuid).Updates(*r).Error
 }
 
 // -----------------------------------------------------------------------------------
@@ -80,10 +69,7 @@ func InsertMInEnd(i *model.MInEnd) error {
 }
 
 func DeleteMInEnd(uuid string) error {
-	if interdb.DB().Where("uuid=?", uuid).Delete(&model.MInEnd{}).RowsAffected == 0 {
-		return errors.New("not found:" + uuid)
-	}
-	return nil
+	return interdb.DB().Where("uuid=?", uuid).Delete(&model.MInEnd{}).Error
 }
 
 func UpdateMInEnd(uuid string, i *model.MInEnd) error {
@@ -119,10 +105,7 @@ func InsertMOutEnd(o *model.MOutEnd) error {
 }
 
 func DeleteMOutEnd(uuid string) error {
-	if interdb.DB().Where("uuid=?", uuid).Delete(&model.MOutEnd{}).RowsAffected == 0 {
-		return errors.New("not found:" + uuid)
-	}
-	return nil
+	return interdb.DB().Where("uuid=?", uuid).Delete(&model.MOutEnd{}).Error
 }
 
 func UpdateMOutEnd(uuid string, o *model.MOutEnd) error {
@@ -207,10 +190,7 @@ func GetMDeviceWithUUID(uuid string) (*model.MDevice, error) {
 
 // 删除设备
 func DeleteDevice(uuid string) error {
-	if interdb.DB().Where("uuid=?", uuid).Delete(&model.MDevice{}).RowsAffected == 0 {
-		return errors.New("not found:" + uuid)
-	}
-	return nil
+	return interdb.DB().Where("uuid=?", uuid).Delete(&model.MDevice{}).Error
 }
 
 // 创建设备
@@ -296,10 +276,7 @@ func GetGoodsWithUUID(uuid string) (*model.MGoods, error) {
 
 // 删除Goods
 func DeleteGoods(uuid string) error {
-	if interdb.DB().Where("uuid=?", uuid).Delete(&model.MGoods{}).RowsAffected == 0 {
-		return errors.New("not found:" + uuid)
-	}
-	return nil
+	return interdb.DB().Where("uuid=?", uuid).Delete(&model.MGoods{}).Error
 }
 
 // 创建Goods
@@ -308,14 +285,9 @@ func InsertGoods(goods *model.MGoods) error {
 }
 
 // 更新Goods
-func UpdateGoods(uuid string, goods *model.MGoods) error {
-	m := model.MGoods{}
-	if err := interdb.DB().Where("uuid=?", uuid).First(&m).Error; err != nil {
-		return err
-	} else {
-		interdb.DB().Model(m).Updates(*goods)
-		return nil
-	}
+func UpdateGoods(goods model.MGoods) error {
+	return interdb.DB().Model(goods).
+		Where("uuid=?", goods.UUID).Updates(&goods).Error
 }
 
 // -------------------------------------------------------------------------------------

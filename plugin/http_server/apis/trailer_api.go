@@ -1,17 +1,21 @@
 package apis
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
 	"time"
 
 	"github.com/hootrhino/rulex/component/trailer"
+	"github.com/hootrhino/rulex/glogger"
 	common "github.com/hootrhino/rulex/plugin/http_server/common"
 	"github.com/hootrhino/rulex/plugin/http_server/model"
 	"github.com/hootrhino/rulex/plugin/http_server/service"
 	"github.com/hootrhino/rulex/typex"
 	"github.com/hootrhino/rulex/utils"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 
 	"github.com/gin-gonic/gin"
 )
@@ -48,18 +52,23 @@ type goodsVo struct {
 
 func GoodsList(c *gin.Context, ruleEngine typex.RuleX) {
 	data := []goodsVo{}
-	trailer.AllGoods().Range(func(key, value interface{}) bool {
-		v := value.(*trailer.GoodsProcess)
-		data = append(data, goodsVo{
-			Running:     v.Running,
-			Uuid:        v.Uuid,
-			LocalPath:   v.LocalPath,
-			NetAddr:     v.NetAddr,
-			Description: v.Description,
-			Args:        v.Args,
-		})
-		return true
-	})
+	Goods := service.AllGoods()
+	for _, mGood := range Goods {
+		vo := goodsVo{
+			Running:     false,
+			Uuid:        mGood.UUID,
+			LocalPath:   mGood.LocalPath,
+			NetAddr:     mGood.NetAddr,
+			Description: mGood.Description,
+			Args:        mGood.Args,
+		}
+		if goods := trailer.Get(mGood.UUID); goods != nil {
+			vo.Running = goods.Running
+			data = append(data, vo)
+		} else {
+			data = append(data, vo)
+		}
+	}
 	c.JSON(common.HTTP_OK, common.OkWithData(data))
 
 }
@@ -125,7 +134,53 @@ func CreateGoods(c *gin.Context, ruleEngine typex.RuleX) {
 *
  */
 func UpdateGoods(c *gin.Context, ruleEngine typex.RuleX) {
-	c.JSON(common.HTTP_OK, common.Error("暂不支持更新"))
+	form := goodsVo{}
+	if err := c.ShouldBindJSON(&form); err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
+	mGoods := model.MGoods{
+		UUID:        form.Uuid,
+		LocalPath:   form.LocalPath,
+		NetAddr:     form.NetAddr,
+		Description: form.Description,
+		Args:        form.Args,
+	}
+	err := service.UpdateGoods(mGoods)
+	if err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
+	// 把正在运行的给停了
+	if goods := trailer.Get(mGoods.UUID); goods != nil {
+		if err != nil {
+			glogger.GLogger.Error(err)
+			return
+		}
+		glogger.GLogger.Debug("Already running, ready to stop:", mGoods.UUID)
+		grpcConnection, err1 := grpc.Dial(goods.NetAddr,
+			grpc.WithTransportCredentials(insecure.NewCredentials()))
+		if err1 != nil {
+			return
+		}
+		defer grpcConnection.Close()
+		client := trailer.NewTrailerClient(grpcConnection)
+		client.Stop(context.Background(), &trailer.Request{})
+		trailer.Remove(mGoods.UUID)
+	}
+	// 开新进程
+	goods := trailer.Goods{
+		UUID:        mGoods.UUID,
+		LocalPath:   mGoods.LocalPath,
+		NetAddr:     mGoods.NetAddr,
+		Description: mGoods.Description,
+		Args:        mGoods.Args,
+	}
+	if err := trailer.Fork(goods); err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
+	c.JSON(common.HTTP_OK, common.Ok())
 }
 
 /*
