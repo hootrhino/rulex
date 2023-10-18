@@ -190,9 +190,7 @@ func run(goodsProcess *GoodsProcess) error {
 			// 等进程起来以后RPC调用
 			if goodsProcess.cmd != nil {
 				if _, err := client.Init(goodsProcess.ctx, &Config{
-					Kv: map[string]string{
-						"args": strings.Join(goodsProcess.Args, ","),
-					},
+					Kv: []byte(strings.Join(goodsProcess.Args, "")),
 				}); err != nil {
 					glogger.GLogger.Error("Init error:", goodsProcess.NetAddr, ", error:", err)
 					continue

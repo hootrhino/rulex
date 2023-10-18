@@ -21,6 +21,7 @@ package datacenter
 *
  */
 type SchemaDetail struct {
+	UUID        string  `json:"uuid"`
 	Name        string  `json:"name"`
 	LocalPath   string  `json:"local_path"`
 	NetAddr     string  `json:"net_addr"`
@@ -36,10 +37,10 @@ type SchemaDetail struct {
 *
  */
 type Column struct {
-	Name        string `json:"name,omitempty"`
-	Type        string `json:"type,omitempty"`
-	Value       string `json:"value,omitempty"`
-	Description string `json:"description,omitempty"`
+	Name        string      `json:"name,omitempty"`
+	Type        string      `json:"type,omitempty"`
+	Value       interface{} `json:"value,omitempty"`
+	Description string      `json:"description,omitempty"`
 }
 
 /*

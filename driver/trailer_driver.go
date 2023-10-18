@@ -38,7 +38,7 @@ func (sc *TrailerDriver) Test() error {
 func (sc *TrailerDriver) Init(config map[string]string) error {
 	sc.config = config
 	_, err := sc.client.Init(context.Background(), &trailer.Config{
-		Kv: sc.config,
+		Kv: []byte{},
 	})
 	if err != nil {
 		glogger.GLogger.Error(err)

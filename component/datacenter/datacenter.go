@@ -17,6 +17,7 @@ package datacenter
 
 import (
 	"context"
+	"strconv"
 	"time"
 
 	"github.com/hootrhino/rulex/component/trailer"
@@ -49,6 +50,7 @@ func SchemaList() []SchemaDetail {
 	trailer.AllGoods().Range(func(key, value any) bool {
 		goodsPs := (value.(*trailer.GoodsProcess))
 		Schemas = append(Schemas, SchemaDetail{
+			UUID:        goodsPs.Uuid,
 			Name:        goodsPs.Name,
 			LocalPath:   goodsPs.LocalPath,
 			NetAddr:     goodsPs.NetAddr,
@@ -92,7 +94,7 @@ func SchemaDefineList() ([]SchemaDefine, error) {
 		for _, column := range columns.Columns {
 			Columns = append(Columns, Column{
 				Name:        string(column.Name),
-				Type:        string(column.Type),
+				Type:        column.Type.String(),
 				Description: string(column.Description),
 			})
 		}
@@ -113,6 +115,7 @@ func SchemaDefineList() ([]SchemaDefine, error) {
  */
 func GetSchemaDetail(goodsId string) SchemaDetail {
 	return SchemaDetail{
+		UUID:        "1122334455",
 		Name:        "Test RPC",
 		LocalPath:   "/root/app1",
 		NetAddr:     "127.0.0.1:4567",
@@ -128,16 +131,17 @@ func GetSchemaDetail(goodsId string) SchemaDetail {
 * 查询，第一个参数是查询请求，针对Sqlite就是SQL，针对mongodb就是JS，根据具体情况而定
 *
  */
-func Query(goodsId, query string) ([]Column, error) {
+
+func Query(goodsId, query string) ([]map[string]any, error) {
 	var err error
-	Columns := []Column{}
+	Rows := []map[string]any{}
 	if goodsPs := trailer.Get(goodsId); goodsPs != nil {
 		grpcConnection, err1 := grpc.Dial(goodsPs.NetAddr,
 			grpc.WithTransportCredentials(insecure.NewCredentials()))
 		if err1 != nil {
 			glogger.GLogger.Error(err1)
 			err = err1
-			return Columns, err
+			return Rows, err
 		}
 		defer grpcConnection.Close()
 		client := trailer.NewTrailerClient(grpcConnection)
@@ -147,14 +151,59 @@ func Query(goodsId, query string) ([]Column, error) {
 		if err2 != nil {
 			glogger.GLogger.Error(err2)
 			err = err2
-			return Columns, err
+			return Rows, err
 		}
-		for _, column := range columns.Column {
-			Columns = append(Columns, Column{
-				Name:  string(column.Name),
-				Value: string(column.Value),
-			})
+		for _, row := range columns.Row {
+			Row := map[string]any{}
+			for _, column := range row.Column {
+				Row[string(column.GetName())] = CovertGoTypeToJsType(column)
+			}
+			Rows = append(Rows, Row)
 		}
 	}
-	return Columns, err
+	return Rows, err
+}
+
+/*
+*
+* 数据转换
+*
+ */
+func CovertGoTypeToJsType(V *trailer.ColumnValue) any {
+	if V.Type == trailer.ValueType_NUMBER {
+		floatValue, err := strconv.ParseFloat(string(V.GetValue()), 64)
+		if err != nil {
+			glogger.GLogger.Error(err)
+			return 0
+		}
+		return floatValue
+	} // Bool 允许两种表示形式
+	if V.Type == trailer.ValueType_BOOL {
+		if string(V.Value) == "true" {
+			return true
+		}
+		if string(V.Value) == "false" {
+			return false
+		}
+		if string(V.Value) == "1" {
+			return true
+		}
+		if string(V.Value) == "0" {
+			return false
+		}
+		if len(V.Value) > 0 {
+			if V.Value[0] == 0 {
+				return false
+			}
+			if V.Value[0] == 1 {
+				return true
+			}
+		}
+		return false
+	}
+	if V.Type == trailer.ValueType_STRING {
+		return string(V.Value)
+	}
+	// 如果到这里说明已经出问题了, 直接返回nil
+	return nil
 }

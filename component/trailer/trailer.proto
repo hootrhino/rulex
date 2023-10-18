@@ -1,5 +1,7 @@
 syntax = "proto3";
+// go
 option go_package = "./;trailer";
+// Java
 option java_multiple_files = false;
 option java_package = "trailer";
 option java_outer_classname = "trailer";
@@ -22,9 +24,9 @@ service trailer {
   // 停止
   rpc Stop (Request) returns (Response) {}
 }
-
+// 通用配置
 message Config {
-    map<string, string> kv = 1;
+    bytes kv = 1;
 }
 message Request {
 
@@ -50,25 +52,36 @@ message StatusResponse {
     Status status = 1;
     string message = 2;
 }
-
+// 数据列类型, 主要为了和前端JavaScript匹配，分了3类
+enum ValueType {
+    STRING = 0;
+    NUMBER = 1;
+    BOOL = 2;
+}
+// 请求拿表结构
 message SchemaRequest{
 }
+// 行定义
+message DataRow{
+    repeated ColumnValue column = 1; // 一行多列
+}
+// 列定义
 message Column{
     bytes name = 1;
-    bytes type = 2;
+    ValueType type = 2;
     bytes description = 3;
 }
-
+// 查出来的数据列
+message ColumnValue{
+    bytes name = 1;
+    ValueType type = 2;
+    bytes value = 3;
+}
 // 表结构返回
 message SchemaResponse{
     int32 code = 1;
     bytes message = 2;
     repeated Column columns = 3;
-}
-// 查出来的数据列
-message ColumnValue{
-    bytes name = 1;
-    bytes value = 2;
 }
 // 请求查询
 message DataRowsRequest{
@@ -76,5 +89,5 @@ message DataRowsRequest{
 }
 // 查询结果
 message DataRowsResponse{
-    repeated ColumnValue column = 1;
+    repeated DataRow row = 1; // 多行
 }
