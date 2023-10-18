@@ -46,6 +46,31 @@ func GetSchemaDefineList(c *gin.Context, ruleEngine typex.RuleX) {
 	}
 	c.JSON(common.HTTP_OK, common.OkWithData(Column))
 }
+
+/*
+*
+* 获取单个仓库的表结构定义
+*
+ */
+func GetSchemaDefine(c *gin.Context, ruleEngine typex.RuleX) {
+	uuid, _ := c.GetQuery("uuid")
+	Schema, err := datacenter.GetSchema(uuid)
+	if err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
+	if Schema.UUID == "" {
+		c.JSON(common.HTTP_OK, common.Error("Schema not found"))
+		return
+	}
+	c.JSON(common.HTTP_OK, common.OkWithData(Schema))
+}
+
+/*
+*
+* 获取仓库结构列表
+*
+ */
 func GetSchemaList(c *gin.Context, ruleEngine typex.RuleX) {
 	c.JSON(common.HTTP_OK, common.OkWithData(datacenter.SchemaList()))
 }

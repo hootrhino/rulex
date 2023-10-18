@@ -70,6 +70,38 @@ func SchemaList() []SchemaDetail {
 *
  */
 
+func GetSchema(goodsId string) (SchemaDefine, error) {
+	schemaDefine := SchemaDefine{}
+	if goodsPs := trailer.Get(goodsId); goodsPs != nil {
+		grpcConnection, err1 := grpc.Dial(goodsPs.NetAddr,
+			grpc.WithTransportCredentials(insecure.NewCredentials()))
+		if err1 != nil {
+			glogger.GLogger.Error(err1)
+			return schemaDefine, err1
+		}
+		defer grpcConnection.Close()
+		client := trailer.NewTrailerClient(grpcConnection)
+		columns, err2 := client.Schema(context.Background(), &trailer.SchemaRequest{})
+		if err2 != nil {
+			glogger.GLogger.Error(err2)
+			return schemaDefine, err2
+		}
+		Columns := []Column{}
+		for _, column := range columns.Columns {
+			Columns = append(Columns, Column{
+				Name:        string(column.Name),
+				Type:        column.Type.String(),
+				Description: string(column.Description),
+			})
+		}
+		schemaDefine = SchemaDefine{
+			UUID:    goodsPs.Uuid,
+			Columns: Columns,
+		}
+	}
+	return schemaDefine, nil
+
+}
 func SchemaDefineList() ([]SchemaDefine, error) {
 	var err error
 	ColumnsMap := []SchemaDefine{}

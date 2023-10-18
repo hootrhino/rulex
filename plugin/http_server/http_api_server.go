@@ -446,6 +446,7 @@ func (hs *ApiServerPlugin) LoadRoute() {
 	}
 	dataCenterApi := server.RouteGroup(server.ContextUrl("/dataCenter"))
 	{
+		dataCenterApi.GET("/schema/define", server.AddRoute(apis.GetSchemaDefine))
 		dataCenterApi.GET("/schema/detail", server.AddRoute(apis.GetSchemaDetail))
 		dataCenterApi.GET("/schema/list", server.AddRoute(apis.GetSchemaList))
 		dataCenterApi.GET("/schema/defineList", server.AddRoute(apis.GetSchemaDefineList))
