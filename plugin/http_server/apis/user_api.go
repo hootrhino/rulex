@@ -55,7 +55,7 @@ func CreateUser(c *gin.Context, ruleEngine typex.RuleX) {
 		return
 	}
 
-	if _, err := service.GetMUser(form.Username, md5Hash(form.Password)); err != nil {
+	if _, err := service.GetMUser(form.Username); err != nil {
 		service.InsertMUser(&model.MUser{
 			Role:        form.Role,
 			Username:    form.Username,
@@ -91,7 +91,7 @@ func Login(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	if _, err := service.GetMUser(u.Username, md5Hash(u.Password)); err != nil {
+	if _, err := service.Login(u.Username, md5Hash(u.Password)); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}

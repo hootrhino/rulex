@@ -121,10 +121,19 @@ func UpdateMOutEnd(uuid string, o *model.MOutEnd) error {
 // -----------------------------------------------------------------------------------
 // USER
 // -----------------------------------------------------------------------------------
-func GetMUser(username string, password string) (*model.MUser, error) {
+func GetMUser(username string) (*model.MUser, error) {
 	m := new(model.MUser)
-	if err := interdb.DB().Where("username=? AND password=?",
-		username, password).First(m).Error; err != nil {
+	if err := interdb.DB().Where("username=?", username).First(m).Error; err != nil {
+		return nil, err
+	} else {
+		return m, nil
+	}
+}
+func Login(username, pwd string) (*model.MUser, error) {
+	m := new(model.MUser)
+	if err := interdb.DB().
+		Where("username=? AND password=?", username, pwd).
+		First(m).Error; err != nil {
 		return nil, err
 	} else {
 		return m, nil
