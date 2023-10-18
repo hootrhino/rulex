@@ -7,12 +7,16 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"net/http"
 	"os"
 	"regexp"
+	"sync"
+	"time"
 
 	"os/exec"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gorilla/websocket"
 	"github.com/hootrhino/rulex/core"
 	"github.com/hootrhino/rulex/glogger"
 )
@@ -36,9 +40,24 @@ type RtspCameraInfo struct {
 	PushAddr      string `json:"pushAddr,omitempty"`
 	ffmpegProcess *exec.Cmd
 }
+
+/*
+*
+* 这是用来给外部输出日志的websocket服务器，其功能非常简单，就是单纯的对外输出实时日志，方便调试使用。
+* 注意：该功能需要配合HttpApiServer使用, 客户端连上以后必须在5s内发送一个 ‘WsTerminal’ 的固定字符
+*       串到服务器才能过认证。
+*
+ */
+type websocketPlayerManager struct {
+	WsServer websocket.Upgrader
+	Clients  map[string]*websocket.Conn
+	lock     sync.Mutex
+}
+
 type rtspServer struct {
-	webServer   *gin.Engine
-	rtspCameras map[string]RtspCameraInfo
+	webServer              *gin.Engine
+	rtspCameras            map[string]RtspCameraInfo
+	websocketPlayerManager *websocketPlayerManager
 }
 
 func calculateMD5(inputString string) string {
@@ -61,9 +80,12 @@ func isValidRTSPAddress(address string) bool {
 func InitRtspServer() *rtspServer {
 	gin.SetMode(gin.ReleaseMode)
 	__DefaultRtspServer = &rtspServer{
-		webServer:   gin.New(),
-		rtspCameras: map[string]RtspCameraInfo{},
+		webServer:              gin.New(),
+		rtspCameras:            map[string]RtspCameraInfo{},
+		websocketPlayerManager: NewPlayerManager(),
 	}
+	// 注册Websocket server
+	__DefaultRtspServer.webServer.GET("/ws", wsServerEndpoint)
 	// http://127.0.0.1:3000/stream/live/001
 	group := __DefaultRtspServer.webServer.Group("/stream")
 	group.POST("/registerLive", func(ctx *gin.Context) {
@@ -240,4 +262,97 @@ func StopFFMPEGProcess(rtspUrl string) error {
 		return p.ffmpegProcess.Process.Kill()
 	}
 	return fmt.Errorf("no such ffmpegProcess:" + rtspUrl)
+}
+
+func (w *websocketPlayerManager) Write(p []byte) (n int, err error) {
+	for _, c := range w.Clients {
+		w.lock.Lock()
+		err := c.WriteMessage(websocket.TextMessage, p)
+		w.lock.Unlock()
+		if err != nil {
+			return 0, err
+		}
+	}
+	return 0, nil
+}
+
+func NewPlayerManager() *websocketPlayerManager {
+	return &websocketPlayerManager{
+		WsServer: websocket.Upgrader{
+			CheckOrigin: func(r *http.Request) bool {
+				return true
+			},
+		},
+		Clients: make(map[string]*websocket.Conn),
+		lock:    sync.Mutex{},
+	}
+
+}
+
+/*
+*
+* 启动服务
+*
+ */
+
+func wsServerEndpoint(c *gin.Context) {
+	//upgrade get request to websocket protocol
+	wsConn, err := __DefaultRtspServer.websocketPlayerManager.WsServer.Upgrade(c.Writer, c.Request, nil)
+	if err != nil {
+		return
+	}
+	// 首先读第一个包是不是: WsTerminal
+	wsConn.SetReadDeadline(time.Now().Add(5 * time.Second))
+	_, b, err := wsConn.ReadMessage()
+	if err != nil {
+		glogger.GLogger.Error(err)
+		return
+	}
+	wsConn.SetReadDeadline(time.Time{})
+	token := string(b)
+	if token != "WebRtspPlayer" {
+		wsConn.WriteMessage(1, []byte("Invalid client token"))
+		wsConn.Close()
+		return
+	}
+	// 最多允许连接10个客户端，实际情况下根本用不了那么多
+	if len(__DefaultRtspServer.websocketPlayerManager.Clients) >= 10 {
+		wsConn.WriteMessage(websocket.TextMessage, []byte("Reached max connections"))
+		wsConn.Close()
+		return
+	}
+	__DefaultRtspServer.websocketPlayerManager.Clients[wsConn.RemoteAddr().String()] = wsConn
+	wsConn.WriteMessage(websocket.TextMessage, []byte("Connected"))
+	glogger.GLogger.Info("WebSocket Terminal connected:" + wsConn.RemoteAddr().String())
+	wsConn.SetCloseHandler(func(code int, text string) error {
+		glogger.GLogger.Info("wsConn CloseHandler:", wsConn.RemoteAddr().String())
+		return nil
+	})
+	go func(ctx context.Context, wsConn *websocket.Conn) {
+		defer func() {
+			wsConn.Close()
+			__DefaultRtspServer.websocketPlayerManager.lock.Lock()
+			delete(__DefaultRtspServer.websocketPlayerManager.Clients, wsConn.RemoteAddr().String())
+			__DefaultRtspServer.websocketPlayerManager.lock.Unlock()
+		}()
+		for {
+			select {
+			case <-ctx.Done():
+				{
+					return
+				}
+			default:
+				{
+				}
+			}
+			_, _, err := wsConn.ReadMessage()
+			wsConn.WriteMessage(websocket.PingMessage, []byte{})
+			if err != nil {
+				glogger.GLogger.Info("WsConn error:", wsConn.RemoteAddr().String(), ", Error:", err)
+				return
+			}
+
+		}
+
+	}(context.Background(), wsConn)
 }
