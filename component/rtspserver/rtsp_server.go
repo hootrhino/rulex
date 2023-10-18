@@ -132,6 +132,7 @@ func InitRtspServer() *rtspServer {
 		if err != nil {
 			glogger.GLogger.Fatalf("Rtsp stream server listen error: %s\n", err)
 		}
+		defer listener.Close()
 		if err := __DefaultRtspServer.webServer.RunListener(listener); err != nil {
 			glogger.GLogger.Fatalf("Rtsp stream server listen error: %s\n", err)
 		}

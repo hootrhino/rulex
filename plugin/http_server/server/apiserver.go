@@ -95,6 +95,7 @@ func StartRulexApiServer(ruleEngine typex.RuleX) {
 		if err != nil {
 			glogger.GLogger.Fatalf("httpserver listen error: %s\n", err)
 		}
+		defer listener.Close()
 		if err := server.ginEngine.RunListener(listener); err != nil {
 			glogger.GLogger.Fatalf("httpserver listen error: %s\n", err)
 		}

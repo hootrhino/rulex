@@ -46,6 +46,7 @@ func _startServer() {
 	rpcServer := grpc.NewServer()
 	rulexrpc.RegisterCodecServer(rpcServer, new(_rpcCodecServer))
 	go func(c context.Context) {
+		defer listener.Close()
 		glogger.GLogger.Info("rpcCodecServer started on", listener.Addr())
 		rpcServer.Serve(listener)
 	}(context.TODO())
