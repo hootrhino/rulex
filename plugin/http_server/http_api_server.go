@@ -104,7 +104,7 @@ func initRulex(engine typex.RuleX) {
 			Description: mGoods.Description,
 			Args:        mGoods.Args,
 		}
-		if err := trailer.Fork(newGoods); err != nil {
+		if err := trailer.StartProcess(newGoods); err != nil {
 			glogger.GLogger.Error("Goods load failed:", err)
 		}
 	}
@@ -442,6 +442,7 @@ func (hs *ApiServerPlugin) LoadRoute() {
 		trailerApi.POST("/create", server.AddRoute(apis.CreateGoods))
 		trailerApi.PUT("/update", server.AddRoute(apis.UpdateGoods))
 		trailerApi.POST("/upload", server.AddRoute(apis.UploadGoodsFile))
+		trailerApi.PUT("/cleanGarbage", server.AddRoute(apis.CleanGoodsUpload))
 		trailerApi.DELETE("/", server.AddRoute(apis.DeleteGoods))
 	}
 	dataCenterApi := server.RouteGroup(server.ContextUrl("/dataCenter"))

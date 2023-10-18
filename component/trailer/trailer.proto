@@ -14,7 +14,7 @@ service trailer {
   // 启动
   rpc Start (Request) returns (Response) {}
   // 获取状态
-  rpc Status (Request) returns (Response) {}
+  rpc Status (Request) returns (StatusResponse) {}
   // 服务调用
   rpc Service (ServiceRequest) returns (ServiceResponse) {}
   // 数据查询

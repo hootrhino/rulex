@@ -37,7 +37,7 @@ type TrailerClient interface {
 	// 启动
 	Start(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error)
 	// 获取状态
-	Status(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error)
+	Status(ctx context.Context, in *Request, opts ...grpc.CallOption) (*StatusResponse, error)
 	// 服务调用
 	Service(ctx context.Context, in *ServiceRequest, opts ...grpc.CallOption) (*ServiceResponse, error)
 	// 数据查询
@@ -74,8 +74,8 @@ func (c *trailerClient) Start(ctx context.Context, in *Request, opts ...grpc.Cal
 	return out, nil
 }
 
-func (c *trailerClient) Status(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error) {
-	out := new(Response)
+func (c *trailerClient) Status(ctx context.Context, in *Request, opts ...grpc.CallOption) (*StatusResponse, error) {
+	out := new(StatusResponse)
 	err := c.cc.Invoke(ctx, Trailer_Status_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -128,7 +128,7 @@ type TrailerServer interface {
 	// 启动
 	Start(context.Context, *Request) (*Response, error)
 	// 获取状态
-	Status(context.Context, *Request) (*Response, error)
+	Status(context.Context, *Request) (*StatusResponse, error)
 	// 服务调用
 	Service(context.Context, *ServiceRequest) (*ServiceResponse, error)
 	// 数据查询
@@ -150,7 +150,7 @@ func (UnimplementedTrailerServer) Init(context.Context, *Config) (*Response, err
 func (UnimplementedTrailerServer) Start(context.Context, *Request) (*Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Start not implemented")
 }
-func (UnimplementedTrailerServer) Status(context.Context, *Request) (*Response, error) {
+func (UnimplementedTrailerServer) Status(context.Context, *Request) (*StatusResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Status not implemented")
 }
 func (UnimplementedTrailerServer) Service(context.Context, *ServiceRequest) (*ServiceResponse, error) {

@@ -36,7 +36,7 @@ type GoodsProcess struct {
 	NetAddr     string   `json:"net_addr,omitempty"`   // RPC网络请求路径
 	Description string   `json:"description,omitempty"`
 	Args        []string `json:"args,omitempty"`
-	rpcStarted  bool     `json:"rpcStarted,omitempty"`
+	rpcStarted  bool
 	ctx         context.Context
 	cmd         *exec.Cmd
 	cancel      context.CancelFunc
@@ -51,9 +51,9 @@ func (goodsPs *GoodsProcess) Stop() {
 		if goodsPs.cmd.Process != nil {
 			goodsPs.cmd.Process.Kill()
 			goodsPs.cmd.Process.Signal(syscall.SIGTERM)
-			goodsPs.cancel()
 		}
 	}
+	goodsPs.cancel()
 }
 
 func NewGoodsProcess() *GoodsProcess {
