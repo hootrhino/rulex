@@ -25,6 +25,7 @@ jobs:
           chmod 755 ./gen_proto.sh
           chmod +x ./gen_proto.sh
           make
+          touch /workspaces/rulex/plugin/http_server/server/www/index.html
           # for test mqtt
           echo "Start Mqtt Server"
           docker run -d -p 1883:1883 -p 9001:9001 eclipse-mosquitto
