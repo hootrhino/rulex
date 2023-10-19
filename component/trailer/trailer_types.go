@@ -3,8 +3,11 @@ package trailer
 import (
 	"context"
 	"encoding/json"
+	"os"
 	"os/exec"
 	"syscall"
+
+	"github.com/hootrhino/rulex/glogger"
 )
 
 /*
@@ -20,7 +23,7 @@ type Goods struct {
 	// Description text
 	Description string
 	// Additional Args
-	Args []string
+	Args string // such la -al
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -28,14 +31,15 @@ type Goods struct {
 //--------------------------------------------------------------------------------------------------
 
 type GoodsProcess struct {
-	Running bool   `json:"running,omitempty"`
-	Name    string `json:"name,omitempty"`
-	Uuid    string `json:"uuid,omitempty"`
+	PsRunning bool   `json:"running,omitempty"`
+	Name      string `json:"name,omitempty"`
+	Uuid      string `json:"uuid,omitempty"`
+	Pid       int    `json:"pid,omitempty"`
 	// 首先启动本地文件，然后用网络路径去发送RPC
-	LocalPath   string   `json:"local_path,omitempty"` // 文件路径
-	NetAddr     string   `json:"net_addr,omitempty"`   // RPC网络请求路径
-	Description string   `json:"description,omitempty"`
-	Args        []string `json:"args,omitempty"`
+	LocalPath   string `json:"local_path,omitempty"` // 文件路径
+	NetAddr     string `json:"net_addr,omitempty"`   // RPC网络请求路径
+	Description string `json:"description,omitempty"`
+	Args        string `json:"args,omitempty"`
 	rpcStarted  bool
 	ctx         context.Context
 	cmd         *exec.Cmd
@@ -51,6 +55,14 @@ func (goodsPs *GoodsProcess) Stop() {
 		if goodsPs.cmd.Process != nil {
 			goodsPs.cmd.Process.Kill()
 			goodsPs.cmd.Process.Signal(syscall.SIGTERM)
+		}
+		if goodsPs.cmd.Process != nil {
+			pr, err := os.FindProcess(goodsPs.Pid)
+			if err != nil {
+				glogger.GLogger.Error(err)
+				return
+			}
+			pr.Kill()
 		}
 	}
 	goodsPs.cancel()

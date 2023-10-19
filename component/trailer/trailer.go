@@ -108,16 +108,34 @@ func StopProcess(goods Goods) error {
 * Fork 一个进程来执行
 *
  */
+
+type goodsStdInOut struct {
+	ps *GoodsProcess
+}
+
+func NewWSStdInOut(ps *GoodsProcess) goodsStdInOut {
+	return goodsStdInOut{ps: ps}
+}
+
+func (hk goodsStdInOut) Write(p []byte) (n int, err error) {
+	glogger.Logrus.WithField("topic",
+		fmt.Sprintf("goods/console/%s", hk.ps.Uuid)).Debug(string(p))
+	return 0, nil
+}
+
+/*
+*
+* 分离进程
+*
+ */
 func fork(goods Goods) error {
 	glogger.GLogger.Infof("fork goods process, (uuid = %v, addr = %v, args = %v)",
 		goods.UUID, goods.LocalPath, goods.Args)
-	Cmd := exec.Command(goods.LocalPath, goods.Args...)
-	Cmd.SysProcAttr = NewSysProcAttr()
-	Cmd.Stdin = nil
-	Cmd.Stdout = glogger.Logrus.Out
-	Cmd.Stderr = glogger.Logrus.Out
 	ctx, Cancel := context.WithCancel(__DefaultTrailerRuntime.ctx)
+	Cmd := exec.CommandContext(ctx, goods.LocalPath, goods.Args)
+	Cmd.SysProcAttr = NewSysProcAttr()
 	goodsProcess := &GoodsProcess{
+		Pid:         0,
 		LocalPath:   goods.LocalPath,
 		NetAddr:     goods.NetAddr,
 		Uuid:        goods.UUID,
@@ -127,6 +145,10 @@ func fork(goods Goods) error {
 		ctx:         ctx,
 		cancel:      Cancel,
 	}
+	// out := NewWSStdInOut(goodsProcess)
+	Cmd.Stdin = nil
+	Cmd.Stdout = os.Stdout
+	Cmd.Stderr = os.Stdout
 	saveProcessMetaToMap(goodsProcess)
 	go runLocalProcess(goodsProcess) // 任务进程
 	return nil
@@ -135,7 +157,7 @@ func fork(goods Goods) error {
 /*
 *
 * Cmd.Wait() 会阻塞, 但是当控制的子进程停止的时候会继续执行, 因此可以在defer里面释放资源
-*
+*  先保证本地Process进程启动，然后再回调RPC
  */
 func runLocalProcess(goodsProcess *GoodsProcess) error {
 	defer func() {
@@ -151,6 +173,7 @@ func runLocalProcess(goodsProcess *GoodsProcess) error {
 
 	var client TrailerClient
 	// 迁移到prob,改造成监督进程
+	// Load OS process
 	go func() {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
@@ -174,8 +197,9 @@ func runLocalProcess(goodsProcess *GoodsProcess) error {
 			}
 			time.Sleep(2 * time.Second)
 			// 尝试启动RPC
-			glogger.GLogger.Debug("Wait Process Start:", goodsProcess.NetAddr)
+			glogger.GLogger.Debug("Wait Grpc Start:", goodsProcess.NetAddr)
 			if loadRpc(goodsProcess) {
+				glogger.GLogger.Debug("Grpc Started:", goodsProcess.NetAddr)
 				return
 			}
 		}
@@ -186,6 +210,8 @@ func runLocalProcess(goodsProcess *GoodsProcess) error {
 		goodsProcess.Uuid,
 		goodsProcess.LocalPath,
 		goodsProcess.Args)
+	// Start 以后即可拿到Pid
+	goodsProcess.Pid = goodsProcess.cmd.Process.Pid
 	if err := goodsProcess.cmd.Wait(); err != nil {
 		State := goodsProcess.cmd.ProcessState
 		if !State.Success() {
@@ -263,22 +289,25 @@ func probe(client TrailerClient, goodsProcess *GoodsProcess) {
 	default:
 		{
 			if goodsProcess.cmd != nil {
+				goodsProcess.PsRunning = true
 				if goodsProcess.rpcStarted {
-					if response, err := client.Status(goodsProcess.ctx, &Request{}); err != nil {
-						glogger.GLogger.Error(err)
-						goodsProcess.Running = false
-						goodsProcess.rpcStarted = false
+					response, err := client.Status(goodsProcess.ctx, &Request{})
+					Status := response.GetStatus()
+					if Status == StatusResponse_RUNNING && err == nil {
+						goodsProcess.rpcStarted = true
 					} else {
-						if response.GetStatus() == StatusResponse_RUNNING {
-							goodsProcess.Running = true
-						}
+						glogger.GLogger.Error(err)
+						goodsProcess.rpcStarted = false
 					}
 				}
-
+				return
 			} else {
+				// 进程没起来，RPC也不会起来
 				// 进程的 cmd==nil 时，说明已经挂了，尝试将其救活, 默认最多抢救5次
-				goodsProcess.Running = false
-				glogger.GLogger.Debug("Goods Process is down:", goodsProcess.Uuid, " try to restart")
+				goodsProcess.PsRunning = false
+				goodsProcess.rpcStarted = false
+				glogger.GLogger.Debug("Goods Process is down:",
+					goodsProcess.Uuid, " try to restart")
 				go fork(Goods{
 					UUID:        goodsProcess.Uuid,
 					LocalPath:   goodsProcess.LocalPath,
@@ -345,7 +374,7 @@ func loadRpc(goodsProcess *GoodsProcess) bool {
 	// 等进程起来以后RPC调用
 	if goodsProcess.cmd != nil {
 		if _, err := client.Init(goodsProcess.ctx, &Config{
-			Kv: []byte(strings.Join(goodsProcess.Args, "")),
+			Kv: []byte(goodsProcess.Args),
 		}); err != nil {
 			glogger.GLogger.Error("Init error:", goodsProcess.NetAddr, ", error:", err)
 			return false

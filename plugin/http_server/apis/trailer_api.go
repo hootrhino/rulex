@@ -30,7 +30,7 @@ import (
 func StopGoods(c *gin.Context, ruleEngine typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
 	if goods := trailer.Get(uuid); goods != nil {
-		if goods.Running {
+		if goods.PsRunning {
 			goods.Stop()
 			c.JSON(common.HTTP_OK, common.Ok())
 			return
@@ -60,10 +60,11 @@ func GoodsDetail(c *gin.Context, ruleEngine typex.RuleX) {
 		LocalPath:   mGood.LocalPath,
 		NetAddr:     mGood.NetAddr,
 		Description: mGood.Description,
-		Args:        mGood.Args,
+		Args:        []string{mGood.Args},
 	}
 	if goods := trailer.Get(mGood.UUID); goods != nil {
-		vo.Running = goods.Running
+		vo.Running = goods.PsRunning
+		vo.Pid = goods.Pid
 	}
 	c.JSON(common.HTTP_OK, common.OkWithData(vo))
 
@@ -75,6 +76,7 @@ func GoodsDetail(c *gin.Context, ruleEngine typex.RuleX) {
 *
  */
 type goodsVo struct {
+	Pid         int      `json:"pid"`
 	Running     bool     `json:"running"`
 	Uuid        string   `json:"uuid"`
 	LocalPath   string   `json:"local_path"`
@@ -93,10 +95,11 @@ func GoodsList(c *gin.Context, ruleEngine typex.RuleX) {
 			LocalPath:   mGood.LocalPath,
 			NetAddr:     mGood.NetAddr,
 			Description: mGood.Description,
-			Args:        mGood.Args,
+			Args:        []string{mGood.Args},
 		}
 		if goods := trailer.Get(mGood.UUID); goods != nil {
-			vo.Running = goods.Running
+			vo.Running = goods.PsRunning
+			vo.Pid = goods.Pid
 			data = append(data, vo)
 		} else {
 			data = append(data, vo)
@@ -125,12 +128,8 @@ func DeleteGoods(c *gin.Context, ruleEngine typex.RuleX) {
 	}
 	trailer.Remove(goods.UUID)
 	// 删除文件
-	if err := os.Remove(goods.LocalPath); err != nil {
-		c.JSON(common.HTTP_OK, common.Error400(err))
-		return
-	}
+	os.Remove(goods.LocalPath)
 	c.JSON(common.HTTP_OK, common.Ok())
-
 }
 
 /*
@@ -187,7 +186,12 @@ func CreateGoods(c *gin.Context, ruleEngine typex.RuleX) {
 		LocalPath:   dir + fileName,
 		NetAddr:     NetAddr,
 		Description: Description,
-		Args:        Args,
+		Args: func() string {
+			if len(Args) > 0 {
+				return Args[0]
+			}
+			return ""
+		}(),
 	}
 
 	if err := service.InsertGoods(&mGoods); err != nil {
@@ -250,7 +254,12 @@ func UpdateGoods(c *gin.Context, ruleEngine typex.RuleX) {
 		LocalPath:   dir + fileName,
 		NetAddr:     NetAddr,
 		Description: Description,
-		Args:        Args,
+		Args: func() string {
+			if len(Args) > 0 {
+				return Args[0]
+			}
+			return ""
+		}(),
 	}
 	err1 := service.UpdateGoods(mGoods)
 	if err1 != nil {
