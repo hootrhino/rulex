@@ -2,11 +2,11 @@ package apis
 
 import (
 	"context"
+	"debug/pe"
 	"fmt"
 	"os"
 	"path/filepath"
 	"runtime"
-	"strings"
 	"time"
 
 	"github.com/hootrhino/rulex/component/trailer"
@@ -24,6 +24,22 @@ import (
 
 /*
 *
+* Goods
+*
+ */
+type goodsVo struct {
+	AutoStart   bool     `json:"autoStart"`
+	Pid         int      `json:"pid"`
+	Running     bool     `json:"running"`
+	Uuid        string   `json:"uuid"`
+	LocalPath   string   `json:"local_path"`
+	NetAddr     string   `json:"net_addr"`
+	Description string   `json:"description"`
+	Args        []string `json:"args"`
+}
+
+/*
+*
 * 停止正在运行的进程
 *
  */
@@ -31,13 +47,12 @@ func StopGoods(c *gin.Context, ruleEngine typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
 	if goods := trailer.Get(uuid); goods != nil {
 		if goods.PsRunning {
-			goods.Stop()
+			goods.StopBy("RULEX")
 			c.JSON(common.HTTP_OK, common.Ok())
 			return
-		} else {
-			c.JSON(common.HTTP_OK, common.Error("Already stopped"))
-			return
 		}
+		c.JSON(common.HTTP_OK, common.Error("Already stopped"))
+		return
 	}
 	c.JSON(common.HTTP_OK, common.Error("Not exists:"+uuid))
 }
@@ -57,6 +72,7 @@ func GoodsDetail(c *gin.Context, ruleEngine typex.RuleX) {
 	vo := goodsVo{
 		Running:     false,
 		Uuid:        mGood.UUID,
+		AutoStart:   *mGood.AutoStart,
 		LocalPath:   mGood.LocalPath,
 		NetAddr:     mGood.NetAddr,
 		Description: mGood.Description,
@@ -70,21 +86,6 @@ func GoodsDetail(c *gin.Context, ruleEngine typex.RuleX) {
 
 }
 
-/*
-*
-* Goods
-*
- */
-type goodsVo struct {
-	Pid         int      `json:"pid"`
-	Running     bool     `json:"running"`
-	Uuid        string   `json:"uuid"`
-	LocalPath   string   `json:"local_path"`
-	NetAddr     string   `json:"net_addr"`
-	Description string   `json:"description"`
-	Args        []string `json:"args"`
-}
-
 func GoodsList(c *gin.Context, ruleEngine typex.RuleX) {
 	data := []goodsVo{}
 	Goods := service.AllGoods()
@@ -92,6 +93,7 @@ func GoodsList(c *gin.Context, ruleEngine typex.RuleX) {
 		vo := goodsVo{
 			Running:     false,
 			Uuid:        mGood.UUID,
+			AutoStart:   *mGood.AutoStart,
 			LocalPath:   mGood.LocalPath,
 			NetAddr:     mGood.NetAddr,
 			Description: mGood.Description,
@@ -121,12 +123,17 @@ func DeleteGoods(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
+
+	if goods := trailer.Get(uuid); goods != nil {
+		if goods.PsRunning {
+			trailer.RemoveBy(goods.Uuid, "RULEX")
+		}
+	}
 	// 数据库和内存都要删除
 	if err := service.DeleteGoods(goods.UUID); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	trailer.Remove(goods.UUID)
 	// 删除文件
 	os.Remove(goods.LocalPath)
 	c.JSON(common.HTTP_OK, common.Ok())
@@ -151,6 +158,8 @@ func CleanGoodsUpload(c *gin.Context, ruleEngine typex.RuleX) {
 * CreateGood
 *
  */
+var __TrailerGoodsUploadDir = "./upload/TrailerGoods/"
+
 func CreateGoods(c *gin.Context, ruleEngine typex.RuleX) {
 	fileHeader, err := c.FormFile("file")
 	if err != nil {
@@ -165,26 +174,53 @@ func CreateGoods(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error("File too large"))
 		return
 	}
-	dir := "./upload/TrailerGoods/"
 	OriginFileName := filepath.Base(fileHeader.Filename)
 	fileExt := filepath.Ext(OriginFileName)
 	fileName := fmt.Sprintf("goods_%d%s", time.Now().UnixMicro(), fileExt)
-	if err := os.MkdirAll(filepath.Dir(dir), os.ModePerm); err != nil {
+	if err := os.MkdirAll(filepath.Dir(__TrailerGoodsUploadDir), os.ModePerm); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	if err := c.SaveUploadedFile(fileHeader, dir+fileName); err != nil {
+	localSavePath := __TrailerGoodsUploadDir + fileName
+	if err := c.SaveUploadedFile(fileHeader, localSavePath); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
+	}
+	// 现阶段先只支持这俩系统
+	if runtime.GOOS == "windows" {
+		if !IsExecutableFileWin(localSavePath) {
+			c.JSON(common.HTTP_OK,
+				common.Error("Is not windows Executable File:"+localSavePath))
+			os.Remove(localSavePath)
+			return
+		}
+	}
+	if runtime.GOOS == "linux" {
+		if !IsExecutableFileUnix(localSavePath) {
+			c.JSON(common.HTTP_OK,
+				common.Error("Is not Linux(Unix) Executable File:"+localSavePath))
+			os.Remove(localSavePath)
+			return
+		}
 	}
 
 	NetAddr := c.PostForm("net_addr")
 	Description := c.PostForm("description")
+	AutoStart := c.PostForm("AutoStart")
 	Args := c.PostFormArray("args")
 	mGoods := model.MGoods{
-		UUID:        utils.GoodsUuid(),
-		LocalPath:   dir + fileName,
-		NetAddr:     NetAddr,
+		UUID:      utils.GoodsUuid(),
+		LocalPath: __TrailerGoodsUploadDir + fileName,
+		NetAddr:   NetAddr,
+		AutoStart: func() *bool {
+			if AutoStart == "1" ||
+				AutoStart == "true" {
+				r := true
+				return &r
+			}
+			r := false
+			return &r
+		}(),
 		Description: Description,
 		Args: func() string {
 			if len(Args) > 0 {
@@ -200,6 +236,7 @@ func CreateGoods(c *gin.Context, ruleEngine typex.RuleX) {
 	}
 	goods := trailer.Goods{
 		UUID:        mGoods.UUID,
+		AutoStart:   mGoods.AutoStart,
 		LocalPath:   mGoods.LocalPath,
 		NetAddr:     mGoods.NetAddr,
 		Description: mGoods.Description,
@@ -235,23 +272,49 @@ func UpdateGoods(c *gin.Context, ruleEngine typex.RuleX) {
 	NetAddr := c.PostForm("net_addr")
 	Description := c.PostForm("description")
 	Args := c.PostFormArray("args")
-	//
-	dir := "./upload/TrailerGoods/"
+	AutoStart := c.PostForm("AutoStart")
 	OriginFileName := filepath.Base(fileHeader.Filename)
 	fileExt := filepath.Ext(OriginFileName)
 	fileName := fmt.Sprintf("goods_%d%s", time.Now().UnixMicro(), fileExt)
-	if err := os.MkdirAll(filepath.Dir(dir), os.ModePerm); err != nil {
+	if err := os.MkdirAll(filepath.Dir(__TrailerGoodsUploadDir), os.ModePerm); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	if err := c.SaveUploadedFile(fileHeader, dir+fileName); err != nil {
+	localSavePath := __TrailerGoodsUploadDir + fileName
+	if err := c.SaveUploadedFile(fileHeader, localSavePath); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
+	}
+	// 现阶段先只支持这俩系统
+	if runtime.GOOS == "windows" {
+		if !IsExecutableFileWin(localSavePath) {
+			c.JSON(common.HTTP_OK,
+				common.Error("Is not windows Executable File:"+localSavePath))
+			os.Remove(localSavePath)
+			return
+		}
+	}
+	if runtime.GOOS == "linux" {
+		if !IsExecutableFileUnix(localSavePath) {
+			c.JSON(common.HTTP_OK,
+				common.Error("Is not Linux(Unix) Executable File:"+localSavePath))
+			os.Remove(localSavePath)
+			return
+		}
 	}
 
 	mGoods := model.MGoods{
-		UUID:        Uuid,
-		LocalPath:   dir + fileName,
+		UUID: Uuid,
+		AutoStart: func() *bool {
+			if AutoStart == "1" ||
+				AutoStart == "true" {
+				r := true
+				return &r
+			}
+			r := false
+			return &r
+		}(),
+		LocalPath:   localSavePath,
 		NetAddr:     NetAddr,
 		Description: Description,
 		Args: func() string {
@@ -287,6 +350,7 @@ func UpdateGoods(c *gin.Context, ruleEngine typex.RuleX) {
 	// 开新进程
 	goods := trailer.Goods{
 		UUID:        mGoods.UUID,
+		AutoStart:   mGoods.AutoStart,
 		LocalPath:   mGoods.LocalPath,
 		NetAddr:     mGoods.NetAddr,
 		Description: mGoods.Description,
@@ -301,44 +365,34 @@ func UpdateGoods(c *gin.Context, ruleEngine typex.RuleX) {
 
 /*
 *
-* 上传文件，保存在 "./upload/goods/" 路径
+* 尝试启动已经停止的进程
 *
  */
-func UploadGoodsFile(c *gin.Context, ruleEngine typex.RuleX) {
-	// single file
-	file, err := c.FormFile("file")
+func StartGoods(c *gin.Context, ruleEngine typex.RuleX) {
+	uuid, _ := c.GetQuery("uuid")
+	mGoods, err := service.GetGoodsWithUUID(uuid)
 	if err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	if runtime.GOOS == "windows" {
-		if !IsExecutableFileWin(file.Filename) {
-			c.JSON(common.HTTP_OK, common.Error("Invalid execute file"))
-			return
-		}
+	if oldPs := trailer.Get(uuid); oldPs != nil {
+		c.JSON(common.HTTP_OK, common.Error("Already started:"+uuid))
+		return
 	}
-	if runtime.GOOS == "linux" {
-		if !IsExecutableFileUnix(file.Filename) ||
-			IsExecutableFileWin(file.Filename) {
-			c.JSON(common.HTTP_OK, common.Error("Invalid execute file"))
-			return
-		}
+	// 开新进程
+	goods := trailer.Goods{
+		UUID:        mGoods.UUID,
+		AutoStart:   mGoods.AutoStart,
+		LocalPath:   mGoods.LocalPath,
+		NetAddr:     mGoods.NetAddr,
+		Description: mGoods.Description,
+		Args:        mGoods.Args,
 	}
-	dir := "./upload/TrailerGoods/"
-	OriginFileName := filepath.Base(file.Filename)
-	fileExt := filepath.Ext(OriginFileName)
-	fileName := fmt.Sprintf("goods_%d_%s", time.Now().UnixMicro(), fileExt)
-	if err := os.MkdirAll(filepath.Dir(dir), os.ModePerm); err != nil {
+	if err := trailer.StartProcess(goods); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	if err := c.SaveUploadedFile(file, dir+fileName); err != nil {
-		c.JSON(common.HTTP_OK, common.Error400(err))
-		return
-	}
-	c.JSON(common.HTTP_OK, common.OkWithData(map[string]string{
-		"url": fileName,
-	}))
+	c.JSON(common.HTTP_OK, common.Ok())
 }
 
 /*
@@ -357,12 +411,23 @@ func IsExecutableFileUnix(filePath string) bool {
 
 	return false
 }
-func IsExecutableFileWin(filePath string) bool {
-	filePath = strings.ToLower(filePath)
-	return strings.HasSuffix(filePath, ".exe") ||
-		strings.HasSuffix(filePath, ".jar") ||
-		strings.HasSuffix(filePath, ".py") ||
-		strings.HasSuffix(filePath, ".js") ||
-		strings.HasSuffix(filePath, ".lua")
 
+/*
+*
+* 读取PE头判断是否可执行
+*
+ */
+func IsExecutableFileWin(filePath string) bool {
+	file, err := os.Open(filePath)
+	if err != nil {
+		glogger.GLogger.Error(err)
+		return false
+	}
+	defer file.Close()
+
+	if _, err := pe.NewFile(file); err != nil {
+		glogger.GLogger.Error(err)
+		return false
+	}
+	return true
 }

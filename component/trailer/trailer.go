@@ -144,6 +144,7 @@ func fork(goods Goods) error {
 		cmd:         Cmd,
 		ctx:         ctx,
 		cancel:      Cancel,
+		mailBox:     make(chan int, 1),
 	}
 	// out := NewWSStdInOut(goodsProcess)
 	Cmd.Stdin = nil
@@ -219,16 +220,24 @@ func runLocalProcess(goodsProcess *GoodsProcess) error {
 			glogger.GLogger.Error("Cmd Exit With State:", err, err1, string(out), ",State:", State)
 		}
 		// 非正常结束, 极有可能是被kill的，所以要尝试抢救
+		// 问题：怎么知道是被kill或者自动结束?
 		if State.ExitCode() != 0 {
-			glogger.GLogger.Warn("Goods process Exit, May be a accident, try to rescue it:", goodsProcess.Uuid)
-			time.Sleep(2 * time.Second)
-			go fork(Goods{
-				UUID:        goodsProcess.Uuid,
-				LocalPath:   goodsProcess.LocalPath,
-				NetAddr:     goodsProcess.NetAddr,
-				Description: goodsProcess.Uuid,
-				Args:        goodsProcess.Args,
-			})
+			// 如果是被 RULEX 干死的就不抢救了，说明触发了 Stop 和 Remove；
+			//    killedBy 如果是别的原因就有抢救机会
+			if goodsProcess.killedBy != "RULEX" {
+				glogger.GLogger.Warn("Goods process Exit, May be a accident, try to rescue it:", goodsProcess.Uuid)
+				// 说明是用户操作停止
+				time.Sleep(2 * time.Second)
+				go fork(Goods{
+					UUID:        goodsProcess.Uuid,
+					LocalPath:   goodsProcess.LocalPath,
+					NetAddr:     goodsProcess.NetAddr,
+					Description: goodsProcess.Uuid,
+					Args:        goodsProcess.Args,
+				})
+			} else {
+				glogger.GLogger.Debug("Goods process killed by Rulex, No need to rescue it:", goodsProcess.Uuid)
+			}
 		}
 
 	}
@@ -258,6 +267,16 @@ func Remove(uuid string) {
 	if ok {
 		gp := (v.(*GoodsProcess))
 		gp.Stop()
+		__DefaultTrailerRuntime.goodsProcessMap.Delete(uuid)
+	}
+}
+
+// 从内存里删除, 删除后记得停止挂件, 通常外部配置表也要删除, 比如Sqlite
+func RemoveBy(uuid, by string) {
+	v, ok := __DefaultTrailerRuntime.goodsProcessMap.Load(uuid)
+	if ok {
+		gp := (v.(*GoodsProcess))
+		gp.StopBy(by)
 		__DefaultTrailerRuntime.goodsProcessMap.Delete(uuid)
 	}
 }

@@ -131,6 +131,7 @@ type MGoods struct {
 	RulexModel
 	UUID        string `gorm:"not null"`
 	LocalPath   string `gorm:"not null"`
+	AutoStart   *bool  `gorm:"not null"`
 	NetAddr     string `gorm:"not null"`
 	Description string `gorm:"not null"`
 	Args        string `gorm:"not null"`

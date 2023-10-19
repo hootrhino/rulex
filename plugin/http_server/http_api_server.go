@@ -441,8 +441,9 @@ func (hs *ApiServerPlugin) LoadRoute() {
 		trailerApi.GET(("/detail"), server.AddRoute(apis.GoodsDetail))
 		trailerApi.POST("/create", server.AddRoute(apis.CreateGoods))
 		trailerApi.PUT("/update", server.AddRoute(apis.UpdateGoods))
-		trailerApi.POST("/upload", server.AddRoute(apis.UploadGoodsFile))
 		trailerApi.PUT("/cleanGarbage", server.AddRoute(apis.CleanGoodsUpload))
+		trailerApi.PUT("/start", server.AddRoute(apis.StartGoods))
+		trailerApi.PUT("/stop", server.AddRoute(apis.StopGoods))
 		trailerApi.DELETE("/", server.AddRoute(apis.DeleteGoods))
 	}
 	dataCenterApi := server.RouteGroup(server.ContextUrl("/dataCenter"))
