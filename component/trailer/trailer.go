@@ -132,7 +132,7 @@ func fork(goods Goods) error {
 	glogger.GLogger.Infof("fork goods process, (uuid = %v, addr = %v, args = %v)",
 		goods.UUID, goods.LocalPath, goods.Args)
 	ctx, Cancel := context.WithCancel(__DefaultTrailerRuntime.ctx)
-	Cmd := exec.CommandContext(ctx, goods.LocalPath, goods.Args)
+	Cmd := exec.CommandContext(ctx, goods.LocalPath, strings.Split(goods.Args, " ")...)
 	Cmd.SysProcAttr = NewSysProcAttr()
 	goodsProcess := &GoodsProcess{
 		Pid:         0,
@@ -310,12 +310,12 @@ func probe(client TrailerClient, goodsProcess *GoodsProcess) {
 			if goodsProcess.cmd != nil {
 				goodsProcess.PsRunning = true
 				if goodsProcess.rpcStarted {
-					response, err := client.Status(goodsProcess.ctx, &Request{})
+					response, errStatus := client.Status(goodsProcess.ctx, &Request{})
 					Status := response.GetStatus()
-					if Status == StatusResponse_RUNNING && err == nil {
+					if Status == StatusResponse_RUNNING && errStatus == nil {
 						goodsProcess.rpcStarted = true
 					} else {
-						glogger.GLogger.Error(err)
+						glogger.GLogger.Error(errStatus)
 						goodsProcess.rpcStarted = false
 					}
 				}

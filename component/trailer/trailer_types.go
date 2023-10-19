@@ -21,7 +21,7 @@ type Goods struct {
 	// Description text
 	Description string
 	// Additional Args
-	Args string // such la -al
+	Args string // 使用空格分割 , such: la -al
 }
 
 //--------------------------------------------------------------------------------------------------

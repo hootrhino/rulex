@@ -67,20 +67,20 @@ message DataRow{
 }
 // 列定义
 message Column{
-    bytes name = 1;
+    string name = 1;
     ValueType type = 2;
-    bytes description = 3;
+    string description = 3;
 }
 // 查出来的数据列
 message ColumnValue{
-    bytes name = 1;
+    string name = 1;
     ValueType type = 2;
     bytes value = 3;
 }
 // 表结构返回
 message SchemaResponse{
     int32 code = 1;
-    bytes message = 2;
+    string message = 2;
     repeated Column columns = 3;
 }
 // 请求查询
