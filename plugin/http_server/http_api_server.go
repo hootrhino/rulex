@@ -97,7 +97,7 @@ func initRulex(engine typex.RuleX) {
 	}
 	// 加载外挂
 	for _, mGoods := range service.AllGoods() {
-		newGoods := trailer.Goods{
+		newGoods := trailer.GoodsInfo{
 			UUID:        mGoods.UUID,
 			LocalPath:   mGoods.LocalPath,
 			NetAddr:     mGoods.NetAddr,

@@ -28,14 +28,15 @@ import (
 *
  */
 type goodsVo struct {
-	AutoStart   bool     `json:"autoStart"`
-	Pid         int      `json:"pid"`
-	Running     bool     `json:"running"`
-	Uuid        string   `json:"uuid"`
-	LocalPath   string   `json:"local_path"`
-	NetAddr     string   `json:"net_addr"`
-	Description string   `json:"description"`
-	Args        []string `json:"args"`
+	AutoStart     bool        `json:"autoStart"`
+	Pid           int         `json:"pid"`
+	Running       bool        `json:"running"`
+	Uuid          string      `json:"uuid"`
+	LocalPath     string      `json:"local_path"`
+	NetAddr       string      `json:"net_addr"`
+	Description   string      `json:"description"`
+	Args          []string    `json:"args"`
+	ProcessDetail interface{} `json:"processDetail,omitempty"`
 }
 
 /*
@@ -81,6 +82,8 @@ func GoodsDetail(c *gin.Context, ruleEngine typex.RuleX) {
 	if goods := trailer.Get(mGood.UUID); goods != nil {
 		vo.Running = goods.PsRunning
 		vo.Pid = goods.Pid
+		detail, _ := trailer.RunningProcessDetail(goods.Pid)
+		vo.ProcessDetail = detail
 	}
 	c.JSON(common.HTTP_OK, common.OkWithData(vo))
 
@@ -234,7 +237,7 @@ func CreateGoods(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	goods := trailer.Goods{
+	goods := trailer.GoodsInfo{
 		UUID:        mGoods.UUID,
 		AutoStart:   mGoods.AutoStart,
 		LocalPath:   mGoods.LocalPath,
@@ -348,7 +351,7 @@ func UpdateGoods(c *gin.Context, ruleEngine typex.RuleX) {
 	}
 
 	// 开新进程
-	goods := trailer.Goods{
+	goods := trailer.GoodsInfo{
 		UUID:        mGoods.UUID,
 		AutoStart:   mGoods.AutoStart,
 		LocalPath:   mGoods.LocalPath,
@@ -380,7 +383,7 @@ func StartGoods(c *gin.Context, ruleEngine typex.RuleX) {
 		return
 	}
 	// 开新进程
-	goods := trailer.Goods{
+	goods := trailer.GoodsInfo{
 		UUID:        mGoods.UUID,
 		AutoStart:   mGoods.AutoStart,
 		LocalPath:   mGoods.LocalPath,

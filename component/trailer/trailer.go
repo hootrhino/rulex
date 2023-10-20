@@ -61,14 +61,13 @@ func InitTrailerRuntime(re typex.RuleX) *TrailerRuntime {
 			// glogger.GLogger.Debug("Start prob process.")
 			AllGoods().Range(func(key, value any) bool {
 				goodsProcess := (value.(*GoodsProcess))
-				grpcConnection, err := grpc.Dial(goodsProcess.NetAddr,
-					grpc.WithTransportCredentials(insecure.NewCredentials()))
+				client, err := goodsProcess.ConnectToRpc()
 				if err != nil {
-					glogger.GLogger.Error(err)
+					glogger.GLogger.Debug("ConnectToRpc error:", err)
+					goodsProcess.ConnectToRpc() // 尝试重连
+				} else {
+					probe(client, goodsProcess) // 尝试重连
 				}
-				client := NewTrailerClient(grpcConnection)
-				probe(client, goodsProcess)
-				grpcConnection.Close()
 				return true
 			})
 			// 2秒停顿
@@ -84,7 +83,7 @@ func InitTrailerRuntime(re typex.RuleX) *TrailerRuntime {
 * 直接启动
 *
  */
-func StartProcess(goods Goods) error {
+func StartProcess(goods GoodsInfo) error {
 	return fork(goods)
 }
 
@@ -93,7 +92,7 @@ func StartProcess(goods Goods) error {
 * 直接关闭
 *
  */
-func StopProcess(goods Goods) error {
+func StopProcess(goods GoodsInfo) error {
 	v, ok := __DefaultTrailerRuntime.goodsProcessMap.Load(goods.UUID)
 	if ok {
 		gp := (v.(*GoodsProcess))
@@ -120,7 +119,10 @@ func NewWSStdInOut(ps *GoodsProcess) goodsStdInOut {
 func (hk goodsStdInOut) Write(p []byte) (n int, err error) {
 	glogger.Logrus.WithField("topic",
 		fmt.Sprintf("goods/console/%s", hk.ps.Uuid)).Debug(string(p))
-	return 0, nil
+	return len(p), nil
+}
+func (hk goodsStdInOut) Read(p []byte) (n int, err error) {
+	return len(p), nil
 }
 
 /*
@@ -128,7 +130,7 @@ func (hk goodsStdInOut) Write(p []byte) (n int, err error) {
 * 分离进程
 *
  */
-func fork(goods Goods) error {
+func fork(goods GoodsInfo) error {
 	glogger.GLogger.Infof("fork goods process, (uuid = %v, addr = %v, args = %v)",
 		goods.UUID, goods.LocalPath, goods.Args)
 	ctx, Cancel := context.WithCancel(__DefaultTrailerRuntime.ctx)
@@ -146,10 +148,10 @@ func fork(goods Goods) error {
 		cancel:      Cancel,
 		mailBox:     make(chan int, 1),
 	}
-	// out := NewWSStdInOut(goodsProcess)
-	Cmd.Stdin = nil
-	Cmd.Stdout = os.Stdout
-	Cmd.Stderr = os.Stdout
+	inOut := NewWSStdInOut(goodsProcess)
+	goodsProcess.cmd.Stdin = &inOut
+	goodsProcess.cmd.Stdout = &inOut
+	goodsProcess.cmd.Stderr = &inOut
 	saveProcessMetaToMap(goodsProcess)
 	go runLocalProcess(goodsProcess) // 任务进程
 	return nil
@@ -228,7 +230,7 @@ func runLocalProcess(goodsProcess *GoodsProcess) error {
 				glogger.GLogger.Warn("Goods process Exit, May be a accident, try to rescue it:", goodsProcess.Uuid)
 				// 说明是用户操作停止
 				time.Sleep(2 * time.Second)
-				go fork(Goods{
+				go fork(GoodsInfo{
 					UUID:        goodsProcess.Uuid,
 					LocalPath:   goodsProcess.LocalPath,
 					NetAddr:     goodsProcess.NetAddr,
@@ -327,7 +329,7 @@ func probe(client TrailerClient, goodsProcess *GoodsProcess) {
 				goodsProcess.rpcStarted = false
 				glogger.GLogger.Debug("Goods Process is down:",
 					goodsProcess.Uuid, " try to restart")
-				go fork(Goods{
+				go fork(GoodsInfo{
 					UUID:        goodsProcess.Uuid,
 					LocalPath:   goodsProcess.LocalPath,
 					NetAddr:     goodsProcess.NetAddr,
