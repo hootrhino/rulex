@@ -409,7 +409,7 @@ func IsExecutableFileUnix(filePath string) bool {
 		return true
 	}
 
-	return false
+	return true
 }
 
 /*

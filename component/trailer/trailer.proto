@@ -75,7 +75,8 @@ message Column{
 message ColumnValue{
     string name = 1;
     ValueType type = 2;
-    bytes value = 3;
+    string id = 3;
+    bytes value = 4;
 }
 // 表结构返回
 message SchemaResponse{
