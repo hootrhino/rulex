@@ -19,13 +19,13 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Trailer_Init_FullMethodName    = "/trailer.trailer/Init"
-	Trailer_Start_FullMethodName   = "/trailer.trailer/Start"
-	Trailer_Status_FullMethodName  = "/trailer.trailer/Status"
-	Trailer_Service_FullMethodName = "/trailer.trailer/Service"
-	Trailer_Query_FullMethodName   = "/trailer.trailer/Query"
-	Trailer_Schema_FullMethodName  = "/trailer.trailer/Schema"
-	Trailer_Stop_FullMethodName    = "/trailer.trailer/Stop"
+	Trailer_Init_FullMethodName    = "/trailer.Trailer/Init"
+	Trailer_Start_FullMethodName   = "/trailer.Trailer/Start"
+	Trailer_Status_FullMethodName  = "/trailer.Trailer/Status"
+	Trailer_Service_FullMethodName = "/trailer.Trailer/Service"
+	Trailer_Query_FullMethodName   = "/trailer.Trailer/Query"
+	Trailer_Schema_FullMethodName  = "/trailer.Trailer/Schema"
+	Trailer_Stop_FullMethodName    = "/trailer.Trailer/Stop"
 )
 
 // TrailerClient is the client API for Trailer service.
@@ -308,7 +308,7 @@ func _Trailer_Stop_Handler(srv interface{}, ctx context.Context, dec func(interf
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Trailer_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "trailer.trailer",
+	ServiceName: "trailer.Trailer",
 	HandlerType: (*TrailerServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

@@ -143,7 +143,7 @@ func fork(info GoodsInfo) error {
 		Cmd = exec.CommandContext(ctx, "python", tArgs...)
 	}
 	// node main.js  args...
-	if info.ExecuteType == "JS" {
+	if info.ExecuteType == "NODEJS" {
 		tArgs = append(tArgs, args...)
 		Cmd = exec.CommandContext(ctx, "node", tArgs...)
 	}
@@ -165,11 +165,11 @@ func fork(info GoodsInfo) error {
 	if info.ExecuteType == "EXE" {
 		Cmd = exec.CommandContext(ctx, info.LocalPath, args...)
 	}
-	glogger.GLogger.Debug("Execute system process:", Cmd.String())
 	if Cmd == nil {
 		Cancel()
 		return fmt.Errorf("unsupported executable file:%s", info.LocalPath)
 	}
+	glogger.GLogger.Debug("Execute system process:", Cmd.String())
 	Cmd.SysProcAttr = NewSysProcAttr()
 	goodsProcess := &GoodsProcess{
 		Info:    info,

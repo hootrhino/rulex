@@ -4,11 +4,11 @@ option go_package = "./;trailer";
 // Java
 option java_multiple_files = false;
 option java_package = "trailer";
-option java_outer_classname = "trailer";
+option java_outer_classname = "Trailer";
 
 package trailer;
 
-service trailer {
+service Trailer {
   // 初始化, 主要是为了传配置进去
   rpc Init (Config) returns (Response) {}
   // 启动

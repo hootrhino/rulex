@@ -2,10 +2,47 @@ package trailer
 
 import (
 	"archive/zip"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 )
+
+/*
+*
+* 包内部配置
+*
+ */
+type AppManifest struct {
+	Native     bool     `json:"native"`
+	ScriptHost string   `json:"scripthost"`
+	Executable string   `json:"executable"`
+	Env        []string `json:"env"`
+}
+
+/*
+*
+* 包验证器
+*
+ */
+/*
+*
+* 针对脚本语言
+*
+ */
+var ExecuteType = map[string]string{
+	".jar": "JAVA",
+	".exe": "EXE",
+	".py":  "PYTHON",
+	".js":  "NODEJS",
+	".lua": "LUA",
+}
+
+func ValidatePackage(mf AppManifest) error {
+	return nil
+}
 
 /*
 *
@@ -89,6 +126,71 @@ func Unzip(zipPath string, targetDir string) error {
 	return nil
 }
 
+func ReadManifestFromZip(zipPath string, targetFile string) (AppManifest, error) {
+	var manifest AppManifest
+
+	// 打开 ZIP 文件
+	zipFile, err := zip.OpenReader(zipPath)
+	if err != nil {
+		return manifest, err
+	}
+	defer zipFile.Close()
+
+	// 查找并打开目标文件
+	var found bool
+	var targetReader io.ReadCloser
+	for _, file := range zipFile.File {
+		if file.Name == targetFile {
+			targetReader, err = file.Open()
+			if err != nil {
+				return manifest, err
+			}
+			found = true
+			break
+		}
+	}
+	if !found {
+		return manifest, errors.New("AppManifest not found in the ZIP archive")
+	}
+	defer targetReader.Close()
+
+	// 解析 JSON 数据
+	decoder := json.NewDecoder(targetReader)
+	if err := decoder.Decode(&manifest); err != nil {
+		return manifest, err
+	}
+
+	return manifest, nil
+}
+
+/*
+*
+  - 解压文件的路径: unzip -d ./upload/TrailerGoods/GOODSQUNK3Z/ app.zip
+    路径下应该包含了所有解压的文件
+    ll ./upload/TrailerGoods/GOODSQUNK3Z
+  - manifest.json
+  - app.exe
+
+*
+*/
+func CreateUnzipPath(dir string) error {
+	if err := os.MkdirAll(filepath.Dir(dir), os.ModePerm); err != nil {
+		return err
+	}
+	return nil
+}
+
+/*
+*
+* 删除解压文件夹 rm -r ./upload/TrailerGoods/GOODSQUNK3Z
+*
+ */
+func RemoveUnzipPath(dir string) error {
+	if err := os.RemoveAll(filepath.Dir(dir)); err != nil {
+		return err
+	}
+	return nil
+}
 func __test() {
 	// 压缩文件
 	if err := Zip(

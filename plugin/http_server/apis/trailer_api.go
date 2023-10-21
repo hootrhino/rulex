@@ -2,6 +2,7 @@ package apis
 
 import (
 	"context"
+	"debug/elf"
 	"debug/pe"
 	"fmt"
 	"os"
@@ -169,12 +170,20 @@ func CleanGoodsUpload(c *gin.Context, ruleEngine typex.RuleX) {
  */
 var __TrailerGoodsUploadDir = "./upload/TrailerGoods/"
 
+func PathExists(path string) (bool, error) {
+	_, err := os.Stat(path)
+	if err == nil {
+		return true, nil
+	} else if os.IsNotExist(err) {
+		return false, nil
+	} else {
+		// 出现错误
+		return false, err
+	}
+}
+
 func CreateGoods(c *gin.Context, ruleEngine typex.RuleX) {
 	fileHeader, err := c.FormFile("file")
-	if err != nil {
-		c.JSON(common.HTTP_OK, common.Error400(err))
-		return
-	}
 	if err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
@@ -186,10 +195,15 @@ func CreateGoods(c *gin.Context, ruleEngine typex.RuleX) {
 	OriginFileName := filepath.Base(fileHeader.Filename)
 	fileExt := filepath.Ext(OriginFileName)
 	fileName := fmt.Sprintf("goods_%d%s", time.Now().UnixMicro(), fileExt)
-	if err := os.MkdirAll(filepath.Dir(__TrailerGoodsUploadDir), os.ModePerm); err != nil {
-		c.JSON(common.HTTP_OK, common.Error400(err))
-		return
+	// 目录是否存在
+	path := filepath.Dir(__TrailerGoodsUploadDir)
+	if exists, _ := PathExists(path); !exists {
+		if err := os.MkdirAll(path, os.ModePerm); err != nil {
+			c.JSON(common.HTTP_OK, common.Error400(err))
+			return
+		}
 	}
+
 	localSavePath := __TrailerGoodsUploadDir + fileName
 	if err := c.SaveUploadedFile(fileHeader, localSavePath); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
@@ -212,10 +226,16 @@ func CreateGoods(c *gin.Context, ruleEngine typex.RuleX) {
 			return
 		}
 	}
-
+	ExeType := getExecuteType(localSavePath)
+	if ExeType == "" {
+		c.JSON(common.HTTP_OK,
+			common.Error("Invalid file:"+localSavePath))
+		os.Remove(localSavePath)
+		return
+	}
 	NetAddr := c.PostForm("net_addr")
 	Description := c.PostForm("description")
-	AutoStart := c.PostForm("AutoStart")
+	AutoStart := c.PostForm("autoStart")
 	Args := c.PostFormArray("args")
 	mGoods := model.MGoods{
 		UUID:      utils.GoodsUuid(),
@@ -230,7 +250,7 @@ func CreateGoods(c *gin.Context, ruleEngine typex.RuleX) {
 			r := false
 			return &r
 		}(),
-		ExecuteType: getExecuteType(fileExt),
+		ExecuteType: ExeType,
 		GoodsType:   "LOCAL", // 默认是LOCAL, 未来根据前端参数决定
 		Args: func() string {
 			if len(Args) > 0 {
@@ -273,10 +293,6 @@ func UpdateGoods(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	if err != nil {
-		c.JSON(common.HTTP_OK, common.Error400(err))
-		return
-	}
 	if fileHeader.Size > (100 << 20) {
 		c.JSON(common.HTTP_OK, common.Error("File too large"))
 		return
@@ -285,7 +301,7 @@ func UpdateGoods(c *gin.Context, ruleEngine typex.RuleX) {
 	NetAddr := c.PostForm("net_addr")
 	Description := c.PostForm("description")
 	Args := c.PostFormArray("args")
-	AutoStart := c.PostForm("AutoStart")
+	AutoStart := c.PostForm("autoStart")
 	OriginFileName := filepath.Base(fileHeader.Filename)
 	fileExt := filepath.Ext(OriginFileName)
 	fileName := fmt.Sprintf("goods_%d%s", time.Now().UnixMicro(), fileExt)
@@ -315,7 +331,13 @@ func UpdateGoods(c *gin.Context, ruleEngine typex.RuleX) {
 			return
 		}
 	}
-
+	ExeType := getExecuteType(localSavePath)
+	if ExeType == "" {
+		c.JSON(common.HTTP_OK,
+			common.Error("Invalid file:"+localSavePath))
+		os.Remove(localSavePath)
+		return
+	}
 	mGoods := model.MGoods{
 		UUID: Uuid,
 		AutoStart: func() *bool {
@@ -329,7 +351,7 @@ func UpdateGoods(c *gin.Context, ruleEngine typex.RuleX) {
 		}(),
 		LocalPath:   localSavePath,
 		NetAddr:     NetAddr,
-		ExecuteType: getExecuteType(fileExt),
+		ExecuteType: ExeType,
 		Args: func() string {
 			if len(Args) > 0 {
 				return Args[0]
@@ -419,7 +441,10 @@ func StartGoods(c *gin.Context, ruleEngine typex.RuleX) {
 *
  */
 func IsExecutableFileUnix(filePath string) bool {
-	return true
+	if IsUnixElf(filePath) {
+		ChangeX(filePath)
+	}
+	return false
 }
 
 /*
@@ -430,51 +455,75 @@ func IsExecutableFileUnix(filePath string) bool {
 func IsExecutableFileWin(filePath string) bool {
 	return true
 }
-func IsUnixElf(filePath string) bool {
-	fileInfo, err := os.Stat(filePath)
-	if err != nil {
-		return false
-	}
-	if fileInfo.Mode()&0111 != 0 {
-		return true
-	}
-	return false
-}
-func IsWinPE(filePath string) bool {
-	file, err := os.Open(filePath)
-	if err != nil {
-		glogger.GLogger.Error(err)
-		return false
-	}
-	defer file.Close()
 
-	if _, err := pe.NewFile(file); err != nil {
-		glogger.GLogger.Error(err)
-		return false
-	}
+/*
+*
+* 是否是可执行脚本语言
+*
+ */
+func IsExecutableScript(fileExt string) bool {
 	return true
 }
 
 /*
 *
-* 针对脚本语言
+* 是否是可执行Linux文件
 *
  */
-func getExecuteType(fileExt string) string {
-	if fileExt == ".jar" {
-		return "JAR"
+func IsUnixElf(filePath string) bool {
+	file, err := elf.Open(filePath)
+	if err != nil {
+		glogger.GLogger.Error(err)
+		return false
 	}
-	if fileExt == ".exe" {
-		return "EXE"
+	defer file.Close()
+	return true
+}
+func IsWinPE(filePath string) bool {
+	file, err := pe.Open(filePath)
+	if err != nil {
+		glogger.GLogger.Error(err)
+		return false
 	}
-	if fileExt == ".py" {
-		return "PYTHON"
+	defer file.Close()
+	return true
+}
+
+/*
+*
+* 给Linux下 ELF 文件增加可执行权限
+*
+ */
+func ChangeX(filePath string) error {
+	// 打开 ELF 文件
+	file, err := elf.Open(filePath)
+	if err != nil {
+		return err
 	}
-	if fileExt == ".js" {
-		return "JS"
+	elfHeader := file.FileHeader
+	file.Close()
+	if elfHeader.Type != elf.ET_EXEC {
+		// 设置可执行权限 (0700 表示读、写、执行权限)
+		if err := os.Chmod(filePath, 0700); err != nil {
+			return err
+		}
+		return nil
 	}
-	if fileExt == ".lua" {
-		return "LUA"
+	return nil
+}
+
+/*
+*
+* 获取文件类型
+*
+ */
+func getExecuteType(OriginFileName string) string {
+	fileExt := filepath.Ext(OriginFileName)
+	if v, ok := trailer.ExecuteType[fileExt]; ok {
+		return v
 	}
-	return "ELF" // ELF
+	if IsUnixElf(fileExt) {
+		return "ELF" // Maybe ELF
+	}
+	return ""
 }
