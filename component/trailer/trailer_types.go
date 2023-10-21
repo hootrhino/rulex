@@ -16,16 +16,14 @@ import (
 *  $> /test_driver Args
  */
 type GoodsInfo struct {
-	UUID      string
-	Name      string // 进程名
-	GoodsType string // LOCAL, EXTERNAL
-	AutoStart *bool
-	// TCP or Unix Socket
-	LocalPath string
-	// RPC addr
-	NetAddr string
-	// Description text
-	Description string
+	UUID        string
+	Name        string // 进程名
+	GoodsType   string // LOCAL, EXTERNAL
+	ExecuteType string // exe,elf,jar,py, nodejs....
+	AutoStart   *bool  // 是否开启自启动，目前全部是自启动
+	LocalPath   string // TCP or Unix Socket
+	NetAddr     string // RPC addr
+	Description string // Description text
 	// Additional Args
 	Args string // 使用空格分割 , such: la -al
 }
@@ -35,22 +33,24 @@ type GoodsInfo struct {
 //--------------------------------------------------------------------------------------------------
 
 type GoodsProcess struct {
-	Uuid          string        `json:"uuid"`       // UUID
-	Pid           int           `json:"pid"`        // pid
-	PsRunning     bool          `json:"running"`    // 本地进程是否启动了
-	Name          string        `json:"name"`       // 进程名
-	GoodsType     string        `json:"goodsType"`  // LOCAL, EXTERNAL
-	LocalPath     string        `json:"local_path"` // 文件保存路径
-	NetAddr       string        `json:"net_addr"`   // RPC网络请求路径
-	Args          string        `json:"args"`       // 进程参数
-	Description   string        `json:"description"`
-	trailerClient TrailerClient // Grpc客户端
-	rpcStarted    bool          // RPC 网络服务是否开启
-	ctx           context.Context
-	cmd           *exec.Cmd
-	cancel        context.CancelFunc
-	killedBy      string   // 被谁干死的, 一般用来处理要不要抢救进程
-	mailBox       chan int // 这里用来接收外部控制信号
+	Info          GoodsInfo
+	psRunning     bool               // 本地进程是否启动了
+	pid           int                // pid
+	trailerClient TrailerClient      // Grpc客户端
+	rpcStarted    bool               // RPC 网络服务是否开启
+	ctx           context.Context    // Context
+	cmd           *exec.Cmd          // Cmd
+	cancel        context.CancelFunc // Cancel Func
+	killedBy      string             // 进程被谁干死的, 一般用来处理要不要抢救进程
+	mailBox       chan int           // 这里用来接收外部控制信号
+}
+
+func (goodsProcess *GoodsProcess) PsRunning() bool {
+	return goodsProcess.psRunning
+
+}
+func (goodsProcess *GoodsProcess) Pid() int {
+	return goodsProcess.pid
 }
 
 /*
@@ -60,7 +60,7 @@ type GoodsProcess struct {
  */
 func (goodsProcess *GoodsProcess) ConnectToRpc() (TrailerClient, error) {
 	if goodsProcess.trailerClient == nil {
-		grpcConnection, err := grpc.Dial(goodsProcess.NetAddr,
+		grpcConnection, err := grpc.Dial(goodsProcess.Info.NetAddr,
 			grpc.WithTransportCredentials(insecure.NewCredentials()))
 		if err != nil {
 			return nil, err

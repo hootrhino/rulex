@@ -131,10 +131,12 @@ type MGoods struct {
 	RulexModel
 	UUID        string `gorm:"not null"`
 	LocalPath   string `gorm:"not null"`
+	GoodsType   string `gorm:"not null"` // LOCAL, EXTERNAL
+	ExecuteType string `gorm:"not null"` // exe,elf,js,py....
 	AutoStart   *bool  `gorm:"not null"`
 	NetAddr     string `gorm:"not null"`
-	Description string `gorm:"not null"`
 	Args        string `gorm:"not null"`
+	Description string `gorm:"not null"`
 }
 
 /*

@@ -50,14 +50,14 @@ func SchemaList() []SchemaDetail {
 	trailer.AllGoods().Range(func(key, value any) bool {
 		goodsPs := (value.(*trailer.GoodsProcess))
 		Schemas = append(Schemas, SchemaDetail{
-			UUID:        goodsPs.Uuid,
-			Name:        goodsPs.Name,
-			LocalPath:   goodsPs.LocalPath,
-			NetAddr:     goodsPs.NetAddr,
+			UUID:        goodsPs.Info.UUID,
+			Name:        goodsPs.Info.Name,
+			LocalPath:   goodsPs.Info.LocalPath,
+			NetAddr:     goodsPs.Info.NetAddr,
 			CreateTs:    0,
 			Size:        0,
 			StorePath:   "",
-			Description: goodsPs.Description,
+			Description: goodsPs.Info.Description,
 		})
 		return true
 	})
@@ -73,7 +73,7 @@ func SchemaList() []SchemaDetail {
 func GetSchema(goodsId string) (SchemaDefine, error) {
 	schemaDefine := SchemaDefine{}
 	if goodsPs := trailer.Get(goodsId); goodsPs != nil {
-		grpcConnection, err1 := grpc.Dial(goodsPs.NetAddr,
+		grpcConnection, err1 := grpc.Dial(goodsPs.Info.NetAddr,
 			grpc.WithTransportCredentials(insecure.NewCredentials()))
 		if err1 != nil {
 			glogger.GLogger.Error(err1)
@@ -95,7 +95,7 @@ func GetSchema(goodsId string) (SchemaDefine, error) {
 			})
 		}
 		schemaDefine = SchemaDefine{
-			UUID:    goodsPs.Uuid,
+			UUID:    goodsPs.Info.UUID,
 			Columns: Columns,
 		}
 	}
@@ -108,7 +108,7 @@ func SchemaDefineList() ([]SchemaDefine, error) {
 	Columns := []Column{}
 	trailer.AllGoods().Range(func(key, value any) bool {
 		goodsPs := (value.(*trailer.GoodsProcess))
-		grpcConnection, err1 := grpc.Dial(goodsPs.NetAddr,
+		grpcConnection, err1 := grpc.Dial(goodsPs.Info.NetAddr,
 			grpc.WithTransportCredentials(insecure.NewCredentials()))
 		if err1 != nil {
 			glogger.GLogger.Error(err1)
@@ -131,7 +131,7 @@ func SchemaDefineList() ([]SchemaDefine, error) {
 			})
 		}
 		Define := SchemaDefine{
-			UUID:    goodsPs.Uuid,
+			UUID:    goodsPs.Info.UUID,
 			Columns: Columns,
 		}
 		ColumnsMap = append(ColumnsMap, Define)
@@ -168,7 +168,7 @@ func Query(goodsId, query string) ([]map[string]any, error) {
 	var err error
 	Rows := []map[string]any{}
 	if goodsPs := trailer.Get(goodsId); goodsPs != nil {
-		grpcConnection, err1 := grpc.Dial(goodsPs.NetAddr,
+		grpcConnection, err1 := grpc.Dial(goodsPs.Info.NetAddr,
 			grpc.WithTransportCredentials(insecure.NewCredentials()))
 		if err1 != nil {
 			glogger.GLogger.Error(err1)

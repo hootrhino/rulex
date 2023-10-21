@@ -99,10 +99,12 @@ func initRulex(engine typex.RuleX) {
 	for _, mGoods := range service.AllGoods() {
 		newGoods := trailer.GoodsInfo{
 			UUID:        mGoods.UUID,
+			AutoStart:   mGoods.AutoStart,
 			LocalPath:   mGoods.LocalPath,
 			NetAddr:     mGoods.NetAddr,
-			Description: mGoods.Description,
 			Args:        mGoods.Args,
+			ExecuteType: mGoods.ExecuteType,
+			Description: mGoods.Description,
 		}
 		if err := trailer.StartProcess(newGoods); err != nil {
 			glogger.GLogger.Error("Goods load failed:", err)

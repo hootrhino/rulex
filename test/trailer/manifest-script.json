@@ -1,0 +1,8 @@
+{
+    "native": false,
+    "scripthost": "java",
+    "executable": "app1.jar",
+    "env": [
+        "os=win10"
+    ]
+}

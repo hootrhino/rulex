@@ -28,15 +28,17 @@ import (
 *
  */
 type goodsVo struct {
-	AutoStart     bool        `json:"autoStart"`
+	Uuid          string      `json:"uuid"`
 	Pid           int         `json:"pid"`
 	Running       bool        `json:"running"`
-	Uuid          string      `json:"uuid"`
+	AutoStart     bool        `json:"autoStart"`
+	GoodsType     string      `json:"goodsType"`   // LOCAL, EXTERNAL
+	ExecuteType   string      `json:"executeType"` // exe,elf,js,py....
 	LocalPath     string      `json:"local_path"`
 	NetAddr       string      `json:"net_addr"`
 	Description   string      `json:"description"`
 	Args          []string    `json:"args"`
-	ProcessDetail interface{} `json:"processDetail,omitempty"`
+	ProcessDetail interface{} `json:"processDetail"`
 }
 
 /*
@@ -47,7 +49,7 @@ type goodsVo struct {
 func StopGoods(c *gin.Context, ruleEngine typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
 	if goods := trailer.Get(uuid); goods != nil {
-		if goods.PsRunning {
+		if goods.PsRunning() {
 			goods.StopBy("RULEX")
 			c.JSON(common.HTTP_OK, common.Ok())
 			return
@@ -73,16 +75,18 @@ func GoodsDetail(c *gin.Context, ruleEngine typex.RuleX) {
 	vo := goodsVo{
 		Running:     false,
 		Uuid:        mGood.UUID,
+		GoodsType:   mGood.GoodsType,
+		ExecuteType: mGood.ExecuteType,
 		AutoStart:   *mGood.AutoStart,
 		LocalPath:   mGood.LocalPath,
 		NetAddr:     mGood.NetAddr,
-		Description: mGood.Description,
 		Args:        []string{mGood.Args},
+		Description: mGood.Description,
 	}
 	if goods := trailer.Get(mGood.UUID); goods != nil {
-		vo.Running = goods.PsRunning
-		vo.Pid = goods.Pid
-		detail, _ := trailer.RunningProcessDetail(goods.Pid)
+		vo.Running = goods.PsRunning()
+		vo.Pid = goods.Pid()
+		detail, _ := trailer.RunningProcessDetail(goods.Pid())
 		vo.ProcessDetail = detail
 	}
 	c.JSON(common.HTTP_OK, common.OkWithData(vo))
@@ -97,14 +101,16 @@ func GoodsList(c *gin.Context, ruleEngine typex.RuleX) {
 			Running:     false,
 			Uuid:        mGood.UUID,
 			AutoStart:   *mGood.AutoStart,
+			GoodsType:   mGood.GoodsType,
+			ExecuteType: mGood.ExecuteType,
 			LocalPath:   mGood.LocalPath,
 			NetAddr:     mGood.NetAddr,
-			Description: mGood.Description,
 			Args:        []string{mGood.Args},
+			Description: mGood.Description,
 		}
 		if goods := trailer.Get(mGood.UUID); goods != nil {
-			vo.Running = goods.PsRunning
-			vo.Pid = goods.Pid
+			vo.Running = goods.PsRunning()
+			vo.Pid = goods.Pid()
 			data = append(data, vo)
 		} else {
 			data = append(data, vo)
@@ -121,24 +127,24 @@ func GoodsList(c *gin.Context, ruleEngine typex.RuleX) {
  */
 func DeleteGoods(c *gin.Context, ruleEngine typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
-	goods, err := service.GetGoodsWithUUID(uuid)
+	mGoods, err := service.GetGoodsWithUUID(uuid)
 	if err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
 
 	if goods := trailer.Get(uuid); goods != nil {
-		if goods.PsRunning {
-			trailer.RemoveBy(goods.Uuid, "RULEX")
+		if goods.PsRunning() {
+			trailer.RemoveBy(goods.Info.UUID, "RULEX")
 		}
 	}
 	// 数据库和内存都要删除
-	if err := service.DeleteGoods(goods.UUID); err != nil {
+	if err := service.DeleteGoods(mGoods.UUID); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
 	// 删除文件
-	os.Remove(goods.LocalPath)
+	os.Remove(mGoods.LocalPath)
 	c.JSON(common.HTTP_OK, common.Ok())
 }
 
@@ -224,13 +230,15 @@ func CreateGoods(c *gin.Context, ruleEngine typex.RuleX) {
 			r := false
 			return &r
 		}(),
-		Description: Description,
+		ExecuteType: getExecuteType(fileExt),
+		GoodsType:   "LOCAL", // 默认是LOCAL, 未来根据前端参数决定
 		Args: func() string {
 			if len(Args) > 0 {
 				return Args[0]
 			}
 			return ""
 		}(),
+		Description: Description,
 	}
 
 	if err := service.InsertGoods(&mGoods); err != nil {
@@ -241,9 +249,11 @@ func CreateGoods(c *gin.Context, ruleEngine typex.RuleX) {
 		UUID:        mGoods.UUID,
 		AutoStart:   mGoods.AutoStart,
 		LocalPath:   mGoods.LocalPath,
+		GoodsType:   mGoods.GoodsType,
+		ExecuteType: mGoods.ExecuteType,
 		NetAddr:     mGoods.NetAddr,
-		Description: mGoods.Description,
 		Args:        mGoods.Args,
+		Description: mGoods.Description,
 	}
 	if err := trailer.StartProcess(goods); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
@@ -319,13 +329,14 @@ func UpdateGoods(c *gin.Context, ruleEngine typex.RuleX) {
 		}(),
 		LocalPath:   localSavePath,
 		NetAddr:     NetAddr,
-		Description: Description,
+		ExecuteType: getExecuteType(fileExt),
 		Args: func() string {
 			if len(Args) > 0 {
 				return Args[0]
 			}
 			return ""
 		}(),
+		Description: Description,
 	}
 	err1 := service.UpdateGoods(mGoods)
 	if err1 != nil {
@@ -339,7 +350,7 @@ func UpdateGoods(c *gin.Context, ruleEngine typex.RuleX) {
 			return
 		}
 		glogger.GLogger.Debug("Already running, ready to stop:", mGoods.UUID)
-		grpcConnection, err1 := grpc.Dial(goods.NetAddr,
+		grpcConnection, err1 := grpc.Dial(goods.Info.NetAddr,
 			grpc.WithTransportCredentials(insecure.NewCredentials()))
 		if err1 != nil {
 			return
@@ -356,8 +367,10 @@ func UpdateGoods(c *gin.Context, ruleEngine typex.RuleX) {
 		AutoStart:   mGoods.AutoStart,
 		LocalPath:   mGoods.LocalPath,
 		NetAddr:     mGoods.NetAddr,
-		Description: mGoods.Description,
 		Args:        mGoods.Args,
+		GoodsType:   mGoods.GoodsType,
+		ExecuteType: mGoods.ExecuteType,
+		Description: mGoods.Description,
 	}
 	if err := trailer.StartProcess(goods); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
@@ -388,8 +401,10 @@ func StartGoods(c *gin.Context, ruleEngine typex.RuleX) {
 		AutoStart:   mGoods.AutoStart,
 		LocalPath:   mGoods.LocalPath,
 		NetAddr:     mGoods.NetAddr,
-		Description: mGoods.Description,
 		Args:        mGoods.Args,
+		GoodsType:   mGoods.GoodsType,
+		ExecuteType: mGoods.ExecuteType,
+		Description: mGoods.Description,
 	}
 	if err := trailer.StartProcess(goods); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
@@ -404,14 +419,6 @@ func StartGoods(c *gin.Context, ruleEngine typex.RuleX) {
 *
  */
 func IsExecutableFileUnix(filePath string) bool {
-	fileInfo, err := os.Stat(filePath)
-	if err != nil {
-		return false
-	}
-	if fileInfo.Mode()&0111 != 0 {
-		return true
-	}
-
 	return true
 }
 
@@ -421,6 +428,19 @@ func IsExecutableFileUnix(filePath string) bool {
 *
  */
 func IsExecutableFileWin(filePath string) bool {
+	return true
+}
+func IsUnixElf(filePath string) bool {
+	fileInfo, err := os.Stat(filePath)
+	if err != nil {
+		return false
+	}
+	if fileInfo.Mode()&0111 != 0 {
+		return true
+	}
+	return false
+}
+func IsWinPE(filePath string) bool {
 	file, err := os.Open(filePath)
 	if err != nil {
 		glogger.GLogger.Error(err)
@@ -433,4 +453,28 @@ func IsExecutableFileWin(filePath string) bool {
 		return false
 	}
 	return true
+}
+
+/*
+*
+* 针对脚本语言
+*
+ */
+func getExecuteType(fileExt string) string {
+	if fileExt == ".jar" {
+		return "JAR"
+	}
+	if fileExt == ".exe" {
+		return "EXE"
+	}
+	if fileExt == ".py" {
+		return "PYTHON"
+	}
+	if fileExt == ".js" {
+		return "JS"
+	}
+	if fileExt == ".lua" {
+		return "LUA"
+	}
+	return "ELF" // ELF
 }

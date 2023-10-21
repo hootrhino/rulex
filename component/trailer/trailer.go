@@ -118,7 +118,7 @@ func NewWSStdInOut(ps *GoodsProcess) goodsStdInOut {
 
 func (hk goodsStdInOut) Write(p []byte) (n int, err error) {
 	glogger.Logrus.WithField("topic",
-		fmt.Sprintf("goods/console/%s", hk.ps.Uuid)).Debug(string(p))
+		fmt.Sprintf("goods/console/%s", hk.ps.Info.UUID)).Debug(string(p))
 	return len(p), nil
 }
 func (hk goodsStdInOut) Read(p []byte) (n int, err error) {
@@ -134,19 +134,56 @@ func fork(goods GoodsInfo) error {
 	glogger.GLogger.Infof("fork goods process, (uuid = %v, addr = %v, args = %v)",
 		goods.UUID, goods.LocalPath, goods.Args)
 	ctx, Cancel := context.WithCancel(__DefaultTrailerRuntime.ctx)
-	Cmd := exec.CommandContext(ctx, goods.LocalPath, strings.Split(goods.Args, " ")...)
+
+	var Cmd *exec.Cmd
+	args := strings.Split(goods.Args, " ")
+	tArgs := []string{goods.LocalPath}
+	// python main.py args...
+	if goods.ExecuteType == "PYTHON" {
+		tArgs = append(tArgs, args...)
+		Cmd = exec.CommandContext(ctx, "python", tArgs...)
+	}
+	// node main.js  args...
+	if goods.ExecuteType == "JS" {
+		tArgs = append(tArgs, args...)
+		Cmd = exec.CommandContext(ctx, "node", tArgs...)
+	}
+	// lua main.lua args...
+	if goods.ExecuteType == "LUA" {
+		tArgs = append(tArgs, args...)
+		Cmd = exec.CommandContext(ctx, "lua", tArgs...)
+	}
+	//$ java -jar JarExample.jar args...
+	if goods.ExecuteType == "JAVA" {
+		jarArgs := []string{"-jar"}
+		tArgs = append(tArgs, args...)
+		jarArgs = append(jarArgs, tArgs...)
+		Cmd = exec.CommandContext(ctx, "java", jarArgs...)
+	}
+	if goods.ExecuteType == "ELF" {
+		Cmd = exec.CommandContext(ctx, goods.LocalPath, args...)
+	}
+	if goods.ExecuteType == "EXE" {
+		Cmd = exec.CommandContext(ctx, goods.LocalPath, args...)
+	}
+	glogger.GLogger.Debug("Execute system process:", Cmd.String())
+	if Cmd == nil {
+		Cancel()
+		return fmt.Errorf("unsupported executable file:%s", goods.LocalPath)
+	}
 	Cmd.SysProcAttr = NewSysProcAttr()
 	goodsProcess := &GoodsProcess{
-		Pid:         0,
-		LocalPath:   goods.LocalPath,
-		NetAddr:     goods.NetAddr,
-		Uuid:        goods.UUID,
-		Description: goods.Description,
-		Args:        goods.Args,
-		cmd:         Cmd,
-		ctx:         ctx,
-		cancel:      Cancel,
-		mailBox:     make(chan int, 1),
+		Info: GoodsInfo{
+			LocalPath:   goods.LocalPath,
+			NetAddr:     goods.NetAddr,
+			UUID:        goods.UUID,
+			Description: goods.Description,
+			Args:        goods.Args,
+		},
+		cmd:     Cmd,
+		ctx:     ctx,
+		cancel:  Cancel,
+		mailBox: make(chan int, 1),
 	}
 	inOut := NewWSStdInOut(goodsProcess)
 	goodsProcess.cmd.Stdin = &inOut
@@ -165,7 +202,7 @@ func fork(goods GoodsInfo) error {
 func runLocalProcess(goodsProcess *GoodsProcess) error {
 	defer func() {
 		// Remove 已经包含了Stop, cancel
-		Remove(goodsProcess.Uuid)
+		Remove(goodsProcess.Info.UUID)
 	}()
 	// 到这里就挂了的,说明参数错了,不值得救活
 	// 最好是直接删了或者更新配置
@@ -184,13 +221,15 @@ func runLocalProcess(goodsProcess *GoodsProcess) error {
 			select {
 			case <-goodsProcess.ctx.Done():
 				{
-					glogger.GLogger.Debug("goodsProcess.ctx.Done():", goodsProcess.NetAddr)
+					glogger.GLogger.Debug("goodsProcess.ctx.Done():",
+						goodsProcess.Info.NetAddr)
 					goodsProcess.cancel()
 					return
 				}
 			case <-ctx.Done():
 				{
-					glogger.GLogger.Debug("goods Process Start timeout:", goodsProcess.NetAddr)
+					glogger.GLogger.Debug("goods Process Start timeout:",
+						goodsProcess.Info.NetAddr)
 					goodsProcess.cancel()
 					return
 				}
@@ -200,9 +239,9 @@ func runLocalProcess(goodsProcess *GoodsProcess) error {
 			}
 			time.Sleep(2 * time.Second)
 			// 尝试启动RPC
-			glogger.GLogger.Debug("Wait Grpc Start:", goodsProcess.NetAddr)
+			glogger.GLogger.Debug("Wait Grpc Start:", goodsProcess.Info.NetAddr)
 			if loadRpc(goodsProcess) {
-				glogger.GLogger.Debug("Grpc Started:", goodsProcess.NetAddr)
+				glogger.GLogger.Debug("Grpc Started:", goodsProcess.Info.NetAddr)
 				return
 			}
 		}
@@ -210,11 +249,11 @@ func runLocalProcess(goodsProcess *GoodsProcess) error {
 
 	glogger.GLogger.Infof("goods process(pid = %v, uuid = %v, addr = %v, args = %v) fork and started",
 		goodsProcess.cmd.Process.Pid,
-		goodsProcess.Uuid,
-		goodsProcess.LocalPath,
-		goodsProcess.Args)
+		goodsProcess.Info.UUID,
+		goodsProcess.Info.LocalPath,
+		goodsProcess.Info.Args)
 	// Start 以后即可拿到Pid
-	goodsProcess.Pid = goodsProcess.cmd.Process.Pid
+	goodsProcess.pid = goodsProcess.cmd.Process.Pid
 	if err := goodsProcess.cmd.Wait(); err != nil {
 		State := goodsProcess.cmd.ProcessState
 		if !State.Success() {
@@ -227,18 +266,18 @@ func runLocalProcess(goodsProcess *GoodsProcess) error {
 			// 如果是被 RULEX 干死的就不抢救了，说明触发了 Stop 和 Remove；
 			//    killedBy 如果是别的原因就有抢救机会
 			if goodsProcess.killedBy != "RULEX" {
-				glogger.GLogger.Warn("Goods process Exit, May be a accident, try to rescue it:", goodsProcess.Uuid)
+				glogger.GLogger.Warn("Goods process Exit, May be a accident, try to rescue it:", goodsProcess.Info.UUID)
 				// 说明是用户操作停止
 				time.Sleep(2 * time.Second)
 				go fork(GoodsInfo{
-					UUID:        goodsProcess.Uuid,
-					LocalPath:   goodsProcess.LocalPath,
-					NetAddr:     goodsProcess.NetAddr,
-					Description: goodsProcess.Uuid,
-					Args:        goodsProcess.Args,
+					UUID:        goodsProcess.Info.UUID,
+					LocalPath:   goodsProcess.Info.LocalPath,
+					NetAddr:     goodsProcess.Info.NetAddr,
+					Description: goodsProcess.Info.Description,
+					Args:        goodsProcess.Info.Args,
 				})
 			} else {
-				glogger.GLogger.Debug("Goods process killed by Rulex, No need to rescue it:", goodsProcess.Uuid)
+				glogger.GLogger.Debug("Goods process killed by Rulex, No need to rescue it:", goodsProcess.Info.UUID)
 			}
 		}
 
@@ -260,7 +299,7 @@ func Get(uuid string) *GoodsProcess {
 
 // 保存进内存
 func saveProcessMetaToMap(goodsProcess *GoodsProcess) {
-	__DefaultTrailerRuntime.goodsProcessMap.Store(goodsProcess.Uuid, goodsProcess)
+	__DefaultTrailerRuntime.goodsProcessMap.Store(goodsProcess.Info.UUID, goodsProcess)
 }
 
 // 从内存里删除, 删除后记得停止挂件, 通常外部配置表也要删除, 比如Sqlite
@@ -302,15 +341,15 @@ func probe(client TrailerClient, goodsProcess *GoodsProcess) {
 	case <-goodsProcess.ctx.Done():
 		{
 			glogger.GLogger.Infof("goods process(uuid = %v, addr = %v, args = %v) stopped",
-				goodsProcess.Uuid,
-				goodsProcess.NetAddr,
-				goodsProcess.Args)
+				goodsProcess.Info.UUID,
+				goodsProcess.Info.NetAddr,
+				goodsProcess.Info.Args)
 			return
 		}
 	default:
 		{
 			if goodsProcess.cmd != nil {
-				goodsProcess.PsRunning = true
+				goodsProcess.psRunning = true
 				if goodsProcess.rpcStarted {
 					response, errStatus := client.Status(goodsProcess.ctx, &Request{})
 					Status := response.GetStatus()
@@ -325,16 +364,16 @@ func probe(client TrailerClient, goodsProcess *GoodsProcess) {
 			} else {
 				// 进程没起来，RPC也不会起来
 				// 进程的 cmd==nil 时，说明已经挂了，尝试将其救活, 默认最多抢救5次
-				goodsProcess.PsRunning = false
+				goodsProcess.psRunning = false
 				goodsProcess.rpcStarted = false
 				glogger.GLogger.Debug("Goods Process is down:",
-					goodsProcess.Uuid, " try to restart")
+					goodsProcess.Info.UUID, " try to restart")
 				go fork(GoodsInfo{
-					UUID:        goodsProcess.Uuid,
-					LocalPath:   goodsProcess.LocalPath,
-					NetAddr:     goodsProcess.NetAddr,
-					Description: goodsProcess.Uuid,
-					Args:        goodsProcess.Args,
+					UUID:        goodsProcess.Info.UUID,
+					LocalPath:   goodsProcess.Info.LocalPath,
+					NetAddr:     goodsProcess.Info.NetAddr,
+					Description: goodsProcess.Info.Description,
+					Args:        goodsProcess.Info.Args,
 				})
 				return
 			}
@@ -384,7 +423,7 @@ func IsExecutableFileWin(filePath string) bool {
 *
  */
 func loadRpc(goodsProcess *GoodsProcess) bool {
-	grpcConnection, err := grpc.Dial(goodsProcess.NetAddr,
+	grpcConnection, err := grpc.Dial(goodsProcess.Info.NetAddr,
 		grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		glogger.GLogger.Error(err)
@@ -395,14 +434,14 @@ func loadRpc(goodsProcess *GoodsProcess) bool {
 	// 等进程起来以后RPC调用
 	if goodsProcess.cmd != nil {
 		if _, err := client.Init(goodsProcess.ctx, &Config{
-			Kv: []byte(goodsProcess.Args),
+			Kv: []byte(goodsProcess.Info.Args),
 		}); err != nil {
-			glogger.GLogger.Error("Init error:", goodsProcess.NetAddr, ", error:", err)
+			glogger.GLogger.Error("Init error:", goodsProcess.Info.NetAddr, ", error:", err)
 			return false
 		}
 		// Start
 		if _, err := client.Start(goodsProcess.ctx, &Request{}); err != nil {
-			glogger.GLogger.Error("Start error:", goodsProcess.NetAddr, ", error:", err)
+			glogger.GLogger.Error("Start error:", goodsProcess.Info.NetAddr, ", error:", err)
 			return false
 		} else {
 			goodsProcess.rpcStarted = true

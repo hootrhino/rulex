@@ -1,0 +1,7 @@
+{
+    "native": true,
+    "executable": "app1.exe",
+    "env": [
+        "os=win10"
+    ]
+}
