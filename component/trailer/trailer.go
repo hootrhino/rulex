@@ -18,7 +18,6 @@ import (
 	"strings"
 	"time"
 
-	"os"
 	"os/exec"
 	"sync"
 
@@ -130,56 +129,50 @@ func (hk goodsStdInOut) Read(p []byte) (n int, err error) {
 * 分离进程
 *
  */
-func fork(goods GoodsInfo) error {
+func fork(info GoodsInfo) error {
 	glogger.GLogger.Infof("fork goods process, (uuid = %v, addr = %v, args = %v)",
-		goods.UUID, goods.LocalPath, goods.Args)
+		info.UUID, info.LocalPath, info.Args)
 	ctx, Cancel := context.WithCancel(__DefaultTrailerRuntime.ctx)
 
 	var Cmd *exec.Cmd
-	args := strings.Split(goods.Args, " ")
-	tArgs := []string{goods.LocalPath}
+	args := strings.Split(info.Args, " ")
+	tArgs := []string{info.LocalPath}
 	// python main.py args...
-	if goods.ExecuteType == "PYTHON" {
+	if info.ExecuteType == "PYTHON" {
 		tArgs = append(tArgs, args...)
 		Cmd = exec.CommandContext(ctx, "python", tArgs...)
 	}
 	// node main.js  args...
-	if goods.ExecuteType == "JS" {
+	if info.ExecuteType == "JS" {
 		tArgs = append(tArgs, args...)
 		Cmd = exec.CommandContext(ctx, "node", tArgs...)
 	}
 	// lua main.lua args...
-	if goods.ExecuteType == "LUA" {
+	if info.ExecuteType == "LUA" {
 		tArgs = append(tArgs, args...)
 		Cmd = exec.CommandContext(ctx, "lua", tArgs...)
 	}
 	//$ java -jar JarExample.jar args...
-	if goods.ExecuteType == "JAVA" {
+	if info.ExecuteType == "JAVA" {
 		jarArgs := []string{"-jar"}
 		tArgs = append(tArgs, args...)
 		jarArgs = append(jarArgs, tArgs...)
 		Cmd = exec.CommandContext(ctx, "java", jarArgs...)
 	}
-	if goods.ExecuteType == "ELF" {
-		Cmd = exec.CommandContext(ctx, goods.LocalPath, args...)
+	if info.ExecuteType == "ELF" {
+		Cmd = exec.CommandContext(ctx, info.LocalPath, args...)
 	}
-	if goods.ExecuteType == "EXE" {
-		Cmd = exec.CommandContext(ctx, goods.LocalPath, args...)
+	if info.ExecuteType == "EXE" {
+		Cmd = exec.CommandContext(ctx, info.LocalPath, args...)
 	}
 	glogger.GLogger.Debug("Execute system process:", Cmd.String())
 	if Cmd == nil {
 		Cancel()
-		return fmt.Errorf("unsupported executable file:%s", goods.LocalPath)
+		return fmt.Errorf("unsupported executable file:%s", info.LocalPath)
 	}
 	Cmd.SysProcAttr = NewSysProcAttr()
 	goodsProcess := &GoodsProcess{
-		Info: GoodsInfo{
-			LocalPath:   goods.LocalPath,
-			NetAddr:     goods.NetAddr,
-			UUID:        goods.UUID,
-			Description: goods.Description,
-			Args:        goods.Args,
-		},
+		Info:    info,
 		cmd:     Cmd,
 		ctx:     ctx,
 		cancel:  Cancel,
@@ -247,11 +240,7 @@ func runLocalProcess(goodsProcess *GoodsProcess) error {
 		}
 	}()
 
-	glogger.GLogger.Infof("goods process(pid = %v, uuid = %v, addr = %v, args = %v) fork and started",
-		goodsProcess.cmd.Process.Pid,
-		goodsProcess.Info.UUID,
-		goodsProcess.Info.LocalPath,
-		goodsProcess.Info.Args)
+	glogger.GLogger.Infof("goods started:", goodsProcess.String())
 	// Start 以后即可拿到Pid
 	goodsProcess.pid = goodsProcess.cmd.Process.Pid
 	if err := goodsProcess.cmd.Wait(); err != nil {
@@ -266,18 +255,15 @@ func runLocalProcess(goodsProcess *GoodsProcess) error {
 			// 如果是被 RULEX 干死的就不抢救了，说明触发了 Stop 和 Remove；
 			//    killedBy 如果是别的原因就有抢救机会
 			if goodsProcess.killedBy != "RULEX" {
-				glogger.GLogger.Warn("Goods process Exit, May be a accident, try to rescue it:", goodsProcess.Info.UUID)
+				glogger.GLogger.Warn("Goods process Exit, May be a accident, try to rescue it:",
+					goodsProcess.String())
 				// 说明是用户操作停止
 				time.Sleep(2 * time.Second)
-				go fork(GoodsInfo{
-					UUID:        goodsProcess.Info.UUID,
-					LocalPath:   goodsProcess.Info.LocalPath,
-					NetAddr:     goodsProcess.Info.NetAddr,
-					Description: goodsProcess.Info.Description,
-					Args:        goodsProcess.Info.Args,
-				})
+				goodsProcess.Stop()
+				go StartProcess(goodsProcess.Info)
 			} else {
-				glogger.GLogger.Debug("Goods process killed by Rulex, No need to rescue it:", goodsProcess.Info.UUID)
+				glogger.GLogger.Debug("Goods process killed by Rulex, No need to rescue it:",
+					goodsProcess.String())
 			}
 		}
 
@@ -340,10 +326,7 @@ func probe(client TrailerClient, goodsProcess *GoodsProcess) {
 	select {
 	case <-goodsProcess.ctx.Done():
 		{
-			glogger.GLogger.Infof("goods process(uuid = %v, addr = %v, args = %v) stopped",
-				goodsProcess.Info.UUID,
-				goodsProcess.Info.NetAddr,
-				goodsProcess.Info.Args)
+			glogger.GLogger.Infof("goods process stopped:", goodsProcess.String())
 			return
 		}
 	default:
@@ -366,15 +349,12 @@ func probe(client TrailerClient, goodsProcess *GoodsProcess) {
 				// 进程的 cmd==nil 时，说明已经挂了，尝试将其救活, 默认最多抢救5次
 				goodsProcess.psRunning = false
 				goodsProcess.rpcStarted = false
-				glogger.GLogger.Debug("Goods Process is down:",
-					goodsProcess.Info.UUID, " try to restart")
-				go fork(GoodsInfo{
-					UUID:        goodsProcess.Info.UUID,
-					LocalPath:   goodsProcess.Info.LocalPath,
-					NetAddr:     goodsProcess.Info.NetAddr,
-					Description: goodsProcess.Info.Description,
-					Args:        goodsProcess.Info.Args,
-				})
+				glogger.GLogger.Debug("Goods Process is down try to restart:",
+					goodsProcess.String())
+				// 未来会根据 AutoStart判断是否重启进程
+				// 字段已经在0.6.4加入
+				goodsProcess.Stop()
+				go StartProcess(goodsProcess.Info)
 				return
 			}
 		}
@@ -389,32 +369,6 @@ func probe(client TrailerClient, goodsProcess *GoodsProcess) {
  */
 func AllGoods() *sync.Map {
 	return __DefaultTrailerRuntime.goodsProcessMap
-}
-
-/*
-*
-* 判断是否可执行(Linux Only)
-*
- */
-func IsExecutableFileUnix(filePath string) bool {
-	fileInfo, err := os.Stat(filePath)
-	if err != nil {
-		return false
-	}
-	if fileInfo.Mode()&0111 != 0 {
-		return true
-	}
-
-	return false
-}
-func IsExecutableFileWin(filePath string) bool {
-	filePath = strings.ToLower(filePath)
-	return strings.HasSuffix(filePath, ".exe") ||
-		strings.HasSuffix(filePath, ".jar") ||
-		strings.HasSuffix(filePath, ".py") ||
-		strings.HasSuffix(filePath, ".js") ||
-		strings.HasSuffix(filePath, ".lua")
-
 }
 
 /*

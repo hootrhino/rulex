@@ -2,7 +2,7 @@ package trailer
 
 import (
 	"context"
-	"encoding/json"
+	"fmt"
 	"os/exec"
 	"syscall"
 
@@ -16,16 +16,27 @@ import (
 *  $> /test_driver Args
  */
 type GoodsInfo struct {
-	UUID        string
-	Name        string // 进程名
-	GoodsType   string // LOCAL, EXTERNAL
-	ExecuteType string // exe,elf,jar,py, nodejs....
-	AutoStart   *bool  // 是否开启自启动，目前全部是自启动
-	LocalPath   string // TCP or Unix Socket
-	NetAddr     string // RPC addr
-	Description string // Description text
+	UUID        string `json:"uuid"`
+	Name        string `json:"name"`         // 进程名
+	GoodsType   string `json:"goods_type"`   // LOCAL, EXTERNAL
+	ExecuteType string `json:"execute_type"` // exe,elf,jar,py, nodejs....
+	AutoStart   *bool  `json:"auto_start"`   // 是否开启自启动，目前全部是自启动
+	LocalPath   string `json:"local_path"`   // TCP or Unix Socket
+	NetAddr     string `json:"net_addr"`     // RPC addr
+	Description string `json:"description"`  // Description text
 	// Additional Args
-	Args string // 使用空格分割 , such: la -al
+	Args string `json:"args"` // 使用空格分割 , such: la -al
+}
+
+func (g GoodsProcess) String() string {
+	return fmt.Sprintf("^Pid:%v, UUID:%v, LocalPath:%v, args:%v, GoodsType:%v, ExecuteType:%v",
+		g.cmd.Process.Pid,
+		g.Info.UUID,
+		g.Info.LocalPath,
+		g.Info.Args,
+		g.Info.GoodsType,
+		g.Info.ExecuteType,
+	)
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -69,10 +80,7 @@ func (goodsProcess *GoodsProcess) ConnectToRpc() (TrailerClient, error) {
 	}
 	return goodsProcess.trailerClient, nil
 }
-func (t GoodsProcess) String() string {
-	b, _ := json.Marshal(t)
-	return string(b)
-}
+
 func (goodsPs *GoodsProcess) StopBy(r string) {
 	goodsPs.killedBy = r
 	if goodsPs.cmd != nil {
