@@ -23,27 +23,33 @@ func LoadSystemSettingsAPI() {
 	//
 	settingsApi := server.DefaultApiServer.GetGroup(server.ContextUrl("/settings"))
 	{
-		// ethnet
-		settingsApi.POST("/eth", server.DefaultApiServer.AddRoute(SetEthNetwork))
-		settingsApi.GET("/eth", server.DefaultApiServer.AddRoute(GetEthNetwork))
-		settingsApi.GET("/connection", server.DefaultApiServer.AddRoute(GetCurrentNetConnection))
-		// time
-		settingsApi.GET("/time", server.DefaultApiServer.AddRoute(GetSystemTime))
-		settingsApi.POST("/time", server.DefaultApiServer.AddRoute(SetSystemTime))
-		// wifi
-		settingsApi.GET("/wifi", server.DefaultApiServer.AddRoute(GetWifi))
-		settingsApi.POST("/wifi", server.DefaultApiServer.AddRoute(SetWifi))
 		// volume
 		settingsApi.GET("/volume", server.DefaultApiServer.AddRoute(GetVolume))
 		settingsApi.POST("/volume", server.DefaultApiServer.AddRoute(SetVolume))
+	}
+	// ethnet
+	ethApi := server.DefaultApiServer.GetGroup(server.ContextUrl("/settings"))
+	{
+		ethApi.POST("/eth", server.DefaultApiServer.AddRoute(SetEthNetwork))
+		ethApi.GET("/eth", server.DefaultApiServer.AddRoute(GetEthNetwork))
+		ethApi.GET("/connection", server.DefaultApiServer.AddRoute(GetCurrentNetConnection))
+	}
+	// wifi
+	wifiApi := server.DefaultApiServer.GetGroup(server.ContextUrl("/settings"))
+	{
+		wifiApi.GET("/wifi", server.DefaultApiServer.AddRoute(GetWifi))
+		wifiApi.POST("/wifi", server.DefaultApiServer.AddRoute(SetWifi))
+	}
+	// time
+	timesApi := server.DefaultApiServer.GetGroup(server.ContextUrl("/settings"))
+	{
+		// time
+		timesApi.GET("/time", server.DefaultApiServer.AddRoute(GetSystemTime))
+		timesApi.POST("/time", server.DefaultApiServer.AddRoute(SetSystemTime))
 		// timezone
-		settingsApi.POST("/timezone", server.DefaultApiServer.AddRoute(SetSystemTimeZone))
-		settingsApi.GET("/timezone", server.DefaultApiServer.AddRoute(GetSystemTimeZone))
-		settingsApi.PUT("/ntp", server.DefaultApiServer.AddRoute(UpdateTimeByNtp))
-		// ip route
-		settingsApi.POST("/iproute", server.DefaultApiServer.AddRoute(SetNewDefaultIpRoute))
-		settingsApi.GET("/iproute", server.DefaultApiServer.AddRoute(GetOldDefaultIpRoute))
-
+		timesApi.POST("/timezone", server.DefaultApiServer.AddRoute(SetSystemTimeZone))
+		timesApi.GET("/timezone", server.DefaultApiServer.AddRoute(GetSystemTimeZone))
+		timesApi.PUT("/ntp", server.DefaultApiServer.AddRoute(UpdateTimeByNtp))
 	}
 	// 4g module
 	settings4GApi := server.DefaultApiServer.GetGroup(server.ContextUrl("/4g"))
@@ -57,6 +63,16 @@ func LoadSystemSettingsAPI() {
 	settingsSoftRouterApi := server.DefaultApiServer.GetGroup(server.ContextUrl("/softRouter"))
 	{
 		settingsSoftRouterApi.GET("/dhcpClients", server.DefaultApiServer.AddRoute(GetDhcpClients))
+		settingsSoftRouterApi.POST("/iproute", server.DefaultApiServer.AddRoute(SetNewDefaultIpRoute))
+		settingsSoftRouterApi.GET("/iproute", server.DefaultApiServer.AddRoute(GetOldDefaultIpRoute))
+
+	}
+	// 固件
+	settingsFirmware := server.DefaultApiServer.GetGroup(server.ContextUrl("/firmware"))
+	{
+		settingsFirmware.POST("/reboot", server.DefaultApiServer.AddRoute(Reboot))
+		settingsFirmware.POST("/restartRulex", server.DefaultApiServer.AddRoute(ReStartRulex))
+		settingsFirmware.POST("/upload", server.DefaultApiServer.AddRoute(UploadFirmWare))
 	}
 
 }
