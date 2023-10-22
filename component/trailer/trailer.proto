@@ -17,6 +17,8 @@ service Trailer {
   rpc Status (Request) returns (StatusResponse) {}
   // 服务调用
   rpc Service (ServiceRequest) returns (ServiceResponse) {}
+  // 流数据
+  rpc OnStream (stream StreamRequest) returns (stream StreamResponse) {}
   // 数据查询
   rpc Query (DataRowsRequest) returns (DataRowsResponse) {}
   // 数据模型
@@ -34,6 +36,13 @@ message Request {
 message Response {
     int32 code = 1;
     string message = 2;
+}
+message StreamRequest{
+    bytes data = 1;
+}
+message StreamResponse{
+    int32 code = 1;
+    bytes data = 2;
 }
 message ServiceRequest{
     bytes cmd = 1;

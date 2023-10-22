@@ -15,6 +15,7 @@ package trailer
 import (
 	"context"
 	"fmt"
+	"net"
 	"strings"
 	"time"
 
@@ -29,14 +30,28 @@ import (
 
 var __DefaultTrailerRuntime *TrailerRuntime
 
-//--------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------
 // Trailer 接口
-//--------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------
+type __TrailerRpcServer struct {
+	UnimplementedTrailerServer
+}
+
+/*
+*
+* 只实现 OnStream 别的暂时先不管
+*
+ */
+func (__TrailerRpcServer) OnStream(s Trailer_OnStreamServer) error {
+	s.Send(&StreamResponse{Code: 1, Data: []byte("OK")})
+	return nil
+}
 
 type TrailerRuntime struct {
 	ctx             context.Context
 	re              typex.RuleX
 	goodsProcessMap *sync.Map // Key: UUID, Value: GoodsProcess
+	rpcServer       *grpc.Server
 }
 
 func InitTrailerRuntime(re typex.RuleX) *TrailerRuntime {
@@ -45,6 +60,15 @@ func InitTrailerRuntime(re typex.RuleX) *TrailerRuntime {
 		re:              re,
 		goodsProcessMap: &sync.Map{},
 	}
+	Listener, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", 7700))
+	if err != nil {
+		glogger.GLogger.Error(err)
+		return nil
+	}
+	__DefaultTrailerRuntime.rpcServer = grpc.NewServer(grpc.EmptyServerOption{})
+	RegisterTrailerServer(__DefaultTrailerRuntime.rpcServer, __TrailerRpcServer{})
+	// Stream Server
+	go __DefaultTrailerRuntime.rpcServer.Serve(Listener)
 	// 探针
 	go func() {
 		for {
@@ -315,6 +339,7 @@ func Stop() {
 		gp.Stop()
 		return true
 	})
+	__DefaultTrailerRuntime.rpcServer.Stop()
 }
 
 /*

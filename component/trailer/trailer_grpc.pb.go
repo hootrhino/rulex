@@ -19,13 +19,14 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Trailer_Init_FullMethodName    = "/trailer.Trailer/Init"
-	Trailer_Start_FullMethodName   = "/trailer.Trailer/Start"
-	Trailer_Status_FullMethodName  = "/trailer.Trailer/Status"
-	Trailer_Service_FullMethodName = "/trailer.Trailer/Service"
-	Trailer_Query_FullMethodName   = "/trailer.Trailer/Query"
-	Trailer_Schema_FullMethodName  = "/trailer.Trailer/Schema"
-	Trailer_Stop_FullMethodName    = "/trailer.Trailer/Stop"
+	Trailer_Init_FullMethodName     = "/trailer.Trailer/Init"
+	Trailer_Start_FullMethodName    = "/trailer.Trailer/Start"
+	Trailer_Status_FullMethodName   = "/trailer.Trailer/Status"
+	Trailer_Service_FullMethodName  = "/trailer.Trailer/Service"
+	Trailer_OnStream_FullMethodName = "/trailer.Trailer/OnStream"
+	Trailer_Query_FullMethodName    = "/trailer.Trailer/Query"
+	Trailer_Schema_FullMethodName   = "/trailer.Trailer/Schema"
+	Trailer_Stop_FullMethodName     = "/trailer.Trailer/Stop"
 )
 
 // TrailerClient is the client API for Trailer service.
@@ -40,6 +41,8 @@ type TrailerClient interface {
 	Status(ctx context.Context, in *Request, opts ...grpc.CallOption) (*StatusResponse, error)
 	// 服务调用
 	Service(ctx context.Context, in *ServiceRequest, opts ...grpc.CallOption) (*ServiceResponse, error)
+	// 流数据
+	OnStream(ctx context.Context, opts ...grpc.CallOption) (Trailer_OnStreamClient, error)
 	// 数据查询
 	Query(ctx context.Context, in *DataRowsRequest, opts ...grpc.CallOption) (*DataRowsResponse, error)
 	// 数据模型
@@ -92,6 +95,37 @@ func (c *trailerClient) Service(ctx context.Context, in *ServiceRequest, opts ..
 	return out, nil
 }
 
+func (c *trailerClient) OnStream(ctx context.Context, opts ...grpc.CallOption) (Trailer_OnStreamClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Trailer_ServiceDesc.Streams[0], Trailer_OnStream_FullMethodName, opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &trailerOnStreamClient{stream}
+	return x, nil
+}
+
+type Trailer_OnStreamClient interface {
+	Send(*StreamRequest) error
+	Recv() (*StreamResponse, error)
+	grpc.ClientStream
+}
+
+type trailerOnStreamClient struct {
+	grpc.ClientStream
+}
+
+func (x *trailerOnStreamClient) Send(m *StreamRequest) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *trailerOnStreamClient) Recv() (*StreamResponse, error) {
+	m := new(StreamResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 func (c *trailerClient) Query(ctx context.Context, in *DataRowsRequest, opts ...grpc.CallOption) (*DataRowsResponse, error) {
 	out := new(DataRowsResponse)
 	err := c.cc.Invoke(ctx, Trailer_Query_FullMethodName, in, out, opts...)
@@ -131,6 +165,8 @@ type TrailerServer interface {
 	Status(context.Context, *Request) (*StatusResponse, error)
 	// 服务调用
 	Service(context.Context, *ServiceRequest) (*ServiceResponse, error)
+	// 流数据
+	OnStream(Trailer_OnStreamServer) error
 	// 数据查询
 	Query(context.Context, *DataRowsRequest) (*DataRowsResponse, error)
 	// 数据模型
@@ -155,6 +191,9 @@ func (UnimplementedTrailerServer) Status(context.Context, *Request) (*StatusResp
 }
 func (UnimplementedTrailerServer) Service(context.Context, *ServiceRequest) (*ServiceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Service not implemented")
+}
+func (UnimplementedTrailerServer) OnStream(Trailer_OnStreamServer) error {
+	return status.Errorf(codes.Unimplemented, "method OnStream not implemented")
 }
 func (UnimplementedTrailerServer) Query(context.Context, *DataRowsRequest) (*DataRowsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Query not implemented")
@@ -250,6 +289,32 @@ func _Trailer_Service_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Trailer_OnStream_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(TrailerServer).OnStream(&trailerOnStreamServer{stream})
+}
+
+type Trailer_OnStreamServer interface {
+	Send(*StreamResponse) error
+	Recv() (*StreamRequest, error)
+	grpc.ServerStream
+}
+
+type trailerOnStreamServer struct {
+	grpc.ServerStream
+}
+
+func (x *trailerOnStreamServer) Send(m *StreamResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *trailerOnStreamServer) Recv() (*StreamRequest, error) {
+	m := new(StreamRequest)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 func _Trailer_Query_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(DataRowsRequest)
 	if err := dec(in); err != nil {
@@ -340,6 +405,13 @@ var Trailer_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Trailer_Stop_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "OnStream",
+			Handler:       _Trailer_OnStream_Handler,
+			ServerStreams: true,
+			ClientStreams: true,
+		},
+	},
 	Metadata: "trailer.proto",
 }
