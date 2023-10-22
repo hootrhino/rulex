@@ -1,5 +1,10 @@
 package trailer
 
+/*
+*
+* 包验证器, 未来会增强应用管理功能, 允许上传ZIP包
+*
+ */
 import (
 	"archive/zip"
 	"encoding/json"
@@ -22,11 +27,6 @@ type AppManifest struct {
 	Env        []string `json:"env"`
 }
 
-/*
-*
-* 包验证器
-*
- */
 /*
 *
 * 针对脚本语言
