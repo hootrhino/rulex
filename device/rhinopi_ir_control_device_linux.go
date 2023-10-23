@@ -83,6 +83,9 @@ func (ird *IR) Start(cctx typex.CCTX) error {
 	}
 	ird.irFd = fd
 	go func(ird *IR) {
+		defer func() {
+			syscall.Close(fd)
+		}()
 		buf := make([]byte, 1024)
 		for {
 			select {
