@@ -84,6 +84,9 @@ func RhinoPiGetCOPS() (string, error) {
 	// +COPS: 0,0,"CHIN-UNICOM",7
 	return __EC200A_AT(__CURRENT_COPS_CMD, __ATTimeout)
 }
+func RhinoPiRestart4G() (string, error) {
+	return __EC200A_AT(__RESET_AT_CMD, __ATTimeout)
+}
 
 /*
 *

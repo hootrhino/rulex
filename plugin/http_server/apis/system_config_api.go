@@ -192,6 +192,17 @@ func ApplyNewestEtcEthConfig() error {
 
 /*
 *
+* 时区设置
+*
+ */
+type timeVo struct {
+	SysTime     string `json:"sysTime"`
+	SysTimeZone string `json:"sysTimeZone"`
+	EnableNtp   bool   `json:"enableNtp"`
+}
+
+/*
+*
   - 设置时间、时区
   - sudo date -s "2023-08-07 15:30:00"
     获取时间: date "+%Y-%m-%d %H:%M:%S" -> 2023-08-07 15:30:00
@@ -201,68 +212,27 @@ func SetSystemTime(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error("OS Not Support:"+runtime.GOOS))
 		return
 	}
-	type Form struct {
-		Time string `json:"time"`
-	}
-	DtoCfg := Form{}
+	DtoCfg := timeVo{}
 	if err0 := c.ShouldBindJSON(&DtoCfg); err0 != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err0))
 		return
 	}
+	if validTimeZone(DtoCfg.SysTimeZone) {
+		c.JSON(common.HTTP_OK, common.Error("InValid TimeZone:"+DtoCfg.SysTimeZone))
+		return
+	}
 
-	err := service.SetSystemTime(DtoCfg.Time)
-	if err != nil {
-		c.JSON(common.HTTP_OK, common.Error400(err))
+	err1 := service.SetSystemTime(DtoCfg.SysTime)
+	if err1 != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err1))
+		return
+	}
+	err2 := service.SetTimeZone(DtoCfg.SysTimeZone)
+	if err2 != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err2))
 		return
 	}
 	c.JSON(common.HTTP_OK, common.Ok())
-
-}
-
-/*
-*
-* 用来测试生成各种网络配置
-*
- */
-func TestGenEtcNetCfg(c *gin.Context, ruleEngine typex.RuleX) {
-
-	c.JSON(common.HTTP_OK, common.Ok())
-
-}
-
-/*
-*
-* 时区设置
-*
- */
-func SetSystemTimeZone(c *gin.Context, ruleEngine typex.RuleX) {
-	type Form struct {
-		Timezone string `json:"timezone"`
-	}
-	DtoCfg := Form{}
-	if err0 := c.ShouldBindJSON(&DtoCfg); err0 != nil {
-		c.JSON(common.HTTP_OK, common.Error400(err0))
-		return
-	}
-
-	if !validTimeZone(DtoCfg.Timezone) {
-		c.JSON(common.HTTP_OK, common.Error("Invalid timezone:"+DtoCfg.Timezone))
-		return
-	}
-	if err := service.SetTimeZone(DtoCfg.Timezone); err != nil {
-		c.JSON(common.HTTP_OK, common.Error400(err))
-		return
-	}
-	c.JSON(common.HTTP_OK, common.Ok())
-
-}
-func GetSystemTimeZone(c *gin.Context, ruleEngine typex.RuleX) {
-	Info, err := service.GetTimeZone()
-	if err != nil {
-		c.JSON(common.HTTP_OK, common.Error400(err))
-		return
-	}
-	c.JSON(common.HTTP_OK, common.OkWithData(Info))
 
 }
 
@@ -281,7 +251,17 @@ func GetSystemTime(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	c.JSON(common.HTTP_OK, common.OkWithData(SysTime))
+	SysTimeZone, err := service.GetTimeZone()
+	if err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
+
+	c.JSON(common.HTTP_OK, common.OkWithData(timeVo{
+		EnableNtp:   true,
+		SysTime:     SysTime,
+		SysTimeZone: SysTimeZone.CurrentTimezone,
+	}))
 }
 
 /*

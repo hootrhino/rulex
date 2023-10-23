@@ -26,6 +26,20 @@ import (
 
 /*
 *
+* 重启4G
+*
+ */
+func RhinoPiRestart4G(c *gin.Context, ruleEngine typex.RuleX) {
+	_, err := archsupport.RhinoPiRestart4G()
+	if err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
+	c.JSON(common.HTTP_OK, common.Ok())
+}
+
+/*
+*
 * 获取4G基本信息
 *
  */

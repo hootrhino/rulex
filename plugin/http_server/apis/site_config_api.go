@@ -24,9 +24,9 @@ import (
 )
 
 type SiteConfigVo struct {
-	SiteName string `json:"site_name"`
+	SiteName string `json:"siteName"`
 	Logo     string `json:"logo"`
-	AppName  string `json:"app_name"`
+	AppName  string `json:"appName"`
 }
 
 func UpdateSiteConfig(c *gin.Context, ruleEngine typex.RuleX) {

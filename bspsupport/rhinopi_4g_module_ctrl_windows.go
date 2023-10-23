@@ -24,3 +24,6 @@ func RhinoPiGetCOPS() (string, error) {
 func RhinoPiGetICCID() (string, error) {
 	return "", nil
 }
+func RhinoPiRestart4G() (string, error) {
+	return "", nil
+}

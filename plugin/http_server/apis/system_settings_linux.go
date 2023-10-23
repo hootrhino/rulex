@@ -21,58 +21,67 @@ func LoadSystemSettingsAPI() {
 	//
 	// 系统设置
 	//
-	settingsApi := server.DefaultApiServer.GetGroup(server.ContextUrl("/settings"))
+
+	ifacesApi := server.RouteGroup(server.ContextUrl("/settings"))
+	{
+		ifacesApi.GET(("/ifaces"), server.AddRoute(GetNetInterfaces))
+		ifacesApi.GET(("/uarts"), server.AddRoute(GetUartList))
+	}
+	settingsApi := server.RouteGroup(server.ContextUrl("/settings"))
 	{
 		// volume
-		settingsApi.GET("/volume", server.DefaultApiServer.AddRoute(GetVolume))
-		settingsApi.POST("/volume", server.DefaultApiServer.AddRoute(SetVolume))
+		settingsApi.GET("/volume", server.AddRoute(GetVolume))
+		settingsApi.POST("/volume", server.AddRoute(SetVolume))
 	}
 	// ethnet
-	ethApi := server.DefaultApiServer.GetGroup(server.ContextUrl("/settings"))
+	ethApi := server.RouteGroup(server.ContextUrl("/settings"))
 	{
-		ethApi.POST("/eth", server.DefaultApiServer.AddRoute(SetEthNetwork))
-		ethApi.GET("/eth", server.DefaultApiServer.AddRoute(GetEthNetwork))
-		ethApi.GET("/connection", server.DefaultApiServer.AddRoute(GetCurrentNetConnection))
+		ethApi.POST("/eth", server.AddRoute(SetEthNetwork))
+		ethApi.GET("/eth", server.AddRoute(GetEthNetwork))
+		ethApi.GET("/connection", server.AddRoute(GetCurrentNetConnection))
 	}
 	// wifi
-	wifiApi := server.DefaultApiServer.GetGroup(server.ContextUrl("/settings"))
+	wifiApi := server.RouteGroup(server.ContextUrl("/settings"))
 	{
-		wifiApi.GET("/wifi", server.DefaultApiServer.AddRoute(GetWifi))
-		wifiApi.POST("/wifi", server.DefaultApiServer.AddRoute(SetWifi))
+		wifiApi.GET("/wifi", server.AddRoute(GetWifi))
+		wifiApi.POST("/wifi", server.AddRoute(SetWifi))
 	}
 	// time
-	timesApi := server.DefaultApiServer.GetGroup(server.ContextUrl("/settings"))
+	timesApi := server.RouteGroup(server.ContextUrl("/settings"))
 	{
 		// time
-		timesApi.GET("/time", server.DefaultApiServer.AddRoute(GetSystemTime))
-		timesApi.POST("/time", server.DefaultApiServer.AddRoute(SetSystemTime))
+		timesApi.GET("/time", server.AddRoute(GetSystemTime))
+		timesApi.POST("/time", server.AddRoute(SetSystemTime))
 		// timezone
-		timesApi.POST("/timezone", server.DefaultApiServer.AddRoute(SetSystemTimeZone))
-		timesApi.GET("/timezone", server.DefaultApiServer.AddRoute(GetSystemTimeZone))
-		timesApi.PUT("/ntp", server.DefaultApiServer.AddRoute(UpdateTimeByNtp))
+		// timesApi.POST("/timezone", server.AddRoute(SetSystemTimeZone))
+		// timesApi.GET("/timezone", server.AddRoute(GetSystemTimeZone))
+		timesApi.PUT("/ntp", server.AddRoute(UpdateTimeByNtp))
 	}
 	// 4g module
-	settings4GApi := server.DefaultApiServer.GetGroup(server.ContextUrl("/4g"))
+	settings4GApi := server.RouteGroup(server.ContextUrl("/4g"))
 	{
-		settings4GApi.GET("/info", server.DefaultApiServer.AddRoute(Get4GBaseInfo))
-		settings4GApi.GET("/csq", server.DefaultApiServer.AddRoute(Get4GCSQ))
-		settings4GApi.GET("/cops", server.DefaultApiServer.AddRoute(Get4GCOPS))
-		settings4GApi.GET("/iccid", server.DefaultApiServer.AddRoute(Get4GICCID))
+		settings4GApi.GET("/info", server.AddRoute(Get4GBaseInfo))
+		settings4GApi.POST("/restart", server.AddRoute(RhinoPiRestart4G))
+		// settings4GApi.GET("/csq", server.AddRoute(Get4GCSQ))
+		// settings4GApi.GET("/cops", server.AddRoute(Get4GCOPS))
+		// settings4GApi.GET("/iccid", server.AddRoute(Get4GICCID))
 	}
 	// 软路由相关
-	settingsSoftRouterApi := server.DefaultApiServer.GetGroup(server.ContextUrl("/softRouter"))
+	settingsSoftRouterApi := server.RouteGroup(server.ContextUrl("/softRouter"))
 	{
-		settingsSoftRouterApi.GET("/dhcpClients", server.DefaultApiServer.AddRoute(GetDhcpClients))
-		settingsSoftRouterApi.POST("/iproute", server.DefaultApiServer.AddRoute(SetNewDefaultIpRoute))
-		settingsSoftRouterApi.GET("/iproute", server.DefaultApiServer.AddRoute(GetOldDefaultIpRoute))
+		settingsSoftRouterApi.GET("/dhcp/clients", server.AddRoute(GetDhcpClients))
+		settingsSoftRouterApi.POST("/iproute", server.AddRoute(SetNewDefaultIpRoute))
+		settingsSoftRouterApi.GET("/iproute", server.AddRoute(GetOldDefaultIpRoute))
 
 	}
 	// 固件
-	settingsFirmware := server.DefaultApiServer.GetGroup(server.ContextUrl("/firmware"))
+	settingsFirmware := server.RouteGroup(server.ContextUrl("/firmware"))
 	{
-		settingsFirmware.POST("/reboot", server.DefaultApiServer.AddRoute(Reboot))
-		settingsFirmware.POST("/restartRulex", server.DefaultApiServer.AddRoute(ReStartRulex))
-		settingsFirmware.POST("/upload", server.DefaultApiServer.AddRoute(UploadFirmWare))
+		settingsFirmware.POST("/reboot", server.AddRoute(Reboot))
+		settingsFirmware.POST("/restartRulex", server.AddRoute(ReStartRulex))
+		settingsFirmware.POST("/upload", server.AddRoute(UploadFirmWare))
+		settingsFirmware.POST("/upgrade", server.AddRoute(UpgradeFirmWare))
+		settingsFirmware.GET("/vendorKey", server.AddRoute(GetVendorKey))
 	}
 
 }

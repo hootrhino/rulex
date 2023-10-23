@@ -13,52 +13,30 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-// RhinoH3 固件相关操作
 package apis
 
 import (
 	"github.com/gin-gonic/gin"
 	common "github.com/hootrhino/rulex/plugin/http_server/common"
-	"github.com/hootrhino/rulex/plugin/http_server/service"
 	"github.com/hootrhino/rulex/typex"
 )
 
 /*
 *
-* 上传最新固件
+* 获取一机一密
 *
  */
-func UploadFirmWare(c *gin.Context, ruleEngine typex.RuleX) {
-	c.JSON(common.HTTP_OK, common.Ok())
-}
-func UpgradeFirmWare(c *gin.Context, ruleEngine typex.RuleX) {
-	c.JSON(common.HTTP_OK, common.Ok())
-}
 
-/*
-*
-* 重启固件
-*
- */
-func ReStartRulex(c *gin.Context, ruleEngine typex.RuleX) {
-	err := service.ReStartRulex()
-	if err != nil {
-		c.JSON(common.HTTP_OK, common.Error400(err))
-		return
-	}
-	c.JSON(common.HTTP_OK, common.Ok())
-}
+func GetVendorKey(c *gin.Context, ruleEngine typex.RuleX) {
+	testK := `
+-----BEGIN OPENSSH PRIVATE KEY-----
+b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW
+QyNTUxOQAAACCjNJ/Ks2nD7xrB5n53YVEkY8+za/Tw2sFQhDMFOG26kwAAAJir8TJ2q/Ey
+dgAAAAtzc2gtZWQyNTUxOQAAACCjNJ/Ks2nD7xrB5n53YVEkY8+za/Tw2sFQhDMFOG26kw
+AAAEBKxe0PZ+fv4nc3TwLoxvLLF4lmQha4OKb74fDBlSIuC6M0n8qzacPvGsHmfndhUSRj
+z7Nr9PDawVCEMwU4bbqTAAAAEWNud3doYWlAZ21haWwuY29tAQIDBA==
+-----END OPENSSH PRIVATE KEY-----
+`
+	c.JSON(common.HTTP_OK, common.OkWithData(testK))
 
-/*
-*
-* 重启操作系统
-*
- */
-func Reboot(c *gin.Context, ruleEngine typex.RuleX) {
-	err := service.Reboot()
-	if err != nil {
-		c.JSON(common.HTTP_OK, common.Error400(err))
-		return
-	}
-	c.JSON(common.HTTP_OK, common.Ok())
 }
