@@ -18,7 +18,6 @@ package target
 import (
 	"errors"
 	"fmt"
-
 	"github.com/hootrhino/rulex/common"
 	"github.com/hootrhino/rulex/typex"
 	"github.com/hootrhino/rulex/utils"
@@ -97,7 +96,11 @@ func (nt *natsTarget) Details() *typex.OutEnd {
 // --------------------------------------------------------
 func (nt *natsTarget) To(data interface{}) (interface{}, error) {
 	if nt.natsConnector != nil {
-		return nil, nt.natsConnector.Publish(nt.mainConfig.Topic, []byte((data.(string))))
+		switch t := data.(type) {
+		case string:
+			return nil, nt.natsConnector.Publish(nt.mainConfig.Topic, []byte(t))
+		}
+		return nil, errors.New("un supported data type")
 	}
 	return nil, errors.New("nats Connector is nil")
 }
