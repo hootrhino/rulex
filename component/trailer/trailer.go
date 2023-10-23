@@ -36,11 +36,12 @@ var __DefaultTrailerRuntime *TrailerRuntime
 type __TrailerRpcServer struct {
 	UnimplementedTrailerServer
 }
+
 /*
 *
-* 只实现 OnStream 别的暂时先不管 
+* 只实现 OnStream 别的暂时先不管
 *
-*/
+ */
 func (__TrailerRpcServer) OnStream(s Trailer_OnStreamServer) error {
 	s.Send(&StreamResponse{Code: 1, Data: []byte("OK")})
 	return nil
@@ -263,7 +264,7 @@ func runLocalProcess(goodsProcess *GoodsProcess) error {
 		}
 	}()
 
-	glogger.GLogger.Infof("goods started:", goodsProcess.String())
+	glogger.GLogger.Info("goods started:", goodsProcess.String())
 	// Start 以后即可拿到Pid
 	goodsProcess.pid = goodsProcess.cmd.Process.Pid
 	if err := goodsProcess.cmd.Wait(); err != nil {
@@ -271,10 +272,7 @@ func runLocalProcess(goodsProcess *GoodsProcess) error {
 		if !State.Success() {
 			out, err1 := goodsProcess.cmd.Output()
 			glogger.GLogger.Error("Cmd Exit With State:", err, err1, string(out), ",State:", State)
-		}
-		// 非正常结束, 极有可能是被kill的，所以要尝试抢救
-		// 问题：怎么知道是被kill或者自动结束?
-		if State.ExitCode() != 0 {
+			// 非正常结束, 极有可能是被kill的，所以要尝试抢救
 			// 如果是被 RULEX 干死的就不抢救了，说明触发了 Stop 和 Remove；
 			//    killedBy 如果是别的原因就有抢救机会
 			if goodsProcess.killedBy != "RULEX" {

@@ -195,6 +195,26 @@ ffmpeg -rtsp_transport tcp -re
 
 *
 */
+/*
+*
+* Fork 一个进程来执行
+*
+ */
+
+type wsInOut struct {
+}
+
+func NewWSStdInOut() wsInOut {
+	return wsInOut{}
+}
+
+func (hk wsInOut) Write(p []byte) (n int, err error) {
+	glogger.Logrus.Info(string(p))
+	return len(p), nil
+}
+func (hk wsInOut) Read(p []byte) (n int, err error) {
+	return len(p), nil
+}
 
 func StartFFMPEGProcess(rtspUrl, pushAddr string) error {
 	params := []string{
@@ -229,9 +249,10 @@ func StartFFMPEGProcess(rtspUrl, pushAddr string) error {
 		return err
 	}
 	if core.GlobalConfig.AppDebugMode {
+		inOut := wsInOut{}
 		cmd.Stdin = nil
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
+		cmd.Stdout = inOut
+		cmd.Stderr = inOut
 	}
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr

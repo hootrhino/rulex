@@ -25,18 +25,6 @@ import (
 
 /*
 *
-* 上传最新固件
-*
- */
-func UploadFirmWare(c *gin.Context, ruleEngine typex.RuleX) {
-	c.JSON(common.HTTP_OK, common.Ok())
-}
-func UpgradeFirmWare(c *gin.Context, ruleEngine typex.RuleX) {
-	c.JSON(common.HTTP_OK, common.Ok())
-}
-
-/*
-*
 * 重启固件
 *
  */

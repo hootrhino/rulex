@@ -16,10 +16,12 @@
 -->
 
 # FFMPEG推流器
-主要用来向前端推RTSP流，拉流用FFMPEG指令实现，本质是执行一个长命令，用golang的Process实现。
+主要用来向前端推RTSP流，拉流用FFMPEG指令实现，本质是执行一个长命令，用 golang 的 Process 实现。
 
 指令如下：
 
 ```sh
 ffmpeg -rtsp_transport tcp -re -i rtsp://192.168.199.243:554/av0_0 -q 5 -f mpegts -fflags nobuffer -c:v mpeg1video -an -s 1920x1080 http://127.0.0.1:9400/stream/ffmpegPush?liveId=147a6d7ae5a785f6e3ea90f25d36c63e
 ```
+## 原理
+![1](1.png)

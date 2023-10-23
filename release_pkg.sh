@@ -9,7 +9,7 @@ create_pkg() {
     local version=$(git describe --tags --always --abbrev=0)
     local release_dir="_release"
     local pkg_name="${APP}-$target-$version.zip"
-    local common_files="./LICENSE ./conf/${APP}.ini"
+    local common_files="./LICENSE ./conf/${APP}.ini ./md5.sum"
     local files_to_include="./${APP} $common_files"
     local files_to_include_exe="./${APP}.exe $common_files"
 
@@ -17,11 +17,12 @@ create_pkg() {
         files_to_include="$files_to_include ./script/*.sh"
         mv ./${APP}-$target ./${APP}
         chmod +x ./${APP}
+        calculate_and_save_md5 ./${APP}
     else
         files_to_include="$files_to_include_exe"
         mv ./${APP}-$target.exe ./${APP}.exe
+        calculate_and_save_md5 ./${APP}.exe
     fi
-
     echo "Create package: $pkg_name"
     zip -j "$release_dir/$pkg_name" $files_to_include
 }
@@ -102,7 +103,21 @@ cross_compile() {
         fi
     done
 }
-
+# 计算md5
+calculate_and_save_md5() {
+    if [ $# -ne 1 ]; then
+        echo "Usage: $0 <file_path>"
+        exit 1
+    fi
+    local file_path="$1"
+    local md5_hash
+    if [ ! -f "$file_path" ]; then
+        echo "File not found: $file_path"
+        return 1
+    fi
+    md5_hash=$(md5sum "$file_path" | awk '{print $1}')
+    echo "$md5_hash  $file_path" >> md5.sum
+}
 #
 # fetch dashboard
 #
