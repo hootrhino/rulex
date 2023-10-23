@@ -34,6 +34,7 @@ func LoadBuildInLuaLib(e typex.RuleX, r *typex.Rule) {
 		r.AddLib(e, "data", "ToUdp", rulexlib.DataToUdp(e))
 		r.AddLib(e, "data", "ToTdEngine", rulexlib.DataToTdEngine(e))
 		r.AddLib(e, "data", "ToMongo", rulexlib.DataToMongo(e))
+		r.AddLib(e, "data", "ToNats", rulexlib.DataToNats(e))
 	}
 	{
 		r.AddLib(e, "rpc", "Request", rulexlib.Request(e))

@@ -36,12 +36,11 @@ var __DefaultTrailerRuntime *TrailerRuntime
 type __TrailerRpcServer struct {
 	UnimplementedTrailerServer
 }
-
 /*
 *
-* 只实现 OnStream 别的暂时先不管
+* 只实现 OnStream 别的暂时先不管 
 *
- */
+*/
 func (__TrailerRpcServer) OnStream(s Trailer_OnStreamServer) error {
 	s.Send(&StreamResponse{Code: 1, Data: []byte("OK")})
 	return nil

@@ -98,9 +98,10 @@ func (nt *natsTarget) To(data interface{}) (interface{}, error) {
 	if nt.natsConnector != nil {
 		switch t := data.(type) {
 		case string:
-			return nil, nt.natsConnector.Publish(nt.mainConfig.Topic, []byte(t))
+			err := nt.natsConnector.Publish(nt.mainConfig.Topic, []byte(t))
+			return nil, err
 		}
-		return nil, errors.New("un supported data type")
+		return nil, errors.New("unsupported data type")
 	}
 	return nil, errors.New("nats Connector is nil")
 }
