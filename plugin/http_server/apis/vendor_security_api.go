@@ -31,10 +31,6 @@ func GetVendorKey(c *gin.Context, ruleEngine typex.RuleX) {
 	testK := `
 -----BEGIN OPENSSH PRIVATE KEY-----
 b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW
-QyNTUxOQAAACCjNJ/Ks2nD7xrB5n53YVEkY8+za/Tw2sFQhDMFOG26kwAAAJir8TJ2q/Ey
-dgAAAAtzc2gtZWQyNTUxOQAAACCjNJ/Ks2nD7xrB5n53YVEkY8+za/Tw2sFQhDMFOG26kw
-AAAEBKxe0PZ+fv4nc3TwLoxvLLF4lmQha4OKb74fDBlSIuC6M0n8qzacPvGsHmfndhUSRj
-z7Nr9PDawVCEMwU4bbqTAAAAEWNud3doYWlAZ21haWwuY29tAQIDBA==
 -----END OPENSSH PRIVATE KEY-----
 `
 	c.JSON(common.HTTP_OK, common.OkWithData(testK))
