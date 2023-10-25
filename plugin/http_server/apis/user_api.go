@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"time"
+	"unicode/utf8"
 
 	common "github.com/hootrhino/rulex/plugin/http_server/common"
 	"github.com/hootrhino/rulex/plugin/http_server/model"
@@ -40,6 +41,10 @@ func Users(c *gin.Context, ruleEngine typex.RuleX) {
 	}
 	c.JSON(common.HTTP_OK, common.OkWithData(users))
 }
+func isLengthBetween8And16(str string) bool {
+	length := utf8.RuneCountInString(str)
+	return length >= 8 && length <= 16
+}
 
 // CreateUser
 func CreateUser(c *gin.Context, ruleEngine typex.RuleX) {
@@ -54,7 +59,14 @@ func CreateUser(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-
+	if !isLengthBetween8And16(form.Username) {
+		c.JSON(common.HTTP_OK, common.Error("Username Length must Between 8 ~ 16"))
+		return
+	}
+	if !isLengthBetween8And16(form.Password) {
+		c.JSON(common.HTTP_OK, common.Error("Password Length must Between 8 ~ 16"))
+		return
+	}
 	if _, err := service.GetMUser(form.Username); err != nil {
 		service.InsertMUser(&model.MUser{
 			Role:        form.Role,

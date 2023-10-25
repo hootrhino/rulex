@@ -96,10 +96,18 @@ uninstall(){
 }
 # create a default user
 create_user(){
+    # 检查是否提供了足够的参数
+    if [ $# -ne 2 ]; then
+        echo "Missing username and password, example: create_user user1 1234"
+        exit 1
+    fi
+    param1="$1"
+    param2="$2"
+
     response=$(curl -X POST -H "Content-Type: application/json" -d '{
     "role": "admin",
-    "username": "admin",
-    "password": "admin",
+    "username": ${param1},
+    "password": ${param2},
     "description": "system admin"
     }' http://127.0.0.1:2580/api/v1/users -w "%{http_code}")
 
