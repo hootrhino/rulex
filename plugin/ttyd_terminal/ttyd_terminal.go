@@ -66,6 +66,9 @@ func (tty *WebTTYPlugin) Start(typex.RuleX) error {
 	return nil
 }
 func (tty *WebTTYPlugin) Stop() error {
+	if tty.cancel != nil {
+		tty.cancel()
+	}
 	if tty.ttydCmd == nil {
 		return nil
 	}

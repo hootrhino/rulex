@@ -33,33 +33,17 @@ import (
 
 func (tty *WebTTYPlugin) Service(arg typex.ServiceArg) typex.ServiceResult {
 	if tty.busying {
+		// 允许忙碌中停止
 		if arg.Name == "stop" {
-			if tty.cancel != nil {
-				tty.cancel()
-			}
-			if tty.ttydCmd != nil {
-				if tty.ttydCmd.ProcessState != nil {
-					tty.ttydCmd.Process.Kill()
-					tty.ttydCmd.Process.Signal(os.Kill)
-				}
-			}
-			tty.busying = false
+			tty.stop()
 			return typex.ServiceResult{Out: "Terminal Stop Success"}
 		}
+		// 禁止多开
 		return typex.ServiceResult{Out: "Terminal already running now"}
 	}
 
 	if arg.Name == "stop" {
-		if tty.cancel != nil {
-			tty.cancel()
-		}
-		if tty.ttydCmd != nil {
-			if tty.ttydCmd.ProcessState != nil {
-				tty.ttydCmd.Process.Kill()
-				tty.ttydCmd.Process.Signal(os.Kill)
-			}
-		}
-		tty.busying = false
+		tty.stop()
 		return typex.ServiceResult{Out: "Terminal Stop Success"}
 
 	}
@@ -68,6 +52,8 @@ func (tty *WebTTYPlugin) Service(arg typex.ServiceArg) typex.ServiceResult {
 		ctx, cancel := context.WithCancel(typex.GCTX)
 		tty.ctx = ctx
 		tty.cancel = cancel
+		tty.ttydCmd.Stdout = os.Stdout
+		tty.ttydCmd.Stderr = os.Stderr
 		tty.ttydCmd = exec.CommandContext(typex.GCTX,
 			"ttyd", "-W", "-p", fmt.Sprintf("%d", tty.mainConfig.ListenPort),
 			"-o", "-6", "bash")
@@ -75,15 +61,31 @@ func (tty *WebTTYPlugin) Service(arg typex.ServiceArg) typex.ServiceResult {
 			glogger.GLogger.Infof("cmd.Start error: %v", err1)
 			return typex.ServiceResult{Out: err1.Error()}
 		}
+		// 如果5分钟没人操作就结束
 		go func(tty *WebTTYPlugin) {
 			defer func() {
-				tty.busying = false
+				tty.stop()
 			}()
 			glogger.GLogger.Info("ttyd started successfully on port:", tty.mainConfig.ListenPort)
 			tty.ttydCmd.Process.Wait()
-			glogger.GLogger.Info("ttyd stopped")
+			glogger.GLogger.Info("ttyd stopped with state:", tty.ttydCmd.ProcessState.String())
 		}(tty)
 		return typex.ServiceResult{Out: "Terminal Start Success"}
 	}
 	return typex.ServiceResult{Out: "Unknown service name:" + arg.Name}
+}
+
+func (tty *WebTTYPlugin) stop() error {
+	if tty.cancel != nil {
+		tty.cancel()
+	}
+	if tty.ttydCmd == nil {
+		return nil
+	}
+	if tty.ttydCmd.ProcessState != nil {
+		tty.ttydCmd.Process.Kill()
+		tty.ttydCmd.Process.Signal(os.Kill)
+	}
+	tty.busying = false
+	return nil
 }
