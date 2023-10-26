@@ -16,6 +16,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"os"
 	"strings"
 	"time"
 
@@ -52,6 +53,7 @@ type TrailerRuntime struct {
 	re              typex.RuleX
 	goodsProcessMap *sync.Map // Key: UUID, Value: GoodsProcess
 	rpcServer       *grpc.Server
+	pid             int
 }
 
 func InitTrailerRuntime(re typex.RuleX) *TrailerRuntime {
@@ -59,6 +61,7 @@ func InitTrailerRuntime(re typex.RuleX) *TrailerRuntime {
 		ctx:             typex.GCTX,
 		re:              re,
 		goodsProcessMap: &sync.Map{},
+		pid:             os.Getppid(),
 	}
 	Listener, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", 7700))
 	if err != nil {
@@ -122,7 +125,7 @@ func StopProcess(goods GoodsInfo) error {
 		gp.Stop()
 		return nil
 	}
-	return fmt.Errorf("Goods not exists:%s", goods.UUID)
+	return fmt.Errorf("goods not exists:%s", goods.UUID)
 }
 
 /*
@@ -281,7 +284,10 @@ func runLocalProcess(goodsProcess *GoodsProcess) error {
 				// 说明是用户操作停止
 				time.Sleep(2 * time.Second)
 				goodsProcess.Stop()
-				go StartProcess(goodsProcess.Info)
+				PPId := os.Getppid()
+				if PPId == __DefaultTrailerRuntime.pid {
+					go StartProcess(goodsProcess.Info)
+				}
 			} else {
 				glogger.GLogger.Debug("Goods process killed by Rulex, No need to rescue it:",
 					goodsProcess.String())
@@ -348,7 +354,7 @@ func probe(client TrailerClient, goodsProcess *GoodsProcess) {
 	select {
 	case <-goodsProcess.ctx.Done():
 		{
-			glogger.GLogger.Infof("goods process stopped:", goodsProcess.String())
+			glogger.GLogger.Info("goods process stopped:", goodsProcess.String())
 			return
 		}
 	default:
@@ -376,7 +382,11 @@ func probe(client TrailerClient, goodsProcess *GoodsProcess) {
 				// 未来会根据 AutoStart判断是否重启进程
 				// 字段已经在0.6.4加入
 				goodsProcess.Stop()
-				go StartProcess(goodsProcess.Info)
+				// 防止Windows下出现僵尸进程
+				PPId := os.Getppid()
+				if PPId == __DefaultTrailerRuntime.pid {
+					go StartProcess(goodsProcess.Info)
+				}
 				return
 			}
 		}
