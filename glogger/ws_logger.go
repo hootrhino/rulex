@@ -1,7 +1,6 @@
 package glogger
 
 import (
-	"context"
 	"net/http"
 	"sync"
 	"time"
@@ -132,33 +131,15 @@ func WsLogger(c *gin.Context) {
 	GLogger.Info("WebSocket Terminal connected:" + wsConn.RemoteAddr().String())
 	wsConn.SetCloseHandler(func(code int, text string) error {
 		GLogger.Info("wsConn CloseHandler:", wsConn.RemoteAddr().String())
+		private_GRealtimeLogger.lock.Lock()
+		delete(private_GRealtimeLogger.Clients, wsConn.RemoteAddr().String())
+		private_GRealtimeLogger.lock.Unlock()
 		return nil
 	})
-	go func(ctx context.Context, wsConn *websocket.Conn) {
-		defer func() {
-			wsConn.Close()
-			lock.Lock()
-			delete(private_GRealtimeLogger.Clients, wsConn.RemoteAddr().String())
-			lock.Unlock()
-		}()
-		for {
-			select {
-			case <-ctx.Done():
-				{
-					return
-				}
-			default:
-				{
-				}
-			}
-			_, _, err := wsConn.ReadMessage()
-			wsConn.WriteMessage(websocket.PingMessage, []byte{})
-			if err != nil {
-				GLogger.Info("WsConn error:", wsConn.RemoteAddr().String(), ", Error:", err)
-				return
-			}
-
-		}
-
-	}(context.Background(), wsConn)
+	wsConn.SetPingHandler(func(appData string) error {
+		return nil
+	})
+	wsConn.SetPongHandler(func(appData string) error {
+		return nil
+	})
 }

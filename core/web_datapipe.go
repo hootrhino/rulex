@@ -25,8 +25,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
-	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/component/interqueue"
+	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/typex"
 )
 
@@ -151,43 +151,18 @@ func dataPipLoop(c *gin.Context) {
 	wsConn.WriteMessage(websocket.TextMessage, []byte("Connected"))
 	glogger.GLogger.Info("__DefaultWebDataPipe Terminal connected:" + wsConn.RemoteAddr().String())
 	wsConn.SetCloseHandler(func(code int, text string) error {
-		glogger.GLogger.Info("__DefaultWebDataPipe CloseHandler:", wsConn.RemoteAddr().String())
+		glogger.GLogger.Info("wsConn CloseHandler:", wsConn.RemoteAddr().String())
+		__DefaultWebDataPipe.lock.Lock()
+		delete(__DefaultWebDataPipe.Clients, wsConn.RemoteAddr().String())
+		__DefaultWebDataPipe.lock.Unlock()
 		return nil
 	})
-	// ping
-	go func(ctx context.Context, wsConn *websocket.Conn) {
-		for {
-			select {
-			case <-ctx.Done():
-				{
-					return
-				}
-			default:
-				{
-				}
-			}
-			_, _, err1 := wsConn.ReadMessage()
-			err2 := wsConn.WriteMessage(websocket.PingMessage, []byte{})
-			if err1 != nil || err2 != nil {
-				glogger.GLogger.Error("__DefaultWebDataPipe error:",
-					wsConn.RemoteAddr().String(), ", Error:", func(e1, e2 error) error {
-						if e1 != nil {
-							return e1
-						}
-						if e2 != nil {
-							return e2
-						}
-						return nil
-					}(err1, err2))
-				wsConn.Close()
-				__DefaultWebDataPipe.lock.Lock()
-				delete(__DefaultWebDataPipe.Clients, wsConn.RemoteAddr().String())
-				__DefaultWebDataPipe.lock.Unlock()
-				return
-			}
-		}
-
-	}(context.Background(), wsConn)
+	wsConn.SetPingHandler(func(appData string) error {
+		return nil
+	})
+	wsConn.SetPongHandler(func(appData string) error {
+		return nil
+	})
 	/*
 	*
 	* 来自前端的事件
