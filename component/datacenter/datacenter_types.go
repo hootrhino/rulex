@@ -21,14 +21,18 @@ package datacenter
 *
  */
 type SchemaDetail struct {
-	UUID        string  `json:"uuid"`
-	Name        string  `json:"name"`
-	LocalPath   string  `json:"local_path"`
-	NetAddr     string  `json:"net_addr"`
-	CreateTs    uint64  `json:"create_ts"`
-	Size        float32 `json:"size"`
-	StorePath   string  `json:"store_path"`
-	Description string  `json:"description"`
+	UUID string `json:"uuid"`
+	Name string `json:"name"`
+	// SchemaType 数据库类型，如果是"INTERNAL"则表示原始RULEX；如果是 "EXTERNAL" 则表示扩展设备
+	// 该字段是为了扩展数据中心, 将数据中心扩展为通用的一个中间层
+	SchemaType   string       `json:"schemaType"`
+	LocalPath    string       `json:"local_path"`
+	NetAddr      string       `json:"net_addr"`
+	CreateTs     uint64       `json:"create_ts"`
+	Size         float32      `json:"size"`
+	StorePath    string       `json:"store_path"`
+	SchemaDefine SchemaDefine `json:"schema_define"`
+	Description  string       `json:"description"`
 }
 
 /*
@@ -51,4 +55,15 @@ type Column struct {
 type SchemaDefine struct {
 	UUID    string   `json:"uuid"`
 	Columns []Column `json:"columns"`
+}
+
+/*
+*
+* 数据源接口
+*
+ */
+type DataSource interface {
+	GetSchemaDetail(goodsId string) SchemaDetail // 表详情
+	Name() string
+	Query(goodsId, query string) ([]map[string]any, error)
 }

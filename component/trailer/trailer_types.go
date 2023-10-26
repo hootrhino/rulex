@@ -18,7 +18,7 @@ import (
 type GoodsInfo struct {
 	UUID        string `json:"uuid"`
 	Name        string `json:"name"`         // 进程名
-	GoodsType   string `json:"goods_type"`   // LOCAL, EXTERNAL
+	GoodsType   string `json:"goods_type"`   // LOCAL(RULEX原始设备), EXTERNAL（外部RPC设备）
 	ExecuteType string `json:"execute_type"` // exe,elf,jar,py, nodejs....
 	AutoStart   *bool  `json:"auto_start"`   // 是否开启自启动，目前全部是自启动
 	LocalPath   string `json:"local_path"`   // TCP or Unix Socket

@@ -15,20 +15,20 @@
 
 package datacenter
 
-var __DefaultDataCenter *DataCenter
-
 /*
 *
-* 留着未来扩充数据中心的功能
+* 本地数据库是Sqlite，用来存储比如Modbus等数据
 *
  */
-type DataCenter struct {
-	ExternalDb ExternalDb
-	LocalDb    LocalDb
+type LocalDb struct {
 }
 
-func InitDataCenter() {
-	__DefaultDataCenter = new(DataCenter)
-	__DefaultDataCenter.ExternalDb = ExternalDb{}
-	__DefaultDataCenter.LocalDb = LocalDb{}
+func (ldb *LocalDb) Name() string {
+	return "LOCALDB"
+}
+func (ldb *LocalDb) GetSchemaDetail(goodsId string) SchemaDetail {
+	return SchemaDetail{}
+}
+func (ldb *LocalDb) Query(goodsId, query string) ([]map[string]any, error) {
+	return []map[string]any{}, nil
 }
