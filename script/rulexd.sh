@@ -19,7 +19,8 @@ ExecStart=$executable run -config=$config_file -db=$db_file
 Restart=always
 User=root
 Group=root
-
+StartLimitInterval=0
+RestartSec=5
 [Install]
 WantedBy=multi-user.target
 EOL
