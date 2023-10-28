@@ -20,12 +20,6 @@ jobs:
           sudo apt update -y
           sudo apt install jq cloc protobuf-compiler -y
           cloc ./
-          chmod 755 ./gen_info.sh
-          chmod +x ./gen_info.sh
-          chmod 755 ./gen_proto.sh
-          chmod +x ./gen_proto.sh
-          mkdir -p ./plugin/http_server/server/www/
-          echo "hello" > ./plugin/http_server/server/www/index.html
           make
           # for test mqtt
           echo "Start Mqtt Server"
