@@ -165,6 +165,9 @@ func GetApp(uuid string) *Application {
 * 获取列表
 *
  */
+func AppCount() int {
+	return len(__DefaultAppStackRuntime.Applications)
+}
 func AllApp() []*Application {
 	return ListApp()
 }

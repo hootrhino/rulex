@@ -90,7 +90,7 @@ func source_count(e typex.RuleX) map[string]int {
 		"plugins": c4,
 		"devices": c5,
 		"goods":   c6,
-		"apps":    len(appstack.AllApp()),
+		"apps":    appstack.AppCount(),
 	}
 }
 
