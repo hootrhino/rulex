@@ -10,6 +10,7 @@ import (
 
 	"github.com/hootrhino/rulex/component/appstack"
 	"github.com/hootrhino/rulex/component/intermetric"
+	"github.com/hootrhino/rulex/component/trailer"
 	common "github.com/hootrhino/rulex/plugin/http_server/common"
 	"github.com/hootrhino/rulex/plugin/http_server/service"
 	"github.com/hootrhino/rulex/utils"
@@ -56,7 +57,8 @@ func source_count(e typex.RuleX) map[string]int {
 	allRule := e.AllRule()
 	plugins := e.AllPlugins()
 	devices := e.AllDevices()
-	var c1, c2, c3, c4, c5 int
+	goods := trailer.AllGoods()
+	var c1, c2, c3, c4, c5, c6 int
 	allInEnd.Range(func(key, value interface{}) bool {
 		c1 += 1
 		return true
@@ -77,12 +79,17 @@ func source_count(e typex.RuleX) map[string]int {
 		c5 += 1
 		return true
 	})
+	goods.Range(func(key, value interface{}) bool {
+		c6 += 1
+		return true
+	})
 	return map[string]int{
 		"inends":  c1,
 		"outends": c2,
 		"rules":   c3,
 		"plugins": c4,
 		"devices": c5,
+		"goods":   c6,
 		"apps":    len(appstack.AllApp()),
 	}
 }
