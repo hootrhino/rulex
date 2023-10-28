@@ -499,7 +499,7 @@ func applyNewestEtcWlanConfig() error {
 		glogger.GLogger.Error(err)
 		return err
 	}
-	glogger.GLogger.Info(out)
+	glogger.GLogger.Info(string(out))
 	return nil
 }
 
