@@ -194,6 +194,14 @@ func CreateGoods(c *gin.Context, ruleEngine typex.RuleX) {
 	}
 	OriginFileName := filepath.Base(fileHeader.Filename)
 	fileExt := filepath.Ext(OriginFileName)
+	Os := runtime.GOOS
+	if Os == "linux" {
+		if fileExt == ".exe" {
+			c.JSON(common.HTTP_OK, common.Error("Linux not support windows execute format"))
+			return
+		}
+	}
+
 	fileName := fmt.Sprintf("goods_%d%s", time.Now().UnixMicro(), fileExt)
 	// 目录是否存在
 	path := filepath.Dir(__TrailerGoodsUploadDir)
@@ -210,7 +218,7 @@ func CreateGoods(c *gin.Context, ruleEngine typex.RuleX) {
 		return
 	}
 	// 现阶段先只支持这俩系统
-	if runtime.GOOS == "windows" {
+	if Os == "windows" {
 		if !IsExecutableFileWin(localSavePath) {
 			c.JSON(common.HTTP_OK,
 				common.Error("Is not windows Executable File:"+localSavePath))
@@ -218,7 +226,7 @@ func CreateGoods(c *gin.Context, ruleEngine typex.RuleX) {
 			return
 		}
 	}
-	if runtime.GOOS == "linux" {
+	if Os == "linux" {
 		if !IsExecutableFileUnix(localSavePath) {
 			c.JSON(common.HTTP_OK,
 				common.Error("Is not Linux(Unix) Executable File:"+localSavePath))
@@ -232,6 +240,13 @@ func CreateGoods(c *gin.Context, ruleEngine typex.RuleX) {
 			common.Error("Invalid file:"+localSavePath))
 		os.Remove(localSavePath)
 		return
+	}
+	if Os == "windows" {
+		if ExeType == "ELF" {
+			c.JSON(common.HTTP_OK, common.Error("Windows not support linux ELF format"))
+			os.Remove(localSavePath)
+			return
+		}
 	}
 	NetAddr := c.PostForm("net_addr")
 	Description := c.PostForm("description")
@@ -304,6 +319,13 @@ func UpdateGoods(c *gin.Context, ruleEngine typex.RuleX) {
 	AutoStart := c.PostForm("autoStart")
 	OriginFileName := filepath.Base(fileHeader.Filename)
 	fileExt := filepath.Ext(OriginFileName)
+	Os := runtime.GOOS
+	if Os == "linux" {
+		if fileExt == ".exe" {
+			c.JSON(common.HTTP_OK, common.Error("Linux not support windows execute format"))
+			return
+		}
+	}
 	fileName := fmt.Sprintf("goods_%d%s", time.Now().UnixMicro(), fileExt)
 	if err := os.MkdirAll(filepath.Dir(__TrailerGoodsUploadDir), os.ModePerm); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
@@ -337,6 +359,13 @@ func UpdateGoods(c *gin.Context, ruleEngine typex.RuleX) {
 			common.Error("Invalid file:"+localSavePath))
 		os.Remove(localSavePath)
 		return
+	}
+	if Os == "windows" {
+		if ExeType == "ELF" {
+			c.JSON(common.HTTP_OK, common.Error("Windows not support linux ELF format"))
+			os.Remove(localSavePath)
+			return
+		}
 	}
 	mGoods := model.MGoods{
 		UUID: Uuid,
@@ -443,6 +472,7 @@ func StartGoods(c *gin.Context, ruleEngine typex.RuleX) {
 func IsExecutableFileUnix(filePath string) bool {
 	if IsUnixElf(filePath) {
 		ChangeX(filePath)
+		return true
 	}
 	return false
 }
@@ -502,9 +532,9 @@ func ChangeX(filePath string) error {
 	}
 	elfHeader := file.FileHeader
 	file.Close()
-	if elfHeader.Type != elf.ET_EXEC {
+	if elfHeader.Type == elf.ET_EXEC {
 		// 设置可执行权限 (0700 表示读、写、执行权限)
-		if err := os.Chmod(filePath, 0700); err != nil {
+		if err := os.Chmod(filePath, 0777); err != nil {
 			return err
 		}
 		return nil
@@ -522,8 +552,8 @@ func getExecuteType(OriginFileName string) string {
 	if v, ok := trailer.ExecuteType[fileExt]; ok {
 		return v
 	}
-	if IsUnixElf(fileExt) {
+	if IsUnixElf(OriginFileName) {
 		return "ELF" // Maybe ELF
 	}
-	return ""
+	return ""// error
 }
