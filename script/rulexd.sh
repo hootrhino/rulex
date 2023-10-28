@@ -19,8 +19,7 @@ ExecStart=$executable run -config=$config_file -db=$db_file
 Restart=always
 User=root
 Group=root
-RestartSec=2
-StartLimitInterval=0
+
 [Install]
 WantedBy=multi-user.target
 EOL
@@ -62,52 +61,39 @@ uninstall(){
     systemctl stop rulex
     systemctl disable rulex
     rm /etc/systemd/system/rulex.service
-    if [ -d "$working_directory" ]; then
-        cd "$working_directory" || exit 1
-        if [ -e "rulex" ]; then
-            rm "rulex"
-            echo "Deleted 'rulex' in $working_directory"
-        fi
-
-        if [ -e "rulex.ini" ]; then
-            rm "rulex.ini"
-            echo "Deleted 'rulex.ini' in $working_directory"
-        fi
-
-        if [ -e "rulex.db" ]; then
-            rm "rulex.db"
-            echo "Deleted 'rulex.db' in $working_directory"
-        fi
-
-        if [ -n "$(find . -maxdepth 1 -name '*.txt' -print -quit)" ]; then
-            rm *.txt
-            echo "Deleted .txt files in $working_directory"
-        fi
-
-        if [ -n "$(find . -maxdepth 1 -name '*.txt.gz' -print -quit)" ]; then
-            rm *.txt.gz
-            echo "Deleted .txt.gz files in $working_directory"
-        fi
-
-    fi
+    rm $working_directory/rulex
+    rm $working_directory/rulex.ini
+    rm $working_directory/rulex.db
+    rm $working_directory/*.txt
+    rm $working_directory/*.txt.gz
     systemctl daemon-reload
     systemctl reset-failed
     echo "Rulex has been uninstalled."
 }
-# create a default user
-create_user(){
-    # 检查是否提供了足够的参数
-    if [ $# -ne 2 ]; then
-        echo "Missing username and password, example: create_user user1 1234"
+
+check_deps() {
+    # Check if ffmpeg is installed
+    if command -v ffmpeg >/dev/null 2>&1; then
+        echo "ffmpeg is installed"
+    else
+        echo "Please install ffmpeg"
         exit 1
     fi
-    param1="$1"
-    param2="$2"
-
+    # Check if ttyd is installed
+    if command -v ttyd >/dev/null 2>&1; then
+        echo "ttyd is installed"
+    else
+        echo "Please install ttyd"
+        exit 1
+    fi
+    echo "All necessary software is installed"
+}
+# create a default user
+create_user(){
     response=$(curl -X POST -H "Content-Type: application/json" -d '{
     "role": "admin",
-    "username": ${param1},
-    "password": ${param2},
+    "username": "admin",
+    "password": "admin",
     "description": "system admin"
     }' http://127.0.0.1:2580/api/v1/users -w "%{http_code}")
 
@@ -141,5 +127,6 @@ if [ "$(id -u)" != "0" ]; then
     echo "This script must be run as root"
     exit 1
 else
+    check_deps
     main $1
 fi
