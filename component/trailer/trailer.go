@@ -56,6 +56,11 @@ type TrailerRuntime struct {
 	pid             int
 }
 
+/*
+*
+* RULEX RPC Server 默认运行在 2588
+*
+ */
 func InitTrailerRuntime(re typex.RuleX) *TrailerRuntime {
 	__DefaultTrailerRuntime = &TrailerRuntime{
 		ctx:             typex.GCTX,
@@ -63,7 +68,7 @@ func InitTrailerRuntime(re typex.RuleX) *TrailerRuntime {
 		goodsProcessMap: &sync.Map{},
 		pid:             os.Getppid(),
 	}
-	Listener, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", 7700))
+	Listener, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", 2588))
 	if err != nil {
 		glogger.GLogger.Error(err)
 		return nil
@@ -72,6 +77,8 @@ func InitTrailerRuntime(re typex.RuleX) *TrailerRuntime {
 	RegisterTrailerServer(__DefaultTrailerRuntime.rpcServer, __TrailerRpcServer{})
 	// Stream Server
 	go __DefaultTrailerRuntime.rpcServer.Serve(Listener)
+	glogger.GLogger.Info("Trailer Runtime Proto Server Listening at [::]:2588")
+
 	// 探针
 	go func() {
 		for {
@@ -342,7 +349,9 @@ func Stop() {
 		gp.Stop()
 		return true
 	})
-	__DefaultTrailerRuntime.rpcServer.Stop()
+	if __DefaultTrailerRuntime.rpcServer != nil {
+		__DefaultTrailerRuntime.rpcServer.Stop()
+	}
 }
 
 /*

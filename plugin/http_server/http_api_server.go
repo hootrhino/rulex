@@ -15,10 +15,7 @@ import (
 	"github.com/hootrhino/rulex/plugin/http_server/server"
 	"github.com/hootrhino/rulex/plugin/http_server/service"
 
-	"github.com/hootrhino/rulex/device"
 	"github.com/hootrhino/rulex/glogger"
-	"github.com/hootrhino/rulex/source"
-	"github.com/hootrhino/rulex/target"
 	"github.com/hootrhino/rulex/typex"
 	"github.com/hootrhino/rulex/utils"
 
@@ -158,35 +155,13 @@ func (hs *ApiServerPlugin) Init(config *ini.Section) error {
 		&model.MCronTask{},
 		&model.MCronResult{},
 	)
-	server.DefaultApiServer.InitializeData()
+	// 初始化所有预制参数
+	server.DefaultApiServer.InitializeGenericOSData()
+	server.DefaultApiServer.InitializeEEKITData()
+	server.DefaultApiServer.InitializeWindowsData()
+	server.DefaultApiServer.InitializeUnixData()
 	initRulex(hs.ruleEngine)
 	return nil
-}
-
-/*
-*
-* 初始化网络配置
-*
- */
-func (hs *ApiServerPlugin) InitializeData() {
-	// 加载资源类型
-	source.LoadSt()
-	target.LoadTt()
-	device.LoadDt()
-	// 初始化有线网口配置
-	if !service.CheckIfAlreadyInitNetWorkConfig() {
-		service.InitNetWorkConfig()
-	}
-	// 初始化WIFI配置
-	if !service.CheckIfAlreadyInitWlanConfig() {
-		service.InitWlanConfig()
-	}
-	// 初始化网站配置
-	service.InitSiteConfig(model.MSiteConfig{
-		SiteName: "RhinoEEKIT",
-		Logo:     "RhinoEEKIT",
-		AppName:  "RhinoEEKIT",
-	})
 }
 
 /*

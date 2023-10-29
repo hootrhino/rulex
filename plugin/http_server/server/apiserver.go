@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"os"
 
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
@@ -93,13 +94,15 @@ func StartRulexApiServer(ruleEngine typex.RuleX) {
 	go func(ctx context.Context, port int) {
 		listener, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", port))
 		if err != nil {
-			glogger.GLogger.Fatalf("httpserver listen error: %s\n", err)
+			glogger.GLogger.Fatalf("httpserver listen error: %s", err)
 		}
 		defer listener.Close()
 		if err := server.ginEngine.RunListener(listener); err != nil {
-			glogger.GLogger.Fatalf("httpserver listen error: %s\n", err)
+			glogger.GLogger.Fatalf("httpserver listen error: %s", err)
 		}
 	}(typex.GCTX, server.config.Port)
+	glogger.GLogger.Infof("httpserver listen on: %d", server.config.Port)
+
 	DefaultApiServer = &server
 }
 
@@ -145,40 +148,54 @@ func (s *RulexApiServer) Route() *gin.Engine {
 
 /*
 *
-* 初始化网络配置, 后期分一个windows版本
+* 初始化网络配置,主要针对Linux，而且目前只支持了Ubuntu1804,后期分一个windows版本
 *
  */
-func (s *RulexApiServer) InitializeData() {
+func (s *RulexApiServer) InitializeGenericOSData() {
+	initStaticModel()
+}
+func (s *RulexApiServer) InitializeUnixData() {
+}
+func (s *RulexApiServer) InitializeWindowsData() {
+}
+
+func (s *RulexApiServer) InitializeEEKITData() {
+	env := os.Getenv("ARCHSUPPORT")
+	if env == "EEKITH3" {
+		// 初始化有线网口配置
+		if !service.CheckIfAlreadyInitNetWorkConfig() {
+			service.InitNetWorkConfig()
+		}
+		// 初始化WIFI配置
+		if !service.CheckIfAlreadyInitWlanConfig() {
+			service.InitWlanConfig()
+		}
+		// 初始化默认路由, 如果没有配置会在数据库生成关于eth1的一个默认路由数据
+		service.InitDefaultIpRoute()
+		// 一组操作, 主要用来初始化 DHCP和DNS、网卡配置等
+		// 1 2 3 的目的是为了每次重启的时候初始化软路由
+		{
+			// 1 初始化默认路由表: ip route
+			service.ConfigDefaultIpTable()
+			// 2 初始化默认DHCP
+			service.ConfigDefaultDhcp()
+			// 3 初始化Eth1的静态IP地址
+			service.ConfigDefaultNat()
+		}
+	}
+}
+
+/*
+*
+* 初始化一些静态数据
+*
+ */
+func initStaticModel() {
 	// 加载资源类型
 	source.LoadSt()
 	target.LoadTt()
 	device.LoadDt()
-	// 初始化有线网口配置
-	if !service.CheckIfAlreadyInitNetWorkConfig() {
-		service.InitNetWorkConfig()
-	}
-	// 初始化WIFI配置
-	if !service.CheckIfAlreadyInitWlanConfig() {
-		service.InitWlanConfig()
-	}
-	// 初始化网站配置
-	service.InitSiteConfig(model.MSiteConfig{
-		SiteName: "RhinoEEKIT",
-		Logo:     "RhinoEEKIT",
-		AppName:  "RhinoEEKIT",
-	})
-	// 初始化默认路由, 如果没有配置会在数据库生成关于eth1的一个默认路由数据
-	service.InitDefaultIpRoute()
-	// 一组操作, 主要用来初始化 DHCP和DNS、网卡配置等
-	// 1 2 3 的目的是为了每次重启的时候初始化软路由
-	{
-		// 1 初始化默认路由表: ip route
-		service.ConfigDefaultIpTable()
-		// 2 初始化默认DHCP
-		service.ConfigDefaultDhcp()
-		// 3 初始化Eth1的静态IP地址
-		service.ConfigDefaultNat()
-	}
+
 	// 配置一个默认分组
 	service.InitGenericGroup(&model.MGenericGroup{
 		UUID:   "VROOT",
@@ -191,5 +208,11 @@ func (s *RulexApiServer) InitializeData() {
 		Type:   "DEVICE",
 		Name:   "默认分组",
 		Parent: "NULL",
+	})
+	// 初始化网站配置
+	service.InitSiteConfig(model.MSiteConfig{
+		SiteName: "",
+		Logo:     "",
+		AppName:  "RhinoEEKIT",
 	})
 }

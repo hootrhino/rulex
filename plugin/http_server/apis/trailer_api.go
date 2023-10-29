@@ -213,6 +213,9 @@ func CreateGoods(c *gin.Context, ruleEngine typex.RuleX) {
 	}
 
 	localSavePath := __TrailerGoodsUploadDir + fileName
+	if Os == "linux" {
+		localSavePath += ".elfx" // 标记是Linux可执行
+	}
 	if err := c.SaveUploadedFile(fileHeader, localSavePath); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
@@ -254,7 +257,7 @@ func CreateGoods(c *gin.Context, ruleEngine typex.RuleX) {
 	Args := c.PostFormArray("args")
 	mGoods := model.MGoods{
 		UUID:      utils.GoodsUuid(),
-		LocalPath: __TrailerGoodsUploadDir + fileName,
+		LocalPath: localSavePath,
 		NetAddr:   NetAddr,
 		AutoStart: func() *bool {
 			if AutoStart == "1" ||
@@ -332,6 +335,9 @@ func UpdateGoods(c *gin.Context, ruleEngine typex.RuleX) {
 		return
 	}
 	localSavePath := __TrailerGoodsUploadDir + fileName
+	if Os == "linux" {
+		localSavePath += ".elfx" // 标记是Linux可执行
+	}
 	if err := c.SaveUploadedFile(fileHeader, localSavePath); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
@@ -534,7 +540,7 @@ func ChangeX(filePath string) error {
 	file.Close()
 	if elfHeader.Type == elf.ET_EXEC {
 		// 设置可执行权限 (0700 表示读、写、执行权限)
-		if err := os.Chmod(filePath, 0777); err != nil {
+		if err := os.Chmod(filePath, 0755); err != nil {
 			return err
 		}
 		return nil
@@ -555,5 +561,5 @@ func getExecuteType(OriginFileName string) string {
 	if IsUnixElf(OriginFileName) {
 		return "ELF" // Maybe ELF
 	}
-	return ""// error
+	return "" // error
 }

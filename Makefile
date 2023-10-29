@@ -84,4 +84,4 @@ cover:
 clean:
 	go clean
 	rm _release -rf
-	rm ${APP}-arm32linux ${APP}-arm64linux *.db *.txt  *.txt.gz -rf
+	rm ${APP}-arm32linux ${APP}-arm64linux *.db *.txt  *.txt.gz -rf upload/*
