@@ -18,8 +18,8 @@ package apis
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/hootrhino/rulex/ossupport"
 	common "github.com/hootrhino/rulex/plugin/http_server/common"
-	"github.com/hootrhino/rulex/plugin/http_server/service"
 	"github.com/hootrhino/rulex/typex"
 )
 
@@ -29,7 +29,7 @@ import (
 *
  */
 func ReStartRulex(c *gin.Context, ruleEngine typex.RuleX) {
-	err := service.ReStartRulex()
+	err := ossupport.ReStartRulex()
 	if err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
@@ -43,7 +43,7 @@ func ReStartRulex(c *gin.Context, ruleEngine typex.RuleX) {
 *
  */
 func Reboot(c *gin.Context, ruleEngine typex.RuleX) {
-	err := service.Reboot()
+	err := ossupport.Reboot()
 	if err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return

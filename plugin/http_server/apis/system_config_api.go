@@ -12,6 +12,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/hootrhino/rulex/glogger"
+	"github.com/hootrhino/rulex/ossupport"
 	common "github.com/hootrhino/rulex/plugin/http_server/common"
 	"github.com/hootrhino/rulex/plugin/http_server/model"
 	"github.com/hootrhino/rulex/plugin/http_server/service"
@@ -37,7 +38,7 @@ func SetVolume(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err0))
 		return
 	}
-	v, err := service.SetVolume(DtoCfg.Volume)
+	v, err := ossupport.SetVolume(DtoCfg.Volume)
 	if err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
@@ -56,7 +57,7 @@ func GetVolume(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error("OS Not Support:"+runtime.GOOS))
 		return
 	}
-	v, err := service.GetVolume()
+	v, err := ossupport.GetVolume()
 	if err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
@@ -81,8 +82,8 @@ func GetWifi(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	Cfg := service.WlanConfig{
-		Wlan0: service.WLANInterface{
+	Cfg := ossupport.WlanConfig{
+		Wlan0: ossupport.WLANInterface{
 			Interface: MWifiConfig.Interface,
 			SSID:      MWifiConfig.SSID,
 			Password:  MWifiConfig.Password,
@@ -164,7 +165,7 @@ func ApplyNewestEtcEthConfig() error {
 	if err != nil {
 		return err
 	}
-	EtcEth0Cfg := service.EtcNetworkConfig{
+	EtcEth0Cfg := ossupport.EtcNetworkConfig{
 		Interface:   MEth0.Interface,
 		Address:     MEth0.Address,
 		Netmask:     MEth0.Netmask,
@@ -172,7 +173,7 @@ func ApplyNewestEtcEthConfig() error {
 		DNS:         MEth0.DNS,
 		DHCPEnabled: *MEth0.DHCPEnabled,
 	}
-	EtcEth1Cfg := service.EtcNetworkConfig{
+	EtcEth1Cfg := ossupport.EtcNetworkConfig{
 		Interface:   MEth1.Interface,
 		Address:     MEth1.Address,
 		Netmask:     MEth1.Netmask,
@@ -222,12 +223,12 @@ func SetSystemTime(c *gin.Context, ruleEngine typex.RuleX) {
 		return
 	}
 
-	err1 := service.SetSystemTime(DtoCfg.SysTime)
+	err1 := ossupport.SetSystemTime(DtoCfg.SysTime)
 	if err1 != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err1))
 		return
 	}
-	err2 := service.SetTimeZone(DtoCfg.SysTimeZone)
+	err2 := ossupport.SetTimeZone(DtoCfg.SysTimeZone)
 	if err2 != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err2))
 		return
@@ -246,12 +247,12 @@ func GetSystemTime(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error("OS Not Support:"+runtime.GOOS))
 		return
 	}
-	SysTime, err := service.GetSystemTime()
+	SysTime, err := ossupport.GetSystemTime()
 	if err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	SysTimeZone, err := service.GetTimeZone()
+	SysTimeZone, err := ossupport.GetTimeZone()
 	if err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
@@ -309,7 +310,7 @@ func GetEthNetwork(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	Eth0Cfg := service.EtcNetworkConfig{
+	Eth0Cfg := ossupport.EtcNetworkConfig{
 		Interface:   MEth0.Interface,
 		Address:     MEth0.Address,
 		Netmask:     MEth0.Address,
@@ -317,7 +318,7 @@ func GetEthNetwork(c *gin.Context, ruleEngine typex.RuleX) {
 		DNS:         MEth0.DNS,
 		DHCPEnabled: *MEth0.DHCPEnabled,
 	}
-	Eth1Cfg := service.EtcNetworkConfig{
+	Eth1Cfg := ossupport.EtcNetworkConfig{
 		Interface:   MEth1.Interface,
 		Address:     MEth1.Address,
 		Netmask:     MEth1.Address,
@@ -325,7 +326,7 @@ func GetEthNetwork(c *gin.Context, ruleEngine typex.RuleX) {
 		DNS:         MEth1.DNS,
 		DHCPEnabled: *MEth1.DHCPEnabled,
 	}
-	c.JSON(common.HTTP_OK, common.OkWithData(map[string]service.EtcNetworkConfig{
+	c.JSON(common.HTTP_OK, common.OkWithData(map[string]ossupport.EtcNetworkConfig{
 		"eth0": Eth0Cfg,
 		"eth1": Eth1Cfg,
 	}))
@@ -338,7 +339,7 @@ func GetEthNetwork(c *gin.Context, ruleEngine typex.RuleX) {
 *
  */
 func GetCurrentNetConnection(c *gin.Context, ruleEngine typex.RuleX) {
-	nmcliOutput, err := service.GetCurrentNetConnection()
+	nmcliOutput, err := ossupport.GetCurrentNetConnection()
 	if err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
@@ -451,7 +452,7 @@ func SetEthNetwork(c *gin.Context, ruleEngine typex.RuleX) {
 *
  */
 func UpdateTimeByNtp(c *gin.Context, ruleEngine typex.RuleX) {
-	if err := service.UpdateTimeByNtp(); err != nil {
+	if err := ossupport.UpdateTimeByNtp(); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}

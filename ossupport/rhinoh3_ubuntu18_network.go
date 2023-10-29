@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package service
+package ossupport
 
 import (
 	"fmt"
@@ -139,7 +139,7 @@ func ReloadDNS16() error {
  */
 func ReloadDNS18xx() error {
 	// 执行 systemd-resolved 命令来重新加载DNS缓存
-	cmd := exec.Command("systemctl", "reload", "systemd-resolved.service")
+	cmd := exec.Command("systemctl", "reload", "systemd-resolved.ossupport")
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("Error executing nmcli: %s", err.Error()+":"+string(output))

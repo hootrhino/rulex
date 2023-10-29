@@ -1,4 +1,4 @@
-package service
+package ossupport
 
 import (
 	"os"
@@ -67,7 +67,7 @@ func (nc *NetplanConfig) YAMLString() string {
 func (nc *NetplanConfig) ApplyEthConfig() error {
 	// sudo netplan apply
 	// sudo systemctl restart systemd-networkd
-	// sudo service networking restart
+	// sudo ossupport networking restart
 	// return os.WriteFile("/etc/netplan/001-eth.yaml", []byte(nc.YAMLString()), 0755)
 	return os.WriteFile("/etc/netplan/001-eth.yaml", []byte(nc.YAMLString()), 0755)
 }

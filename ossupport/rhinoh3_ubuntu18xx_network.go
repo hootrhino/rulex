@@ -1,4 +1,4 @@
-package service
+package ossupport
 
 import (
 	"encoding/json"
@@ -48,7 +48,7 @@ func (nc *EtcNetworkConfig) JsonString() string {
 *
 * 将结构体写入配置文件
 sudo systemctl restart networking
-sudo service networking restart
+sudo ossupport networking restart
 *
 */
 func (iface *EtcNetworkConfig) GenEtcConfig() string {

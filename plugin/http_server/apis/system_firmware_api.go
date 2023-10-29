@@ -24,8 +24,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/hootrhino/rulex/component/trailer"
+	"github.com/hootrhino/rulex/ossupport"
 	common "github.com/hootrhino/rulex/plugin/http_server/common"
-	"github.com/hootrhino/rulex/plugin/http_server/service"
 	"github.com/hootrhino/rulex/typex"
 )
 
@@ -95,7 +95,7 @@ func UpgradeFirmWare(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	if err := service.ReStartRulex(); err != nil {
+	if err := ossupport.ReStartRulex(); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}

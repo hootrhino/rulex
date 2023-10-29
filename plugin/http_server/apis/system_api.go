@@ -11,6 +11,7 @@ import (
 	"github.com/hootrhino/rulex/component/appstack"
 	"github.com/hootrhino/rulex/component/intermetric"
 	"github.com/hootrhino/rulex/component/trailer"
+	"github.com/hootrhino/rulex/ossupport"
 	common "github.com/hootrhino/rulex/plugin/http_server/common"
 	"github.com/hootrhino/rulex/plugin/http_server/service"
 	"github.com/hootrhino/rulex/utils"
@@ -116,7 +117,7 @@ func System(c *gin.Context, ruleEngine typex.RuleX) {
 		"osDist":     ruleEngine.Version().Dist,
 		"startedAt":  __StartedAt,
 		"osUpTime": func() string {
-			result, err := service.GetUptime()
+			result, err := ossupport.GetUptime()
 			if err != nil {
 				return "0 days 0 hours 0 minutes"
 			}
