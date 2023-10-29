@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/plugin/http_server/model"
 	"io"
 	"os/exec"
@@ -32,6 +33,7 @@ func (pm *ProcessManager) RunProcess(file io.Writer, task model.MCronTask) error
 	var name string
 	script, err := base64.StdEncoding.DecodeString(task.Script)
 	if err != nil {
+		glogger.GLogger.Error("parse script failed", err)
 		return err
 	}
 	if task.TaskType == CRON_TASK_TYPE_LINUX_SHELL {
@@ -69,7 +71,7 @@ func (pm *ProcessManager) RunProcess(file io.Writer, task model.MCronTask) error
 	return nil
 }
 
-func (pm *ProcessManager) KillProcess(id int) error {
+func (pm *ProcessManager) KillProcess(id string) error {
 	value, ok := pm.runningProcess.Load(id)
 	if !ok {
 		// not exist, return success
@@ -83,10 +85,10 @@ func (pm *ProcessManager) KillProcess(id int) error {
 	return nil
 }
 
-func (pm *ProcessManager) ListProcess() map[int32]*exec.Cmd {
-	m := make(map[int32]*exec.Cmd)
+func (pm *ProcessManager) ListProcess() map[string]*exec.Cmd {
+	m := make(map[string]*exec.Cmd)
 	f := func(key, value any) bool {
-		k := key.(int32)
+		k := key.(string)
 		cmd := value.(*exec.Cmd)
 		m[k] = cmd
 		return true

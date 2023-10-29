@@ -2,10 +2,6 @@ package httpserver
 
 import (
 	"encoding/json"
-	"net/http"
-
-	"github.com/hootrhino/rulex/component/cron_task"
-
 	"github.com/hootrhino/rulex/component/appstack"
 	"github.com/hootrhino/rulex/component/interdb"
 	"github.com/hootrhino/rulex/component/trailer"
@@ -14,6 +10,8 @@ import (
 	"github.com/hootrhino/rulex/plugin/http_server/model"
 	"github.com/hootrhino/rulex/plugin/http_server/server"
 	"github.com/hootrhino/rulex/plugin/http_server/service"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 
 	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/typex"
@@ -439,22 +437,23 @@ func (hs *ApiServerPlugin) LoadRoute() {
 	/**
 	 * 定时任务
 	 */
-	route := server.DefaultApiServer.Route()
-	route.StaticFS("api/cron_assets", http.Dir(cron_task.CRON_ASSETS))
-	route.StaticFS("api/cron_logs", http.Dir(cron_task.CRON_LOGS))
 	crontaskApi := server.DefaultApiServer.GetGroup(server.ContextUrl("/crontask"))
 	{
-		crontaskApi.POST("/create", server.AddRouteV2(apis.CreateScheduleTask))
-		crontaskApi.DELETE("/delete", server.AddRouteV2(apis.DeleteScheduleTask))
-		crontaskApi.PUT("/update", server.AddRouteV2(apis.UpdateScheduleTask))
-		crontaskApi.GET("/page", server.AddRouteV2(apis.PageScheduleTask))
+		crontaskApi.POST("/create", server.AddRouteV2(apis.CreateCronTask))
+		crontaskApi.DELETE("/delete", server.AddRouteV2(apis.DeleteCronTask))
+		crontaskApi.PUT("/update", server.AddRouteV2(apis.UpdateCronTask))
+		crontaskApi.GET("/list", server.AddRouteV2(apis.ListCronTask))
 		crontaskApi.GET("/results/page", server.AddRouteV2(apis.PageCronTaskResult))
-
-		crontaskApi.GET("/start", server.AddRouteV2(apis.EnableTask))
-		crontaskApi.GET("/stop", server.AddRouteV2(apis.DisableTask))
-		crontaskApi.GET("/listRunningTask", server.AddRouteV2(apis.ListRunningTask))
-		crontaskApi.GET("/terminateRunningTask", server.AddRouteV2(apis.TerminateRunningTask))
+		crontaskApi.GET("/start", server.AddRouteV2(apis.StartTask))
+		crontaskApi.GET("/stop", server.AddRouteV2(apis.StopTask))
 	}
+
+	/**
+	  swagger config
+	  @reference http://localhost:2580/swagger/index.html
+	*/
+	route := server.DefaultApiServer.Route()
+	route.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 }
 
 // ApiServerPlugin Start

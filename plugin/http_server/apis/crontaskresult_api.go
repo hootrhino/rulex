@@ -1,8 +1,6 @@
 package apis
 
 import (
-	"strconv"
-
 	"github.com/gin-gonic/gin"
 	"github.com/hootrhino/rulex/component/interdb"
 	"github.com/hootrhino/rulex/plugin/http_server/model"
@@ -10,6 +8,17 @@ import (
 	"github.com/hootrhino/rulex/typex"
 )
 
+// PageCronTaskResult godoc
+// @BasePath /api/v1
+// @Summary 分页获取定时任务执行结果
+// @Tags crontask
+// @Param current query string false "current"
+// @Param size query string false "size"
+// @Param uuid query string false "uuid"
+// @Accept json
+// @Produce json
+// @Success 200 {object} httpserver.R
+// @Router /crontask/results/page [get]
 func PageCronTaskResult(c *gin.Context, ruleEngine typex.RuleX) (any, error) {
 	page, err := service.ReadPageRequest(c)
 	if err != nil {
@@ -17,13 +26,9 @@ func PageCronTaskResult(c *gin.Context, ruleEngine typex.RuleX) (any, error) {
 	}
 
 	cronResult := model.MCronResult{}
-	taskId := c.Query("taskId")
-	if taskId != "" {
-		atoi, err := strconv.Atoi(taskId)
-		if err != nil {
-			return nil, err
-		}
-		cronResult.TaskId = uint(atoi)
+	uuid := c.Query("uuid")
+	if uuid != "" {
+		cronResult.TaskUuid = uuid
 	}
 
 	db := interdb.DB()

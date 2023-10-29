@@ -2,10 +2,6 @@ package apis
 
 import (
 	"errors"
-	"os"
-	"path"
-	"strconv"
-
 	"github.com/gin-gonic/gin"
 	"github.com/hootrhino/rulex/component/cron_task"
 	"github.com/hootrhino/rulex/component/interdb"
@@ -15,9 +11,18 @@ import (
 	"github.com/hootrhino/rulex/typex"
 )
 
-// CreateScheduleTask
-// 创建定时任务
-func CreateScheduleTask(c *gin.Context, ruleEngine typex.RuleX) (any, error) {
+// 参考 https://blog.csdn.net/newbieJ/article/details/127125140
+
+// CreateCronTask godoc
+// @BasePath /api/v1
+// @Summary 创建定时任务
+// @Tags crontask
+// @param object body dto.CronTaskCreateDTO true "创建"
+// @Accept json
+// @Produce json
+// @Success 200 {object} httpserver.R
+// @Router /crontask/create [post]
+func CreateCronTask(c *gin.Context, ruleEngine typex.RuleX) (any, error) {
 	// 1. 从c中取出数据
 	data := dto.CronTaskCreateDTO{}
 	err := c.ShouldBindJSON(&data)
@@ -30,165 +35,127 @@ func CreateScheduleTask(c *gin.Context, ruleEngine typex.RuleX) (any, error) {
 		return nil, err
 	}
 
-	// 创建工作路径
-	updateTask := model.MCronTask{}
-	updateTask.ID = task.ID
-	dir := path.Join(cron_task.CRON_ASSETS, strconv.Itoa(int(task.ID)))
-	err = os.MkdirAll(dir, cron_task.PERM_0777)
-	if err != nil {
-		return nil, err
-	}
-	updateTask.WorkDir = dir
-
-	switch task.TaskType {
-	case cron_task.CRON_TASK_TYPE_LINUX_SHELL:
-		// 所有linuxshell都以bash -c
-		updateTask.Script = data.Script
-	case cron_task.CRON_TASK_TYPE_WINDOWS_CMD:
-		//filepath := path.Join(dir, data.File.Filename)
-		//err = c.SaveUploadedFile(data.File, filepath)
-		//if err != nil {
-		//	return nil, err
-		//}
-		//updateTask.Command = filepath
-		//updateTask.WorkDir = dir
-	default:
-		return nil, errors.New("error taskType")
-	}
-
-	// 4. 更新数据库
-	db := interdb.DB()
-	tx := db.Updates(&updateTask)
-	if tx.Error != nil {
-		return nil, err
-	}
-
-	return 0, nil
+	return task.UUID, nil
 }
 
-func DeleteScheduleTask(c *gin.Context, ruleEngine typex.RuleX) (any, error) {
-	dto := model.MCronTask{}
-	err := c.ShouldBindJSON(&dto)
-	if err != nil {
-		return nil, err
-	}
-	err = service.DeleteScheduleTask(dto.ID)
+// DeleteCronTask godoc
+// @BasePath /api/v1
+// @Summary 删除定时任务
+// @Tags crontask
+// @Param uuid query string true "uuid"
+// @Accept json
+// @Produce json
+// @Success 200 {object} httpserver.R
+// @Router /crontask/delete [delete]
+func DeleteCronTask(c *gin.Context, ruleEngine typex.RuleX) (any, error) {
+	uuid := c.Query("uuid")
+	err := service.DeleteScheduleTask(uuid)
 	if err != nil {
 		return nil, err
 	}
 	return nil, nil
 }
 
-func PageScheduleTask(c *gin.Context, ruleEngine typex.RuleX) (any, error) {
-	page := model.PageRequest{}
-	var err error
-	page.Current, err = strconv.Atoi(c.DefaultQuery("current", "1"))
-	if err != nil {
-		return nil, err
-	}
-	page.Size, err = strconv.Atoi(c.DefaultQuery("size", "25"))
-	if err != nil {
-		return nil, err
-	}
-
+// ListCronTask godoc
+// @BasePath /api/v1
+// @Summary 获取所有定时任务
+// @Tags crontask
+// @Produce json
+// @Success 200 {object} httpserver.R
+// @Router /crontask/list [get]
+func ListCronTask(c *gin.Context, ruleEngine typex.RuleX) (any, error) {
 	condition := model.MCronTask{}
-	scheduleTask, err := service.PageScheduleTask(page, condition)
+	scheduleTask, err := service.ListScheduleTask(condition)
 	return scheduleTask, err
 }
 
-func UpdateScheduleTask(c *gin.Context, ruleEngine typex.RuleX) (any, error) {
-	dto2 := dto.CronTaskUpdateDTO{}
-	err := c.ShouldBind(&dto2)
+// UpdateCronTask godoc
+// @BasePath /api/v1
+// @Summary 更新定时任务
+// @Tags crontask
+// @param object body dto.CronTaskUpdateDTO true "更新"
+// @Accept json
+// @Produce json
+// @Success 200 {object} httpserver.R
+// @Router /crontask/update [put]
+func UpdateCronTask(c *gin.Context, ruleEngine typex.RuleX) (any, error) {
+	updateDTO := dto.CronTaskUpdateDTO{}
+	err := c.ShouldBind(&updateDTO)
 	if err != nil {
 		return nil, err
 	}
 
-	task, err := service.UpdateScheduleTask(&dto2)
+	task, err := service.UpdateScheduleTask(&updateDTO)
 	if err != nil {
 		return nil, err
-	}
-	if dto2.File != nil {
-		dir := path.Join(cron_task.CRON_ASSETS, strconv.Itoa(int(task.ID)))
-		err = os.MkdirAll(dir, cron_task.PERM_0777)
-		if err != nil {
-			return nil, err
-		}
-		filepath := path.Join(dir, dto2.File.Filename)
-		err = c.SaveUploadedFile(dto2.File, filepath)
-		if err != nil {
-			return nil, err
-		}
-		// 4. 更新数据库
-		updateTask := model.MCronTask{
-			Command: filepath,
-			WorkDir: dir,
-		}
-		updateTask.ID = task.ID
-
-		db := interdb.DB()
-		tx := db.Updates(&updateTask)
-		if tx.Error != nil {
-			return nil, err
-		}
 	}
 	return task, err
 }
 
-func EnableTask(c *gin.Context, ruleEngine typex.RuleX) (any, error) {
-	id, ok := c.GetQuery("id")
+// StartTask godoc
+// @BasePath /api/v1
+// @Summary 启动定时任务
+// @Tags crontask
+// @Param uuid query string true "uuid"
+// @Produce json
+// @Success 200 {object} httpserver.R
+// @Router /crontask/start [get]
+func StartTask(c *gin.Context, ruleEngine typex.RuleX) (any, error) {
+	uuid, ok := c.GetQuery("uuid")
 	if !ok {
-		return nil, errors.New("id must not be null")
-	}
-	idNum, err := strconv.Atoi(id)
-	if err != nil {
-		return nil, err
+		return nil, errors.New("uuid must not be null")
 	}
 	// 0. 更新数据库
 	db := interdb.DB()
 	task := model.MCronTask{}
-	task.ID = uint(idNum)
 	task.Enable = "1"
-	tx := db.Updates(&task)
+	tx := db.Where("uuid = ?", uuid).Updates(&task)
 	if tx.Error != nil {
 		return nil, tx.Error
 	}
-	find := db.Find(&task)
-	if find.Error != nil {
-		return nil, find.Error
+	tx = db.Where("uuid = ?", uuid).Find(&task)
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+	if task.UUID == "" {
+		return nil, errors.New("cron task not exist")
 	}
 
 	// 1. 调用cron的库进行调度
 	manager := cron_task.GetCronManager()
-	err = manager.AddTask(task)
+	err := manager.AddTask(task)
 	if err != nil {
 		return nil, err
 	}
 	return nil, nil
 }
 
-func DisableTask(c *gin.Context, ruleEngine typex.RuleX) (any, error) {
-	id, ok := c.GetQuery("id")
+// StopTask godoc
+// @BasePath /api/v1
+// @Summary 停止定时任务
+// @Tags crontask
+// @Param uuid query string true "uuid"
+// @Produce json
+// @Success 200 {object} httpserver.R
+// @Router /crontask/stop [get]
+func StopTask(c *gin.Context, ruleEngine typex.RuleX) (any, error) {
+	uuid, ok := c.GetQuery("uuid")
 	if !ok {
-		return nil, errors.New("id must not be null")
-	}
-	idNum, err := strconv.Atoi(id)
-	if err != nil {
-		return nil, err
+		return nil, errors.New("uuid must not be null")
 	}
 
 	// 0. 更新数据库
 	db := interdb.DB()
 	task := model.MCronTask{}
-	task.ID = uint(idNum)
 	task.Enable = "0"
-	tx := db.Updates(&task)
+	tx := db.Where("uuid = ?", uuid).Updates(&task)
 	if tx.Error != nil {
 		return nil, tx.Error
 	}
 
 	// 1. 调用cron的库进行调度
 	manager := cron_task.GetCronManager()
-	manager.DeleteTask(uint(idNum))
+	manager.DeleteTask(uuid)
 	return nil, nil
 }
 
@@ -201,15 +168,14 @@ func ListRunningTask(c *gin.Context, ruleEngine typex.RuleX) (any, error) {
 
 func TerminateRunningTask(c *gin.Context, ruleEngine typex.RuleX) (any, error) {
 	// 1. 请求cronManager进行停止正在运行的任务
-	id, ok := c.GetQuery("id")
+	uuid, ok := c.GetQuery("uuid")
 	if !ok {
 		return nil, errors.New("id must not be null")
 	}
-	idNum, err := strconv.Atoi(id)
+	manager := cron_task.GetCronManager()
+	err := manager.KillTask(uuid)
 	if err != nil {
 		return nil, err
 	}
-	manager := cron_task.GetCronManager()
-	err = manager.KillTask(idNum)
-	return nil, nil
+	return 0, nil
 }

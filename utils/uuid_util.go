@@ -41,6 +41,9 @@ func AiBaseUuid() string {
 func DataSchemaUuid() string {
 	return MakeUUID("SCHEMA")
 }
+func CronTaskUuid() string {
+	return MakeUUID("CRONTASK")
+}
 
 // MakeUUID
 func RuleUuid() string {
