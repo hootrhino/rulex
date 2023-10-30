@@ -58,9 +58,6 @@ func (ht *HTTPTarget) Start(cctx typex.CCTX) error {
 	return nil
 }
 
-func (ht *HTTPTarget) Test(outEndId string) bool {
-	return true
-}
 func (ht *HTTPTarget) Enabled() bool {
 	return ht.Enable
 }

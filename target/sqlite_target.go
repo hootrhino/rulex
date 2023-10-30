@@ -72,9 +72,6 @@ func (sqt *SqliteTarget) Start(cctx typex.CCTX) error {
 	return nil
 }
 
-func (sqt *SqliteTarget) Test(outEndId string) bool {
-	return true
-}
 func (sqt *SqliteTarget) Enabled() bool {
 	return true
 }

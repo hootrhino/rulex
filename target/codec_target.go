@@ -43,11 +43,6 @@ func NewCodecTarget(rx typex.RuleX) typex.XTarget {
 	return ct
 }
 
-// 测试资源是否可用
-func (ct *codecTarget) Test(outEndId string) bool {
-	return true
-}
-
 // 用来初始化传递资源配置
 func (ct *codecTarget) Init(outEndId string, configMap map[string]interface{}) error {
 	ct.PointId = outEndId

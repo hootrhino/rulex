@@ -89,10 +89,6 @@ func (g776 *userG776) Start(cctx typex.CCTX) error {
 	glogger.GLogger.Info("userG776 started")
 	return nil
 }
-
-func (g776 *userG776) Test(outEndId string) bool {
-	return true
-}
 func (g776 *userG776) Enabled() bool {
 	return g776.Enable
 }

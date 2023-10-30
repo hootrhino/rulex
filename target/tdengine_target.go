@@ -72,11 +72,6 @@ func (td *tdEngineTarget) url() string {
 		td.mainConfig.Fqdn, td.mainConfig.Port, td.mainConfig.DbName)
 }
 
-// 测试资源是否可用
-func (td *tdEngineTarget) Test(inEndId string) bool {
-	return td.test()
-}
-
 //
 // 注册InEndID到资源
 //
@@ -134,7 +129,10 @@ func (td *tdEngineTarget) Pause() {
 
 // 获取资源状态
 func (td *tdEngineTarget) Status() typex.SourceState {
-	return td.status
+	if td.test() {
+		return typex.SOURCE_UP
+	}
+	return typex.SOURCE_DOWN
 }
 
 // 获取资源绑定的的详情

@@ -103,7 +103,9 @@ func (aism *AISDeviceMaster) Status() typex.DeviceState {
 // 停止设备
 func (aism *AISDeviceMaster) Stop() {
 	aism.status = typex.DEV_DOWN
-	aism.CancelCTX()
+	if aism.CancelCTX != nil {
+		aism.CancelCTX()
+	}
 	if aism.tcpListener != nil {
 		aism.tcpListener.Close()
 	}

@@ -5,10 +5,6 @@ package typex
 //
 type XTarget interface {
 	//
-	// 测试资源是否可用
-	//
-	Test(outEndId string) bool
-	//
 	// 用来初始化传递资源配置
 	//
 	Init(outEndId string, configMap map[string]interface{}) error
