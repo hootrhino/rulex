@@ -21,6 +21,11 @@ import (
 	"strings"
 )
 
+/*
+*
+* 获取板子支持的网络接口
+*
+ */
 func GetBSPNetIfaces() ([]string, error) {
 	// 执行命令
 	cmd := exec.Command("sh", "-c", "ip -o link show | awk -F': ' '{print $2}'")
