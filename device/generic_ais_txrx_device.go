@@ -24,9 +24,10 @@ var __AisCodec = aislib.CodecNew(false, false, false)
 // 把AIS包里面的几个结构体拿出来了，主要是适配JSON格式, 下面这些结构体和AIS包里面的完全一样
 // --------------------------------------------------------------------------------------------------
 type _AISDeviceMasterConfig struct {
-	Mode string `json:"mode"` // TCP UDP UART
-	Host string `json:"host" validate:"required"`
-	Port int    `json:"port" validate:"required"`
+	Mode     string `json:"mode"` // TCP UDP UART
+	Host     string `json:"host" validate:"required"`
+	Port     int    `json:"port" validate:"required"`
+	ParseAis bool   `json:"parseAis"`
 }
 type AISDeviceMaster struct {
 	typex.XStatus
@@ -47,9 +48,10 @@ func NewAISDeviceMaster(e typex.RuleX) typex.XDevice {
 	aism := new(AISDeviceMaster)
 	aism.RuleEngine = e
 	aism.mainConfig = _AISDeviceMasterConfig{
-		Mode: "TCP",
-		Host: "0.0.0.0",
-		Port: 6005,
+		Mode:     "TCP",
+		Host:     "127.0.0.1",
+		Port:     6005,
+		ParseAis: false,
 	}
 	aism.DevicesSessionMap = map[string]*__AISDeviceSession{}
 	return aism
@@ -232,6 +234,11 @@ func (aism *AISDeviceMaster) handleIO(session *__AISDeviceSession) {
 			delete(aism.DevicesSessionMap, session.SN)
 			session.Transport.Close()
 			return
+		}
+		// 如果不需要解析,直接原文透传
+		if !aism.mainConfig.ParseAis {
+			aism.RuleEngine.WorkDevice(aism.Details(), s)
+			continue
 		}
 		// 可能会收到心跳包: !HRT710,Q,003,0*06
 		if strings.HasPrefix(s, "!HRT") {

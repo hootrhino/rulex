@@ -72,9 +72,11 @@ AIS（Automatic Identification System）是一种用于船舶自动识别和通�
 ## 配置
 本插件是基于TCP来传输AIS报文，公共配置如下：
 ```go
-type HostConfig struct {
-	Host string `json:"host" validate:"required" title:"服务地址"`
-	Port int    `json:"port" validate:"required" title:"服务端口"`
+type _AISDeviceMasterConfig struct {
+	Mode     string `json:"mode"` // TCP UDP UART
+	Host     string `json:"host" validate:"required"`
+	Port     int    `json:"port" validate:"required"`
+	ParseAis bool   `json:"parseAis"`
 }
 ```
 
