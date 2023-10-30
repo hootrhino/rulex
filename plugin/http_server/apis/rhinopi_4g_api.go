@@ -67,9 +67,16 @@ func Get4GBaseInfo(c *gin.Context, ruleEngine typex.RuleX) {
 	}
 	c.JSON(common.HTTP_OK, common.OkWithData(
 		map[string]interface{}{
-			"csq":   csq,
-			"cops":  cm,
-			"iccid": strings.TrimLeft(iccid, "+QCCID: "),
+			"csq":  csq,
+			"cops": cm,
+			"iccid": func() string {
+				len1 := len(iccid)
+				len2 := len("+QCCID: ")
+				if len1 > len2 {
+					return iccid[len2:]
+				}
+				return "00000000"
+			}(),
 		},
 	))
 
@@ -108,9 +115,54 @@ func Get4GCOPS(c *gin.Context, ruleEngine typex.RuleX) {
 
 /*
 *
-* 获取电话卡ICCID
+* 设置APN
 *
  */
+// ptype int, apn, username, password string, auth, cdmaPwd int
+type APNFormVo struct {
+	SenceId  int    `json:"senceId"`
+	PTytpe   int    `json:"ptytpe"`
+	Auth     int    `json:"auth"`
+	CDMAPWD  int    `json:"cdmapwd"`
+	APN      string `json:"apn"`
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
+func GetAPN(c *gin.Context, ruleEngine typex.RuleX) {
+	if _, err := archsupport.RhinoPiGetAPN(); err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
+	// 默认返回一个空值
+	c.JSON(common.HTTP_OK, common.OkWithData(
+		APNFormVo{
+			SenceId:  1,
+			PTytpe:   1,
+			APN:      "",
+			Username: "",
+			Password: "",
+			Auth:     0,
+			CDMAPWD:  0,
+		},
+	))
+}
+func SetAPN(c *gin.Context, ruleEngine typex.RuleX) {
+
+	form := APNFormVo{}
+	if err := c.ShouldBindJSON(&form); err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
+	if _, err := archsupport.RhinoPiSetAPN(
+		form.PTytpe, form.APN, form.Username, form.Password, form.Auth, form.CDMAPWD,
+	); err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
+	c.JSON(common.HTTP_OK, common.Ok())
+
+}
 func Get4GICCID(c *gin.Context, ruleEngine typex.RuleX) {
 	result, err := archsupport.RhinoPiGetICCID()
 	if err != nil {

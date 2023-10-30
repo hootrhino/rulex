@@ -57,6 +57,32 @@ func init() {
 
 /*
 *
+* APN 配置, 参考文档: Quectel_LTE_Standard(A)系列_TCP(IP)_应用指导_V1.4.pdf-2.3.2章节
+--
+
+AT+QICSGP=<contextID>[,<context_
+type>,<APN>[,<username>,<passwo
+rd>)[,<authentication>[,<CDMA_pw
+d>]]]]
+
+AT+QICSGP=1 //查询场景 1 配置。
++QICSGP: 1,"","","",0
+OK
+AT+QICSGP=1,1,"UNINET","","",1 //配置场景 1，APN 配置为"UNINET"（中国联通）。
+OK\ERROR
+*/
+func RhinoPiGetAPN() (string, error) {
+	return __EC200A_AT("AT+QICSGP=1", __ATTimeout)
+}
+
+// 场景恒等于1
+func RhinoPiSetAPN(ptype int, apn, username, password string, auth, cdmaPwd int) (string, error) {
+	return __EC200A_AT(fmt.Sprintf(`AT+QICSGP=1,%d,"%s","%s","%s",%d,%d`,
+		ptype, apn, username, password, auth, cdmaPwd), __ATTimeout)
+}
+
+/*
+*
   - 获取信号: +CSQ: 39,99
   - 0：没有信号。
   - 1-9：非常弱的信号，可能无法建立连接。
@@ -233,15 +259,14 @@ func __ExecuteAT(cmd string) error {
 */
 func __EC200A_AT(command string, timeout time.Duration) (string, error) {
 	// 打开设备文件以供读写
-	device := "/dev/ttyUSB1"
-	file, err := os.OpenFile(device, os.O_RDWR, os.ModePerm)
+	file, err := os.OpenFile(__USB_4GDEV, os.O_RDWR, os.ModePerm)
 	if err != nil {
 		return "", err
 	}
 	defer file.Close()
 
 	// 写入AT指令
-	_, err = file.WriteString(command + "\r\n")
+	_, err = file.WriteString(command)
 	if err != nil {
 		return "", err
 	}
@@ -256,11 +281,7 @@ func __EC200A_AT(command string, timeout time.Duration) (string, error) {
 		file.SetReadDeadline(deadline)
 		n, err := file.Read(buffer[:])
 		if err != nil {
-			if err == io.EOF {
-				break
-			} else {
-				break
-			}
+			return "", err
 		}
 		if n > 0 {
 			if buffer[0] == 10 {
@@ -272,16 +293,4 @@ func __EC200A_AT(command string, timeout time.Duration) (string, error) {
 		}
 	}
 	return string(responseData), nil
-}
-
-/*
-*
-* 判断是否成功
-*
- */
-func atOK(parts string) bool {
-	if strings.Contains(parts, "ERROR") {
-		return false
-	}
-	return true
 }

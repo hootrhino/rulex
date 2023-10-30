@@ -53,9 +53,6 @@ func LoadSystemSettingsAPI() {
 		// time
 		timesApi.GET("/time", server.AddRoute(GetSystemTime))
 		timesApi.POST("/time", server.AddRoute(SetSystemTime))
-		// timezone
-		// timesApi.POST("/timezone", server.AddRoute(SetSystemTimeZone))
-		// timesApi.GET("/timezone", server.AddRoute(GetSystemTimeZone))
 		timesApi.PUT("/ntp", server.AddRoute(UpdateTimeByNtp))
 	}
 	// 4g module
@@ -63,9 +60,8 @@ func LoadSystemSettingsAPI() {
 	{
 		settings4GApi.GET("/info", server.AddRoute(Get4GBaseInfo))
 		settings4GApi.POST("/restart", server.AddRoute(RhinoPiRestart4G))
-		// settings4GApi.GET("/csq", server.AddRoute(Get4GCSQ))
-		// settings4GApi.GET("/cops", server.AddRoute(Get4GCOPS))
-		// settings4GApi.GET("/iccid", server.AddRoute(Get4GICCID))
+		settings4GApi.GET("/apn", server.AddRoute(GetAPN))
+		settings4GApi.POST("/apn", server.AddRoute(SetAPN))
 	}
 	// 软路由相关
 	settingsSoftRouterApi := server.RouteGroup(server.ContextUrl("/softRouter"))

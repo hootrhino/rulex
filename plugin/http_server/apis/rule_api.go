@@ -647,7 +647,7 @@ func TestDeviceCallback(c *gin.Context, ruleEngine typex.RuleX) {
  */
 func ListByDevice(c *gin.Context, ruleEngine typex.RuleX) {
 	deviceId, _ := c.GetQuery("deviceId")
-	MRule, err := service.GetMRule(deviceId)
+	MDevice, err := service.GetMDeviceWithUUID(deviceId)
 	if err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
@@ -655,7 +655,7 @@ func ListByDevice(c *gin.Context, ruleEngine typex.RuleX) {
 	mRules := service.AllMRules() // 这个效率太低了, 后期写个SQL优化一下
 	ruleVos := []ruleVo{}
 	for _, rule := range mRules {
-		if utils.SContains(rule.FromDevice, MRule.UUID) {
+		if utils.SContains(rule.FromDevice, MDevice.UUID) {
 			ruleVos = append(ruleVos, ruleVo{
 				UUID:        rule.UUID,
 				FromSource:  rule.FromSource,
@@ -682,7 +682,7 @@ func ListByDevice(c *gin.Context, ruleEngine typex.RuleX) {
  */
 func ListByInend(c *gin.Context, ruleEngine typex.RuleX) {
 	inendId, _ := c.GetQuery("inendId")
-	MInend, err := service.GetMInEnd(inendId)
+	MInend, err := service.GetMInEndWithUUID(inendId)
 	if err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return

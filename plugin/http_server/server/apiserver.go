@@ -163,16 +163,6 @@ func (s *RulexApiServer) InitializeWindowsData() {
 func (s *RulexApiServer) InitializeEEKITData() {
 	env := os.Getenv("ARCHSUPPORT")
 	if env == "EEKITH3" {
-		// 初始化有线网口配置
-		if !service.CheckIfAlreadyInitNetWorkConfig() {
-			service.InitNetWorkConfig()
-		}
-		// 初始化WIFI配置
-		if !service.CheckIfAlreadyInitWlanConfig() {
-			service.InitWlanConfig()
-		}
-		// 初始化默认路由, 如果没有配置会在数据库生成关于eth1的一个默认路由数据
-		service.InitDefaultIpRoute()
 
 	}
 }
@@ -222,6 +212,16 @@ func initStaticModel() {
 	source.LoadSt()
 	target.LoadTt()
 	device.LoadDt()
+	// 初始化有线网口配置
+	if !service.CheckIfAlreadyInitNetWorkConfig() {
+		service.InitNetWorkConfig()
+	}
+	// 初始化WIFI配置
+	if !service.CheckIfAlreadyInitWlanConfig() {
+		service.InitWlanConfig()
+	}
+	// 初始化默认路由, 如果没有配置会在数据库生成关于eth1的一个默认路由数据
+	service.InitDefaultIpRoute()
 
 	// 配置一个默认分组
 	service.InitGenericGroup(&model.MGenericGroup{
