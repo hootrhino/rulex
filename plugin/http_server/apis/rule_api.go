@@ -3,8 +3,8 @@ package apis
 import (
 	"fmt"
 
-	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/component/interqueue"
+	"github.com/hootrhino/rulex/glogger"
 	common "github.com/hootrhino/rulex/plugin/http_server/common"
 	"github.com/hootrhino/rulex/plugin/http_server/model"
 	"github.com/hootrhino/rulex/plugin/http_server/server"
@@ -165,9 +165,9 @@ func CreateRule(c *gin.Context, ruleEngine typex.RuleX) {
 		Actions:     form.Actions,
 	}
 
-	if form.Type != "lua" {
-		// 未来可能支持别的脚本
-	}
+	// if form.Type != "lua" {
+	// 	// 未来可能支持别的脚本
+	// }
 	rule := typex.NewLuaRule(
 		ruleEngine,
 		mRule.UUID,
@@ -638,4 +638,75 @@ func TestDeviceCallback(c *gin.Context, ruleEngine typex.RuleX) {
 		return
 	}
 	c.JSON(common.HTTP_OK, common.Ok())
+}
+
+/*
+*
+* 根据设备查询其Rules【0.6.4】
+*
+ */
+func ListByDevice(c *gin.Context, ruleEngine typex.RuleX) {
+	deviceId, _ := c.GetQuery("deviceId")
+	MRule, err := service.GetMRule(deviceId)
+	if err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
+	mRules := service.AllMRules() // 这个效率太低了, 后期写个SQL优化一下
+	ruleVos := []ruleVo{}
+	for _, rule := range mRules {
+		if utils.SContains(rule.FromDevice, MRule.UUID) {
+			ruleVos = append(ruleVos, ruleVo{
+				UUID:        rule.UUID,
+				FromSource:  rule.FromSource,
+				FromDevice:  rule.FromDevice,
+				Name:        rule.Name,
+				Type:        rule.Type,
+				Status:      1,
+				Expression:  rule.Expression,
+				Description: rule.Description,
+				Actions:     rule.Actions,
+				Success:     rule.Success,
+				Failed:      rule.Failed,
+			})
+		}
+	}
+	c.JSON(common.HTTP_OK, common.OkWithData(ruleVos))
+
+}
+
+/*
+*
+* 根据输入查询其Rules【0.6.4】
+*
+ */
+func ListByInend(c *gin.Context, ruleEngine typex.RuleX) {
+	inendId, _ := c.GetQuery("inendId")
+	MInend, err := service.GetMInEnd(inendId)
+	if err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
+
+	mRules := service.AllMRules() // 这个效率太低了, 后期写个SQL优化一下
+	ruleVos := []ruleVo{}
+	for _, rule := range mRules {
+		if utils.SContains(rule.FromSource, MInend.UUID) {
+			ruleVos = append(ruleVos, ruleVo{
+				UUID:        rule.UUID,
+				FromSource:  rule.FromSource,
+				FromDevice:  rule.FromDevice,
+				Name:        rule.Name,
+				Type:        rule.Type,
+				Status:      1,
+				Expression:  rule.Expression,
+				Description: rule.Description,
+				Actions:     rule.Actions,
+				Success:     rule.Success,
+				Failed:      rule.Failed,
+			})
+		}
+	}
+	c.JSON(common.HTTP_OK, common.OkWithData(ruleVos))
+
 }

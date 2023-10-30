@@ -170,30 +170,11 @@ func (hs *ApiServerPlugin) Init(config *ini.Section) error {
 *
  */
 func (hs *ApiServerPlugin) LoadRoute() {
-	//
-	// Get all plugins
-	//
-	server.DefaultApiServer.Route().GET(server.ContextUrl("plugins"), server.AddRoute(apis.Plugins))
-	//
-	// Get system information
-	//
-	server.DefaultApiServer.Route().GET(server.ContextUrl("system"), server.AddRoute(apis.System))
-	//
-	// Ping -> Pong
-	//
-	server.DefaultApiServer.Route().GET(server.ContextUrl("ping"), server.AddRoute(apis.Ping))
-	//
-	//
-	//
-	server.DefaultApiServer.Route().GET(server.ContextUrl("sourceCount"), server.AddRoute(apis.SourceCount))
-	//
-	//
-	//
-	server.DefaultApiServer.Route().GET(server.ContextUrl("logs"), server.AddRoute(apis.Logs))
-	//
-	//
-	//
-	server.DefaultApiServer.Route().POST(server.ContextUrl("logout"), server.AddRoute(apis.LogOut))
+	systemApi := server.RouteGroup(server.ContextUrl("/"))
+	{
+		systemApi.GET(("/ping"), server.AddRoute(apis.Ping))
+		systemApi.POST(("/logout"), server.AddRoute(apis.LogOut))
+	}
 	//
 	// Get all inends
 	//
@@ -226,6 +207,7 @@ func (hs *ApiServerPlugin) LoadRoute() {
 		userApi.GET(("/"), server.AddRoute(apis.Users))
 		userApi.GET(("/detail"), server.AddRoute(apis.UserDetail))
 		userApi.POST(("/"), server.AddRoute(apis.CreateUser))
+		userApi.POST(("/logout"), server.AddRoute(apis.LogOut))
 
 	}
 
@@ -269,6 +251,8 @@ func (hs *ApiServerPlugin) LoadRoute() {
 		rulesApi.POST(("/testIn"), server.AddRoute(apis.TestSourceCallback))
 		rulesApi.POST(("/testOut"), server.AddRoute(apis.TestOutEndCallback))
 		rulesApi.POST(("/testDevice"), server.AddRoute(apis.TestDeviceCallback))
+		rulesApi.GET(("/byInend"), server.AddRoute(apis.ListByInend))
+		rulesApi.GET(("/byDevice"), server.AddRoute(apis.ListByDevice))
 	}
 
 	//
@@ -284,15 +268,7 @@ func (hs *ApiServerPlugin) LoadRoute() {
 	// 验证 lua 语法
 	//
 	server.DefaultApiServer.Route().POST(server.ContextUrl("validateRule"), server.AddRoute(apis.ValidateLuaSyntax))
-	//
-	// 获取配置表
-	//
-	resourceTypeApi := server.RouteGroup(server.ContextUrl("/"))
-	{
-		resourceTypeApi.GET(("rType"), server.AddRoute(apis.RType))
-		resourceTypeApi.GET(("tType"), server.AddRoute(apis.TType))
-		resourceTypeApi.GET(("dType"), server.AddRoute(apis.DType))
-	}
+
 	//
 	// 网络适配器列表
 	//
@@ -346,6 +322,10 @@ func (hs *ApiServerPlugin) LoadRoute() {
 	// ----------------------------------------------------------------------------------------------
 	// Plugin
 	// ----------------------------------------------------------------------------------------------
+	pluginsApi := server.RouteGroup(server.ContextUrl("/plugins"))
+	{
+		pluginsApi.GET(("/"), server.AddRoute(apis.Plugins))
+	}
 	pluginApi := server.RouteGroup(server.ContextUrl("/plugin"))
 	{
 		pluginApi.POST(("/service"), server.AddRoute(apis.PluginService))
