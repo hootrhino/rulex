@@ -68,13 +68,9 @@ func __InitDefaultDHCPd() error {
 
 * 这个初始化特殊在咬对两个软件的配置进行刷新，一个是 dnsmasq， 一个是isc-dhcp-server
 */
-func ConfigDefaultDhcp() error {
-	MIpRoute, err := GetDefaultIpRoute()
-	if err != nil {
-		return err
-	}
+func ConfigDefaultDhcp(Iface string) error {
 	// isc-dhcp-server config
-	if err0 := __InitDefaultDHCPListenIface(MIpRoute.Iface); err0 != nil {
+	if err0 := __InitDefaultDHCPListenIface(Iface); err0 != nil {
 		return err0
 	}
 	// dnsmasq config
@@ -197,10 +193,22 @@ func BindMacAndIP() {
 	}
 
 *isc-dhcp-server 会加载 /etc/dhcp/dhcpd.conf 配置文件
-这里需要注意一下，此处配置衣服那个要和网卡的配置一致
+这里需要注意一下，此处配置要和网卡的配置一致
 */
-func ConfigDefaultNat() error {
-	ss := `
+type IpRoute struct {
+	Iface       string // 用来做子网的那个网卡的网卡名
+	Ip          string // 用来做子网的那个网卡的IP地址
+	Network     string
+	Gateway     string // 用来做子网的那个网卡的网关
+	Netmask     string
+	IpPoolBegin string // IP地址池起始
+	IpPoolEnd   string // IP地址池结束
+	IfaceFrom   string // 流量入口
+	IfaceTo     string // 流量出口
+}
+
+func ConfigDefaultNat(IpRoute IpRoute) error {
+	dhcpdConf := `
 subnet %s netmask %s {
     range %s %s;
     option routers %s;
@@ -209,18 +217,14 @@ subnet %s netmask %s {
 }
 
 `
-	MIpRoute, err0 := GetDefaultIpRoute()
-	if err0 != nil {
-		return err0
+	if IsIPv4InDHCPRange(IpRoute.Network, IpRoute.IpPoolBegin, IpRoute.IpPoolEnd) {
+		return fmt.Errorf("not Valid Ip Range:%s-%s", IpRoute.IpPoolBegin, IpRoute.IpPoolEnd)
 	}
-	if IsIPv4InDHCPRange(MIpRoute.Network, MIpRoute.IpPoolBegin, MIpRoute.IpPoolEnd) {
-		fmt.Errorf("Not Valid Ip Range:%s-%s", MIpRoute.IpPoolBegin, MIpRoute.IpPoolEnd)
+	if IsIPRangeValid(IpRoute.IpPoolBegin, IpRoute.IpPoolEnd) {
+		return fmt.Errorf("not Valid Ip Range:%s-%s", IpRoute.IpPoolBegin, IpRoute.IpPoolEnd)
 	}
-	if IsIPRangeValid(MIpRoute.IpPoolBegin, MIpRoute.IpPoolEnd) {
-		fmt.Errorf("Not Valid Ip Range:%s-%s", MIpRoute.IpPoolBegin, MIpRoute.IpPoolEnd)
-	}
-	shell := fmt.Sprintf(ss, MIpRoute.Network, MIpRoute.Netmask,
-		MIpRoute.IpPoolBegin, MIpRoute.IpPoolEnd, MIpRoute.Gateway)
+	shell := fmt.Sprintf(dhcpdConf, IpRoute.Network, IpRoute.Netmask,
+		IpRoute.IpPoolBegin, IpRoute.IpPoolEnd, IpRoute.Gateway)
 
 	if err1 := os.WriteFile("/etc/dhcp/dhcpd.conf",
 		[]byte(shell), 0644); err1 != nil {

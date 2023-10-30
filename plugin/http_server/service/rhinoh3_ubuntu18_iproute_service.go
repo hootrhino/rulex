@@ -12,7 +12,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
-package ossupport
+package service
 
 import (
 	"bytes"
@@ -20,7 +20,6 @@ import (
 	"os/exec"
 	"strings"
 
-	archsupport "github.com/hootrhino/rulex/bspsupport"
 	"github.com/hootrhino/rulex/component/interdb"
 	"github.com/hootrhino/rulex/plugin/http_server/model"
 )
@@ -80,7 +79,8 @@ func InitDefaultIpRoute() error {
 		FirstOrCreate(&m).Error; err != nil {
 		return err
 	}
-	return UpdateDefaultRoute(m.Ip, m.Iface)
+	return nil
+	// return UpdateDefaultRoute(m.Ip, m.Iface)
 }
 
 // getDefaultRoute 返回默认路由的信息作为字符串切片
@@ -126,21 +126,4 @@ func delDefaultRoute(route string) error {
 		return fmt.Errorf("Error executing del: %s", err.Error()+":"+string(output))
 	}
 	return nil
-}
-
-/*
-
-  - 每次初始化软路由配置表
-  - 1 数据库查上一次配置的网卡参数
-    2 清除当前配置
-    3 应用最新的
-*/
-
-func ConfigDefaultIpTable() error {
-	MIpRoute, err := GetDefaultIpRoute()
-	if err != nil {
-		return err
-	}
-	return archsupport.ReInitForwardRule(MIpRoute.Iface, "eth1")
-
 }

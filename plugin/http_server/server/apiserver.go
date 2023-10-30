@@ -172,16 +172,42 @@ func (s *RulexApiServer) InitializeEEKITData() {
 			service.InitWlanConfig()
 		}
 		// 初始化默认路由, 如果没有配置会在数据库生成关于eth1的一个默认路由数据
-		ossupport.InitDefaultIpRoute()
-		// 一组操作, 主要用来初始化 DHCP和DNS、网卡配置等
-		// 1 2 3 的目的是为了每次重启的时候初始化软路由
+		service.InitDefaultIpRoute()
+
+	}
+}
+
+/*
+*
+* 初始化配置
+*
+ */
+func (s *RulexApiServer) InitializeConfigCtl() {
+	// 一组操作, 主要用来初始化 DHCP和DNS、网卡配置等
+	// 1 2 3 的目的是为了每次重启的时候初始化软路由
+	env := os.Getenv("ARCHSUPPORT")
+	if env == "EEKITH3" {
 		{
+			MIproute, err := service.GetDefaultIpRoute()
+			if err != nil {
+				return
+			}
 			// 1 初始化默认路由表: ip route
-			ossupport.ConfigDefaultIpTable()
+			ossupport.ConfigDefaultIpTable(MIproute.Iface)
 			// 2 初始化默认DHCP
-			ossupport.ConfigDefaultDhcp()
+			ossupport.ConfigDefaultDhcp(MIproute.Iface)
 			// 3 初始化Eth1的静态IP地址
-			ossupport.ConfigDefaultNat()
+			ossupport.ConfigDefaultNat(ossupport.IpRoute{
+				Iface:       MIproute.Iface,
+				Ip:          MIproute.Ip,
+				Network:     MIproute.Network,
+				Gateway:     MIproute.Gateway,
+				Netmask:     MIproute.Netmask,
+				IpPoolBegin: MIproute.IpPoolBegin,
+				IpPoolEnd:   MIproute.IpPoolEnd,
+				IfaceFrom:   MIproute.IfaceFrom,
+				IfaceTo:     MIproute.IfaceTo,
+			})
 		}
 	}
 }

@@ -4,9 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
-
-	"github.com/hootrhino/rulex/component/interdb"
-	"github.com/hootrhino/rulex/plugin/http_server/model"
 )
 
 // # /etc/network/interfaces
@@ -70,18 +67,4 @@ func (iface *EtcNetworkConfig) GenEtcConfig() string {
 	configLines = append(configLines, fmt.Sprintf("    dns-nameservers %s\n", strings.Join(iface.DNS, " ")))
 	configText := strings.Join(configLines, "\n")
 	return configText
-}
-
-/*
-*
-* 匹配: /etc/network/interfaces
-*
- */
-func GetAllNetConfig() ([]model.MNetworkConfig, error) {
-	// 查出前两个网卡的配置
-	ethCfg := []model.MNetworkConfig{}
-	err := interdb.DB().
-		Where("interface=? or interface=?", "eth0", "eth1").
-		Find(&ethCfg).Error
-	return ethCfg, err
 }

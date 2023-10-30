@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package archsupport
+package ossupport
 
 import (
 	"fmt"
@@ -186,4 +186,16 @@ service isc-dhcp-server stop
 		return fmt.Errorf("Start dnsmasq error:%s,%s", string(output), err)
 	}
 	return nil
+}
+
+/*
+
+  - 每次初始化软路由配置表
+  - 1 数据库查上一次配置的网卡参数
+    2 清除当前配置
+    3 应用最新的
+*/
+
+func ConfigDefaultIpTable(Iface string) error {
+	return ReInitForwardRule(Iface, "eth1")
 }

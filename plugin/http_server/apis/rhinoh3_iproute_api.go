@@ -23,6 +23,7 @@ import (
 	"github.com/hootrhino/rulex/ossupport"
 	common "github.com/hootrhino/rulex/plugin/http_server/common"
 	"github.com/hootrhino/rulex/plugin/http_server/model"
+	"github.com/hootrhino/rulex/plugin/http_server/service"
 	"github.com/hootrhino/rulex/typex"
 	"github.com/hootrhino/rulex/utils"
 )
@@ -49,7 +50,7 @@ type IpRouteVo struct {
 *
  */
 func GetOldDefaultIpRoute(c *gin.Context, ruleEngine typex.RuleX) {
-	MIpRoute, err := ossupport.IpRouteDetail()
+	MIpRoute, err := service.IpRouteDetail()
 	if err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
@@ -82,7 +83,7 @@ func SetNewDefaultIpRoute(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(fmt.Errorf("Only support iface:%v", ifaces)))
 		return
 	}
-	err3 := ossupport.UpdateIpRoute(model.MIpRoute{
+	err3 := service.UpdateIpRoute(model.MIpRoute{
 		Ip:    form.Ip,
 		Iface: form.Iface,
 	})
@@ -90,7 +91,7 @@ func SetNewDefaultIpRoute(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err3))
 		return
 	}
-	err2 := ossupport.UpdateDefaultRoute(form.Ip, form.Iface)
+	err2 := service.UpdateDefaultRoute(form.Ip, form.Iface)
 	if err2 != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err2))
 		return
