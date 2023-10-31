@@ -34,6 +34,10 @@ import (
 type ExternalDb struct {
 }
 
+func (db *ExternalDb) Init() error {
+	return nil
+}
+
 func (db *ExternalDb) Name() string {
 	return "EXTERNALDB"
 }

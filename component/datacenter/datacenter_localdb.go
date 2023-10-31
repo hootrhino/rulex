@@ -23,6 +23,10 @@ package datacenter
 type LocalDb struct {
 }
 
+func Init(ldb *LocalDb) error {
+	return nil
+}
+
 func (ldb *LocalDb) Name() string {
 	return "LOCALDB"
 }

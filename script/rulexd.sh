@@ -1,6 +1,25 @@
 #!/bin/bash
+RESET='\033[0m'
+RED='\033[31m'
+BLUE='\033[34m'
+YELLOW='\033[33m'
 
+# 打印红色文本
+echo_red() {
+    echo -e "${RED}$1${RESET}"
+}
+
+# 打印蓝色文本
+echo_blue() {
+    echo -e "${BLUE}$1${RESET}"
+}
+
+# 打印黄色文本
+echo_yellow() {
+    echo -e "${YELLOW}$1${RESET}"
+}
 install(){
+    check_deps
     local source_dir="$PWD"
     local service_file="/etc/systemd/system/rulex.service"
     local executable="/usr/local/rulex"
@@ -31,9 +50,9 @@ EOL
     systemctl enable rulex
     systemctl start rulex
     if [ $? -eq 0 ]; then
-        echo "Rulex service has been created and extracted."
+        echo "[√] Rulex service has been created and extracted."
     else
-        echo "Failed to create the Rulex service or extract files."
+        echo "[x] Failed to create the Rulex service or extract files."
     fi
     exit 0
 }
@@ -41,7 +60,7 @@ EOL
 start(){
     systemctl daemon-reload
     systemctl start rulex
-    echo "RULEX started as a daemon."
+    echo "[√] RULEX started as a daemon."
     exit 0
 }
 status(){
@@ -54,40 +73,48 @@ restart(){
 
 stop(){
     systemctl stop rulex
-    echo "Service Rulex has been stopped."
+    echo "[√] Service Rulex has been stopped."
 }
-
+remove_files(){
+    if ls $1 1> /dev/null 2>&1; then
+        rm $1
+        echo "[!] $1 files removed."
+    else
+        echo "[#] $1 files not found. No need to remove."
+    fi
+}
 uninstall(){
     local working_directory="/usr/local"
     systemctl stop rulex
     systemctl disable rulex
-    rm /etc/systemd/system/rulex.service
-    rm $working_directory/rulex
-    rm $working_directory/rulex.ini
-    rm $working_directory/rulex.db
-    rm $working_directory/*.txt
-    rm $working_directory/*.txt.gz
+    remove_files /etc/systemd/system/rulex.service
+    remove_files $working_directory/rulex
+    remove_files $working_directory/rulex.ini
+    remove_files $working_directory/rulex.db
+    remove_files $working_directory/*.txt
+    remove_files $working_directory/*.txt.gz
     systemctl daemon-reload
     systemctl reset-failed
-    echo "Rulex has been uninstalled."
+    echo "[√] Rulex has been uninstalled."
 }
 
 check_deps() {
     # Check if ffmpeg is installed
+    echo_yellow "[·] Check necessary software"
     if command -v ffmpeg >/dev/null 2>&1; then
-        echo "ffmpeg is installed"
+        echo "[=] ffmpeg is installed"
     else
-        echo "Please install ffmpeg"
+        echo "!!! ffmpeg is not installed, Please install ffmpeg, you can go to install document: https://trac.ffmpeg.org/wiki/CompilationGuide/Ubuntu"
         exit 1
     fi
     # Check if ttyd is installed
     if command -v ttyd >/dev/null 2>&1; then
-        echo "ttyd is installed"
+        echo "[=] ttyd is installed"
     else
-        echo "Please install ttyd"
+        echo "!!! ttyd is not installed, Please install ttyd, you can go to install document: https://github.com/tsl0922/ttyd"
         exit 1
     fi
-    echo "All necessary software is installed"
+    echo_yellow "[√] All necessary software is installed"
 }
 # create a default user
 create_user(){
@@ -99,9 +126,9 @@ create_user(){
     }' http://127.0.0.1:2580/api/v1/users -w "%{http_code}")
 
     if [ "$response" = "201" ]; then
-        echo "User created"
+        echo "[√] User created"
     else
-        echo "User creation failed"
+        echo "[x] User creation failed"
     fi
 
 }
@@ -114,8 +141,8 @@ main(){
             $1
         ;;
         *)
-            echo "Invalid command: $1"
-            echo "Usage: $0 <install|start|restart|stop|uninstall|status>"
+            echo "[x] Invalid command: $1"
+            echo "[?] Usage: $0 <install|start|restart|stop|uninstall|status>"
             exit 1
         ;;
     esac
@@ -125,9 +152,8 @@ main(){
 # main
 #===========================================
 if [ "$(id -u)" != "0" ]; then
-    echo "This script must be run as root"
+    echo "[x] This script must be run as root"
     exit 1
 else
-    check_deps
     main $1
 fi

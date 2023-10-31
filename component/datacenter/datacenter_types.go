@@ -63,6 +63,7 @@ type SchemaDefine struct {
 *
  */
 type DataSource interface {
+	Init() error
 	GetSchemaDetail(goodsId string) SchemaDetail // 表详情
 	Name() string
 	Query(goodsId, query string) ([]map[string]any, error)

@@ -16,23 +16,23 @@
 Actions =
 {
     function(data)
-        local dataT, err = rulexlib:J2T(data)
+        local dataT, err = json:J2T(data)
         if (err ~= nil) then
-            applib:Debug('parse json error:' .. err)
+            stdlib:Debug('parse json error:' .. err)
             return true, data
         end
         for key, value in pairs(dataT) do
-            local MatchHexS = rulexlib:MatchUInt("hum:[0,1];temp:[2,3]", value['value'])
-            local ts = rulexlib:Time()
-            local Json = rulexlib:T2J(
+            local MatchHexS = hex:MatchUInt("hum:[0,1];temp:[2,3]", value['value'])
+            local ts = time:Time()
+            local Json = json:T2J(
                 {
                     tag = key,
                     ts = ts,
-                    hum = rulexlib:TFloat(MatchHexS['hum'] * 0.1, 2),
-                    temp = rulexlib:TFloat(MatchHexS['temp'] * 0.1, 2),
+                    hum = math:TFloat(MatchHexS['hum'] * 0.1, 2),
+                    temp = math:TFloat(MatchHexS['temp'] * 0.1, 2),
                 }
             )
-            rulexlib:Debug(Json)
+            stdlib:Debug(Json)
         end
         return true, data
     end

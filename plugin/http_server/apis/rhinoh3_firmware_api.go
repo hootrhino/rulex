@@ -29,11 +29,6 @@ import (
 *
  */
 func ReStartRulex(c *gin.Context, ruleEngine typex.RuleX) {
-	err := ossupport.ReStartRulex()
-	if err != nil {
-		c.JSON(common.HTTP_OK, common.Error400(err))
-		return
-	}
 	c.JSON(common.HTTP_OK, common.Ok())
 }
 

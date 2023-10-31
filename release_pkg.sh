@@ -116,7 +116,7 @@ calculate_and_save_md5() {
         return 1
     fi
     md5_hash=$(md5sum "$file_path" | awk '{print $1}')
-    echo "$md5_hash  $file_path" >> md5.sum
+    echo -n "$md5_hash" > md5.sum
 }
 #
 # fetch dashboard
