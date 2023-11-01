@@ -26,11 +26,14 @@ type MIpRoute struct {
 	UUID        string `gorm:"not null"`
 	Iface       string `gorm:"not null"` // 用来做子网的那个网卡的网卡名
 	Ip          string `gorm:"not null"` // 用来做子网的那个网卡的IP地址
-	Network     string `gorm:"not null"`
 	Gateway     string `gorm:"not null"` // 用来做子网的那个网卡的网关
-	Netmask     string `gorm:"not null"`
-	IpPoolBegin string `gorm:"not null"` // IP地址池起始
-	IpPoolEnd   string `gorm:"not null"` // IP地址池结束
-	IfaceFrom   string `gorm:"not null"` // 流量入口
-	IfaceTo     string `gorm:"not null"` // 流量出口
+	Network     string `gorm:"not null"` // 用来做子网的那个网卡的网段
+	Netmask     string `gorm:"not null"` // 用来做子网的那个网卡子网掩码
+	IpPoolBegin string `gorm:"not null"` // DHCP IP地址池起始
+	IpPoolEnd   string `gorm:"not null"` // DHCP IP地址池结束
+	//------------------------------------
+	// IP 路由方向, 默认 ETH1 透传到 4G
+	//------------------------------------
+	IfaceFrom    string `gorm:"not null"` // 流量入口
+	IfaceTo      string `gorm:"not null"` // 流量出口
 }

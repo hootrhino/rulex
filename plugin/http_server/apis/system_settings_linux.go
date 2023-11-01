@@ -66,7 +66,10 @@ func LoadSystemSettingsAPI() {
 	// 软路由相关
 	settingsSoftRouterApi := server.RouteGroup(server.ContextUrl("/softRouter"))
 	{
+		settingsSoftRouterApi.GET("/dhcp", server.AddRoute(GetDHCP))
+		settingsSoftRouterApi.POST("/dhcp", server.AddRoute(SetDHCP))
 		settingsSoftRouterApi.GET("/dhcp/clients", server.AddRoute(GetDhcpClients))
+		// 默认 Ip route
 		settingsSoftRouterApi.POST("/iproute", server.AddRoute(SetNewDefaultIpRoute))
 		settingsSoftRouterApi.GET("/iproute", server.AddRoute(GetOldDefaultIpRoute))
 

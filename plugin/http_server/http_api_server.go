@@ -205,8 +205,8 @@ func (hs *ApiServerPlugin) LoadRoute() {
 	userApi := server.RouteGroup(server.ContextUrl("/users"))
 	{
 		userApi.GET(("/"), server.AddRoute(apis.Users))
-		userApi.GET(("/detail"), server.AddRoute(apis.UserDetail))
 		userApi.POST(("/"), server.AddRoute(apis.CreateUser))
+		userApi.GET(("/detail"), server.AddRoute(apis.UserDetail))
 		userApi.POST(("/logout"), server.AddRoute(apis.LogOut))
 
 	}
@@ -280,6 +280,11 @@ func (hs *ApiServerPlugin) LoadRoute() {
 		osApi.GET(("/system"), server.AddRoute(apis.System))
 		osApi.GET(("/startedAt"), server.AddRoute(apis.StartedAt))
 
+	}
+	backupApi := server.RouteGroup(server.ContextUrl("/backup"))
+	{
+		backupApi.GET(("/"), server.AddRoute(apis.BackupSqlite))
+		backupApi.POST(("/"), server.AddRoute(apis.UploadSqlite))
 	}
 	//
 	// 设备管理
@@ -391,6 +396,8 @@ func (hs *ApiServerPlugin) LoadRoute() {
 
 		siteConfigApi.PUT("/update", server.AddRoute(apis.UpdateSiteConfig))
 		siteConfigApi.GET("/detail", server.AddRoute(apis.GetSiteConfig))
+		siteConfigApi.GET(("/logo"), server.AddRoute(apis.GetSysLogo))
+		siteConfigApi.POST(("/logo"), server.AddRoute(apis.UploadSysLogo))
 	}
 	trailerApi := server.RouteGroup(server.ContextUrl("/goods"))
 	{

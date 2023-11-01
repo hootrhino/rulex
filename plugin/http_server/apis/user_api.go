@@ -4,6 +4,10 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
+	"net/http"
+	"os"
+	"path/filepath"
+	"strconv"
 	"time"
 	"unicode/utf8"
 
@@ -198,4 +202,51 @@ func parseToken(tokenString string) (*JwtClaims, error) {
 	} else {
 		return nil, err
 	}
+}
+
+/*
+*
+* 上传头像
+*
+ */
+func UploadSysLogo(c *gin.Context, ruleEngine typex.RuleX) {
+	// single file
+	file, err := c.FormFile("file")
+	if err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
+	fileName := "avatar.png"
+	dir := "./upload/avatar/"
+	if err := os.MkdirAll(filepath.Dir(dir), os.ModePerm); err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
+	if err := c.SaveUploadedFile(file, dir+fileName); err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
+	c.JSON(common.HTTP_OK, common.OkWithData(map[string]string{
+		"url": fileName,
+	}))
+}
+
+/*
+*
+* 加载头像
+*
+ */
+func GetSysLogo(c *gin.Context, ruleEngine typex.RuleX) {
+	fileName := "avatar.png"
+	dir := "./upload/avatar/"
+	fileBytes, err := os.ReadFile(dir + fileName)
+	if err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
+	c.Writer.WriteHeader(http.StatusOK)
+	c.Writer.Header().Set("Content-Type", "image/jpeg")
+	c.Writer.Header().Set("Content-Length", strconv.Itoa(len(fileBytes)))
+	c.Writer.Write(fileBytes)
+	c.Writer.Flush()
 }

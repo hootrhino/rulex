@@ -185,9 +185,9 @@ func (s *RulexApiServer) InitializeConfigCtl() {
 			// 1 初始化默认路由表: ip route
 			ossupport.ConfigDefaultIpTable(MIproute.Iface)
 			// 2 初始化默认DHCP
-			ossupport.ConfigDefaultDhcp(MIproute.Iface)
+			ossupport.ConfigDefaultIscServer(MIproute.Iface)
 			// 3 初始化Eth1的静态IP地址
-			ossupport.ConfigDefaultNat(ossupport.IpRoute{
+			ossupport.ConfigDefaultIscServeDhcp(ossupport.IscServerDHCPConfig{
 				Iface:       MIproute.Iface,
 				Ip:          MIproute.Ip,
 				Network:     MIproute.Network,

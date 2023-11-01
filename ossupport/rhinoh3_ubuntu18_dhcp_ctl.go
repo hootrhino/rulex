@@ -68,7 +68,7 @@ func __InitDefaultDHCPd() error {
 
 * 这个初始化特殊在咬对两个软件的配置进行刷新，一个是 dnsmasq， 一个是isc-dhcp-server
 */
-func ConfigDefaultDhcp(Iface string) error {
+func ConfigDefaultIscServer(Iface string) error {
 	// isc-dhcp-server config
 	if err0 := __InitDefaultDHCPListenIface(Iface); err0 != nil {
 		return err0
@@ -195,19 +195,22 @@ func BindMacAndIP() {
 *isc-dhcp-server 会加载 /etc/dhcp/dhcpd.conf 配置文件
 这里需要注意一下，此处配置要和网卡的配置一致
 */
-type IpRoute struct {
+type IscServerDHCPConfig struct {
 	Iface       string // 用来做子网的那个网卡的网卡名
 	Ip          string // 用来做子网的那个网卡的IP地址
-	Network     string
 	Gateway     string // 用来做子网的那个网卡的网关
-	Netmask     string
-	IpPoolBegin string // IP地址池起始
-	IpPoolEnd   string // IP地址池结束
-	IfaceFrom   string // 流量入口
-	IfaceTo     string // 流量出口
+	Network     string // 用来做子网的那个网卡的网段
+	Netmask     string // 用来做子网的那个网卡子网掩码
+	IpPoolBegin string // DHCP IP地址池起始
+	IpPoolEnd   string // DHCP IP地址池结束
+	//------------------------------------
+	// IP 路由方向, 默认 ETH1 透传到 4G
+	//------------------------------------
+	IfaceFrom string // 流量入口
+	IfaceTo   string // 流量出口
 }
 
-func ConfigDefaultNat(IpRoute IpRoute) error {
+func ConfigDefaultIscServeDhcp(IpRoute IscServerDHCPConfig) error {
 	dhcpdConf := `
 subnet %s netmask %s {
     range %s %s;
