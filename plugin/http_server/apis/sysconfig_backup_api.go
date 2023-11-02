@@ -6,7 +6,6 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	common "github.com/hootrhino/rulex/plugin/http_server/common"
@@ -19,8 +18,8 @@ import (
 *
  */
 func BackupSqlite(c *gin.Context, ruleEngine typex.RuleX) {
-	fileName := "rulex.ini"
-	dir := "./"
+	fileName := "backup.sql"
+	dir := "./upload/backup/"
 	fileBytes, err := os.ReadFile(fmt.Sprintf("%s%s", dir, fileName))
 	if err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
@@ -45,7 +44,7 @@ func UploadSqlite(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	fileName := fmt.Sprintf("backup_%d.sql", time.Now().UnixMicro())
+	fileName := "backup.sql"
 	dir := "./upload/backup/"
 	if err := os.MkdirAll(filepath.Dir(dir), os.ModePerm); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
