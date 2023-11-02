@@ -169,7 +169,11 @@ func Get4GICCID(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 	} else {
 		// +QCCID: 89860426102180397625
-		iccid := strings.TrimLeft(result, "+QCCID: ")
+		len1:=len("+QCCID: ")
+		iccid:=""
+		if len(result)>len1 {
+			iccid=result[len1:]
+		}
 		c.JSON(common.HTTP_OK, common.OkWithData(iccid))
 	}
 }
