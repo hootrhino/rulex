@@ -120,13 +120,13 @@ func Get4GCOPS(c *gin.Context, ruleEngine typex.RuleX) {
  */
 // ptype int, apn, username, password string, auth, cdmaPwd int
 type APNFormVo struct {
-	SenceId  int    `json:"senceId"`
-	PTytpe   int    `json:"ptytpe"`
-	Auth     int    `json:"auth"`
-	CDMAPWD  int    `json:"cdmapwd"`
-	APN      string `json:"apn"`
-	Username string `json:"username"`
-	Password string `json:"password"`
+	SenceId     int    `json:"senceId"`
+	PTytpe      int    `json:"ptytpe"`
+	Auth        int    `json:"auth"`
+	CDMAPWD     int    `json:"cdmapwd"`
+	APN         string `json:"apn"`
+	Username string `json:"apn_username"`
+	Password string `json:"apn_password"`
 }
 
 func GetAPN(c *gin.Context, ruleEngine typex.RuleX) {
