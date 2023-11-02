@@ -72,7 +72,7 @@ func InitDefaultIpRoute() error {
 		IpPoolBegin: "192.168.64.100",
 		IpPoolEnd:   "192.168.64.150",
 		IfaceFrom:   "eth1", // 默认将Eth1网口和USB 4G网卡桥接起来, 这样就可以实现4G上网
-		IfaceTo:     "usb0",
+		IfaceTo:     "usb1",
 	}
 	if err := interdb.DB().Model(m).
 		Where("uuid=?", "0").
