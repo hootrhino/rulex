@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	common "github.com/hootrhino/rulex/plugin/http_server/common"
@@ -20,16 +19,11 @@ import (
 func BackupSqlite(c *gin.Context, ruleEngine typex.RuleX) {
 	fileName := "backup.sql"
 	dir := "./upload/backup/"
-	fileBytes, err := os.ReadFile(fmt.Sprintf("%s%s", dir, fileName))
-	if err != nil {
-		c.JSON(common.HTTP_OK, common.Error400(err))
-		return
-	}
 	c.Writer.WriteHeader(http.StatusOK)
-	c.Writer.Header().Set("Content-Type", "text/plain")
-	c.Writer.Header().Set("Content-Length", strconv.Itoa(len(fileBytes)))
-	c.Writer.Write(fileBytes)
-	c.Writer.Flush()
+	c.Header("Content-Type", "application/octet-stream")
+	c.Header("Content-Disposition", "attachment; filename="+fileName)
+	c.Header("Content-Transfer-Encoding", "binary")
+	c.File(fmt.Sprintf("%s%s", dir, fileName))
 }
 
 /*
