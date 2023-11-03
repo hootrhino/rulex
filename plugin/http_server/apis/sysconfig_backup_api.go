@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/hootrhino/rulex/component/interdb"
@@ -18,13 +19,16 @@ import (
 *
  */
 func BackupSqlite(c *gin.Context, ruleEngine typex.RuleX) {
-	fileName := "backup.sql"
-	dir := "./upload/backup/"
+	wd, err := os.Getwd()
+	if err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
+	fileName := "rulex.db"
+	dir := wd
 	c.Writer.WriteHeader(http.StatusOK)
-	c.Header("Content-Type", "application/octet-stream")
-	c.Header("Content-Disposition", "attachment; filename="+fileName)
-	c.Header("Content-Transfer-Encoding", "binary")
-	c.File(fmt.Sprintf("%s%s", dir, fileName))
+	c.FileAttachment(fmt.Sprintf("%s/%s", dir, fileName),
+	fmt.Sprintf("backup_%d_.db",time.Now().UnixNano()))
 }
 
 /*
@@ -39,7 +43,7 @@ func UploadSqlite(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	fileName := "backup.sql"
+	fileName := "recovery.db"
 	dir := "./upload/backup/"
 	if err := os.MkdirAll(filepath.Dir(dir), os.ModePerm); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
