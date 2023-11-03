@@ -213,29 +213,9 @@ func CreateGoods(c *gin.Context, ruleEngine typex.RuleX) {
 	}
 
 	localSavePath := __TrailerGoodsUploadDir + fileName
-	if Os == "linux" {
-		localSavePath += ".elfx" // 标记是Linux可执行
-	}
 	if err := c.SaveUploadedFile(fileHeader, localSavePath); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
-	}
-	// 现阶段先只支持这俩系统
-	if Os == "windows" {
-		if !IsExecutableFileWin(localSavePath) {
-			c.JSON(common.HTTP_OK,
-				common.Error("Is not windows Executable File:"+localSavePath))
-			os.Remove(localSavePath)
-			return
-		}
-	}
-	if Os == "linux" {
-		if !IsExecutableFileUnix(localSavePath) {
-			c.JSON(common.HTTP_OK,
-				common.Error("Is not Linux(Unix) Executable File:"+localSavePath))
-			os.Remove(localSavePath)
-			return
-		}
 	}
 	ExeType := getExecuteType(localSavePath)
 	if ExeType == "" {
@@ -244,9 +224,22 @@ func CreateGoods(c *gin.Context, ruleEngine typex.RuleX) {
 		os.Remove(localSavePath)
 		return
 	}
+	if ExeType=="ELF" {
+		if Os == "linux" {
+			localSavePath += ".elfx" // 标记是Linux可执行
+		}
+	}
+
 	if Os == "windows" {
 		if ExeType == "ELF" {
 			c.JSON(common.HTTP_OK, common.Error("Windows not support linux ELF format"))
+			os.Remove(localSavePath)
+			return
+		}
+	}
+	if Os == "linux" {
+		if ExeType == "EXE" {
+			c.JSON(common.HTTP_OK, common.Error("Linux not support Windows EXE format"))
 			os.Remove(localSavePath)
 			return
 		}
@@ -335,29 +328,9 @@ func UpdateGoods(c *gin.Context, ruleEngine typex.RuleX) {
 		return
 	}
 	localSavePath := __TrailerGoodsUploadDir + fileName
-	if Os == "linux" {
-		localSavePath += ".elfx" // 标记是Linux可执行
-	}
 	if err := c.SaveUploadedFile(fileHeader, localSavePath); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
-	}
-	// 现阶段先只支持这俩系统
-	if runtime.GOOS == "windows" {
-		if !IsExecutableFileWin(localSavePath) {
-			c.JSON(common.HTTP_OK,
-				common.Error("Is not windows Executable File:"+localSavePath))
-			os.Remove(localSavePath)
-			return
-		}
-	}
-	if runtime.GOOS == "linux" {
-		if !IsExecutableFileUnix(localSavePath) {
-			c.JSON(common.HTTP_OK,
-				common.Error("Is not Linux(Unix) Executable File:"+localSavePath))
-			os.Remove(localSavePath)
-			return
-		}
 	}
 	ExeType := getExecuteType(localSavePath)
 	if ExeType == "" {
@@ -366,9 +339,21 @@ func UpdateGoods(c *gin.Context, ruleEngine typex.RuleX) {
 		os.Remove(localSavePath)
 		return
 	}
+	if ExeType=="ELF" {
+		if Os == "linux" {
+			localSavePath += ".elfx" // 标记是Linux可执行
+		}
+	}
 	if Os == "windows" {
 		if ExeType == "ELF" {
 			c.JSON(common.HTTP_OK, common.Error("Windows not support linux ELF format"))
+			os.Remove(localSavePath)
+			return
+		}
+	}
+	if Os == "linux" {
+		if ExeType == "EXE" {
+			c.JSON(common.HTTP_OK, common.Error("Linux not support Windows EXE format"))
 			os.Remove(localSavePath)
 			return
 		}

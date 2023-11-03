@@ -80,8 +80,13 @@ func StartUpgradeProcess(path string, args []string) {
 	cmd.SysProcAttr = NewSysProcAttr()
 	cmd.Stdout = outputFile
 	cmd.Stderr = outputFile
-	cmd.Process.Pid = -1 // 用来分离进程用,简直天坑参数！！！
+	if cmd.Process != nil {
+		cmd.Process.Pid = -1 // 用来分离进程用,简直天坑参数！！！
+	}
 	err := cmd.Start()
+	if cmd.Process != nil {
+		cmd.Process.Pid = -1 // 用来分离进程用,简直天坑参数！！！
+	}
 	if err != nil {
 		log.Println("Start Upgrade Process Failed:", err)
 		return

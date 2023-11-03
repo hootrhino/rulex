@@ -52,11 +52,12 @@ func (tty *WebTTYPlugin) Service(arg typex.ServiceArg) typex.ServiceResult {
 		ctx, cancel := context.WithCancel(typex.GCTX)
 		tty.ctx = ctx
 		tty.cancel = cancel
-		tty.ttydCmd.Stdout = os.Stdout
-		tty.ttydCmd.Stderr = os.Stderr
+
 		tty.ttydCmd = exec.CommandContext(typex.GCTX,
 			"ttyd", "-W", "-p", fmt.Sprintf("%d", tty.mainConfig.ListenPort),
 			"-o", "-6", "bash")
+		tty.ttydCmd.Stdout = os.Stdout
+		tty.ttydCmd.Stderr = os.Stderr
 		if err1 := tty.ttydCmd.Start(); err1 != nil {
 			glogger.GLogger.Infof("cmd.Start error: %v", err1)
 			return typex.ServiceResult{Out: err1.Error()}

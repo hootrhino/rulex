@@ -238,8 +238,17 @@ func initStaticModel() {
 	})
 	// 初始化网站配置
 	service.InitSiteConfig(model.MSiteConfig{
-		SiteName: "",
+		SiteName: "RhinoEEKIT",
 		Logo:     "",
 		AppName:  "RhinoEEKIT",
 	})
+	// 初始化一个用户
+	service.InitMUser(
+		&model.MUser{
+			Role:        "DefaultAdmin",
+			Username:    "hootrhino",
+			Password:    "25d55ad283aa400af464c76d713c07ad",//12345678
+			Description: "Default Rulex Admin User",
+		},
+	)
 }
