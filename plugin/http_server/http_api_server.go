@@ -300,6 +300,7 @@ func (hs *ApiServerPlugin) LoadRoute() {
 		deviceApi.PUT(("/modbus/point"), server.AddRoute(apis.UpdateModbusPoint))
 		deviceApi.GET(("/modbus"), server.AddRoute(apis.ModbusPoints))
 		deviceApi.GET("/group", server.AddRoute(apis.ListDeviceGroup))
+		deviceApi.GET("/listByGroup", server.AddRoute(apis.ListDeviceByGroup))
 
 	}
 

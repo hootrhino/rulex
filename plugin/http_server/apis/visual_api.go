@@ -56,7 +56,7 @@ func CreateVisual(c *gin.Context, ruleEngine typex.RuleX) {
 	}
 	// 新建大屏的时候必须给一个分组
 	if err := service.BindResource(form.Gid, MVisual.UUID); err != nil {
-		c.JSON(common.HTTP_OK, common.Error400(err))
+		c.JSON(common.HTTP_OK, common.Error("Group not found"))
 		return
 	}
 	// 返回新建的大屏字段 用来跳转编辑器

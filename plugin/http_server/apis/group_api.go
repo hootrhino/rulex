@@ -251,3 +251,33 @@ func ListVisualByGroup(c *gin.Context, ruleEngine typex.RuleX) {
 	}
 	c.JSON(common.HTTP_OK, common.OkWithData(visuals))
 }
+
+/*
+*
+* 大屏
+*
+ */
+func ListDeviceByGroup(c *gin.Context, ruleEngine typex.RuleX) {
+	Gid, _ := c.GetQuery("uuid")
+	devices := []*typex.Device{}
+	_, MDevice := service.FindByType(Gid, "DEVICE")
+	for _, mdev := range MDevice {
+		device := ruleEngine.GetDevice(mdev.UUID)
+		if device == nil {
+			tDevice := new(typex.Device)
+			tDevice.UUID = mdev.UUID
+			tDevice.Name = mdev.Name
+			tDevice.Type = typex.DeviceType(mdev.Type)
+			tDevice.Description = mdev.Description
+			tDevice.BindRules = map[string]typex.Rule{}
+			tDevice.Config = map[string]interface{}{}
+			tDevice.State = typex.DEV_STOP
+			devices = append(devices, tDevice)
+		}
+		if device != nil {
+			device.State = device.Device.Status()
+			devices = append(devices, device)
+		}
+	}
+	c.JSON(common.HTTP_OK, common.OkWithData(devices))
+}

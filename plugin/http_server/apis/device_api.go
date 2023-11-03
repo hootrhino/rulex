@@ -49,51 +49,26 @@ func DeviceDetail(c *gin.Context, ruleEngine typex.RuleX) {
 	c.JSON(common.HTTP_OK, common.OkWithData(device))
 }
 func Devices(c *gin.Context, ruleEngine typex.RuleX) {
-	uuid, _ := c.GetQuery("uuid")
-	if uuid == "" {
-		devices := []*typex.Device{}
-		for _, mdev := range service.AllDevices() {
-			device := ruleEngine.GetDevice(mdev.UUID)
-			if device == nil {
-				tDevice := new(typex.Device)
-				tDevice.UUID = mdev.UUID
-				tDevice.Name = mdev.Name
-				tDevice.Type = typex.DeviceType(mdev.Type)
-				tDevice.Description = mdev.Description
-				tDevice.BindRules = map[string]typex.Rule{}
-				tDevice.Config = map[string]interface{}{}
-				tDevice.State = typex.DEV_STOP
-				devices = append(devices, tDevice)
-			}
-			if device != nil {
-				device.State = device.Device.Status()
-				devices = append(devices, device)
-			}
+	devices := []*typex.Device{}
+	for _, mdev := range service.AllDevices() {
+		device := ruleEngine.GetDevice(mdev.UUID)
+		if device == nil {
+			tDevice := new(typex.Device)
+			tDevice.UUID = mdev.UUID
+			tDevice.Name = mdev.Name
+			tDevice.Type = typex.DeviceType(mdev.Type)
+			tDevice.Description = mdev.Description
+			tDevice.BindRules = map[string]typex.Rule{}
+			tDevice.Config = map[string]interface{}{}
+			tDevice.State = typex.DEV_STOP
+			devices = append(devices, tDevice)
 		}
-		c.JSON(common.HTTP_OK, common.OkWithData(devices))
-		return
+		if device != nil {
+			device.State = device.Device.Status()
+			devices = append(devices, device)
+		}
 	}
-	mdev, err := service.GetMDeviceWithUUID(uuid)
-	if err != nil {
-		c.JSON(common.HTTP_OK, common.Error400(err))
-		return
-	}
-	device := ruleEngine.GetDevice(mdev.UUID)
-	if device == nil {
-		// 如果内存里面没有就给安排一个死设备
-		tDevice := new(typex.Device)
-		tDevice.UUID = mdev.UUID
-		tDevice.Name = mdev.Name
-		tDevice.Type = typex.DeviceType(mdev.Type)
-		tDevice.Description = mdev.Description
-		tDevice.BindRules = map[string]typex.Rule{}
-		tDevice.Config = mdev.GetConfig()
-		tDevice.State = typex.DEV_STOP
-		c.JSON(common.HTTP_OK, common.OkWithData(tDevice))
-		return
-	}
-	device.State = device.Device.Status()
-	c.JSON(common.HTTP_OK, common.OkWithData(device))
+	c.JSON(common.HTTP_OK, common.OkWithData(devices))
 }
 
 // 删除设备
@@ -146,17 +121,20 @@ func DeleteDevice(c *gin.Context, ruleEngine typex.RuleX) {
 
 }
 
+type DeviceVo struct {
+	UUID         string                 `json:"uuid"`
+	Gid          string                 `json:"gid"`
+	Name         string                 `json:"name"`
+	Type         string                 `json:"type"`
+	ActionScript string                 `json:"actionScript"`
+	Config       map[string]interface{} `json:"config"`
+	Description  string                 `json:"description"`
+}
+
 // 创建设备
 func CreateDevice(c *gin.Context, ruleEngine typex.RuleX) {
-	type Form struct {
-		UUID         string                 `json:"uuid"`
-		Name         string                 `json:"name"`
-		Type         string                 `json:"type"`
-		ActionScript string                 `json:"actionScript"`
-		Config       map[string]interface{} `json:"config"`
-		Description  string                 `json:"description"`
-	}
-	form := Form{}
+
+	form := DeviceVo{}
 	if err := c.ShouldBindJSON(&form); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
@@ -167,15 +145,21 @@ func CreateDevice(c *gin.Context, ruleEngine typex.RuleX) {
 		return
 	}
 	newUUID := utils.DeviceUuid()
-	if err := service.InsertDevice(&model.MDevice{
+	MDevice := model.MDevice{
 		UUID:        newUUID,
 		Type:        form.Type,
 		Name:        form.Name,
 		Description: form.Description,
 		Config:      string(configJson),
 		BindRules:   []string{},
-	}); err != nil {
+	}
+	if err := service.InsertDevice(&MDevice); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
+	// 新建大屏的时候必须给一个分组
+	if err := service.BindResource(form.Gid, MDevice.UUID); err != nil {
+		c.JSON(common.HTTP_OK, common.Error("Group not found"))
 		return
 	}
 	if err := server.LoadNewestDevice(newUUID, ruleEngine); err != nil {
@@ -188,14 +172,8 @@ func CreateDevice(c *gin.Context, ruleEngine typex.RuleX) {
 
 // 更新设备
 func UpdateDevice(c *gin.Context, ruleEngine typex.RuleX) {
-	type Form struct {
-		UUID        string                 `json:"uuid"`
-		Name        string                 `json:"name"`
-		Type        string                 `json:"type"`
-		Config      map[string]interface{} `json:"config"`
-		Description string                 `json:"description"`
-	}
-	form := Form{}
+
+	form := DeviceVo{}
 	if err := c.ShouldBindJSON(&form); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
@@ -215,17 +193,21 @@ func UpdateDevice(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, err)
 		return
 	}
-
-	if err := service.UpdateDevice(Device.UUID, &model.MDevice{
+	MDevice := model.MDevice{
 		Type:        form.Type,
 		Name:        form.Name,
 		Description: form.Description,
 		Config:      string(configJson),
-	}); err != nil {
+	}
+	if err := service.UpdateDevice(Device.UUID, &MDevice); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-
+	// 新建大屏的时候必须给一个分组
+	if err := service.BindResource(form.Gid, MDevice.UUID); err != nil {
+		c.JSON(common.HTTP_OK, common.Error("Group not found"))
+		return
+	}
 	if err := server.LoadNewestDevice(form.UUID, ruleEngine); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
