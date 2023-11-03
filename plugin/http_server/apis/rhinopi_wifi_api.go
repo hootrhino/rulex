@@ -17,7 +17,7 @@ package apis
 
 import (
 	"github.com/gin-gonic/gin"
-	archsupport "github.com/hootrhino/rulex/bspsupport"
+	"github.com/hootrhino/rulex/ossupport"
 	common "github.com/hootrhino/rulex/plugin/http_server/common"
 	"github.com/hootrhino/rulex/typex"
 )
@@ -28,7 +28,7 @@ import (
 *
  */
 func ScanWIFIWithNmcli(c *gin.Context, ruleEngine typex.RuleX) {
-	Wlans, err := archsupport.ScanWIFIWithNmcli()
+	Wlans, err := ossupport.ScanWIFIWithNmcli()
 	if err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return

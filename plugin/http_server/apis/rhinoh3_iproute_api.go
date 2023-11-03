@@ -19,7 +19,7 @@ import (
 	"fmt"
 
 	"github.com/gin-gonic/gin"
-	archsupport "github.com/hootrhino/rulex/bspsupport"
+	"github.com/hootrhino/rulex/ossupport"
 	common "github.com/hootrhino/rulex/plugin/http_server/common"
 	"github.com/hootrhino/rulex/plugin/http_server/model"
 	"github.com/hootrhino/rulex/plugin/http_server/service"
@@ -135,7 +135,7 @@ func SetNewDefaultIpRoute(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	ifaces, err1 := archsupport.GetBSPNetIfaces()
+	ifaces, err1 := ossupport.GetBSPNetIfaces()
 	if err1 != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err1))
 		return

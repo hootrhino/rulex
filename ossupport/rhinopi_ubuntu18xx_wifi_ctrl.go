@@ -1,4 +1,4 @@
-package archsupport
+package ossupport
 
 import (
 	"fmt"
