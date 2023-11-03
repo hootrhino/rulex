@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hootrhino/rulex/component/interdb"
 	common "github.com/hootrhino/rulex/plugin/http_server/common"
 	"github.com/hootrhino/rulex/typex"
 )
@@ -51,4 +52,5 @@ func UploadSqlite(c *gin.Context, ruleEngine typex.RuleX) {
 	c.JSON(common.HTTP_OK, common.OkWithData(map[string]string{
 		"url": fileName,
 	}))
+	interdb.DB().Migrator()
 }

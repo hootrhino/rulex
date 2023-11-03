@@ -54,7 +54,11 @@ func (tty *WebTTYPlugin) Service(arg typex.ServiceArg) typex.ServiceResult {
 		tty.cancel = cancel
 
 		tty.ttydCmd = exec.CommandContext(typex.GCTX,
-			"ttyd", "-W", "-p", fmt.Sprintf("%d", tty.mainConfig.ListenPort),
+			"ttyd", "-W",
+			"-p", fmt.Sprintf("%d", tty.mainConfig.ListenPort),
+			"-c","rhino:hoot", // username"password
+			"-O",// Not allow Cros
+			"-m","1", // Max allow 1 client
 			"-o", "-6", "bash")
 		tty.ttydCmd.Stdout = os.Stdout
 		tty.ttydCmd.Stderr = os.Stderr
