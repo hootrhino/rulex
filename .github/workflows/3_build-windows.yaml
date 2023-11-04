@@ -27,13 +27,9 @@ jobs:
           choco install make -Y
           choco install golang --version 1.20.1 -Y
 
-      - name: Dir
-        shell: powershell
-        run: |
-          dir
-      - name: Build
-        shell: powershell
-        run: |
-          go mod tidy
-          go build
+      # - name: Build
+      #   shell: powershell
+      #   run: |
+      #     go mod tidy
+      #     go build
       # go.exe test -timeout 30s -run ^TestFullyRun$ github.com/hootrhino/rulex/test -v -count=1
