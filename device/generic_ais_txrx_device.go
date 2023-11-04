@@ -230,7 +230,7 @@ func (aism *AISDeviceMaster) handleAuth(ctx context.Context,
 func (aism *AISDeviceMaster) handleIO(session *__AISDeviceSession) {
 	reader := bufio.NewReader(session.Transport)
 	for {
-		s, err := reader.ReadString('\n')
+		rawAiSString, err := reader.ReadString('\n')
 		if err != nil {
 			glogger.GLogger.Error(err)
 			delete(aism.DevicesSessionMap, session.SN)
@@ -239,21 +239,26 @@ func (aism *AISDeviceMaster) handleIO(session *__AISDeviceSession) {
 		}
 		// 如果不需要解析,直接原文透传
 		if !aism.mainConfig.ParseAis {
-			aism.RuleEngine.WorkDevice(aism.Details(), s)
+			// {
+			//     "ais_receiver_device":"%s",
+			//     "ais_data":"%s"
+			// }
+			ds := `{"ais_receiver_device":"%s","ais_data":"%s"}`
+			aism.RuleEngine.WorkDevice(aism.Details(), fmt.Sprintf(ds, session.SN, rawAiSString))
 			continue
 		}
 		// 可能会收到心跳包: !HRT710,Q,003,0*06
-		if strings.HasPrefix(s, "!HRT") {
+		if strings.HasPrefix(rawAiSString, "!HRT") {
 			glogger.GLogger.Debug("Heart beat from:", session.SN, session.Transport.RemoteAddr())
 			continue
 		}
-		if strings.HasPrefix(s, "!DYA") {
+		if strings.HasPrefix(rawAiSString, "!DYA") {
 			glogger.GLogger.Debug("DYA Message from:", session.SN, session.Transport.RemoteAddr())
 			continue
 		}
-		sentence, err := nmea.Parse(s)
+		sentence, err := nmea.Parse(rawAiSString)
 		if err != nil {
-			glogger.GLogger.Error(err, s)
+			glogger.GLogger.Error(err, rawAiSString)
 			continue
 		}
 		// glogger.GLogger.Info("Received data:", sentence.DataType(), sentence)

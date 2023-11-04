@@ -33,8 +33,8 @@ type TDEngineConfig struct {
 *
  */
 type HTTPConfig struct {
-	Url     string            `json:"url" title:"URL"`
-	Headers map[string]string `json:"headers" title:"HTTP Headers"`
+	Url     string            `json:"url" validate:"required" title:"URL"`
+	Headers map[string]string `json:"headers" validate:"required" title:"HTTP Headers"`
 }
 
 /*

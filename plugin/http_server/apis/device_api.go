@@ -211,9 +211,15 @@ func UpdateDevice(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	// 新建大屏的时候必须给一个分组
-	if err := service.BindResource(form.Gid, MDevice.UUID); err != nil {
-		c.JSON(common.HTTP_OK, common.Error("Group not found"))
+	// 取消绑定分组,删除原来旧的分组
+	Group := service.GetVisualGroup(Device.UUID)
+	if err := service.UnBindResource(Group.UUID, Device.UUID); err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
+	// 重新绑定分组
+	if err := service.BindResource(form.Gid, Device.UUID); err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
 	if err := server.LoadNewestDevice(form.UUID, ruleEngine); err != nil {
