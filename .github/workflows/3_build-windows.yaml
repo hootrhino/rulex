@@ -30,6 +30,7 @@ jobs:
       - name: Build
         shell: powershell
         run: |
+          dir
           go mod tidy
           go build
       # go.exe test -timeout 30s -run ^TestFullyRun$ github.com/hootrhino/rulex/test -v -count=1
