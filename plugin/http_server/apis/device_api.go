@@ -19,6 +19,16 @@ import (
 	"gopkg.in/square/go-jose.v2/json"
 )
 
+type DeviceVo struct {
+	UUID        string                 `json:"uuid"`
+	Gid         string                 `json:"gid"`
+	Name        string                 `json:"name"`
+	Type        string                 `json:"type"`
+	State       int                    `json:"state"`
+	Config      map[string]interface{} `json:"config"`
+	Description string                 `json:"description"`
+}
+
 /*
 *
 * 列表先读数据库，然后读内存，合并状态后输出
@@ -31,42 +41,50 @@ func DeviceDetail(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400EmptyObj(err))
 		return
 	}
+	DeviceVo := DeviceVo{}
+	DeviceVo.UUID = mdev.UUID
+	DeviceVo.Name = mdev.Name
+	DeviceVo.Type = mdev.Type
+	DeviceVo.Description = mdev.Description
+	DeviceVo.Config = mdev.GetConfig()
+	//
 	device := ruleEngine.GetDevice(mdev.UUID)
 	if device == nil {
-		// 如果内存里面没有就给安排一个死设备
-		tDevice := new(typex.Device)
-		tDevice.UUID = mdev.UUID
-		tDevice.Name = mdev.Name
-		tDevice.Type = typex.DeviceType(mdev.Type)
-		tDevice.Description = mdev.Description
-		tDevice.BindRules = map[string]typex.Rule{}
-		tDevice.Config = mdev.GetConfig()
-		tDevice.State = typex.DEV_STOP
-		c.JSON(common.HTTP_OK, common.OkWithData(tDevice))
-		return
+		DeviceVo.State = int(typex.DEV_STOP)
+	} else {
+		DeviceVo.State = int(device.Device.Status())
 	}
-	device.State = device.Device.Status()
-	c.JSON(common.HTTP_OK, common.OkWithData(device))
+	Group := service.GetVisualGroup(mdev.UUID)
+	DeviceVo.Gid = Group.UUID
+	c.JSON(common.HTTP_OK, common.OkWithData(DeviceVo))
 }
-func Devices(c *gin.Context, ruleEngine typex.RuleX) {
-	devices := []*typex.Device{}
-	for _, mdev := range service.AllDevices() {
+
+/*
+*
+* 分组查看
+*
+ */
+func ListDeviceByGroup(c *gin.Context, ruleEngine typex.RuleX) {
+	Gid, _ := c.GetQuery("uuid")
+	devices := []DeviceVo{}
+	_, MDevices := service.FindByType(Gid, "DEVICE")
+	for _, mdev := range MDevices {
+		DeviceVo := DeviceVo{}
+		DeviceVo.UUID = mdev.UUID
+		DeviceVo.Name = mdev.Name
+		DeviceVo.Type = mdev.Type
+		DeviceVo.Description = mdev.Description
+		DeviceVo.Config = mdev.GetConfig()
+		//
 		device := ruleEngine.GetDevice(mdev.UUID)
 		if device == nil {
-			tDevice := new(typex.Device)
-			tDevice.UUID = mdev.UUID
-			tDevice.Name = mdev.Name
-			tDevice.Type = typex.DeviceType(mdev.Type)
-			tDevice.Description = mdev.Description
-			tDevice.BindRules = map[string]typex.Rule{}
-			tDevice.Config = map[string]interface{}{}
-			tDevice.State = typex.DEV_STOP
-			devices = append(devices, tDevice)
+			DeviceVo.State = int(typex.DEV_STOP)
+		} else {
+			DeviceVo.State = int(device.Device.Status())
 		}
-		if device != nil {
-			device.State = device.Device.Status()
-			devices = append(devices, device)
-		}
+		Group := service.GetVisualGroup(mdev.UUID)
+		DeviceVo.Gid = Group.UUID
+		devices = append(devices, DeviceVo)
 	}
 	c.JSON(common.HTTP_OK, common.OkWithData(devices))
 }
@@ -119,16 +137,6 @@ func DeleteDevice(c *gin.Context, ruleEngine typex.RuleX) {
 	ruleEngine.RemoveDevice(uuid)
 	c.JSON(common.HTTP_OK, common.Ok())
 
-}
-
-type DeviceVo struct {
-	UUID         string                 `json:"uuid"`
-	Gid          string                 `json:"gid"`
-	Name         string                 `json:"name"`
-	Type         string                 `json:"type"`
-	ActionScript string                 `json:"actionScript"`
-	Config       map[string]interface{} `json:"config"`
-	Description  string                 `json:"description"`
 }
 
 // 创建设备

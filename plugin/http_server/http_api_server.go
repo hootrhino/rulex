@@ -291,7 +291,6 @@ func (hs *ApiServerPlugin) LoadRoute() {
 	//
 	deviceApi := server.RouteGroup(server.ContextUrl("/devices"))
 	{
-		deviceApi.GET(("/"), server.AddRoute(apis.Devices))
 		deviceApi.POST(("/"), server.AddRoute(apis.CreateDevice))
 		deviceApi.PUT(("/"), server.AddRoute(apis.UpdateDevice))
 		deviceApi.DELETE(("/"), server.AddRoute(apis.DeleteDevice))

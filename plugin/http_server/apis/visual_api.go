@@ -174,6 +174,31 @@ func ListVisual(c *gin.Context, ruleEngine typex.RuleX) {
 
 /*
 *
+* 大屏分组查看
+*
+ */
+func ListVisualByGroup(c *gin.Context, ruleEngine typex.RuleX) {
+	Gid, _ := c.GetQuery("uuid")
+	visuals := []VisualVo{}
+	MVisuals, _ := service.FindByType(Gid, "VISUAL")
+	for _, vv := range MVisuals {
+		Vo := VisualVo{
+			UUID:      vv.UUID,
+			Name:      vv.Name,
+			Type:      vv.Type,
+			Content:   vv.Content,
+			Status:    &vv.Status,
+			Thumbnail: vv.Thumbnail,
+		}
+		Group := service.GetVisualGroup(vv.UUID)
+		Vo.Gid = Group.UUID
+		visuals = append(visuals, Vo)
+	}
+	c.JSON(common.HTTP_OK, common.OkWithData(visuals))
+}
+
+/*
+*
 * 大屏详情
 *
  */
