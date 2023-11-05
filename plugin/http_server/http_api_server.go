@@ -154,6 +154,7 @@ func (hs *ApiServerPlugin) Init(config *ini.Section) error {
 		&model.MIpRoute{},
 		&model.MCronTask{},
 		&model.MCronResult{},
+		&model.MHwInterface{},
 	)
 	// 初始化所有预制参数
 	server.DefaultApiServer.InitializeGenericOSData()
@@ -410,6 +411,7 @@ func (hs *ApiServerPlugin) LoadRoute() {
 		trailerApi.PUT("/stop", server.AddRoute(apis.StopGoods))
 		trailerApi.DELETE("/", server.AddRoute(apis.DeleteGoods))
 	}
+	// 数据中心
 	dataCenterApi := server.RouteGroup(server.ContextUrl("/dataCenter"))
 	{
 		dataCenterApi.GET("/schema/define", server.AddRoute(apis.GetSchemaDefine))
@@ -417,6 +419,13 @@ func (hs *ApiServerPlugin) LoadRoute() {
 		dataCenterApi.GET("/schema/list", server.AddRoute(apis.GetSchemaList))
 		dataCenterApi.GET("/schema/defineList", server.AddRoute(apis.GetSchemaDefineList))
 		dataCenterApi.POST("/data/query", server.AddRoute(apis.GetQueryData))
+	}
+	// 硬件接口API
+	HwIFaceApi := server.DefaultApiServer.GetGroup(server.ContextUrl("/hwiface"))
+	{
+		HwIFaceApi.GET("/detail", server.AddRoute(apis.GetHwInterfaceDetail))
+		HwIFaceApi.GET("/list", server.AddRoute(apis.AllHwInterfaces))
+		HwIFaceApi.POST("/update", server.AddRoute(apis.UpdateHwInterfaceConfig))
 	}
 	//
 	// 系统设置

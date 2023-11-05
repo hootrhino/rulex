@@ -70,7 +70,7 @@ func Restart() error {
 func StartUpgradeProcess(path string, args []string) {
 	log.Printf("Start Upgrade Process Pid=%d, Gid=%d", os.Getpid(), os.Getegid())
 	defer log.Println("Start Upgrade Process Exited")
-	outputFile, err1 := os.Create("StartUpgradeProcess.txt")
+	outputFile, err1 := os.Create("local-upgrade-log.txt")
 	if err1 != nil {
 		log.Println("Create Upgrade log error:", err1)
 		return

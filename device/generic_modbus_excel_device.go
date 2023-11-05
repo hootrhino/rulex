@@ -11,7 +11,6 @@ import (
 	"github.com/plgd-dev/kit/v2/log"
 	modbus "github.com/wwhai/gomodbus"
 
-	archsupport "github.com/hootrhino/rulex/bspsupport"
 	"github.com/hootrhino/rulex/common"
 	"github.com/hootrhino/rulex/component/interdb"
 	"github.com/hootrhino/rulex/core"
@@ -162,11 +161,7 @@ func (mdev *generic_modbus_excel_device) Init(devId string, configMap map[string
 	if !utils.SContains([]string{"RTU", "TCP"}, mdev.mainConfig.CommonConfig.Mode) {
 		return errors.New("unsupported mode, only can be one of 'TCP' or 'RTU'")
 	}
-	// 做端口管理
-	Port := archsupport.GetHwPort(mdev.mainConfig.RtuConfig.Uart)
-	if Port.Busy {
-		return errors.New(Port.BusyingInfo())
-	}
+
 	return nil
 }
 
@@ -217,7 +212,6 @@ func (mdev *generic_modbus_excel_device) Start(cctx typex.CCTX) error {
 	// ---------------------------------------------------------------------------------
 	if !mdev.mainConfig.CommonConfig.AutoRequest {
 		mdev.status = typex.DEV_UP
-		archsupport.HwPortBusy(mdev.mainConfig.RtuConfig.Uart, mdev.PointId)
 		return nil
 	}
 	mdev.retryTimes = 0
@@ -292,7 +286,6 @@ func (mdev *generic_modbus_excel_device) Stop() {
 	if mdev.driver != nil {
 		mdev.driver.Stop()
 	}
-	archsupport.HwPortFree(mdev.mainConfig.RtuConfig.Uart)
 }
 
 // 设备属性，是一系列属性描述

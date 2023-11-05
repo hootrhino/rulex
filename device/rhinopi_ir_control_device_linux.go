@@ -2,9 +2,7 @@ package device
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
-	archsupport "github.com/hootrhino/rulex/bspsupport"
 	"syscall"
 	"time"
 	"unsafe"
@@ -46,11 +44,7 @@ func NewIRDevice(e typex.RuleX) typex.XDevice {
 //  初始化
 func (ird *IR) Init(devId string, configMap map[string]interface{}) error {
 	ird.PointId = devId
-	// 做端口管理
-	Port := archsupport.GetHwPort(__IR_DEV)
-	if Port.Busy {
-		return errors.New(Port.BusyingInfo())
-	}
+
 	return nil
 }
 
@@ -113,7 +107,6 @@ func (ird *IR) Start(cctx typex.CCTX) error {
 		}
 	}(ird)
 	ird.status = typex.DEV_UP
-	archsupport.HwPortBusy(__IR_DEV, ird.PointId)
 	return nil
 }
 
@@ -145,7 +138,6 @@ func (ird *IR) Stop() {
 	if ird.irFd != 0 {
 		syscall.Close(ird.irFd)
 	}
-	archsupport.HwPortFree(__IR_DEV)
 
 }
 

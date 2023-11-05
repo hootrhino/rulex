@@ -81,6 +81,7 @@ func LoadSystemSettingsAPI() {
 		settingsFirmware.POST("/restartRulex", server.AddRoute(ReStartRulex))
 		settingsFirmware.POST("/upload", server.AddRoute(UploadFirmWare))
 		settingsFirmware.POST("/upgrade", server.AddRoute(UpgradeFirmWare))
+		settingsFirmware.GET("/upGradeLog", server.AddRoute(GetUpGradeLog))
 		settingsFirmware.GET("/vendorKey", server.AddRoute(GetVendorKey))
 	}
 

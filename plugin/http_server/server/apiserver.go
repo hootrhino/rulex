@@ -213,16 +213,13 @@ func initStaticModel() {
 	target.LoadTt()
 	device.LoadDt()
 	// 初始化有线网口配置
-	if !service.CheckIfAlreadyInitNetWorkConfig() {
-		service.InitNetWorkConfig()
-	}
+	service.InitNetWorkConfig()
 	// 初始化WIFI配置
-	if !service.CheckIfAlreadyInitWlanConfig() {
-		service.InitWlanConfig()
-	}
+	service.InitWlanConfig()
 	// 初始化默认路由, 如果没有配置会在数据库生成关于eth1的一个默认路由数据
 	service.InitDefaultIpRoute()
-
+	// 初始化硬件接口参数
+	service.InitHwIfaceConfig()
 	// 配置一个默认分组
 	service.InitGenericGroup(&model.MGenericGroup{
 		UUID:   "VROOT",
@@ -247,7 +244,7 @@ func initStaticModel() {
 		&model.MUser{
 			Role:        "DefaultAdmin",
 			Username:    "hootrhino",
-			Password:    "25d55ad283aa400af464c76d713c07ad",//12345678
+			Password:    "25d55ad283aa400af464c76d713c07ad", //12345678
 			Description: "Default Rulex Admin User",
 		},
 	)

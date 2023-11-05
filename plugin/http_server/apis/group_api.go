@@ -100,6 +100,7 @@ func DeleteGroup(c *gin.Context, ruleEngine typex.RuleX) {
 	}
 	if err := service.DeleteGenericGroup(uuid); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
 	}
 	c.JSON(common.HTTP_OK, common.Ok())
 

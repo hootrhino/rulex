@@ -17,7 +17,6 @@ package archsupport
 
 import (
 	"encoding/json"
-	"fmt"
 )
 
 /*
@@ -26,11 +25,10 @@ import (
 * 警告：此处会随着硬件不同而不兼容，要移植的时候记得统一一下目标硬件的端口
 *
  */
-var __RhinoH3HwInterfaces map[string]*RhinoH3HwInterface
+var __RhinoH3HwInterfaces map[string]RhinoH3HwInterface
 
 func init() {
-	_InterfaceInit()
-
+	__RhinoH3HwInterfaces = map[string]RhinoH3HwInterface{}
 }
 
 /*
@@ -38,76 +36,24 @@ func init() {
 * 这里记录一些H3网关的硬件接口信息,同时记录串口是否被占用等
 *
  */
+type UartConfig struct {
+	Timeout  int
+	Uart     string
+	BaudRate int
+	DataBits int
+	Parity   string
+	StopBits int
+}
 type RhinoH3HwInterface struct {
-	Name     string `json:"name"`
-	Alias    string `json:"alias"`
-	Busy     bool   `json:"busy"`     // 是否被占
-	OccupyBy string `json:"OccupyBy"` // 被谁占用了
+	Name     string      // 接口名称
+	Type     string      // 接口类型, UART(串口),USB(USB),FD(通用文件句柄)
+	Alias    string      // 别名
+	Busy     bool        // 是否被占
+	OccupyBy string      // 被谁占用了
+	Config   interface{} // 配置, 串口配置、或者网卡、USB等
 }
 
 func (v RhinoH3HwInterface) String() string {
 	b, _ := json.Marshal(v)
 	return string(b)
-}
-
-func HwPortBusy(name string, occupy string) {
-	Port, ok := __RhinoH3HwInterfaces[name]
-	if ok {
-		Port.Busy = true
-		Port.OccupyBy = occupy
-	}
-}
-func HwPortFree(name string) {
-	Port, ok := __RhinoH3HwInterfaces[name]
-	if ok {
-		Port.Busy = false
-		Port.OccupyBy = ""
-	}
-}
-
-/*
-*
-* 展示自己的信息
-*
- */
-func (v RhinoH3HwInterface) BusyingInfo() string {
-	return fmt.Sprintf("Port [%s(%s)] is busying now, may be occupy by %s",
-		v.Name, v.Alias, v.OccupyBy)
-}
-func _InterfaceInit() {
-	__RhinoH3HwInterfaces = map[string]*RhinoH3HwInterface{
-		"/dev/ttyS1": {
-			Name:     "/dev/ttyS1",
-			Alias:    "RS4851(A1B1)",
-			Busy:     false,
-			OccupyBy: "",
-		},
-		"/dev/ttyS2": {
-			Name:     "/dev/ttyS2",
-			Alias:    "RS4851(A2B2)",
-			Busy:     false,
-			OccupyBy: "",
-		},
-		"/dev/input/event1": {
-			Name:     "/dev/input/event1",
-			Alias:    "IR RECEIVER",
-			Busy:     false,
-			OccupyBy: "",
-		},
-	}
-
-}
-func AllUartInterfaces() map[string]RhinoH3HwInterface {
-	r := map[string]RhinoH3HwInterface{}
-	for k, v := range __RhinoH3HwInterfaces {
-		r[k] = *v
-	}
-	return r
-}
-func GetHwPort(name string) RhinoH3HwInterface {
-	Port, ok := __RhinoH3HwInterfaces[name]
-	if ok {
-		return *Port
-	}
-	return RhinoH3HwInterface{Busy: false}
 }
