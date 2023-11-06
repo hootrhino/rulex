@@ -26,6 +26,7 @@ import (
 	"github.com/hootrhino/rulex/component/aibase"
 	"github.com/hootrhino/rulex/component/appstack"
 	"github.com/hootrhino/rulex/component/datacenter"
+	"github.com/hootrhino/rulex/component/hwportmanager"
 	"github.com/hootrhino/rulex/component/interdb"
 	"github.com/hootrhino/rulex/component/intermetric"
 	"github.com/hootrhino/rulex/component/interqueue"
@@ -81,8 +82,10 @@ func InitRuleEngine(config typex.RulexConfig) typex.RuleX {
 	}
 	// Internal DB
 	interdb.Init(__DefaultRuleEngine, __DEFAULT_DB_PATH)
+	// Load hardware Port Manager
+	hwportmanager.InitHwPortsManager(__DefaultRuleEngine)
 	// Internal Metric
-	intermetric.InitInternalMetric()
+	intermetric.InitInternalMetric(__DefaultRuleEngine)
 	// trailer
 	trailer.InitTrailerRuntime(__DefaultRuleEngine)
 	// lua appstack manager
@@ -92,7 +95,7 @@ func InitRuleEngine(config typex.RulexConfig) typex.RuleX {
 	// Internal Queue
 	interqueue.InitDataCacheQueue(__DefaultRuleEngine, core.GlobalConfig.MaxQueueSize)
 	// Data center
-	datacenter.InitDataCenter()
+	datacenter.InitDataCenter(__DefaultRuleEngine)
 	return __DefaultRuleEngine
 }
 

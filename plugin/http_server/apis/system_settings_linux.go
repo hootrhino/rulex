@@ -78,6 +78,7 @@ func LoadSystemSettingsAPI() {
 	settingsFirmware := server.RouteGroup(server.ContextUrl("/firmware"))
 	{
 		settingsFirmware.POST("/reboot", server.AddRoute(Reboot))
+		settingsFirmware.POST("/recoverNew", server.AddRoute(RecoverNew))
 		settingsFirmware.POST("/restartRulex", server.AddRoute(ReStartRulex))
 		settingsFirmware.POST("/upload", server.AddRoute(UploadFirmWare))
 		settingsFirmware.POST("/upgrade", server.AddRoute(UpgradeFirmWare))

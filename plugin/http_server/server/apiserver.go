@@ -219,7 +219,7 @@ func initStaticModel() {
 	// 初始化默认路由, 如果没有配置会在数据库生成关于eth1的一个默认路由数据
 	service.InitDefaultIpRoute()
 	// 初始化硬件接口参数
-	service.InitHwIfaceConfig()
+	service.InitHwPortConfig()
 	// 配置一个默认分组
 	service.InitGenericGroup(&model.MGenericGroup{
 		UUID:   "VROOT",

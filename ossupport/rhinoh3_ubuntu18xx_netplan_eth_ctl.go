@@ -24,7 +24,7 @@ network:
 */
 //
 // 读取Ip状态(静态/动态)  yaml
-type HwInterface struct {
+type HwPort struct {
 	Dhcp4       *bool    `yaml:"dhcp4" json:"dhcp4"`
 	Addresses   []string `yaml:"addresses" json:"addresses"`
 	Gateway4    string   `yaml:"gateway4" json:"gateway4"`
@@ -32,8 +32,8 @@ type HwInterface struct {
 }
 
 type EthInterface struct {
-	Eth0 HwInterface `yaml:"eth0" json:"eth0"`
-	Eth1 HwInterface `yaml:"eth1" json:"eth1"`
+	Eth0 HwPort `yaml:"eth0" json:"eth0"`
+	Eth1 HwPort `yaml:"eth1" json:"eth1"`
 }
 type Network struct {
 	Version   int          `yaml:"version" json:"version"`

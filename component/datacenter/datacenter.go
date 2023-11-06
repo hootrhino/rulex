@@ -15,6 +15,8 @@
 
 package datacenter
 
+import "github.com/hootrhino/rulex/typex"
+
 var __DefaultDataCenter *DataCenter
 
 /*
@@ -25,10 +27,12 @@ var __DefaultDataCenter *DataCenter
 type DataCenter struct {
 	ExternalDb ExternalDb
 	LocalDb    LocalDb
+	rulex      typex.RuleX
 }
 
-func InitDataCenter() {
+func InitDataCenter(rulex typex.RuleX) {
 	__DefaultDataCenter = new(DataCenter)
 	__DefaultDataCenter.ExternalDb = ExternalDb{}
 	__DefaultDataCenter.LocalDb = LocalDb{}
+	__DefaultDataCenter.rulex = rulex
 }

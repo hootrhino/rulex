@@ -50,6 +50,16 @@ func Reboot(c *gin.Context, ruleEngine typex.RuleX) {
 
 /*
 *
+* 回复出厂
+*
+ */
+func RecoverNew(c *gin.Context, ruleEngine typex.RuleX) {
+
+	c.JSON(common.HTTP_OK, common.Ok())
+}
+
+/*
+*
 * 获取本地升级日志
 *
  */

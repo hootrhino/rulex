@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/hootrhino/rulex/component/cron_task"
+	"github.com/hootrhino/rulex/component/hwportmanager"
 
 	"github.com/hootrhino/rulex/component/appstack"
 	"github.com/hootrhino/rulex/component/interdb"
@@ -43,10 +44,16 @@ func NewHttpApiServer(ruleEngine typex.RuleX) *ApiServerPlugin {
 
 /*
 *
-* 初始化RULEX
+* 初始化RULEX, 初始化数据到运行时
 *
  */
 func initRulex(engine typex.RuleX) {
+	/*
+	*
+	* 加载Port
+	*
+	 */
+	loadAllPortConfig()
 	/*
 	*
 	* 加载schema到内存中
@@ -127,7 +134,46 @@ func initRulex(engine typex.RuleX) {
 			}
 		}
 	}
+
 }
+
+/*
+*
+* 从数据库拿端口配置
+*
+ */
+func loadAllPortConfig() {
+	MHwPorts, err := service.AllHwPort()
+	if err != nil {
+		glogger.GLogger.Fatal(err)
+		return
+	}
+	for _, MHwPort := range MHwPorts {
+		Port := hwportmanager.RhinoH3HwPort{
+			UUID:        MHwPort.UUID,
+			Name:        MHwPort.Name,
+			Type:        MHwPort.Type,
+			Alias:       MHwPort.Alias,
+			Description: MHwPort.Description,
+		}
+		// 串口
+		if MHwPort.Type == "UART" {
+			config := hwportmanager.UartConfig{}
+			if err := utils.BindConfig(MHwPort.GetConfig(), &config); err != nil {
+				glogger.GLogger.Error(err) // 这里必须不能出错
+				continue
+			}
+			Port.Config = config
+			hwportmanager.SetHwPort(Port)
+		}
+		// 未知接口参数为空，以后扩展，比如FD
+		if MHwPort.Type != "UART" {
+			Port.Config = nil
+			hwportmanager.SetHwPort(Port)
+		}
+	}
+}
+
 func (hs *ApiServerPlugin) Init(config *ini.Section) error {
 	if err := utils.InIMapToStruct(config, &hs.mainConfig); err != nil {
 		return err
@@ -154,7 +200,7 @@ func (hs *ApiServerPlugin) Init(config *ini.Section) error {
 		&model.MIpRoute{},
 		&model.MCronTask{},
 		&model.MCronResult{},
-		&model.MHwInterface{},
+		&model.MHwPort{},
 	)
 	// 初始化所有预制参数
 	server.DefaultApiServer.InitializeGenericOSData()
@@ -423,9 +469,9 @@ func (hs *ApiServerPlugin) LoadRoute() {
 	// 硬件接口API
 	HwIFaceApi := server.DefaultApiServer.GetGroup(server.ContextUrl("/hwiface"))
 	{
-		HwIFaceApi.GET("/detail", server.AddRoute(apis.GetHwInterfaceDetail))
-		HwIFaceApi.GET("/list", server.AddRoute(apis.AllHwInterfaces))
-		HwIFaceApi.POST("/update", server.AddRoute(apis.UpdateHwInterfaceConfig))
+		HwIFaceApi.GET("/detail", server.AddRoute(apis.GetHwPortDetail))
+		HwIFaceApi.GET("/list", server.AddRoute(apis.AllHwPorts))
+		HwIFaceApi.POST("/update", server.AddRoute(apis.UpdateHwPortConfig))
 	}
 	//
 	// 系统设置

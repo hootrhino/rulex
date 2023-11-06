@@ -30,7 +30,7 @@ type UartConfigDto struct {
 	Parity   string
 	StopBits int
 }
-type HwInterfaceDto struct {
+type HwPortDto struct {
 	UUID     string
 	Name     string        // 接口名称
 	Type     string        // 接口类型, UART(串口),USB(USB),FD(通用文件句柄)
@@ -53,37 +53,37 @@ func (u UartConfigDto) JsonString() string {
 * 所有的接口列表配置
 *
  */
-func AllHwInterface() ([]model.MHwInterface, error) {
-	Ifaces := []model.MHwInterface{}
-	return Ifaces, interdb.DB().
-		Model(&model.MHwInterface{}).Find(&Ifaces).Error
+func AllHwPort() ([]model.MHwPort, error) {
+	ports := []model.MHwPort{}
+	return ports, interdb.DB().
+		Model(&model.MHwPort{}).Find(&ports).Error
 }
 
 /*
 *
-* 配置WIFI HwInterface
+* 配置WIFI HwPort
 *
  */
-func UpdateHwInterfaceConfig(MHwInterface model.MHwInterface) error {
-	Model := model.MHwInterface{}
+func UpdateHwPortConfig(MHwPort model.MHwPort) error {
+	Model := model.MHwPort{}
 	return interdb.DB().
 		Model(Model).
 		Where("uuid=? AND name=?",
-			MHwInterface.UUID, MHwInterface.Name).
-		Updates(MHwInterface).Error
+			MHwPort.UUID, MHwPort.Name).
+		Updates(MHwPort).Error
 }
 
 /*
 *
-* 获取HwInterface的配置信息
+* 获取HwPort的配置信息
 *
  */
-func GetHwInterfaceConfig(uuid string) (model.MHwInterface, error) {
-	MHwInterface := model.MHwInterface{}
+func GetHwPortConfig(uuid string) (model.MHwPort, error) {
+	MHwPort := model.MHwPort{}
 	err := interdb.DB().
 		Where("uuid=?", uuid).
-		Find(&MHwInterface).Error
-	return MHwInterface, err
+		Find(&MHwPort).Error
+	return MHwPort, err
 }
 
 /*
@@ -91,9 +91,9 @@ func GetHwInterfaceConfig(uuid string) (model.MHwInterface, error) {
 * 初始化网卡配置参数
 *
  */
-func InitHwIfaceConfig() error {
+func InitHwPortConfig() error {
 
-	S1 := model.MHwInterface{
+	S1 := model.MHwPort{
 		UUID:        "/dev/ttyS1",
 		Name:        "/dev/ttyS1",
 		Type:        "UART",
@@ -109,7 +109,7 @@ func InitHwIfaceConfig() error {
 		StopBits: 1,
 	}
 	S1.Config = uartCfg1.JsonString()
-	S2 := model.MHwInterface{
+	S2 := model.MHwPort{
 		UUID:        "/dev/ttyS2",
 		Name:        "/dev/ttyS2",
 		Type:        "UART",
@@ -127,16 +127,17 @@ func InitHwIfaceConfig() error {
 	S2.Config = uartCfg2.JsonString()
 	//
 	err1 := interdb.DB().
-		Table("m_hw_interfaces").Where("uuid", "/dev/ttyS1").
+		Model(S1).Where("uuid", "/dev/ttyS1").
 		FirstOrCreate(&S1).Error
 	if err1 != nil {
 		return err1
 	}
 	err2 := interdb.DB().
-		Table("m_hw_interfaces").Where("uuid", "/dev/ttyS2").
+		Model(S2).Where("uuid", "/dev/ttyS2").
 		FirstOrCreate(&S2).Error
 	if err2 != nil {
 		return err2
 	}
+
 	return nil
 }

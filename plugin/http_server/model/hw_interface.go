@@ -16,7 +16,7 @@ package model
 
 import "gopkg.in/square/go-jose.v2/json"
 
-type MHwInterface struct {
+type MHwPort struct {
 	RulexModel
 	UUID        string `gorm:"not null"`
 	Name        string `gorm:"not null"` // 接口名称
@@ -26,7 +26,7 @@ type MHwInterface struct {
 	Config      string `gorm:"not null"` // 配置, 串口配置、或者网卡、USB等
 }
 
-func (md MHwInterface) GetConfig() map[string]interface{} {
+func (md MHwPort) GetConfig() map[string]interface{} {
 	result := map[string]interface{}{}
 	err := json.Unmarshal([]byte(md.Config), &result)
 	if err != nil {
