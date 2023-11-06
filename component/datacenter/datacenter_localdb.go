@@ -15,24 +15,69 @@
 
 package datacenter
 
+import "github.com/hootrhino/rulex/typex"
+
 /*
 *
 * 本地数据库是Sqlite，用来存储比如Modbus等数据
 *
  */
 type LocalDb struct {
+	Sqlite *SqliteDAO
+	rulex  typex.RuleX
 }
 
-func Init(ldb *LocalDb) error {
+func InitLocalDb(rulex typex.RuleX) DataSource {
+	return &LocalDb{
+		Sqlite: InitSqliteDAO(rulex),
+		rulex:  rulex,
+	}
+}
+
+func (ldb *LocalDb) Init() error {
 	return nil
 }
 
-func (ldb *LocalDb) Name() string {
-	return "LOCALDB"
-}
 func (ldb *LocalDb) GetSchemaDetail(goodsId string) SchemaDetail {
-	return SchemaDetail{}
+	return SchemaDetail{
+		UUID:        "INTERNAL_DATACENTER",
+		SchemaType:  "INTERNAL_DATACENTER",
+		Name:        "RULEX内置轻量级数据仓库",
+		LocalPath:   ".local",
+		NetAddr:     ".local",
+		CreateTs:    0,
+		Size:        0,
+		StorePath:   ".local",
+		Description: "本地内部数据中心",
+	}
 }
+
+/*
+*
+* 此处执行SQL
+*
+ */
 func (ldb *LocalDb) Query(goodsId, query string) ([]map[string]any, error) {
-	return []map[string]any{}, nil
+	Rows := []map[string]any{}
+	// 第一行数据
+	// Row1 := map[string]any{
+	// 	"Key1": 1,
+	// 	"Key2": 1,
+	// 	"Key3": 1,
+	// 	"Key4": 1,
+	// 	"Key5": 1,
+	// 	"Key6": 1,
+	// }
+	// // 第二行数据
+	// Row2 := map[string]any{
+	// 	"Key1": 1,
+	// 	"Key2": 1,
+	// 	"Key3": 1,
+	// 	"Key4": 1,
+	// 	"Key5": 1,
+	// 	"Key6": 1,
+	// }
+	// Rows = append(Rows, Row1)
+	// Rows = append(Rows, Row2)
+	return Rows, nil
 }

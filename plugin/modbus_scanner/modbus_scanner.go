@@ -27,28 +27,18 @@ import (
 * 串口配置
 *
  */
-type __UartConfig struct {
-	Timeout  int    `json:"timeout" validate:"required"`
-	Uart     string `json:"uart" validate:"required"`
-	BaudRate int    `json:"baudRate" validate:"required"`
-	DataBits int    `json:"dataBits" validate:"required"`
-	Parity   string `json:"parity" validate:"required"`
-	StopBits int    `json:"stopBits" validate:"required"`
-}
 type modbusScanner struct {
-	uuid       string
-	UartConfig __UartConfig
-	busying    bool
-	ctx        context.Context
-	cancel     context.CancelFunc
+	uuid    string
+	busying bool
+	ctx     context.Context
+	cancel  context.CancelFunc
 }
 
 func NewModbusScanner() *modbusScanner {
 
 	return &modbusScanner{
-		uuid:       "MODBUS_SCANNER",
-		UartConfig: __UartConfig{},
-		busying:    false,
+		uuid:    "MODBUS_SCANNER",
+		busying: false,
 	}
 }
 
