@@ -20,6 +20,7 @@ import (
 
 	"github.com/hootrhino/rulex/component/interdb"
 	"github.com/hootrhino/rulex/plugin/http_server/model"
+	"go.bug.st/serial"
 )
 
 type UartConfigDto struct {
@@ -92,52 +93,63 @@ func GetHwPortConfig(uuid string) (model.MHwPort, error) {
 *
  */
 func InitHwPortConfig() error {
-
-	S1 := model.MHwPort{
-		UUID:        "/dev/ttyS1",
-		Name:        "/dev/ttyS1",
-		Type:        "UART",
-		Alias:       "RS4851(A1B1)",
-		Description: "RS4851号串口",
-	}
-	uartCfg1 := UartConfigDto{
-		Timeout:  3000,
-		Uart:     "/dev/ttyS1",
-		BaudRate: 9600,
-		DataBits: 8,
-		Parity:   "N",
-		StopBits: 1,
-	}
-	S1.Config = uartCfg1.JsonString()
-	S2 := model.MHwPort{
-		UUID:        "/dev/ttyS2",
-		Name:        "/dev/ttyS2",
-		Type:        "UART",
-		Alias:       "RS4851(A2B2)",
-		Description: "RS4852号串口",
-	}
-	uartCfg2 := UartConfigDto{
-		Timeout:  3000,
-		Uart:     "/dev/ttyS2",
-		BaudRate: 9600,
-		DataBits: 8,
-		Parity:   "N",
-		StopBits: 1,
-	}
-	S2.Config = uartCfg2.JsonString()
-	//
-	err1 := interdb.DB().
-		Model(S1).Where("uuid", "/dev/ttyS1").
-		FirstOrCreate(&S1).Error
-	if err1 != nil {
-		return err1
-	}
-	err2 := interdb.DB().
-		Model(S2).Where("uuid", "/dev/ttyS2").
-		FirstOrCreate(&S2).Error
-	if err2 != nil {
-		return err2
+	for _, portName := range getOsPort() {
+		Port := model.MHwPort{
+			UUID:        portName,
+			Name:        portName,
+			Type:        "UART",
+			Alias:       portName,
+			Description: portName,
+		}
+		uartCfg := UartConfigDto{
+			Timeout:  3000,
+			Uart:     portName,
+			BaudRate: 9600,
+			DataBits: 8,
+			Parity:   "N",
+			StopBits: 1,
+		}
+		Port.Config = uartCfg.JsonString()
+		err1 := interdb.DB().
+			Model(Port).Where("uuid", portName).
+			FirstOrCreate(&Port).Error
+		if err1 != nil {
+			return err1
+		}
 	}
 
 	return nil
+}
+
+/*
+*
+* 获取系统串口
+*
+ */
+func getOsPort() []string {
+	ports, _ := serial.GetPortsList()
+	List := []string{}
+	for _, port := range ports {
+		// 明确知道有这么多端口，啰嗦代码是为了标记以免以后忘记
+		if port == "COM0" {
+			continue
+		}
+		if port == "/dev/ttyS0" {
+			continue
+		}
+		if port == "/dev/ttyS3" {
+			continue
+		}
+		if port == "/dev/ttyUSB0" {
+			continue
+		}
+		if port == "/dev/ttyUSB1" {
+			continue
+		}
+		if port == "/dev/ttyUSB2" {
+			continue
+		}
+		List = append(List, port)
+	}
+	return List
 }
