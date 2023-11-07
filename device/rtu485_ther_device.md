@@ -10,7 +10,7 @@ TC-S200 系列空气质量监测仪内置 PM2.5、TVOC、甲醛、CO2，温湿�
     "name": "RTU485_THER",
     "type": "RTU485_THER",
     "config": {
-        "mode": "RTU",
+        "mode": "UART",
         "timeout": 10,
         "frequency": 5,
         "autoRequest": true,

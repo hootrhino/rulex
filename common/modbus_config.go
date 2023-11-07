@@ -76,7 +76,7 @@ type RTUConfig struct {
 	StopBits int    `json:"stopBits" validate:"required" title:"停止位" info:"串口通信停止位"`
 }
 type ModBusConfig struct {
-	Mode    string `json:"mode" title:"工作模式" info:"RTU/TCP"`
+	Mode    string `json:"mode" title:"工作模式" info:"UART/TCP"`
 	Timeout int    `json:"timeout" validate:"required" title:"连接超时"`
 	// Weather allow AutoRequest?
 	AutoRequest bool `json:"autoRequest" title:"启动轮询"`

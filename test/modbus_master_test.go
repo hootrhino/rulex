@@ -13,7 +13,7 @@ type registerParam struct {
 }
 
 type ModBusConfig struct {
-	Mode     string `json:"mode" title:"工作模式" info:"可以在 RTU/TCP 两个模式之间切换"`
+	Mode     string `json:"mode" title:"工作模式" info:"可以在 UART/TCP 两个模式之间切换"`
 	Timeout  int    `json:"timeout" validate:"required" title:"连接超时"`
 	SlaverId byte   `json:"slaverId" validate:"required" title:"TCP端口"`
 	//
@@ -58,7 +58,7 @@ func TestMaster(t *testing.T) {
 		},
 	}
 	d2 := ModBusConfig{
-		Mode:      "RTU",
+		Mode:      "UART",
 		Timeout:   5,
 		SlaverId:  1,
 		Frequency: 5,

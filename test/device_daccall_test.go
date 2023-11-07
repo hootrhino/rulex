@@ -28,7 +28,7 @@ func Test_dac_call_device(t *testing.T) {
 	GMODBUS := typex.NewDevice(typex.GENERIC_MODBUS,
 		"GENERIC_MODBUS", "GENERIC_MODBUS", map[string]interface{}{
 			"mode": "TCP",
-			// "mode":      "RTU",
+			// "mode":      "UART",
 			"timeout":   10,
 			"frequency": 5,
 			"config": map[string]interface{}{

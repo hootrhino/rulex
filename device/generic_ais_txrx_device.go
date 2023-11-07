@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net"
 	"reflect"
@@ -12,6 +13,8 @@ import (
 
 	"github.com/adrianmo/go-nmea"
 	aislib "github.com/hootrhino/go-ais"
+	"github.com/hootrhino/rulex/common"
+	"github.com/hootrhino/rulex/component/hwportmanager"
 	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/typex"
 	"github.com/hootrhino/rulex/utils"
@@ -23,18 +26,23 @@ var __AisCodec = aislib.CodecNew(false, false, false)
 // --------------------------------------------------------------------------------------------------
 // 把AIS包里面的几个结构体拿出来了，主要是适配JSON格式, 下面这些结构体和AIS包里面的完全一样
 // --------------------------------------------------------------------------------------------------
-type _AISDeviceMasterConfig struct {
-	Mode     string `json:"mode"` // TCP UDP UART
-	Host     string `json:"host" validate:"required"`
-	Port     int    `json:"port" validate:"required"`
+type _AISCommonConfig struct {
+	Mode     string `json:"mode" title:"工作模式" info:"UART/TCP"`
 	ParseAis bool   `json:"parseAis"`
+}
+type _AISDeviceMasterConfig struct {
+	CommonConfig _AISCommonConfig  `json:"commonConfig"`
+	HostConfig   common.HostConfig `json:"hostConfig"`
+	PortUuid     string            `json:"portUuid"`
 }
 type AISDeviceMaster struct {
 	typex.XStatus
-	status      typex.DeviceState
-	mainConfig  _AISDeviceMasterConfig
-	RuleEngine  typex.RuleX
-	tcpListener net.Listener // TCP 接收端
+	status       typex.DeviceState
+	mainConfig   _AISDeviceMasterConfig
+	RuleEngine   typex.RuleX
+	tcpListener  net.Listener // TCP 接收端
+	hwPortConfig hwportmanager.UartConfig
+
 	// session
 	DevicesSessionMap map[string]*__AISDeviceSession
 }
@@ -48,10 +56,15 @@ func NewAISDeviceMaster(e typex.RuleX) typex.XDevice {
 	aism := new(AISDeviceMaster)
 	aism.RuleEngine = e
 	aism.mainConfig = _AISDeviceMasterConfig{
-		Mode:     "TCP",
-		Host:     "127.0.0.1",
-		Port:     6005,
-		ParseAis: false,
+		HostConfig: common.HostConfig{
+			Host:    "127.0.0.1",
+			Port:    6005,
+			Timeout: 3000,
+		},
+		CommonConfig: _AISCommonConfig{
+			Mode:     "TCP",
+			ParseAis: false,
+		},
 	}
 	aism.DevicesSessionMap = map[string]*__AISDeviceSession{}
 	return aism
@@ -63,6 +76,29 @@ func (aism *AISDeviceMaster) Init(devId string, configMap map[string]interface{}
 	if err := utils.BindSourceConfig(configMap, &aism.mainConfig); err != nil {
 		return err
 	}
+	if !utils.SContains([]string{"UART", "TCP"}, aism.mainConfig.CommonConfig.Mode) {
+		return errors.New("unsupported mode, only can be one of 'TCP' or 'RTU'")
+	}
+
+	if aism.mainConfig.CommonConfig.Mode == "UART" {
+		hwPort, err := hwportmanager.GetHwPort(aism.mainConfig.PortUuid)
+		if err != nil {
+			return err
+		}
+		if hwPort.Busy {
+			return fmt.Errorf("UART is busying now, Occupied By:%s", hwPort.OccupyBy)
+		}
+		switch tCfg := hwPort.Config.(type) {
+		case hwportmanager.UartConfig:
+			{
+				aism.hwPortConfig = tCfg
+			}
+		default:
+			{
+				return fmt.Errorf("invalid config:%s", hwPort.Config)
+			}
+		}
+	}
 
 	return nil
 }
@@ -71,17 +107,24 @@ func (aism *AISDeviceMaster) Init(devId string, configMap map[string]interface{}
 func (aism *AISDeviceMaster) Start(cctx typex.CCTX) error {
 	aism.Ctx = cctx.Ctx
 	aism.CancelCTX = cctx.CancelCTX
-	//
-	listener, err := net.Listen("tcp",
-		fmt.Sprintf("%s:%v", aism.mainConfig.Host, aism.mainConfig.Port))
-	if err != nil {
-		return err
+	if aism.mainConfig.CommonConfig.Mode == "TCP" {
+		//
+		listener, err := net.Listen("tcp",
+			fmt.Sprintf("%s:%v", aism.mainConfig.HostConfig.Host, aism.mainConfig.HostConfig.Port))
+		if err != nil {
+			return err
+		}
+		aism.tcpListener = listener
+		glogger.GLogger.Infof("AIS TCP server started on TCP://%s:%v",
+			aism.mainConfig.HostConfig.Host, aism.mainConfig.HostConfig.Port)
+		go aism.handleTcpConnect(listener)
+		aism.status = typex.DEV_UP
 	}
-	aism.tcpListener = listener
-	glogger.GLogger.Infof("AIS TCP server started on TCP://%s:%v",
-		aism.mainConfig.Host, aism.mainConfig.Port)
-	go aism.handleConnect(listener)
-	aism.status = typex.DEV_UP
+	if aism.mainConfig.CommonConfig.Mode == "UART" {
+		msg := "UART Mode Not Support In Current Version"
+		glogger.GLogger.Debug(msg)
+		return fmt.Errorf(msg)
+	}
 	return nil
 }
 
@@ -108,6 +151,9 @@ func (aism *AISDeviceMaster) Stop() {
 	}
 	if aism.tcpListener != nil {
 		aism.tcpListener.Close()
+	}
+	if aism.mainConfig.CommonConfig.Mode == "UART" {
+		hwportmanager.FreeInterfaceBusy(aism.mainConfig.PortUuid)
 	}
 }
 
@@ -153,7 +199,7 @@ func (aism *AISDeviceMaster) OnCtrl(cmd []byte, args []byte) ([]byte, error) {
 * 处理连接
 *
  */
-func (aism *AISDeviceMaster) handleConnect(listener net.Listener) {
+func (aism *AISDeviceMaster) handleTcpConnect(listener net.Listener) {
 	for {
 		select {
 		case <-aism.Ctx.Done():
@@ -170,7 +216,7 @@ func (aism *AISDeviceMaster) handleConnect(listener net.Listener) {
 			continue
 		}
 		ctx, cancel := context.WithCancel(aism.Ctx)
-		go aism.handleAuth(ctx, cancel, &__AISDeviceSession{
+		go aism.handleTcpAuth(ctx, cancel, &__AISDeviceSession{
 			Transport: tcpcon,
 		})
 
@@ -190,7 +236,7 @@ type __AISDeviceSession struct {
 	Transport net.Conn // TCP连接
 }
 
-func (aism *AISDeviceMaster) handleAuth(ctx context.Context,
+func (aism *AISDeviceMaster) handleTcpAuth(ctx context.Context,
 	cancel context.CancelFunc, session *__AISDeviceSession) {
 	// 5秒内读一个SN
 	session.Transport.SetDeadline(time.Now().Add(5 * time.Second))
@@ -238,7 +284,7 @@ func (aism *AISDeviceMaster) handleIO(session *__AISDeviceSession) {
 			return
 		}
 		// 如果不需要解析,直接原文透传
-		if !aism.mainConfig.ParseAis {
+		if !aism.mainConfig.CommonConfig.ParseAis {
 			// {
 			//     "ais_receiver_device":"%s",
 			//     "ais_data":"%s"

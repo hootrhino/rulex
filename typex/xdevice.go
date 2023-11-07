@@ -13,26 +13,30 @@ import (
 type DeviceState int
 
 const (
-	// 外部停止
-	DEV_STOP DeviceState = 0
+	// 设备故障
+	DEV_DOWN DeviceState = 0
 	// 设备启用
 	DEV_UP DeviceState = 1
-	// 设备故障
-	DEV_DOWN DeviceState = 2
+	// 暂停，这是个占位值，只为了和其他地方统一值,但是没用
+	_ DeviceState = 2
+	// 外部停止
+	DEV_STOP DeviceState = 3
 )
 
 func (s DeviceState) String() string {
-	if s == 2 {
+	if s == 0 {
 		return "DOWN"
 	}
 	if s == 1 {
 		return "UP"
 	}
-	if s == 0 {
+	if s == 2 {
+		return "PAUSE"
+	}
+	if s == 3 {
 		return "STOP"
 	}
-	return "UnKnown State"
-
+	return "ERROR"
 }
 
 type DeviceType string
@@ -52,7 +56,7 @@ const (
 	GENERIC_PROTOCOL           DeviceType = "GENERIC_PROTOCOL"           // 通用自定义协议处理器
 	GENERIC_OPCUA              DeviceType = "GENERIC_OPCUA"              // 通用OPCUA
 	GENERIC_CAMERA             DeviceType = "GENERIC_CAMERA"             // 通用摄像头
-	GENERIC_AIS                DeviceType = "GENERIC_AIS"                // 通用AIS
+	GENERIC_AIS_RECEIVER       DeviceType = "GENERIC_AIS_RECEIVER"       // 通用AIS
 	GENERIC_BACNET_IP          DeviceType = "GENERIC_BACNET_IP"          // 通用BacnetIP
 	RHINOPI_IR                 DeviceType = "RHINOPI_IR"                 // 大犀牛PI的红外线接收器
 )

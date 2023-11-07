@@ -22,7 +22,7 @@ func Test_TSS200_ReadData(t *testing.T) {
 
 	tss200 := typex.NewDevice(typex.TSS200V02,
 		"TSS200V02", "TSS200V02", map[string]interface{}{
-			"mode":      "RTU",
+			"mode":      "UART",
 			"timeout":   10,
 			"frequency": 5,
 			"config": map[string]interface{}{

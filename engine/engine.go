@@ -517,7 +517,7 @@ func (e *RuleEngine) InitDeviceTypeManager() error {
 			NewDevice: device.NewVideoCamera,
 		},
 	)
-	e.DeviceTypeManager.Register(typex.GENERIC_AIS,
+	e.DeviceTypeManager.Register(typex.GENERIC_AIS_RECEIVER,
 		&typex.XConfig{
 			Engine:    e,
 			NewDevice: device.NewAISDeviceMaster,

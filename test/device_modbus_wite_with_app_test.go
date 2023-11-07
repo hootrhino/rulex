@@ -54,7 +54,7 @@ func Test_Modbus_App_Write(t *testing.T) {
 	modbusDevice := typex.NewDevice(typex.GENERIC_PROTOCOL,
 		"GENERIC_PROTOCOL", "GENERIC_PROTOCOL", map[string]interface{}{
 			// "mode": "TCP",
-			"mode":        "RTU",
+			"mode":        "UART",
 			"autoRequest": false,
 			"timeout":     10,
 			"frequency":   5,

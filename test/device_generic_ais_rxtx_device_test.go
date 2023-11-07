@@ -112,13 +112,13 @@ func Test_generic_ais_txrx_device(t *testing.T) {
 	if err := engine.LoadPlugin("plugin.http_server", hh); err != nil {
 		t.Fatal(err)
 	}
-	GENERIC_AIS := typex.NewDevice(typex.GENERIC_AIS,
-		"GENERIC_AIS", "GENERIC_AIS", map[string]interface{}{
+	GENERIC_AIS_RECEIVER := typex.NewDevice(typex.GENERIC_AIS_RECEIVER,
+		"GENERIC_AIS_RECEIVER", "GENERIC_AIS_RECEIVER", map[string]interface{}{
 			"host": "0.0.0.0",
 			"port": 6005,
 		})
 	ctx, cancelF := typex.NewCCTX()
-	if err := engine.LoadDeviceWithCtx(GENERIC_AIS, ctx, cancelF); err != nil {
+	if err := engine.LoadDeviceWithCtx(GENERIC_AIS_RECEIVER, ctx, cancelF); err != nil {
 		t.Fatal(err)
 	}
 	time.Sleep(25 * time.Second)

@@ -25,6 +25,7 @@ import (
 	"time"
 
 	"github.com/hootrhino/rulex/common"
+	"github.com/hootrhino/rulex/component/hwportmanager"
 	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/typex"
 	"github.com/hootrhino/rulex/utils"
@@ -32,16 +33,10 @@ import (
 )
 
 // 读出来的字节缓冲默认大小
-const __DEFAULT_BUFFER_SIZE = 100
-
-// 传输形式：
-// `rawtcp`, `rawudp`, `rawserial`
-const rawtcp string = "rawtcp"
-const rawudp string = "rawudp"
-const rawserial string = "rawserial"
+const __DEFAULT_BUFFER_SIZE = 1024
 
 type _CPDCommonConfig struct {
-	Transport string `json:"transport" validate:"required"` // 传输协议
+	Mode      string `json:"mode" validate:"required"`      // 传输协议
 	RetryTime int    `json:"retryTime" validate:"required"` // 几次以后重启,0 表示不重启
 }
 
@@ -51,18 +46,19 @@ type _CPDCommonConfig struct {
 *
  */
 type _CustomProtocolConfig struct {
-	CommonConfig _CPDCommonConfig        `json:"commonConfig" validate:"required"`
-	UartConfig   common.CommonUartConfig `json:"uartConfig" validate:"required"`
-	HostConfig   common.HostConfig       `json:"hostConfig" validate:"required"`
+	CommonConfig _CPDCommonConfig  `json:"commonConfig" validate:"required"`
+	PortUuid     string            `json:"portUuid"`
+	HostConfig   common.HostConfig `json:"hostConfig" validate:"required"`
 }
 type CustomProtocolDevice struct {
 	typex.XStatus
-	status     typex.DeviceState
-	RuleEngine typex.RuleX
-	serialPort *serial.Port // 串口
-	tcpcon     net.Conn     // TCP
-	mainConfig _CustomProtocolConfig
-	errorCount int // 记录最大容错数，默认5次，出错超过5此就重启
+	status       typex.DeviceState
+	RuleEngine   typex.RuleX
+	serialPort   *serial.Port // 串口
+	tcpcon       net.Conn     // TCP
+	mainConfig   _CustomProtocolConfig
+	errorCount   int // 记录最大容错数，默认5次，出错超过5此就重启
+	hwPortConfig hwportmanager.UartConfig
 }
 
 func NewCustomProtocolDevice(e typex.RuleX) typex.XDevice {
@@ -70,8 +66,8 @@ func NewCustomProtocolDevice(e typex.RuleX) typex.XDevice {
 	mdev.RuleEngine = e
 	mdev.mainConfig = _CustomProtocolConfig{
 		CommonConfig: _CPDCommonConfig{},
-		UartConfig:   common.CommonUartConfig{},
-		HostConfig:   common.HostConfig{Timeout: 50},
+		PortUuid:     "/dev/ttyS0",
+		HostConfig:   common.HostConfig{Host: "127.0.0.1", Port: 502, Timeout: 3000},
 	}
 	return mdev
 
@@ -83,12 +79,28 @@ func (mdev *CustomProtocolDevice) Init(devId string, configMap map[string]interf
 	if err := utils.BindSourceConfig(configMap, &mdev.mainConfig); err != nil {
 		return err
 	}
-	if !utils.SContains([]string{"N", "E", "O"}, mdev.mainConfig.UartConfig.Parity) {
-		return errors.New("parity value only one of 'N','O','E'")
+	if !utils.SContains([]string{`TCP`, `UART`},
+		mdev.mainConfig.CommonConfig.Mode) {
+		return errors.New("option only one of 'TCP','UART'")
 	}
-	if !utils.SContains([]string{`rawtcp`, `rawudp`, `rawserial`},
-		mdev.mainConfig.CommonConfig.Transport) {
-		return errors.New("option only one of 'rawtcp','rawudp','rawserial'")
+	if mdev.mainConfig.CommonConfig.Mode == "UART" {
+		hwPort, err := hwportmanager.GetHwPort(mdev.mainConfig.PortUuid)
+		if err != nil {
+			return err
+		}
+		if hwPort.Busy {
+			return fmt.Errorf("UART is busying now, Occupied By:%s", hwPort.OccupyBy)
+		}
+		switch tCfg := hwPort.Config.(type) {
+		case hwportmanager.UartConfig:
+			{
+				mdev.hwPortConfig = tCfg
+			}
+		default:
+			{
+				return fmt.Errorf("invalid config:%s", hwPort.Config)
+			}
+		}
 	}
 	return nil
 }
@@ -101,27 +113,33 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 	mdev.status = typex.DEV_DOWN
 
 	// 现阶段暂时只支持RS485串口, 以后有需求再支持TCP、UDP
-	if mdev.mainConfig.CommonConfig.Transport == "rawserial" {
+	if mdev.mainConfig.CommonConfig.Mode == "rawserial" {
+
 		config := serial.Config{
-			Name:        mdev.mainConfig.UartConfig.Uart,
-			Baud:        mdev.mainConfig.UartConfig.BaudRate,
-			Size:        byte(mdev.mainConfig.UartConfig.DataBits),
-			Parity:      serial.Parity(mdev.mainConfig.UartConfig.Parity[0]),
-			StopBits:    serial.StopBits(mdev.mainConfig.UartConfig.StopBits),
-			ReadTimeout: time.Duration(mdev.mainConfig.UartConfig.Timeout) * time.Millisecond,
+			Name:        mdev.hwPortConfig.Uart,
+			Baud:        mdev.hwPortConfig.BaudRate,
+			Size:        byte(mdev.hwPortConfig.DataBits),
+			Parity:      serial.Parity(mdev.hwPortConfig.Parity[0]),
+			StopBits:    serial.StopBits(mdev.hwPortConfig.StopBits),
+			ReadTimeout: time.Duration(mdev.hwPortConfig.Timeout) * time.Millisecond,
 		}
 		serialPort, err := serial.OpenPort(&config)
 		if err != nil {
 			glogger.GLogger.Error("serialPort start failed:", err)
 			return err
 		}
+		hwportmanager.SetInterfaceBusy(mdev.mainConfig.PortUuid,
+			hwportmanager.HwPortOccupy{
+				UUID: mdev.PointId,
+				Type: "DEVICE",
+			})
 		mdev.serialPort = serialPort
 		mdev.status = typex.DEV_UP
 		return nil
 	}
 
 	// rawtcp
-	if mdev.mainConfig.CommonConfig.Transport == "rawtcp" {
+	if mdev.mainConfig.CommonConfig.Mode == "rawtcp" {
 		tcpcon, err := net.Dial("tcp",
 			fmt.Sprintf("%s:%d", mdev.mainConfig.HostConfig.Host,
 				mdev.mainConfig.HostConfig.Port))
@@ -133,7 +151,7 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 		mdev.status = typex.DEV_UP
 		return nil
 	}
-	return fmt.Errorf("unsupported transport:%s", mdev.mainConfig.CommonConfig.Transport)
+	return fmt.Errorf("unsupported Mode:%s", mdev.mainConfig.CommonConfig.Mode)
 }
 
 /*
@@ -180,15 +198,16 @@ func (mdev *CustomProtocolDevice) Status() typex.DeviceState {
 func (mdev *CustomProtocolDevice) Stop() {
 	mdev.CancelCTX()
 	mdev.status = typex.DEV_DOWN
-	if mdev.mainConfig.CommonConfig.Transport == rawtcp {
+	if mdev.mainConfig.CommonConfig.Mode == "TCP" {
 		if mdev.tcpcon != nil {
 			mdev.tcpcon.Close()
 		}
 	}
-	if mdev.mainConfig.CommonConfig.Transport == rawserial {
+	if mdev.mainConfig.CommonConfig.Mode == "UART" {
 		if mdev.serialPort != nil {
 			mdev.serialPort.Close()
 		}
+		hwportmanager.FreeInterfaceBusy(mdev.mainConfig.PortUuid)
 	}
 }
 
@@ -235,15 +254,15 @@ func (mdev *CustomProtocolDevice) ctrl(args []byte) ([]byte, error) {
 	glogger.GLogger.Debug("Custom Protocol Device Request:", hexs)
 	result := [__DEFAULT_BUFFER_SIZE]byte{}
 	ctx, cancel := context.WithTimeout(context.Background(),
-		time.Duration(mdev.mainConfig.UartConfig.Timeout)*time.Millisecond)
+		time.Duration(mdev.hwPortConfig.Timeout)*time.Millisecond)
 	var count int = 0
 	var errSliceRequest error = nil
-	if mdev.mainConfig.CommonConfig.Transport == rawserial {
+	if mdev.mainConfig.CommonConfig.Mode == "UART" {
 		count, errSliceRequest = utils.SliceRequest(ctx, mdev.serialPort,
 			hexs, result[:], false,
 			time.Duration(30)*time.Millisecond /*30ms wait*/)
 	}
-	if mdev.mainConfig.CommonConfig.Transport == rawtcp {
+	if mdev.mainConfig.CommonConfig.Mode == "TCP" {
 		mdev.tcpcon.SetReadDeadline(
 			time.Now().Add((time.Duration(mdev.mainConfig.HostConfig.Timeout) * time.Millisecond)),
 		)
