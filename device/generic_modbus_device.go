@@ -137,26 +137,6 @@ func (mdev *generic_modbus_device) Init(devId string, configMap map[string]inter
 			}
 		}
 	}
-	hwPort, err := hwportmanager.GetHwPort(mdev.mainConfig.PortUuid)
-	if err != nil {
-		return err
-	}
-	if hwPort.Busy {
-		return fmt.Errorf("UART is busying now, Occupied By:%s", hwPort.OccupyBy)
-	}
-	if mdev.mainConfig.CommonConfig.Mode == "UART" {
-		switch tCfg := hwPort.Config.(type) {
-		case hwportmanager.UartConfig:
-			{
-				mdev.hwPortConfig = tCfg
-			}
-		default:
-			{
-				return fmt.Errorf("invalid config:%s", hwPort.Config)
-			}
-		}
-	}
-
 	return nil
 }
 
