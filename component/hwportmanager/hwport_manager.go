@@ -24,6 +24,7 @@ package hwportmanager
 import (
 	"encoding/json"
 	"fmt"
+	"sync"
 
 	"github.com/hootrhino/rulex/typex"
 )
@@ -33,12 +34,14 @@ var __HwPortsManager *HwPortsManager
 type HwPortsManager struct {
 	Interfaces map[string]RhinoH3HwPort
 	rulex      typex.RuleX
+	lock       sync.Mutex
 }
 
 func InitHwPortsManager(rulex typex.RuleX) *HwPortsManager {
 	__HwPortsManager = &HwPortsManager{
 		Interfaces: map[string]RhinoH3HwPort{},
 		rulex:      rulex,
+		lock:       sync.Mutex{},
 	}
 	return __HwPortsManager
 }
@@ -82,10 +85,14 @@ func (v RhinoH3HwPort) String() string {
 *
  */
 func SetHwPort(Port RhinoH3HwPort) {
+	__HwPortsManager.lock.Lock()
+	defer __HwPortsManager.lock.Unlock()
 	__HwPortsManager.Interfaces[Port.Name] = Port
 	refreshHwPort(Port.Name)
 }
 func RefreshPort(Port RhinoH3HwPort) {
+	__HwPortsManager.lock.Lock()
+	defer __HwPortsManager.lock.Unlock()
 	__HwPortsManager.Interfaces[Port.Name] = Port
 	refreshHwPort(Port.Name)
 }
@@ -118,6 +125,8 @@ func refreshHwPort(name string) {
 *
  */
 func GetHwPort(name string) (RhinoH3HwPort, error) {
+	__HwPortsManager.lock.Lock()
+	defer __HwPortsManager.lock.Unlock()
 	if Port, ok := __HwPortsManager.Interfaces[name]; ok {
 		return Port, nil
 	}
@@ -143,6 +152,8 @@ func AllHwPort() []RhinoH3HwPort {
 *
  */
 func SetInterfaceBusy(name string, OccupyBy HwPortOccupy) {
+	__HwPortsManager.lock.Lock()
+	defer __HwPortsManager.lock.Unlock()
 	if Port, ok := __HwPortsManager.Interfaces[name]; ok {
 		Port.Busy = true
 		Port.OccupyBy = OccupyBy
@@ -156,11 +167,18 @@ func SetInterfaceBusy(name string, OccupyBy HwPortOccupy) {
 *
  */
 func FreeInterfaceBusy(name string) {
+	__HwPortsManager.lock.Lock()
+	defer __HwPortsManager.lock.Unlock()
 	if Port, ok := __HwPortsManager.Interfaces[name]; ok {
-		Port.Busy = false
-		Port.OccupyBy = HwPortOccupy{
-			"", "",
+		if Port.OccupyBy.Type == "DEVICE" {
+			OccupierDevice := __HwPortsManager.rulex.GetDevice(Port.OccupyBy.UUID)
+			if OccupierDevice != nil {
+				Port.Busy = false
+				Port.OccupyBy = HwPortOccupy{
+					"", "",
+				}
+				__HwPortsManager.Interfaces[name] = Port
+			}
 		}
-		__HwPortsManager.Interfaces[name] = Port
 	}
 }
