@@ -266,7 +266,9 @@ func (tc *iothub) Pause() {
 }
 func (tc *iothub) Stop() {
 	tc.status = typex.SOURCE_DOWN
-	tc.CancelCTX()
+	if tc.CancelCTX != nil {
+		tc.CancelCTX()
+	}
 	if tc.client != nil {
 		tc.client.Unsubscribe(tc.PropertyDownTopic)
 		tc.client.Unsubscribe(tc.ActionDownTopic)

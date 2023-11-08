@@ -6,8 +6,8 @@ import (
 	"net"
 
 	"github.com/hootrhino/rulex/common"
-	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/component/rulexrpc"
+	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/typex"
 	"github.com/hootrhino/rulex/utils"
 
@@ -81,8 +81,9 @@ func (g *grpcInEndSource) DataModels() []typex.XDataModel {
 
 func (g *grpcInEndSource) Stop() {
 	g.status = typex.SOURCE_STOP
-	g.CancelCTX()
-
+	if g.CancelCTX != nil {
+		g.CancelCTX()
+	}
 	if g.rpcServer != nil {
 		g.rpcServer.Stop()
 		g.rpcServer = nil

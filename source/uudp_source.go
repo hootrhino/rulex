@@ -114,7 +114,9 @@ func (u *udpSource) Status() typex.SourceState {
 
 func (u *udpSource) Stop() {
 	u.status = typex.SOURCE_STOP
-	u.CancelCTX()
+	if u.CancelCTX != nil {
+		u.CancelCTX()
+	}
 	if u.uDPConn != nil {
 		err := u.uDPConn.Close()
 		if err != nil {
