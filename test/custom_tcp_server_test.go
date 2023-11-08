@@ -138,7 +138,7 @@ func TestCustomTCP(t *testing.T) {
 	dev1 := typex.NewDevice(typex.GENERIC_PROTOCOL,
 		"UART", "UART", map[string]interface{}{
 			"commonConfig": map[string]interface{}{
-				"transport": "rawtcp",
+				"transport": "TCP",
 				"retryTime": 5,
 				"frequency": 100,
 			},

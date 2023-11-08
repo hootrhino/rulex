@@ -17,9 +17,9 @@ const __DEFAULT_BUFFER_SIZE = 100
 
 // 传输形式：
 // `rawtcp`, `rawudp`, `rawserial`
-const rawtcp string = "rawtcp"
+const rawtcp string = "TCP"
 const rawudp string = "rawudp"
-const rawserial string = "rawserial"
+const rawserial string = "UART"
 
 type _CPDCommonConfig struct {
 	Transport string `json:"transport" validate:"required"` // 传输协议

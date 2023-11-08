@@ -113,7 +113,7 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 	mdev.status = typex.DEV_DOWN
 
 	// 现阶段暂时只支持RS485串口, 以后有需求再支持TCP、UDP
-	if mdev.mainConfig.CommonConfig.Mode == "rawserial" {
+	if mdev.mainConfig.CommonConfig.Mode == "UART" {
 
 		config := serial.Config{
 			Name:        mdev.hwPortConfig.Uart,
@@ -140,7 +140,7 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 	}
 
 	// rawtcp
-	if mdev.mainConfig.CommonConfig.Mode == "rawtcp" {
+	if mdev.mainConfig.CommonConfig.Mode == "TCP" {
 		tcpcon, err := net.Dial("tcp",
 			fmt.Sprintf("%s:%d", mdev.mainConfig.HostConfig.Host,
 				mdev.mainConfig.HostConfig.Port))

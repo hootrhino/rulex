@@ -15,7 +15,7 @@
         "description":"GENERIC_PROTOCOL",
         "config":{
             "commonConfig":{
-                "transport":"rawserial",
+                "transport":"UART",
                 "retryTime":5,
                 "frequency":100
             },
@@ -38,7 +38,7 @@
         "description":"GENERIC_PROTOCOL",
         "config":{
             "commonConfig":{
-                "transport":"rawtcp",
+                "transport":"TCP",
                 "retryTime":5,
                 "frequency":100
             },

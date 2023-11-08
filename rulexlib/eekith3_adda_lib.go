@@ -2,7 +2,6 @@ package rulexlib
 
 import (
 	lua "github.com/hootrhino/gopher-lua"
-	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/typex"
 	"github.com/hootrhino/rulex/vendor3rd"
 )
@@ -70,7 +69,7 @@ func H3DO1Set(rx typex.RuleX) func(*lua.LState) int {
 func H3DO1Get(rx typex.RuleX) func(*lua.LState) int {
 	return func(l *lua.LState) int {
 		v, e := vendor3rd.EEKIT_GPIOGet(6)
-		glogger.GLogger.Debug("H3DO1Get", v, e)
+		// glogger.GLogger.Debug("H3DO2 Get Value:", v, ", error:", e)
 		if e != nil {
 			l.Push(lua.LNil)
 			l.Push(lua.LString(e.Error()))
@@ -106,7 +105,7 @@ func H3DO2Set(rx typex.RuleX) func(*lua.LState) int {
 func H3DO2Get(rx typex.RuleX) func(*lua.LState) int {
 	return func(l *lua.LState) int {
 		v, e := vendor3rd.EEKIT_GPIOGet(7)
-		glogger.GLogger.Debug("H3DO2Get", v, e)
+		// glogger.GLogger.Debug("H3DO2 Get Value:", v, ", error:", e)
 		if e != nil {
 			l.Push(lua.LNil)
 			l.Push(lua.LString(e.Error()))
@@ -125,13 +124,13 @@ func H3DO2Get(rx typex.RuleX) func(*lua.LState) int {
  */
 func H3DI1Get(rx typex.RuleX) func(*lua.LState) int {
 	return func(l *lua.LState) int {
-		v, e := vendor3rd.EEKIT_GPIOGet(8)
-		glogger.GLogger.Debug("H3DI1Get", v, e)
+		Value, e := vendor3rd.EEKIT_GPIOGet(8)
+		// glogger.GLogger.Debug("H3DI1 Get Value:", Value, ", error:", e)
 		if e != nil {
 			l.Push(lua.LNil)
 			l.Push(lua.LString(e.Error()))
 		} else {
-			l.Push(lua.LNumber(v))
+			l.Push(lua.LNumber(Value))
 			l.Push(lua.LNil)
 		}
 		return 2
@@ -139,13 +138,13 @@ func H3DI1Get(rx typex.RuleX) func(*lua.LState) int {
 }
 func H3DI2Get(rx typex.RuleX) func(*lua.LState) int {
 	return func(l *lua.LState) int {
-		v, e := vendor3rd.EEKIT_GPIOGet(9)
-		glogger.GLogger.Debug("H3DI2Get", v, e)
+		Value, e := vendor3rd.EEKIT_GPIOGet(9)
+		// glogger.GLogger.Debug("H3DI2 Get Value:", Value, ", error:", e)
 		if e != nil {
 			l.Push(lua.LNil)
 			l.Push(lua.LString(e.Error()))
 		} else {
-			l.Push(lua.LNumber(v))
+			l.Push(lua.LNumber(Value))
 			l.Push(lua.LNil)
 		}
 		return 2
@@ -154,7 +153,7 @@ func H3DI2Get(rx typex.RuleX) func(*lua.LState) int {
 func H3DI3Get(rx typex.RuleX) func(*lua.LState) int {
 	return func(l *lua.LState) int {
 		v, e := vendor3rd.EEKIT_GPIOGet(10)
-		glogger.GLogger.Debug("H3DI2Get", v, e)
+		// glogger.GLogger.Debug("H3DI2Get", v, e)
 		if e != nil {
 			l.Push(lua.LNil)
 			l.Push(lua.LString(e.Error()))
