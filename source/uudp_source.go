@@ -43,7 +43,6 @@ func (u *udpSource) Start(cctx typex.CCTX) error {
 			select {
 			case <-ctx.Done():
 				{
-					u.status = typex.SOURCE_STOP
 					return
 				}
 			default:
@@ -53,14 +52,8 @@ func (u *udpSource) Start(cctx typex.CCTX) error {
 			n, remoteAddr, err := u1.uDPConn.ReadFromUDP(data)
 			if err != nil {
 				glogger.GLogger.Error(err.Error())
-				// return ok
-				_, err = u1.uDPConn.WriteToUDP([]byte("err"), remoteAddr)
-				if err != nil {
-					glogger.GLogger.Error(err)
-				}
 				continue
 			}
-			// glogger.GLogger.Infof("Receive udp data:<%s> %s\n", remoteAddr, data[:n])
 			work, err := u.RuleEngine.WorkInEnd(u.RuleEngine.GetInEnd(u.PointId), string(data[:n]))
 			if !work {
 				glogger.GLogger.Error(err)
@@ -122,7 +115,6 @@ func (u *udpSource) Stop() {
 		if err != nil {
 			glogger.GLogger.Error(err)
 		}
-		u.uDPConn = nil
 	}
 
 }
