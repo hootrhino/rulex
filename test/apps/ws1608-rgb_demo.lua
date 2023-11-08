@@ -12,18 +12,18 @@ AppDESCRIPTION = ""
 function Main(arg)
     while true do
         ws1608:GPIOSet("red", 1)
-        applib:Sleep(200)
+        stdlib:Sleep(200)
         ws1608:GPIOSet("red", 0)
-        applib:Sleep(200)
+        stdlib:Sleep(200)
         --
         ws1608:GPIOSet("green", 1)
-        applib:Sleep(200)
+        stdlib:Sleep(200)
         ws1608:GPIOSet("green", 0)
-        applib:Sleep(200)
+        stdlib:Sleep(200)
         --
         ws1608:GPIOSet("blue", 1)
-        applib:Sleep(200)
+        stdlib:Sleep(200)
         ws1608:GPIOSet("blue", 0)
-        applib:Sleep(200)
+        stdlib:Sleep(200)
     end
 end

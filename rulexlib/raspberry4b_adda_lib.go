@@ -8,7 +8,7 @@ import (
 
 /*
 *
-* 读GPIO， lua的函数调用应该是这样: eekith3:GPIOGet(pin) -> v,error
+* 读GPIO， lua的函数调用应该是这样: rhinopi:GPIOGet(pin) -> v,error
 *
  */
 func RASPI4_GPIOGet(rx typex.RuleX) func(*lua.LState) int {
@@ -28,7 +28,7 @@ func RASPI4_GPIOGet(rx typex.RuleX) func(*lua.LState) int {
 
 /*
 *
-* 写GPIO， lua的函数调用应该是这样: eekith3:GPIOSet(pin, v) -> error
+* 写GPIO， lua的函数调用应该是这样: rhinopi:GPIOSet(pin, v) -> error
 *
  */
 func RASPI4_GPIOSet(rx typex.RuleX) func(*lua.LState) int {

@@ -34,7 +34,7 @@ function Main(arg)
     for i = 1, 10, 1 do
         local data = { temp = 20.15 , humi = 34}
         local err = applib:DataToUdp('UdpServer', applib:T2J(data))
-        applib:Sleep(100)
+        stdlib:Sleep(100)
     end
     return 0
 end

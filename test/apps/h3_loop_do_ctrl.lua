@@ -25,10 +25,10 @@ function Main(arg)
     local gpio = { 6, 7 }
     while true do
         for _, value in ipairs(gpio) do
-            eekith3:GPIOSet(value, 0)
-            applib:Sleep(1000)
-            eekith3:GPIOSet(value, 1)
-            applib:Sleep(1000)
+            rhinopi:GPIOSet(value, 0)
+            stdlib:Sleep(1000)
+            rhinopi:GPIOSet(value, 1)
+            stdlib:Sleep(1000)
         end
     end
     return 0

@@ -118,26 +118,22 @@ func LoadBuildInLuaLib(e typex.RuleX, r *typex.Rule) {
 		r.AddLib(e, "hex", "MatchHex", rulexlib.MatchHex(e))
 		r.AddLib(e, "hex", "MatchUInt", rulexlib.MatchUInt(e))
 	}
-	//------------------------------------------------------------------------
-	// 注册GPIO操作函数到LUA运行时
-	//------------------------------------------------------------------------
-	// EEKIT
-	r.AddLib(e, "eekit", "GPIOGet", rulexlib.EEKIT_GPIOGet(e))
-	r.AddLib(e, "eekit", "GPIOSet", rulexlib.EEKIT_GPIOSet(e))
-	// 树莓派4B
-	r.AddLib(e, "raspi4b", "GPIOGet", rulexlib.RASPI4_GPIOGet(e))
-	r.AddLib(e, "raspi4b", "GPIOSet", rulexlib.RASPI4_GPIOSet(e))
-	// 玩客云WS1508
-	r.AddLib(e, "ws1608", "GPIOGet", rulexlib.WKYWS1608_GPIOGet(e))
-	r.AddLib(e, "ws1608", "GPIOSet", rulexlib.WKYWS1608_GPIOSet(e))
+	{
+		// DO1 DO2
+		r.AddLib(e, "rhinopi", "DO1Set", rulexlib.H3DO1Set(e))
+		r.AddLib(e, "rhinopi", "DO1Get", rulexlib.H3DO1Get(e))
+		r.AddLib(e, "rhinopi", "DO2Set", rulexlib.H3DO2Set(e))
+		r.AddLib(e, "rhinopi", "DO2Get", rulexlib.H3DO2Get(e))
+		// DI1 DI2 DI3
+		r.AddLib(e, "rhinopi", "DI1Get", rulexlib.H3DI1Get(e))
+		r.AddLib(e, "rhinopi", "DI2Get", rulexlib.H3DI2Get(e))
+		r.AddLib(e, "rhinopi", "DI3Get", rulexlib.H3DI3Get(e))
+
+	}
 	//------------------------------------------------------------------------
 	// AI BASE
 	//------------------------------------------------------------------------
 	r.AddLib(e, "aibase", "Infer", rulexlib.Infer(e))
-	//------------------------------------------------------------------------
-	// yqueue
-	//------------------------------------------------------------------------
-	r.AddLib(e, "pipe", "Output", rulexlib.Output(e))
 	//------------------------------------------------------------------------
 	// Math
 	//------------------------------------------------------------------------

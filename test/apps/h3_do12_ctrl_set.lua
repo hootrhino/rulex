@@ -15,15 +15,15 @@
 
 function Main(arg)
     while true do
-        eekith3:H3DO1Set(0)
-        applib:Sleep(1000)
-        eekith3:H3DO1Set(1)
-        applib:Sleep(1000)
+        rhinopi:H3DO1Set(0)
+        stdlib:Sleep(1000)
+        rhinopi:H3DO1Set(1)
+        stdlib:Sleep(1000)
         --
-        eekith3:H3DO2Set(1)
-        applib:Sleep(1000)
-        eekith3:H3DO2Set(0)
-        applib:Sleep(1000)
+        rhinopi:H3DO2Set(1)
+        stdlib:Sleep(1000)
+        rhinopi:H3DO2Set(0)
+        stdlib:Sleep(1000)
     end
     return 0
 end

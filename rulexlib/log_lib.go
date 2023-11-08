@@ -1,7 +1,6 @@
 package rulexlib
 
 import (
-
 	lua "github.com/hootrhino/gopher-lua"
 	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/typex"
@@ -10,7 +9,7 @@ import (
 
 /*
 *
-* APP debug输出, applib:debug(".....")
+* APP debug输出, stdlib:Debug(".....")
 *
  */
 func DebugAPP(rx typex.RuleX, uuid string) func(*lua.LState) int {

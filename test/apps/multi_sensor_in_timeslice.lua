@@ -75,6 +75,6 @@ function Main(arg)
                 print('Parsed Value ===>', K, '=', parsedValue)
             end
         end
-        applib:Sleep(100)
+        stdlib:Sleep(100)
     end
 end

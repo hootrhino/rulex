@@ -86,9 +86,9 @@ func Test_Modbus_App_Write(t *testing.T) {
 	luas := `
 function Main(arg)
     local error1 = modbus:F5("uuid1", 0, 1, "00")
-    applib:Sleep(1000)
+    stdlib:Sleep(1000)
     local error2 = modbus:F5("uuid1", 0, 1, "01")
-    applib:Sleep(1000)
+    stdlib:Sleep(1000)
     return 0
 end
 `

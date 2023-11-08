@@ -16,7 +16,7 @@ import (
 	"github.com/hootrhino/rulex/typex"
 )
 
-var _DataToHttp_luaCase = `function Main(arg) for i = 1, 3, 1 do local err = applib:DataToHttp('httpServer',applib:T2J({temp = 20,humi = 13.45})) applib:log('result =>') applib:Sleep(100) end return 0 end`
+var _DataToHttp_luaCase = `function Main(arg) for i = 1, 3, 1 do local err = applib:DataToHttp('httpServer',applib:T2J({temp = 20,humi = 13.45})) applib:log('result =>') stdlib:Sleep(100) end return 0 end`
 
 func Test_DataToHttp(t *testing.T) {
 	RmUnitTestDbFile(t)

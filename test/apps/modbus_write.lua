@@ -19,9 +19,9 @@ AppVERSION = '0.0.1'
 function Main(arg)
     while true do
         local error1 = modbus:F5("DEVICEABK4LG", 1, 0, "00")
-        applib:Sleep(1000)
+        stdlib:Sleep(1000)
         local error2 = modbus:F5("DEVICEABK4LG", 1, 0, "01")
-        applib:Sleep(1000)
+        stdlib:Sleep(1000)
     end
     return 0
 end
