@@ -64,14 +64,14 @@ func __GPIOGet(gpioPath string) (int, error) {
 		return 0, err
 	}
 	if len(bites) > 0 {
-		if bites[0] == 1 {
+		if bites[0] == '0' || bites[0] == 48 {
 			return 0, nil
 		}
-		if bites[1] == 1 {
+		if bites[1] == '1' || bites[0] == 49 {
 			return 1, nil
 		}
 	}
-	return 0, fmt.Errorf("read gpio value failed:%s", gpioPath)
+	return 0, fmt.Errorf("read gpio value failed: %s, value: %v", gpioPath, bites)
 }
 
 // Set

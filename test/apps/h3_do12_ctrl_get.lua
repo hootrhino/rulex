@@ -16,9 +16,9 @@
 function Main(arg)
     while true do
         local v1, err1 = rhinopi:DO1Get()
-        stdlib:Debug("DO1:" .. v1 .. ", err1:" .. err1)
+        print("DO1:", v1, ", err1:", err1)
         local v2, err2 = rhinopi:DO2Get()
-        stdlib:Debug("DO2:" .. v2 .. ", err2:" .. err2)
+        print("DO2:", v2, ", err2:", err2)
         time:Sleep(1000)
     end
     return 0
