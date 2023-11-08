@@ -132,6 +132,7 @@ func (mdev *CustomProtocolDevice) Start(cctx typex.CCTX) error {
 			hwportmanager.HwPortOccupy{
 				UUID: mdev.PointId,
 				Type: "DEVICE",
+				Name: mdev.Details().Name,
 			})
 		mdev.serialPort = serialPort
 		mdev.status = typex.DEV_UP

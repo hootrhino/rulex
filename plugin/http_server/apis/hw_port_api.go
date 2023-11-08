@@ -41,6 +41,7 @@ type HwPortVo struct {
 type HwPortOccupyVo struct {
 	UUID string `json:"uuid"` // UUID
 	Type string `json:"type"` // DEVICE, Other......
+	Name string `json:"name"` // DEVICE, Other......
 }
 type UartConfigVo struct {
 	Timeout  int    `json:"timeout"`
@@ -148,7 +149,7 @@ func GetHwPortDetail(c *gin.Context, ruleEngine typex.RuleX) {
 		Description: Port.Description,
 		Busy:        Port.Busy,
 		OccupyBy: HwPortOccupyVo{
-			Port.OccupyBy.Type, Port.OccupyBy.UUID,
+			Port.OccupyBy.Type, Port.OccupyBy.UUID, Port.Name,
 		},
 	}))
 

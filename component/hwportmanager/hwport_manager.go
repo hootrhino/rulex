@@ -52,26 +52,27 @@ func InitHwPortsManager(rulex typex.RuleX) *HwPortsManager {
 *
  */
 type UartConfig struct {
-	Timeout  int
-	Uart     string
-	BaudRate int
-	DataBits int
-	Parity   string
-	StopBits int
+	Timeout  int    `json:"timeout"`
+	Uart     string `json:"uart"`
+	BaudRate int    `json:"baudRate"`
+	DataBits int    `json:"dataBits"`
+	Parity   string `json:"parity"`
+	StopBits int    `json:"stopBits"`
 }
 type HwPortOccupy struct {
-	UUID string // UUID
-	Type string // DEVICE, Other......
+	UUID string `json:"uuid"` // UUID
+	Type string `json:"type"` // DEVICE, Other......
+	Name string `json:"name"` // 占用的设备名称
 }
 type RhinoH3HwPort struct {
-	UUID        string       // 接口名称
-	Name        string       // 接口名称
-	Alias       string       // 别名
-	Busy        bool         // 运行时数据，是否被占
-	OccupyBy    HwPortOccupy // 运行时数据，被谁占用了 UUID
-	Type        string       // 接口类型, UART(串口),USB(USB),FD(通用文件句柄)
-	Description string       // 额外备注
-	Config      interface{}  // 配置, 串口配置、或者网卡、USB等
+	UUID        string       `json:"uuid"`        // 接口名称
+	Name        string       `json:"name"`        // 接口名称
+	Alias       string       `json:"alias"`       // 别名
+	Busy        bool         `json:"busy"`        // 运行时数据，是否被占
+	OccupyBy    HwPortOccupy `json:"occupyBy"`    // 运行时数据，被谁占用了 UUID
+	Type        string       `json:"type"`        // 接口类型, UART(串口),USB(USB),FD(通用文件句柄)
+	Description string       `json:"description"` // 额外备注
+	Config      interface{}  `json:"config"`      // 配置, 串口配置、或者网卡、USB等
 }
 
 func (v RhinoH3HwPort) String() string {
@@ -116,7 +117,6 @@ func refreshHwPort(name string) {
 			}
 		}
 	}
-
 }
 
 /*
@@ -175,7 +175,7 @@ func FreeInterfaceBusy(name string) {
 			if OccupierDevice != nil {
 				Port.Busy = false
 				Port.OccupyBy = HwPortOccupy{
-					"", "",
+					"", "", "",
 				}
 				__HwPortsManager.Interfaces[name] = Port
 			}

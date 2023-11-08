@@ -172,6 +172,7 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 		hwportmanager.SetInterfaceBusy(mdev.mainConfig.PortUuid, hwportmanager.HwPortOccupy{
 			UUID: mdev.PointId,
 			Type: "DEVICE",
+			Name: mdev.Details().Name,
 		})
 		client := modbus.NewClient(mdev.rtuHandler)
 		mdev.driver = driver.NewModBusRtuDriver(mdev.Details(),

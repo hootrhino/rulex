@@ -69,8 +69,7 @@ func UpdateHwPortConfig(MHwPort model.MHwPort) error {
 	Model := model.MHwPort{}
 	return interdb.DB().
 		Model(Model).
-		Where("uuid=? AND name=?",
-			MHwPort.UUID, MHwPort.Name).
+		Where("uuid=?", MHwPort.UUID).
 		Updates(MHwPort).Error
 }
 
@@ -95,10 +94,13 @@ func GetHwPortConfig(uuid string) (model.MHwPort, error) {
 func InitHwPortConfig() error {
 	for _, portName := range getOsPort() {
 		Port := model.MHwPort{
-			UUID:        portName,
-			Name:        portName,
-			Type:        "UART",
-			Alias:       portName,
+			UUID: portName,
+			Name: portName,
+			Type: "UART",
+			Alias: func() string {
+				// Alias Ext
+				return portName
+			}(),
 			Description: portName,
 		}
 		uartCfg := UartConfigDto{
