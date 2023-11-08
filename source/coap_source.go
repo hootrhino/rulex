@@ -78,8 +78,9 @@ func (cc *coAPInEndSource) Start(cctx typex.CCTX) error {
 
 func (cc *coAPInEndSource) Stop() {
 	cc.status = typex.SOURCE_STOP
-	cc.CancelCTX()
-
+	if cc.CancelCTX != nil {
+		cc.CancelCTX()
+	}
 }
 
 func (cc *coAPInEndSource) DataModels() []typex.XDataModel {
