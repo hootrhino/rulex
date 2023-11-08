@@ -15,11 +15,21 @@
 
 package shellengine
 
+import (
+	"fmt"
+	"os"
+	"syscall"
+)
+
 /*
 *
 * 系统调用
 *
  */
-func IOctl(fd int, request, arg uintptr) error {
+func IOctl(trap uintptr, args ...uintptr) error {
+	_, _, errno := syscall.SyscallN(trap, args...)
+	if errno != 0 {
+		return os.NewSyscallError(fmt.Sprintf("ioctl error:%v,%v", trap, args), errno)
+	}
 	return nil
 }

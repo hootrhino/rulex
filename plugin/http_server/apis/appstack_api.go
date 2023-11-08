@@ -2,7 +2,6 @@ package apis
 
 import (
 	"fmt"
-	"regexp"
 
 	common "github.com/hootrhino/rulex/plugin/http_server/common"
 	"github.com/hootrhino/rulex/plugin/http_server/model"

@@ -54,30 +54,34 @@ func (ldb *LocalDb) GetSchemaDetail(goodsId string) SchemaDetail {
 
 /*
 *
-* 此处执行SQL
-*
- */
+  - 此处执行SQL
+    // 第一行数据
+    // Row1 := map[string]any{
+    // 	"Key1": 1,
+    // 	"Key2": 1,
+    // 	"Key3": 1,
+    // 	"Key4": 1,
+    // 	"Key5": 1,
+    // 	"Key6": 1,
+    // }
+    // // 第二行数据
+    // Row2 := map[string]any{
+    // 	"Key1": 1,
+    // 	"Key2": 1,
+    // 	"Key3": 1,
+    // 	"Key4": 1,
+    // 	"Key5": 1,
+    // 	"Key6": 1,
+    // }
+    // Rows = append(Rows, Row1)
+    // Rows = append(Rows, Row2)
+*/
 func (ldb *LocalDb) Query(goodsId, query string) ([]map[string]any, error) {
-	Rows := []map[string]any{}
-	// 第一行数据
-	// Row1 := map[string]any{
-	// 	"Key1": 1,
-	// 	"Key2": 1,
-	// 	"Key3": 1,
-	// 	"Key4": 1,
-	// 	"Key5": 1,
-	// 	"Key6": 1,
-	// }
-	// // 第二行数据
-	// Row2 := map[string]any{
-	// 	"Key1": 1,
-	// 	"Key2": 1,
-	// 	"Key3": 1,
-	// 	"Key4": 1,
-	// 	"Key5": 1,
-	// 	"Key6": 1,
-	// }
-	// Rows = append(Rows, Row1)
-	// Rows = append(Rows, Row2)
-	return Rows, nil
+
+	result := []map[string]any{}
+	err := ldb.Sqlite.db.Raw(query).Find(&result).Error
+	if err != nil {
+		return []map[string]any{}, err
+	}
+	return result, nil
 }

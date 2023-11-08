@@ -14,3 +14,13 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package shellengine
+
+import "github.com/hootrhino/rulex/typex"
+
+type WindowsPowerShell struct {
+	rulex typex.RuleX
+}
+
+func InitWindowsPowerShell(rulex typex.RuleX) *WindowsPowerShell {
+	return &WindowsPowerShell{rulex: rulex}
+}

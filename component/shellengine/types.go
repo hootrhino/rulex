@@ -25,7 +25,7 @@ import "context"
 type ShellEngine interface {
 	JustRun(ctx context.Context, cmd string) error                                 // 一次性指令,不等返回
 	JustRunDetach(ctx context.Context, cmd string) error                           // 分离进程
-	RunAndWait(ctx context.Context, cmd string) ([]byte, error)                    // 运行指令然后等待结果
+	RunAndWaitResult(ctx context.Context, cmd string) ([]byte, error)              // 运行指令然后等待结果
 	RunWithInteractive(ctx context.Context, cmd string, in, out chan []byte) error // 交互运行，自带stdin
 	ReadFD(fd int, p []byte) (n int, err error)                                    // Syscall read
 	IOctl(fd int, request, arg uintptr) error                                      // UNIX ioctl
