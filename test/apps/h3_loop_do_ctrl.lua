@@ -26,9 +26,9 @@ function Main(arg)
     while true do
         for _, value in ipairs(gpio) do
             rhinopi:GPIOSet(value, 0)
-            stdlib:Sleep(1000)
+            time:Sleep(1000)
             rhinopi:GPIOSet(value, 1)
-            stdlib:Sleep(1000)
+            time:Sleep(1000)
         end
     end
     return 0

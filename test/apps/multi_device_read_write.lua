@@ -17,6 +17,6 @@ function Main(arg)
         if d1_state == "0" then
             applib:WriteDevice(deviceUUID, "l2", "0011AABBCCFF11")
         end
-        stdlib:Sleep(1000)
+        time:Sleep(1000)
     end
 end

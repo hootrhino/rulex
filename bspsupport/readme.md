@@ -62,9 +62,9 @@ ARCHSUPPORT=EEKITH3 rulex run
 function Main(arg)
     while true do
         ws1608:GPIOSet("red", 1)
-        stdlib:Sleep(2000)
+        time:Sleep(2000)
         ws1608:GPIOSet("red", 0)
-        stdlib:Sleep(2000)
+        time:Sleep(2000)
     end
 end
 
@@ -76,9 +76,9 @@ end
 function Main(arg)
     while true do
         rhinopi:GPIOSet(6, 1)
-        stdlib:Sleep(2000)
+        time:Sleep(2000)
         rhinopi:GPIOSet(7, 0)
-        stdlib:Sleep(2000)
+        time:Sleep(2000)
     end
 end
 

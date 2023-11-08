@@ -82,7 +82,7 @@ function Main(arg)
         local result, err = applib:CtrlDevice(Id, "010300000002C40B")
         --result {"in":"010300000002C40B","out":"010304000100022a32"}
         print("CtrlDevice result=>", result)
-        stdlib:Sleep(60)
+        time:Sleep(60)
     end
     return 0
 end
@@ -241,7 +241,7 @@ function Main(arg)
         for i = 1, 5, 1 do
             local result, err = applib:CtrlDevice('uuid', "0" .. i)
             print("|*** CtrlDevice [0x01] result=>", result, err)
-            stdlib:Sleep(1000)
+            time:Sleep(1000)
         end
     end
     return 0

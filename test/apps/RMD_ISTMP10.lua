@@ -13,6 +13,6 @@ function Main(arg)
         else
             stdlib:Debug("√√√*** CtrlDevice result=>" .. result)
         end
-        stdlib:Sleep(100)
+        time:Sleep(100)
     end
 end

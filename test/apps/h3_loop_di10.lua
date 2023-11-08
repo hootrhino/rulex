@@ -34,7 +34,7 @@ function Main(arg)
             end
             s = v
         end
-        stdlib:Sleep(50)
+        time:Sleep(50)
     end
     return 0
 end

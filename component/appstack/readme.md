@@ -51,7 +51,7 @@ function Main(arg)
 			humi = 13.45
 		}))
 		print("err =>", err)
-		stdlib:Sleep(1000)
+		time:Sleep(1000)
 	end
 	return 0
 end

@@ -7,7 +7,7 @@ function Main(arg)
         local result, err = applib:CtrlDevice(Id, "010300000002C40B")
         --result {"in":"010300000002C40B","name":"write","out":"010304000100022a32"}
         print("CtrlDevice result=>", result)
-        stdlib:Sleep(60)
+        time:Sleep(60)
     end
     return 0
 end

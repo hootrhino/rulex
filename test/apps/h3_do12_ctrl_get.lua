@@ -19,7 +19,7 @@ function Main(arg)
         stdlib:Debug("DO1:" .. v1 .. ", err1:" .. err1)
         local v2, err2 = rhinopi:DO2Get()
         stdlib:Debug("DO2:" .. v2 .. ", err2:" .. err2)
-        stdlib:Sleep(1000)
+        time:Sleep(1000)
     end
     return 0
 end
