@@ -45,8 +45,12 @@ func LoadBuildInLuaLib(e typex.RuleX, r *typex.Rule) {
 	}
 	{
 		// 标准库
-		r.AddLib(e, "stdlib", "Debug", rulexlib.Debug(e, r.UUID))
+		r.AddLib(e, "stdlib", "Debug", rulexlib.DebugRule(e, r.UUID))
+		r.AddLib(e, "stdlib", "Println", rulexlib.Println(e))
 		r.AddLib(e, "stdlib", "Throw", rulexlib.Throw(e))
+		r.AddLib(e, "_G", "Debug", rulexlib.DebugRule(e, r.UUID))
+		r.AddLib(e, "_G", "Println", rulexlib.Println(e))
+		r.AddLib(e, "_G", "Throw", rulexlib.Throw(e))
 	}
 	{
 		// 二进制操作

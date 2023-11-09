@@ -86,6 +86,10 @@ func LoadAppLib(app *Application, e typex.RuleX) {
 	{
 		addAppLib(app, e, "stdlib", "Debug", rulexlib.DebugAPP(e, app.UUID))
 		addAppLib(app, e, "stdlib", "Throw", rulexlib.Throw(e))
+		addAppLib(app, e, "stdlib", "Println", rulexlib.Println(e))
+		addAppLib(app, e, "_G", "Debug", rulexlib.DebugAPP(e, app.UUID))
+		addAppLib(app, e, "_G", "Throw", rulexlib.Throw(e))
+		addAppLib(app, e, "_G", "Println", rulexlib.Println(e))
 	}
 
 	// 二进制操作

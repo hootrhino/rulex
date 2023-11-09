@@ -44,7 +44,6 @@ func RuleDetail(c *gin.Context, ruleEngine typex.RuleX) {
 		Name:        rule.Name,
 		Type:        rule.Type,
 		Status:      1,
-		Expression:  rule.Expression,
 		Description: rule.Description,
 		FromSource:  rule.FromSource,
 		FromDevice:  rule.FromDevice,
@@ -66,7 +65,6 @@ func Rules(c *gin.Context, ruleEngine typex.RuleX) {
 				Name:        rule.Name,
 				Type:        rule.Type,
 				Status:      1,
-				Expression:  rule.Expression,
 				Description: rule.Description,
 				FromSource:  rule.FromSource,
 				FromDevice:  rule.FromDevice,
@@ -87,7 +85,6 @@ func Rules(c *gin.Context, ruleEngine typex.RuleX) {
 			Name:        rule.Name,
 			Type:        rule.Type,
 			Status:      1,
-			Expression:  rule.Expression,
 			Description: rule.Description,
 			FromSource:  rule.FromSource,
 			FromDevice:  rule.FromDevice,
@@ -105,7 +102,6 @@ func CreateRule(c *gin.Context, ruleEngine typex.RuleX) {
 		FromDevice  []string `json:"fromDevice" binding:"required"`
 		Name        string   `json:"name" binding:"required"`
 		Type        string   `json:"type"`
-		Expression  string   `json:"expression"`
 		Description string   `json:"description"`
 		Actions     string   `json:"actions"`
 		Success     string   `json:"success"`
@@ -156,7 +152,6 @@ func CreateRule(c *gin.Context, ruleEngine typex.RuleX) {
 		Name:        form.Name,
 		Type:        form.Type,
 		UUID:        utils.RuleUuid(),
-		Expression:  form.Expression,
 		Description: form.Description,
 		FromSource:  form.FromSource,
 		FromDevice:  form.FromDevice,
@@ -347,7 +342,6 @@ func UpdateRule(c *gin.Context, ruleEngine typex.RuleX) {
 		if err := service.UpdateMRule(mRule.UUID, &model.MRule{
 			Name:        form.Name,
 			Type:        form.Type,
-			Expression:  form.Expression,
 			Description: form.Description,
 			FromSource:  form.FromSource,
 			FromDevice:  form.FromDevice,
@@ -663,7 +657,6 @@ func ListByDevice(c *gin.Context, ruleEngine typex.RuleX) {
 				Name:        rule.Name,
 				Type:        rule.Type,
 				Status:      1,
-				Expression:  rule.Expression,
 				Description: rule.Description,
 				Actions:     rule.Actions,
 				Success:     rule.Success,
@@ -699,7 +692,6 @@ func ListByInend(c *gin.Context, ruleEngine typex.RuleX) {
 				Name:        rule.Name,
 				Type:        rule.Type,
 				Status:      1,
-				Expression:  rule.Expression,
 				Description: rule.Description,
 				Actions:     rule.Actions,
 				Success:     rule.Success,
