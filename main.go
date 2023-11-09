@@ -102,6 +102,7 @@ func main() {
 					// Try 5 times
 					killOld := false
 					log.Println("[Prepare Stage] Try to kill Old Process:", OldPid)
+					// TODO 这里有个问题：无法分离进程
 					if err := ossupport.StopRulex(); err != nil {
 						log.Println("[Prepare Stage] Old Process killed error:", OldPid, err)
 					} else {
