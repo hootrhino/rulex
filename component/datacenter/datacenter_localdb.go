@@ -15,7 +15,10 @@
 
 package datacenter
 
-import "github.com/hootrhino/rulex/typex"
+import (
+	"github.com/hootrhino/rulex/typex"
+	"github.com/hootrhino/sqlparser"
+)
 
 /*
 *
@@ -76,12 +79,32 @@ func (ldb *LocalDb) GetSchemaDetail(goodsId string) SchemaDetail {
     // Rows = append(Rows, Row1)
     // Rows = append(Rows, Row2)
 */
-func (ldb *LocalDb) Query(goodsId, query string) ([]map[string]any, error) {
+const (
+	// UnknownType is the zero value for a Type
+	UnknownType = 0
+	// Select represents a SELECT query
+	Select = 1
+	// Update represents an UPDATE query
+	Update = 2
+	// Insert represents an INSERT query
+	Insert = 3
+	// Delete represents a DELETE query
+	Delete = 4
+)
 
+func (ldb *LocalDb) Query(goodsId, query string) ([]map[string]any, error) {
 	result := []map[string]any{}
-	err := ldb.Sqlite.db.Raw(query).Find(&result).Error
+	Query, err := sqlparser.Parse(query)
 	if err != nil {
 		return []map[string]any{}, err
 	}
-	return result, nil
+	//select
+	if Query.Type == Select {
+		err1 := ldb.Sqlite.db.Raw(query).Scan(&result).Error
+		if err1 != nil {
+			return []map[string]any{}, err1
+		}
+		return result, nil
+	}
+	return result, ldb.Sqlite.db.Raw(query).Error
 }
