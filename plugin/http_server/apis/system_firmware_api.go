@@ -94,9 +94,18 @@ func UpgradeFirmWare(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error("invalid sum md5!"))
 		return
 	}
-	chmodx(tempPath + "/rulex")
+	// 将其移动到一个临时目录
+	if err := MoveFile(tempPath+"/rulex", tempPath+"/rulex-temp"); err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
+	if err := chmodX(tempPath + "/rulex-temp"); err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
+
 	c.JSON(common.HTTP_OK, common.Ok())
-	go ossupport.StartUpgradeProcess(tempPath+"/rulex",
+	go ossupport.StartUpgradeProcess(tempPath+"/rulex-temp",
 		[]string{"upgrade", "-oldpid", fmt.Sprintf("%d", os.Getpid())})
 
 }
@@ -121,7 +130,7 @@ func sumMD5(filePath string) (string, error) {
 	_, _ = io.Copy(hash, file)
 	return hex.EncodeToString(hash.Sum(nil)), nil
 }
-func chmodx(filePath string) error {
+func chmodX(filePath string) error {
 
 	if err := os.Chmod(filePath, 0755); err != nil {
 		return err

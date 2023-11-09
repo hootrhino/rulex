@@ -77,7 +77,7 @@ func main() {
 				Action: func(c *cli.Context) error {
 					fmt.Println(typex.Banner)
 					engine.RunRulex(c.String("config"))
-					log.Printf("[Prepare Stage Log] Run rulex successfully.")
+					log.Printf("[Prepare Stage] Run rulex successfully.")
 					return nil
 				},
 			},
@@ -93,23 +93,23 @@ func main() {
 				},
 				Action: func(c *cli.Context) error {
 					OldPid := c.Int("oldpid")
-					log.Println("[Prepare Stage Log] Updater Pid=",
+					log.Println("[Prepare Stage] Updater Pid=",
 						os.Getpid(), "Gid=", os.Getegid(), " OldPid:", OldPid)
 					if OldPid < 0 {
-						log.Printf("[Prepare Stage Log] Invalid OldPid:%d", OldPid)
+						log.Printf("[Prepare Stage] Invalid OldPid:%d", OldPid)
 						return nil
 					}
 					// Try 5 times
 					killOld := false
-					log.Println("[Prepare Stage Log] Try to kill Old Process:", OldPid)
+					log.Println("[Prepare Stage] Try to kill Old Process:", OldPid)
 					if err := ossupport.StopRulex(); err != nil {
-						log.Println("[Prepare Stage Log] Old Process killed error:", OldPid, err)
+						log.Println("[Prepare Stage] Old Process killed error:", OldPid, err)
 					} else {
-						log.Println("[Prepare Stage Log] Old Process killed success:", OldPid)
+						log.Println("[Prepare Stage] Old Process killed success:", OldPid)
 						killOld = true
 					}
 					if !killOld {
-						log.Println("[Prepare Stage Log] Restart rulex failed, Upgrade Process Exited")
+						log.Println("[Prepare Stage] Restart rulex failed, Upgrade Process Exited")
 						os.Exit(0)
 						return nil
 					}
@@ -117,24 +117,19 @@ func main() {
 						// EEKITH3 Use SystemCtl manage RULEX
 						env := os.Getenv("ARCHSUPPORT")
 						if runtime.GOOS == "linux" {
-							log.Println("[Prepare Stage Log] Ready to Upgrade on product:", env)
-							// // cp rulex /usr/local/
-							// uploadPath := "./upload/Firmware" // 固定路径
-							// Firmware := "/Firmware.zip"       // 固定路径
-							// 解压到安装目录
-							// wd, err := os.Getwd()
+							log.Println("[Prepare Stage] Ready to Upgrade on product:", env)
 							if err := trailer.Unzip(
 								"/usr/local/upload/Firmware/Firmware.zip",
 								"/usr/local"); err != nil {
-								log.Println("[Prepare Stage Log] Unzip error:", err)
+								log.Println("[Prepare Stage] Unzip error:", err)
 								return err
 							}
 							if err := ossupport.Restart(); err != nil {
-								log.Println("[Prepare Stage Log] Restart rulex error", err)
+								log.Println("[Prepare Stage] Restart rulex error", err)
 								return nil
 							}
-							log.Println("[Prepare Stage Log] Restart rulex success, Upgrade Process Exited")
-							os.Exit(0)
+							log.Println("[Prepare Stage] Restart rulex success, Upgrade Process Exited")
+							return nil
 						}
 					}
 					return nil

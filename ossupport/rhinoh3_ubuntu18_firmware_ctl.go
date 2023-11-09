@@ -49,14 +49,17 @@ func Restart() error {
 		if err != nil {
 			return fmt.Errorf("%s,%s", err, string(out))
 		}
+		log.Println("[Prepare Stage] systemctl daemon-reload:", string(out))
+
 	}
 	{
-		cmd := exec.Command("sudo", "systemctl", "restart", "rulex")
+		cmd := exec.Command("sudo", "service", "rulex", "start")
 		cmd.SysProcAttr = NewSysProcAttr()
 		out, err := cmd.CombinedOutput()
 		if err != nil {
 			return fmt.Errorf("%s,%s", err, string(out))
 		}
+		log.Println("[Prepare Stage] service start:", string(out))
 
 	}
 	return nil
