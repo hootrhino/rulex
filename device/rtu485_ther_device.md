@@ -84,12 +84,12 @@ end
 
 -- Actions
 Actions = {
-    function(data)
+    function(args)
         local _, err = rulexlib:ReadDevice(device, 0, "all")
         if (err ~= nil) then
             return false, data
         end
-        return true, data
+        return true, args
     end
 }
 

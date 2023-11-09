@@ -12,11 +12,11 @@ end
 
 -- Actions
 Actions = {
-    function(data)
+    function(args)
         local err1 = data:ToMqtt('$UUID', data)
         if err1 ~= nil then
             -- DO YOUR FAILED HANDLE
         end
-        return true, data
+        return true, args
     end
 }

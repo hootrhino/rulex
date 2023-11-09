@@ -8,7 +8,7 @@ function Failed(error)
     print(error)
 end
 -- Actions
-Actions = {function(data)
+Actions = {function(args)
     local t = {
         ["type"] = 15,
         ["params"] = {

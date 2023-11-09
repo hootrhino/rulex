@@ -66,7 +66,7 @@ func Test_data_to_tdengine(t *testing.T) {
 	//
 	callback :=
 		`Actions = {
-			function(data)
+			function(args)
 				local t = rulexlib:J2T(data)
 				local Result = data:ToTdEngine('TD1', string.format("%d, %d, %d, %d", t['co2'], t['hum'], t['lex'], t['temp']))
 				print("data:ToTdEngine Result", Result==nil)

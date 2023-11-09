@@ -31,9 +31,9 @@ type HTTPConfig struct {
 
 ## 示例
 ```lua
-function(data)
+function(args)
     local err = data:ToHttp('HttpOut', data)
 	print("[LUA DataToHttp] ==>", err)
-	return true, data
+	return true, args
 end
 ```

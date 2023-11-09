@@ -105,10 +105,10 @@ func Test_Codec(t *testing.T) {
 		`function Success() print("[LUA Success Callback]=> OK") end`,
 		`
 		Actions = {
-			function(data)
+			function(args)
 			print('rulexlib:RPCDEC ==> ', rulexlib:RPCDEC('grpcCodec001', data))
 			print('rulexlib:RPCENC ==> ', rulexlib:RPCENC('grpcCodec002', data))
-				return true, data
+				return true, args
 			end
 		}`,
 		`function Failed(error) print("[LUA Failed Callback]", error) end`)

@@ -86,7 +86,7 @@ func Test_modbus_485_sensor_gateway(t *testing.T) {
 		[]string{RTU485Device.UUID}, // 数据来自网关设备,所以这里需要配置设备ID
 		`function Success() print("[LUA Success Callback]=> OK") end`,
 		`
-Actions = {function(data)
+Actions = {function(args)
 	for tag, v in pairs(rulexlib:J2T(data)) do
 		local ts = rulexlib:TsUnixNano()
 		local value = rulexlib:J2T(v['value'])
@@ -100,7 +100,7 @@ Actions = {function(data)
 		print('mqttOutEnd-iothub', rulexlib:T2J(jsont))
 		data:ToMqtt('mqttOutEnd-iothub', rulexlib:T2J(jsont))
 	end
-	return true, data
+	return true, args
 end}
 `,
 		`function Failed(error) print("[LUA Failed Callback]", error) end`)

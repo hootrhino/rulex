@@ -22,10 +22,10 @@
 local Devices = {
     {
         Name = "某个设备",
-        Encode = function(data)
+        Encode = function(args)
             -- 你实现
         end,
-        Decode = function(data)
+        Decode = function(args)
             -- 你实现
         end,
     },

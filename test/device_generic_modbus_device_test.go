@@ -65,7 +65,7 @@ func Test_Generic_modbus_device_tcp_mode(t *testing.T) {
 		`function Success() print("[LUA Success Callback]=> OK") end`,
 		`
 		Actions = {
-			function(data)
+			function(args)
 				print("RawData --->",data)
 				local nodeT = rulexlib:J2T(data)
 				local dataT = nodeT['node1']
@@ -79,7 +79,7 @@ func Test_Generic_modbus_device_tcp_mode(t *testing.T) {
 				print('b2 --> ', matchedData["b2"], ' --> ', b2)
 				print('c3 --> ', matchedData["c3"], ' --> ', c3)
 				print('d4 --> ', matchedData["d4"], ' --> ', d4)
-				return true, data
+				return true, args
 			end
 		}`,
 		`function Failed(error) print("[LUA Failed Callback]", error) end`)

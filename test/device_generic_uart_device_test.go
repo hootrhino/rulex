@@ -51,9 +51,9 @@ func Test_UART_Device(t *testing.T) {
 		`function Success() print("[LUA Success Callback]=> OK") end`,
 		`
 		Actions = {
-		function(data)
+		function(args)
 			print('----> ',data)
-			return true, data
+			return true, args
 		end
 	}
 `,

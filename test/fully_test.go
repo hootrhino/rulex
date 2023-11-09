@@ -3,9 +3,9 @@ package test
 import (
 	"context"
 
+	"github.com/hootrhino/rulex/component/rulexrpc"
 	"github.com/hootrhino/rulex/glogger"
 	httpserver "github.com/hootrhino/rulex/plugin/http_server"
-	"github.com/hootrhino/rulex/component/rulexrpc"
 	"github.com/hootrhino/rulex/typex"
 
 	"testing"
@@ -43,41 +43,41 @@ func TestFullyRun(t *testing.T) {
 		`function Success() print("[LUA Success Callback]=> OK") end`,
 		`
 		Actions = {
-			function(data)
+			function(args)
 			    local V1 = rulexlib:JQ(".[] | select(.temp > 50000000)", data)
                 print("[LUA Actions Callback 1 ===> Data is:", data)
 			    print("[LUA Actions Callback 1 ===> .[] | select(.temp >= 50000000)] return => ", rulexlib:JQ(".[] | select(.temp > 50000000)", data))
-				return true, data
+				return true, args
 			end,
-			function(data)
+			function(args)
 			    local V2 = rulexlib:JQ(".[] | select(.hum < 20)", data)
 			    print("[LUA Actions Callback 2 ===> .[] | select(.hum < 20)] return => ", rulexlib:JQ(".[] | select(.hum < 20)", data))
-				return true, data
+				return true, args
 			end,
-			function(data)
+			function(args)
 			    local V3 = rulexlib:JQ(".[] | select(.co2 > 50)", data)
 			    print("[LUA Actions Callback 3 ===> .[] | select(.co2 > 50] return => ", rulexlib:JQ(".[] | select(.co2 > 50)", data))
-				return true, data
+				return true, args
 			end,
-			function(data)
+			function(args)
 			    local V4 = rulexlib:JQ(".[] | select(.lex > 50)", data)
 			    print("[LUA Actions Callback 4 ===> .[] | select(.lex > 50)] return => ", rulexlib:JQ(".[] | select(.lex > 50)", data))
-				return true, data
+				return true, args
 			end,
-			function(data)
+			function(args)
 				--
 				print("[LUA Actions Callback 5, rulexlib:J2T] ==>",rulexlib:J2T(data))
 				print("[LUA Actions Callback 5, rulexlib:T2J] ==>",rulexlib:T2J(rulexlib:J2T(data)))
-				return true, data
+				return true, args
 			end,
-			function(data)
+			function(args)
 			    --
 				-- 0110_0001 0110_0001 0110_0010
 				-- <a:5 b:3 c:1 => a:00001100 b:00000001 c:0
 				local V6 = rulexlib:T2J(rulexlib:MB("<a:5 b:3 c:1", "aab", false))
 				print("[LUA Actions Callback 6, rulex.MatchBinary] ==>", V6)
 				print("[LUA Actions Callback 6, rulex.MatchBinary] ==>", V6)
-				return true, data
+				return true, args
 			end
 		}`,
 		`function Failed(error) print("[LUA Failed Callback]", error) end`)
@@ -91,9 +91,9 @@ func TestFullyRun(t *testing.T) {
 		`function Success() print("[LUA Success Callback]=> OK") end`,
 		`
 		Actions = {
-			function(data)
+			function(args)
 				print("[LUA Actions Callback RULE ==================> 1] ==>", data)
-				return true, data
+				return true, args
 			end
 		}`,
 		`function Failed(error) print("[LUA Failed Callback]", error) end`)
@@ -107,9 +107,9 @@ func TestFullyRun(t *testing.T) {
 		`function Success() print("[LUA Success Callback]=> OK") end`,
 		`
 		Actions = {
-			function(data)
+			function(args)
 			    print("[LUA Actions Callback RULE ==================> 2] ==>", data)
-				return true, data
+				return true, args
 			end
 		}`,
 		`function Failed(error) print("[LUA Failed Callback]", error) end`)
@@ -122,23 +122,23 @@ func TestFullyRun(t *testing.T) {
 		`function Success() print("[rulexlib:J2T(data) Success Callback]=> OK") end`,
 		`
 		Actions = {
-			function(data)
+			function(args)
 			    local t1 = rulexlib:J2T(data)
 			    print("[rulexlib:J2T(data)] ==>", rulexlib:T2J(t1))
-				return true, data
+				return true, args
 			end,
-			function(data)
+			function(args)
 			    print("[rulexlib:Time()] ==>", rulexlib:Time())
 			    print("[rulexlib:TsUnix()] ==>", rulexlib:TsUnix())
 			    print("[rulexlib:TsUnixNano()] ==>", rulexlib:TsUnixNano())
 			    rulexlib:VSet('k', 'v')
 			    print("[rulexlib:VGet(k)] ==>", rulexlib:VGet('k'))
 			    print("[HelloLib] ==>", Hello())
-				return true, data
+				return true, args
 			end,
-			function(data)
+			function(args)
 			print(rulexlib:Time())
-				return true, data
+				return true, args
 			end
 		}`,
 		`function Failed(error) print("[rulexlib:J2T(data) Failed Callback]", error) end`)

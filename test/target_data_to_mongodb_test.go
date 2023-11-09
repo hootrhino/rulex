@@ -57,10 +57,10 @@ func Test_DataToMongo(t *testing.T) {
 		`function Success() print("[LUA Success Callback]=> OK") end`,
 		`
 		Actions = {
-			function(data)
+			function(args)
 			    local err = data:ToMongo('mongoOut', data)
 				print("[LUA DataToMongo] ==>", err)
-				return true, data
+				return true, args
 			end
 		}`,
 		`function Failed(error) print("[LUA Failed Callback]", error) end`)

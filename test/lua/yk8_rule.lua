@@ -27,7 +27,7 @@ end
 --     }
 -- }
 -- Actions
-Actions = { function(data)
+Actions = { function(args)
     local dataT, err = rulexlib:J2T(data)
     -- 兼容多种平台
     if dataT['method'] == 'control' or dataT['method'] == 'property' then
@@ -63,5 +63,5 @@ Actions = { function(data)
             rulexlib:Throw(err)
         end
     end
-    return true, data
+    return true, args
 end }

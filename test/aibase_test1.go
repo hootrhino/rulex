@@ -37,7 +37,7 @@ func Test_AIBASE_ANN_MNIST(t *testing.T) {
 		`function Success() print("[LUA Success Callback]=> OK") end`,
 		`
 		Actions = {
-			function(data)
+			function(args)
 			    local P = {
 				    [0] = {11,12,13,14,15,16,17,18},
 				    [1] = {21,22,23,24,25,26,27,28},
@@ -50,7 +50,7 @@ func Test_AIBASE_ANN_MNIST(t *testing.T) {
 					end
 				end
 				print('Test_AIBASE_ANN_MNIST =>', result, err1)
-				return true, data
+				return true, args
 			end
 		}`,
 		`function Failed(error) print("[LUA Failed Callback]", error) end`)

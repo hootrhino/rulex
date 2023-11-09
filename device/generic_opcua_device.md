@@ -100,8 +100,8 @@ OPCUA采集协议是基于OPCUA协议的一种采集协议，主要用于采集O
 ```lua
 Actions =
 {
-    function(data)
-        return true, data
+    function(args)
+        return true, args
     end
 }
 
@@ -112,8 +112,8 @@ Actions =
 ```lua
 Actions =
 {
-    function(data)
-        return true, data
+    function(args)
+        return true, args
     end
 }
 

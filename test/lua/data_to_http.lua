@@ -14,7 +14,7 @@ Actions =
     --        ┌────────────────────────────────────────
     -- data = |00 00 00 01|00 00 00 01|00 00 00 01|00 00 00 01|
     --        └────────────────────────────────────────
-    function(data)
+    function(args)
         local jsont = {
             tag1 = data[0],
             tag2 = data[1],
@@ -22,6 +22,6 @@ Actions =
             tag4 = data[3],
         }
         data:ToHttp('OUTEND', rulexlib:T2J(jsont))
-        return true, data
+        return true, args
     end
 }

@@ -81,9 +81,9 @@ func TestInitData(t *testing.T) {
 		`function Success() print("[LUA Success]OK") end`,
 		`
 			Actions = {
-				function(data)
+				function(args)
 					print("[LUA Actions Callback]", data)
-					return true, data
+					return true, args
 				end
 			}`,
 		`function Failed(error) print("[LUA Failed]OK", error) end`)

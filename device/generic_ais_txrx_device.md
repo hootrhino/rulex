@@ -84,8 +84,8 @@ type _AISDeviceMasterConfig struct {
 ```lua
 Actions =
 {
-    function(data)
-        return true, data
+    function(args)
+        return true, args
     end
 }
 

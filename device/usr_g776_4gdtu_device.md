@@ -44,15 +44,15 @@ end
 -- Actions
 
 Actions = {
-    function(data)
+    function(args)
         local dataTable, err1 = rulexlib:J2T(data)
         if err1 ~= nil then
-            return true, data
+            return true, args
         end
         for _k, entity in pairs(dataTable) do
             data:ToUsrG776DTU("uuid", "DATA" ,rulexlib:T2J(entity["value"]))
         end
-        return true, data
+        return true, args
     end
 }
 

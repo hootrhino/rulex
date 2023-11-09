@@ -37,7 +37,7 @@ func Test_rulex_base_lib(t *testing.T) {
 		`function Success() print("[Success Callback]=> OK") end`,
 		`
 	Actions = {
-		function(data)
+		function(args)
 			print("[rulexlib:Time()] ==>", rulexlib:Time())
 			print("[rulexlib:TsUnix()] ==>", rulexlib:TsUnix())
 			print("[rulexlib:TsUnixNano()] ==>", rulexlib:TsUnixNano())
@@ -49,11 +49,11 @@ func Test_rulex_base_lib(t *testing.T) {
 			-- print("[rulexlib:VGet(k)] ==>", rulexlib:VGet('k'))
 			-- Hello()
 			-- rulexlib:Throw('this is test Throw')
-			return true, data
+			return true, args
 		end,
-		function(data)
+		function(args)
 			rulexlib:log(rulexlib:Time())
-			return true, data
+			return true, args
 		end
 	}`,
 		`function Failed(error) print("[Failed Callback]", error) end`)

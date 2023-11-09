@@ -5,9 +5,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/hootrhino/rulex/component/rulexrpc"
 	"github.com/hootrhino/rulex/glogger"
 	httpserver "github.com/hootrhino/rulex/plugin/http_server"
-	"github.com/hootrhino/rulex/component/rulexrpc"
 	"github.com/hootrhino/rulex/typex"
 
 	"google.golang.org/grpc"
@@ -41,19 +41,19 @@ func Test_JQ_Parse(t *testing.T) {
 		`function Success() print("[LUA Success Callback]=> OK") end`,
 		`
 		Actions = {
-			function(data)
+			function(args)
 				print("[LUA rulexlib:J2T] ==>",rulexlib:J2T(data))
 				print("[LUA rulexlib:T2J] ==>",rulexlib:T2J(rulexlib:J2T(data)))
 				print("[LUA rulexlib:T2J] ==>",rulexlib:T2J(rulexlib:J2T(data)) == data)
-				return true, data
+				return true, args
 			end,
-			function(data)
+			function(args)
 			print(data)
-				return true, data
+				return true, args
 			end,
-			function(data)
+			function(args)
 			print(data)
-				return true, data
+				return true, args
 			end,
 		}`,
 		`function Failed(error) print("[LUA Failed Callback]", error) end`)

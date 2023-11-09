@@ -15,11 +15,11 @@
 
 Actions =
 {
-    function(data)
-        local dataT, err = json:J2T(data)
+    function(args)
+        local dataT, err = json:J2T(args)
         if (err ~= nil) then
             stdlib:Debug('parse json error:' .. err)
-            return true, data
+            return true, args
         end
         for key, value in pairs(dataT) do
             local MatchHexS = hex:MatchUInt("hum:[0,1];temp:[2,3]", value['value'])
@@ -32,8 +32,8 @@ Actions =
                     temp = math:TFloat(MatchHexS['temp'] * 0.1, 2),
                 }
             )
-            stdlib:Debug(Json)
+            stdlib:Println(Json)
         end
-        return true, data
+        return true, args
     end
 }

@@ -5,12 +5,12 @@ import (
 	"testing"
 	"time"
 
+	"github.com/hootrhino/rulex/component/rulexrpc"
 	"github.com/hootrhino/rulex/core"
 	"github.com/hootrhino/rulex/engine"
 	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/plugin/demo_plugin"
 	httpserver "github.com/hootrhino/rulex/plugin/http_server"
-	"github.com/hootrhino/rulex/component/rulexrpc"
 	"github.com/hootrhino/rulex/typex"
 
 	"google.golang.org/grpc"
@@ -53,11 +53,11 @@ func Test_Binary_LUA_Parse(t *testing.T) {
 			--        ┌───────────────────────────────────────────────┐
 			-- data = |00 00 00 01|00 00 00 02|00 00 00 03|00 00 00 04|
 			--        └───────────────────────────────────────────────┘
-			function(data)
+			function(args)
 				local json = require("json")
 				local V6 = json.encode(rulexlib:MB("<a:8 b:8 c:8 d:8", data, false))
 				print("[LUA Actions Callback 5, rulex.MatchBinary] ==>", V6)
-				return true, data
+				return true, args
 			end
 		}`,
 		`function Failed(error) print("[LUA Failed Callback]", error) end`)
