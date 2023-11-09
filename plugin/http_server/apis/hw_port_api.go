@@ -73,6 +73,12 @@ func AllHwPorts(c *gin.Context, ruleEngine typex.RuleX) {
 			Name:        port.Name,
 			Type:        port.Type,
 			Alias:       port.Alias,
+			Busy:        port.Busy,
+			OccupyBy:    HwPortOccupyVo{
+				UUID: port.OccupyBy.UUID,
+				Type: port.OccupyBy.Type,
+				Name: port.OccupyBy.Name,
+			},
 			Description: port.Description,
 		})
 	}
