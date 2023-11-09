@@ -139,7 +139,7 @@ func CreateOutEnd(c *gin.Context, ruleEngine typex.RuleX) {
 		return
 	}
 	if err := server.LoadNewestOutEnd(newUUID, ruleEngine); err != nil {
-		c.JSON(common.HTTP_OK, common.Error400(err))
+		c.JSON(common.HTTP_OK, common.OkWithMsg(err.Error()))
 		return
 	}
 	c.JSON(common.HTTP_OK, common.Ok())

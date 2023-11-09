@@ -35,6 +35,9 @@ func OkWithEmpty() R {
 func OkWithData(data interface{}) R {
 	return R{200, SUCCESS, data}
 }
+func OkWithMsg(msg string) R {
+	return R{200, msg, []EmptyObj{}}
+}
 func Error(s string) R {
 	return R{4000, s, []EmptyObj{}}
 }
