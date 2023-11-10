@@ -11,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"github.com/hootrhino/rulex/glogger"
+	"github.com/hootrhino/rulex/typex"
 )
 
 /*
@@ -188,8 +189,8 @@ func wsServerEndpoint(c *gin.Context) {
 	}
 	glogger.GLogger.Debugf("Request live:%s, Token is :%s", LiveId, Token)
 	// 最多允许连接10个客户端，实际情况下根本用不了那么多
-	if len(__DefaultRtspServer.websocketPlayerManager.Clients) >= 10 {
-		wsConn.WriteMessage(websocket.TextMessage, []byte("Reached max connections"))
+	if len(__DefaultRtspServer.websocketPlayerManager.Clients) >= 2 {
+		wsConn.WriteMessage(websocket.TextMessage, []byte("Reached max connections:2"))
 		wsConn.Close()
 		return
 	}
@@ -209,5 +210,33 @@ func wsServerEndpoint(c *gin.Context) {
 	wsConn.SetPongHandler(func(appData string) error {
 		return nil
 	})
-
+	go func(wsConn *websocket.Conn) {
+		defer func() {
+			if wsConn != nil {
+				glogger.GLogger.Info("wsConn Disconnect By accident:", wsConn.RemoteAddr().String())
+				__DefaultRtspServer.websocketPlayerManager.lock.Lock()
+				delete(__DefaultRtspServer.websocketPlayerManager.Clients, wsConn.RemoteAddr().String())
+				__DefaultRtspServer.websocketPlayerManager.lock.Unlock()
+			}
+		}()
+		for {
+			select {
+			case <-typex.GCTX.Done():
+				{
+					return
+				}
+			default:
+				{
+				}
+			}
+			_, _, err := wsConn.ReadMessage()
+			if err != nil {
+				break
+			}
+			err = wsConn.WriteMessage(websocket.PingMessage, []byte{})
+			if err != nil {
+				break
+			}
+		}
+	}(wsConn)
 }
