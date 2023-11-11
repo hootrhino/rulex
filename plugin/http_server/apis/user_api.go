@@ -249,15 +249,10 @@ func GetSysLogo(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err1))
 		return
 	}
-	binData, err2 := os.ReadFile(MSiteConfig.Logo)
-	if err2 != nil {
-		c.JSON(common.HTTP_OK, common.Error400(err2))
-		return
-	}
 	c.Writer.WriteHeader(http.StatusOK)
 	c.Writer.Header().Set("Content-Type", "image/jpeg")
-	c.Writer.Header().Set("Content-Length", strconv.Itoa(len(binData)))
-	c.Writer.Write(binData)
+	c.Writer.Header().Set("Content-Length", strconv.Itoa(len(MSiteConfig.Logo)))
+	c.Writer.Write([]byte(MSiteConfig.Logo))
 	c.Writer.Flush()
 }
 
