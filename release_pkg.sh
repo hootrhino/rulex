@@ -6,7 +6,7 @@ RESPOSITORY="https://github.com/hootrhino"
 #
 create_pkg() {
     local target=$1
-    local version=$(git describe --tags --always --abbrev=0)
+    local version="$(git describe --tags $(git rev-list --tags --max-count=1))"
     local release_dir="_release"
     local pkg_name="${APP}-$target-$version.zip"
     local common_files="./LICENSE ./conf/${APP}.ini ./md5.sum"
