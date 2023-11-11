@@ -130,7 +130,7 @@ fetch_dashboard() {
         echo -e "\033[44;32m [√] File www.zip already downloaded \033[0m"
         unzip -q "$www_zip" -d "$http_server_dir"
     else
-        local VERSION=$(git describe --tags --always --abbrev=0)
+        VERSION="$(git describe --tags $(git rev-list --tags --max-count=1))"
         local URL="${RESPOSITORY}/hootrhino-eekit-web/releases/download/${VERSION}/www.zip"
         echo -e "\033[41;37m [*] Fetch www.zip from: ${URL}\033[0m"
         # 发送HEAD请求来检查URL是否存在
