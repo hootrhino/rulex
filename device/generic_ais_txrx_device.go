@@ -142,7 +142,7 @@ func (aism *AISDeviceMaster) Start(cctx typex.CCTX) error {
 			return err
 		}
 		go func() {
-			reader := bufio.NewReader(aism.serialPort)
+			buffer := [4096]byte{}
 			defer aism.serialPort.Close()
 			for {
 				select {
@@ -154,14 +154,44 @@ func (aism *AISDeviceMaster) Start(cctx typex.CCTX) error {
 					{
 					}
 				}
-
-				rawAiSString, err := reader.ReadString('\n') // \r\n
+				offset := 0
+				endl1 := false
+				endl2 := false
+				ok := false
+				oneByte := [1]byte{}
+				for {
+					_, err := aism.serialPort.Read(oneByte[:])
+					if err != nil {
+						glogger.GLogger.Info("serialPort Read error", err)
+						return
+					}
+					if oneByte[0] == '\r' {
+						endl1 = true
+						continue
+					}
+					if oneByte[0] == '\n' {
+						endl2 = true
+						ok = true
+					}
+					if endl1 && endl2 {
+						break
+					} else {
+						buffer[offset] = oneByte[0]
+						offset++
+					}
+				}
+				// 可能AIS报文传输失败了
+				if !ok {
+					glogger.GLogger.Info("serialPort Read may occurred error:", err)
+					continue
+				}
+				rawAiSString := string(buffer[:offset])
 				if err != nil {
 					glogger.GLogger.Error(err)
 					aism.status = typex.DEV_DOWN
 					return
 				}
-
+				// 这段是个兼容代码，现阶段适配了一款AIS USB 串口接收器，以后会自己做
 				// RF小作坊的设备发出来的无用信息
 				{
 					if strings.HasPrefix("NONE", rawAiSString) {
@@ -194,7 +224,7 @@ func (aism *AISDeviceMaster) Start(cctx typex.CCTX) error {
 					if lens > 2 {
 						aism.RuleEngine.WorkDevice(aism.Details(),
 							fmt.Sprintf(ds, aism.mainConfig.CommonConfig.GwSN,
-								aism.mainConfig.CommonConfig.GwSN, rawAiSString[:lens-2]), // \r\n
+								aism.mainConfig.CommonConfig.GwSN, rawAiSString), // \r\n
 						)
 					}
 				}
