@@ -216,8 +216,8 @@ func UploadSysLogo(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	fileName := "avatar.png"
-	dir := "./upload/avatar/"
+	fileName := "logo.png"
+	dir := "./upload/Logo/"
 	if err := os.MkdirAll(filepath.Dir(dir), os.ModePerm); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
@@ -226,8 +226,15 @@ func UploadSysLogo(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
+	err1 := service.UpdateSiteConfig(model.MSiteConfig{
+		Logo: dir + fileName,
+	})
+	if err1 != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err1))
+		return
+	}
 	c.JSON(common.HTTP_OK, common.OkWithData(map[string]string{
-		"url": fileName,
+		"url": "/api/v1/site/logo",
 	}))
 }
 
@@ -237,16 +244,37 @@ func UploadSysLogo(c *gin.Context, ruleEngine typex.RuleX) {
 *
  */
 func GetSysLogo(c *gin.Context, ruleEngine typex.RuleX) {
-	fileName := "avatar.png"
-	dir := "./upload/avatar/"
-	fileBytes, err := os.ReadFile(dir + fileName)
-	if err != nil {
-		c.JSON(common.HTTP_OK, common.Error400(err))
+	MSiteConfig, err1 := service.GetSiteConfig()
+	if err1 != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err1))
+		return
+	}
+	binData, err2 := os.ReadFile(MSiteConfig.Logo)
+	if err2 != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err2))
 		return
 	}
 	c.Writer.WriteHeader(http.StatusOK)
 	c.Writer.Header().Set("Content-Type", "image/jpeg")
-	c.Writer.Header().Set("Content-Length", strconv.Itoa(len(fileBytes)))
-	c.Writer.Write(fileBytes)
+	c.Writer.Header().Set("Content-Length", strconv.Itoa(len(binData)))
+	c.Writer.Write(binData)
 	c.Writer.Flush()
+}
+
+/*
+*
+* 重置站点
+*
+ */
+func ResetSiteConfig(c *gin.Context, ruleEngine typex.RuleX) {
+	err1 := service.UpdateSiteConfig(model.MSiteConfig{
+		SiteName: "",
+		Logo:     "",
+		AppName:  "",
+	})
+	if err1 != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err1))
+		return
+	}
+	c.JSON(common.HTTP_OK, common.Ok())
 }

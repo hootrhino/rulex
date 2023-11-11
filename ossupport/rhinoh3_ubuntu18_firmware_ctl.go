@@ -20,6 +20,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"strings"
 )
 
 /*
@@ -72,29 +73,31 @@ func Restart() error {
  */
 func StartUpgradeProcess(path string, args []string) {
 	log.Printf("Start Upgrade Process Pid=%d, Gid=%d", os.Getpid(), os.Getegid())
-	defer log.Println("Start Upgrade Process Exited")
-	outputFile, err1 := os.Create("local-upgrade-log.txt")
-	if err1 != nil {
-		log.Println("Create Upgrade log error:", err1)
-		return
-	}
-	defer outputFile.Close()
-	cmd := exec.Command(path, args...)
+	cmd := exec.Command("bash", "-c", path+" "+strings.Join(args, " "))
 	cmd.SysProcAttr = NewSysProcAttr()
-	cmd.Stdout = outputFile
-	cmd.Stderr = outputFile
+	cmd.Env = os.Environ()
+	cmd.Stdin = nil
+	cmd.Stdout = nil
+	cmd.Stderr = nil
+	cmd.ExtraFiles = nil
 	if cmd.Process != nil {
-		cmd.Process.Pid = -1 // 用来分离进程用,简直天坑参数！！！
+		cmd.Process.Release() // 用来分离进程用,简直天坑参数！！！
 	}
 	err := cmd.Start()
+	// log.Println("Start Upgrade Process:", cmd.String())
 	if cmd.Process != nil {
-		cmd.Process.Pid = -1 // 用来分离进程用,简直天坑参数！！！
+		cmd.Process.Release() // 用来分离进程用,简直天坑参数！！！
 	}
 	if err != nil {
 		log.Println("Start Upgrade Process Failed:", err)
 		return
 	}
-	log.Println("Start Upgrade Process:", cmd.String())
+	err1 := cmd.Wait()
+	if err1 != nil {
+		log.Println("Wait Upgrade Process Failed:", err1)
+		return
+	}
+	log.Println("Start Upgrade Process:", cmd.Process.Pid, cmd.String())
 }
 
 /*
@@ -108,6 +111,20 @@ func Reboot() error {
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
 		return err
+	}
+	return nil
+}
+
+/*
+*
+* 解压安装包
+*
+ */
+func UnzipFirmware(zipFile, destDir string) error {
+	cmd := exec.Command("unzip", "-o", zipFile, "-d", destDir)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("failed to unzip file: %s, %s", err.Error(), string(out))
 	}
 	return nil
 }

@@ -3,18 +3,16 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
-	_ "net/http/pprof"
-	"os"
-	"runtime"
-	"time"
-
-	"github.com/hootrhino/rulex/component/trailer"
 	"github.com/hootrhino/rulex/engine"
 	"github.com/hootrhino/rulex/ossupport"
 	"github.com/hootrhino/rulex/typex"
 	"github.com/hootrhino/rulex/utils"
 	"github.com/urfave/cli/v2"
+	"log"
+	_ "net/http/pprof"
+	"os"
+	"runtime"
+	"time"
 )
 
 func init() {
@@ -83,7 +81,7 @@ func main() {
 			},
 			{
 				Name:  "upgrade",
-				Usage: "upgrade -oldpid $PID",
+				Usage: "! JUST FOR Upgrade FirmWare",
 				Flags: []cli.Flag{
 					&cli.IntFlag{
 						Name:  "oldpid",
@@ -100,26 +98,26 @@ func main() {
 						return nil
 					}
 					// Try 5 times
-					killOld := false
+					killOld := true
 					log.Println("[Prepare Stage] Try to kill Old Process:", OldPid)
 					// TODO 这里有个问题：无法分离进程
-					if err := ossupport.StopRulex(); err != nil {
-						log.Println("[Prepare Stage] Old Process killed error:", OldPid, err)
-					} else {
-						log.Println("[Prepare Stage] Old Process killed success:", OldPid)
-						killOld = true
-					}
-					if !killOld {
-						log.Println("[Prepare Stage] Restart rulex failed, Upgrade Process Exited")
-						os.Exit(0)
-						return nil
-					}
+					// if err := ossupport.StopRulex(); err != nil {
+					// 	log.Println("[Prepare Stage] Old Process killed error:", OldPid, err)
+					// } else {
+					// 	log.Println("[Prepare Stage] Old Process killed success:", OldPid)
+					// 	killOld = true
+					// }
+					// if !killOld {
+					// 	log.Println("[Prepare Stage] Restart rulex failed, Upgrade Process Exited")
+					// 	os.Exit(0)
+					// 	return nil
+					// }
 					if killOld {
 						// EEKITH3 Use SystemCtl manage RULEX
 						env := os.Getenv("ARCHSUPPORT")
 						if runtime.GOOS == "linux" {
 							log.Println("[Prepare Stage] Ready to Upgrade on product:", env)
-							if err := trailer.Unzip(
+							if err := ossupport.UnzipFirmware(
 								"/usr/local/upload/Firmware/Firmware.zip",
 								"/usr/local"); err != nil {
 								log.Println("[Prepare Stage] Unzip error:", err)
@@ -130,6 +128,7 @@ func main() {
 								return nil
 							}
 							log.Println("[Prepare Stage] Restart rulex success, Upgrade Process Exited")
+							os.Exit(0)
 							return nil
 						}
 					}

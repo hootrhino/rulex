@@ -28,7 +28,7 @@ func BackupSqlite(c *gin.Context, ruleEngine typex.RuleX) {
 	dir := wd
 	c.Writer.WriteHeader(http.StatusOK)
 	c.FileAttachment(fmt.Sprintf("%s/%s", dir, fileName),
-	fmt.Sprintf("backup_%d_.db",time.Now().UnixNano()))
+		fmt.Sprintf("backup_%d_.db", time.Now().UnixNano()))
 }
 
 /*

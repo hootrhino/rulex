@@ -64,9 +64,9 @@ func UploadFirmWare(c *gin.Context, ruleEngine typex.RuleX) {
 *
  */
 func UpgradeFirmWare(c *gin.Context, ruleEngine typex.RuleX) {
-	uploadPath := "./upload/Firmware/"  // 固定路径
-	Firmware := "Firmware.zip"          // 固定路径
-	tempPath := uploadPath + "/temp001" // 固定路径
+	uploadPath := "./upload/Firmware/" // 固定路径
+	Firmware := "Firmware.zip"         // 固定路径
+	tempPath := uploadPath + "temp001" // 固定路径
 	err := os.MkdirAll(tempPath, os.ModePerm)
 	if err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
@@ -105,7 +105,7 @@ func UpgradeFirmWare(c *gin.Context, ruleEngine typex.RuleX) {
 	}
 
 	c.JSON(common.HTTP_OK, common.Ok())
-	go ossupport.StartUpgradeProcess(tempPath+"/rulex-temp",
+	ossupport.StartUpgradeProcess(tempPath+"/rulex-temp",
 		[]string{"upgrade", "-oldpid", fmt.Sprintf("%d", os.Getpid())})
 
 }

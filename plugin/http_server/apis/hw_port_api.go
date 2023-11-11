@@ -69,12 +69,12 @@ func AllHwPorts(c *gin.Context, ruleEngine typex.RuleX) {
 	HwPortVos := []HwPortVo{}
 	for _, port := range hwportmanager.AllHwPort() {
 		HwPortVos = append(HwPortVos, HwPortVo{
-			UUID:        port.UUID,
-			Name:        port.Name,
-			Type:        port.Type,
-			Alias:       port.Alias,
-			Busy:        port.Busy,
-			OccupyBy:    HwPortOccupyVo{
+			UUID:  port.UUID,
+			Name:  port.Name,
+			Type:  port.Type,
+			Alias: port.Alias,
+			Busy:  port.Busy,
+			OccupyBy: HwPortOccupyVo{
 				UUID: port.OccupyBy.UUID,
 				Type: port.OccupyBy.Type,
 				Name: port.OccupyBy.Name,
@@ -155,7 +155,7 @@ func GetHwPortDetail(c *gin.Context, ruleEngine typex.RuleX) {
 		Description: Port.Description,
 		Busy:        Port.Busy,
 		OccupyBy: HwPortOccupyVo{
-			Port.OccupyBy.Type, Port.OccupyBy.UUID, Port.Name,
+			Port.OccupyBy.UUID, Port.OccupyBy.Type, Port.Name,
 		},
 	}))
 

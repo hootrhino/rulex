@@ -117,36 +117,29 @@ func CreateRule(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error(`rule type must be 'lua' but now is:`+form.Type))
 		return
 	}
-	lenSources := len(form.FromSource)
-	lenDevices := len(form.FromDevice)
-	if lenSources > 0 {
-		for _, id := range form.FromSource {
-			in, _ := service.GetMInEndWithUUID(id)
-			if in == nil {
-				c.JSON(common.HTTP_OK, common.Error(`inend not exists: `+id))
-				return
-			}
+	for _, id := range form.FromSource {
+		in, _ := service.GetMInEndWithUUID(id)
+		if in == nil {
+			c.JSON(common.HTTP_OK, common.Error(`inend not exists: `+id))
+			return
 		}
 	}
 
-	if lenDevices > 0 {
-		for _, id := range form.FromDevice {
-			in, _ := service.GetMDeviceWithUUID(id)
-			if in == nil {
-				c.JSON(common.HTTP_OK, common.Error(`device not exists: `+id))
-				return
-			}
+	for _, id := range form.FromDevice {
+		in, _ := service.GetMDeviceWithUUID(id)
+		if in == nil {
+			c.JSON(common.HTTP_OK, common.Error(`device not exists: `+id))
+			return
 		}
 	}
+
 	// tmpRule 是一个一次性的临时rule，用来验证规则，这么做主要是为了防止真实Lua Vm 被污染
 	tmpRule := typex.NewRule(nil, "_", "_", "_", []string{}, []string{},
 		form.Success, form.Actions, form.Failed)
-
 	if err := core.VerifyLuaSyntax(tmpRule); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-
 	//
 	mRule := &model.MRule{
 		Name:        form.Name,
@@ -160,9 +153,6 @@ func CreateRule(c *gin.Context, ruleEngine typex.RuleX) {
 		Actions:     form.Actions,
 	}
 
-	// if form.Type != "lua" {
-	// 	// 未来可能支持别的脚本
-	// }
 	rule := typex.NewLuaRule(
 		ruleEngine,
 		mRule.UUID,
@@ -277,34 +267,22 @@ func UpdateRule(c *gin.Context, ruleEngine typex.RuleX) {
 		Failed      string   `json:"failed"`
 	}
 	form := Form{Type: "lua"}
-
 	if err := c.ShouldBindJSON(&form); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	if !utils.SContains([]string{"lua"}, form.Type) {
-		c.JSON(common.HTTP_OK, common.Error(`rule type must be 'lua' but now is:`+form.Type))
-		return
-	}
-	lenSources := len(form.FromSource)
-	lenDevices := len(form.FromDevice)
-	if lenSources > 0 {
-		for _, id := range form.FromSource {
-			in := ruleEngine.GetInEnd(id)
-			if in == nil {
-				c.JSON(common.HTTP_OK, common.Error(`inend not exists: `+id))
-				return
-			}
+	for _, id := range form.FromSource {
+		in := ruleEngine.GetInEnd(id)
+		if in == nil {
+			c.JSON(common.HTTP_OK, common.Error(`inend not exists: `+id))
+			return
 		}
 	}
-
-	if lenDevices > 0 {
-		for _, id := range form.FromDevice {
-			in := ruleEngine.GetDevice(id)
-			if in == nil {
-				c.JSON(common.HTTP_OK, common.Error(`device not exists: `+id))
-				return
-			}
+	for _, id := range form.FromDevice {
+		in := ruleEngine.GetDevice(id)
+		if in == nil {
+			c.JSON(common.HTTP_OK, common.Error(`device not exists: `+id))
+			return
 		}
 	}
 	// tmpRule 是一个一次性的临时rule，用来验证规则，这么做主要是为了防止真实Lua Vm 被污染
