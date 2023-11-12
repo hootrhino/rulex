@@ -150,14 +150,11 @@ fetch_dashboard() {
 #
 # gen_changelog
 #
+
 gen_changelog() {
-    PreviewVersion=$(git describe --tags --abbrev=0 $(git rev-list --tags --skip=1 --max-count=1))
-    CurrentVersion=$(git describe --tags --abbrev=0)
-    echo "----------------------------------------------------------------"
-    echo -e "\033[34m [★] Change log between\033[44;34m ["${PreviewVersion}"] <--> [${CurrentVersion}]. \033[0m"
-    echo "----------------------------------------------------------------"
-    ChangeLog=$(git log ${PreviewVersion}..${CurrentVersion} --oneline --decorate --color)
-    printf "${ChangeLog}\n"
+    echo -e "[.]Version Change log:"
+    log=$(git log --oneline --pretty=format:"\033[0;31m[#]\033[0m%s\n" $(git describe --abbrev=0 --tags).. | cat)
+    echo -e $log
 }
 
 #
