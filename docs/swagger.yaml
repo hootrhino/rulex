@@ -1,0 +1,224 @@
+basePath: /api/v1
+definitions:
+  dto.CronTaskCreateDTO:
+    properties:
+      args:
+        description: '"param1 param2 param3"'
+        type: string
+      cronExpr:
+        type: string
+      env:
+        description: '["A=e1", "B=e2", "C=e3"]'
+        items:
+          type: string
+        type: array
+      isRoot:
+        description: 0-false 1-true
+        type: string
+      name:
+        type: string
+      script:
+        type: string
+      taskType:
+        description: 1-shell 2-cmd
+        type: integer
+    required:
+    - cronExpr
+    - name
+    - taskType
+    type: object
+  dto.CronTaskUpdateDTO:
+    properties:
+      args:
+        description: '"param1 param2 param3"'
+        type: string
+      cronExpr:
+        type: string
+      env:
+        description: '["A=e1", "B=e2", "C=e3"]'
+        items:
+          type: string
+        type: array
+      isRoot:
+        description: 0-false 1-true
+        type: string
+      name:
+        type: string
+      script:
+        type: string
+      taskType:
+        description: 1-shell 2-cmd
+        type: integer
+      uuid:
+        type: string
+    required:
+    - uuid
+    type: object
+  httpserver.R:
+    properties:
+      code:
+        type: integer
+      data: {}
+      msg:
+        type: string
+    required:
+    - code
+    - msg
+    type: object
+externalDocs:
+  description: OpenAPI
+  url: https://swagger.io/resources/open-api/
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: This is a sample server celler server.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Swagger Example API
+  version: "1.0"
+paths:
+  /crontask/create:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 创建
+        in: body
+        name: object
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CronTaskCreateDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpserver.R'
+      summary: 创建定时任务
+      tags:
+      - crontask
+  /crontask/delete:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: uuid
+        in: query
+        name: uuid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpserver.R'
+      summary: 删除定时任务
+      tags:
+      - crontask
+  /crontask/list:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpserver.R'
+      summary: 获取所有定时任务
+      tags:
+      - crontask
+  /crontask/results/page:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: current
+        in: query
+        name: current
+        type: string
+      - description: size
+        in: query
+        name: size
+        type: string
+      - description: uuid
+        in: query
+        name: uuid
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpserver.R'
+      summary: 分页获取定时任务执行结果
+      tags:
+      - crontask
+  /crontask/start:
+    get:
+      parameters:
+      - description: uuid
+        in: query
+        name: uuid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpserver.R'
+      summary: 启动定时任务
+      tags:
+      - crontask
+  /crontask/stop:
+    get:
+      parameters:
+      - description: uuid
+        in: query
+        name: uuid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpserver.R'
+      summary: 停止定时任务
+      tags:
+      - crontask
+  /crontask/update:
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: 更新
+        in: body
+        name: object
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CronTaskUpdateDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpserver.R'
+      summary: 更新定时任务
+      tags:
+      - crontask
+securityDefinitions:
+  BasicAuth:
+    type: basic
+swagger: "2.0"

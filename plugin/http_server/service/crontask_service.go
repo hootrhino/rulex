@@ -7,11 +7,13 @@ import (
 	"github.com/hootrhino/rulex/component/interdb"
 	"github.com/hootrhino/rulex/plugin/http_server/dto"
 	"github.com/hootrhino/rulex/plugin/http_server/model"
+	"github.com/hootrhino/rulex/utils"
 )
 
 func CreateScheduleTask(data *dto.CronTaskCreateDTO) (*model.MCronTask, error) {
 	db := interdb.DB()
 	task := model.MCronTask{
+		UUID:     utils.CronTaskUuid(),
 		Name:     data.Name,
 		CronExpr: data.CronExpr,
 		Enable:   "0",
@@ -34,42 +36,36 @@ func CreateScheduleTask(data *dto.CronTaskCreateDTO) (*model.MCronTask, error) {
 	return &task, nil
 }
 
-func DeleteScheduleTask(id uint) error {
+func DeleteScheduleTask(uuid string) error {
 	db := interdb.DB()
 	task := model.MCronTask{}
-	task.ID = id
-	tx := db.Delete(&task)
+	tx := db.Where("uuid = ?", uuid).Delete(&task)
 
 	// 停止已经在调度的任务
 	manager := cron_task.GetCronManager()
-	manager.DeleteTask(id)
+	manager.DeleteTask(uuid)
 	return tx.Error
 }
 
-func PageScheduleTask(page model.PageRequest, task model.MCronTask) (any, error) {
+func ListScheduleTask(task model.MCronTask) (any, error) {
 	db := interdb.DB()
 	var records []model.MCronTask
-	var count int64
-	t := db.Model(&model.MCronTask{}).Where(&model.MCronTask{}, &task).Count(&count)
-	if t.Error != nil {
-		return nil, t.Error
-	}
-	tx := db.Scopes(Paginate(page)).Find(&records, &task)
+	tx := db.Find(&records)
 	if tx.Error != nil {
 		return nil, tx.Error
 	}
-	return WrapPageResult(page, records, count), nil
+	return records, nil
 }
 
 func UpdateScheduleTask(data *dto.CronTaskUpdateDTO) (*model.MCronTask, error) {
 	db := interdb.DB()
 	cronTask := model.MCronTask{}
 	d := db.Model(&model.MCronTask{})
-	find := d.Find(&cronTask, data.ID)
-	if find.Error != nil {
-		return nil, find.Error
+	tx := d.Where("uuid = ?", data.UUID).Find(&cronTask)
+	if tx.Error != nil {
+		return nil, tx.Error
 	}
-	if find.RowsAffected == 0 {
+	if tx.RowsAffected == 0 {
 		return nil, errors.New("定时任务不存在")
 	}
 	if cronTask.Enable == "1" {
@@ -83,14 +79,13 @@ func UpdateScheduleTask(data *dto.CronTaskUpdateDTO) (*model.MCronTask, error) {
 		Args:     data.Args,
 	}
 
-	t := db.Model(&task)
-	task.ID = uint(data.ID)
+	tx = db.Model(&task)
 	if data.Env != nil {
 		marshal, _ := json.Marshal(data.Env)
 		task.Env = string(marshal)
 	}
 
-	tx := t.Updates(task)
+	tx = tx.Where("uuid = ?", data.UUID).Updates(task)
 	if tx.Error != nil {
 		return nil, tx.Error
 	}

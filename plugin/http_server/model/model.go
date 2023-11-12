@@ -270,16 +270,17 @@ type MWifiConfig struct {
  */
 type MCronTask struct {
 	RulexModel
-	Name      string    `gorm:"not null" json:"name"`
-	CronExpr  string    `json:"cronExpr"` // linux cron standard
-	Enable    string    `json:"enable"`   // 0-disable 1-enable
-	TaskType  int       `json:"taskType"` // 1-shell 2-cmd
-	Command   string    `json:"command"`  // cron_assets/{id}/a.sh
-	Args      *string   `json:"args"`     // "param1 param2 param3"
-	IsRoot    string    `json:"isRoot"`   // 0-false 1-true
-	WorkDir   string    `json:"workDir"`  // cron_assets/{id}
-	Env       string    `json:"env"`      // ["A=e1", "B=e2", "C=e3"]
-	Script    string    `json:"script"`   // 脚本内容
+	UUID      string    `gorm:"not null; default:''" json:"uuid"`
+	Name      string    `gorm:"not null;" json:"name"`
+	CronExpr  string    `gorm:"not null" json:"cronExpr"` // linux cron standard
+	Enable    string    `json:"enable"`                   // 0-disable 1-enable
+	TaskType  int       `json:"taskType"`                 // 1-shell 目前
+	Command   string    `json:"command"`                  // 目前不使用，默认都是linux shell
+	Args      *string   `json:"args"`                     // "-param1 -param2 -param3"
+	IsRoot    string    `json:"isRoot"`                   // 0-false 1-true
+	WorkDir   string    `json:"workDir"`                  // 目前不使用，默认工作路径和网关工作路径保持一致
+	Env       string    `json:"env"`                      // ["A=e1", "B=e2", "C=e3"]
+	Script    string    `json:"script"`                   // 脚本内容
 	UpdatedAt time.Time `json:"updatedAt"`
 }
 
@@ -288,9 +289,9 @@ type MCronTask struct {
  */
 type MCronResult struct {
 	RulexModel
-	TaskId    uint      `json:"taskId,omitempty"`
+	TaskUuid  string    `gorm:"not null; default:''" json:"taskUuid,omitempty"`
 	Status    string    `json:"status"`             // 1-running 2-end
-	ExitCode  string    `json:"ExitCode,omitempty"` // 0-success other-failed
+	ExitCode  string    `json:"exitCode,omitempty"` // 0-success other-failed
 	LogPath   string    `json:"logPath,omitempty"`
 	StartTime time.Time `json:"startTime"`
 	EndTime   time.Time `json:"endTime"`

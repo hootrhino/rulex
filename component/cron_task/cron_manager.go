@@ -1,7 +1,6 @@
 package cron_task
 
 import (
-	"fmt"
 	"os"
 	"os/exec"
 	"path"
@@ -14,7 +13,6 @@ import (
 	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/plugin/http_server/model"
 	"github.com/robfig/cron/v3"
-	"github.com/sirupsen/logrus"
 )
 
 var cronManager *CronManager
@@ -22,7 +20,7 @@ var cronManager *CronManager
 type CronManager struct {
 	cronEngine     *cron.Cron
 	mtx            sync.Mutex
-	crontab        map[uint]cron.EntryID
+	crontab        map[string]cron.EntryID
 	runningTask    sync.Map
 	processManager *ProcessManager
 }
@@ -44,7 +42,7 @@ func NewCronManager() *CronManager {
 	)
 	manager := CronManager{
 		cronEngine:     engine,
-		crontab:        make(map[uint]cron.EntryID),
+		crontab:        make(map[string]cron.EntryID),
 		processManager: NewProcessManager(),
 		mtx:            sync.Mutex{},
 	}
@@ -87,7 +85,7 @@ func NewCronManager() *CronManager {
 
 func (m *CronManager) AddTask(task model.MCronTask) error {
 	cronExpr := task.CronExpr
-	id := task.ID
+	id := task.UUID
 
 	m.mtx.Lock()
 	defer m.mtx.Unlock()
@@ -95,53 +93,30 @@ func (m *CronManager) AddTask(task model.MCronTask) error {
 		return nil
 	}
 	dir, _ := os.Getwd()
-	task.WorkDir = path.Join(dir, task.WorkDir)
-	task.Command = path.Join(dir, task.Command)
+	task.WorkDir = path.Join(".")
 	err := os.MkdirAll(dir, PERM_0777)
 	if err != nil {
 		return err
 	}
 	entryId, err := m.cronEngine.AddFunc(cronExpr, func() {
-		// 打开一个新的logger
-		now := time.Now()
-		logPath := fmt.Sprintf("cron_logs/%s/%v", now.Format("2006-01-02"), id)
-		err := os.MkdirAll(logPath, PERM_0777)
-		if err != nil {
-			glogger.GLogger.Error(err)
-		}
-		logTask := logrus.New()
-		filePath := path.Join(logPath, now.Format("15-04-05")+".log")
-		file, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
-		if err != nil {
-			glogger.GLogger.Error(err)
-			logTask.Out = os.Stdout
-		} else {
-			logTask.Out = file
-		}
-		defer func() {
-			if file != nil {
-				file.Close()
-			}
-		}()
-
-		//save
+		// create a task execute log record
 		result := model.MCronResult{
-			TaskId:    id,
+			TaskUuid:  task.UUID,
 			Status:    "1",
-			LogPath:   filePath,
-			StartTime: now,
+			StartTime: time.Now(),
 		}
 		saveResults(&result)
 
-		logTask.Info("---------------Start task---------------")
+		taskLogger := glogger.GLogger.WithField("task_uuid", task.UUID)
+		taskLogger.Info("---------------Start task---------------")
 
 		m.runningTask.Store(id, task)
 		defer m.runningTask.Delete(id)
 		// 调用process manager启动任务并等待其完成
-		err = m.processManager.RunProcess(logTask.Out, task)
+		err = m.processManager.RunProcess(taskLogger.Logger.Out, task)
 		exitCode := 0
 		if err != nil {
-			logTask.Error("Task Return Error, err=", err)
+			taskLogger.Error("Task Return Error, err=", err)
 			if exitError, ok := err.(*exec.ExitError); ok {
 				// 进程退出时返回非零状态码
 				exitCode = exitError.ExitCode()
@@ -149,7 +124,7 @@ func (m *CronManager) AddTask(task model.MCronTask) error {
 				exitCode = -1
 			}
 		}
-		logTask.Info("---------------End   task---------------")
+		taskLogger.Info("---------------End   task---------------")
 
 		result.EndTime = time.Now()
 		result.Status = "2"
@@ -172,21 +147,22 @@ func saveResults(m *model.MCronResult) {
 	}
 }
 
-func (m *CronManager) DeleteTask(id uint) {
+func (m *CronManager) DeleteTask(id string) {
 	entryID, ok := m.crontab[id]
 	if !ok {
 		return
 	}
-	err := m.processManager.KillProcess(int(id))
+	err := m.processManager.KillProcess(id)
 	if err != nil {
 		glogger.GLogger.Error("kill process failed, err=%+v", err)
+		return
 	}
 	m.cronEngine.Remove(entryID)
 	delete(m.crontab, id)
 }
 
-func (m *CronManager) KillTask(id int) error {
-	return m.processManager.KillProcess(id)
+func (m *CronManager) KillTask(uuid string) error {
+	return m.processManager.KillProcess(uuid)
 }
 
 func (m *CronManager) ListRunningTask() []model.MCronTask {
