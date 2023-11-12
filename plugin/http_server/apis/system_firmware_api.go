@@ -18,12 +18,14 @@ package apis
 import (
 	"crypto/md5"
 	"encoding/hex"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
 
 	"github.com/gin-gonic/gin"
 	"github.com/hootrhino/rulex/component/trailer"
+	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/ossupport"
 	common "github.com/hootrhino/rulex/plugin/http_server/common"
 	"github.com/hootrhino/rulex/typex"
@@ -62,14 +64,16 @@ func UploadFirmWare(c *gin.Context, ruleEngine typex.RuleX) {
 *
  */
 func UpgradeFirmWare(c *gin.Context, ruleEngine typex.RuleX) {
-	dir := "./upload/Firmware/"
-	fileName := "Firmware.zip" // 固定名称
-	tempPath, err := os.MkdirTemp(dir+fileName+"/temp", "temp*")
+	uploadPath := "./upload/Firmware/" // 固定路径
+	Firmware := "Firmware.zip"         // 固定路径
+	tempPath := uploadPath + "temp001" // 固定路径
+	err := os.MkdirAll(tempPath, os.ModePerm)
 	if err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	if err := trailer.Unzip(dir+fileName, tempPath); err != nil {
+	// 提前解压文件
+	if err := trailer.Unzip(uploadPath+Firmware, tempPath); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
@@ -85,21 +89,25 @@ func UpgradeFirmWare(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err2))
 		return
 	}
+	glogger.GLogger.Debugf("Compare MD5:[%s]~[%s]", md51, string(readBytes))
 	if md51 != string(readBytes) {
 		c.JSON(common.HTTP_OK, common.Error("invalid sum md5!"))
 		return
 	}
-	// Rulex 默认安装在 /usr/local/ 目录
-	// cp -> rulex-arm32-linux "/usr/local/"
-	if err := os.Rename(tempPath+"/rulex*", "/usr/local/"); err != nil {
+	// 将其移动到一个临时目录
+	if err := MoveFile(tempPath+"/rulex", tempPath+"/rulex-temp"); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	if err := ossupport.ReStartRulex(); err != nil {
+	if err := chmodX(tempPath + "/rulex-temp"); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
+
 	c.JSON(common.HTTP_OK, common.Ok())
+	ossupport.StartUpgradeProcess(tempPath+"/rulex-temp",
+		[]string{"upgrade", "-oldpid", fmt.Sprintf("%d", os.Getpid())})
+
 }
 
 /*
@@ -121,4 +129,41 @@ func sumMD5(filePath string) (string, error) {
 	hash := md5.New()
 	_, _ = io.Copy(hash, file)
 	return hex.EncodeToString(hash.Sum(nil)), nil
+}
+func chmodX(filePath string) error {
+
+	if err := os.Chmod(filePath, 0755); err != nil {
+		return err
+	}
+	return nil
+
+}
+
+/*
+*
+* 移动文件
+*
+ */
+func MoveFile(sourcePath, destPath string) error {
+	inputFile, err := os.Open(sourcePath)
+	if err != nil {
+		return fmt.Errorf("Couldn't open source file: %s", err)
+	}
+	outputFile, err := os.Create(destPath)
+	if err != nil {
+		inputFile.Close()
+		return fmt.Errorf("Couldn't open dest file: %s", err)
+	}
+	defer outputFile.Close()
+	_, err = io.Copy(outputFile, inputFile)
+	inputFile.Close()
+	if err != nil {
+		return fmt.Errorf("Writing to output file failed: %s", err)
+	}
+	// The copy was successful, so now delete the original file
+	err = os.Remove(sourcePath)
+	if err != nil {
+		return fmt.Errorf("Failed removing original file: %s", err)
+	}
+	return nil
 }

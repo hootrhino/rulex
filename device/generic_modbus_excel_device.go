@@ -11,7 +11,6 @@ import (
 	"github.com/plgd-dev/kit/v2/log"
 	modbus "github.com/wwhai/gomodbus"
 
-	archsupport "github.com/hootrhino/rulex/bspsupport"
 	"github.com/hootrhino/rulex/common"
 	"github.com/hootrhino/rulex/component/interdb"
 	"github.com/hootrhino/rulex/core"
@@ -60,7 +59,7 @@ type modbusPointPosition struct {
 }
 
 type _GMODExcelCommonConfig struct {
-	Mode        string `json:"mode" title:"工作模式" info:"RTU/TCP"`
+	Mode        string `json:"mode" title:"工作模式" info:"UART/TCP"`
 	Timeout     int    `json:"timeout" validate:"required" title:"连接超时"`
 	AutoRequest bool   `json:"autoRequest" title:"启动轮询"`
 	Frequency   int64  `json:"frequency" validate:"required" title:"采集频率"`
@@ -159,14 +158,10 @@ func (mdev *generic_modbus_excel_device) Init(devId string, configMap map[string
 	if utils.IsListDuplicated(tags) {
 		return errors.New("tag duplicated")
 	}
-	if !utils.SContains([]string{"RTU", "TCP"}, mdev.mainConfig.CommonConfig.Mode) {
+	if !utils.SContains([]string{"UART", "TCP"}, mdev.mainConfig.CommonConfig.Mode) {
 		return errors.New("unsupported mode, only can be one of 'TCP' or 'RTU'")
 	}
-	// 做端口管理
-	Port := archsupport.GetHwPort(mdev.mainConfig.RtuConfig.Uart)
-	if Port.Busy {
-		return errors.New(Port.BusyingInfo())
-	}
+
 	return nil
 }
 
@@ -175,7 +170,7 @@ func (mdev *generic_modbus_excel_device) Start(cctx typex.CCTX) error {
 	mdev.Ctx = cctx.Ctx
 	mdev.CancelCTX = cctx.CancelCTX
 
-	if mdev.mainConfig.CommonConfig.Mode == "RTU" {
+	if mdev.mainConfig.CommonConfig.Mode == "UART" {
 		mdev.rtuHandler = modbus.NewRTUClientHandler(mdev.mainConfig.RtuConfig.Uart)
 		mdev.rtuHandler.BaudRate = mdev.mainConfig.RtuConfig.BaudRate
 		mdev.rtuHandler.DataBits = mdev.mainConfig.RtuConfig.DataBits
@@ -217,7 +212,6 @@ func (mdev *generic_modbus_excel_device) Start(cctx typex.CCTX) error {
 	// ---------------------------------------------------------------------------------
 	if !mdev.mainConfig.CommonConfig.AutoRequest {
 		mdev.status = typex.DEV_UP
-		archsupport.HwPortBusy(mdev.mainConfig.RtuConfig.Uart, mdev.PointId)
 		return nil
 	}
 	mdev.retryTimes = 0
@@ -292,7 +286,6 @@ func (mdev *generic_modbus_excel_device) Stop() {
 	if mdev.driver != nil {
 		mdev.driver.Stop()
 	}
-	archsupport.HwPortFree(mdev.mainConfig.RtuConfig.Uart)
 }
 
 // 设备属性，是一系列属性描述

@@ -35,14 +35,14 @@ func Test_Trailer_load(t *testing.T) {
 	if runtime.GOOS == "windows" {
 		path += ".exe"
 	}
-	goods := trailer.Goods{
+	goods := trailer.GoodsInfo{
 		UUID:        "trailer-demo-app",
 		LocalPath:   path,
 		NetAddr:     "127.0.0.1:7798",
 		Description: "trailer-demo-app",
-		Args:        []string{"arg1", "arg2"},
+		Args:        "arg1 args",
 	}
-	if err := trailer.Fork(goods); err != nil {
+	if err := trailer.StartProcess(goods); err != nil {
 		glogger.GLogger.Fatal("Goods load failed:", err)
 	}
 	grpcConnection, err := grpc.Dial(goods.NetAddr,

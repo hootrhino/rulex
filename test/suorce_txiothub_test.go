@@ -77,7 +77,7 @@ func Test_tencent_iothub(t *testing.T) {
 		`function Success() print("[LUA Success Callback]=> OK") end`,
 		`
 		Actions = {
-		function(data)
+		function(args)
 		    print('From IotHUB:', data)
 			-- property
 		    iothub:PropertySuccess('tencentIothub', 'test-is-lua-001')
@@ -85,7 +85,7 @@ func Test_tencent_iothub(t *testing.T) {
 			-- action
 		    iothub:ActionSuccess('tencentIothub', 'test-is-lua-001', rulexlib:T2J({sw1=0}))
 		    iothub:ActionFailed('tencentIothub', 'test-is-lua-001', rulexlib:T2J({sw1=0}))
-			return true, data
+			return true, args
 		end
 	}
 `,

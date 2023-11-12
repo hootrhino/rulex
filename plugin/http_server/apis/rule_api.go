@@ -3,8 +3,8 @@ package apis
 import (
 	"fmt"
 
-	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/component/interqueue"
+	"github.com/hootrhino/rulex/glogger"
 	common "github.com/hootrhino/rulex/plugin/http_server/common"
 	"github.com/hootrhino/rulex/plugin/http_server/model"
 	"github.com/hootrhino/rulex/plugin/http_server/server"
@@ -44,7 +44,6 @@ func RuleDetail(c *gin.Context, ruleEngine typex.RuleX) {
 		Name:        rule.Name,
 		Type:        rule.Type,
 		Status:      1,
-		Expression:  rule.Expression,
 		Description: rule.Description,
 		FromSource:  rule.FromSource,
 		FromDevice:  rule.FromDevice,
@@ -66,7 +65,6 @@ func Rules(c *gin.Context, ruleEngine typex.RuleX) {
 				Name:        rule.Name,
 				Type:        rule.Type,
 				Status:      1,
-				Expression:  rule.Expression,
 				Description: rule.Description,
 				FromSource:  rule.FromSource,
 				FromDevice:  rule.FromDevice,
@@ -87,7 +85,6 @@ func Rules(c *gin.Context, ruleEngine typex.RuleX) {
 			Name:        rule.Name,
 			Type:        rule.Type,
 			Status:      1,
-			Expression:  rule.Expression,
 			Description: rule.Description,
 			FromSource:  rule.FromSource,
 			FromDevice:  rule.FromDevice,
@@ -105,7 +102,6 @@ func CreateRule(c *gin.Context, ruleEngine typex.RuleX) {
 		FromDevice  []string `json:"fromDevice" binding:"required"`
 		Name        string   `json:"name" binding:"required"`
 		Type        string   `json:"type"`
-		Expression  string   `json:"expression"`
 		Description string   `json:"description"`
 		Actions     string   `json:"actions"`
 		Success     string   `json:"success"`
@@ -121,42 +117,34 @@ func CreateRule(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error(`rule type must be 'lua' but now is:`+form.Type))
 		return
 	}
-	lenSources := len(form.FromSource)
-	lenDevices := len(form.FromDevice)
-	if lenSources > 0 {
-		for _, id := range form.FromSource {
-			in, _ := service.GetMInEndWithUUID(id)
-			if in == nil {
-				c.JSON(common.HTTP_OK, common.Error(`inend not exists: `+id))
-				return
-			}
+	for _, id := range form.FromSource {
+		in, _ := service.GetMInEndWithUUID(id)
+		if in == nil {
+			c.JSON(common.HTTP_OK, common.Error(`inend not exists: `+id))
+			return
 		}
 	}
 
-	if lenDevices > 0 {
-		for _, id := range form.FromDevice {
-			in, _ := service.GetMDeviceWithUUID(id)
-			if in == nil {
-				c.JSON(common.HTTP_OK, common.Error(`device not exists: `+id))
-				return
-			}
+	for _, id := range form.FromDevice {
+		in, _ := service.GetMDeviceWithUUID(id)
+		if in == nil {
+			c.JSON(common.HTTP_OK, common.Error(`device not exists: `+id))
+			return
 		}
 	}
+
 	// tmpRule 是一个一次性的临时rule，用来验证规则，这么做主要是为了防止真实Lua Vm 被污染
 	tmpRule := typex.NewRule(nil, "_", "_", "_", []string{}, []string{},
 		form.Success, form.Actions, form.Failed)
-
 	if err := core.VerifyLuaSyntax(tmpRule); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-
 	//
 	mRule := &model.MRule{
 		Name:        form.Name,
 		Type:        form.Type,
 		UUID:        utils.RuleUuid(),
-		Expression:  form.Expression,
 		Description: form.Description,
 		FromSource:  form.FromSource,
 		FromDevice:  form.FromDevice,
@@ -165,9 +153,6 @@ func CreateRule(c *gin.Context, ruleEngine typex.RuleX) {
 		Actions:     form.Actions,
 	}
 
-	if form.Type != "lua" {
-		// 未来可能支持别的脚本
-	}
 	rule := typex.NewLuaRule(
 		ruleEngine,
 		mRule.UUID,
@@ -282,34 +267,22 @@ func UpdateRule(c *gin.Context, ruleEngine typex.RuleX) {
 		Failed      string   `json:"failed"`
 	}
 	form := Form{Type: "lua"}
-
 	if err := c.ShouldBindJSON(&form); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	if !utils.SContains([]string{"lua"}, form.Type) {
-		c.JSON(common.HTTP_OK, common.Error(`rule type must be 'lua' but now is:`+form.Type))
-		return
-	}
-	lenSources := len(form.FromSource)
-	lenDevices := len(form.FromDevice)
-	if lenSources > 0 {
-		for _, id := range form.FromSource {
-			in := ruleEngine.GetInEnd(id)
-			if in == nil {
-				c.JSON(common.HTTP_OK, common.Error(`inend not exists: `+id))
-				return
-			}
+	for _, id := range form.FromSource {
+		in := ruleEngine.GetInEnd(id)
+		if in == nil {
+			c.JSON(common.HTTP_OK, common.Error(`inend not exists: `+id))
+			return
 		}
 	}
-
-	if lenDevices > 0 {
-		for _, id := range form.FromDevice {
-			in := ruleEngine.GetDevice(id)
-			if in == nil {
-				c.JSON(common.HTTP_OK, common.Error(`device not exists: `+id))
-				return
-			}
+	for _, id := range form.FromDevice {
+		in := ruleEngine.GetDevice(id)
+		if in == nil {
+			c.JSON(common.HTTP_OK, common.Error(`device not exists: `+id))
+			return
 		}
 	}
 	// tmpRule 是一个一次性的临时rule，用来验证规则，这么做主要是为了防止真实Lua Vm 被污染
@@ -347,7 +320,6 @@ func UpdateRule(c *gin.Context, ruleEngine typex.RuleX) {
 		if err := service.UpdateMRule(mRule.UUID, &model.MRule{
 			Name:        form.Name,
 			Type:        form.Type,
-			Expression:  form.Expression,
 			Description: form.Description,
 			FromSource:  form.FromSource,
 			FromDevice:  form.FromDevice,
@@ -638,4 +610,73 @@ func TestDeviceCallback(c *gin.Context, ruleEngine typex.RuleX) {
 		return
 	}
 	c.JSON(common.HTTP_OK, common.Ok())
+}
+
+/*
+*
+* 根据设备查询其Rules【0.6.4】
+*
+ */
+func ListByDevice(c *gin.Context, ruleEngine typex.RuleX) {
+	deviceId, _ := c.GetQuery("deviceId")
+	MDevice, err := service.GetMDeviceWithUUID(deviceId)
+	if err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
+	mRules := service.AllMRules() // 这个效率太低了, 后期写个SQL优化一下
+	ruleVos := []ruleVo{}
+	for _, rule := range mRules {
+		if utils.SContains(rule.FromDevice, MDevice.UUID) {
+			ruleVos = append(ruleVos, ruleVo{
+				UUID:        rule.UUID,
+				FromSource:  rule.FromSource,
+				FromDevice:  rule.FromDevice,
+				Name:        rule.Name,
+				Type:        rule.Type,
+				Status:      1,
+				Description: rule.Description,
+				Actions:     rule.Actions,
+				Success:     rule.Success,
+				Failed:      rule.Failed,
+			})
+		}
+	}
+	c.JSON(common.HTTP_OK, common.OkWithData(ruleVos))
+
+}
+
+/*
+*
+* 根据输入查询其Rules【0.6.4】
+*
+ */
+func ListByInend(c *gin.Context, ruleEngine typex.RuleX) {
+	inendId, _ := c.GetQuery("inendId")
+	MInend, err := service.GetMInEndWithUUID(inendId)
+	if err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
+
+	mRules := service.AllMRules() // 这个效率太低了, 后期写个SQL优化一下
+	ruleVos := []ruleVo{}
+	for _, rule := range mRules {
+		if utils.SContains(rule.FromSource, MInend.UUID) {
+			ruleVos = append(ruleVos, ruleVo{
+				UUID:        rule.UUID,
+				FromSource:  rule.FromSource,
+				FromDevice:  rule.FromDevice,
+				Name:        rule.Name,
+				Type:        rule.Type,
+				Status:      1,
+				Description: rule.Description,
+				Actions:     rule.Actions,
+				Success:     rule.Success,
+				Failed:      rule.Failed,
+			})
+		}
+	}
+	c.JSON(common.HTTP_OK, common.OkWithData(ruleVos))
+
 }

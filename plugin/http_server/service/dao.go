@@ -143,6 +143,9 @@ func Login(username, pwd string) (*model.MUser, error) {
 func InsertMUser(o *model.MUser) error {
 	return interdb.DB().Table("m_users").Create(o).Error
 }
+func InitMUser(o *model.MUser) error {
+	return interdb.DB().Table("m_users").FirstOrCreate(o).Error
+}
 
 func UpdateMUser(uuid string, o *model.MUser) error {
 	m := model.MUser{}

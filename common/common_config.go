@@ -8,7 +8,7 @@ package common
 type HostConfig struct {
 	Host    string `json:"host" validate:"required" title:"服务地址"`
 	Port    int    `json:"port" validate:"required" title:"服务端口"`
-	Timeout int    `json:"timeout"`
+	Timeout int    `json:"timeout,omitempty" title:"连接超时"`
 }
 
 /*
@@ -18,7 +18,6 @@ type HostConfig struct {
  */
 type IcmpConfig struct {
 	Timeout int `json:"timeout" validate:"required" title:"连接超时"`
-
 	// ["127.0.0.1", "127.0.0.2", "127.0.0.3"]
 	Hosts []string `json:"hosts" validate:"required" title:"服务地址"`
 }

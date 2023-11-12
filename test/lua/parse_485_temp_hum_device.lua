@@ -40,11 +40,11 @@
 -- Actions
 Actions =
 {
-    function(data)
+    function(args)
         local dataT, err = rulexlib:J2T(data)
         if (err ~= nil) then
             print('parse json error:', err)
-            return true, data
+            return true, args
         end
         for key, value in pairs(dataT) do
             local MatchHexS = rulexlib:MatchUInt("temp:[0,1];hum:[2,3]", value['value'])
@@ -64,6 +64,6 @@ Actions =
             print("DataToMqtt-> OUT48320dfdeaaa4ec7971a37a922e17d93:", Json)
             print(data:ToMqtt('OUT48320dfdeaaa4ec7971a37a922e17d93', Json))
         end
-        return true, data
+        return true, args
     end
 }

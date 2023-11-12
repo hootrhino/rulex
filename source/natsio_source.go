@@ -102,7 +102,9 @@ func (nt *natsSource) Details() *typex.InEnd {
 
 func (nt *natsSource) Stop() {
 	nt.status = typex.SOURCE_STOP
-	nt.CancelCTX()
+	if nt.CancelCTX != nil {
+		nt.CancelCTX()
+	}
 	if nt.natsConnector != nil {
 		if nt.natsConnector.IsConnected() {
 			err := nt.natsConnector.Drain()

@@ -49,11 +49,11 @@ func Test_g7776_Device(t *testing.T) {
 		`function Success() print("[LUA Success Callback]=> OK") end`,
 		`
 		Actions = {
-		function(data)
+		function(args)
 			print("received: ",data)
 			local n1, err = rulexlib:WriteDevice("GUART1", 0, "GUART1 data")
 			print("write size: ",n1, "error: ",err)
-			return true, data
+			return true, args
 		end
 	}
 `,

@@ -26,6 +26,7 @@ import (
 	"github.com/hootrhino/rulex/component/aibase"
 	"github.com/hootrhino/rulex/component/appstack"
 	"github.com/hootrhino/rulex/component/datacenter"
+	"github.com/hootrhino/rulex/component/hwportmanager"
 	"github.com/hootrhino/rulex/component/interdb"
 	"github.com/hootrhino/rulex/component/intermetric"
 	"github.com/hootrhino/rulex/component/interqueue"
@@ -81,8 +82,10 @@ func InitRuleEngine(config typex.RulexConfig) typex.RuleX {
 	}
 	// Internal DB
 	interdb.Init(__DefaultRuleEngine, __DEFAULT_DB_PATH)
+	// Load hardware Port Manager
+	hwportmanager.InitHwPortsManager(__DefaultRuleEngine)
 	// Internal Metric
-	intermetric.InitInternalMetric()
+	intermetric.InitInternalMetric(__DefaultRuleEngine)
 	// trailer
 	trailer.InitTrailerRuntime(__DefaultRuleEngine)
 	// lua appstack manager
@@ -92,7 +95,7 @@ func InitRuleEngine(config typex.RulexConfig) typex.RuleX {
 	// Internal Queue
 	interqueue.InitDataCacheQueue(__DefaultRuleEngine, core.GlobalConfig.MaxQueueSize)
 	// Data center
-	datacenter.InitDataCenter()
+	datacenter.InitDataCenter(__DefaultRuleEngine)
 	return __DefaultRuleEngine
 }
 
@@ -130,6 +133,11 @@ func (e *RuleEngine) GetConfig() *typex.RulexConfig {
 // Stop
 func (e *RuleEngine) Stop() {
 	glogger.GLogger.Info("[*] Ready to stop rulex")
+	// 所有的APP停了
+	appstack.Stop()
+	// 外挂停了
+	trailer.Stop()
+	// 资源
 	e.InEnds.Range(func(key, value interface{}) bool {
 		inEnd := value.(*typex.InEnd)
 		if inEnd.Source != nil {
@@ -171,10 +179,7 @@ func (e *RuleEngine) Stop() {
 		glogger.GLogger.Info("Stop Device:", Device.Name, " Successfully")
 		return true
 	})
-	// 外挂停了
-	trailer.Stop()
-	// 所有的APP停了
-	appstack.Stop()
+
 	glogger.GLogger.Info("[√] Stop Rulex successfully")
 	if err := glogger.Close(); err != nil {
 		fmt.Println("Close logger error: ", err)
@@ -514,7 +519,7 @@ func (e *RuleEngine) InitDeviceTypeManager() error {
 			NewDevice: device.NewVideoCamera,
 		},
 	)
-	e.DeviceTypeManager.Register(typex.GENERIC_AIS,
+	e.DeviceTypeManager.Register(typex.GENERIC_AIS_RECEIVER,
 		&typex.XConfig{
 			Engine:    e,
 			NewDevice: device.NewAISDeviceMaster,

@@ -37,11 +37,6 @@ func InitSiteConfig(SiteConfig model.MSiteConfig) error {
 
 // 更新 SiteConfig
 func UpdateSiteConfig(SiteConfig model.MSiteConfig) error {
-	m := model.MSiteConfig{}
-	if err := interdb.DB().Where("uuid=0").First(&m).Error; err != nil {
-		return err
-	} else {
-		interdb.DB().Model(m).Updates(SiteConfig)
-		return nil
-	}
+	SiteConfig.UUID = "0" // 默认就一个配置
+	return interdb.DB().Where("uuid=0").Model(SiteConfig).Updates(SiteConfig).Error
 }

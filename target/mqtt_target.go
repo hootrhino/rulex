@@ -28,7 +28,11 @@ import (
 )
 
 //
-
+/*
+*
+* 单向的MQTT客户端，不支持subscribe，订阅了不生效
+*
+ */
 type mqttOutEndTarget struct {
 	typex.XStatus
 	client     mqtt.Client
@@ -46,16 +50,16 @@ func NewMqttTarget(e typex.RuleX) typex.XTarget {
 func (*mqttOutEndTarget) Driver() typex.XExternalDriver {
 	return nil
 }
-func (mm *mqttOutEndTarget) Init(outEndId string, configMap map[string]interface{}) error {
-	mm.PointId = outEndId
-	if err := utils.BindSourceConfig(configMap, &mm.mainConfig); err != nil {
+func (mq *mqttOutEndTarget) Init(outEndId string, configMap map[string]interface{}) error {
+	mq.PointId = outEndId
+	if err := utils.BindSourceConfig(configMap, &mq.mainConfig); err != nil {
 		return err
 	}
 	return nil
 }
-func (mm *mqttOutEndTarget) Start(cctx typex.CCTX) error {
-	mm.Ctx = cctx.Ctx
-	mm.CancelCTX = cctx.CancelCTX
+func (mq *mqttOutEndTarget) Start(cctx typex.CCTX) error {
+	mq.Ctx = cctx.Ctx
+	mq.CancelCTX = cctx.CancelCTX
 	//
 	//
 	var connectHandler mqtt.OnConnectHandler = func(client mqtt.Client) {
@@ -66,64 +70,62 @@ func (mm *mqttOutEndTarget) Start(cctx typex.CCTX) error {
 		glogger.GLogger.Warnf("Connect lost: %v, try to reconnect\n", err)
 	}
 	opts := mqtt.NewClientOptions()
-	opts.AddBroker(fmt.Sprintf("tcp://%s:%v", mm.mainConfig.Host, mm.mainConfig.Port))
-	opts.SetClientID(mm.mainConfig.ClientId)
-	opts.SetUsername(mm.mainConfig.Username)
-	opts.SetPassword(mm.mainConfig.Password)
+	opts.AddBroker(fmt.Sprintf("tcp://%s:%v", mq.mainConfig.Host, mq.mainConfig.Port))
+	opts.SetClientID(mq.mainConfig.ClientId)
+	opts.SetUsername(mq.mainConfig.Username)
+	opts.SetPassword(mq.mainConfig.Password)
 	opts.OnConnect = connectHandler
 	opts.OnConnectionLost = connectLostHandler
-	opts.SetAutoReconnect(false)
-	opts.SetMaxReconnectInterval(0)
-	mm.client = mqtt.NewClient(opts)
-	token := mm.client.Connect()
+	opts.SetAutoReconnect(false)    //不需要自动重连, 交给RULEX管理
+	opts.SetMaxReconnectInterval(0) // 不需要自动重连, 交给RULEX管理
+	mq.client = mqtt.NewClient(opts)
+	token := mq.client.Connect()
 	if token.Wait() && token.Error() != nil {
 		return token.Error()
-	} else {
-		mm.status = typex.SOURCE_UP
-		return nil
 	}
-
+	mq.status = typex.SOURCE_UP
+	return nil
 }
 
-func (mm *mqttOutEndTarget) DataModels() []typex.XDataModel {
-	return mm.XDataModels
+func (mq *mqttOutEndTarget) DataModels() []typex.XDataModel {
+	return mq.XDataModels
 }
 
-func (mm *mqttOutEndTarget) Stop() {
-	mm.CancelCTX()
-	mm.status = typex.SOURCE_DOWN
-	if mm.client != nil {
-		mm.client.Disconnect(0)
-		mm.client = nil
+func (mq *mqttOutEndTarget) Stop() {
+	mq.status = typex.SOURCE_DOWN
+	if mq.CancelCTX != nil {
+		mq.CancelCTX()
+	}
+	if mq.client != nil {
+		mq.client.Disconnect(0)
 	}
 }
-func (mm *mqttOutEndTarget) Reload() {
+func (mq *mqttOutEndTarget) Reload() {
 
 }
-func (mm *mqttOutEndTarget) Pause() {
+func (mq *mqttOutEndTarget) Pause() {
 
 }
-func (mm *mqttOutEndTarget) Status() typex.SourceState {
-	return mm.status
-}
-
-func (mm *mqttOutEndTarget) Test(outEndId string) bool {
-	if mm.client != nil {
-		return mm.client.IsConnected()
+func (mq *mqttOutEndTarget) Status() typex.SourceState {
+	if mq.client != nil {
+		if mq.client.IsConnected() {
+			return typex.SOURCE_UP
+		}
 	}
-	return false
+	return typex.SOURCE_DOWN
 }
 
-func (mm *mqttOutEndTarget) Enabled() bool {
-	return mm.Enable
+func (mq *mqttOutEndTarget) Enabled() bool {
+	return mq.Enable
 }
-func (mm *mqttOutEndTarget) Details() *typex.OutEnd {
-	return mm.RuleEngine.GetOutEnd(mm.PointId)
+func (mq *mqttOutEndTarget) Details() *typex.OutEnd {
+	return mq.RuleEngine.GetOutEnd(mq.PointId)
 }
 
-func (mm *mqttOutEndTarget) To(data interface{}) (interface{}, error) {
-	if mm.client != nil {
-		token := mm.client.Publish(mm.mainConfig.PubTopic, 1, false, data)
+func (mq *mqttOutEndTarget) To(data interface{}) (interface{}, error) {
+	if mq.client != nil {
+		glogger.GLogger.Debug("mqtt Target publish:", mq.mainConfig.PubTopic, 1, false, data)
+		token := mq.client.Publish(mq.mainConfig.PubTopic, 1, false, data)
 		return token.Error(), nil
 	}
 	return nil, errors.New("mqtt client is nil")

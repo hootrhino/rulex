@@ -24,7 +24,7 @@ AppDESCRIPTION = ""
 function Main(arg)
     local s = 0
     while true do
-        local v, err = eekith3:GPIOGet(8)
+        local v, err = rhinopi:GPIOGet(8)
         if err ~= nil then
             break
         else
@@ -34,7 +34,7 @@ function Main(arg)
             end
             s = v
         end
-        applib:Sleep(50)
+        time:Sleep(50)
     end
     return 0
 end

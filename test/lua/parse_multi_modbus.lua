@@ -10,7 +10,7 @@
 --     }
 -- }
 Actions = {
-    function(data)
+    function(args)
         local dataT, err0 = rulexlib:J2T(data)
         if err0 ~= nil then
             print("ERROR:", err0)
@@ -21,6 +21,6 @@ Actions = {
             print("value", entity.value)
         end
         ::END::
-        return true, data
+        return true, args
     end
 }

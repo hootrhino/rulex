@@ -163,25 +163,41 @@ func (s *RulexApiServer) InitializeWindowsData() {
 func (s *RulexApiServer) InitializeEEKITData() {
 	env := os.Getenv("ARCHSUPPORT")
 	if env == "EEKITH3" {
-		// 初始化有线网口配置
-		if !service.CheckIfAlreadyInitNetWorkConfig() {
-			service.InitNetWorkConfig()
-		}
-		// 初始化WIFI配置
-		if !service.CheckIfAlreadyInitWlanConfig() {
-			service.InitWlanConfig()
-		}
-		// 初始化默认路由, 如果没有配置会在数据库生成关于eth1的一个默认路由数据
-		ossupport.InitDefaultIpRoute()
-		// 一组操作, 主要用来初始化 DHCP和DNS、网卡配置等
-		// 1 2 3 的目的是为了每次重启的时候初始化软路由
+
+	}
+}
+
+/*
+*
+* 初始化配置
+*
+ */
+func (s *RulexApiServer) InitializeConfigCtl() {
+	// 一组操作, 主要用来初始化 DHCP和DNS、网卡配置等
+	// 1 2 3 的目的是为了每次重启的时候初始化软路由
+	env := os.Getenv("ARCHSUPPORT")
+	if env == "EEKITH3" {
 		{
+			MIproute, err := service.GetDefaultIpRoute()
+			if err != nil {
+				return
+			}
 			// 1 初始化默认路由表: ip route
-			ossupport.ConfigDefaultIpTable()
+			ossupport.ConfigDefaultIpTable(MIproute.Iface)
 			// 2 初始化默认DHCP
-			ossupport.ConfigDefaultDhcp()
+			ossupport.ConfigDefaultIscServer(MIproute.Iface)
 			// 3 初始化Eth1的静态IP地址
-			ossupport.ConfigDefaultNat()
+			ossupport.ConfigDefaultIscServeDhcp(ossupport.IscServerDHCPConfig{
+				Iface:       MIproute.Iface,
+				Ip:          MIproute.Ip,
+				Network:     MIproute.Network,
+				Gateway:     MIproute.Gateway,
+				Netmask:     MIproute.Netmask,
+				IpPoolBegin: MIproute.IpPoolBegin,
+				IpPoolEnd:   MIproute.IpPoolEnd,
+				IfaceFrom:   MIproute.IfaceFrom,
+				IfaceTo:     MIproute.IfaceTo,
+			})
 		}
 	}
 }
@@ -196,7 +212,14 @@ func initStaticModel() {
 	source.LoadSt()
 	target.LoadTt()
 	device.LoadDt()
-
+	// 初始化有线网口配置
+	service.InitNetWorkConfig()
+	// 初始化WIFI配置
+	service.InitWlanConfig()
+	// 初始化默认路由, 如果没有配置会在数据库生成关于eth1的一个默认路由数据
+	service.InitDefaultIpRoute()
+	// 初始化硬件接口参数
+	service.InitHwPortConfig()
 	// 配置一个默认分组
 	service.InitGenericGroup(&model.MGenericGroup{
 		UUID:   "VROOT",
@@ -212,8 +235,17 @@ func initStaticModel() {
 	})
 	// 初始化网站配置
 	service.InitSiteConfig(model.MSiteConfig{
-		SiteName: "",
-		Logo:     "",
-		AppName:  "RhinoEEKIT",
+		SiteName: "Rhino EEKit",
+		Logo:     "/logo.png",
+		AppName:  "Rhino EEKit",
 	})
+	// 初始化一个用户
+	service.InitMUser(
+		&model.MUser{
+			Role:        "DefaultAdmin",
+			Username:    "hootrhino",
+			Password:    "25d55ad283aa400af464c76d713c07ad", //12345678
+			Description: "Default Rulex Admin User",
+		},
+	)
 }

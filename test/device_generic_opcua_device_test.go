@@ -63,9 +63,9 @@ func Test_Generic_opcua_device(t *testing.T) {
 		`function Success() print("[LUA Success Callback]=> OK") end`,
 		`
 		Actions = {
-			function(data)
+			function(args)
 			    print(data)
-				return true, data
+				return true, args
 			end
 		}`,
 		`function Failed(error) print("[LUA Failed Callback]", error) end`)

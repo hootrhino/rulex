@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	httpserver "github.com/hootrhino/rulex/plugin/http_server"
 	"github.com/hootrhino/rulex/component/rulexrpc"
+	httpserver "github.com/hootrhino/rulex/plugin/http_server"
 	"github.com/hootrhino/rulex/typex"
 
 	"google.golang.org/grpc"
@@ -46,7 +46,7 @@ func Test_modbus_485_sensor_data_parse(t *testing.T) {
 		`function Success() print("[LUA Success Callback]=> OK") end`,
 		`
 		Actions = {
-			function(data)
+			function(args)
 				local table = rulexlib:J2T(data)
 				local value = table['value']
 				local t = rulexlib:HsubToN(value, 5, 8)
@@ -61,7 +61,7 @@ func Test_modbus_485_sensor_data_parse(t *testing.T) {
 					T1 = t1,
 					H2 = h2
 				}))
-				return true, data
+				return true, args
 			end
 		}`,
 		`function Failed(error) print("[LUA Failed Callback]", error) end`)

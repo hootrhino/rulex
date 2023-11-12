@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net"
 	"reflect"
@@ -12,10 +13,13 @@ import (
 
 	"github.com/adrianmo/go-nmea"
 	aislib "github.com/hootrhino/go-ais"
+	"github.com/hootrhino/rulex/common"
+	"github.com/hootrhino/rulex/component/hwportmanager"
 	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/typex"
 	"github.com/hootrhino/rulex/utils"
 	"github.com/jinzhu/copier"
+	serial "github.com/wwhai/goserial"
 )
 
 var __AisCodec = aislib.CodecNew(false, false, false)
@@ -23,17 +27,25 @@ var __AisCodec = aislib.CodecNew(false, false, false)
 // --------------------------------------------------------------------------------------------------
 // 把AIS包里面的几个结构体拿出来了，主要是适配JSON格式, 下面这些结构体和AIS包里面的完全一样
 // --------------------------------------------------------------------------------------------------
+type _AISCommonConfig struct {
+	Mode     string `json:"mode" title:"工作模式" info:"UART/TCP"`
+	ParseAis bool   `json:"parseAis"`
+	GwSN     string `json:"gwsn"`
+}
 type _AISDeviceMasterConfig struct {
-	Mode string `json:"mode"` // TCP UDP UART
-	Host string `json:"host" validate:"required"`
-	Port int    `json:"port" validate:"required"`
+	CommonConfig _AISCommonConfig  `json:"commonConfig"`
+	HostConfig   common.HostConfig `json:"hostConfig"`
+	PortUuid     string            `json:"portUuid"`
 }
 type AISDeviceMaster struct {
 	typex.XStatus
-	status      typex.DeviceState
-	mainConfig  _AISDeviceMasterConfig
-	RuleEngine  typex.RuleX
-	tcpListener net.Listener // TCP 接收端
+	status       typex.DeviceState
+	mainConfig   _AISDeviceMasterConfig
+	RuleEngine   typex.RuleX
+	tcpListener  net.Listener // TCP 接收端
+	serialPort   serial.Port
+	hwPortConfig hwportmanager.UartConfig
+
 	// session
 	DevicesSessionMap map[string]*__AISDeviceSession
 }
@@ -47,9 +59,16 @@ func NewAISDeviceMaster(e typex.RuleX) typex.XDevice {
 	aism := new(AISDeviceMaster)
 	aism.RuleEngine = e
 	aism.mainConfig = _AISDeviceMasterConfig{
-		Mode: "TCP",
-		Host: "0.0.0.0",
-		Port: 6005,
+		HostConfig: common.HostConfig{
+			Host:    "127.0.0.1",
+			Port:    6005,
+			Timeout: 3000,
+		},
+		CommonConfig: _AISCommonConfig{
+			Mode:     "TCP",
+			ParseAis: false,
+			GwSN:     "HR0001",
+		},
 	}
 	aism.DevicesSessionMap = map[string]*__AISDeviceSession{}
 	return aism
@@ -61,6 +80,29 @@ func (aism *AISDeviceMaster) Init(devId string, configMap map[string]interface{}
 	if err := utils.BindSourceConfig(configMap, &aism.mainConfig); err != nil {
 		return err
 	}
+	if !utils.SContains([]string{"UART", "TCP"}, aism.mainConfig.CommonConfig.Mode) {
+		return errors.New("unsupported mode, only can be one of 'TCP' or 'RTU'")
+	}
+
+	if aism.mainConfig.CommonConfig.Mode == "UART" {
+		hwPort, err := hwportmanager.GetHwPort(aism.mainConfig.PortUuid)
+		if err != nil {
+			return err
+		}
+		if hwPort.Busy {
+			return fmt.Errorf("UART is busying now, Occupied By:%s", hwPort.OccupyBy)
+		}
+		switch tCfg := hwPort.Config.(type) {
+		case hwportmanager.UartConfig:
+			{
+				aism.hwPortConfig = tCfg
+			}
+		default:
+			{
+				return fmt.Errorf("invalid config:%s", hwPort.Config)
+			}
+		}
+	}
 
 	return nil
 }
@@ -69,18 +111,157 @@ func (aism *AISDeviceMaster) Init(devId string, configMap map[string]interface{}
 func (aism *AISDeviceMaster) Start(cctx typex.CCTX) error {
 	aism.Ctx = cctx.Ctx
 	aism.CancelCTX = cctx.CancelCTX
-	//
-	listener, err := net.Listen("tcp",
-		fmt.Sprintf("%s:%v", aism.mainConfig.Host, aism.mainConfig.Port))
-	if err != nil {
-		return err
+	if aism.mainConfig.CommonConfig.Mode == "TCP" {
+		//
+		listener, err := net.Listen("tcp",
+			fmt.Sprintf("%s:%v", aism.mainConfig.HostConfig.Host, aism.mainConfig.HostConfig.Port))
+		if err != nil {
+			return err
+		}
+		aism.tcpListener = listener
+		glogger.GLogger.Infof("AIS TCP server started on TCP://%s:%v",
+			aism.mainConfig.HostConfig.Host, aism.mainConfig.HostConfig.Port)
+		go aism.handleTcpConnect(listener)
+		aism.status = typex.DEV_UP
+		return nil
 	}
-	aism.tcpListener = listener
-	glogger.GLogger.Infof("AIS TCP server started on TCP://%s:%v",
-		aism.mainConfig.Host, aism.mainConfig.Port)
-	go aism.handleConnect(listener)
-	aism.status = typex.DEV_UP
-	return nil
+	// 串口收发卡
+	if aism.mainConfig.CommonConfig.Mode == "UART" {
+		config := serial.Config{
+			Address:  aism.hwPortConfig.Uart,
+			BaudRate: aism.hwPortConfig.BaudRate,
+			DataBits: aism.hwPortConfig.DataBits,
+			Parity:   aism.hwPortConfig.Parity,
+			StopBits: aism.hwPortConfig.StopBits,
+			Timeout:  time.Duration(aism.hwPortConfig.Timeout) * time.Millisecond,
+		}
+		var err error
+		aism.serialPort, err = serial.Open(&config)
+		if err != nil {
+			glogger.GLogger.Error("serial port start failed err:", err, ", config:", config)
+			return err
+		}
+		go func() {
+			buffer := [4096]byte{}
+			defer aism.serialPort.Close()
+			for {
+				select {
+				case <-aism.Ctx.Done():
+					{
+						return
+					}
+				default:
+					{
+					}
+				}
+				offset := 0
+				endl1 := false
+				endl2 := false
+				ok := false
+				oneByte := [1]byte{}
+				readyStatus := false // 超时也是就绪状态
+				ctx1, cancel1 := context.WithTimeout(aism.Ctx,
+					time.Duration(aism.hwPortConfig.Timeout)*time.Millisecond)
+				defer cancel1()
+				for {
+					select {
+					// 控制时间防止死机
+					case <-ctx1.Done():
+						{
+							if !readyStatus {
+								glogger.GLogger.Warnf("serialPort %s Read timeout", aism.hwPortConfig.Uart)
+							}
+							break
+						}
+					default:
+						{
+						}
+					}
+					_, err := aism.serialPort.Read(oneByte[:])
+					if err != nil {
+						if strings.Contains(err.Error(), "timeout") {
+							readyStatus = true
+							continue
+						}
+						readyStatus = false
+						aism.status = typex.DEV_DOWN
+						glogger.GLogger.Errorf("serialPort %s Read error", aism.hwPortConfig.Uart)
+						return
+					}
+					if oneByte[0] == '\r' {
+						endl1 = true
+						continue
+					}
+					if oneByte[0] == '\n' {
+						endl2 = true
+						ok = true
+					}
+					if endl1 && endl2 {
+						break
+					} else {
+						buffer[offset] = oneByte[0]
+						offset++
+					}
+				}
+				// 可能AIS报文传输失败了
+				if !ok {
+					glogger.GLogger.Info("serialPort Read may occurred error:", err)
+					continue
+				}
+				rawAiSString := string(buffer[:offset])
+				if err != nil {
+					glogger.GLogger.Error(err)
+					aism.status = typex.DEV_DOWN
+					return
+				}
+				// 这段是个兼容代码，现阶段适配了一款AIS USB 串口接收器，以后会自己做
+				{
+					if strings.HasPrefix("NONE", rawAiSString) {
+						glogger.GLogger.Info("AIS33VRx Receiver Heart Beat Packet")
+						continue
+					}
+					if strings.HasPrefix("AIS33VRx", rawAiSString) {
+						glogger.GLogger.Info(rawAiSString)
+						continue
+					}
+					if strings.HasPrefix("AIS Ch 1", rawAiSString) {
+						glogger.GLogger.Info(rawAiSString)
+						continue
+					}
+					if strings.HasPrefix("AIS Ch 2", rawAiSString) {
+						glogger.GLogger.Info(rawAiSString)
+						continue
+					}
+				}
+
+				// 如果不需要解析,直接原文透传
+				if !aism.mainConfig.CommonConfig.ParseAis {
+					// {
+					//     "ais_receiver_device":"%s",
+					//     "gwsn":"%s"
+					//     "ais_data":"%s"
+					// }
+					ds := `{"ais_receiver_device":"%s","gwsn":"%s","ais_data":"%s"}`
+					lens := len(rawAiSString)
+					if lens > 2 {
+						aism.RuleEngine.WorkDevice(aism.Details(),
+							fmt.Sprintf(ds, aism.mainConfig.CommonConfig.GwSN,
+								aism.mainConfig.CommonConfig.GwSN, rawAiSString), // \r\n
+						)
+					}
+				}
+			}
+		}()
+		hwportmanager.SetInterfaceBusy(aism.mainConfig.PortUuid, hwportmanager.HwPortOccupy{
+			UUID: aism.PointId,
+			Type: "DEVICE",
+			Name: aism.Details().Name,
+		})
+		aism.status = typex.DEV_UP
+		return nil
+	}
+	aism.status = typex.DEV_DOWN
+	return fmt.Errorf("invalid work mode:%s", aism.mainConfig.CommonConfig.Mode)
 }
 
 // 从设备里面读数据出来
@@ -101,9 +282,18 @@ func (aism *AISDeviceMaster) Status() typex.DeviceState {
 // 停止设备
 func (aism *AISDeviceMaster) Stop() {
 	aism.status = typex.DEV_DOWN
-	aism.CancelCTX()
+	if aism.CancelCTX != nil {
+		aism.CancelCTX()
+	}
 	if aism.tcpListener != nil {
 		aism.tcpListener.Close()
+	}
+	// release serial port
+	if aism.mainConfig.CommonConfig.Mode == "UART" {
+		if aism.serialPort != nil {
+			aism.serialPort.Close()
+		}
+		hwportmanager.FreeInterfaceBusy(aism.mainConfig.PortUuid)
 	}
 }
 
@@ -149,7 +339,7 @@ func (aism *AISDeviceMaster) OnCtrl(cmd []byte, args []byte) ([]byte, error) {
 * 处理连接
 *
  */
-func (aism *AISDeviceMaster) handleConnect(listener net.Listener) {
+func (aism *AISDeviceMaster) handleTcpConnect(listener net.Listener) {
 	for {
 		select {
 		case <-aism.Ctx.Done():
@@ -166,7 +356,7 @@ func (aism *AISDeviceMaster) handleConnect(listener net.Listener) {
 			continue
 		}
 		ctx, cancel := context.WithCancel(aism.Ctx)
-		go aism.handleAuth(ctx, cancel, &__AISDeviceSession{
+		go aism.handleTcpAuth(ctx, cancel, &__AISDeviceSession{
 			Transport: tcpcon,
 		})
 
@@ -186,7 +376,7 @@ type __AISDeviceSession struct {
 	Transport net.Conn // TCP连接
 }
 
-func (aism *AISDeviceMaster) handleAuth(ctx context.Context,
+func (aism *AISDeviceMaster) handleTcpAuth(ctx context.Context,
 	cancel context.CancelFunc, session *__AISDeviceSession) {
 	// 5秒内读一个SN
 	session.Transport.SetDeadline(time.Now().Add(5 * time.Second))
@@ -226,25 +416,38 @@ func (aism *AISDeviceMaster) handleAuth(ctx context.Context,
 func (aism *AISDeviceMaster) handleIO(session *__AISDeviceSession) {
 	reader := bufio.NewReader(session.Transport)
 	for {
-		s, err := reader.ReadString('\n')
+		rawAiSString, err := reader.ReadString('\n')
 		if err != nil {
 			glogger.GLogger.Error(err)
 			delete(aism.DevicesSessionMap, session.SN)
 			session.Transport.Close()
+			aism.status = typex.DEV_DOWN
 			return
 		}
+		// 如果不需要解析,直接原文透传
+		if !aism.mainConfig.CommonConfig.ParseAis {
+			// {
+			//     "ais_receiver_device":"%s",
+			//     "ais_data":"%s"
+			//     "gwsn":"%s"
+			// }
+			ds := `{"ais_receiver_device":"%s","gwsn":"%s","ais_data":"%s"}`
+			aism.RuleEngine.WorkDevice(aism.Details(), fmt.Sprintf(ds, session.SN,
+				aism.mainConfig.CommonConfig.GwSN, rawAiSString))
+			continue
+		}
 		// 可能会收到心跳包: !HRT710,Q,003,0*06
-		if strings.HasPrefix(s, "!HRT") {
+		if strings.HasPrefix(rawAiSString, "!HRT") {
 			glogger.GLogger.Debug("Heart beat from:", session.SN, session.Transport.RemoteAddr())
 			continue
 		}
-		if strings.HasPrefix(s, "!DYA") {
+		if strings.HasPrefix(rawAiSString, "!DYA") {
 			glogger.GLogger.Debug("DYA Message from:", session.SN, session.Transport.RemoteAddr())
 			continue
 		}
-		sentence, err := nmea.Parse(s)
+		sentence, err := nmea.Parse(rawAiSString)
 		if err != nil {
-			glogger.GLogger.Error(err, s)
+			glogger.GLogger.Error(err, rawAiSString)
 			continue
 		}
 		// glogger.GLogger.Info("Received data:", sentence.DataType(), sentence)

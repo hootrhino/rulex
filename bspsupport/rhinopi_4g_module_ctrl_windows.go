@@ -27,3 +27,11 @@ func RhinoPiGetICCID() (string, error) {
 func RhinoPiRestart4G() (string, error) {
 	return "", nil
 }
+func RhinoPiGetAPN() (string, error) {
+	return "", nil
+}
+
+// 场景恒等于1
+func RhinoPiSetAPN(ptype int, apn, username, password string, auth, cdmaPwd int) (string, error) {
+	return "", nil
+}

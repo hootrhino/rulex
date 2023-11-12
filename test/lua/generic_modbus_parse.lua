@@ -27,7 +27,7 @@ function Failed(error)
 end
 
 -- Actions
-Actions = {function(data)
+Actions = {function(args)
     local jt = rulexlib:J2T(data)
     for k, v in pairs(jt) do
         local ht = rulexlib:MB('>hv:16 tv:16', v['value'], false)
@@ -46,5 +46,5 @@ Actions = {function(data)
         }
         print(k, "Parsed value:", rulexlib:T2J(jsont))
     end
-    return true, data
+    return true, args
 end}

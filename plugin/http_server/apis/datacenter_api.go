@@ -54,7 +54,7 @@ func GetSchemaDefineList(c *gin.Context, ruleEngine typex.RuleX) {
  */
 func GetSchemaDefine(c *gin.Context, ruleEngine typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
-	Schema, err := datacenter.GetSchema(uuid)
+	Schema, err := datacenter.GetSchemaDefine(uuid)
 	if err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return

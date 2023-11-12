@@ -2,8 +2,13 @@ package apis
 
 import (
 	"crypto/md5"
+	"encoding/base64"
 	"encoding/hex"
 	"fmt"
+	"net/http"
+	"os"
+	"path/filepath"
+	"strconv"
 	"time"
 	"unicode/utf8"
 
@@ -198,4 +203,92 @@ func parseToken(tokenString string) (*JwtClaims, error) {
 	} else {
 		return nil, err
 	}
+}
+
+/*
+*
+* 上传头像
+*
+ */
+func UploadSysLogo(c *gin.Context, ruleEngine typex.RuleX) {
+	// single file
+	file, err := c.FormFile("file")
+	if err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
+	fileName := "logo.png"
+	dir := "./upload/Logo/"
+	if err := os.MkdirAll(filepath.Dir(dir), os.ModePerm); err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
+	if err := c.SaveUploadedFile(file, dir+fileName); err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
+	err1 := service.UpdateSiteConfig(model.MSiteConfig{
+		Logo: dir + fileName,
+	})
+	if err1 != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err1))
+		return
+	}
+	c.JSON(common.HTTP_OK, common.OkWithData(map[string]string{
+		"url": "/api/v1/site/logo",
+	}))
+}
+
+/*
+*
+* 加载头像
+*
+ */
+func GetSysLogo(c *gin.Context, ruleEngine typex.RuleX) {
+	MSiteConfig, err1 := service.GetSiteConfig()
+	if err1 != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err1))
+		return
+	}
+	var Binary []byte
+	// data:image/png;base64,
+	if len(MSiteConfig.Logo) < 22 {
+		var err1 error
+		Binary, err1 = base64.StdEncoding.DecodeString(model.SysDefaultLogo[22:])
+		if err1 != nil {
+			c.JSON(common.HTTP_OK, common.Error400(err1))
+			return
+		}
+	} else {
+		var err2 error
+		Binary, err2 = base64.StdEncoding.DecodeString(MSiteConfig.Logo[22:])
+		if err2 != nil {
+			c.JSON(common.HTTP_OK, common.Error400(err2))
+			return
+		}
+	}
+
+	c.Writer.WriteHeader(http.StatusOK)
+	c.Writer.Header().Set("Content-Type", "image/jpeg")
+	c.Writer.Header().Set("Content-Length", strconv.Itoa(len(Binary)))
+	c.Writer.Write(Binary)
+	c.Writer.Flush()
+}
+
+/*
+*
+* 重置站点
+*
+ */
+func ResetSiteConfig(c *gin.Context, ruleEngine typex.RuleX) {
+	err1 := service.UpdateSiteConfig(model.MSiteConfig{
+		SiteName: "Rhino EEKit",
+		Logo:     "/logo.png",
+		AppName:  "Rhino EEKit",
+	})
+	if err1 != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err1))
+		return
+	}
+	c.JSON(common.HTTP_OK, common.Ok())
 }

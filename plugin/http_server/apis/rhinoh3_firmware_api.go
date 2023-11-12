@@ -17,6 +17,8 @@
 package apis
 
 import (
+	"os"
+
 	"github.com/gin-gonic/gin"
 	"github.com/hootrhino/rulex/ossupport"
 	common "github.com/hootrhino/rulex/plugin/http_server/common"
@@ -29,11 +31,6 @@ import (
 *
  */
 func ReStartRulex(c *gin.Context, ruleEngine typex.RuleX) {
-	err := ossupport.ReStartRulex()
-	if err != nil {
-		c.JSON(common.HTTP_OK, common.Error400(err))
-		return
-	}
 	c.JSON(common.HTTP_OK, common.Ok())
 }
 
@@ -49,4 +46,28 @@ func Reboot(c *gin.Context, ruleEngine typex.RuleX) {
 		return
 	}
 	c.JSON(common.HTTP_OK, common.Ok())
+}
+
+/*
+*
+* 回复出厂
+*
+ */
+func RecoverNew(c *gin.Context, ruleEngine typex.RuleX) {
+
+	c.JSON(common.HTTP_OK, common.Ok())
+}
+
+/*
+*
+* 获取本地升级日志
+*
+ */
+func GetUpGradeLog(c *gin.Context, ruleEngine typex.RuleX) {
+	byteS, _ := os.ReadFile("local-upgrade-log.txt")
+	// if err != nil {
+	// 	c.JSON(common.HTTP_OK, common.Error400(err))
+	// 	return
+	// }
+	c.JSON(common.HTTP_OK, common.OkWithData(string(byteS)))
 }

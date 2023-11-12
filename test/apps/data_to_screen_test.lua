@@ -42,7 +42,7 @@ function Main()
 
         for _, cmd in ipairs(cmdlist) do
 			ToScreen(Inid,Outid,cmd)
-            applib:Sleep(500)
+            time:Sleep(500)
         end
 
     end

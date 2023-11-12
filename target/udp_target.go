@@ -64,9 +64,6 @@ func (udpt *UdpTarget) Start(cctx typex.CCTX) error {
 	return nil
 }
 
-func (udpt *UdpTarget) Test(outEndId string) bool {
-	return true
-}
 func (udpt *UdpTarget) Enabled() bool {
 	return udpt.Enable
 }

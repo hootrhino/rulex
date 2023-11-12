@@ -72,20 +72,6 @@ func (m *mongoTarget) Start(cctx typex.CCTX) error {
 
 }
 
-func (m *mongoTarget) Test(outEndId string) bool {
-	if m.client != nil {
-		ctx, cancel := context.WithTimeout(m.Ctx, time.Second*2)
-		defer cancel()
-		if err1 := m.client.Ping(ctx, nil); err1 != nil {
-			return false
-		} else {
-			return true
-		}
-	}
-	return false
-
-}
-
 func (m *mongoTarget) Enabled() bool {
 	return m.Enable
 }

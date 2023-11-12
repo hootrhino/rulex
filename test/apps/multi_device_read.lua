@@ -17,7 +17,7 @@ function Main(arg)
             goto continue
         end
         print(binary2)
-        applib:Sleep(1000)
+        time:Sleep(1000)
     end
     return 0
 end

@@ -34,9 +34,9 @@ type HostConfig struct {
 
 ## 示例
 ```lua
-function(data)
+function(args)
     local err = data:ToUDP('UDPOut', data)
 	print("[LUA DataToUDP] ==>", err)
-	return true, data
+	return true, args
 end
 ```

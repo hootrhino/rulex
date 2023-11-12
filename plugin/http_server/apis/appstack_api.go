@@ -2,7 +2,6 @@ package apis
 
 import (
 	"fmt"
-	"regexp"
 
 	common "github.com/hootrhino/rulex/plugin/http_server/common"
 	"github.com/hootrhino/rulex/plugin/http_server/model"
@@ -90,7 +89,6 @@ func Apps(c *gin.Context, ruleEngine typex.RuleX) {
 * 直接新建一个文件，文件名为 UUID.lua
 *
  */
-const semVerRegexExpr = `^(0|[1-9]+[0-9]*)\.(0|[1-9]+[0-9]*)\.(0|[1-9]+[0-9]*)(-(0|[1-9A-Za-z-][0-9A-Za-z-]*)(\.[0-9A-Za-z-]+)*)?(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$`
 const luaTemplate = `
 --
 -- App use lua syntax, goto https://hootrhino.github.io for more document
@@ -106,7 +104,7 @@ AppDESCRIPTION = "%s"
 `
 const defaultLuaMain = `
 function Main(arg)
-	applib:Debug("Hello World:" .. applib:Time())
+	stdlib:Debug("Hello World:" .. time:Time())
 	return 0
 end
 `
@@ -115,11 +113,6 @@ func CreateApp(c *gin.Context, ruleEngine typex.RuleX) {
 	form := appStackDto{}
 	if err := c.ShouldBindJSON(&form); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
-		return
-	}
-	match, _ := regexp.Match(semVerRegexExpr, []byte(form.Version))
-	if !match {
-		c.JSON(common.HTTP_OK, common.Error400(fmt.Errorf("version not match server style:%s", form.Version)))
 		return
 	}
 	newUUID := utils.AppUuid()
@@ -164,12 +157,6 @@ func UpdateApp(c *gin.Context, ruleEngine typex.RuleX) {
 	form := appStackDto{}
 	if err := c.ShouldBindJSON(&form); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
-		return
-	}
-	// 校验版本号
-	match, _ := regexp.Match(semVerRegexExpr, []byte(form.Version))
-	if !match {
-		c.JSON(common.HTTP_OK, common.Error400(fmt.Errorf("version not match server style:%s", form.Version)))
 		return
 	}
 	// 校验语法

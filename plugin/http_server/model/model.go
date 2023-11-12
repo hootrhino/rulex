@@ -47,7 +47,6 @@ type MRule struct {
 	Type        string     // 脚本类型，目前支持"lua"
 	FromSource  StringList `gorm:"not null type:string[]"`
 	FromDevice  StringList `gorm:"not null type:string[]"`
-	Expression  string     `gorm:"not null"` // Expr脚本
 	Actions     string     `gorm:"not null"`
 	Success     string     `gorm:"not null"`
 	Failed      string     `gorm:"not null"`

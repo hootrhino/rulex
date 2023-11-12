@@ -17,7 +17,7 @@ function Main(arg)
             applib:log(err1)
             return 0
         end
-        applib:Sleep(1000)
+        time:Sleep(1000)
     end
     return 0
 end

@@ -44,7 +44,7 @@ func Test_http_source(t *testing.T) {
 	//
 	callback :=
 		`Actions = {
-			function(data)
+			function(args)
 				print("From http===>", data)
 				return false, data
 			end

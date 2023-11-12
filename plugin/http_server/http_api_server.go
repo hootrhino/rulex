@@ -2,6 +2,11 @@ package httpserver
 
 import (
 	"encoding/json"
+	"net/http"
+
+	"github.com/hootrhino/rulex/component/cron_task"
+	"github.com/hootrhino/rulex/component/hwportmanager"
+
 	"github.com/hootrhino/rulex/component/appstack"
 	"github.com/hootrhino/rulex/component/interdb"
 	"github.com/hootrhino/rulex/component/trailer"
@@ -41,10 +46,16 @@ func NewHttpApiServer(ruleEngine typex.RuleX) *ApiServerPlugin {
 
 /*
 *
-* 初始化RULEX
+* 初始化RULEX, 初始化数据到运行时
 *
  */
 func initRulex(engine typex.RuleX) {
+	/*
+	*
+	* 加载Port
+	*
+	 */
+	loadAllPortConfig()
 	/*
 	*
 	* 加载schema到内存中
@@ -125,7 +136,46 @@ func initRulex(engine typex.RuleX) {
 			}
 		}
 	}
+
 }
+
+/*
+*
+* 从数据库拿端口配置
+*
+ */
+func loadAllPortConfig() {
+	MHwPorts, err := service.AllHwPort()
+	if err != nil {
+		glogger.GLogger.Fatal(err)
+		return
+	}
+	for _, MHwPort := range MHwPorts {
+		Port := hwportmanager.RhinoH3HwPort{
+			UUID:        MHwPort.UUID,
+			Name:        MHwPort.Name,
+			Type:        MHwPort.Type,
+			Alias:       MHwPort.Alias,
+			Description: MHwPort.Description,
+		}
+		// 串口
+		if MHwPort.Type == "UART" {
+			config := hwportmanager.UartConfig{}
+			if err := utils.BindConfig(MHwPort.GetConfig(), &config); err != nil {
+				glogger.GLogger.Error(err) // 这里必须不能出错
+				continue
+			}
+			Port.Config = config
+			hwportmanager.SetHwPort(Port)
+		}
+		// 未知接口参数为空，以后扩展，比如FD
+		if MHwPort.Type != "UART" {
+			Port.Config = nil
+			hwportmanager.SetHwPort(Port)
+		}
+	}
+}
+
 func (hs *ApiServerPlugin) Init(config *ini.Section) error {
 	if err := utils.InIMapToStruct(config, &hs.mainConfig); err != nil {
 		return err
@@ -152,6 +202,7 @@ func (hs *ApiServerPlugin) Init(config *ini.Section) error {
 		&model.MIpRoute{},
 		&model.MCronTask{},
 		&model.MCronResult{},
+		&model.MHwPort{},
 	)
 	// 初始化所有预制参数
 	server.DefaultApiServer.InitializeGenericOSData()
@@ -168,30 +219,11 @@ func (hs *ApiServerPlugin) Init(config *ini.Section) error {
 *
  */
 func (hs *ApiServerPlugin) LoadRoute() {
-	//
-	// Get all plugins
-	//
-	server.DefaultApiServer.Route().GET(server.ContextUrl("plugins"), server.AddRoute(apis.Plugins))
-	//
-	// Get system information
-	//
-	server.DefaultApiServer.Route().GET(server.ContextUrl("system"), server.AddRoute(apis.System))
-	//
-	// Ping -> Pong
-	//
-	server.DefaultApiServer.Route().GET(server.ContextUrl("ping"), server.AddRoute(apis.Ping))
-	//
-	//
-	//
-	server.DefaultApiServer.Route().GET(server.ContextUrl("sourceCount"), server.AddRoute(apis.SourceCount))
-	//
-	//
-	//
-	server.DefaultApiServer.Route().GET(server.ContextUrl("logs"), server.AddRoute(apis.Logs))
-	//
-	//
-	//
-	server.DefaultApiServer.Route().POST(server.ContextUrl("logout"), server.AddRoute(apis.LogOut))
+	systemApi := server.RouteGroup(server.ContextUrl("/"))
+	{
+		systemApi.GET(("/ping"), server.AddRoute(apis.Ping))
+		systemApi.POST(("/logout"), server.AddRoute(apis.LogOut))
+	}
 	//
 	// Get all inends
 	//
@@ -222,8 +254,9 @@ func (hs *ApiServerPlugin) LoadRoute() {
 	userApi := server.RouteGroup(server.ContextUrl("/users"))
 	{
 		userApi.GET(("/"), server.AddRoute(apis.Users))
-		userApi.GET(("/detail"), server.AddRoute(apis.UserDetail))
 		userApi.POST(("/"), server.AddRoute(apis.CreateUser))
+		userApi.GET(("/detail"), server.AddRoute(apis.UserDetail))
+		userApi.POST(("/logout"), server.AddRoute(apis.LogOut))
 
 	}
 
@@ -267,6 +300,8 @@ func (hs *ApiServerPlugin) LoadRoute() {
 		rulesApi.POST(("/testIn"), server.AddRoute(apis.TestSourceCallback))
 		rulesApi.POST(("/testOut"), server.AddRoute(apis.TestOutEndCallback))
 		rulesApi.POST(("/testDevice"), server.AddRoute(apis.TestDeviceCallback))
+		rulesApi.GET(("/byInend"), server.AddRoute(apis.ListByInend))
+		rulesApi.GET(("/byDevice"), server.AddRoute(apis.ListByDevice))
 	}
 
 	//
@@ -282,15 +317,7 @@ func (hs *ApiServerPlugin) LoadRoute() {
 	// 验证 lua 语法
 	//
 	server.DefaultApiServer.Route().POST(server.ContextUrl("validateRule"), server.AddRoute(apis.ValidateLuaSyntax))
-	//
-	// 获取配置表
-	//
-	resourceTypeApi := server.RouteGroup(server.ContextUrl("/"))
-	{
-		resourceTypeApi.GET(("rType"), server.AddRoute(apis.RType))
-		resourceTypeApi.GET(("tType"), server.AddRoute(apis.TType))
-		resourceTypeApi.GET(("dType"), server.AddRoute(apis.DType))
-	}
+
 	//
 	// 网络适配器列表
 	//
@@ -303,12 +330,16 @@ func (hs *ApiServerPlugin) LoadRoute() {
 		osApi.GET(("/startedAt"), server.AddRoute(apis.StartedAt))
 
 	}
+	backupApi := server.RouteGroup(server.ContextUrl("/backup"))
+	{
+		backupApi.GET(("/"), server.AddRoute(apis.BackupSqlite))
+		backupApi.POST(("/"), server.AddRoute(apis.UploadSqlite))
+	}
 	//
 	// 设备管理
 	//
 	deviceApi := server.RouteGroup(server.ContextUrl("/devices"))
 	{
-		deviceApi.GET(("/"), server.AddRoute(apis.Devices))
 		deviceApi.POST(("/"), server.AddRoute(apis.CreateDevice))
 		deviceApi.PUT(("/"), server.AddRoute(apis.UpdateDevice))
 		deviceApi.DELETE(("/"), server.AddRoute(apis.DeleteDevice))
@@ -317,6 +348,7 @@ func (hs *ApiServerPlugin) LoadRoute() {
 		deviceApi.PUT(("/modbus/point"), server.AddRoute(apis.UpdateModbusPoint))
 		deviceApi.GET(("/modbus"), server.AddRoute(apis.ModbusPoints))
 		deviceApi.GET("/group", server.AddRoute(apis.ListDeviceGroup))
+		deviceApi.GET("/listByGroup", server.AddRoute(apis.ListDeviceByGroup))
 
 	}
 
@@ -344,6 +376,10 @@ func (hs *ApiServerPlugin) LoadRoute() {
 	// ----------------------------------------------------------------------------------------------
 	// Plugin
 	// ----------------------------------------------------------------------------------------------
+	pluginsApi := server.RouteGroup(server.ContextUrl("/plugins"))
+	{
+		pluginsApi.GET(("/"), server.AddRoute(apis.Plugins))
+	}
 	pluginApi := server.RouteGroup(server.ContextUrl("/plugin"))
 	{
 		pluginApi.POST(("/service"), server.AddRoute(apis.PluginService))
@@ -408,7 +444,10 @@ func (hs *ApiServerPlugin) LoadRoute() {
 	{
 
 		siteConfigApi.PUT("/update", server.AddRoute(apis.UpdateSiteConfig))
+		siteConfigApi.PUT("/reset", server.AddRoute(apis.ResetSiteConfig))
 		siteConfigApi.GET("/detail", server.AddRoute(apis.GetSiteConfig))
+		siteConfigApi.GET(("/logo"), server.AddRoute(apis.GetSysLogo))
+		siteConfigApi.POST(("/logo"), server.AddRoute(apis.UploadSysLogo))
 	}
 	trailerApi := server.RouteGroup(server.ContextUrl("/goods"))
 	{
@@ -421,6 +460,7 @@ func (hs *ApiServerPlugin) LoadRoute() {
 		trailerApi.PUT("/stop", server.AddRoute(apis.StopGoods))
 		trailerApi.DELETE("/", server.AddRoute(apis.DeleteGoods))
 	}
+	// 数据中心
 	dataCenterApi := server.RouteGroup(server.ContextUrl("/dataCenter"))
 	{
 		dataCenterApi.GET("/schema/define", server.AddRoute(apis.GetSchemaDefine))
@@ -428,6 +468,13 @@ func (hs *ApiServerPlugin) LoadRoute() {
 		dataCenterApi.GET("/schema/list", server.AddRoute(apis.GetSchemaList))
 		dataCenterApi.GET("/schema/defineList", server.AddRoute(apis.GetSchemaDefineList))
 		dataCenterApi.POST("/data/query", server.AddRoute(apis.GetQueryData))
+	}
+	// 硬件接口API
+	HwIFaceApi := server.DefaultApiServer.GetGroup(server.ContextUrl("/hwiface"))
+	{
+		HwIFaceApi.GET("/detail", server.AddRoute(apis.GetHwPortDetail))
+		HwIFaceApi.GET("/list", server.AddRoute(apis.AllHwPorts))
+		HwIFaceApi.POST("/update", server.AddRoute(apis.UpdateHwPortConfig))
 	}
 	//
 	// 系统设置

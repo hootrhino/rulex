@@ -19,7 +19,7 @@ function Main(arg)
             temp = 12.3,
             date = applib:Time(),
         })
-        applib:Sleep(1000)
+        time:Sleep(1000)
     end
     return 0
 end

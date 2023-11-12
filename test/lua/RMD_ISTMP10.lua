@@ -17,11 +17,11 @@
 --
 Actions =
 {
-    function(data)
+    function(args)
         local dataT, err = rulexlib:J2T(data)
         if (err ~= nil) then
             print('parse json error:', err)
-            return true, data
+            return true, args
         end
         for _, value in pairs(dataT) do
             local MatchHexS = rulexlib:MatchUInt("temp:[0,1]", value['value'])
@@ -34,6 +34,6 @@ Actions =
             )
             rulexlib:Debug(Json)
         end
-        return true, data
+        return true, args
     end
 }

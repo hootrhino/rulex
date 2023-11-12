@@ -5,7 +5,7 @@
 ## 脚本示例
 ```lua
 Actions = {
-    function(data)
+    function(args)
         print('Data From IotHUB:', data)
         local Json = rulexlib:T2J(
             {
@@ -19,7 +19,7 @@ Actions = {
         )
         print('Data to IotHUB:', Json)
         data:ToIotHUB('INe1e769cff3b9467394564ca78c7bc93b', Json)
-        return true, data
+        return true, args
     end
 }
 

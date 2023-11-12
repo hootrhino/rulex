@@ -19,9 +19,9 @@ type Field struct {
 var actions = `
 Actions =
 {
-function(data)
+function(args)
 %v
-	return true, data
+	return true, args
 end
 }
 `

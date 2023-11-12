@@ -17,11 +17,10 @@ package datacenter
 
 import (
 	"context"
-	"strconv"
-	"time"
 
 	"github.com/hootrhino/rulex/component/trailer"
 	"github.com/hootrhino/rulex/glogger"
+	"github.com/hootrhino/rulex/typex"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -32,143 +31,40 @@ import (
 *
  */
 type ExternalDb struct {
+	rulex typex.RuleX
 }
 
+func InitExternalDb(rulex typex.RuleX) DataSource {
+	Edb := new(ExternalDb)
+	Edb.rulex = rulex
+	return Edb
+}
+func (db *ExternalDb) Init() error {
+	return nil
+}
 func (db *ExternalDb) Name() string {
-	return "EXTERNALDB"
+	return "EXTERNAL_DATACENTER"
 }
 func (db *ExternalDb) GetSchemaDetail(goodsId string) SchemaDetail {
-	return SchemaDetail{}
-}
-func (db *ExternalDb) Query(goodsId, query string) ([]map[string]any, error) {
-	return []map[string]any{}, nil
-}
-
-/*
-*
-* 获取表格定义
-*
- */
-func SchemaList() []SchemaDetail {
-	Schemas := []SchemaDetail{}
-	trailer.AllGoods().Range(func(key, value any) bool {
-		goodsPs := (value.(*trailer.GoodsProcess))
-		Schemas = append(Schemas, SchemaDetail{
-			UUID:        goodsPs.Info.UUID,
-			Name:        goodsPs.Info.Name,
-			LocalPath:   goodsPs.Info.LocalPath,
-			NetAddr:     goodsPs.Info.NetAddr,
-			CreateTs:    0,
-			Size:        0,
-			StorePath:   "",
-			Description: goodsPs.Info.Description,
-		})
-		return true
-	})
-	return Schemas
-}
-
-/*
-*
-* 表结构
-*
- */
-
-func GetSchema(goodsId string) (SchemaDefine, error) {
-	schemaDefine := SchemaDefine{}
-	if goodsPs := trailer.Get(goodsId); goodsPs != nil {
-		grpcConnection, err1 := grpc.Dial(goodsPs.Info.NetAddr,
-			grpc.WithTransportCredentials(insecure.NewCredentials()))
-		if err1 != nil {
-			glogger.GLogger.Error(err1)
-			return schemaDefine, err1
-		}
-		defer grpcConnection.Close()
-		client := trailer.NewTrailerClient(grpcConnection)
-		columns, err2 := client.Schema(context.Background(), &trailer.SchemaRequest{})
-		if err2 != nil {
-			glogger.GLogger.Error(err2)
-			return schemaDefine, err2
-		}
-		Columns := []Column{}
-		for _, column := range columns.Columns {
-			Columns = append(Columns, Column{
-				Name:        string(column.Name),
-				Type:        column.Type.String(),
-				Description: string(column.Description),
-			})
-		}
-		schemaDefine = SchemaDefine{
-			UUID:    goodsPs.Info.UUID,
-			Columns: Columns,
-		}
-	}
-	return schemaDefine, nil
-
-}
-func SchemaDefineList() ([]SchemaDefine, error) {
-	var err error
-	ColumnsMap := []SchemaDefine{}
-	Columns := []Column{}
-	trailer.AllGoods().Range(func(key, value any) bool {
-		goodsPs := (value.(*trailer.GoodsProcess))
-		grpcConnection, err1 := grpc.Dial(goodsPs.Info.NetAddr,
-			grpc.WithTransportCredentials(insecure.NewCredentials()))
-		if err1 != nil {
-			glogger.GLogger.Error(err1)
-			err = err1
-			return false
-		}
-		defer grpcConnection.Close()
-		client := trailer.NewTrailerClient(grpcConnection)
-		columns, err2 := client.Schema(context.Background(), &trailer.SchemaRequest{})
-		if err2 != nil {
-			glogger.GLogger.Error(err2)
-			err = err2
-			return false
-		}
-		for _, column := range columns.Columns {
-			Columns = append(Columns, Column{
-				Name:        string(column.Name),
-				Type:        column.Type.String(),
-				Description: string(column.Description),
-			})
-		}
-		Define := SchemaDefine{
-			UUID:    goodsPs.Info.UUID,
-			Columns: Columns,
-		}
-		ColumnsMap = append(ColumnsMap, Define)
-		return true
-	})
-	return ColumnsMap, err
-}
-
-/*
-*
-* 获取仓库详情, 现阶段写死的, 后期会在proto中实现
-*
- */
-func GetSchemaDetail(goodsId string) SchemaDetail {
 	return SchemaDetail{
-		UUID:        "1122334455",
-		Name:        "Test RPC",
-		LocalPath:   "/root/app1",
-		NetAddr:     "127.0.0.1:4567",
-		CreateTs:    uint64(time.Now().Unix()),
-		Size:        12.34,
-		StorePath:   "/root/data/test.db",
-		Description: "An simply demo",
+		UUID:        "EXTERNAL_DATACENTER",
+		SchemaType:  "EXTERNAL_DATACENTER",
+		Name:        "外部数据中心",
+		LocalPath:   ".EXTERNAL_DATACENTER",
+		NetAddr:     ".EXTERNAL_DATACENTER",
+		CreateTs:    0,
+		Size:        0,
+		StorePath:   ".EXTERNAL_DATACENTER",
+		Description: "外部数据中心",
 	}
 }
 
 /*
 *
-* 查询，第一个参数是查询请求，针对Sqlite就是SQL，针对mongodb就是JS，根据具体情况而定
+* 去调用RPC的Query
 *
  */
-
-func Query(goodsId, query string) ([]map[string]any, error) {
+func (db *ExternalDb) Query(goodsId, query string) ([]map[string]any, error) {
 	var err error
 	Rows := []map[string]any{}
 	if goodsPs := trailer.Get(goodsId); goodsPs != nil {
@@ -192,54 +88,10 @@ func Query(goodsId, query string) ([]map[string]any, error) {
 		for _, row := range columns.Row {
 			Row := map[string]any{}
 			for _, column := range row.Column {
-				Row[string(column.GetName())] = CovertGoTypeToJsType(column)
+				Row[string(column.GetName())] = covertGoTypeToJsType(column)
 			}
 			Rows = append(Rows, Row)
 		}
 	}
 	return Rows, err
-}
-
-/*
-*
-* 数据转换
-*
- */
-func CovertGoTypeToJsType(V *trailer.ColumnValue) any {
-	if V.Type == trailer.ValueType_NUMBER {
-		floatValue, err := strconv.ParseFloat(string(V.GetValue()), 64)
-		if err != nil {
-			glogger.GLogger.Error(err)
-			return 0
-		}
-		return floatValue
-	} // Bool 允许两种表示形式
-	if V.Type == trailer.ValueType_BOOL {
-		if string(V.Value) == "true" {
-			return true
-		}
-		if string(V.Value) == "false" {
-			return false
-		}
-		if string(V.Value) == "1" {
-			return true
-		}
-		if string(V.Value) == "0" {
-			return false
-		}
-		if len(V.Value) > 0 {
-			if V.Value[0] == 0 {
-				return false
-			}
-			if V.Value[0] == 1 {
-				return true
-			}
-		}
-		return false
-	}
-	if V.Type == trailer.ValueType_STRING {
-		return string(V.Value)
-	}
-	// 如果到这里说明已经出问题了, 直接返回nil
-	return nil
 }

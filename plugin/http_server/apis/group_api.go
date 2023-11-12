@@ -100,6 +100,7 @@ func DeleteGroup(c *gin.Context, ruleEngine typex.RuleX) {
 	}
 	if err := service.DeleteGenericGroup(uuid); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
 	}
 	c.JSON(common.HTTP_OK, common.Ok())
 
@@ -221,33 +222,4 @@ func UnBindResource(c *gin.Context, ruleEngine typex.RuleX) {
 	}
 	c.JSON(common.HTTP_OK, common.Ok())
 
-}
-
-/*
-*
-* 大屏
-*
- */
-func ListVisualByGroup(c *gin.Context, ruleEngine typex.RuleX) {
-	Gid, _ := c.GetQuery("uuid")
-	visuals := []VisualVo{}
-	MVisuals, _ := service.FindByType(Gid, "VISUAL")
-	for _, vv := range MVisuals {
-		Vo := VisualVo{
-			UUID:      vv.UUID,
-			Name:      vv.Name,
-			Type:      vv.Type,
-			Content:   vv.Content,
-			Status:    &vv.Status,
-			Thumbnail: vv.Thumbnail,
-		}
-		Group := service.GetVisualGroup(vv.UUID)
-		if Group.UUID != "" {
-			Vo.Gid = Group.UUID
-		} else {
-			Vo.Gid = ""
-		}
-		visuals = append(visuals, Vo)
-	}
-	c.JSON(common.HTTP_OK, common.OkWithData(visuals))
 }

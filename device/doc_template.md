@@ -98,8 +98,8 @@
     ```lua
     Actions =
     {
-        function(data)
-            return true, data
+        function(args)
+            return true, args
         end
     }
 
@@ -110,8 +110,8 @@
     ```lua
     Actions =
     {
-        function(data)
-            return true, data
+        function(args)
+            return true, args
         end
     }
 

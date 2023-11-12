@@ -15,7 +15,7 @@
         "description":"GENERIC_PROTOCOL",
         "config":{
             "commonConfig":{
-                "transport":"rawserial",
+                "transport":"UART",
                 "retryTime":5,
                 "frequency":100
             },
@@ -38,7 +38,7 @@
         "description":"GENERIC_PROTOCOL",
         "config":{
             "commonConfig":{
-                "transport":"rawtcp",
+                "transport":"TCP",
                 "retryTime":5,
                 "frequency":100
             },
@@ -82,7 +82,7 @@ function Main(arg)
         local result, err = applib:CtrlDevice(Id, "010300000002C40B")
         --result {"in":"010300000002C40B","out":"010304000100022a32"}
         print("CtrlDevice result=>", result)
-        applib:Sleep(60)
+        time:Sleep(60)
     end
     return 0
 end
@@ -102,13 +102,13 @@ end
      local b, err = hex:Hexs2Bytes('FFFFFF014CB2AA55')
      -- b 是一个table: {0 = 0, 1 = 1}
   ```
-- eekith3:GPIOSet: 控制GPIO
+- rhinopi:GPIOSet: 控制GPIO
   ```lua
-     local err = eekith3:GPIOSet(6, 1)
+     local err = rhinopi:GPIOSet(6, 1)
   ```
-- eekith3:GPIOGet 16进制字符串转成字节
+- rhinopi:GPIOGet 16进制字符串转成字节
   ```lua
-     local value, err = eekith3:GPIOGet(6)
+     local value, err = rhinopi:GPIOGet(6)
      -- value 的值为 0 或者 1
   ```
 - applib:MatchHex 提取十六进制
@@ -241,7 +241,7 @@ function Main(arg)
         for i = 1, 5, 1 do
             local result, err = applib:CtrlDevice('uuid', "0" .. i)
             print("|*** CtrlDevice [0x01] result=>", result, err)
-            applib:Sleep(1000)
+            time:Sleep(1000)
         end
     end
     return 0

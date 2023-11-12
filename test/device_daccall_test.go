@@ -28,7 +28,7 @@ func Test_dac_call_device(t *testing.T) {
 	GMODBUS := typex.NewDevice(typex.GENERIC_MODBUS,
 		"GENERIC_MODBUS", "GENERIC_MODBUS", map[string]interface{}{
 			"mode": "TCP",
-			// "mode":      "RTU",
+			// "mode":      "UART",
 			"timeout":   10,
 			"frequency": 5,
 			"config": map[string]interface{}{
@@ -64,11 +64,11 @@ func Test_dac_call_device(t *testing.T) {
 		`function Success() print("[LUA Success Callback]=> OK") end`,
 		`
 		Actions = {
-			function(data)
+			function(args)
 				print("data=", data)
 				local r, error = device:DCACall("GMODBUS", "get_status", {1, 2, 3})
 				print("r=", r, ", error=", error)
-				return true, data
+				return true, args
 			end
 		}`,
 		`function Failed(error) print("[LUA Failed Callback]", error) end`)

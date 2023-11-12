@@ -5,7 +5,7 @@ function Main(arg)
         local data = { name = 'Demo', sn = 'A123456', state = '00' }
         local err = applib:DataToUdp('UdpServer', applib:T2J(data))
         applib:log('DataToUdp success? =>', err == nil)
-        applib:Sleep(100)
+        time:Sleep(100)
     end
     return 0
 end

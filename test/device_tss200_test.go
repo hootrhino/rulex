@@ -22,7 +22,7 @@ func Test_TSS200_ReadData(t *testing.T) {
 
 	tss200 := typex.NewDevice(typex.TSS200V02,
 		"TSS200V02", "TSS200V02", map[string]interface{}{
-			"mode":      "RTU",
+			"mode":      "UART",
 			"timeout":   10,
 			"frequency": 5,
 			"config": map[string]interface{}{
@@ -58,9 +58,9 @@ func Test_TSS200_ReadData(t *testing.T) {
 		`function Success() print("[LUA Success Callback]=> OK") end`,
 		`
 		Actions = {
-			function(data)
+			function(args)
 				print('data ==> ', data)
-				return true, data
+				return true, args
 			end
 		}`,
 		`function Failed(error) print("[LUA Failed Callback]", error) end`)

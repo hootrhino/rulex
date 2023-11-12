@@ -63,15 +63,6 @@ func (nt *natsTarget) Start(cctx typex.CCTX) error {
 	}
 }
 
-// 测试资源状态
-func (nt *natsTarget) Test(outEndId string) bool {
-	if nt.natsConnector != nil {
-		return nt.natsConnector.IsConnected()
-	} else {
-		return false
-	}
-}
-
 func (nt *natsTarget) Enabled() bool {
 	return true
 }
@@ -84,7 +75,12 @@ func (nt *natsTarget) Pause() {
 }
 
 func (nt *natsTarget) Status() typex.SourceState {
-	return nt.status
+	if nt.natsConnector != nil {
+		if nt.natsConnector.IsConnected() {
+			return typex.SOURCE_UP
+		}
+	}
+	return typex.SOURCE_DOWN
 }
 
 func (nt *natsTarget) Details() *typex.OutEnd {

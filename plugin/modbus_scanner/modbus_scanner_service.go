@@ -22,9 +22,9 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/hootrhino/rulex/component/hwportmanager"
 	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/typex"
-	"github.com/hootrhino/rulex/utils"
 	"github.com/sirupsen/logrus"
 	serial "github.com/wwhai/goserial"
 )
@@ -82,29 +82,52 @@ func (cs *modbusScanner) Service(arg typex.ServiceArg) typex.ServiceResult {
 
 	if arg.Name == "scan" {
 		cs.busying = true
+		// portUuid 从args里传进来的
 		switch s := arg.Args.(type) {
 		case string:
 			{
-				err := json.Unmarshal([]byte(s), &cs.UartConfig)
-				if err != nil {
+				type form struct {
+					PortUuid string `json:"portUuid"`
+				}
+				form1 := form{}
+				if err := json.Unmarshal([]byte(s), &form1); err != nil {
+					cs.cancel()
 					cs.busying = false
 					return typex.ServiceResult{Out: []map[string]interface{}{
 						{"error": err.Error()},
 					}}
 				}
-				if !utils.SContains([]string{"N", "E", "O"}, cs.UartConfig.Parity) {
+				hwPort, err := hwportmanager.GetHwPort(form1.PortUuid)
+				if err != nil {
+					cs.cancel()
 					cs.busying = false
 					return typex.ServiceResult{Out: []map[string]interface{}{
-						{"error": "parity value only one of 'N','O','E'"},
+						{"error": "port not exists:" + form1.PortUuid},
 					}}
 				}
+				hwPortConfig := hwportmanager.UartConfig{}
+				switch tcfg := hwPort.Config.(type) {
+				case hwportmanager.UartConfig:
+					{
+						hwPortConfig = tcfg
+					}
+				default:
+					{
+						cs.cancel()
+						cs.busying = false
+						return typex.ServiceResult{Out: []map[string]interface{}{
+							{"error": "port not exists:" + form1.PortUuid},
+						}}
+					}
+				}
+
 				config := serial.Config{
-					Address:  cs.UartConfig.Uart,
-					BaudRate: cs.UartConfig.BaudRate,
-					DataBits: cs.UartConfig.DataBits,
-					Parity:   cs.UartConfig.Parity,
-					StopBits: cs.UartConfig.StopBits,
-					Timeout:  1 * time.Second,
+					Address:  hwPortConfig.Uart,
+					BaudRate: hwPortConfig.BaudRate,
+					DataBits: hwPortConfig.DataBits,
+					Parity:   hwPortConfig.Parity,
+					StopBits: hwPortConfig.StopBits,
+					Timeout:  2 * time.Second,
 				}
 				serialPort, err := serial.Open(&config)
 				if err != nil {

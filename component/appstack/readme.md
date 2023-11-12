@@ -22,7 +22,7 @@ AppDESCRIPTION = "A demo app"
 -- 必须包含 APPMain(arg) 函数作为 app 启动点
 function Main(arg)
 	while true do
-		local value, err = eekith3:GPIOGet(6)
+		local value, err = rhinopi:GPIOGet(6)
 		if err ~= nil
 		then
 			print(err)
@@ -51,7 +51,7 @@ function Main(arg)
 			humi = 13.45
 		}))
 		print("err =>", err)
-		applib:Sleep(1000)
+		time:Sleep(1000)
 	end
 	return 0
 end

@@ -34,7 +34,7 @@ function Main(arg)
     for i = 1, 10, 1 do
         local data = { temp = 20.15 , humi = 34}
         local err = applib:DataToUdp('UdpServer', applib:T2J(data))
-        applib:Sleep(100)
+        time:Sleep(100)
     end
     return 0
 end
@@ -72,8 +72,8 @@ function Failed(error)
 end
 
 Actions = {
-    function(data)
-        return true, data
+    function(args)
+        return true, args
     end
 }
 
@@ -83,9 +83,9 @@ Actions = {
 
 ```lua
 Actions = {
-    function(data)
+    function(args)
         print("return => ", rulexlib:JqSelect(".[] | select(.hum < 20)", data))
-        return true, data
+        return true, args
     end
 }
 ```
@@ -94,14 +94,14 @@ Actions = {
 
 ```lua
 Actions = {
-    function(data)
+    function(args)
         -- 持久化到 MongoDb:
         data:ToMongo("45dd0c90f56d", data)
         -- 持久化到 Mysql:
         data:ToMysql("45dd0c90f56d", data)
         -- 推送化到 Kafka:
         data:ToKafka("45dd0c90f56d", data)
-        return true, data
+        return true, args
     end
 }
 ```

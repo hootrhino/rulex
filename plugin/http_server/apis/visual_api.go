@@ -56,7 +56,7 @@ func CreateVisual(c *gin.Context, ruleEngine typex.RuleX) {
 	}
 	// 新建大屏的时候必须给一个分组
 	if err := service.BindResource(form.Gid, MVisual.UUID); err != nil {
-		c.JSON(common.HTTP_OK, common.Error400(err))
+		c.JSON(common.HTTP_OK, common.Error("Group not found"))
 		return
 	}
 	// 返回新建的大屏字段 用来跳转编辑器
@@ -170,6 +170,31 @@ func ListVisual(c *gin.Context, ruleEngine typex.RuleX) {
 	}
 	c.JSON(common.HTTP_OK, common.OkWithData(visuals))
 
+}
+
+/*
+*
+* 大屏分组查看
+*
+ */
+func ListVisualByGroup(c *gin.Context, ruleEngine typex.RuleX) {
+	Gid, _ := c.GetQuery("uuid")
+	visuals := []VisualVo{}
+	MVisuals, _ := service.FindByType(Gid, "VISUAL")
+	for _, vv := range MVisuals {
+		Vo := VisualVo{
+			UUID:      vv.UUID,
+			Name:      vv.Name,
+			Type:      vv.Type,
+			Content:   vv.Content,
+			Status:    &vv.Status,
+			Thumbnail: vv.Thumbnail,
+		}
+		Group := service.GetVisualGroup(vv.UUID)
+		Vo.Gid = Group.UUID
+		visuals = append(visuals, Vo)
+	}
+	c.JSON(common.HTTP_OK, common.OkWithData(visuals))
 }
 
 /*

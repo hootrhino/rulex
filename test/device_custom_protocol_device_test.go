@@ -9,8 +9,8 @@ import (
 
 	serial "github.com/wwhai/tarmserial"
 
-	httpserver "github.com/hootrhino/rulex/plugin/http_server"
 	"github.com/hootrhino/rulex/component/rulexrpc"
+	httpserver "github.com/hootrhino/rulex/plugin/http_server"
 	"github.com/hootrhino/rulex/typex"
 	"github.com/hootrhino/rulex/utils"
 	"google.golang.org/grpc"
@@ -112,9 +112,9 @@ func TestCustomProtocolDevice(t *testing.T) {
 		`function Success() print("[LUA Success Callback]=> OK") end`,
 		`
 		Actions = {
-		function(data)
+		function(args)
 			   print("Received Inend Data ======> : ",data)
-			return true, data
+			return true, args
 		end,
 	}
 `,

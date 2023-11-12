@@ -58,9 +58,9 @@ type MqttConfig struct {
 
 ## 示例
 ```lua
-function(data)
+function(args)
     local err = data:ToMqtt('MqttOut', data)
 	print("[LUA DataToMqtt] ==>", err)
-	return true, data
+	return true, args
 end
 ```

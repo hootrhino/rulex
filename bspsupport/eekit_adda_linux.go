@@ -66,40 +66,30 @@ func _EEKIT_GPIOAllInit() int {
 			_EEKIT_GPIOInit(eekit_DO1, eekit_Out)
 			fmt.Println("EEKIT_GPIOAllInit DO1 Out Mode Ok")
 		}
-	} else {
-		fmt.Println("EEKIT_GPIOAllInit DO1 Out Mode Error:", err1)
 	}
 	if err2 != nil {
 		if strings.Contains(err2.Error(), "no such file or directory") {
 			_EEKIT_GPIOInit(eekit_DO2, eekit_Out)
 			fmt.Println("EEKIT_GPIOAllInit DO2 Out Mode Ok")
 		}
-	} else {
-		fmt.Println("EEKIT_GPIOAllInit DO2 Out Mode Error:", err2)
 	}
 	if err3 != nil {
 		if strings.Contains(err3.Error(), "no such file or directory") {
 			_EEKIT_GPIOInit(eekit_DI1, eekit_In)
 			fmt.Println("EEKIT_GPIOAllInit DI1 In Mode Ok")
 		}
-	} else {
-		fmt.Println("EEKIT_GPIOAllInit DI1 In Mode Error:", err3)
 	}
 	if err4 != nil {
 		if strings.Contains(err4.Error(), "no such file or directory") {
 			_EEKIT_GPIOInit(eekit_DI2, eekit_In)
 			fmt.Println("EEKIT_GPIOAllInit DI2 In Mode Ok")
 		}
-	} else {
-		fmt.Println("EEKIT_GPIOAllInit DI2 In Mode Error:", err4)
 	}
 	if err5 != nil {
 		if strings.Contains(err5.Error(), "no such file or directory") {
 			_EEKIT_GPIOInit(eekit_DI3, eekit_In)
 			fmt.Println("EEKIT_GPIOAllInit DI3 In Mode Ok")
 		}
-	} else {
-		fmt.Println("EEKIT_GPIOAllInit DI3 In Mode Error:", err5)
 	}
 	// 返回值无用
 	return 1

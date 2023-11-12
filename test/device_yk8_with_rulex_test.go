@@ -146,7 +146,7 @@ Actions = {
 			end
 		end
 	end
-	return true, data
+	return true, args
 end
 }`,
 		`function Failed(error) print("[LUA Failed Callback]", error) end`)

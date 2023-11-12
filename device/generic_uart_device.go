@@ -7,7 +7,6 @@ import (
 	"sync"
 	"time"
 
-	archsupport "github.com/hootrhino/rulex/bspsupport"
 	"github.com/hootrhino/rulex/common"
 	"github.com/hootrhino/rulex/driver"
 	"github.com/hootrhino/rulex/glogger"
@@ -68,11 +67,7 @@ func (uart *genericUartDevice) Init(devId string, configMap map[string]interface
 	if !utils.SContains([]string{"N", "E", "O"}, uart.mainConfig.UartConfig.Parity) {
 		return errors.New("parity value only one of 'N','O','E'")
 	}
-	// 做端口管理
-	Port := archsupport.GetHwPort(uart.mainConfig.UartConfig.Uart)
-	if Port.Busy {
-		return errors.New(Port.BusyingInfo())
-	}
+
 	return nil
 }
 
@@ -100,7 +95,6 @@ func (uart *genericUartDevice) Start(cctx typex.CCTX) error {
 		return nil
 	}
 	uart.status = typex.DEV_UP
-	archsupport.HwPortBusy(uart.mainConfig.UartConfig.Uart, uart.PointId)
 	return nil
 }
 
@@ -163,7 +157,6 @@ func (uart *genericUartDevice) Stop() {
 		uart.driver.Stop()
 		uart.driver = nil
 	}
-	archsupport.HwPortFree(uart.mainConfig.UartConfig.Uart)
 }
 
 // 设备属性，是一系列属性描述

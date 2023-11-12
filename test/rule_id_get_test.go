@@ -41,10 +41,10 @@ func Test_Get_RULE_ID(t *testing.T) {
 		`function Success() print("[LUA Success Callback]=> OK") end`,
 		`
 		Actions = {
-			function(data)
+			function(args)
 				print('rulexlib:Time() =================> ', rulexlib:Time())
 				print('rulexlib:RUUID() =================> ', rulexlib:RUUID())
-				return true, data
+				return true, args
 			end
 		}`,
 		`function Failed(error) print("[LUA Failed Callback]", error) end`)

@@ -1,5 +1,5 @@
 Actions = {
-    function(data)
+    function(args)
         print('Received data from iothub:', data)
         local source = 'tencentIothub'
         local device = 'YK8Device1'
@@ -70,6 +70,6 @@ Actions = {
                 end
             end
         end
-        return true, data
+        return true, args
     end
 }

@@ -159,9 +159,9 @@ func Test_RULEX_WITH_S1200PLC(t *testing.T) {
 		`function Success()end`,
 		`
 	Actions = {
-		function(data)
+		function(args)
 		    rulexlib:log('EMQX_BROKER: ', data)
-			return true, data
+			return true, args
 		end
 	}`, `function Failed(error) print("[EMQX_BROKER Failed Callback]", error) end`)
 	if err := engine.LoadRule(rule1); err != nil {

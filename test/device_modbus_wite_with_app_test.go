@@ -17,9 +17,9 @@ const __DEFAULT_BUFFER_SIZE = 100
 
 // 传输形式：
 // `rawtcp`, `rawudp`, `rawserial`
-const rawtcp string = "rawtcp"
+const rawtcp string = "TCP"
 const rawudp string = "rawudp"
-const rawserial string = "rawserial"
+const rawserial string = "UART"
 
 type _CPDCommonConfig struct {
 	Transport string `json:"transport" validate:"required"` // 传输协议
@@ -54,7 +54,7 @@ func Test_Modbus_App_Write(t *testing.T) {
 	modbusDevice := typex.NewDevice(typex.GENERIC_PROTOCOL,
 		"GENERIC_PROTOCOL", "GENERIC_PROTOCOL", map[string]interface{}{
 			// "mode": "TCP",
-			"mode":        "RTU",
+			"mode":        "UART",
 			"autoRequest": false,
 			"timeout":     10,
 			"frequency":   5,
@@ -86,9 +86,9 @@ func Test_Modbus_App_Write(t *testing.T) {
 	luas := `
 function Main(arg)
     local error1 = modbus:F5("uuid1", 0, 1, "00")
-    applib:Sleep(1000)
+    time:Sleep(1000)
     local error2 = modbus:F5("uuid1", 0, 1, "01")
-    applib:Sleep(1000)
+    time:Sleep(1000)
     return 0
 end
 `

@@ -94,7 +94,9 @@ func (mm *mqttInEndSource) DataModels() []typex.XDataModel {
 
 func (mm *mqttInEndSource) Stop() {
 	mm.status = typex.SOURCE_STOP
-	mm.CancelCTX()
+	if mm.CancelCTX != nil {
+		mm.CancelCTX()
+	}
 	mm.client.Disconnect(0)
 	if mm.client != nil {
 		mm.client.Disconnect(0)

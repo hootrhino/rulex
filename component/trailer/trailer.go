@@ -54,6 +54,7 @@ type TrailerRuntime struct {
 	goodsProcessMap *sync.Map // Key: UUID, Value: GoodsProcess
 	rpcServer       *grpc.Server
 	pid             int
+	running         bool // true: running; false: stop
 }
 
 /*
@@ -67,6 +68,7 @@ func InitTrailerRuntime(re typex.RuleX) *TrailerRuntime {
 		re:              re,
 		goodsProcessMap: &sync.Map{},
 		pid:             os.Getppid(),
+		running:         true,
 	}
 	Listener, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", 2588))
 	if err != nil {
@@ -280,16 +282,21 @@ func runLocalProcess(goodsProcess *GoodsProcess) error {
 	if err := goodsProcess.cmd.Wait(); err != nil {
 		State := goodsProcess.cmd.ProcessState
 		if !State.Success() {
-			out, err1 := goodsProcess.cmd.Output()
-			glogger.GLogger.Error("Cmd Exit With State:", err, err1, string(out), ",State:", State)
+			glogger.GLogger.Error("Cmd Exit With State:", State)
 			// 非正常结束, 极有可能是被kill的，所以要尝试抢救
 			// 如果是被 RULEX 干死的就不抢救了，说明触发了 Stop 和 Remove；
 			//    killedBy 如果是别的原因就有抢救机会
+			// 还需要判断是否是主进程结束
+			if !__DefaultTrailerRuntime.running {
+				glogger.GLogger.Error("Trailer Runtime exited:", State)
+				return nil
+			}
 			if goodsProcess.killedBy != "RULEX" {
+
 				glogger.GLogger.Warn("Goods process Exit, May be a accident, try to rescue it:",
 					goodsProcess.String())
 				// 说明是用户操作停止
-				time.Sleep(2 * time.Second)
+				time.Sleep(4 * time.Second)
 				goodsProcess.Stop()
 				PPId := os.Getppid()
 				if PPId == __DefaultTrailerRuntime.pid {
@@ -344,9 +351,10 @@ func RemoveBy(uuid, by string) {
 
 // 停止外挂运行时管理器, 这个要是停了基本上就是程序结束了
 func Stop() {
+	__DefaultTrailerRuntime.running = false
 	__DefaultTrailerRuntime.goodsProcessMap.Range(func(key, v interface{}) bool {
 		gp := (v.(*GoodsProcess))
-		gp.Stop()
+		gp.StopBy("RULEX")
 		return true
 	})
 	if __DefaultTrailerRuntime.rpcServer != nil {

@@ -2,24 +2,28 @@ package intermetric
 
 import (
 	"math"
+
+	"github.com/hootrhino/rulex/typex"
 )
 
 var __DefaultInternalMetric *InternalMetric
 
 type InternalMetric struct {
+	rulex      typex.RuleX
 	InSuccess  uint64 `json:"inSuccess"`
 	OutSuccess uint64 `json:"outSuccess"`
 	InFailed   uint64 `json:"inFailed"`
 	OutFailed  uint64 `json:"outFailed"`
 }
 
-func InitInternalMetric() *InternalMetric {
+func InitInternalMetric(rulex typex.RuleX) *InternalMetric {
 	__DefaultInternalMetric = &InternalMetric{
 		InSuccess:  0,
 		OutSuccess: 0,
 		InFailed:   0,
 		OutFailed:  0,
 	}
+	__DefaultInternalMetric.rulex = rulex
 	return __DefaultInternalMetric
 
 }

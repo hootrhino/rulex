@@ -9,11 +9,11 @@ jobs:
     name: 打包发布
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: "检查安装go环境"
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v4
         with:
-          go-version: 1.18
+          go-version: 1.20.1
       - name: 构建发布包
         run: |
           sudo apt update -y
@@ -23,7 +23,7 @@ jobs:
                gcc-mips-linux-gnu \
                gcc-mingw-w64 \
                gcc-aarch64-linux-gnu -y
-          curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -
+          curl -sL https://deb.nodesource.com/setup_16.x | sudo -E bash -
           sudo apt-get install -y nodejs
           cloc ./
           chmod 755 ./gen_info.sh

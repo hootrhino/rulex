@@ -6,7 +6,7 @@ RESPOSITORY="https://github.com/hootrhino"
 #
 create_pkg() {
     local target=$1
-    local version=$(git describe --tags --always --abbrev=0)
+    local version="$(git describe --tags $(git rev-list --tags --max-count=1))"
     local release_dir="_release"
     local pkg_name="${APP}-$target-$version.zip"
     local common_files="./LICENSE ./conf/${APP}.ini ./md5.sum"
@@ -116,7 +116,7 @@ calculate_and_save_md5() {
         return 1
     fi
     md5_hash=$(md5sum "$file_path" | awk '{print $1}')
-    echo "$md5_hash  $file_path" >> md5.sum
+    echo -n "$md5_hash" > md5.sum
 }
 #
 # fetch dashboard
@@ -130,7 +130,7 @@ fetch_dashboard() {
         echo -e "\033[44;32m [√] File www.zip already downloaded \033[0m"
         unzip -q "$www_zip" -d "$http_server_dir"
     else
-        local VERSION=$(git describe --tags --always --abbrev=0)
+        VERSION="$(git describe --tags $(git rev-list --tags --max-count=1))"
         local URL="${RESPOSITORY}/hootrhino-eekit-web/releases/download/${VERSION}/www.zip"
         echo -e "\033[41;37m [*] Fetch www.zip from: ${URL}\033[0m"
         # 发送HEAD请求来检查URL是否存在

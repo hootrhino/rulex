@@ -97,7 +97,7 @@ Modbus协议是一种简单且易于实现的协议，广泛应用于工业自�
 脚本如下：
 ```lua
 Actions = {
-  function(data)
+  function(args)
 ​    local dataT, err0 = rulexlib:J2T(data)
 ​    if err0 ~= nil then
 ​      print("ERROR:", err0)
@@ -117,7 +117,7 @@ Actions = {
 ​      print('DataToUdp success? =>', err4 == nil)
 ​    end
 ​    ::END::
-​    return true, data
+​    return true, args
   end
 }
 

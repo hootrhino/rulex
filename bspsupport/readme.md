@@ -39,7 +39,7 @@ ARCHSUPPORT=EEKITH3 rulex run
 1. GPIO 设置
 
    ```lua
-   eekith3:GPIOSet(Pin, Value)
+   rhinopi:GPIOSet(Pin, Value)
    ```
    参数表
 
@@ -50,7 +50,7 @@ ARCHSUPPORT=EEKITH3 rulex run
 2. GPIO 获取
 
    ```lua
-   eekith3:GPIOGet(Pin)
+   rhinopi:GPIOGet(Pin)
    ```
    | 参数名 | 类型 | 说明     |
    | ------ | ---- | -------- |
@@ -62,9 +62,9 @@ ARCHSUPPORT=EEKITH3 rulex run
 function Main(arg)
     while true do
         ws1608:GPIOSet("red", 1)
-        applib:Sleep(2000)
+        time:Sleep(2000)
         ws1608:GPIOSet("red", 0)
-        applib:Sleep(2000)
+        time:Sleep(2000)
     end
 end
 
@@ -75,10 +75,10 @@ end
 ```lua
 function Main(arg)
     while true do
-        eekith3:GPIOSet(6, 1)
-        applib:Sleep(2000)
-        eekith3:GPIOSet(7, 0)
-        applib:Sleep(2000)
+        rhinopi:GPIOSet(6, 1)
+        time:Sleep(2000)
+        rhinopi:GPIOSet(7, 0)
+        time:Sleep(2000)
     end
 end
 

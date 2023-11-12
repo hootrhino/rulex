@@ -10,7 +10,7 @@ function Main(arg)
         for i = 1, 5, 1 do
             local result, err = applib:CtrlDevice('DEVICEda7ea0bdcf364ca7b7dda5e0cca647d7', "0" .. i)
             print("|*** CtrlDevice [0x01] result=>", result, err)
-            applib:Sleep(50)
+            time:Sleep(50)
         end
     end
     return 0

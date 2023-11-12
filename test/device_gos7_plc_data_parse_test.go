@@ -5,9 +5,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/hootrhino/rulex/component/rulexrpc"
 	"github.com/hootrhino/rulex/glogger"
 	httpserver "github.com/hootrhino/rulex/plugin/http_server"
-	"github.com/hootrhino/rulex/component/rulexrpc"
 	"github.com/hootrhino/rulex/typex"
 
 	"google.golang.org/grpc"
@@ -41,7 +41,7 @@ func Test_S7_PLC_Parse(t *testing.T) {
 		`function Success() print("[LUA Success Callback]=> OK") end`,
 		`
 		Actions = {
-			function(data)
+			function(args)
 				local V0 = rulexlib:MB(">a:16 b:16 c:16 d:16 e:16", data, false)
 				local a = rulexlib:T2J(V0['a'])
 				local b = rulexlib:T2J(V0['b'])
@@ -53,7 +53,7 @@ func Test_S7_PLC_Parse(t *testing.T) {
 				print('c ==> ', c, ' ->', rulexlib:BS2B(a), '==> ', rulexlib:B2I64('>', rulexlib:BS2B(c)))
 				print('d ==> ', d, ' ->', rulexlib:BS2B(a), '==> ', rulexlib:B2I64('>', rulexlib:BS2B(d)))
 				print('e ==> ', e, ' ->', rulexlib:BS2B(a), '==> ', rulexlib:B2I64('>', rulexlib:BS2B(e)))
-				return true, data
+				return true, args
 			end
 		}`,
 		`function Failed(error) print("[LUA Failed Callback]", error) end`)

@@ -7,7 +7,7 @@ function ParseData(data)
     -- data: {"in":"AA0011...","out":"AABBCDD..."}
     local DataT, err = rulexlib:J2T(data)
     if err ~= nil then
-        return true, data
+        return true, args
     end
     -- Do your business
     rulexlib:log(DataT['in'])

@@ -31,7 +31,7 @@ function Main(arg)
                 -- 74 02 25 0A 01 01 59 AA 55 有人
                 applib:ReadDevice(deviceUUID, 3)
             end
-            applib:Sleep(1000)
+            time:Sleep(1000)
         until true
     end
 

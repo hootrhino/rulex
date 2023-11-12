@@ -1,5 +1,5 @@
 Actions = {
-    function(data)
+    function(args)
         local Json = rulexlib:T2J(
             {
                 method = 'userDefineTopic',

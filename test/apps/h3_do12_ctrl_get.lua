@@ -15,11 +15,11 @@
 
 function Main(arg)
     while true do
-        local v1, err1 = eekith3:H3DO1Get()
-        applib:Debug("DO1:" .. v1 .. ", err1:" .. err1)
-        local v2, err2 = eekith3:H3DO2Get()
-        applib:Debug("DO2:" .. v2 .. ", err2:" .. err2)
-        applib:Sleep(1000)
+        local v1, err1 = rhinopi:DO1Get()
+        print("DO1:", v1, ", err1:", err1)
+        local v2, err2 = rhinopi:DO2Get()
+        print("DO2:", v2, ", err2:", err2)
+        time:Sleep(1000)
     end
     return 0
 end

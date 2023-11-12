@@ -16,7 +16,7 @@ import (
 	"github.com/hootrhino/rulex/typex"
 )
 
-var _DataToUdp_luaCase = `function Main(arg) for i = 1, 3, 1 do local err = applib:DataToUdp('UdpServer',applib:T2J({temp = 20,humi = 13.45})) applib:log('result =>',err) applib:Sleep(100) end return 0 end`
+var _DataToUdp_luaCase = `function Main(arg) for i = 1, 3, 1 do local err = applib:DataToUdp('UdpServer',applib:T2J({temp = 20,humi = 13.45})) applib:log('result =>',err) time:Sleep(100) end return 0 end`
 
 // go test -timeout 30s -run ^Test_DataToUdp github.com/hootrhino/rulex/test -v -count=1
 
