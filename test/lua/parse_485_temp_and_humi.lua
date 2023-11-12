@@ -32,7 +32,7 @@ Actions =
                     temp = math:TFloat(MatchHexS['temp'] * 0.1, 2),
                 }
             )
-            stdlib:Println(Json)
+            stdlib:Debug(Json)
         end
         return true, args
     end

@@ -250,16 +250,24 @@ func GetSysLogo(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err1))
 		return
 	}
+	var Binary []byte
 	// data:image/png;base64,
 	if len(MSiteConfig.Logo) < 22 {
-		c.JSON(common.HTTP_OK, common.Error400(fmt.Errorf("invalid image format")))
-		return
+		var err1 error
+		Binary, err1 = base64.StdEncoding.DecodeString(model.SysDefaultLogo[22:])
+		if err1 != nil {
+			c.JSON(common.HTTP_OK, common.Error400(err1))
+			return
+		}
+	} else {
+		var err2 error
+		Binary, err2 = base64.StdEncoding.DecodeString(MSiteConfig.Logo[22:])
+		if err2 != nil {
+			c.JSON(common.HTTP_OK, common.Error400(err2))
+			return
+		}
 	}
-	Binary, err2 := base64.StdEncoding.DecodeString(MSiteConfig.Logo[22:])
-	if err2 != nil {
-		c.JSON(common.HTTP_OK, common.Error400(err2))
-		return
-	}
+
 	c.Writer.WriteHeader(http.StatusOK)
 	c.Writer.Header().Set("Content-Type", "image/jpeg")
 	c.Writer.Header().Set("Content-Length", strconv.Itoa(len(Binary)))

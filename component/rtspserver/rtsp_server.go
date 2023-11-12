@@ -190,7 +190,7 @@ func wsServerEndpoint(c *gin.Context) {
 	glogger.GLogger.Debugf("Request live:%s, Token is :%s", LiveId, Token)
 	// 最多允许连接10个客户端，实际情况下根本用不了那么多
 	if len(__DefaultRtspServer.websocketPlayerManager.Clients) >= 2 {
-		wsConn.WriteMessage(websocket.TextMessage, []byte("Reached max connections:2"))
+		wsConn.WriteMessage(websocket.CloseMessage, []byte{})
 		wsConn.Close()
 		return
 	}
