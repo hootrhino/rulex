@@ -19,7 +19,7 @@ echo_yellow() {
     echo -e "${YELLOW}$1${RESET}"
 }
 install(){
-    check_deps
+    # check_deps
     local source_dir="$PWD"
     local service_file="/etc/systemd/system/rulex.service"
     local executable="/usr/local/rulex"
