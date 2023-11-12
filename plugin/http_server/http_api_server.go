@@ -442,6 +442,7 @@ func (hs *ApiServerPlugin) LoadRoute() {
 	{
 
 		siteConfigApi.PUT("/update", server.AddRoute(apis.UpdateSiteConfig))
+		siteConfigApi.PUT("/reset", server.AddRoute(apis.ResetSiteConfig))
 		siteConfigApi.GET("/detail", server.AddRoute(apis.GetSiteConfig))
 		siteConfigApi.GET(("/logo"), server.AddRoute(apis.GetSysLogo))
 		siteConfigApi.POST(("/logo"), server.AddRoute(apis.UploadSysLogo))

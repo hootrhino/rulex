@@ -23,7 +23,6 @@ require (
 	github.com/gosnmp/gosnmp v1.35.0
 	github.com/hootrhino/go-ais v1.0.0
 	github.com/hootrhino/gopher-lua v1.0.0
-	github.com/hootrhino/sqlparser v0.0.0-20231109065617-65a00e02402f
 	github.com/hootrhino/wmi v0.0.0-20230603082700-cfa077a8cf01
 	github.com/itchyny/gojq v0.12.13
 	github.com/jinzhu/copier v0.3.5

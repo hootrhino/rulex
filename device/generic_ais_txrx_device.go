@@ -133,7 +133,7 @@ func (aism *AISDeviceMaster) Start(cctx typex.CCTX) error {
 			DataBits: aism.hwPortConfig.DataBits,
 			Parity:   aism.hwPortConfig.Parity,
 			StopBits: aism.hwPortConfig.StopBits,
-			Timeout:  time.Duration(aism.hwPortConfig.Timeout) * time.Second,
+			Timeout:  time.Duration(aism.hwPortConfig.Timeout) * time.Millisecond,
 		}
 		var err error
 		aism.serialPort, err = serial.Open(&config)
@@ -159,10 +159,33 @@ func (aism *AISDeviceMaster) Start(cctx typex.CCTX) error {
 				endl2 := false
 				ok := false
 				oneByte := [1]byte{}
+				readyStatus := false // 超时也是就绪状态
+				ctx1, cancel1 := context.WithTimeout(aism.Ctx,
+					time.Duration(aism.hwPortConfig.Timeout)*time.Millisecond)
+				defer cancel1()
 				for {
+					select {
+					// 控制时间防止死机
+					case <-ctx1.Done():
+						{
+							if !readyStatus {
+								glogger.GLogger.Warnf("serialPort %s Read timeout", aism.hwPortConfig.Uart)
+							}
+							break
+						}
+					default:
+						{
+						}
+					}
 					_, err := aism.serialPort.Read(oneByte[:])
 					if err != nil {
-						glogger.GLogger.Info("serialPort Read error", err)
+						if strings.Contains(err.Error(), "timeout") {
+							readyStatus = true
+							continue
+						}
+						readyStatus = false
+						aism.status = typex.DEV_DOWN
+						glogger.GLogger.Errorf("serialPort %s Read error", aism.hwPortConfig.Uart)
 						return
 					}
 					if oneByte[0] == '\r' {
@@ -192,7 +215,6 @@ func (aism *AISDeviceMaster) Start(cctx typex.CCTX) error {
 					return
 				}
 				// 这段是个兼容代码，现阶段适配了一款AIS USB 串口接收器，以后会自己做
-				// RF小作坊的设备发出来的无用信息
 				{
 					if strings.HasPrefix("NONE", rawAiSString) {
 						glogger.GLogger.Info("AIS33VRx Receiver Heart Beat Packet")

@@ -647,8 +647,6 @@ github.com/hootrhino/go-ais v1.0.0 h1:7SSOn3XCB4I4o7SAJ8RvJ4jhqI9w3rVU379jgINCuh
 github.com/hootrhino/go-ais v1.0.0/go.mod h1:QsnHNr4Xcj6xEfa32MmUmhAc1i0BtJZzi4rSZKftw1M=
 github.com/hootrhino/gopher-lua v1.0.0 h1:6kYVenNQYvWdqf4sd2KXOr4XUPKyDZqrxW0PNIM061E=
 github.com/hootrhino/gopher-lua v1.0.0/go.mod h1:tY0TknOctxfkzkx60g+po3hj7K1R+YdwLYqT4OqAINc=
-github.com/hootrhino/sqlparser v0.0.0-20231109065617-65a00e02402f h1:VJdFt8DcLRuxF/ymTWNLfsfugf+uKd6DOxktjZQ48Kk=
-github.com/hootrhino/sqlparser v0.0.0-20231109065617-65a00e02402f/go.mod h1:aoyMJvTY66JXevHUrVNVLy/ryzr9mgnTNx3a3sicGe8=
 github.com/hootrhino/wmi v0.0.0-20230603082700-cfa077a8cf01 h1:oPtZwF/Th9FuFZH4bv0otm6de/5ewcqfaf6pVI/Xfwc=
 github.com/hootrhino/wmi v0.0.0-20230603082700-cfa077a8cf01/go.mod h1:RmN9Gg8TiRseWz6DqrfekUqlRWzUtLJonWUwyfTdcu0=
 github.com/iancoleman/strcase v0.1.2/go.mod h1:SK73tn/9oHe+/Y0h39VT4UCxmurVJkR5NA7kMEAOgSE=

@@ -92,13 +92,12 @@ func (mq *mqttOutEndTarget) DataModels() []typex.XDataModel {
 }
 
 func (mq *mqttOutEndTarget) Stop() {
+	mq.status = typex.SOURCE_DOWN
 	if mq.CancelCTX != nil {
 		mq.CancelCTX()
 	}
-	mq.status = typex.SOURCE_DOWN
 	if mq.client != nil {
 		mq.client.Disconnect(0)
-		mq.client = nil
 	}
 }
 func (mq *mqttOutEndTarget) Reload() {

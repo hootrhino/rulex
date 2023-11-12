@@ -220,7 +220,7 @@ func CreateGoods(c *gin.Context, ruleEngine typex.RuleX) {
 	ExeType := getExecuteType(localSavePath)
 	if ExeType == "" {
 		c.JSON(common.HTTP_OK,
-			common.Error("Invalid file:"+localSavePath))
+			common.Error("Invalid file:"+localSavePath)) 
 		os.Remove(localSavePath)
 		return
 	}

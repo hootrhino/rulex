@@ -2,6 +2,7 @@ package apis
 
 import (
 	"crypto/md5"
+	"encoding/base64"
 	"encoding/hex"
 	"fmt"
 	"net/http"
@@ -249,10 +250,20 @@ func GetSysLogo(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err1))
 		return
 	}
+	// data:image/png;base64,
+	if len(MSiteConfig.Logo) < 22 {
+		c.JSON(common.HTTP_OK, common.Error400(fmt.Errorf("invalid image format")))
+		return
+	}
+	Binary, err2 := base64.StdEncoding.DecodeString(MSiteConfig.Logo[22:])
+	if err2 != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err2))
+		return
+	}
 	c.Writer.WriteHeader(http.StatusOK)
 	c.Writer.Header().Set("Content-Type", "image/jpeg")
-	c.Writer.Header().Set("Content-Length", strconv.Itoa(len(MSiteConfig.Logo)))
-	c.Writer.Write([]byte(MSiteConfig.Logo))
+	c.Writer.Header().Set("Content-Length", strconv.Itoa(len(Binary)))
+	c.Writer.Write(Binary)
 	c.Writer.Flush()
 }
 
@@ -263,9 +274,9 @@ func GetSysLogo(c *gin.Context, ruleEngine typex.RuleX) {
  */
 func ResetSiteConfig(c *gin.Context, ruleEngine typex.RuleX) {
 	err1 := service.UpdateSiteConfig(model.MSiteConfig{
-		SiteName: "",
-		Logo:     "",
-		AppName:  "",
+		SiteName: "Rhino EEKit",
+		Logo:     "/logo.png",
+		AppName:  "Rhino EEKit",
 	})
 	if err1 != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err1))

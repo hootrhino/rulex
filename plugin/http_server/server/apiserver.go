@@ -235,9 +235,9 @@ func initStaticModel() {
 	})
 	// 初始化网站配置
 	service.InitSiteConfig(model.MSiteConfig{
-		SiteName: "RhinoEEKIT",
-		Logo:     "",
-		AppName:  "RhinoEEKIT",
+		SiteName: "Rhino EEKit",
+		Logo:     "/logo.png",
+		AppName:  "Rhino EEKit",
 	})
 	// 初始化一个用户
 	service.InitMUser(

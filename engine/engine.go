@@ -133,6 +133,11 @@ func (e *RuleEngine) GetConfig() *typex.RulexConfig {
 // Stop
 func (e *RuleEngine) Stop() {
 	glogger.GLogger.Info("[*] Ready to stop rulex")
+	// 所有的APP停了
+	appstack.Stop()
+	// 外挂停了
+	trailer.Stop()
+	// 资源
 	e.InEnds.Range(func(key, value interface{}) bool {
 		inEnd := value.(*typex.InEnd)
 		if inEnd.Source != nil {
@@ -174,10 +179,7 @@ func (e *RuleEngine) Stop() {
 		glogger.GLogger.Info("Stop Device:", Device.Name, " Successfully")
 		return true
 	})
-	// 外挂停了
-	trailer.Stop()
-	// 所有的APP停了
-	appstack.Stop()
+
 	glogger.GLogger.Info("[√] Stop Rulex successfully")
 	if err := glogger.Close(); err != nil {
 		fmt.Println("Close logger error: ", err)

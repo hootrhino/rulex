@@ -100,18 +100,6 @@ func main() {
 					// Try 5 times
 					killOld := true
 					log.Println("[Prepare Stage] Try to kill Old Process:", OldPid)
-					// TODO 这里有个问题：无法分离进程
-					// if err := ossupport.StopRulex(); err != nil {
-					// 	log.Println("[Prepare Stage] Old Process killed error:", OldPid, err)
-					// } else {
-					// 	log.Println("[Prepare Stage] Old Process killed success:", OldPid)
-					// 	killOld = true
-					// }
-					// if !killOld {
-					// 	log.Println("[Prepare Stage] Restart rulex failed, Upgrade Process Exited")
-					// 	os.Exit(0)
-					// 	return nil
-					// }
 					if killOld {
 						// EEKITH3 Use SystemCtl manage RULEX
 						env := os.Getenv("ARCHSUPPORT")

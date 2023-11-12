@@ -92,11 +92,7 @@ func StartUpgradeProcess(path string, args []string) {
 		log.Println("Start Upgrade Process Failed:", err)
 		return
 	}
-	err1 := cmd.Wait()
-	if err1 != nil {
-		log.Println("Wait Upgrade Process Failed:", err1)
-		return
-	}
+	os.Exit(0)
 	log.Println("Start Upgrade Process:", cmd.Process.Pid, cmd.String())
 }
 
