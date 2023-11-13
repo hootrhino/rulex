@@ -32,6 +32,7 @@ func LoadBuildInLuaLib(e typex.RuleX, r *typex.Rule) {
 		r.AddLib(e, "data", "ToHttp", rulexlib.DataToHttp(e))
 		r.AddLib(e, "data", "ToMqtt", rulexlib.DataToMqtt(e))
 		r.AddLib(e, "data", "ToUdp", rulexlib.DataToUdp(e))
+		r.AddLib(e, "data", "ToTcp", rulexlib.DataToTcp(e))
 		r.AddLib(e, "data", "ToTdEngine", rulexlib.DataToTdEngine(e))
 		r.AddLib(e, "data", "ToMongo", rulexlib.DataToMongo(e))
 		r.AddLib(e, "data", "ToNats", rulexlib.DataToNats(e))
@@ -49,7 +50,6 @@ func LoadBuildInLuaLib(e typex.RuleX, r *typex.Rule) {
 		r.AddLib(e, "stdlib", "Println", rulexlib.Println(e))
 		r.AddLib(e, "stdlib", "Throw", rulexlib.Throw(e))
 		r.AddLib(e, "_G", "Debug", rulexlib.DebugRule(e, r.UUID))
-		r.AddLib(e, "_G", "Println", rulexlib.Println(e))
 		r.AddLib(e, "_G", "Throw", rulexlib.Throw(e))
 	}
 	{

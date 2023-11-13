@@ -28,9 +28,9 @@ import (
 )
 
 type _TcpCommonConfig struct {
-	DataMode   string `json:"dataMode" validate:"required"`    // RAW_STRING ; HEX_STRING
-	AllowPing  *bool  `json:"allow_ping" validate:"required"`  // 是否开启ping
-	PingPacket string `json:"ping_packet" validate:"required"` // Ping 包内容, 必填16字符以内
+	DataMode   string `json:"dataMode" validate:"required"`   // RAW_STRING ; HEX_STRING
+	AllowPing  *bool  `json:"allowPing" validate:"required"`  // 是否开启ping
+	PingPacket string `json:"pingPacket" validate:"required"` // Ping 包内容, 必填16字符以内
 }
 type _TcpMainConfig struct {
 	CommonConfig _TcpCommonConfig  `json:"commonConfig" validate:"required"`
@@ -38,10 +38,9 @@ type _TcpMainConfig struct {
 }
 type TTcpTarget struct {
 	typex.XStatus
-	client       *net.TCPConn
-	mainConfig   _TcpMainConfig
-	commonConfig _TcpCommonConfig
-	status       typex.SourceState
+	client     *net.TCPConn
+	mainConfig _TcpMainConfig
+	status     typex.SourceState
 }
 
 /*
@@ -118,6 +117,7 @@ func (ht *TTcpTarget) Start(cctx typex.CCTX) error {
 					ht.status = typex.SOURCE_DOWN
 					return
 				}
+				time.Sleep(5 * time.Second)
 			}
 		}(ht)
 	}
@@ -139,7 +139,7 @@ func (ht *TTcpTarget) To(data interface{}) (interface{}, error) {
 	if ht.client != nil {
 		switch s := data.(type) {
 		case string:
-			if ht.commonConfig.DataMode == "RAW_STRING" {
+			if ht.mainConfig.CommonConfig.DataMode == "RAW_STRING" {
 				ht.client.SetReadDeadline(
 					time.Now().Add((time.Duration(ht.mainConfig.HostConfig.Timeout) *
 						time.Millisecond)),
@@ -150,7 +150,7 @@ func (ht *TTcpTarget) To(data interface{}) (interface{}, error) {
 					return 0, err0
 				}
 			}
-			if ht.commonConfig.DataMode == "HEX_STRING" {
+			if ht.mainConfig.CommonConfig.DataMode == "HEX_STRING" {
 				dByte, err1 := hex.DecodeString(s)
 				if err1 != nil {
 					return 0, err1

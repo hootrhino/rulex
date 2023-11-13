@@ -74,11 +74,12 @@ func LoadAppLib(app *Application, e typex.RuleX) {
 	// 消息转发
 	// 数据持久化
 	{
-		addAppLib(app, e, "data", "DataToHttp", rulexlib.DataToHttp(e))
-		addAppLib(app, e, "data", "DataToMqtt", rulexlib.DataToMqtt(e))
-		addAppLib(app, e, "data", "DataToUdp", rulexlib.DataToUdp(e))
-		addAppLib(app, e, "data", "DataToTdEngine", rulexlib.DataToTdEngine(e))
-		addAppLib(app, e, "data", "DataToMongo", rulexlib.DataToMongo(e))
+		addAppLib(app, e, "data", "ToHttp", rulexlib.DataToHttp(e))
+		addAppLib(app, e, "data", "ToMqtt", rulexlib.DataToMqtt(e))
+		addAppLib(app, e, "data", "ToUdp", rulexlib.DataToUdp(e))
+		addAppLib(app, e, "data", "ToTcp", rulexlib.DataToTcp(e))
+		addAppLib(app, e, "data", "ToTdEngine", rulexlib.DataToTdEngine(e))
+		addAppLib(app, e, "data", "ToMongo", rulexlib.DataToMongo(e))
 		addAppLib(app, e, "data", "ToScreen", rulexlib.DataToUiComponent(e))
 
 	}
@@ -89,7 +90,6 @@ func LoadAppLib(app *Application, e typex.RuleX) {
 		addAppLib(app, e, "stdlib", "Println", rulexlib.Println(e))
 		addAppLib(app, e, "_G", "Debug", rulexlib.DebugAPP(e, app.UUID))
 		addAppLib(app, e, "_G", "Throw", rulexlib.Throw(e))
-		addAppLib(app, e, "_G", "Println", rulexlib.Println(e))
 	}
 
 	// 二进制操作
