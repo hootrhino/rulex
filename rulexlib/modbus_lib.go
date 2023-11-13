@@ -89,10 +89,16 @@ func F5(rx typex.RuleX) func(l *lua.LState) int {
 			l.Push(lua.LString(err.Error()))
 			return 1
 		}
+		for _, v := range HexValues {
+			if v > 1 {
+				l.Push(lua.LString("Value Only Support '00' or '01'"))
+				return 1
+			}
+		}
 		Device := rx.GetDevice(devUUID)
 		if Device != nil {
 			if Device.Type != typex.GENERIC_MODBUS {
-				l.Push(lua.LString("Only support GENERIC_PROTOCOL device"))
+				l.Push(lua.LString("Only support GENERIC_MODBUS device"))
 				return 1
 			}
 			if Device.Device.Status() == typex.DEV_UP {
@@ -106,18 +112,12 @@ func F5(rx typex.RuleX) func(l *lua.LState) int {
 				})
 				_, err := Device.Device.OnWrite([]byte("F5"), args)
 				if err != nil {
-					glogger.GLogger.Error(err)
-					l.Push(lua.LString(err.Error()))
-					return 1
-				} else {
 					l.Push(lua.LString(err.Error()))
 					return 1
 				}
-			} else {
-				l.Push(lua.LString("device down:" + devUUID))
-				return 1
 			}
-
+			l.Push(lua.LString("Device down:" + devUUID))
+			return 1
 		}
 		l.Push(lua.LNil)
 		return 1
@@ -126,7 +126,8 @@ func F5(rx typex.RuleX) func(l *lua.LState) int {
 
 /*
 *
-* Modbus Function4
+*     local error = modbus:F6("uuid1", 0, 1, "0001020304")
+
 *
  */
 func F6(rx typex.RuleX) func(l *lua.LState) int {
@@ -134,7 +135,7 @@ func F6(rx typex.RuleX) func(l *lua.LState) int {
 		devUUID := l.ToString(2)
 		slaverId := l.ToNumber(3)
 		Address := l.ToNumber(4)
-		Values := l.ToString(5)
+		Values := l.ToString(5) // 必须是单个字节: 000100010001
 		HexValues, err := hex.DecodeString(Values)
 		if err != nil {
 			l.Push(lua.LString(err.Error()))
@@ -142,11 +143,16 @@ func F6(rx typex.RuleX) func(l *lua.LState) int {
 		}
 		Device := rx.GetDevice(devUUID)
 		if Device != nil {
+			if Device.Type != typex.GENERIC_MODBUS {
+				l.Push(lua.LString("Only support GENERIC_MODBUS device"))
+				return 1
+			}
 			if Device.Device.Status() == typex.DEV_UP {
 				args, _ := json.Marshal(common.RegisterW{
 					Function: 6,
 					SlaverId: byte(slaverId),
 					Address:  uint16(Address),
+					Quantity: uint16(1), //2字节
 					Values:   HexValues,
 				})
 				_, err := Device.Device.OnWrite([]byte("F6"), args)
@@ -154,16 +160,10 @@ func F6(rx typex.RuleX) func(l *lua.LState) int {
 					glogger.GLogger.Error(err)
 					l.Push(lua.LString(err.Error()))
 					return 1
-				} else {
-					l.Push(lua.LString(err.Error()))
-					return 1
 				}
-			} else {
-				l.Push(lua.LNil)
-				l.Push(lua.LString("device down:" + devUUID))
-				return 2
 			}
-
+			l.Push(lua.LString("device down:" + devUUID))
+			return 1
 		}
 		l.Push(lua.LNil)
 		return 1
@@ -172,15 +172,18 @@ func F6(rx typex.RuleX) func(l *lua.LState) int {
 
 /*
 *
-* Modbus Function15
+  - Modbus Function15
+    local error = modbus:F15("uuid1", 0, 1, "0001020304")
+
 *
- */
+*/
 func F15(rx typex.RuleX) func(l *lua.LState) int {
 	return func(l *lua.LState) int {
 		devUUID := l.ToString(2)
 		slaverId := l.ToNumber(3)
 		Address := l.ToNumber(4)
-		Values := l.ToString(5)
+		Quantity := l.ToNumber(5) // 必须是单个字节: 000100010001
+		Values := l.ToString(6)   // 必须是单个字节: 000100010001
 		HexValues, err := hex.DecodeString(Values)
 		if err != nil {
 			l.Push(lua.LString(err.Error()))
@@ -188,11 +191,16 @@ func F15(rx typex.RuleX) func(l *lua.LState) int {
 		}
 		Device := rx.GetDevice(devUUID)
 		if Device != nil {
+			if Device.Type != typex.GENERIC_MODBUS {
+				l.Push(lua.LString("Only support GENERIC_MODBUS device"))
+				return 1
+			}
 			if Device.Device.Status() == typex.DEV_UP {
 				args, _ := json.Marshal(common.RegisterW{
 					Function: 15,
 					SlaverId: byte(slaverId),
 					Address:  uint16(Address),
+					Quantity: uint16(Quantity),
 					Values:   HexValues,
 				})
 				_, err := Device.Device.OnWrite([]byte("F15"), args)
@@ -200,16 +208,10 @@ func F15(rx typex.RuleX) func(l *lua.LState) int {
 					glogger.GLogger.Error(err)
 					l.Push(lua.LString(err.Error()))
 					return 1
-				} else {
-					l.Push(lua.LString(err.Error()))
-					return 1
 				}
-			} else {
-				l.Push(lua.LNil)
-				l.Push(lua.LString("device down:" + devUUID))
-				return 2
 			}
-
+			l.Push(lua.LString("device down:" + devUUID))
+			return 1
 		}
 		l.Push(lua.LNil)
 		return 1
@@ -219,14 +221,15 @@ func F15(rx typex.RuleX) func(l *lua.LState) int {
 /*
 *
 * Modbus Function16
-*
+*    local error = modbus:F16("uuid1", 0, 1, "0001020304")
  */
 func F16(rx typex.RuleX) func(l *lua.LState) int {
 	return func(l *lua.LState) int {
 		devUUID := l.ToString(2)
 		slaverId := l.ToNumber(3)
 		Address := l.ToNumber(4)
-		Values := l.ToString(5)
+		Quantity := l.ToNumber(5) //
+		Values := l.ToString(6)   //
 		HexValues, err := hex.DecodeString(Values)
 		if err != nil {
 			l.Push(lua.LString(err.Error()))
@@ -234,11 +237,16 @@ func F16(rx typex.RuleX) func(l *lua.LState) int {
 		}
 		Device := rx.GetDevice(devUUID)
 		if Device != nil {
+			if Device.Type != typex.GENERIC_MODBUS {
+				l.Push(lua.LString("Only support GENERIC_MODBUS device"))
+				return 1
+			}
 			if Device.Device.Status() == typex.DEV_UP {
 				args, _ := json.Marshal(common.RegisterW{
 					Function: 16,
 					SlaverId: byte(slaverId),
 					Address:  uint16(Address),
+					Quantity: uint16(Quantity),
 					Values:   HexValues,
 				})
 				_, err := Device.Device.OnWrite([]byte("F16"), args)
@@ -246,16 +254,8 @@ func F16(rx typex.RuleX) func(l *lua.LState) int {
 					glogger.GLogger.Error(err)
 					l.Push(lua.LString(err.Error()))
 					return 1
-				} else {
-					l.Push(lua.LString(err.Error()))
-					return 1
 				}
-			} else {
-				l.Push(lua.LNil)
-				l.Push(lua.LString("device down:" + devUUID))
-				return 2
 			}
-
 		}
 		l.Push(lua.LNil)
 		return 1

@@ -134,6 +134,13 @@ func LoadBuildInLuaLib(e typex.RuleX, r *typex.Rule) {
 		r.AddLib(e, "rhinopi", "DI3Get", rulexlib.H3DI3Get(e))
 
 	}
+	// Modbus
+	{
+		r.AddLib(e, "modbus", "F5", rulexlib.F5(e))
+		r.AddLib(e, "modbus", "F6", rulexlib.F6(e))
+		r.AddLib(e, "modbus", "F15", rulexlib.F15(e))
+		r.AddLib(e, "modbus", "F16", rulexlib.F16(e))
+	}
 	//------------------------------------------------------------------------
 	// AI BASE
 	//------------------------------------------------------------------------

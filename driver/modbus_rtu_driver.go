@@ -150,21 +150,37 @@ func (d *modBusRtuDriver) Read(cmd []byte, data []byte) (int, error) {
 *
  */
 func (d *modBusRtuDriver) Write(_ []byte, data []byte) (int, error) {
-	dataMap := []common.RegisterW{}
-	if err := json.Unmarshal(data, &dataMap); err != nil {
+	RegisterW := common.RegisterW{}
+	if err := json.Unmarshal(data, &RegisterW); err != nil {
 		return 0, err
 	}
+	dataMap := [1]common.RegisterW{RegisterW}
 	for _, r := range dataMap {
+		d.handler.SlaveId = r.SlaverId
 		// 5
 		if r.Function == common.WRITE_SINGLE_COIL {
-			_, err := d.client.WriteSingleCoil(r.Address, binary.BigEndian.Uint16(r.Values))
-			if err != nil {
-				return 0, err
+			if len(r.Values) > 0 {
+				if r.Values[0] == 0 {
+					_, err := d.client.WriteSingleCoil(r.Address,
+						binary.BigEndian.Uint16([]byte{0x00, 0x00}))
+					if err != nil {
+						return 0, err
+					}
+				}
+				if r.Values[0] == 1 {
+					_, err := d.client.WriteSingleCoil(r.Address,
+						binary.BigEndian.Uint16([]byte{0xFF, 0x00}))
+					if err != nil {
+						return 0, err
+					}
+				}
+
 			}
+
 		}
 		// 15
 		if r.Function == common.WRITE_MULTIPLE_COILS {
-			_, err := d.client.WriteMultipleCoils(r.Address, uint16(len(r.Values)), r.Values)
+			_, err := d.client.WriteMultipleCoils(r.Address, r.Quantity, r.Values)
 			if err != nil {
 				return 0, err
 			}
@@ -178,7 +194,9 @@ func (d *modBusRtuDriver) Write(_ []byte, data []byte) (int, error) {
 		}
 		// 16
 		if r.Function == common.WRITE_MULTIPLE_HOLDING_REGISTERS {
-			_, err := d.client.WriteMultipleRegisters(r.Address, uint16(len(r.Values)), r.Values)
+
+			_, err := d.client.WriteMultipleRegisters(r.Address,
+				uint16(len(r.Values))/2, maybePrependZero(r.Values))
 			if err != nil {
 				return 0, err
 			}
@@ -186,7 +204,12 @@ func (d *modBusRtuDriver) Write(_ []byte, data []byte) (int, error) {
 	}
 	return 0, nil
 }
-
+func maybePrependZero(slice []byte) []byte {
+	if len(slice)%2 != 0 {
+		slice = append([]byte{0}, slice...)
+	}
+	return slice
+}
 func (d *modBusRtuDriver) DriverDetail() typex.DriverDetail {
 	return typex.DriverDetail{
 		Name:        "Generic ModBus RTU Driver",

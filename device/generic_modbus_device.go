@@ -57,7 +57,7 @@ import (
 //	}
 type _GMODCommonConfig struct {
 	Mode        string `json:"mode" title:"工作模式" info:"UART/TCP"`
-	AutoRequest bool   `json:"autoRequest" title:"启动轮询"`
+	AutoRequest *bool  `json:"autoRequest" title:"启动轮询"`
 	Frequency   int64  `json:"frequency" validate:"required" title:"采集频率"`
 }
 type _GMODConfig struct {
@@ -87,9 +87,14 @@ func NewGenericModbusDevice(e typex.RuleX) typex.XDevice {
 	mdev := new(generic_modbus_device)
 	mdev.RuleEngine = e
 	mdev.mainConfig = _GMODConfig{
-		CommonConfig: _GMODCommonConfig{},
-		PortUuid:     "/dev/ttyS0",
-		HostConfig:   common.HostConfig{Host: "127.0.0.1", Port: 502, Timeout: 3000},
+		CommonConfig: _GMODCommonConfig{
+			AutoRequest: func() *bool {
+				b := false
+				return &b
+			}(),
+		},
+		PortUuid:   "/dev/ttyS0",
+		HostConfig: common.HostConfig{Host: "127.0.0.1", Port: 502, Timeout: 3000},
 	}
 	mdev.Busy = false
 	mdev.status = typex.DEV_DOWN
@@ -199,30 +204,32 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 	//---------------------------------------------------------------------------------
 	// Start
 	//---------------------------------------------------------------------------------
-
-	mdev.retryTimes = 0
-	go func(ctx context.Context, Driver typex.XExternalDriver) {
-		buffer := make([]byte, common.T_64KB)
-		for {
-			select {
-			case <-ctx.Done():
-				{
-					return
+	if *mdev.mainConfig.CommonConfig.AutoRequest {
+		mdev.retryTimes = 0
+		go func(ctx context.Context, Driver typex.XExternalDriver) {
+			buffer := make([]byte, common.T_64KB)
+			for {
+				select {
+				case <-ctx.Done():
+					{
+						return
+					}
+				default:
+					{
+					}
 				}
-			default:
-				{
+				n, err := Driver.Read([]byte{}, buffer)
+				if err != nil {
+					glogger.GLogger.Error(err)
+					mdev.retryTimes++
+				} else {
+					mdev.RuleEngine.WorkDevice(mdev.Details(), string(buffer[:n]))
 				}
 			}
-			n, err := Driver.Read([]byte{}, buffer)
-			if err != nil {
-				glogger.GLogger.Error(err)
-				mdev.retryTimes++
-			} else {
-				mdev.RuleEngine.WorkDevice(mdev.Details(), string(buffer[:n]))
-			}
-		}
 
-	}(mdev.Ctx, mdev.driver)
+		}(mdev.Ctx, mdev.driver)
+	}
+
 	mdev.status = typex.DEV_UP
 	return nil
 }

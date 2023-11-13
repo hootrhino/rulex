@@ -12,15 +12,12 @@
 --
 -- You should have received a copy of the GNU Affero General Public License
 -- along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-AppNAME = 'Modbus1'
-AppVERSION = '0.0.1'
-
 function Main(arg)
+    local UUID = 'DEVICE9KXIGK'
     while true do
-        local error1 = modbus:F5("DEVICEABK4LG", 1, 0, "00")
+        local err1 = modbus:F6(UUID, 1, 0, "AABB")
         time:Sleep(1000)
-        local error2 = modbus:F5("DEVICEABK4LG", 1, 0, "01")
+        local err2 = modbus:F6(UUID, 1, 0, "CCDD")
         time:Sleep(1000)
     end
     return 0

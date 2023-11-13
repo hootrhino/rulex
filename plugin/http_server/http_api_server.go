@@ -128,7 +128,7 @@ func initRulex(engine typex.RuleX) {
 			continue
 		}
 		if *mApp.AutoStart {
-			glogger.GLogger.Debug("App autoStart allowed:", app.UUID, app.Version, app.Name)
+			glogger.GLogger.Debug("App autoStart allowed:", app.UUID)
 			if err1 := appstack.StartApp(app.UUID); err1 != nil {
 				glogger.GLogger.Error("App autoStart failed:", err1)
 			}

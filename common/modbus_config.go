@@ -57,6 +57,7 @@ type RegisterW struct {
 	Function int    `json:"function"` // Function
 	SlaverId byte   `json:"slaverId"` // 从机ID
 	Address  uint16 `json:"address"`  // Address
+	Quantity uint16 `json:"quantity"` // Quantity
 	Values   []byte `json:"values"`   // Value
 }
 

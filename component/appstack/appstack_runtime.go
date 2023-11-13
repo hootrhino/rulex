@@ -18,6 +18,7 @@ package appstack
 import (
 	"context"
 	"fmt"
+	"time"
 
 	lua "github.com/hootrhino/gopher-lua"
 	"github.com/hootrhino/rulex/glogger"
@@ -77,7 +78,7 @@ func StartApp(uuid string) error {
 	if app.AppState == 1 {
 		return fmt.Errorf("app not already started:%s", uuid)
 	}
-	// args := lua.LBool(false) // Main的参数，未来准备扩展
+	args := lua.LBool(false) // Main的参数，未来准备扩展
 	ctx, cancel := context.WithCancel(typex.GCTX)
 	app.SetCnC(ctx, cancel)
 	go func(app *Application) {
@@ -93,18 +94,49 @@ func StartApp(uuid string) error {
 		err := app.VM().CallByParam(lua.P{
 			Fn:      app.GetMainFunc(),
 			NRet:    1,
-			Protect: true, // If ``Protect`` is false,
+			// Protect: true, // If ``Protect`` is false,
 			// GopherLua will panic instead of returning an ``error`` value.
 			Handler: &lua.LFunction{
 				GFunction: func(*lua.LState) int {
 					return 1
 				},
 			},
-		}, lua.LBool(false))
-		if err != nil {
-			glogger.GLogger.Error("normal app.VM().CallByParam error:", err)
+		}, args)
+		// 检查是自己死的还是被RULEX杀死
+		// 1 正常结束
+		// 2 被rulex删除
+		// 3 跑飞了
+		if err == nil {
+			if app.KilledBy == "RULEX" {
+				glogger.GLogger.Infof("App %s Killed By RULEX", app.UUID)
+			}
+			if app.KilledBy == "NORMAL" || app.KilledBy == "" {
+				glogger.GLogger.Infof("App %s NORMAL Exited", app.UUID)
+			}
+			return
 		}
-		app.AppState = 0
+		// 中间出现异常挂了，此时要根据: auto start 来判断是否抢救
+		if err != nil {
+			time.Sleep(5 * time.Second)
+			if app.KilledBy == "RULEX" {
+				glogger.GLogger.Infof("App %s Killed By RULEX, No need to rescue", app.UUID)
+				return
+			}
+			if app.KilledBy == "NORMAL" {
+				glogger.GLogger.Infof("App %s NORMAL Exited,  No need to rescue", app.UUID)
+				return
+			}
+			glogger.GLogger.Warnf("App %s Exited With error: %s, May be accident, Try to survive",
+				app.UUID, err.Error())
+			// TODO 到底要不要设置一个尝试重启的阈值？
+			// if tryTimes >= Max -> return
+			if app.AutoStart {
+				glogger.GLogger.Infof("App %s Try to restart", app.UUID)
+				go StartApp(uuid)
+				return
+			}
+			glogger.GLogger.Infof("App %s not need to restart", app.UUID)
+		}
 	}(app)
 	glogger.GLogger.Info("App started:", app.UUID)
 	return nil
