@@ -90,21 +90,12 @@ func (g *grpcInEndSource) Stop() {
 	}
 
 }
-func (g *grpcInEndSource) Reload() {
 
-}
-func (g *grpcInEndSource) Pause() {
-
-}
 func (g *grpcInEndSource) Status() typex.SourceState {
 	return g.status
 }
 
 func (g *grpcInEndSource) Test(inEndId string) bool {
-	return true
-}
-
-func (g *grpcInEndSource) Enabled() bool {
 	return true
 }
 
@@ -114,9 +105,6 @@ func (g *grpcInEndSource) Details() *typex.InEnd {
 
 func (*grpcInEndSource) Driver() typex.XExternalDriver {
 	return nil
-}
-func (*grpcInEndSource) Configs() *typex.XConfig {
-	return &typex.XConfig{}
 }
 
 func (r *RulexRpcServer) Work(ctx context.Context, in *rulexrpc.Data) (*rulexrpc.Response, error) {

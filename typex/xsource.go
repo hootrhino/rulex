@@ -28,25 +28,9 @@ type XSource interface {
 	//
 	Start(CCTX) error
 	//
-	// 资源是否被启用
-	//
-	Enabled() bool
-	//
 	// 数据模型, 用来描述该资源支持的数据, 对应的是云平台的物模型
 	//
 	DataModels() []XDataModel
-	//
-	// 获取前端表单定义
-	//
-	Configs() *XConfig
-	//
-	// 重载: 比如可以在重启的时候把某些数据保存起来
-	//
-	Reload()
-	//
-	// 挂起资源, 用来做暂停资源使用
-	//
-	Pause()
 	//
 	// 获取资源状态
 	//

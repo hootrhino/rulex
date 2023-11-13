@@ -86,12 +86,7 @@ func (cc *coAPInEndSource) Stop() {
 func (cc *coAPInEndSource) DataModels() []typex.XDataModel {
 	return cc.XDataModels
 }
-func (cc *coAPInEndSource) Reload() {
 
-}
-func (cc *coAPInEndSource) Pause() {
-
-}
 func (cc *coAPInEndSource) Status() typex.SourceState {
 	return cc.status
 }
@@ -99,19 +94,13 @@ func (cc *coAPInEndSource) Status() typex.SourceState {
 func (cc *coAPInEndSource) Test(inEndId string) bool {
 	return true
 }
-func (cc *coAPInEndSource) Enabled() bool {
-	return true
-}
+
 func (cc *coAPInEndSource) Details() *typex.InEnd {
 	return cc.RuleEngine.GetInEnd(cc.PointId)
 }
 
 func (cc *coAPInEndSource) Driver() typex.XExternalDriver {
 	return nil
-}
-
-func (*coAPInEndSource) Configs() *typex.XConfig {
-	return &typex.XConfig{}
 }
 
 // 拓扑

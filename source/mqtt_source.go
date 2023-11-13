@@ -103,12 +103,7 @@ func (mm *mqttInEndSource) Stop() {
 		mm.client = nil
 	}
 }
-func (mm *mqttInEndSource) Reload() {
 
-}
-func (mm *mqttInEndSource) Pause() {
-
-}
 func (mm *mqttInEndSource) Status() typex.SourceState {
 	return mm.status
 }
@@ -120,17 +115,11 @@ func (mm *mqttInEndSource) Test(inEndId string) bool {
 	return false
 }
 
-func (mm *mqttInEndSource) Enabled() bool {
-	return mm.Enable
-}
 func (mm *mqttInEndSource) Details() *typex.InEnd {
 	return mm.RuleEngine.GetInEnd(mm.PointId)
 }
 func (*mqttInEndSource) Driver() typex.XExternalDriver {
 	return nil
-}
-func (*mqttInEndSource) Configs() *typex.XConfig {
-	return &typex.XConfig{}
 }
 
 // 拓扑

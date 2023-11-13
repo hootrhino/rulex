@@ -72,18 +72,6 @@ func (m *mongoTarget) Start(cctx typex.CCTX) error {
 
 }
 
-func (m *mongoTarget) Enabled() bool {
-	return m.Enable
-}
-
-func (m *mongoTarget) Reload() {
-	glogger.GLogger.Info("Mongo target Reload success")
-}
-
-func (m *mongoTarget) Pause() {
-	glogger.GLogger.Info("Mongo target Pause success")
-}
-
 func (m *mongoTarget) Status() typex.SourceState {
 	if m.client != nil {
 		ctx, cancel := context.WithTimeout(m.Ctx, time.Second*2)
@@ -126,13 +114,4 @@ func (m *mongoTarget) To(data interface{}) (interface{}, error) {
 }
 func (m *mongoTarget) Details() *typex.OutEnd {
 	return m.RuleEngine.GetOutEnd(m.PointId)
-}
-
-/*
-*
-* 配置
-*
- */
-func (*mongoTarget) Configs() *typex.XConfig {
-	return &typex.XConfig{}
 }

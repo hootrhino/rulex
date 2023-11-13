@@ -64,15 +64,6 @@ func (udpt *UdpTarget) Start(cctx typex.CCTX) error {
 	return nil
 }
 
-func (udpt *UdpTarget) Enabled() bool {
-	return udpt.Enable
-}
-func (udpt *UdpTarget) Reload() {
-
-}
-func (udpt *UdpTarget) Pause() {
-
-}
 func (udpt *UdpTarget) Status() typex.SourceState {
 	return udpt.status
 
@@ -103,13 +94,4 @@ func (udpt *UdpTarget) Stop() {
 }
 func (udpt *UdpTarget) Details() *typex.OutEnd {
 	return udpt.RuleEngine.GetOutEnd(udpt.PointId)
-}
-
-/*
-*
-* 配置
-*
- */
-func (*UdpTarget) Configs() *typex.XConfig {
-	return &typex.XConfig{}
 }

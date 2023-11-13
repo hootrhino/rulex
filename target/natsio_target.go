@@ -63,17 +63,6 @@ func (nt *natsTarget) Start(cctx typex.CCTX) error {
 	}
 }
 
-func (nt *natsTarget) Enabled() bool {
-	return true
-}
-
-func (nt *natsTarget) Reload() {
-
-}
-
-func (nt *natsTarget) Pause() {
-}
-
 func (nt *natsTarget) Status() typex.SourceState {
 	if nt.natsConnector != nil {
 		if nt.natsConnector.IsConnected() {
@@ -113,13 +102,4 @@ func (nt *natsTarget) Stop() {
 		}
 	}
 
-}
-
-/*
-*
-* 配置
-*
- */
-func (*natsTarget) Configs() *typex.XConfig {
-	return &typex.XConfig{}
 }

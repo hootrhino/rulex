@@ -71,20 +71,6 @@ func (ct *codecTarget) Start(cctx typex.CCTX) error {
 
 }
 
-// 资源是否被启用
-func (ct *codecTarget) Enabled() bool {
-	return true
-}
-
-// 重载: 比如可以在重启的时候把某些数据保存起来
-func (ct *codecTarget) Reload() {
-
-}
-
-// 挂起资源, 用来做暂停资源使用
-func (ct *codecTarget) Pause() {
-
-}
 
 // 获取资源状态
 func (ct *codecTarget) Status() typex.SourceState {
@@ -96,11 +82,6 @@ func (ct *codecTarget) Status() typex.SourceState {
 func (ct *codecTarget) Details() *typex.OutEnd {
 	out := ct.RuleEngine.GetOutEnd(ct.PointId)
 	return out
-
-}
-
-func (ct *codecTarget) Configs() *typex.XConfig {
-	return &typex.XConfig{}
 
 }
 

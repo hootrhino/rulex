@@ -208,14 +208,7 @@ func DeleteInEnd(c *gin.Context, ruleEngine typex.RuleX) {
 *
  */
 func GetInEndConfig(c *gin.Context, ruleEngine typex.RuleX) {
-	uuid, _ := c.GetQuery("uuid")
-	inend := ruleEngine.GetInEnd(uuid)
-	if inend != nil {
-		c.JSON(common.HTTP_OK, common.OkWithData(inend.Source.Configs()))
-	} else {
-		c.JSON(common.HTTP_OK, common.OkWithEmpty())
-	}
-
+	c.JSON(common.HTTP_OK, common.OkWithEmpty())
 }
 
 /*

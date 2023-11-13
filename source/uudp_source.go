@@ -87,18 +87,9 @@ func (u *udpSource) Init(inEndId string, configMap map[string]interface{}) error
 	}
 	return nil
 }
-func (u *udpSource) Enabled() bool {
-	return true
-}
 
 func (u *udpSource) DataModels() []typex.XDataModel {
 	return u.XDataModels
-}
-
-func (u *udpSource) Reload() {
-}
-
-func (u *udpSource) Pause() {
 }
 
 func (u *udpSource) Status() typex.SourceState {
@@ -120,9 +111,6 @@ func (u *udpSource) Stop() {
 }
 func (*udpSource) Driver() typex.XExternalDriver {
 	return nil
-}
-func (*udpSource) Configs() *typex.XConfig {
-	return &typex.XConfig{}
 }
 
 // 拓扑

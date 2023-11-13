@@ -58,15 +58,6 @@ func (ht *HTTPTarget) Start(cctx typex.CCTX) error {
 	return nil
 }
 
-func (ht *HTTPTarget) Enabled() bool {
-	return ht.Enable
-}
-func (ht *HTTPTarget) Reload() {
-
-}
-func (ht *HTTPTarget) Pause() {
-
-}
 func (ht *HTTPTarget) Status() typex.SourceState {
 	return ht.status
 
@@ -84,11 +75,3 @@ func (ht *HTTPTarget) Details() *typex.OutEnd {
 	return ht.RuleEngine.GetOutEnd(ht.PointId)
 }
 
-/*
-*
-* 配置
-*
- */
-func (*HTTPTarget) Configs() *typex.XConfig {
-	return &typex.XConfig{}
-}

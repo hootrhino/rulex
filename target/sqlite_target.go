@@ -72,15 +72,6 @@ func (sqt *SqliteTarget) Start(cctx typex.CCTX) error {
 	return nil
 }
 
-func (sqt *SqliteTarget) Enabled() bool {
-	return true
-}
-func (sqt *SqliteTarget) Reload() {
-
-}
-func (sqt *SqliteTarget) Pause() {
-
-}
 func (sqt *SqliteTarget) Status() typex.SourceState {
 	return typex.SOURCE_UP
 
@@ -117,13 +108,4 @@ func (sqt *SqliteTarget) Stop() {
 }
 func (sqt *SqliteTarget) Details() *typex.OutEnd {
 	return sqt.RuleEngine.GetOutEnd(sqt.PointId)
-}
-
-/*
-*
-* 配置
-*
- */
-func (*SqliteTarget) Configs() *typex.XConfig {
-	return &typex.XConfig{}
 }

@@ -89,15 +89,7 @@ func (g776 *userG776) Start(cctx typex.CCTX) error {
 	glogger.GLogger.Info("userG776 started")
 	return nil
 }
-func (g776 *userG776) Enabled() bool {
-	return g776.Enable
-}
-func (g776 *userG776) Reload() {
 
-}
-func (g776 *userG776) Pause() {
-
-}
 func (g776 *userG776) Status() typex.SourceState {
 	if g776.serialPort != nil {
 		// https://www.usr.cn/Download/806.html
@@ -142,13 +134,4 @@ func (g776 *userG776) Stop() {
 }
 func (g776 *userG776) Details() *typex.OutEnd {
 	return g776.RuleEngine.GetOutEnd(g776.PointId)
-}
-
-/*
-*
-* 配置
-*
- */
-func (*userG776) Configs() *typex.XConfig {
-	return &typex.XConfig{}
 }

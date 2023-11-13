@@ -258,12 +258,7 @@ func (tc *iothub) Start(cctx typex.CCTX) error {
 func (tc *iothub) DataModels() []typex.XDataModel {
 	return tc.XDataModels
 }
-func (tc *iothub) Reload() {
 
-}
-func (tc *iothub) Pause() {
-
-}
 func (tc *iothub) Stop() {
 	tc.status = typex.SOURCE_DOWN
 	if tc.CancelCTX != nil {
@@ -293,17 +288,12 @@ func (tc *iothub) Test(inEndId string) bool {
 	return false
 }
 
-func (tc *iothub) Enabled() bool {
-	return tc.Enable
-}
+
 func (tc *iothub) Details() *typex.InEnd {
 	return tc.RuleEngine.GetInEnd(tc.PointId)
 }
 func (*iothub) Driver() typex.XExternalDriver {
 	return nil
-}
-func (*iothub) Configs() *typex.XConfig {
-	return &typex.XConfig{}
 }
 
 // 拓扑

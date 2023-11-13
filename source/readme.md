@@ -8,11 +8,7 @@ type XSource interface {
 	Test(inEndId string) bool
 	Init(inEndId string, cfg map[string]interface{}) error
 	Start(CCTX) error
-	Enabled() bool
 	DataModels() []XDataModel
-	Configs() *XConfig
-	Reload()
-	Pause()
 	Status() SourceState
 	Details() *InEnd
 	Driver() XExternalDriver

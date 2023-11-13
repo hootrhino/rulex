@@ -108,23 +108,9 @@ func (td *tdEngineTarget) Start(cctx typex.CCTX) error {
 
 }
 
-// 资源是否被启用
-func (td *tdEngineTarget) Enabled() bool {
-	return true
-}
-
 // 数据模型, 用来描述该资源支持的数据, 对应的是云平台的物模型
 func (td *tdEngineTarget) DataModels() []typex.XDataModel {
 	return td.XDataModels
-}
-
-// 重载: 比如可以在重启的时候把某些数据保存起来
-func (td *tdEngineTarget) Reload() {
-
-}
-
-// 挂起资源, 用来做暂停资源使用
-func (td *tdEngineTarget) Pause() {
 }
 
 // 获取资源状态
@@ -226,13 +212,4 @@ func (td *tdEngineTarget) To(data interface{}) (interface{}, error) {
 		}
 	}
 	return nil, nil
-}
-
-/*
-*
-* 配置
-*
- */
-func (*tdEngineTarget) Configs() *typex.XConfig {
-	return &typex.XConfig{}
 }

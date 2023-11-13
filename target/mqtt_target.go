@@ -100,12 +100,7 @@ func (mq *mqttOutEndTarget) Stop() {
 		mq.client.Disconnect(0)
 	}
 }
-func (mq *mqttOutEndTarget) Reload() {
 
-}
-func (mq *mqttOutEndTarget) Pause() {
-
-}
 func (mq *mqttOutEndTarget) Status() typex.SourceState {
 	if mq.client != nil {
 		if mq.client.IsConnected() {
@@ -115,9 +110,6 @@ func (mq *mqttOutEndTarget) Status() typex.SourceState {
 	return typex.SOURCE_DOWN
 }
 
-func (mq *mqttOutEndTarget) Enabled() bool {
-	return mq.Enable
-}
 func (mq *mqttOutEndTarget) Details() *typex.OutEnd {
 	return mq.RuleEngine.GetOutEnd(mq.PointId)
 }
@@ -131,11 +123,3 @@ func (mq *mqttOutEndTarget) To(data interface{}) (interface{}, error) {
 	return nil, errors.New("mqtt client is nil")
 }
 
-/*
-*
-* 配置
-*
- */
-func (*mqttOutEndTarget) Configs() *typex.XConfig {
-	return &typex.XConfig{}
-}

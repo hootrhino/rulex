@@ -76,16 +76,6 @@ func (nt *natsSource) Init(inEndId string, configMap map[string]interface{}) err
 	}
 	return nil
 }
-func (nt *natsSource) Enabled() bool {
-	return true
-}
-
-func (nt *natsSource) Reload() {
-
-}
-
-func (nt *natsSource) Pause() {
-}
 
 func (nt *natsSource) Status() typex.SourceState {
 	return nt.status
@@ -117,9 +107,6 @@ func (nt *natsSource) Stop() {
 		}
 	}
 
-}
-func (nt *natsSource) Configs() *typex.XConfig {
-	return &typex.XConfig{}
 }
 
 func (nt *natsSource) DataModels() []typex.XDataModel {
