@@ -645,5 +645,11 @@ func (e *RuleEngine) InitTargetTypeManager() error {
 			NewTarget: target.NewUserG776,
 		},
 	)
+	e.TargetTypeManager.Register(typex.TCP_TRANSPORT,
+		&typex.XConfig{
+			Engine:    e,
+			NewTarget: target.NewTTcpTarget,
+		},
+	)
 	return nil
 }

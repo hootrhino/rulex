@@ -142,7 +142,7 @@ func dataPipLoop(c *gin.Context) {
 		return
 	}
 	// 最多允许连接10个客户端，实际情况下根本用不了那么多
-	if len(__DefaultWebDataPipe.Clients) >= 10 {
+	if len(__DefaultWebDataPipe.Clients) > 5 {
 		wsConn.WriteMessage(websocket.TextMessage, []byte("Reached max client connections"))
 		wsConn.Close()
 		return

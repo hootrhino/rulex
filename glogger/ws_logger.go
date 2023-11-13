@@ -122,7 +122,7 @@ func WsLogger(c *gin.Context) {
 		return
 	}
 	// 最多允许连接10个客户端，实际情况下根本用不了那么多
-	if len(private_GRealtimeLogger.Clients) >= 1 {
+	if len(private_GRealtimeLogger.Clients) > 5 {
 		wsConn.WriteMessage(websocket.CloseMessage, []byte{})
 		wsConn.Close()
 		return

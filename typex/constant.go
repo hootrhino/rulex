@@ -78,7 +78,6 @@ const (
 	RULEX_UDP InEndType = "RULEX_UDP"
 	// 通用IotHUB
 	GENERIC_IOT_HUB InEndType = "GENERIC_IOT_HUB"
-
 )
 
 // TargetType
@@ -115,6 +114,8 @@ const (
 	SQLITE_TARGET TargetType = "SQLITE_TARGET"
 	// USER_G776 DTU
 	USER_G776_TARGET TargetType = "USER_G776_TARGET"
+	// TCP 透传
+	TCP_TRANSPORT TargetType = "TCP_TRANSPORT"
 )
 
 /*
