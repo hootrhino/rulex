@@ -2,7 +2,6 @@ package typex
 
 import (
 	"context"
-	"os"
 	"sync"
 )
 
@@ -129,8 +128,6 @@ type RuleX interface {
 	// 停止规则引擎
 	//
 	Stop()
-	// 优雅关闭
-	Wait(...os.Signal)
 	//
 	// Snapshot Dump
 	//
