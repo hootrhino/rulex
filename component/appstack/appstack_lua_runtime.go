@@ -145,7 +145,10 @@ func LoadAppLib(app *Application, e typex.RuleX) {
 		addAppLib(app, e, "json", "T2J", rulexlib.JSONE(e)) // Lua Table -> JSON
 		addAppLib(app, e, "json", "J2T", rulexlib.JSOND(e)) // JSON -> Lua Table
 	}
-
+	{
+		// LocalDBQuery -> data ,error
+		addAppLib(app, e, "datacenter", "DBQuery", rulexlib.LocalDBQuery(e))
+	}
 	{
 		// Device R/W
 		addAppLib(app, e, "device", "ReadDevice", rulexlib.ReadDevice(e))

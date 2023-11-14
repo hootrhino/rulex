@@ -14,3 +14,37 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package rulexlib
+
+import (
+	"encoding/json"
+
+	lua "github.com/hootrhino/gopher-lua"
+	"github.com/hootrhino/rulex/component/datacenter"
+	"github.com/hootrhino/rulex/typex"
+)
+
+/*
+*
+* 数据中心本地执行
+*
+ */
+func LocalDBQuery(rx typex.RuleX) func(*lua.LState) int {
+	return func(l *lua.LState) int {
+		sql := l.ToString(2)
+		Map, err := datacenter.Query("INTERNAL_DATACENTER", sql)
+		if err != nil {
+			l.Push(lua.LNil)
+			l.Push(lua.LString(err.Error()))
+			return 2
+		}
+		bytes, err1 := json.Marshal(Map)
+		if err1 != nil {
+			l.Push(lua.LNil)
+			l.Push(lua.LString(err1.Error()))
+			return 2
+		}
+		l.Push(lua.LString(string(bytes)))
+		l.Push(lua.LNil)
+		return 2
+	}
+}
