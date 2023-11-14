@@ -473,6 +473,7 @@ func (hs *ApiServerPlugin) LoadRoute() {
 		HwIFaceApi.GET("/detail", server.AddRoute(apis.GetHwPortDetail))
 		HwIFaceApi.GET("/list", server.AddRoute(apis.AllHwPorts))
 		HwIFaceApi.POST("/update", server.AddRoute(apis.UpdateHwPortConfig))
+		HwIFaceApi.GET("/refresh", server.AddRoute(apis.RefreshPortList))
 	}
 	//
 	// 系统设置

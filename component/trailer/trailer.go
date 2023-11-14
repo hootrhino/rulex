@@ -272,6 +272,9 @@ func runLocalProcess(goodsProcess *GoodsProcess) error {
 			if loadRpc(goodsProcess) {
 				glogger.GLogger.Debug("Grpc Started:", goodsProcess.Info.NetAddr)
 				return
+			} else {
+				glogger.GLogger.Debug("Grpc Started Failed:", goodsProcess.Info.NetAddr)
+				goodsProcess.psRunning = false
 			}
 		}
 	}()

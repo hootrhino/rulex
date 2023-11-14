@@ -182,6 +182,11 @@ func PathExists(path string) (bool, error) {
 	}
 }
 
+/*
+*
+* 新建一个扩展
+*
+ */
 func CreateGoods(c *gin.Context, ruleEngine typex.RuleX) {
 	fileHeader, err := c.FormFile("file")
 	if err != nil {
@@ -220,11 +225,11 @@ func CreateGoods(c *gin.Context, ruleEngine typex.RuleX) {
 	ExeType := getExecuteType(localSavePath)
 	if ExeType == "" {
 		c.JSON(common.HTTP_OK,
-			common.Error("Invalid file:"+localSavePath)) 
+			common.Error("Invalid file:"+localSavePath))
 		os.Remove(localSavePath)
 		return
 	}
-	if ExeType=="ELF" {
+	if ExeType == "ELF" {
 		if Os == "linux" {
 			localSavePath += ".elfx" // 标记是Linux可执行
 		}
@@ -339,7 +344,7 @@ func UpdateGoods(c *gin.Context, ruleEngine typex.RuleX) {
 		os.Remove(localSavePath)
 		return
 	}
-	if ExeType=="ELF" {
+	if ExeType == "ELF" {
 		if Os == "linux" {
 			localSavePath += ".elfx" // 标记是Linux可执行
 		}

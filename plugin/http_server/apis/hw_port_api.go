@@ -62,6 +62,19 @@ func (u UartConfigVo) JsonString() string {
 
 /*
 *
+* 针对刚插入硬件的情况，需要及时刷新
+*
+ */
+func RefreshPortList(c *gin.Context, ruleEngine typex.RuleX) {
+	if err := service.InitHwPortConfig(); err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
+	c.JSON(common.HTTP_OK, common.Ok())
+}
+
+/*
+*
 * 硬件接口
 *
  */
