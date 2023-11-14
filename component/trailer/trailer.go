@@ -119,6 +119,7 @@ func InitTrailerRuntime(re typex.RuleX) *TrailerRuntime {
 *
  */
 func StartProcess(goods GoodsInfo) error {
+	Remove(goods.UUID)
 	return fork(goods)
 }
 
@@ -128,6 +129,7 @@ func StartProcess(goods GoodsInfo) error {
 *
  */
 func StopProcess(goods GoodsInfo) error {
+	// Defer 删了以后这里不一定能拿到UUID
 	v, ok := __DefaultTrailerRuntime.goodsProcessMap.Load(goods.UUID)
 	if ok {
 		gp := (v.(*GoodsProcess))
@@ -225,21 +227,25 @@ func fork(info GoodsInfo) error {
 
 /*
 *
+* 抢救进程
+*
+ */
+func rescueRunLocalProcess(goodsProcess *GoodsProcess) error {
+	return runLocalProcess(goodsProcess)
+}
+
+/*
+*
 * Cmd.Wait() 会阻塞, 但是当控制的子进程停止的时候会继续执行, 因此可以在defer里面释放资源
 *  先保证本地Process进程启动，然后再回调RPC
  */
 func runLocalProcess(goodsProcess *GoodsProcess) error {
-	defer func() {
-		// Remove 已经包含了Stop, cancel
-		Remove(goodsProcess.Info.UUID)
-	}()
 	// 到这里就挂了的,说明参数错了,不值得救活
 	// 最好是直接删了或者更新配置
 	if err := goodsProcess.cmd.Start(); err != nil {
 		glogger.GLogger.Error("exec command error:", err)
 		return err
 	}
-
 	var client TrailerClient
 	// 迁移到prob,改造成监督进程
 	// Load OS process
@@ -294,8 +300,7 @@ func runLocalProcess(goodsProcess *GoodsProcess) error {
 				glogger.GLogger.Error("Trailer Runtime exited:", State)
 				return nil
 			}
-			if goodsProcess.killedBy != "RULEX" {
-
+			if goodsProcess.Info.KilledBy != "RULEX" {
 				glogger.GLogger.Warn("Goods process Exit, May be a accident, try to rescue it:",
 					goodsProcess.String())
 				// 说明是用户操作停止
@@ -303,14 +308,13 @@ func runLocalProcess(goodsProcess *GoodsProcess) error {
 				goodsProcess.Stop()
 				PPId := os.Getppid()
 				if PPId == __DefaultTrailerRuntime.pid {
-					go StartProcess(goodsProcess.Info)
+					go rescueRunLocalProcess(goodsProcess)
 				}
 			} else {
 				glogger.GLogger.Debug("Goods process killed by Rulex, No need to rescue it:",
 					goodsProcess.String())
 			}
 		}
-
 	}
 	if client != nil {
 		client.Stop(goodsProcess.ctx, &Request{})

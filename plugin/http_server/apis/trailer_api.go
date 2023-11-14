@@ -135,9 +135,7 @@ func DeleteGoods(c *gin.Context, ruleEngine typex.RuleX) {
 	}
 
 	if goods := trailer.Get(uuid); goods != nil {
-		if goods.PsRunning() {
-			trailer.RemoveBy(goods.Info.UUID, "RULEX")
-		}
+		trailer.RemoveBy(goods.Info.UUID, "RULEX")
 	}
 	// 数据库和内存都要删除
 	if err := service.DeleteGoods(mGoods.UUID); err != nil {

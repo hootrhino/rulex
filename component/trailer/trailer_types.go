@@ -25,7 +25,8 @@ type GoodsInfo struct {
 	NetAddr     string `json:"net_addr"`     // RPC addr
 	Description string `json:"description"`  // Description text
 	// Additional Args
-	Args string `json:"args"` // 使用空格分割 , such: la -al
+	Args     string `json:"args"` // 使用空格分割 , such: la -al
+	KilledBy string // 进程被谁干死的, 一般用来处理要不要抢救进程
 }
 
 func (g GoodsProcess) String() string {
@@ -52,7 +53,6 @@ type GoodsProcess struct {
 	ctx           context.Context    // Context
 	cmd           *exec.Cmd          // Cmd
 	cancel        context.CancelFunc // Cancel Func
-	killedBy      string             // 进程被谁干死的, 一般用来处理要不要抢救进程
 	mailBox       chan int           // 这里用来接收外部控制信号
 }
 
@@ -82,7 +82,7 @@ func (goodsProcess *GoodsProcess) ConnectToRpc() (TrailerClient, error) {
 }
 
 func (goodsPs *GoodsProcess) StopBy(r string) {
-	goodsPs.killedBy = r
+	goodsPs.Info.KilledBy = r
 	if goodsPs.cmd != nil {
 		if goodsPs.cmd.Process != nil {
 			goodsPs.cmd.Process.Kill()
