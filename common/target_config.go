@@ -24,7 +24,6 @@ type TDEngineConfig struct {
 	DbName         string `json:"dbName" validate:"required" title:"数据库名"`          // 数据库名
 	CreateDbSql    string `json:"createDbSql" validate:"required" title:"建库SQL"`    // 建库SQL
 	CreateTableSql string `json:"createTableSql" validate:"required" title:"建表SQL"` // 建表SQL
-	InsertSql      string `json:"insertSql" validate:"required" title:"写入SQL"`      // 插入SQL
 }
 
 /*

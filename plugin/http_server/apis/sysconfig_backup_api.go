@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/hootrhino/rulex/component/interdb"
+	"github.com/hootrhino/rulex/ossupport"
 	common "github.com/hootrhino/rulex/plugin/http_server/common"
 	"github.com/hootrhino/rulex/typex"
 )
@@ -19,7 +19,7 @@ import (
 * 备份Sqlite文件
 *
  */
-func BackupSqlite(c *gin.Context, ruleEngine typex.RuleX) {
+func DownloadSqlite(c *gin.Context, ruleEngine typex.RuleX) {
 	wd, err := os.Getwd()
 	if err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
@@ -58,10 +58,9 @@ func UploadSqlite(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	c.JSON(common.HTTP_OK, common.OkWithData(map[string]string{
-		"url": "recovery",
-	}))
-	interdb.DB().Migrator()
+	c.JSON(common.HTTP_OK, common.Ok())
+	ossupport.StartRecoverProcess()
+
 }
 
 // https://www.sqlite.org/fileformat.html

@@ -17,6 +17,7 @@ package ossupport
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"os/exec"
@@ -68,6 +69,38 @@ func Restart() error {
 
 /*
 *
+* 恢复上传的DB
+1 停止RULEX
+2 删除DB
+3 复制DB过去
+4 重启
+- path: /usr/local/rulex, args: recover=true
+*
+*/
+func StartRecoverProcess() {
+	log.Printf("Start Recover Process Pid=%d, Gid=%d", os.Getpid(), os.Getegid())
+	cmd := exec.Command("bash", "-c", "/usr/local/rulex -recover=true")
+	cmd.SysProcAttr = NewSysProcAttr()
+	cmd.Env = os.Environ()
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	if cmd.Process != nil {
+		cmd.Process.Release() // 用来分离进程用,简直天坑参数！！！
+	}
+	err := cmd.Start()
+	if cmd.Process != nil {
+		cmd.Process.Release() // 用来分离进程用,简直天坑参数！！！
+	}
+	if err != nil {
+		log.Println("Start Recover Process Failed:", err)
+		return
+	}
+	os.Exit(0)
+}
+
+/*
+*
 * 启用升级进程
 *
  */
@@ -76,15 +109,13 @@ func StartUpgradeProcess(path string, args []string) {
 	cmd := exec.Command("bash", "-c", path+" "+strings.Join(args, " "))
 	cmd.SysProcAttr = NewSysProcAttr()
 	cmd.Env = os.Environ()
-	cmd.Stdin = nil
-	cmd.Stdout = nil
-	cmd.Stderr = nil
-	cmd.ExtraFiles = nil
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
 	if cmd.Process != nil {
 		cmd.Process.Release() // 用来分离进程用,简直天坑参数！！！
 	}
 	err := cmd.Start()
-	// log.Println("Start Upgrade Process:", cmd.String())
 	if cmd.Process != nil {
 		cmd.Process.Release() // 用来分离进程用,简直天坑参数！！！
 	}
@@ -93,7 +124,6 @@ func StartUpgradeProcess(path string, args []string) {
 		return
 	}
 	os.Exit(0)
-	log.Println("Start Upgrade Process:", cmd.Process.Pid, cmd.String())
 }
 
 /*
@@ -121,6 +151,35 @@ func UnzipFirmware(zipFile, destDir string) error {
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("failed to unzip file: %s, %s", err.Error(), string(out))
+	}
+	return nil
+}
+
+/*
+*
+* 移动文件
+*
+ */
+func MoveFile(sourcePath, destPath string) error {
+	inputFile, err := os.Open(sourcePath)
+	if err != nil {
+		return fmt.Errorf("couldn't open source file: %s", err)
+	}
+	outputFile, err := os.Create(destPath)
+	if err != nil {
+		inputFile.Close()
+		return fmt.Errorf("couldn't open dest file: %s", err)
+	}
+	defer outputFile.Close()
+	_, err = io.Copy(outputFile, inputFile)
+	inputFile.Close()
+	if err != nil {
+		return fmt.Errorf("Writing to output file failed: %s", err)
+	}
+	// The copy was successful, so now delete the original file
+	err = os.Remove(sourcePath)
+	if err != nil {
+		return fmt.Errorf("Failed removing original file: %s", err)
 	}
 	return nil
 }

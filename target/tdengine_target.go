@@ -202,13 +202,8 @@ func (td *tdEngineTarget) To(data interface{}) (interface{}, error) {
 	switch s := data.(type) {
 	case string:
 		{
-			ss := strings.Split(s, ",")
-			insertSql := td.mainConfig.InsertSql
-			for _, v := range ss {
-				insertSql = strings.Replace(insertSql, "%v", strings.TrimSpace(v), 1)
-			}
 			return execQuery(td.client, td.mainConfig.Username,
-				td.mainConfig.Password, insertSql, td.url()), nil
+				td.mainConfig.Password, s, td.url()), nil
 		}
 	}
 	return nil, nil

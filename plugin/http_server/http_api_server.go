@@ -330,7 +330,7 @@ func (hs *ApiServerPlugin) LoadRoute() {
 	}
 	backupApi := server.RouteGroup(server.ContextUrl("/backup"))
 	{
-		backupApi.GET(("/download"), server.AddRoute(apis.BackupSqlite))
+		backupApi.GET(("/download"), server.AddRoute(apis.DownloadSqlite))
 		backupApi.POST(("/upload"), server.AddRoute(apis.UploadSqlite))
 	}
 	//
