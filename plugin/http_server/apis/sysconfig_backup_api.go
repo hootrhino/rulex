@@ -1,6 +1,7 @@
 package apis
 
 import (
+	"encoding/binary"
 	"fmt"
 	"net/http"
 	"os"
@@ -44,7 +45,7 @@ func UploadSqlite(c *gin.Context, ruleEngine typex.RuleX) {
 		return
 	}
 	fileName := "recovery.db"
-	dir := "./upload/backup/"
+	dir := "./upload/Backup/"
 	if err := os.MkdirAll(filepath.Dir(dir), os.ModePerm); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
@@ -53,8 +54,27 @@ func UploadSqlite(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
+	if _, err := ReadSQLiteFileMagicNumber(dir + fileName); err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
 	c.JSON(common.HTTP_OK, common.OkWithData(map[string]string{
-		"url": fileName,
+		"url": "recovery",
 	}))
 	interdb.DB().Migrator()
+}
+
+// https://www.sqlite.org/fileformat.html
+func ReadSQLiteFileMagicNumber(filePath string) ([16]byte, error) {
+	MagicNumber := [16]byte{}
+	file, err := os.Open(filePath)
+	if err != nil {
+		return MagicNumber, err
+	}
+	defer file.Close()
+	binary.Read(file, binary.BigEndian, &MagicNumber)
+	if string(MagicNumber[:]) == "SQLite format 3\x00" {
+		return MagicNumber, nil
+	}
+	return MagicNumber, fmt.Errorf("invalid Sqlite Db ,MagicNumber:%v error", MagicNumber)
 }
