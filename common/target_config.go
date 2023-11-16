@@ -17,13 +17,11 @@ type MongoConfig struct {
 // db_name: 可选参数，指定本次所执行的 SQL 语句的默认数据库库名
 // curl -u root:taosdata -d 'show databases;' 106.15.225.172:6041/rest/sql
 type TDEngineConfig struct {
-	Fqdn           string `json:"fqdn" validate:"required" title:"地址"`              // 服务地址
-	Port           int    `json:"port" validate:"required" title:"端口"`              // 服务端口
-	Username       string `json:"username" validate:"required" title:"用户"`          // 用户
-	Password       string `json:"password" validate:"required" title:"密码"`          // 密码
-	DbName         string `json:"dbName" validate:"required" title:"数据库名"`          // 数据库名
-	CreateDbSql    string `json:"createDbSql" validate:"required" title:"建库SQL"`    // 建库SQL
-	CreateTableSql string `json:"createTableSql" validate:"required" title:"建表SQL"` // 建表SQL
+	Fqdn     string `json:"fqdn" validate:"required" title:"地址"`     // 服务地址
+	Port     int    `json:"port" validate:"required" title:"端口"`     // 服务端口
+	Username string `json:"username" validate:"required" title:"用户"` // 用户
+	Password string `json:"password" validate:"required" title:"密码"` // 密码
+	DbName   string `json:"dbName" validate:"required" title:"数据库名"` // 数据库名
 }
 
 /*

@@ -93,19 +93,8 @@ func (td *tdEngineTarget) Start(cctx typex.CCTX) error {
 	td.Ctx = cctx.Ctx
 	td.CancelCTX = cctx.CancelCTX
 	//
-
-	if err := execQuery(td.client, td.mainConfig.Username,
-		td.mainConfig.Password, td.mainConfig.CreateDbSql, td.url()); err != nil {
-		return err
-	}
-	if err := execQuery(td.client, td.mainConfig.Username,
-		td.mainConfig.Password, td.mainConfig.CreateTableSql, td.url()); err != nil {
-		return err
-	} else {
-		td.status = typex.SOURCE_UP
-		return nil
-	}
-
+	td.status = typex.SOURCE_UP
+	return nil
 }
 
 // 数据模型, 用来描述该资源支持的数据, 对应的是云平台的物模型
