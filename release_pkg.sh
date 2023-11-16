@@ -19,7 +19,7 @@ create_pkg() {
         chmod +x ./${APP}
         calculate_and_save_md5 ./${APP}
     else
-        files_to_include="$files_to_include_exe"
+        files_to_include="$files_to_include_exe ./script/*.bat"
         mv ./${APP}-$target.exe ./${APP}.exe
         calculate_and_save_md5 ./${APP}.exe
     fi
