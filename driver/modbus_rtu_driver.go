@@ -78,6 +78,7 @@ func (d *modBusRtuDriver) Read(cmd []byte, data []byte) (int, error) {
 				SlaverId: r.SlaverId,
 				Address:  r.Address,
 				Quantity: r.Quantity,
+				Alias:    r.Alias,
 				Value:    covertEmptyHex(results),
 			}
 			dataMap[r.Tag] = value
@@ -94,6 +95,7 @@ func (d *modBusRtuDriver) Read(cmd []byte, data []byte) (int, error) {
 				SlaverId: r.SlaverId,
 				Address:  r.Address,
 				Quantity: r.Quantity,
+				Alias:    r.Alias,
 				Value:    covertEmptyHex(results),
 			}
 			dataMap[r.Tag] = value
@@ -111,6 +113,7 @@ func (d *modBusRtuDriver) Read(cmd []byte, data []byte) (int, error) {
 				SlaverId: r.SlaverId,
 				Address:  r.Address,
 				Quantity: r.Quantity,
+				Alias:    r.Alias,
 				Value:    covertEmptyHex(results),
 			}
 			dataMap[r.Tag] = value
@@ -127,6 +130,7 @@ func (d *modBusRtuDriver) Read(cmd []byte, data []byte) (int, error) {
 				SlaverId: r.SlaverId,
 				Address:  r.Address,
 				Quantity: r.Quantity,
+				Alias:    r.Alias,
 				Value:    covertEmptyHex(results),
 			}
 			dataMap[r.Tag] = value
