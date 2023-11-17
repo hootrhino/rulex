@@ -40,8 +40,8 @@ func (hh *ICMPSender) PluginMetaInfo() typex.XPluginMetaInfo {
 		Version:  "v1.0.0",
 		Homepage: "https://hootrhino.github.io",
 		HelpLink: "https://hootrhino.github.io",
-		Author:   "wwhai",
-		Email:    "cnwwhai@gmail.com",
+		Author:   "HootRhinoTeam",
+		Email:    "HootRhinoTeam@hootrhino.com",
 		License:  "MIT",
 	}
 }

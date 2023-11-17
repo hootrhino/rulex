@@ -96,8 +96,8 @@ func (cs *cs104Server) PluginMetaInfo() typex.XPluginMetaInfo {
 		Version:  "v0.0.1",
 		Homepage: "https://hootrhino.github.io",
 		HelpLink: "https://hootrhino.github.io",
-		Author:   "wwhai",
-		Email:    "cnwwhai@gmail.com",
+		Author:   "HootRhinoTeam",
+		Email:    "HootRhinoTeam@hootrhino.com",
 		License:  "MIT",
 	}
 }

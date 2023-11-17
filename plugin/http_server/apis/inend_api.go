@@ -38,52 +38,29 @@ func InEndDetail(c *gin.Context, ruleEngine typex.RuleX) {
 
 // Get all inends
 func InEnds(c *gin.Context, ruleEngine typex.RuleX) {
-	uuid, _ := c.GetQuery("uuid")
-	if uuid == "" {
-		inEnds := []typex.InEnd{}
-		for _, v := range service.AllMInEnd() {
-			var inEnd *typex.InEnd
-			if inEnd = ruleEngine.GetInEnd(v.UUID); inEnd == nil {
-				tmpInEnd := typex.InEnd{
-					UUID:        v.UUID,
-					Type:        typex.InEndType(v.Type),
-					Name:        v.Name,
-					Description: v.Description,
-					BindRules:   map[string]typex.Rule{},
-					Config:      v.GetConfig(),
-					State:       typex.SOURCE_STOP,
-				}
-				inEnds = append(inEnds, tmpInEnd)
+
+	inEnds := []typex.InEnd{}
+	for _, v := range service.AllMInEnd() {
+		var inEnd *typex.InEnd
+		if inEnd = ruleEngine.GetInEnd(v.UUID); inEnd == nil {
+			tmpInEnd := typex.InEnd{
+				UUID:        v.UUID,
+				Type:        typex.InEndType(v.Type),
+				Name:        v.Name,
+				Description: v.Description,
+				BindRules:   map[string]typex.Rule{},
+				Config:      v.GetConfig(),
+				State:       typex.SOURCE_STOP,
 			}
-			if inEnd != nil {
-				inEnd.State = inEnd.Source.Status()
-				inEnds = append(inEnds, *inEnd)
-			}
+			inEnds = append(inEnds, tmpInEnd)
 		}
-		c.JSON(common.HTTP_OK, common.OkWithData(inEnds))
-		return
-	}
-	Model, err := service.GetMInEndWithUUID(uuid)
-	if err != nil {
-		c.JSON(common.HTTP_OK, common.Error400(err))
-		return
-	}
-	inEnd := ruleEngine.GetInEnd(Model.UUID)
-	if inEnd == nil {
-		tmpInEnd := typex.InEnd{
-			UUID:        Model.UUID,
-			Type:        typex.InEndType(Model.Type),
-			Name:        Model.Name,
-			Description: Model.Description,
-			BindRules:   map[string]typex.Rule{},
-			Config:      Model.GetConfig(),
-			State:       typex.SOURCE_STOP,
+		if inEnd != nil {
+			inEnd.State = inEnd.Source.Status()
+			inEnds = append(inEnds, *inEnd)
 		}
-		c.JSON(common.HTTP_OK, common.OkWithData(tmpInEnd))
-		return
 	}
-	inEnd.State = inEnd.Source.Status()
-	c.JSON(common.HTTP_OK, common.OkWithData(inEnd))
+	c.JSON(common.HTTP_OK, common.OkWithData(inEnds))
+	return
 
 }
 

@@ -86,8 +86,8 @@ func (hh *WebTTYPlugin) PluginMetaInfo() typex.XPluginMetaInfo {
 		Version:  "v0.0.1",
 		Homepage: "https://github.com/tsl0922/ttyd",
 		HelpLink: "https://github.com/tsl0922/ttyd",
-		Author:   "wwhai",
-		Email:    "cnwwhai@gmail.com",
+		Author:   "HootRhinoTeam",
+		Email:    "HootRhinoTeam@hootrhino.com",
 		License:  "MIT",
 	}
 }
