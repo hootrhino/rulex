@@ -89,10 +89,10 @@ func (s *MqttServer) PluginMetaInfo() typex.XPluginMetaInfo {
 		UUID:     s.uuid,
 		Name:     "Light Weight MqttServer",
 		Version:  "v2.0.0",
-		Homepage: "https://github.com/lion-brave",
-		HelpLink: "https://github.com/lion-brave",
-		Author:   "liyong",
-		Email:    "liyong@gmail.com",
+		Homepage: "https://hootrhino.github.io",
+		HelpLink: "https://hootrhino.github.io",
+		Author:   "HootRhinoTeam",
+		Email:    "HootRhinoTeam@hootrhino.com",
 		License:  "MIT",
 	}
 }

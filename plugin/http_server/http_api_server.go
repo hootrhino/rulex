@@ -222,25 +222,12 @@ func (hs *ApiServerPlugin) LoadRoute() {
 		systemApi.GET(("/ping"), server.AddRoute(apis.Ping))
 		systemApi.POST(("/logout"), server.AddRoute(apis.LogOut))
 	}
-	//
-	// Get all inends
-	//
-	server.DefaultApiServer.Route().GET(server.ContextUrl("inends"), server.AddRoute(apis.InEnds))
-	server.DefaultApiServer.Route().GET(server.ContextUrl("inends/detail"), server.AddRoute(apis.InEndDetail))
+
 	//
 	//
 	//
 	server.DefaultApiServer.Route().GET(server.ContextUrl("drivers"), server.AddRoute(apis.Drivers))
-	//
-	// Get all outends
-	//
-	server.DefaultApiServer.Route().GET(server.ContextUrl("outends"), server.AddRoute(apis.OutEnds))
-	server.DefaultApiServer.Route().GET(server.ContextUrl("outends/detail"), server.AddRoute(apis.OutEndDetail))
-	//
-	// Get all rules
-	//
-	server.DefaultApiServer.Route().GET(server.ContextUrl("rules"), server.AddRoute(apis.Rules))
-	server.DefaultApiServer.Route().GET(server.ContextUrl("rules/detail"), server.AddRoute(apis.RuleDetail))
+
 	//
 	// Get statistics data
 	//
@@ -268,49 +255,38 @@ func (hs *ApiServerPlugin) LoadRoute() {
 	//
 	server.DefaultApiServer.Route().GET(server.ContextUrl("info"), server.AddRoute(apis.Info))
 	//
-	// Create InEnd
-	//
-	server.DefaultApiServer.Route().POST(server.ContextUrl("inends"), server.AddRoute(apis.CreateInend))
-	//
-	// Update Inend
-	//
-	server.DefaultApiServer.Route().PUT(server.ContextUrl("inends"), server.AddRoute(apis.UpdateInend))
-	//
-	// 配置表
-	//
-	server.DefaultApiServer.Route().GET(server.ContextUrl("inends/config"), server.AddRoute(apis.GetInEndConfig))
-	//
-	// 数据模型表
-	//
-	server.DefaultApiServer.Route().GET(server.ContextUrl("inends/models"), server.AddRoute(apis.GetInEndModels))
-	//
-	// Create OutEnd
-	//
-	server.DefaultApiServer.Route().POST(server.ContextUrl("outends"), server.AddRoute(apis.CreateOutEnd))
-	//
-	// Update OutEnd
-	//
-	server.DefaultApiServer.Route().PUT(server.ContextUrl("outends"), server.AddRoute(apis.UpdateOutEnd))
+	InEndApi := server.RouteGroup(server.ContextUrl("/inends"))
+
+	{
+		InEndApi.GET(("/detail"), server.AddRoute(apis.InEndDetail))
+		InEndApi.GET(("/list"), server.AddRoute(apis.InEnds))
+		InEndApi.POST(("/create"), server.AddRoute(apis.CreateInend))
+		InEndApi.DELETE(("/delete"), server.AddRoute(apis.DeleteInEnd))
+		InEndApi.PUT(("/update"), server.AddRoute(apis.UpdateInend))
+	}
+
 	rulesApi := server.RouteGroup(server.ContextUrl("/rules"))
 	{
-		rulesApi.POST(("/"), server.AddRoute(apis.CreateRule))
-		rulesApi.PUT(("/"), server.AddRoute(apis.UpdateRule))
-		rulesApi.DELETE(("/"), server.AddRoute(apis.DeleteRule))
+		rulesApi.POST(("/create"), server.AddRoute(apis.CreateRule))
+		rulesApi.PUT(("/update"), server.AddRoute(apis.UpdateRule))
+		rulesApi.DELETE(("/delete"), server.AddRoute(apis.DeleteRule))
+		rulesApi.GET(("/list"), server.AddRoute(apis.Rules))
+		rulesApi.GET(("/detail"), server.AddRoute(apis.RuleDetail))
+		//
 		rulesApi.POST(("/testIn"), server.AddRoute(apis.TestSourceCallback))
 		rulesApi.POST(("/testOut"), server.AddRoute(apis.TestOutEndCallback))
 		rulesApi.POST(("/testDevice"), server.AddRoute(apis.TestDeviceCallback))
 		rulesApi.GET(("/byInend"), server.AddRoute(apis.ListByInend))
 		rulesApi.GET(("/byDevice"), server.AddRoute(apis.ListByDevice))
 	}
-
-	//
-	// Delete inend by UUID
-	//
-	server.DefaultApiServer.Route().DELETE(server.ContextUrl("inends"), server.AddRoute(apis.DeleteInEnd))
-	//
-	// Delete outEnd by UUID
-	//
-	server.DefaultApiServer.Route().DELETE(server.ContextUrl("outends"), server.AddRoute(apis.DeleteOutEnd))
+	OutEndApi := server.RouteGroup(server.ContextUrl("/outends"))
+	{
+		OutEndApi.GET(("/detail"), server.AddRoute(apis.OutEndDetail))
+		OutEndApi.GET(("/list"), server.AddRoute(apis.OutEnds))
+		OutEndApi.POST(("/create"), server.AddRoute(apis.CreateOutEnd))
+		OutEndApi.DELETE(("/delete"), server.AddRoute(apis.DeleteOutEnd))
+		OutEndApi.PUT(("/update"), server.AddRoute(apis.UpdateOutEnd))
+	}
 
 	//
 	// 验证 lua 语法
@@ -339,9 +315,9 @@ func (hs *ApiServerPlugin) LoadRoute() {
 	//
 	deviceApi := server.RouteGroup(server.ContextUrl("/devices"))
 	{
-		deviceApi.POST(("/"), server.AddRoute(apis.CreateDevice))
-		deviceApi.PUT(("/"), server.AddRoute(apis.UpdateDevice))
-		deviceApi.DELETE(("/"), server.AddRoute(apis.DeleteDevice))
+		deviceApi.POST(("/create"), server.AddRoute(apis.CreateDevice))
+		deviceApi.PUT(("/update"), server.AddRoute(apis.UpdateDevice))
+		deviceApi.DELETE(("/delete"), server.AddRoute(apis.DeleteDevice))
 		deviceApi.GET(("/detail"), server.AddRoute(apis.DeviceDetail))
 		deviceApi.POST(("/modbus/sheetImport"), server.AddRoute(apis.ModbusSheetImport))
 		deviceApi.PUT(("/modbus/point"), server.AddRoute(apis.UpdateModbusPoint))
@@ -356,21 +332,13 @@ func (hs *ApiServerPlugin) LoadRoute() {
 	// ----------------------------------------------------------------------------------------------
 	appApi := server.RouteGroup(server.ContextUrl("/app"))
 	{
-		appApi.GET(("/"), server.AddRoute(apis.Apps))
-		appApi.POST(("/"), server.AddRoute(apis.CreateApp))
-		appApi.PUT(("/"), server.AddRoute(apis.UpdateApp))
-		appApi.DELETE(("/"), server.AddRoute(apis.RemoveApp))
+		appApi.GET(("/list"), server.AddRoute(apis.Apps))
+		appApi.POST(("/create"), server.AddRoute(apis.CreateApp))
+		appApi.PUT(("/update"), server.AddRoute(apis.UpdateApp))
+		appApi.DELETE(("/delete"), server.AddRoute(apis.RemoveApp))
 		appApi.PUT(("/start"), server.AddRoute(apis.StartApp))
 		appApi.PUT(("/stop"), server.AddRoute(apis.StopApp))
 		appApi.GET(("/detail"), server.AddRoute(apis.AppDetail))
-	}
-	// ----------------------------------------------------------------------------------------------
-	// AI BASE
-	// ----------------------------------------------------------------------------------------------
-	aiApi := server.RouteGroup(server.ContextUrl("/aibase"))
-	{
-		aiApi.GET(("/"), server.AddRoute(apis.AiBase))
-		aiApi.DELETE(("/"), server.AddRoute(apis.DeleteAiBase))
 	}
 	// ----------------------------------------------------------------------------------------------
 	// Plugin
@@ -396,19 +364,9 @@ func (hs *ApiServerPlugin) LoadRoute() {
 		groupApi.GET("/detail", server.AddRoute(apis.GroupDetail))
 		groupApi.POST("/bind", server.AddRoute(apis.BindResource))
 		groupApi.PUT("/unbind", server.AddRoute(apis.UnBindResource))
-		groupApi.DELETE("/", server.AddRoute(apis.DeleteGroup))
+		groupApi.DELETE("/delete", server.AddRoute(apis.DeleteGroup))
 	}
 
-	//
-	// 协议应用管理
-	//
-	protoAppApi := server.RouteGroup(server.ContextUrl("/protoapp"))
-	{
-		protoAppApi.POST("/create", server.AddRoute(apis.CreateProtocolApp))
-		protoAppApi.DELETE("/delete", server.AddRoute(apis.DeleteProtocolApp))
-		protoAppApi.PUT("/update", server.AddRoute(apis.UpdateProtocolApp))
-		protoAppApi.GET("/list", server.AddRoute(apis.ListProtocolApp))
-	}
 	//
 	// 大屏应用管理
 	//
@@ -522,8 +480,8 @@ func (hs *ApiServerPlugin) PluginMetaInfo() typex.XPluginMetaInfo {
 		Version:  "v1.0.0",
 		Homepage: "https://hootrhino.github.io",
 		HelpLink: "https://hootrhino.github.io",
-		Author:   "wwhai",
-		Email:    "cnwwhai@gmail.com",
+		Author:   "HootRhinoTeam",
+		Email:    "HootRhinoTeam@hootrhino.com",
 		License:  "MIT",
 	}
 }
