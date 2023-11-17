@@ -114,7 +114,7 @@ func (hh *genericWatchDog) PluginMetaInfo() typex.XPluginMetaInfo {
 		HelpLink: "https://hootrhino.github.io",
 		Author:   "HootRhinoTeam",
 		Email:    "HootRhinoTeam@hootrhino.com",
-		License:  "MIT",
+		License:  "AGPL",
 	}
 }
 

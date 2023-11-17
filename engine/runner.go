@@ -16,8 +16,6 @@
 package engine
 
 import (
-	"github.com/hootrhino/rulex/component/cron_task"
-	"github.com/hootrhino/rulex/plugin/http_server/service"
 	"os"
 	"os/signal"
 	"strings"
@@ -36,6 +34,7 @@ import (
 	"github.com/hootrhino/rulex/glogger"
 	httpserver "github.com/hootrhino/rulex/plugin/http_server"
 	icmpsender "github.com/hootrhino/rulex/plugin/icmp_sender"
+	license_manager "github.com/hootrhino/rulex/plugin/license_manager"
 	"github.com/hootrhino/rulex/typex"
 )
 
@@ -64,22 +63,21 @@ func RunRulex(iniPath string) {
 	signal.Notify(c, syscall.SIGINT, syscall.SIGABRT, syscall.SIGTERM)
 	engine := InitRuleEngine(mainConfig)
 	engine.Start()
-
-	// Load Plugin
-	loadPlugin(engine)
 	// Load Http api Server
 	httpServer := httpserver.NewHttpApiServer(engine)
 	if err := engine.LoadPlugin("plugin.http_server", httpServer); err != nil {
 		glogger.GLogger.Error(err)
 		return
 	}
-	// load Cron Task
-	for _, task := range service.AllEnabledCronTask() {
-		if err := cron_task.GetCronManager().AddTask(task); err != nil {
-			glogger.GLogger.Error(err)
-			continue
-		}
+	license_manager := license_manager.NewLicenseManager(engine)
+	if err := engine.LoadPlugin("plugin.license_manager", license_manager); err != nil {
+		glogger.GLogger.Error(err)
+		return
 	}
+
+	// Load Plugin
+	loadPlugin(engine)
+
 	s := <-c
 	glogger.GLogger.Warn("RULEX Receive Stop Signal: ", s)
 	engine.Stop()
@@ -94,7 +92,7 @@ func loadPlugin(engine typex.RuleX) {
 		name := strings.TrimPrefix(section.Name(), "plugin.")
 		enable, err := section.GetKey("enable")
 		if err != nil {
-			glogger.GLogger.Fatal(err)
+			continue
 		}
 		if !enable.MustBool(false) {
 			glogger.GLogger.Warnf("Plugin is disable:%s", name)

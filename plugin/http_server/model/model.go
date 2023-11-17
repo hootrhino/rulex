@@ -225,19 +225,6 @@ type MGenericGroupRelation struct {
 
 /*
 *
-* 应用商店里面的各类协议脚本
-*
- */
-type MProtocolApp struct {
-	RulexModel
-	UUID    string `gorm:"not null"` // 名称
-	Name    string `gorm:"not null"` // 名称
-	Type    string `gorm:"not null"` // 类型: IN OUT DEVICE APP
-	Content string `gorm:"not null"` // 协议包的内容
-}
-
-/*
-*
 * 系统配置参数, 直接以String保存，完了以后再加工成Dto结构体
 *
  */

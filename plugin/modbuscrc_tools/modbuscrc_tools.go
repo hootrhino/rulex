@@ -50,6 +50,6 @@ func (hh *modbusCRCCalculator) PluginMetaInfo() typex.XPluginMetaInfo {
 		HelpLink: "https://hootrhino.github.io",
 		Author:   "HootRhinoTeam",
 		Email:    "HootRhinoTeam@hootrhino.com",
-		License:  "MIT",
+		License:  "AGPL",
 	}
 }
