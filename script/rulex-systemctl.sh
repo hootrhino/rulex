@@ -45,6 +45,7 @@ EOL
     chmod +x $source_dir/rulex
     cp "$source_dir/rulex" "$executable"
     cp "$source_dir/rulex.ini" "$config_file"
+    cp "$source_dir/license.*" /usr/local/
     systemctl daemon-reload
     systemctl enable rulex
     systemctl start rulex
@@ -92,6 +93,7 @@ uninstall(){
     remove_files $working_directory/rulex.db
     remove_files $working_directory/*.txt
     remove_files $working_directory/upload/
+    remove_files $working_directory/license.*
     remove_files $working_directory/*.txt.gz
     systemctl daemon-reload
     systemctl reset-failed

@@ -21,6 +21,7 @@ uninstall_files() {
     rm -f /usr/local/rulex.ini
     rm -f /usr/local/rulex.db
     rm -f /usr/local/*.txt
+    rm -f /usr/local/license.*
     rm -rf /usr/local/upload/
     rm -f /usr/local/*.txt.gz
 }
