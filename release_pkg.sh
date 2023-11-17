@@ -9,7 +9,7 @@ create_pkg() {
     local version="$(git describe --tags $(git rev-list --tags --max-count=1))"
     local release_dir="_release"
     local pkg_name="${APP}-$target-$version.zip"
-    local common_files="./LICENSE ./conf/${APP}.ini ./md5.sum"
+    local common_files="./conf/license.* ./LICENSE ./conf/${APP}.ini ./md5.sum"
     local files_to_include="./${APP} $common_files"
     local files_to_include_exe="./${APP}.exe $common_files"
 
