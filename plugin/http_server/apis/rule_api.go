@@ -55,32 +55,10 @@ func RuleDetail(c *gin.Context, ruleEngine typex.RuleX) {
 
 // Get all rules
 func Rules(c *gin.Context, ruleEngine typex.RuleX) {
-	uuid, _ := c.GetQuery("uuid")
-	if uuid == "" {
-		DataList := []ruleVo{}
-		allRules, _ := service.GetAllMRule()
-		for _, rule := range allRules {
-			DataList = append(DataList, ruleVo{
-				UUID:        rule.UUID,
-				Name:        rule.Name,
-				Type:        rule.Type,
-				Status:      1,
-				Description: rule.Description,
-				FromSource:  rule.FromSource,
-				FromDevice:  rule.FromDevice,
-				Success:     rule.Success,
-				Failed:      rule.Failed,
-				Actions:     rule.Actions,
-			})
-		}
-		c.JSON(common.HTTP_OK, common.OkWithData(DataList))
-	} else {
-		rule, err := service.GetMRuleWithUUID(uuid)
-		if err != nil {
-			c.JSON(common.HTTP_OK, common.Error400(err))
-			return
-		}
-		c.JSON(common.HTTP_OK, common.OkWithData(ruleVo{
+	DataList := []ruleVo{}
+	allRules, _ := service.GetAllMRule()
+	for _, rule := range allRules {
+		DataList = append(DataList, ruleVo{
 			UUID:        rule.UUID,
 			Name:        rule.Name,
 			Type:        rule.Type,
@@ -91,8 +69,9 @@ func Rules(c *gin.Context, ruleEngine typex.RuleX) {
 			Success:     rule.Success,
 			Failed:      rule.Failed,
 			Actions:     rule.Actions,
-		}))
+		})
 	}
+	c.JSON(common.HTTP_OK, common.OkWithData(DataList))
 }
 
 // Create rule
