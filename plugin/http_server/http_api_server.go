@@ -251,8 +251,9 @@ func (hs *ApiServerPlugin) LoadRoute() {
 	//
 	userApi := server.RouteGroup(server.ContextUrl("/users"))
 	{
-		userApi.GET(("/"), server.AddRoute(apis.Users))
+		// userApi.GET(("/"), server.AddRoute(apis.Users))
 		userApi.POST(("/"), server.AddRoute(apis.CreateUser))
+		userApi.PUT(("/update"), server.AddRoute(apis.UpdateUser))
 		userApi.GET(("/detail"), server.AddRoute(apis.UserDetail))
 		userApi.POST(("/logout"), server.AddRoute(apis.LogOut))
 

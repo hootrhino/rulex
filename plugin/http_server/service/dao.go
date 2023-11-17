@@ -147,14 +147,10 @@ func InitMUser(o *model.MUser) error {
 	return interdb.DB().Table("m_users").FirstOrCreate(o).Error
 }
 
-func UpdateMUser(uuid string, o *model.MUser) error {
-	m := model.MUser{}
-	if err := interdb.DB().Where("uuid=?", uuid).First(&m).Error; err != nil {
-		return err
-	} else {
-		interdb.DB().Model(m).Updates(*o)
-		return nil
-	}
+func UpdateMUser(o *model.MUser) error {
+	interdb.DB().Model(o).Where("username=?", o.Username).Updates(*o)
+	return nil
+
 }
 
 // -----------------------------------------------------------------------------------

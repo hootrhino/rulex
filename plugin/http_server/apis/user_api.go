@@ -85,6 +85,38 @@ func CreateUser(c *gin.Context, ruleEngine typex.RuleX) {
 	c.JSON(common.HTTP_OK, common.Error("user already exists:"+form.Username))
 }
 
+// UpdateUser
+func UpdateUser(c *gin.Context, ruleEngine typex.RuleX) {
+	type Form struct {
+		Username    string `json:"username" binding:"required"`
+		Password    string `json:"password" binding:"required"`
+		Description string `json:"description"`
+	}
+	form := Form{}
+	if err := c.ShouldBindJSON(&form); err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
+	if !isLengthBetween8And16(form.Username) {
+		c.JSON(common.HTTP_OK, common.Error("Username Length must Between 8 ~ 16"))
+		return
+	}
+	if !isLengthBetween8And16(form.Password) {
+		c.JSON(common.HTTP_OK, common.Error("Password Length must Between 8 ~ 16"))
+		return
+	}
+
+	if err := service.UpdateMUser(&model.MUser{
+		Username:    form.Username,
+		Password:    md5Hash(form.Password),
+		Description: form.Description,
+	}); err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
+	c.JSON(common.HTTP_OK, common.Ok())
+}
+
 /*
 *
 * Md5 计算
