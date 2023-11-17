@@ -3,6 +3,7 @@ package httpserver
 import (
 	"encoding/json"
 
+	"github.com/hootrhino/rulex/component/cron_task"
 	"github.com/hootrhino/rulex/component/hwportmanager"
 
 	"github.com/hootrhino/rulex/component/appstack"
@@ -134,6 +135,14 @@ func initRulex(engine typex.RuleX) {
 			}
 		}
 	}
+	//
+	// load Cron Task
+	for _, task := range service.AllEnabledCronTask() {
+		if err := cron_task.GetCronManager().AddTask(task); err != nil {
+			glogger.GLogger.Error(err)
+			continue
+		}
+	}
 
 }
 
@@ -192,7 +201,6 @@ func (hs *ApiServerPlugin) Init(config *ini.Section) error {
 		&model.MVisual{},
 		&model.MGenericGroup{},
 		&model.MGenericGroupRelation{},
-		&model.MProtocolApp{},
 		&model.MNetworkConfig{},
 		&model.MWifiConfig{},
 		&model.MDataSchema{},
@@ -482,7 +490,7 @@ func (hs *ApiServerPlugin) PluginMetaInfo() typex.XPluginMetaInfo {
 		HelpLink: "https://hootrhino.github.io",
 		Author:   "HootRhinoTeam",
 		Email:    "HootRhinoTeam@hootrhino.com",
-		License:  "MIT",
+		License:  "AGPL",
 	}
 }
 

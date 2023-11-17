@@ -88,6 +88,6 @@ func (hh *WebTTYPlugin) PluginMetaInfo() typex.XPluginMetaInfo {
 		HelpLink: "https://github.com/tsl0922/ttyd",
 		Author:   "HootRhinoTeam",
 		Email:    "HootRhinoTeam@hootrhino.com",
-		License:  "MIT",
+		License:  "AGPL",
 	}
 }
