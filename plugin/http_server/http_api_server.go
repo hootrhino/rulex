@@ -269,7 +269,7 @@ func (hs *ApiServerPlugin) LoadRoute() {
 		InEndApi.GET(("/detail"), server.AddRoute(apis.InEndDetail))
 		InEndApi.GET(("/list"), server.AddRoute(apis.InEnds))
 		InEndApi.POST(("/create"), server.AddRoute(apis.CreateInend))
-		InEndApi.DELETE(("/delete"), server.AddRoute(apis.DeleteInEnd))
+		InEndApi.DELETE(("/del"), server.AddRoute(apis.DeleteInEnd))
 		InEndApi.PUT(("/update"), server.AddRoute(apis.UpdateInend))
 	}
 
@@ -277,7 +277,7 @@ func (hs *ApiServerPlugin) LoadRoute() {
 	{
 		rulesApi.POST(("/create"), server.AddRoute(apis.CreateRule))
 		rulesApi.PUT(("/update"), server.AddRoute(apis.UpdateRule))
-		rulesApi.DELETE(("/delete"), server.AddRoute(apis.DeleteRule))
+		rulesApi.DELETE(("/del"), server.AddRoute(apis.DeleteRule))
 		rulesApi.GET(("/list"), server.AddRoute(apis.Rules))
 		rulesApi.GET(("/detail"), server.AddRoute(apis.RuleDetail))
 		//
@@ -292,7 +292,7 @@ func (hs *ApiServerPlugin) LoadRoute() {
 		OutEndApi.GET(("/detail"), server.AddRoute(apis.OutEndDetail))
 		OutEndApi.GET(("/list"), server.AddRoute(apis.OutEnds))
 		OutEndApi.POST(("/create"), server.AddRoute(apis.CreateOutEnd))
-		OutEndApi.DELETE(("/delete"), server.AddRoute(apis.DeleteOutEnd))
+		OutEndApi.DELETE(("/del"), server.AddRoute(apis.DeleteOutEnd))
 		OutEndApi.PUT(("/update"), server.AddRoute(apis.UpdateOutEnd))
 	}
 
@@ -325,7 +325,7 @@ func (hs *ApiServerPlugin) LoadRoute() {
 	{
 		deviceApi.POST(("/create"), server.AddRoute(apis.CreateDevice))
 		deviceApi.PUT(("/update"), server.AddRoute(apis.UpdateDevice))
-		deviceApi.DELETE(("/delete"), server.AddRoute(apis.DeleteDevice))
+		deviceApi.DELETE(("/del"), server.AddRoute(apis.DeleteDevice))
 		deviceApi.GET(("/detail"), server.AddRoute(apis.DeviceDetail))
 		deviceApi.POST(("/modbus/sheetImport"), server.AddRoute(apis.ModbusSheetImport))
 		deviceApi.PUT(("/modbus/point"), server.AddRoute(apis.UpdateModbusPoint))
@@ -343,7 +343,7 @@ func (hs *ApiServerPlugin) LoadRoute() {
 		appApi.GET(("/list"), server.AddRoute(apis.Apps))
 		appApi.POST(("/create"), server.AddRoute(apis.CreateApp))
 		appApi.PUT(("/update"), server.AddRoute(apis.UpdateApp))
-		appApi.DELETE(("/delete"), server.AddRoute(apis.RemoveApp))
+		appApi.DELETE(("/del"), server.AddRoute(apis.RemoveApp))
 		appApi.PUT(("/start"), server.AddRoute(apis.StartApp))
 		appApi.PUT(("/stop"), server.AddRoute(apis.StopApp))
 		appApi.GET(("/detail"), server.AddRoute(apis.AppDetail))
@@ -372,7 +372,7 @@ func (hs *ApiServerPlugin) LoadRoute() {
 		groupApi.GET("/detail", server.AddRoute(apis.GroupDetail))
 		groupApi.POST("/bind", server.AddRoute(apis.BindResource))
 		groupApi.PUT("/unbind", server.AddRoute(apis.UnBindResource))
-		groupApi.DELETE("/delete", server.AddRoute(apis.DeleteGroup))
+		groupApi.DELETE("/del", server.AddRoute(apis.DeleteGroup))
 	}
 
 	//
@@ -399,7 +399,7 @@ func (hs *ApiServerPlugin) LoadRoute() {
 	schemaApi := server.RouteGroup(server.ContextUrl("/schema"))
 	{
 		schemaApi.POST("/create", server.AddRoute(apis.CreateDataSchema))
-		schemaApi.DELETE("/delete", server.AddRoute(apis.DeleteDataSchema))
+		schemaApi.DELETE("/del", server.AddRoute(apis.DeleteDataSchema))
 		schemaApi.PUT("/update", server.AddRoute(apis.UpdateDataSchema))
 		schemaApi.GET("/list", server.AddRoute(apis.ListDataSchema))
 		schemaApi.GET(("/detail"), server.AddRoute(apis.DataSchemaDetail))
@@ -453,7 +453,7 @@ func (hs *ApiServerPlugin) LoadRoute() {
 	crontaskApi := server.DefaultApiServer.GetGroup(server.ContextUrl("/crontask"))
 	{
 		crontaskApi.POST("/create", server.AddRouteV2(apis.CreateCronTask))
-		crontaskApi.DELETE("/delete", server.AddRouteV2(apis.DeleteCronTask))
+		crontaskApi.DELETE("/del", server.AddRouteV2(apis.DeleteCronTask))
 		crontaskApi.PUT("/update", server.AddRouteV2(apis.UpdateCronTask))
 		crontaskApi.GET("/list", server.AddRouteV2(apis.ListCronTask))
 		crontaskApi.GET("/results/page", server.AddRouteV2(apis.PageCronTaskResult))

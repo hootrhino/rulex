@@ -57,7 +57,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/crontask/delete": {
+        "/crontask/del": {
             "delete": {
                 "consumes": [
                     "application/json"
