@@ -142,6 +142,47 @@ func main() {
 					return nil
 				},
 			},
+			{
+				Name:   "active",
+				Usage:  "active -H host -U rhino -P hoot",
+				Hidden: true,
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:  "H",
+						Usage: "active server ip",
+					},
+					&cli.StringFlag{
+						Name:  "U",
+						Usage: "active admin username",
+					},
+					&cli.StringFlag{
+						Name:  "P",
+						Usage: "active admin password",
+					},
+				},
+				Action: func(c *cli.Context) error {
+					host := c.String("H")
+					if host == "" {
+						return fmt.Errorf("[LICENCE ACTIVE]: missing host")
+					}
+					username := c.String("U")
+					if username == "" {
+						return fmt.Errorf("[LICENCE ACTIVE]: missing admin username")
+					}
+					password := c.String("P")
+					if password == "" {
+						return fmt.Errorf("[LICENCE ACTIVE]: missing admin password")
+					}
+					macAddr, err := ossupport.ReadIfaceMacAddr("eth0")
+					if err != nil {
+						return err
+					}
+					// commercial version will implement it
+					log.Printf("[LICENCE ACTIVE]: Admin(%s,%s), mac addr:[%s] try to request license from %s\n",
+						username, password, macAddr, host)
+					return nil
+				},
+			},
 			// version
 			{
 				Name:  "version",

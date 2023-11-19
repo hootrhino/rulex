@@ -3,6 +3,8 @@ package ossupport
 import (
 	"encoding/json"
 	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -67,4 +69,24 @@ func (iface *EtcNetworkConfig) GenEtcConfig() string {
 	configLines = append(configLines, fmt.Sprintf("    dns-nameservers %s\n", strings.Join(iface.DNS, " ")))
 	configText := strings.Join(configLines, "\n")
 	return configText
+}
+
+/*
+*
+* 获取网卡的MAC地址
+*
+ */
+func ReadIfaceMacAddr(ifaceName string) (string, error) {
+	// 构建文件路径
+	filePath := filepath.Join("/sys/class/net", ifaceName, "address")
+
+	// 读取文件内容
+	content, err := os.ReadFile(filePath)
+	if err != nil {
+		return "", err
+	}
+	if len(content) < 10 {
+		return "", fmt.Errorf("get mac address error:%s", ifaceName)
+	}
+	return string(content[:len(content)-1]), nil
 }
