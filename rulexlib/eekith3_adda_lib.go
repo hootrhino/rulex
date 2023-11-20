@@ -115,3 +115,27 @@ func H3DI3Get(rx typex.RuleX) func(*lua.LState) int {
 		return 2
 	}
 }
+
+// User Gpio operation
+func LedOn(rx typex.RuleX) func(*lua.LState) int {
+	return func(l *lua.LState) int {
+		e := archsupport.EEKIT_GPIOSetUserGpio(0)
+		if e != nil {
+			l.Push(lua.LString(e.Error()))
+		} else {
+			l.Push(lua.LNil)
+		}
+		return 1
+	}
+}
+func LedOff(rx typex.RuleX) func(*lua.LState) int {
+	return func(l *lua.LState) int {
+		e := archsupport.EEKIT_GPIOSetUserGpio(1)
+		if e != nil {
+			l.Push(lua.LString(e.Error()))
+		} else {
+			l.Push(lua.LNil)
+		}
+		return 1
+	}
+}

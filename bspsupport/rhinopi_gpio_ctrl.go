@@ -15,6 +15,19 @@
 
 package archsupport
 
+//-----------------------------------------------
+// 这是EEKIT网关的DI-DO支持库
+//-----------------------------------------------
+/*
+    pins map
+
+	DO1 -> PA6
+	DO2 -> PA7
+	DI1 -> PA8
+	DI2	-> PA9
+	DI3 -> PA10
+	USER_GPIO -> PA20
+*/
 import (
 	"fmt"
 	"os"
@@ -27,11 +40,6 @@ import (
  */
 const (
 	__h3_GPIO_PATH = "/sys/class/gpio/gpio%v/value"
-	// __h3_DO1       = "/sys/class/gpio/gpio6/value"  // gpio6
-	// __h3_DO2       = "/sys/class/gpio/gpio7/value"  // gpio7
-	// __h3_DI1       = "/sys/class/gpio/gpio8/value"  // gpio8
-	// __h3_DI2       = "/sys/class/gpio/gpio9/value"  // gpio9
-	// __h3_DI3       = "/sys/class/gpio/gpio10/value" // gpio10
 )
 
 /*
@@ -53,6 +61,9 @@ func EEKIT_GPIOGetDI2() (int, error) {
 }
 func EEKIT_GPIOGetDI3() (int, error) {
 	return EEKIT_GPIOGetByFile(10)
+}
+func EEKIT_GPIOGetUserGpio() (int, error) {
+	return EEKIT_GPIOGetByFile(20)
 }
 func EEKIT_GPIOGetByFile(pin byte) (int, error) {
 	return __GPIOGet(fmt.Sprintf(__h3_GPIO_PATH, pin))
@@ -90,6 +101,9 @@ func EEKIT_GPIOSetDI2(value int) error {
 }
 func EEKIT_GPIOSetDI3(value int) error {
 	return EEKIT_GPIOSetByFile(10, value)
+}
+func EEKIT_GPIOSetUserGpio(value int) error {
+	return EEKIT_GPIOSetByFile(20, value)
 }
 
 func EEKIT_GPIOSetByFile(pin, value int) error {
