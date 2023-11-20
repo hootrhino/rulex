@@ -187,8 +187,8 @@ func LoadAppLib(app *Application, e typex.RuleX) {
 		addAppLib(app, e, "rhinopi", "DI2Get", rulexlib.H3DI2Get(e))
 		addAppLib(app, e, "rhinopi", "DI3Get", rulexlib.H3DI3Get(e))
 		// LED
-		addAppLib(app, e, "rhinopi", "LedOn", rulexlib.LedOn(e))
-		addAppLib(app, e, "rhinopi", "LedOff", rulexlib.LedOff(e))
+		addAppLib(app, e, "rhinopi", "Led1On", rulexlib.Led1On(e))
+		addAppLib(app, e, "rhinopi", "Led1Off", rulexlib.Led1Off(e))
 
 	}
 	{
