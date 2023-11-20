@@ -1,9 +1,10 @@
 package test
 
 import (
+	"runtime"
 	"testing"
 
-	"github.com/hootrhino/rulex/glogger"
+	"github.com/hootrhino/rulex/ossupport"
 	"go.bug.st/serial"
 )
 
@@ -11,12 +12,11 @@ func Test_GetPortsList(t *testing.T) {
 	t.Log(GetUartList())
 }
 func GetUartList() []string {
-	r := []string{}
-	ports, err := serial.GetPortsList()
-	if err != nil {
-		glogger.GLogger.Error(err)
-		return r
+	var ports []string
+	if runtime.GOOS == "windows" {
+		ports, _ = serial.GetPortsList()
+	} else {
+		ports, _ = ossupport.GetPortsListUnix()
 	}
-	r = append(r, ports...)
-	return r
+	return ports
 }

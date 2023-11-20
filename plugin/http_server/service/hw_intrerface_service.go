@@ -17,8 +17,10 @@ package service
 
 import (
 	"encoding/json"
+	"runtime"
 
 	"github.com/hootrhino/rulex/component/interdb"
+	"github.com/hootrhino/rulex/ossupport"
 	"github.com/hootrhino/rulex/plugin/http_server/model"
 	"go.bug.st/serial"
 )
@@ -129,10 +131,15 @@ func InitHwPortConfig() error {
 *
  */
 func getOsPort() []string {
-	ports, _ := serial.GetPortsList()
+	var ports []string
+	if runtime.GOOS == "windows" {
+		ports, _ = serial.GetPortsList()
+	} else {
+		ports, _ = ossupport.GetPortsListUnix()
+	}
 	List := []string{}
 	for _, port := range ports {
-		// 明确知道有这么多端口，啰嗦代码是为了标记以免以后忘记
+		// 明确知道有这么多端口是被占用的，啰嗦代码是为了标记以免以后忘记
 		if port == "COM0" {
 			continue
 		}

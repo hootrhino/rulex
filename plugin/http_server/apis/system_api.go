@@ -3,6 +3,7 @@ package apis
 import (
 	"fmt"
 	"net"
+	"runtime"
 
 	// "runtime"
 	"strconv"
@@ -254,7 +255,12 @@ func DType(c *gin.Context, ruleEngine typex.RuleX) {
 *
  */
 func GetUarts(c *gin.Context, ruleEngine typex.RuleX) {
-	ports, _ := serial.GetPortsList()
+	var ports []string
+	if runtime.GOOS == "windows" {
+		ports, _ = serial.GetPortsList()
+	} else {
+		ports, _ = ossupport.GetPortsListUnix()
+	}
 	c.JSON(common.HTTP_OK, common.OkWithData(ports))
 }
 
