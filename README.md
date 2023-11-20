@@ -23,6 +23,23 @@
 
 
 ## 快速开始
+### 源码编译
+#### 环境安装
+下面是Ubuntu上搭建环境的指令：
+```bash
+sudo apt install jq cloc protobuf-compiler \
+     gcc-mingw-w64-x86-64 \
+     gcc-arm-linux-gnueabi \
+     gcc-mips-linux-gnu \
+     gcc-mingw-w64 \
+     gcc-aarch64-linux-gnu -y
+```
+> 推荐使用ubuntu开发。
+
+#### 编译
+```sh
+make
+```
 
 ### HelloWorld
 下面展示一个最简单的设备数据转发案例：
