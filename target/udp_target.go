@@ -90,7 +90,9 @@ func (udpt *UdpTarget) To(data interface{}) (interface{}, error) {
 
 func (udpt *UdpTarget) Stop() {
 	udpt.status = typex.SOURCE_STOP
-	udpt.CancelCTX()
+	if udpt.CancelCTX != nil {
+		udpt.CancelCTX()
+	}
 }
 func (udpt *UdpTarget) Details() *typex.OutEnd {
 	return udpt.RuleEngine.GetOutEnd(udpt.PointId)
