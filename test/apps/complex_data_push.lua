@@ -28,7 +28,7 @@ function Main(arg)
                 state = string.sub(jsonT['out'], 9, 10)
             }
             print("udpData => ", udpData)
-            local err4 = applib:DataToUdp(udpServerUUID, udpData)
+            local err4 = data:ToUdp(udpServerUUID, udpData)
             print('DataToUdp success? =>', err4 == nil)
             time:Sleep(1000)
         until true
