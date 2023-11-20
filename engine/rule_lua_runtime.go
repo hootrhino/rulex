@@ -154,6 +154,8 @@ func LoadBuildInLuaLib(e typex.RuleX, r *typex.Rule) {
 	r.AddLib(e, "math", "TFloat", rulexlib.TruncateFloat(e))
 	// LocalDBQuery
 	r.AddLib(e, "datacenter", "DBQuery", rulexlib.LocalDBQuery(e))
+	//
+	r.AddLib(e, "network", "Ping", rulexlib.PingIp(e))
 
 }
 

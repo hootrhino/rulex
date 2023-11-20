@@ -36,6 +36,7 @@ func init() {
 	typex.DefaultVersion.Arch = arch
 }
 
+//go:generate bash ./gen_info.sh
 func main() {
 	app := &cli.App{
 		Name:  "RULEX Gateway FrameWork",
@@ -160,7 +161,7 @@ func main() {
 						Usage: "active admin password",
 					},
 				},
-				
+
 				Action: func(c *cli.Context) error {
 					host := c.String("H")
 					if host == "" {

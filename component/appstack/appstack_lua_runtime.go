@@ -213,4 +213,6 @@ func LoadAppLib(app *Application, e typex.RuleX) {
 	addAppLib(app, e, "rpc", "Request", rulexlib.Request(e))
 	// jq
 	addAppLib(app, e, "jq", "Execute", rulexlib.JqSelect(e))
+	// Ping
+	addAppLib(app, e, "network", "Ping", rulexlib.PingIp(e))
 }
