@@ -117,7 +117,8 @@ func H3DI3Get(rx typex.RuleX) func(*lua.LState) int {
 }
 
 // User Gpio operation
-func LedOn(rx typex.RuleX) func(*lua.LState) int {
+// 注意：低电平亮
+func Led1On(rx typex.RuleX) func(*lua.LState) int {
 	return func(l *lua.LState) int {
 		e := archsupport.EEKIT_GPIOSetUserGpio(0)
 		if e != nil {
@@ -128,7 +129,7 @@ func LedOn(rx typex.RuleX) func(*lua.LState) int {
 		return 1
 	}
 }
-func LedOff(rx typex.RuleX) func(*lua.LState) int {
+func Led1Off(rx typex.RuleX) func(*lua.LState) int {
 	return func(l *lua.LState) int {
 		e := archsupport.EEKIT_GPIOSetUserGpio(1)
 		if e != nil {
