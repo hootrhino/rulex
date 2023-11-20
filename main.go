@@ -160,6 +160,7 @@ func main() {
 						Usage: "active admin password",
 					},
 				},
+				
 				Action: func(c *cli.Context) error {
 					host := c.String("H")
 					if host == "" {
