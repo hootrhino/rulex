@@ -19,15 +19,18 @@ all:
 	@echo "\e[41m[*] Host   \e[0m: \e[36m ${host} \e[0m"
 	@echo "\e[41m[*] IP     \e[0m: \e[36m ${ip} \e[0m"
 	@echo "\e[41m[*] Disk   \e[0m: \e[36m ${disk} \e[0m"
+	go generate
 	make build
 
 .PHONY: build
 build:
 	CGO_ENABLED=1 GOOS=linux
+	go generate
 	go build -v -ldflags "-s -w" -o ${APP}
 
 .PHONY: x64linux
 x64linux:
+	go generate
 	CGO_ENABLED=1 GOOS=linux GOARCH=amd64 CC=gcc\
 	    go build -ldflags "-s -w -linkmode external -extldflags -static" -o ${APP}-x64linux
 
@@ -38,28 +41,33 @@ windows:
 
 .PHONY: arm32
 arm32:
+	go generate
 	CGO_ENABLED=1 GOOS=linux GOARCH=arm CC=arm-linux-gnueabi-gcc\
 	    go build -ldflags "-s -w -linkmode external -extldflags -static" -o ${APP}-arm32linux
 
 .PHONY: arm64
 arm64:
+	go generate
 	CGO_ENABLED=1 GOOS=linux GOARCH=arm64 CC=aarch64-linux-gnu-gcc\
 	    go build -ldflags "-s -w -linkmode external -extldflags -static" -o ${APP}-arm64linux
 
 .PHONY: mips32
 mips32:
+	go generate
 	# sudo apt-get install gcc-mips-linux-gnu
 	GOOS=linux GOARCH=mips CGO_ENABLED=1 CC=mips-linux-gnu-gcc\
 	    go build -ldflags "-s -w -linkmode external -extldflags -static" -o ${APP}-mips32linux
 
 .PHONY: mips64
 mips64:
+	go generate
 	# sudo apt-get install gcc-mips-linux-gnu
 	GOOS=linux GOARCH=mips64 CGO_ENABLED=1 CC=mips-linux-gnu-gcc\
 	    go build -ldflags "-s -w -linkmode external -extldflags -static" -o ${APP}-mips64linux
 
 .PHONY: mipsel
 mipsle:
+	go generate
 	# sudo apt-get install gcc-mipsel-linux-gnu
 	GOOS=linux GOARCH=mipsle CGO_ENABLED=1 GOMIPS=softfloat CC=mipsel-linux-gnu-gcc\
 	    go build -ldflags "-s -w -linkmode external -extldflags -static" -o ${APP}-mipslelinux
