@@ -18,7 +18,12 @@ jobs:
       - name: Linux 构建测试
         run: |
           sudo apt update -y
-          sudo apt install jq cloc protobuf-compiler -y
+          sudo apt install jq cloc protobuf-compiler \
+               gcc-mingw-w64-x86-64 \
+               gcc-arm-linux-gnueabi \
+               gcc-mips-linux-gnu \
+               gcc-mingw-w64 \
+               gcc-aarch64-linux-gnu -y
           cloc ./
           make
           # for test mqtt
