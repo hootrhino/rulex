@@ -7,12 +7,14 @@ USE_PROCD=1
 # Check if the service is disabled
 [ -e /etc/config/rulex_daemon ] && . /etc/config/rulex_daemon
 
-working_directory="./"
+working_directory="/usr/local/"
 
 # Function to copy files to /usr/local
 install_files() {
-    cp "$working_directory"/rulex /usr/local/
-    cp "$working_directory"/rulex.ini /usr/local/
+    cp "./rulex $working_directory
+    cp "./rulex.ini $working_directory
+    cp "./license.key" $working_directory
+    cp "./license.lic" $working_directory
 }
 remove_files() {
     if [ -e "$1" ]; then
@@ -25,20 +27,6 @@ remove_files() {
     else
         echo "[#] $1 files not found. No need to remove."
     fi
-}
-
-# Function to uninstall the service
-uninstall(){
-    local working_directory="/usr/local"
-    remove_files $working_directory/rulex
-    remove_files $working_directory/rulex.ini
-    remove_files $working_directory/rulex.db
-    remove_files $working_directory/*.txt
-    remove_files $working_directory/upload/
-    remove_files $working_directory/license.key
-    remove_files $working_directory/license.lic
-    remove_files $working_directory/*.txt.gz
-    echo "[√] Rulex has been uninstalled."
 }
 
 start_service() {
@@ -72,7 +60,15 @@ enable_service() {
 
 # Function to uninstall the service
 uninstall_service() {
-    uninstall_files
+    procd_close_instance
+    remove_files $working_directory/rulex
+    remove_files $working_directory/rulex.ini
+    remove_files $working_directory/rulex.db
+    remove_files $working_directory/*.txt
+    remove_files $working_directory/upload/
+    remove_files $working_directory/license.key
+    remove_files $working_directory/license.lic
+    remove_files $working_directory/*.txt.gz
     /etc/init.d/rulex_daemon stop
     /etc/init.d/rulex_daemon disable
     rm /etc/init.d/rulex_daemon
