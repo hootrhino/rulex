@@ -76,19 +76,19 @@ stop(){
     systemctl stop rulex
     echo "[√] Service Rulex has been stopped."
 }
-remove_files(){
-    if ls $1 1> /dev/null 2>&1; then
-        rm -rf $1
-        if [[ $path == *"/upload"* ]]; then
-            rm -rf $1
+remove_files() {
+    if [ -e "$1" ]; then
+        if [[ $1 == *"/upload"* ]]; then
+            rm -rf "$1"
         else
-            rm $1
+            rm "$1"
         fi
         echo "[!] $1 files removed."
     else
         echo "[#] $1 files not found. No need to remove."
     fi
 }
+
 uninstall(){
     local working_directory="/usr/local"
     systemctl stop rulex

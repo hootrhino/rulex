@@ -14,16 +14,31 @@ install_files() {
     cp "$working_directory"/rulex /usr/local/
     cp "$working_directory"/rulex.ini /usr/local/
 }
+remove_files() {
+    if [ -e "$1" ]; then
+        if [[ $1 == *"/upload"* ]]; then
+            rm -rf "$1"
+        else
+            rm "$1"
+        fi
+        echo "[!] $1 files removed."
+    else
+        echo "[#] $1 files not found. No need to remove."
+    fi
+}
 
 # Function to uninstall the service
-uninstall_files() {
-    rm -f /usr/local/rulex
-    rm -f /usr/local/rulex.ini
-    rm -f /usr/local/rulex.db
-    rm -f /usr/local/*.txt
-    rm -f /usr/local/license.*
-    rm -rf /usr/local/upload/
-    rm -f /usr/local/*.txt.gz
+uninstall(){
+    local working_directory="/usr/local"
+    remove_files $working_directory/rulex
+    remove_files $working_directory/rulex.ini
+    remove_files $working_directory/rulex.db
+    remove_files $working_directory/*.txt
+    remove_files $working_directory/upload/
+    remove_files $working_directory/license.key
+    remove_files $working_directory/license.lic
+    remove_files $working_directory/*.txt.gz
+    echo "[√] Rulex has been uninstalled."
 }
 
 start_service() {
