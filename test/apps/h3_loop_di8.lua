@@ -29,7 +29,7 @@ function Main(arg)
             break
         else
             if v ~= s then
-                local err0 = applib:DataToUdp('udpServerUUID', 'hello gpio8:' .. v)
+                local err0 = data:ToUdp('udpServerUUID', 'hello gpio8:' .. v)
                 print('DataToUdp success? =>', err0 == nil)
             end
             s = v
