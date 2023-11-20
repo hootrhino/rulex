@@ -25,14 +25,18 @@ import (
 	DI1 -> PA8
 	DI2	-> PA9
 	DI3 -> PA10
+	USER_GPIO -> PA20
 */
 const (
+	// DO
 	eekit_DO1 string = "6"
 	eekit_DO2 string = "7"
-
+	// DI
 	eekit_DI1 string = "8"
 	eekit_DI2 string = "9"
 	eekit_DI3 string = "10"
+	// Use LED
+	eekit_USER_GPIO string = "20"
 )
 
 const (
@@ -56,11 +60,13 @@ func _EEKIT_GPIOAllInit() int {
 	gpio8 := "/sys/class/gpio/gpio8/value"
 	gpio9 := "/sys/class/gpio/gpio9/value"
 	gpio10 := "/sys/class/gpio/gpio10/value"
+	gpio20 := "/sys/class/gpio/gpio20/value"
 	_, err1 := os.Stat(gpio6)
 	_, err2 := os.Stat(gpio7)
 	_, err3 := os.Stat(gpio8)
 	_, err4 := os.Stat(gpio9)
 	_, err5 := os.Stat(gpio10)
+	_, err6 := os.Stat(gpio20)
 	if err1 != nil {
 		if strings.Contains(err1.Error(), "no such file or directory") {
 			_EEKIT_GPIOInit(eekit_DO1, eekit_Out)
@@ -89,6 +95,12 @@ func _EEKIT_GPIOAllInit() int {
 		if strings.Contains(err5.Error(), "no such file or directory") {
 			_EEKIT_GPIOInit(eekit_DI3, eekit_In)
 			fmt.Println("EEKIT_GPIOAllInit DI3 In Mode Ok")
+		}
+	}
+	if err6 != nil {
+		if strings.Contains(err5.Error(), "no such file or directory") {
+			_EEKIT_GPIOInit(eekit_USER_GPIO, eekit_Out)
+			fmt.Println("EEKIT_GPIOAllInit USER_GPIO Out Mode Ok")
 		}
 	}
 	// 返回值无用

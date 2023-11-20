@@ -153,7 +153,7 @@ fetch_dashboard() {
 
 gen_changelog() {
     echo -e "[.]Version Change log:"
-    log=$(git log --oneline --pretty=format:"\033[0;31m[#]\033[0m%s\n" $(git describe --abbrev=0 --tags).. | cat)
+    log=$(git log --oneline --pretty=format:" \033[0;31m[#]\033[0m%s\n" $(git describe --abbrev=0 --tags).. | cat)
     echo -e $log
 }
 
