@@ -3,7 +3,7 @@ package test
 import (
 	"time"
 
-	httpserver "github.com/hootrhino/rulex/plugin/http_server"
+	httpserver "github.com/hootrhino/rulex/plugin/rulex_api_server"
 
 	"testing"
 

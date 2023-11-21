@@ -4,11 +4,12 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
-	"github.com/hootrhino/rulex/glogger"
-	"github.com/hootrhino/rulex/plugin/http_server/model"
 	"io"
 	"os/exec"
 	"sync"
+
+	"github.com/hootrhino/rulex/glogger"
+	"github.com/hootrhino/rulex/plugin/rulex_api_server/model"
 )
 
 // ProcessManager

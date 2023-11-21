@@ -6,7 +6,7 @@ import (
 
 	"github.com/hootrhino/rulex/device"
 	"github.com/hootrhino/rulex/glogger"
-	httpserver "github.com/hootrhino/rulex/plugin/http_server"
+	httpserver "github.com/hootrhino/rulex/plugin/rulex_api_server"
 	"github.com/hootrhino/rulex/typex"
 )
 

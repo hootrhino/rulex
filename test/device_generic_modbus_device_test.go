@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/hootrhino/rulex/glogger"
-	httpserver "github.com/hootrhino/rulex/plugin/http_server"
+	httpserver "github.com/hootrhino/rulex/plugin/rulex_api_server"
 	mbserver "github.com/tbrandon/mbserver"
 
 	"testing"

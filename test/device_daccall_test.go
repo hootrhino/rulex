@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/hootrhino/rulex/glogger"
-	httpserver "github.com/hootrhino/rulex/plugin/http_server"
 	mqttserver "github.com/hootrhino/rulex/plugin/mqtt_server"
+	httpserver "github.com/hootrhino/rulex/plugin/rulex_api_server"
 	"github.com/hootrhino/rulex/typex"
 )
 

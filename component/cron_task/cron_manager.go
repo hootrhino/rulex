@@ -11,7 +11,7 @@ import (
 
 	"github.com/hootrhino/rulex/component/interdb"
 	"github.com/hootrhino/rulex/glogger"
-	"github.com/hootrhino/rulex/plugin/http_server/model"
+	"github.com/hootrhino/rulex/plugin/rulex_api_server/model"
 	"github.com/robfig/cron/v3"
 )
 
