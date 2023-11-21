@@ -82,9 +82,9 @@ func StartRecoverProcess() {
 	cmd := exec.Command("bash", "-c", "/usr/local/rulex recover -recover=true")
 	cmd.SysProcAttr = NewSysProcAttr()
 	cmd.Env = os.Environ()
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+	cmd.Stdin = nil
+	cmd.Stdout = nil
+	cmd.Stderr = nil
 	if cmd.Process != nil {
 		cmd.Process.Release()
 	}
@@ -109,9 +109,9 @@ func StartUpgradeProcess(path string, args []string) {
 	cmd := exec.Command("bash", "-c", path+" "+strings.Join(args, " "))
 	cmd.SysProcAttr = NewSysProcAttr()
 	cmd.Env = os.Environ()
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+	cmd.Stdin = nil
+	cmd.Stdout = nil
+	cmd.Stderr = nil
 	if cmd.Process != nil {
 		cmd.Process.Release() // 用来分离进程用,简直天坑参数！！！
 	}

@@ -121,30 +121,38 @@ calculate_and_save_md5() {
 #
 # fetch dashboard
 #
+#!/bin/bash
+
 fetch_dashboard() {
-    local www_zip="./www.zip"
-    local http_server_dir="./plugin/http_server/www"
+    local owner="hootrhino"
+    local repo="hootrhino-eekit-web"
 
-    # 检查文件是否存在
-    if [ -f "$www_zip" ]; then
-        echo -e "\033[44;32m [√] File www.zip already downloaded \033[0m"
-        unzip -q "$www_zip" -d "$http_server_dir"
-    else
-        VERSION="$(git describe --tags $(git rev-list --tags --max-count=1))"
-        local URL="${RESPOSITORY}/hootrhino-eekit-web/releases/download/${VERSION}/www.zip"
-        echo -e "\033[41;37m [*] Fetch www.zip from: ${URL}\033[0m"
-        # 发送HEAD请求来检查URL是否存在
-        response=$(curl -s --head -w %{http_code} "$URL" -o /dev/null)
-
-        if [ "$response" = "200" ]; then
-            echo -e "\033[40;32m [*] Unzip www.zip to:${http_server_dir} \033[0m"
-            wget -q --show-progress "$URL"
-            unzip -q "$www_zip" -d "$http_server_dir"
-        else
-            echo -e "\033[41;30m [x] Error with http code 404, check if ${URL} exists \033[0m"
-            exit 1
-        fi
+    # 检查当前目录是否已经存在 www.zip 文件
+    if [ -f "www.zip" ]; then
+        echo "[!] www.zip already exists. No need to download."
+        exit 0
     fi
+
+    # 获取最新 release 的 tag 名称
+    local tag=$(curl -s "https://api.github.com/repos/$owner/$repo/releases/latest" | jq -r .tag_name)
+
+    # 获取最新 release 中的 www.zip 下载链接
+    local zip_url=$(curl -s "https://api.github.com/repos/$owner/$repo/releases/latest" | jq -r '.assets[] | select(.name == "www.zip") | .browser_download_url')
+
+    if [ -z "$zip_url" ]; then
+        echo "[x] Error: www.zip not found in the release assets."
+        exit 1
+    fi
+
+    # 下载 www.zip 文件
+    curl -L -o www.zip "$zip_url"
+
+    echo "[√] Download complete. Tag: $tag"
+
+    # 解压 www.zip 文件到指定目录
+    unzip -o www.zip -d /plugin/rulex_api_server/server/www/
+
+    echo "[√] Extraction complete. www.zip contents have been overwritten to /plugin/rulex_api_server/server/www/."
 }
 
 #
