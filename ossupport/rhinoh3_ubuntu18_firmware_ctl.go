@@ -45,7 +45,7 @@ func StopRulex() error {
  */
 func Restart() error {
 	{
-		cmd := exec.Command("sudo", "systemctl", "daemon-reload")
+		cmd := exec.Command("systemctl", "daemon-reload")
 		cmd.SysProcAttr = NewSysProcAttr()
 		out, err := cmd.CombinedOutput()
 		if err != nil {
@@ -55,7 +55,7 @@ func Restart() error {
 
 	}
 	{
-		cmd := exec.Command("sudo", "service", "rulex", "restart")
+		cmd := exec.Command("service", "rulex", "restart")
 		cmd.SysProcAttr = NewSysProcAttr()
 		out, err := cmd.CombinedOutput()
 		if err != nil {
@@ -79,18 +79,18 @@ func Restart() error {
 */
 func StartRecoverProcess() {
 	log.Printf("Start Recover Process Pid=%d, Gid=%d", os.Getpid(), os.Getegid())
-	cmd := exec.Command("bash", "-c", "/usr/local/rulex -recover=true")
+	cmd := exec.Command("bash", "-c", "/usr/local/rulex recover -recover=true")
 	cmd.SysProcAttr = NewSysProcAttr()
 	cmd.Env = os.Environ()
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if cmd.Process != nil {
-		cmd.Process.Release() // 用来分离进程用,简直天坑参数！！！
+		cmd.Process.Release()
 	}
 	err := cmd.Start()
 	if cmd.Process != nil {
-		cmd.Process.Release() // 用来分离进程用,简直天坑参数！！！
+		cmd.Process.Release()
 	}
 	if err != nil {
 		log.Println("Start Recover Process Failed:", err)
