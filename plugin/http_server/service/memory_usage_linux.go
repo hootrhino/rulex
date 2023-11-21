@@ -24,58 +24,28 @@ import (
 	"strings"
 )
 
-// GetMemPercent 获取Linux内存使用百分比
 func GetMemPercent() (float64, error) {
-	// 打开 /proc/meminfo 文件
-	file, err := os.Open("/proc/meminfo")
+	content, err := ioutil.ReadFile("/proc/meminfo")
 	if err != nil {
-		return 0, fmt.Errorf("Open /proc/meminfo error: %v", err)
+		return 0.0, err
 	}
-	defer file.Close()
 
-	// 初始化变量用于存储内存信息
-	var totalMem, freeMem int64
+	meminfo := string(content)
 
-	// 逐行读取文件内容
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		line := scanner.Text()
+	var memTotal, memAvailable float64
+	lines := strings.Split(meminfo, "\n")
+	for _, line := range lines {
 		fields := strings.Fields(line)
-		if len(fields) == 3 {
-			// 提取字段名、值和单位
-			fieldName := fields[0]
-			fieldValue := fields[1]
-
-			// 将值转换为整数
-			value, err := parseMemInfoValue(fieldValue)
-			if err != nil {
-				return 0, fmt.Errorf("parse MemInfo Value error: %v", err)
-			}
-
-			// 根据字段名更新内存信息
-			switch fieldName {
-			case "MemTotal:":
-				totalMem = value
-			case "MemFree:":
-				freeMem = value
-			}
+		if len(fields) < 2 {
+			continue
+		}
+		switch fields[0] {
+		case "MemTotal:":
+			fmt.Sscan(fields[1], &memTotal)
+		case "MemAvailable:":
+			fmt.Sscan(fields[1], &memAvailable)
 		}
 	}
-
-	// 计算已使用内存
-	usedMem := totalMem - freeMem
-
-	// 计算内存使用百分比
-	memUsagePercent := float64(usedMem) / float64(totalMem) * 100
-
-	return math.Round(memUsagePercent*100) / 100, nil
-}
-
-// parseMemInfoValue 解析 /proc/meminfo 文件中的内存值（以 KB 为单位）
-func parseMemInfoValue(valueStr string) (int64, error) {
-	value, err := strconv.ParseInt(valueStr, 10, 64)
-	if err != nil {
-		return 0, err
-	}
-	return value * 1024, nil
+	memPercent := 100.0 * (1.0 - memAvailable/memTotal)
+	return memPercent, nil
 }
