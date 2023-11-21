@@ -55,7 +55,7 @@ func Restart() error {
 
 	}
 	{
-		cmd := exec.Command("sudo", "service", "rulex", "start")
+		cmd := exec.Command("sudo", "service", "rulex", "restart")
 		cmd.SysProcAttr = NewSysProcAttr()
 		out, err := cmd.CombinedOutput()
 		if err != nil {

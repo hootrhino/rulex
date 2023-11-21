@@ -128,9 +128,9 @@ func main() {
 						log.Println("[DATA RECOVER] Stop rulex error", err)
 						return err
 					}
-					dir := "./upload/Backup/"
+					dir := "/usr/local/upload/Backup/"
 					fileName := "recovery.db"
-					if err := ossupport.MoveFile(dir+fileName, "./rulex.db"); err != nil {
+					if err := ossupport.MoveFile(dir+fileName, "/usr/local/rulex.db"); err != nil {
 						log.Println("[DATA RECOVER] Move Db File error", err)
 						return err
 					}
