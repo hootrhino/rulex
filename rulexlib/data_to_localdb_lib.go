@@ -31,7 +31,7 @@ import (
 func LocalDBQuery(rx typex.RuleX) func(*lua.LState) int {
 	return func(l *lua.LState) int {
 		sql := l.ToString(2)
-		Map, err := datacenter.Query("INTERNAL_DATACENTER", sql)
+		Map, err := datacenter.Query("RULEX_INTERNAL_DATACENTER", sql)
 		if err != nil {
 			l.Push(lua.LNil)
 			l.Push(lua.LString(err.Error()))
