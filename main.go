@@ -122,18 +122,20 @@ func main() {
 				},
 				Action: func(c *cli.Context) error {
 					if !c.Bool("recover") {
-						return nil
+						return fmt.Errorf("[DATA RECOVER] Nothing todo")
 					}
 					if err := ossupport.StopRulex(); err != nil {
 						log.Println("[DATA RECOVER] Stop rulex error", err)
 						return err
 					}
-					dir := "/usr/local/upload/Backup/"
-					fileName := "recovery.db"
-					if err := ossupport.MoveFile(dir+fileName, "/usr/local/rulex.db"); err != nil {
+					recoveryDb := "/usr/local/upload/Backup/recovery.db"
+					log.Println("[DATA RECOVER] Move Db File")
+					if err := ossupport.MoveFile(recoveryDb, "/usr/local/rulex.db"); err != nil {
 						log.Println("[DATA RECOVER] Move Db File error", err)
 						return err
 					}
+					log.Println("[DATA RECOVER] Move Db File Finished")
+					log.Println("[DATA RECOVER] Try to Restart rulex")
 					if err := ossupport.Restart(); err != nil {
 						log.Println("[DATA RECOVER] Restart rulex error", err)
 						return err
