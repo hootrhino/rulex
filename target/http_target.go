@@ -69,9 +69,10 @@ func (ht *HTTPTarget) To(data interface{}) (interface{}, error) {
 
 func (ht *HTTPTarget) Stop() {
 	ht.status = typex.SOURCE_STOP
-	ht.CancelCTX()
+	if ht.CancelCTX != nil {
+		ht.CancelCTX()
+	}
 }
 func (ht *HTTPTarget) Details() *typex.OutEnd {
 	return ht.RuleEngine.GetOutEnd(ht.PointId)
 }
-
