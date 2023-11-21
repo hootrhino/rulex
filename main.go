@@ -76,6 +76,13 @@ func main() {
 					},
 				},
 				Action: func(c *cli.Context) error {
+					file, err := os.Create("/usr/local/local-upgrade-log.txt")
+					if err != nil {
+						return fmt.Errorf("[DATA RECOVER] Error creating file:%s", err)
+					}
+					defer file.Close()
+					os.Stdout = file
+					os.Stderr = file
 					OldPid := c.Int("oldpid")
 					log.Println("[RULEX UPGRADE] Updater Pid=",
 						os.Getpid(), "Gid=", os.Getegid(), " OldPid:", OldPid)
@@ -121,15 +128,26 @@ func main() {
 					},
 				},
 				Action: func(c *cli.Context) error {
+					file, err := os.Create("/usr/local/local-upgrade-log.txt")
+					if err != nil {
+						return fmt.Errorf("[DATA RECOVER] Error creating file:%s", err)
+					}
+					defer file.Close()
+					os.Stdout = file
+					os.Stderr = file
 					if !c.Bool("recover") {
 						return fmt.Errorf("[DATA RECOVER] Nothing todo")
 					}
+
 					if err := ossupport.StopRulex(); err != nil {
 						log.Println("[DATA RECOVER] Stop rulex error", err)
 						return err
 					}
 					recoveryDb := "/usr/local/upload/Backup/recovery.db"
 					log.Println("[DATA RECOVER] Move Db File")
+					if err := os.Remove("/usr/local/rulex.db"); err != nil {
+						return fmt.Errorf("[DATA RECOVER] Remove Old Db File error:%s", err)
+					}
 					if err := ossupport.MoveFile(recoveryDb, "/usr/local/rulex.db"); err != nil {
 						log.Println("[DATA RECOVER] Move Db File error", err)
 						return err
