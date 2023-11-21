@@ -25,7 +25,7 @@ remove_files() {
         fi
         echo "[!] $1 files removed."
     else
-        echo "[#] $1 files not found. No need to remove."
+        echo "[*] $1 files not found. No need to remove."
     fi
 }
 

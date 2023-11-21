@@ -21,20 +21,18 @@ import (
 	"net"
 	"time"
 
-	"github.com/hootrhino/rulex/common"
 	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/typex"
 	"github.com/hootrhino/rulex/utils"
 )
 
-type __TcpCommonConfig struct {
-	DataMode   string `json:"dataMode" validate:"required"`
-	AllowPing  *bool  `json:"allowPing" validate:"required"`
-	PingPacket string `json:"pingPacket" validate:"required"`
-}
 type _TcpMainConfig struct {
-	CommonConfig __TcpCommonConfig `json:"commonConfig"`
-	HostConfig   common.HostConfig `json:"hostConfig"`
+	AllowPing  *bool  `json:"allowPing"`
+	DataMode   string `json:"dataMode"`
+	Host       string `json:"host"`
+	PingPacket string `json:"pingPacket"`
+	Port       int    `json:"port"`
+	Timeout    int    `json:"timeout"`
 }
 type TTcpTarget struct {
 	typex.XStatus
@@ -52,11 +50,10 @@ func NewTTcpTarget(e typex.RuleX) typex.XTarget {
 	ht := new(TTcpTarget)
 	ht.RuleEngine = e
 	ht.mainConfig = _TcpMainConfig{
-		CommonConfig: __TcpCommonConfig{AllowPing: func() *bool {
+		AllowPing: func() *bool {
 			b := true
 			return &b
-		}()},
-		HostConfig: common.HostConfig{},
+		}(),
 	}
 	ht.status = typex.SOURCE_DOWN
 	return ht
@@ -67,6 +64,7 @@ func (ht *TTcpTarget) Init(outEndId string, configMap map[string]interface{}) er
 	if err := utils.BindSourceConfig(configMap, &ht.mainConfig); err != nil {
 		return err
 	}
+	ht.mainConfig.PingPacket += "\r\n"
 	return nil
 
 }
@@ -74,7 +72,7 @@ func (ht *TTcpTarget) Start(cctx typex.CCTX) error {
 	ht.Ctx = cctx.Ctx
 	ht.CancelCTX = cctx.CancelCTX
 	var err error
-	host := fmt.Sprintf("%s:%d", ht.mainConfig.HostConfig.Host, ht.mainConfig.HostConfig.Port)
+	host := fmt.Sprintf("%s:%d", ht.mainConfig.Host, ht.mainConfig.Port)
 	serverAddr, err := net.ResolveTCPAddr("tcp", host)
 	if err != nil {
 		return err
@@ -86,7 +84,7 @@ func (ht *TTcpTarget) Start(cctx typex.CCTX) error {
 	if err != nil {
 		return err
 	}
-	if *ht.mainConfig.CommonConfig.AllowPing {
+	if *ht.mainConfig.AllowPing {
 		go func(ht *TTcpTarget) {
 			for {
 				select {
@@ -99,10 +97,10 @@ func (ht *TTcpTarget) Start(cctx typex.CCTX) error {
 					}
 				}
 				ht.client.SetReadDeadline(
-					time.Now().Add((time.Duration(ht.mainConfig.HostConfig.Timeout) *
+					time.Now().Add((time.Duration(ht.mainConfig.Timeout) *
 						time.Millisecond)),
 				)
-				_, err1 := ht.client.Write([]byte(ht.mainConfig.CommonConfig.PingPacket))
+				_, err1 := ht.client.Write([]byte(ht.mainConfig.PingPacket))
 				ht.client.SetReadDeadline(time.Time{})
 				if err1 != nil {
 					glogger.GLogger.Error("TTcpTarget Ping Error:", err1)
@@ -131,26 +129,27 @@ func (ht *TTcpTarget) To(data interface{}) (interface{}, error) {
 	if ht.client != nil {
 		switch s := data.(type) {
 		case string:
-			if ht.mainConfig.CommonConfig.DataMode == "RAW_STRING" {
+			if ht.mainConfig.DataMode == "RAW_STRING" {
 				ht.client.SetReadDeadline(
-					time.Now().Add((time.Duration(ht.mainConfig.HostConfig.Timeout) *
+					time.Now().Add((time.Duration(ht.mainConfig.Timeout) *
 						time.Millisecond)),
 				)
-				_, err0 := ht.client.Write([]byte(s))
+				_, err0 := ht.client.Write([]byte(s + "\r\n"))
 				ht.client.SetReadDeadline(time.Time{})
 				if err0 != nil {
 					return 0, err0
 				}
 			}
-			if ht.mainConfig.CommonConfig.DataMode == "HEX_STRING" {
+			if ht.mainConfig.DataMode == "HEX_STRING" {
 				dByte, err1 := hex.DecodeString(s)
 				if err1 != nil {
 					return 0, err1
 				}
 				ht.client.SetReadDeadline(
-					time.Now().Add((time.Duration(ht.mainConfig.HostConfig.Timeout) *
+					time.Now().Add((time.Duration(ht.mainConfig.Timeout) *
 						time.Millisecond)),
 				)
+				dByte = append(dByte, []byte{'\r', '\n'}...)
 				_, err0 := ht.client.Write(dByte)
 				ht.client.SetReadDeadline(time.Time{})
 				if err0 != nil {
