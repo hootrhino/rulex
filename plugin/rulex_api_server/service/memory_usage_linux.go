@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"math"
 )
 
 func GetMemPercent() (float64, error) {
@@ -44,5 +45,5 @@ func GetMemPercent() (float64, error) {
 		}
 	}
 	memPercent := 100.0 * (1.0 - memAvailable/memTotal)
-	return memPercent, nil
+	return math.Round(memPercent*100) / 100, nil
 }
