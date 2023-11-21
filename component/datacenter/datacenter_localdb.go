@@ -44,8 +44,8 @@ func (ldb *LocalDb) Init() error {
 
 func (ldb *LocalDb) GetSchemaDetail(goodsId string) SchemaDetail {
 	return SchemaDetail{
-		UUID:        "INTERNAL_DATACENTER",
-		SchemaType:  "INTERNAL_DATACENTER",
+		UUID:        "RULEX_INTERNAL_DATACENTER",
+		SchemaType:  "RULEX_INTERNAL_DATACENTER",
 		Name:        "RULEX内置轻量级数据仓库",
 		LocalPath:   ".local",
 		NetAddr:     ".local",
