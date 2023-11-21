@@ -16,16 +16,13 @@
 package service
 
 import (
-	"bufio"
 	"fmt"
-	"math"
 	"os"
-	"strconv"
 	"strings"
 )
 
 func GetMemPercent() (float64, error) {
-	content, err := ioutil.ReadFile("/proc/meminfo")
+	content, err := os.ReadFile("/proc/meminfo")
 	if err != nil {
 		return 0.0, err
 	}
