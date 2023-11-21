@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	httpserver "github.com/hootrhino/rulex/plugin/http_server"
+	httpserver "github.com/hootrhino/rulex/plugin/rulex_api_server"
 	"github.com/hootrhino/rulex/typex"
 )
 

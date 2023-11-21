@@ -63,7 +63,7 @@ $$
     {
         "appId":"rulex",
         "file":"C:/Users/wangwenhai/workspace/rulex/plugin/http_server/rule_api.go:580",
-        "func":"github.com/hootrhino/rulex/plugin/http_server.TestSourceCallback",
+        "func":"github.com/hootrhino/rulex/plugin/rulex_api_server.TestSourceCallback",
         "level":"debug",
         "msg":"string",
         "time":"2023-06-30T17:52:31+08:00",
@@ -75,7 +75,7 @@ $$
     {
         "appId":"rulex",
         "file":"C:/Users/wangwenhai/workspace/rulex/plugin/http_server/rule_api.go:580",
-        "func":"github.com/hootrhino/rulex/plugin/http_server.TestSourceCallback",
+        "func":"github.com/hootrhino/rulex/plugin/rulex_api_server.TestSourceCallback",
         "level":"debug",
         "msg":"string",
         "time":"2023-06-30T17:52:31+08:00",

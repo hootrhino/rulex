@@ -32,9 +32,9 @@ import (
 
 	"github.com/hootrhino/rulex/core"
 	"github.com/hootrhino/rulex/glogger"
-	httpserver "github.com/hootrhino/rulex/plugin/http_server"
 	icmpsender "github.com/hootrhino/rulex/plugin/icmp_sender"
 	license_manager "github.com/hootrhino/rulex/plugin/license_manager"
+	httpserver "github.com/hootrhino/rulex/plugin/rulex_api_server"
 	"github.com/hootrhino/rulex/typex"
 )
 

@@ -10,7 +10,7 @@ import (
 	serial "github.com/wwhai/tarmserial"
 
 	"github.com/hootrhino/rulex/component/rulexrpc"
-	httpserver "github.com/hootrhino/rulex/plugin/http_server"
+	httpserver "github.com/hootrhino/rulex/plugin/rulex_api_server"
 	"github.com/hootrhino/rulex/typex"
 	"github.com/hootrhino/rulex/utils"
 	"google.golang.org/grpc"

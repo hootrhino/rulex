@@ -10,7 +10,7 @@ import (
 	"github.com/hootrhino/rulex/engine"
 	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/plugin/demo_plugin"
-	httpserver "github.com/hootrhino/rulex/plugin/http_server"
+	httpserver "github.com/hootrhino/rulex/plugin/rulex_api_server"
 	"github.com/hootrhino/rulex/typex"
 
 	"google.golang.org/grpc"
