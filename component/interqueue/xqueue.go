@@ -64,7 +64,7 @@ func InitDataCacheQueue(rulex typex.RuleX, maxQueueSize int) XQueue {
 	return DefaultDataCacheQueue
 }
 func (q *DataCacheQueue) GetSize() int {
-	return len(q.Queue)
+	return cap(q.Queue)
 }
 
 /*
@@ -73,7 +73,7 @@ func (q *DataCacheQueue) GetSize() int {
 *
  */
 func (q *DataCacheQueue) Push(d QueueData) error {
-	if len(q.Queue)+1 > q.GetSize() {
+	if len(q.Queue)+1 > 52428800 { // 50Mb
 		msg := fmt.Sprintf("attached max queue size, max size is:%v, current size is: %v", q.GetSize(), len(q.Queue)+1)
 		glogger.GLogger.Error(msg)
 		return errors.New(msg)
