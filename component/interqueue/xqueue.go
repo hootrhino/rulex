@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/component/intermetric"
+	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/typex"
 )
 
@@ -64,7 +64,7 @@ func InitDataCacheQueue(rulex typex.RuleX, maxQueueSize int) XQueue {
 	return DefaultDataCacheQueue
 }
 func (q *DataCacheQueue) GetSize() int {
-	return cap(q.Queue)
+	return len(q.Queue)
 }
 
 /*
@@ -73,8 +73,6 @@ func (q *DataCacheQueue) GetSize() int {
 *
  */
 func (q *DataCacheQueue) Push(d QueueData) error {
-	// glogger.GLogger.Debug("DataCacheQueue Push:", d.Data)
-	// 比较数据和容积
 	if len(q.Queue)+1 > q.GetSize() {
 		msg := fmt.Sprintf("attached max queue size, max size is:%v, current size is: %v", q.GetSize(), len(q.Queue)+1)
 		glogger.GLogger.Error(msg)
@@ -144,10 +142,10 @@ func StartDataCacheQueue() {
 func (q *DataCacheQueue) PushQueue(qd QueueData) error {
 	err := DefaultDataCacheQueue.Push(qd)
 	if err != nil {
-		glogger.GLogger.Error("PushQueue error:", err)
-		// q.rulex.MetricStatistics.IncInFailed()
+		glogger.GLogger.Error("PushInQueue error:", err)
+		intermetric.IncInFailed()
 	} else {
-		// e.MetricStatistics.IncIn()
+		intermetric.IncIn()
 	}
 	return err
 }
@@ -161,9 +159,9 @@ func (q *DataCacheQueue) PushInQueue(in *typex.InEnd, data string) error {
 	err := DefaultDataCacheQueue.Push(qd)
 	if err != nil {
 		glogger.GLogger.Error("PushInQueue error:", err)
-		// e.MetricStatistics.IncInFailed()
+		intermetric.IncInFailed()
 	} else {
-		// e.MetricStatistics.IncIn()
+		intermetric.IncIn()
 	}
 	return err
 }
@@ -184,9 +182,9 @@ func (q *DataCacheQueue) PushDeviceQueue(Device *typex.Device, data string) erro
 	err := DefaultDataCacheQueue.Push(qd)
 	if err != nil {
 		glogger.GLogger.Error("PushInQueue error:", err)
-		// q.rulex.MetricStatistics.IncInFailed()
+		intermetric.IncInFailed()
 	} else {
-		// q.rulex.MetricStatistics.IncIn()
+		intermetric.IncIn()
 	}
 	return err
 }
@@ -201,9 +199,9 @@ func (q *DataCacheQueue) PushOutQueue(out *typex.OutEnd, data string) error {
 	err := DefaultDataCacheQueue.Push(qd)
 	if err != nil {
 		glogger.GLogger.Error("PushOutQueue error:", err)
-		// e.MetricStatistics.IncInFailed()
+		intermetric.IncInFailed()
 	} else {
-		// e.MetricStatistics.IncIn()
+		intermetric.IncIn()
 	}
 	return err
 }
