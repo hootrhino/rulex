@@ -43,10 +43,14 @@ RestartSec=5
 WantedBy=multi-user.target
 EOL
     chmod +x $source_dir/rulex
+    echo "[.] Copy $source_dir/rulex to $working_directory."
     cp "$source_dir/rulex" "$executable"
+    echo "[.] Copy $source_dir/rulex.ini to $working_directory."
     cp "$source_dir/rulex.ini" "$config_file"
-    cp "$source_dir/license.key" /usr/local/
-    cp "$source_dir/license.lic" /usr/local/
+    echo "[.] Copy $source_dir/license.key to /usr/local/license.key."
+    cp "$source_dir/license.key" "/usr/local/license.key"
+    echo "[.] Copy $source_dir/license.lic to /usr/local/license.lic."
+    cp "$source_dir/license.lic" "/usr/local/license.lic"
     systemctl daemon-reload
     systemctl enable rulex
     systemctl start rulex
@@ -85,7 +89,7 @@ remove_files() {
         fi
         echo "[!] $1 files removed."
     else
-        echo "[#] $1 files not found. No need to remove."
+        echo "[*] $1 files not found. No need to remove."
     fi
 }
 
