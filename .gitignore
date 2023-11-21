@@ -19,11 +19,11 @@ _build*
 lua-log*
 *.txt
 *.txt.gz
-plugin/http_server/www/*
-plugin/http_server/server/www/*
+plugin/rulex_api_server/www/*
+plugin/rulex_api_server/server/www/*
 dist/
 apps/*.lua
-plugin/http_server/www/index.html
-plugin/http_server/server/www/index.html
+plugin/rulex_api_server/www/index.html
+plugin/rulex_api_server/server/www/index.html
 test/script/_temp/*
 upload/*
