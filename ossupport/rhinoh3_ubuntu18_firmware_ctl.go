@@ -78,16 +78,11 @@ func Restart() error {
 *
 */
 func StartRecoverProcess() {
-	file, err1 := os.Create("/usr/local/local-recover-log.txt")
-	if err1 != nil {
-		return
-	}
-	defer file.Close()
 	cmd := exec.Command("/usr/local/rulex", "recover", "-recover=true")
 	cmd.SysProcAttr = NewSysProcAttr()
-	cmd.Env = []string{}
-	cmd.Stdout = file
-	cmd.Stderr = file
+	cmd.Env = os.Environ()
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
 	err := cmd.Start()
 	log.Printf("Start Recover Process Pid=%d, Cmd:%s", cmd.Process.Pid, cmd.String())
 	if err != nil {
@@ -104,17 +99,11 @@ func StartRecoverProcess() {
 *
  */
 func StartUpgradeProcess(path string, args []string) {
-	file, err1 := os.Create("/usr/local/local-upgrade-log.txt")
-	if err1 != nil {
-		return
-	}
-	defer file.Close()
-
 	cmd := exec.Command("bash", "-c", path+" "+strings.Join(args, " "))
 	cmd.SysProcAttr = NewSysProcAttr()
-	cmd.Env = []string{}
-	cmd.Stdout = file
-	cmd.Stderr = file
+	cmd.Env = os.Environ()
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
 	log.Printf("Start Upgrade Process Pid=%d, Gid=%d", os.Getpid(), os.Getegid())
 	if cmd.Process != nil {
 		cmd.Process.Release() // 用来分离进程用,简直天坑参数！！！
