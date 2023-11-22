@@ -17,36 +17,11 @@
 }
 ```
 ## 测试
-可以通过下面这个HTML页面来测试效果。
-```html
-<!DOCTYPE html>
-<html lang="zh-CN">
+勃播放地址:`ws://127.0.0.1:9400/ws?token=WebRtspPlayer&liveId=a97607e47c81d43dba8ef6fa48a2cd45`,其中：
+- URL: 固定路径`ws://127.0.0.1:9400/ws`
+- token：固定值`WebRtspPlayer`
+- liveId：播放源的名称的**md5Hash**,例如`USB2.0 PC CAMERA`的 liveId 是 `a97607e47c81d43dba8ef6fa48a2cd45`。
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
-        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0,minimal-ui:ios">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
-    <link rel="stylesheet" href="">
-    <script src=""></script>
-</head>
-
-<body>
-    <div>
-        <img src="http://127.0.0.1:8080" />
-        <img src="http://127.0.0.1:8080" />
-        <img src="http://127.0.0.1:8080" />
-    </div>
-    <div>
-        <img src="http://127.0.0.1:8080" />
-        <img src="http://127.0.0.1:8080" />
-        <img src="http://127.0.0.1:8080" />
-    </div>
-</body>
-
-</html>
-```
 ## 维护
 
 - <cnwwhai@gmail.com>
