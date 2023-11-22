@@ -17,13 +17,13 @@ package service
 
 import (
 	"fmt"
-	"os"
-	"strings"
+	"io/ioutil"
 	"math"
+	"strings"
 )
 
 func GetMemPercent() (float64, error) {
-	content, err := os.ReadFile("/proc/meminfo")
+	content, err := ioutil.ReadFile("/proc/meminfo")
 	if err != nil {
 		return 0.0, err
 	}
@@ -44,6 +44,7 @@ func GetMemPercent() (float64, error) {
 			fmt.Sscan(fields[1], &memAvailable)
 		}
 	}
-	memPercent := 100.0 * (1.0 - memAvailable/memTotal)
-	return math.Round(memPercent*100) / 100, nil
+
+	memPercent := math.Round(100.0*(1.0-memAvailable/memTotal)*100) / 100
+	return memPercent, nil
 }
