@@ -41,24 +41,24 @@ func UploadSqlite(c *gin.Context, ruleEngine typex.RuleX) {
 	// single file
 	file, err := c.FormFile("file")
 	if err != nil {
-		c.JSON(common.HTTP_OK, common.Error400(err))
+		c.JSON(common.HTTP_OK, common.OkWithData(err))
 		return
 	}
 	fileName := "recovery.db"
 	dir := "./upload/Backup/"
 	if err := os.MkdirAll(filepath.Dir(dir), os.ModePerm); err != nil {
-		c.JSON(common.HTTP_OK, common.Error400(err))
+		c.JSON(common.HTTP_OK, common.OkWithData(err))
 		return
 	}
 	if err := c.SaveUploadedFile(file, dir+fileName); err != nil {
-		c.JSON(common.HTTP_OK, common.Error400(err))
+		c.JSON(common.HTTP_OK, common.OkWithData(err))
 		return
 	}
 	if _, err := ReadSQLiteFileMagicNumber(dir + fileName); err != nil {
-		c.JSON(common.HTTP_OK, common.Error400(err))
+		c.JSON(common.HTTP_OK, common.OkWithData(err))
 		return
 	}
-	c.JSON(common.HTTP_OK, common.Ok())
+	c.JSON(common.HTTP_OK, common.OkWithData(""))
 	ossupport.StartRecoverProcess()
 
 }
