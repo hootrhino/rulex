@@ -169,7 +169,7 @@ func (vc *videoCamera) startFFMPEGProcess(rtspUrl, pushAddr string) {
 	}()
 	paramsVideo := []string{
 		"-f", "dshow",
-		"-i", fmt.Sprintf("video=%s", rtspUrl),
+		"-i", fmt.Sprintf("video='%s'", rtspUrl),
 		"-c:v", "libx264",
 		"-preset", "veryfast",
 		"-tune", "zerolatency",
@@ -220,9 +220,11 @@ func (vc *videoCamera) startFFMPEGProcess(rtspUrl, pushAddr string) {
 		cmd.Stdin = nil
 		cmd.Stdout = inOut
 		cmd.Stderr = inOut
+	} else {
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
 	}
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+
 	vc.ffmpegProcess = cmd
 	// 等待 FFmpeg 进程完成
 	if err := vc.ffmpegProcess.Wait(); err != nil {
