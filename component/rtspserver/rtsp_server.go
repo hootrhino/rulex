@@ -68,7 +68,7 @@ func InitRtspServer() *rtspServer {
 	group.POST("/ffmpegPush", func(ctx *gin.Context) {
 		LiveId := ctx.Query("liveId")
 		// Token := ctx.Query("token")
-		glogger.GLogger.Info("Try to load RTSP From:", LiveId)
+		glogger.GLogger.Info("Receive stream push From:", LiveId)
 		// http://127.0.0.1:9400 :后期通过参数传进
 		// 启动一个FFMPEG开始从摄像头拉流
 		bodyReader := bufio.NewReader(ctx.Request.Body)
@@ -97,10 +97,10 @@ func InitRtspServer() *rtspServer {
 	return __DefaultRtspServer
 }
 func pushToWebsocket(liveId string, data []byte) {
-	// fmt.Println(liveId, data)
 	if C, Ok := __DefaultRtspServer.websocketPlayerManager.Clients[liveId]; Ok {
-		C.WriteMessage(2, data)
+		C.WriteMessage(websocket.BinaryMessage, data)
 	}
+
 }
 
 /*
@@ -168,13 +168,7 @@ func NewPlayerManager() *websocketPlayerManager {
 * 启动服务
 *
  */
-type wsToken struct {
-	Token  string `json:"token"`
-	LiveId string `json:"live_id"`
-}
-
 func wsServerEndpoint(c *gin.Context) {
-	//upgrade get request to websocket protocol
 	wsConn, err := __DefaultRtspServer.websocketPlayerManager.WsServer.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		return
@@ -183,19 +177,18 @@ func wsServerEndpoint(c *gin.Context) {
 	Token := c.Query("token")
 
 	if Token != "WebRtspPlayer" {
-		wsConn.WriteMessage(1, []byte("Invalid client token"))
+		wsConn.WriteMessage(websocket.CloseMessage, []byte("Invalid client token"))
 		wsConn.Close()
 		return
 	}
 	glogger.GLogger.Debugf("Request live:%s, Token is :%s", LiveId, Token)
 	// 最多允许连接10个客户端，实际情况下根本用不了那么多
-	if len(__DefaultRtspServer.websocketPlayerManager.Clients) >= 2 {
+	if len(__DefaultRtspServer.websocketPlayerManager.Clients) >= 10 {
 		wsConn.WriteMessage(websocket.CloseMessage, []byte{})
 		wsConn.Close()
 		return
 	}
 	__DefaultRtspServer.websocketPlayerManager.Clients[LiveId] = wsConn
-	wsConn.WriteMessage(websocket.TextMessage, []byte("Connected"))
 	glogger.GLogger.Info("WebSocket Player connected:" + wsConn.RemoteAddr().String())
 	wsConn.SetCloseHandler(func(code int, text string) error {
 		glogger.GLogger.Info("wsConn CloseHandler:", wsConn.RemoteAddr().String())
@@ -211,14 +204,6 @@ func wsServerEndpoint(c *gin.Context) {
 		return nil
 	})
 	go func(wsConn *websocket.Conn) {
-		defer func() {
-			if wsConn != nil {
-				glogger.GLogger.Info("wsConn Disconnect By accident:", wsConn.RemoteAddr().String())
-				__DefaultRtspServer.websocketPlayerManager.lock.Lock()
-				delete(__DefaultRtspServer.websocketPlayerManager.Clients, wsConn.RemoteAddr().String())
-				__DefaultRtspServer.websocketPlayerManager.lock.Unlock()
-			}
-		}()
 		for {
 			select {
 			case <-typex.GCTX.Done():
