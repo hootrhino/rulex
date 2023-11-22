@@ -78,24 +78,23 @@ func Restart() error {
 *
 */
 func StartRecoverProcess() {
-	log.Printf("Start Recover Process Pid=%d, Gid=%d", os.Getpid(), os.Getegid())
-	cmd := exec.Command("bash", "-c", "/usr/local/rulex recover -recover=true")
+	file, err1 := os.Create("/usr/local/local-recover-log.txt")
+	if err1 != nil {
+		return
+	}
+	defer file.Close()
+	cmd := exec.Command("/usr/local/rulex", "recover", "-recover=true")
 	cmd.SysProcAttr = NewSysProcAttr()
-	cmd.Env = os.Environ()
-	cmd.Stdin = nil
-	cmd.Stdout = nil
-	cmd.Stderr = nil
-	if cmd.Process != nil {
-		cmd.Process.Release()
-	}
+	cmd.Env = []string{}
+	cmd.Stdout = file
+	cmd.Stderr = file
 	err := cmd.Start()
-	if cmd.Process != nil {
-		cmd.Process.Release()
-	}
+	log.Printf("Start Recover Process Pid=%d, Cmd:%s", cmd.Process.Pid, cmd.String())
 	if err != nil {
 		log.Println("Start Recover Process Failed:", err)
 		return
 	}
+	log.Println("Old Process Exited:", os.Getpid())
 	os.Exit(0)
 }
 
@@ -105,13 +104,18 @@ func StartRecoverProcess() {
 *
  */
 func StartUpgradeProcess(path string, args []string) {
-	log.Printf("Start Upgrade Process Pid=%d, Gid=%d", os.Getpid(), os.Getegid())
+	file, err1 := os.Create("/usr/local/local-upgrade-log.txt")
+	if err1 != nil {
+		return
+	}
+	defer file.Close()
+
 	cmd := exec.Command("bash", "-c", path+" "+strings.Join(args, " "))
 	cmd.SysProcAttr = NewSysProcAttr()
-	cmd.Env = os.Environ()
-	cmd.Stdin = nil
-	cmd.Stdout = nil
-	cmd.Stderr = nil
+	cmd.Env = []string{}
+	cmd.Stdout = file
+	cmd.Stderr = file
+	log.Printf("Start Upgrade Process Pid=%d, Gid=%d", os.Getpid(), os.Getegid())
 	if cmd.Process != nil {
 		cmd.Process.Release() // 用来分离进程用,简直天坑参数！！！
 	}
@@ -119,10 +123,12 @@ func StartUpgradeProcess(path string, args []string) {
 	if cmd.Process != nil {
 		cmd.Process.Release() // 用来分离进程用,简直天坑参数！！！
 	}
+	log.Printf("Start Upgrade Process Pid=%d, Cmd:%s", cmd.Process.Pid, cmd.String())
 	if err != nil {
 		log.Println("Start Upgrade Process Failed:", err)
 		return
 	}
+	log.Println("Old Process Exited:", os.Getpid())
 	os.Exit(0)
 }
 

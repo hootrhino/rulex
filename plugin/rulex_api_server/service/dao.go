@@ -189,11 +189,7 @@ func AllDevices() []model.MDevice {
 // 获取设备列表
 func GetMDeviceWithUUID(uuid string) (*model.MDevice, error) {
 	m := new(model.MDevice)
-	if err := interdb.DB().Where("uuid=?", uuid).First(m).Error; err != nil {
-		return nil, err
-	} else {
-		return m, nil
-	}
+	return m, interdb.DB().Where("uuid=?", uuid).First(m).Error
 }
 
 // 删除设备

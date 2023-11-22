@@ -42,7 +42,7 @@ func ReStartRulex(c *gin.Context, ruleEngine typex.RuleX) {
 func Reboot(c *gin.Context, ruleEngine typex.RuleX) {
 	err := ossupport.Reboot()
 	if err != nil {
-		c.JSON(common.HTTP_OK, common.Error400(err))
+		c.JSON(common.HTTP_OK, common.OkWithData(err))
 		return
 	}
 	c.JSON(common.HTTP_OK, common.Ok())
@@ -54,7 +54,6 @@ func Reboot(c *gin.Context, ruleEngine typex.RuleX) {
 *
  */
 func RecoverNew(c *gin.Context, ruleEngine typex.RuleX) {
-
 	c.JSON(common.HTTP_OK, common.Ok())
 }
 
@@ -65,9 +64,5 @@ func RecoverNew(c *gin.Context, ruleEngine typex.RuleX) {
  */
 func GetUpGradeLog(c *gin.Context, ruleEngine typex.RuleX) {
 	byteS, _ := os.ReadFile("local-upgrade-log.txt")
-	// if err != nil {
-	// 	c.JSON(common.HTTP_OK, common.Error400(err))
-	// 	return
-	// }
 	c.JSON(common.HTTP_OK, common.OkWithData(string(byteS)))
 }

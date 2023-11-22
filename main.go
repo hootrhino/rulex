@@ -128,16 +128,16 @@ func main() {
 					},
 				},
 				Action: func(c *cli.Context) error {
-					file, err := os.Create("/usr/local/local-upgrade-log.txt")
+					if !c.Bool("recover") {
+						return fmt.Errorf("[DATA RECOVER] Nothing todo")
+					}
+					file, err := os.Create("/usr/local/local-recover-log.txt")
 					if err != nil {
 						return fmt.Errorf("[DATA RECOVER] Error creating file:%s", err)
 					}
 					defer file.Close()
 					os.Stdout = file
 					os.Stderr = file
-					if !c.Bool("recover") {
-						return fmt.Errorf("[DATA RECOVER] Nothing todo")
-					}
 
 					if err := ossupport.StopRulex(); err != nil {
 						log.Println("[DATA RECOVER] Stop rulex error", err)
