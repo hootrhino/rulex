@@ -76,13 +76,6 @@ func main() {
 					},
 				},
 				Action: func(c *cli.Context) error {
-					file, err := os.Create("/usr/local/local-upgrade-log.txt")
-					if err != nil {
-						return fmt.Errorf("[DATA RECOVER] Error creating file:%s", err)
-					}
-					defer file.Close()
-					os.Stdout = file
-					os.Stderr = file
 					OldPid := c.Int("oldpid")
 					log.Println("[RULEX UPGRADE] Updater Pid=",
 						os.Getpid(), "Gid=", os.Getegid(), " OldPid:", OldPid)
@@ -131,14 +124,6 @@ func main() {
 					if !c.Bool("recover") {
 						return fmt.Errorf("[DATA RECOVER] Nothing todo")
 					}
-					file, err := os.Create("/usr/local/local-recover-log.txt")
-					if err != nil {
-						return fmt.Errorf("[DATA RECOVER] Error creating file:%s", err)
-					}
-					defer file.Close()
-					os.Stdout = file
-					os.Stderr = file
-
 					if err := ossupport.StopRulex(); err != nil {
 						log.Println("[DATA RECOVER] Stop rulex error", err)
 						return err
