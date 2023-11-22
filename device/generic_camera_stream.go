@@ -9,7 +9,6 @@ import (
 	"regexp"
 	"syscall"
 
-	"github.com/hootrhino/rulex/core"
 	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/typex"
 	"github.com/hootrhino/rulex/utils"
@@ -168,6 +167,8 @@ func (vc *videoCamera) startFFMPEGProcess(rtspUrl, pushAddr string) {
 		vc.status = typex.DEV_DOWN
 	}()
 	paramsVideo := []string{
+		"-hide_banner",
+		"-framerate", "24",
 		"-f", "dshow",
 		"-i", fmt.Sprintf("video='%s'", rtspUrl),
 		"-c:v", "libx264",
@@ -179,6 +180,8 @@ func (vc *videoCamera) startFFMPEGProcess(rtspUrl, pushAddr string) {
 
 	paramsRtsp := []string{
 		// rtsp://192.168.199.243:554/av0_0
+		"-hide_banner",
+		"-framerate", "24",
 		"-rtsp_transport",
 		"tcp",
 		"-re",
@@ -211,25 +214,10 @@ func (vc *videoCamera) startFFMPEGProcess(rtspUrl, pushAddr string) {
 	}
 	glogger.GLogger.Info("Start FFMPEG ffmpegProcess with:", cmd.String())
 	// 启动 FFmpeg 推流
-	if err := cmd.Start(); err != nil {
-		glogger.GLogger.Error(err)
-		return
-	}
-	if core.GlobalConfig.AppDebugMode {
-		inOut := wsInOut{}
-		cmd.Stdin = nil
-		cmd.Stdout = inOut
-		cmd.Stderr = inOut
-	} else {
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-	}
-
+	cmd.Env = os.Environ()
 	vc.ffmpegProcess = cmd
-	// 等待 FFmpeg 进程完成
-	if err := vc.ffmpegProcess.Wait(); err != nil {
-		output, _ := cmd.CombinedOutput()
-		glogger.GLogger.Error(err, string(output))
+	if output, err := cmd.CombinedOutput(); err != nil {
+		glogger.GLogger.Error("error: ", err, ", output: ", string(output))
 		return
 	}
 	glogger.GLogger.Info("stop Video Stream Endpoint:", rtspUrl)
