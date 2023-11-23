@@ -30,7 +30,7 @@ import (
 *
  */
 func StopRulex() error {
-	cmd := exec.Command("service", "rulex", "stop")
+	cmd := exec.Command("sudo", "systemctl", "rulex", "stop")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("%s,%s", err, string(out))
@@ -45,7 +45,7 @@ func StopRulex() error {
  */
 func Restart() error {
 	{
-		cmd := exec.Command("systemctl", "daemon-reload")
+		cmd := exec.Command("sudo", "systemctl", "daemon-reload")
 		cmd.SysProcAttr = NewSysProcAttr()
 		out, err := cmd.CombinedOutput()
 		if err != nil {
@@ -55,7 +55,7 @@ func Restart() error {
 
 	}
 	{
-		cmd := exec.Command("service", "rulex", "restart")
+		cmd := exec.Command("sudo", "systemctl", "rulex", "restart")
 		cmd.SysProcAttr = NewSysProcAttr()
 		out, err := cmd.CombinedOutput()
 		if err != nil {
@@ -78,12 +78,18 @@ func Restart() error {
 *
 */
 func StartRecoverProcess() {
-	cmd := exec.Command("/usr/local/rulex", "recover", "-recover=true")
+	cmd := exec.Command("sudo", "/usr/local/rulex", "recover", "-recover=true")
 	cmd.SysProcAttr = NewSysProcAttr()
 	cmd.Env = os.Environ()
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
+	if cmd.Process != nil {
+		cmd.Process.Release() // 用来分离进程用,简直天坑参数！！！
+	}
 	err := cmd.Start()
+	if cmd.Process != nil {
+		cmd.Process.Release() // 用来分离进程用,简直天坑参数！！！
+	}
 	log.Printf("Start Recover Process Pid=%d, Cmd:%s", cmd.Process.Pid, cmd.String())
 	if err != nil {
 		log.Println("Start Recover Process Failed:", err)
@@ -99,12 +105,11 @@ func StartRecoverProcess() {
 *
  */
 func StartUpgradeProcess(path string, args []string) {
-	cmd := exec.Command("bash", "-c", path+" "+strings.Join(args, " "))
+	cmd := exec.Command("sudo", "bash", "-c", path+" "+strings.Join(args, " "))
 	cmd.SysProcAttr = NewSysProcAttr()
 	cmd.Env = os.Environ()
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
-	log.Printf("Start Upgrade Process Pid=%d, Gid=%d", os.Getpid(), os.Getegid())
 	if cmd.Process != nil {
 		cmd.Process.Release() // 用来分离进程用,简直天坑参数！！！
 	}
@@ -127,7 +132,7 @@ func StartUpgradeProcess(path string, args []string) {
 *
  */
 func Reboot() error {
-	cmd := exec.Command("reboot")
+	cmd := exec.Command("sudo", "reboot")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
