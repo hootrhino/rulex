@@ -1,130 +1,184 @@
-#!/bin/sh /etc/rc.common
-# rulex_daemon - Rulex daemon script for Linux
+#!/bin/bash
 
-START=99
-USE_PROCD=1
+### BEGIN INIT INFO
+# Provides:          rulex
+# Required-Start:    $network $local_fs $remote_fs
+# Required-Stop:     $network $local_fs $remote_fs
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Rulex Service
+# Description:       Rulex Service
+### END INIT INFO
 
-# Check if the service is disabled
-[ -e /etc/config/rulex_daemon ] && . /etc/config/rulex_daemon
+EXECUTABLE_PATH="/usr/local/rulex"
+CONFIG_PATH="/usr/local/rulex.ini"
+SERVICE_NAME="rulex"
+WORKING_DIRECTORY="/usr/local/"
+WAIT_TIME_SECONDS=3
+CHECK_INTERVAL_SECONDS=1
+PID_FILE="/var/run/$SERVICE_NAME.pid"
+SCRIPT_PATH="/etc/init.d/rulex.sh"
+PID_FILE="/var/run/rulex.pid"
 
-working_directory="/usr/local/"
-
-# Function to copy files to /usr/local
-install_files() {
-    cp "./rulex $working_directory
-    cp "./rulex.ini $working_directory
-    cp "./license.key" $working_directory
-    cp "./license.lic" $working_directory
+log() {
+    local level=$1
+    shift
+    echo "[$level] $(date +'%Y-%m-%d %H:%M:%S') - $@"
 }
-remove_files() {
-    if [ -e "$1" ]; then
-        if [[ $1 == *"/upload"* ]]; then
-            rm -rf "$1"
+
+
+install(){
+    local source_dir="$PWD"
+    local service_file="/etc/init.d/rulex.service"
+    local executable="/usr/local/rulex"
+    local working_directory="/usr/local/"
+    local config_file="/usr/local/rulex.ini"
+    local db_file="/usr/local/rulex.db"
+cat > "$service_file" << EOL
+#!/bin/sh $service_file
+# Create Time: $(date +'%Y-%m-%d %H:%M:%S')
+log() {
+    local level=\$1
+    shift
+    echo "[$level] $(date +'%Y-%m-%d %H:%M:%S') - $@"
+}
+
+start() {
+    log INFO "Starting rulex..."
+    nohup $executable run -config=$config_file nohup.log 2>&1 &
+    echo $! > "$PID_FILE"
+    log INFO "Starting rulex Finished"
+}
+
+stop() {
+    # Check if rulex process is running
+    if pgrep -x "rulex" > /dev/null; then
+        pid=$(pgrep -x "rulex")
+        log INFO "Killing rulex process with PID $pid"
+        kill "$pid"
+    else
+        log INFO "rulex process is not running."
+    fi
+}
+
+restart() {
+    stop
+    start
+}
+
+status() {
+    log INFO "Checking rulex status..."
+    pid=$(pgrep -x "rulex")
+    if [ -n "$pid" ]; then
+        log INFO "rulex is running with Pid:${pid}"
+    else
+        log INFO "rulex is not running."
+    fi
+}
+
+EOL
+
+    mkdir -p $working_directory
+    chmod +x $source_dir/rulex
+    cp -rfp "$source_dir/rulex" "$executable"
+    cp -rfp "$source_dir/rulex.ini" "$config_file"
+    cp -rfp "$source_dir/license.lic" "$working_directory"
+    cp -rfp "$source_dir/license.key" "$working_directory"
+    chmod 777 $service_file
+    if [ $? -eq 0 ]; then
+        log INFO "Rulex service has been created and extracted."
+    else
+        log ERROR "Failed to create the Rulex service or extract files."
+    fi
+    exit 0
+}
+
+__remove_files() {
+    local file=$1
+    log INFO "Removing $file..."
+    if [ -e "$file" ]; then
+        if [ -d "$file" ]; then
+            rm -rf "$file"
         else
-            rm "$1"
+            rm "$file"
         fi
-        echo "[!] $1 files removed."
+        log INFO "$file removed."
     else
-        echo "[*] $1 files not found. No need to remove."
+        log INFO "$file not found. No need to remove."
     fi
 }
 
-start_service() {
-    if [ "$DISABLED" -eq 0 ]; then
-        procd_open_instance
-        procd_set_param command /usr/local/rulex run -config /usr/local/rulex.ini
-        procd_set_param respawn
-        procd_set_param timeout 5  # 5 seconds timeout
-        procd_close_instance
+uninstall(){
+    local working_directory="/usr/local"
+    __remove_files /etc/systemd/system/rulex.service
+    __remove_files $working_directory/rulex
+    __remove_files $working_directory/rulex.ini
+    __remove_files $working_directory/rulex.db
+    __remove_files $working_directory/license.lic
+    __remove_files $working_directory/license.key
+    __remove_files $working_directory/upload/
+    __remove_files $working_directory/*.txt
+    __remove_files $working_directory/*.txt.gz
+    log INFO "Rulex has been uninstalled."
+}
+
+start() {
+    log INFO "Starting $SERVICE_NAME..."
+    nohup $EXECUTABLE_PATH run -config $CONFIG_PATH >output.log 2>&1 &
+    echo "$!" > "$PID_FILE" && log INFO "Service started."
+}
+
+stop() {
+    log INFO "Stopping $SERVICE_NAME..."
+    rm -f "$PID_FILE" && log INFO "PID file removed."
+    pid=$(pgrep -x "$SERVICE_NAME")
+    if [ -n "$pid" ]; then
+        kill -15 "$pid" && log INFO "Process $pid (rulex) terminated."
+        pkill -f "$SERVICE_NAME"
     else
-        echo "Service is disabled. To enable, run: /etc/init.d/rulex_daemon enable"
+        log INFO "Process rulex not found."
     fi
 }
 
-stop_service() {
-    procd_close_instance
+restart(){
+    stop
+    start
 }
 
-# Function to disable the service
-disable_service() {
-    [ -e /etc/config/rulex_daemon ] && echo 'DISABLED=1' > /etc/config/rulex_daemon
-    /etc/init.d/rulex_daemon stop
-    /etc/init.d/rulex_daemon disable
-}
-
-# Function to enable the service
-enable_service() {
-    [ -e /etc/config/rulex_daemon ] && rm /etc/config/rulex_daemon
-    /etc/init.d/rulex_daemon enable
-}
-
-# Function to uninstall the service
-uninstall_service() {
-    procd_close_instance
-    remove_files $working_directory/rulex
-    remove_files $working_directory/rulex.ini
-    remove_files $working_directory/rulex.db
-    remove_files $working_directory/*.txt
-    remove_files $working_directory/upload/
-    remove_files $working_directory/license.key
-    remove_files $working_directory/license.lic
-    remove_files $working_directory/*.txt.gz
-    /etc/init.d/rulex_daemon stop
-    /etc/init.d/rulex_daemon disable
-    rm /etc/init.d/rulex_daemon
-    rm /etc/config/rulex_daemon
-    echo "Rulex uninstallation complete."
-}
-
-# Function to check service status
-status_service() {
-    if procd_status rulex_daemon > /dev/null; then
-        echo "Rulex is running."
+status() {
+    log INFO "Checking $SERVICE_NAME status..."
+    pid=$(pgrep -x "$SERVICE_NAME")
+    if [ -n "$pid" ]; then
+        log INFO "$SERVICE_NAME is running with Pid:${pid}"
     else
-        echo "Rulex is not running."
+        log INFO "$SERVICE_NAME is not running."
     fi
 }
 
-service_triggers() {
-    procd_add_reload_trigger "rulex"
-}
+case "$1" in
+    install)
+        install
+    ;;
+    start)
+        start
+    ;;
+    restart)
+        stop
+        start
+    ;;
+    stop)
+        stop
+    ;;
+    uninstall)
+        uninstall
+    ;;
+    status)
+        status
+    ;;
+    *)
+        log ERROR "Usage: $0 {install|start|restart|stop|uninstall|status}"
+        exit 1
+    ;;
+esac
 
-reload_service() {
-    procd_send_signal rulex HUP
-}
-
-shutdown_service() {
-    procd_close_instance
-}
-
-service_error() {
-    procd_close_instance
-    echo "Error starting rulex_daemon" >&2
-}
-
-run() {
-    case "$1" in
-        install)
-            install_files
-        ;;
-        start)
-            start_service
-        ;;
-        restart)
-            reload_service
-        ;;
-        stop)
-            stop_service
-        ;;
-        uninstall)
-            uninstall_service
-        ;;
-        status)
-            status_service
-        ;;
-        *)
-            echo "Usage: $0 {install|start|restart|stop|uninstall|status}"
-            exit 1
-        ;;
-    esac
-}
+exit 0
