@@ -13,13 +13,13 @@
 EXECUTABLE_PATH="/usr/local/rulex"
 CONFIG_PATH="/usr/local/rulex.ini"
 SERVICE_NAME="rulex"
-WORKING_DIRECTORY="/usr/local/"
+WORKING_DIRECTORY="/usr/local"
 WAIT_TIME_SECONDS=3
 CHECK_INTERVAL_SECONDS=1
 PID_FILE="/var/run/$SERVICE_NAME.pid"
 SCRIPT_PATH="/etc/init.d/rulex.sh"
 PID_FILE="/var/run/rulex.pid"
-
+service_file="/etc/init.d/rulex.service"
 log() {
     local level=$1
     shift
@@ -29,9 +29,7 @@ log() {
 
 install(){
     local source_dir="$PWD"
-    local service_file="/etc/init.d/rulex.service"
     local executable="/usr/local/rulex"
-    local working_directory="/usr/local/"
     local config_file="/usr/local/rulex.ini"
     local db_file="/usr/local/rulex.db"
 cat > "$service_file" << EOL
@@ -78,12 +76,12 @@ status() {
 
 EOL
 
-    mkdir -p $working_directory
+    mkdir -p $WORKING_DIRECTORY
     chmod +x $source_dir/rulex
     cp -rfp "$source_dir/rulex" "$executable"
     cp -rfp "$source_dir/rulex.ini" "$config_file"
-    cp -rfp "$source_dir/license.lic" "$working_directory"
-    cp -rfp "$source_dir/license.key" "$working_directory"
+    cp -rfp "$source_dir/license.lic" "$WORKING_DIRECTORY/"
+    cp -rfp "$source_dir/license.key" "$WORKING_DIRECTORY/"
     chmod 777 $service_file
     if [ $? -eq 0 ]; then
         log INFO "Rulex service has been created and extracted."
@@ -109,16 +107,18 @@ __remove_files() {
 }
 
 uninstall(){
-    local working_directory="/usr/local"
-    __remove_files /etc/systemd/system/rulex.service
-    __remove_files $working_directory/rulex
-    __remove_files $working_directory/rulex.ini
-    __remove_files $working_directory/rulex.db
-    __remove_files $working_directory/license.lic
-    __remove_files $working_directory/license.key
-    __remove_files $working_directory/upload/
-    __remove_files $working_directory/*.txt
-    __remove_files $working_directory/*.txt.gz
+    __remove_files $service_file
+    __remove_files "$WORKING_DIRECTORY/rulex"
+    __remove_files "$WORKING_DIRECTORY/rulex.ini"
+    __remove_files "$WORKING_DIRECTORY/rulex.db"
+    __remove_files "$WORKING_DIRECTORY/license.lic"
+    __remove_files "$WORKING_DIRECTORY/license.key"
+    __remove_files "$WORKING_DIRECTORY/RULEX_INTERNAL_DATACENTER.db"
+    __remove_files "$WORKING_DIRECTORY/LICENSE"
+    __remove_files "$WORKING_DIRECTORY/md5.sum"
+    __remove_files "$WORKING_DIRECTORY/upload/"
+    __remove_files "$WORKING_DIRECTORY/"*.txt
+    __remove_files "$WORKING_DIRECTORY/"*.txt.gz
     log INFO "Rulex has been uninstalled."
 }
 
