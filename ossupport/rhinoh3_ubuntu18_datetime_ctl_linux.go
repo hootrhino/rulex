@@ -17,6 +17,7 @@ package ossupport
 
 import (
 	"fmt"
+	"golang.org/x/sys/unix"
 	"os/exec"
 	"strings"
 	"time"
@@ -161,14 +162,22 @@ func SetTimeZone(timezone string) error {
 * 获取开机时间
 *
  */
+
 func GetUptime() (string, error) {
-	shell := `
-awk '{print int($1 / 86400) " days " int(($1 % 86400) / 3600) " hours " int(($1 % 3600) / 60) " minutes"}' /proc/uptime
-`
-	cmd := exec.Command("sh", "-c", shell)
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		return "", fmt.Errorf("GetUptime error:%s,%s", string(output), err.Error())
+	var info unix.Sysinfo_t
+
+	if err := unix.Sysinfo(&info); err != nil {
+		return "0:0:0", err
 	}
-	return strings.Trim(string(output), "\n"), nil
+
+	return formatUptime(int64(info.Uptime)), nil
+}
+
+func formatUptime(uptime int64) string {
+	days := uptime / 86400
+	hours := (uptime % 86400) / 3600
+	minutes := (uptime % 3600) / 60
+	seconds := uptime % 60
+
+	return fmt.Sprintf("%d days, %02d:%02d:%02d", days, hours, minutes, seconds)
 }

@@ -13,6 +13,7 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+WORKING_DIRECTORY="/usr/local"
 
 
 log() {
@@ -25,7 +26,6 @@ install() {
     local source_dir="$PWD"
     local service_file="/etc/init.d/rulex.service"
     local executable="/usr/local/rulex"
-    local working_directory="/usr/local/"
     local config_file="/usr/local/rulex.ini"
     local db_file="/usr/local/rulex.db"
 
@@ -66,12 +66,12 @@ status() {
 
 EOL
 
-    mkdir -p "$working_directory"
+    mkdir -p "$WORKING_DIRECTORY/"
     chmod +x "$source_dir/rulex"
     cp -rfp "$source_dir/rulex" "$executable"
     cp -rfp "$source_dir/rulex.ini" "$config_file"
-    cp -rfp "$source_dir/license.lic" "$working_directory"
-    cp -rfp "$source_dir/license.key" "$working_directory"
+    cp -rfp "$source_dir/license.lic" "$WORKING_DIRECTORY/"
+    cp -rfp "$source_dir/license.key" "$WORKING_DIRECTORY/"
 
     chmod 777 "$service_file"
     "$service_file" enable
@@ -100,14 +100,20 @@ __remove_files() {
 }
 
 uninstall() {
-    local service_file="$service_file.service"
     "$service_file" stop
     "$service_file" disable
-    local working_directory="/usr/local"
-    __remove_files /etc/systemd/system/rulex.service
-    __remove_files "$working_directory/rulex" "$working_directory/rulex.ini" "$working_directory/rulex.db"
-    __remove_files "$working_directory/license.lic" "$working_directory/license.key"
-    __remove_files "$working_directory/upload/" "$working_directory/"*.txt "$working_directory/"*.txt.gz
+    __remove_files $service_file
+    __remove_files "$WORKING_DIRECTORY/rulex"
+    __remove_files "$WORKING_DIRECTORY/rulex.ini"
+    __remove_files "$WORKING_DIRECTORY/rulex.db"
+    __remove_files "$WORKING_DIRECTORY/license.lic"
+    __remove_files "$WORKING_DIRECTORY/license.key"
+    __remove_files "$WORKING_DIRECTORY/RULEX_INTERNAL_DATACENTER.db"
+    __remove_files "$WORKING_DIRECTORY/LICENSE"
+    __remove_files "$WORKING_DIRECTORY/md5.sum"
+    __remove_files "$WORKING_DIRECTORY/upload/"
+    __remove_files "$WORKING_DIRECTORY/"*.txt
+    __remove_files "$WORKING_DIRECTORY/"*.txt.gz
     log INFO "Rulex has been uninstalled."
 }
 

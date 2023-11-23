@@ -30,10 +30,13 @@ import (
 *
  */
 func StopRulex() error {
-	cmd := exec.Command("sudo", "systemctl", "rulex", "stop")
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		return fmt.Errorf("%s,%s", err, string(out))
+	pid, err1 := GetEarliestProcessPID("rulex")
+	if err1 != nil {
+		return err1
+	}
+	err2 := KillProcess(pid)
+	if err2 != nil {
+		return err2
 	}
 	return nil
 }
@@ -44,25 +47,10 @@ func StopRulex() error {
 *
  */
 func Restart() error {
-	{
-		cmd := exec.Command("sudo", "systemctl", "daemon-reload")
-		cmd.SysProcAttr = NewSysProcAttr()
-		out, err := cmd.CombinedOutput()
-		if err != nil {
-			return fmt.Errorf("%s,%s", err, string(out))
-		}
-		log.Println("[Prepare Stage] systemctl daemon-reload:", string(out))
-
-	}
-	{
-		cmd := exec.Command("sudo", "systemctl", "rulex", "restart")
-		cmd.SysProcAttr = NewSysProcAttr()
-		out, err := cmd.CombinedOutput()
-		if err != nil {
-			return fmt.Errorf("%s,%s", err, string(out))
-		}
-		log.Println("[Prepare Stage] service start:", string(out))
-
+	cmd := exec.Command("/etc/systemd/system/rulex.service", "restart")
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("%s,%s", err, string(out))
 	}
 	return nil
 }
@@ -78,7 +66,7 @@ func Restart() error {
 *
 */
 func StartRecoverProcess() {
-	cmd := exec.Command("sudo", "/usr/local/rulex", "recover", "-recover=true")
+	cmd := exec.Command("/usr/local/rulex", "recover", "-recover=true")
 	cmd.SysProcAttr = NewSysProcAttr()
 	cmd.Env = os.Environ()
 	cmd.Stdout = os.Stdout
@@ -105,7 +93,7 @@ func StartRecoverProcess() {
 *
  */
 func StartUpgradeProcess(path string, args []string) {
-	cmd := exec.Command("sudo", "bash", "-c", path+" "+strings.Join(args, " "))
+	cmd := exec.Command("bash", "-c", path+" "+strings.Join(args, " "))
 	cmd.SysProcAttr = NewSysProcAttr()
 	cmd.Env = os.Environ()
 	cmd.Stdout = os.Stdout
@@ -132,7 +120,7 @@ func StartUpgradeProcess(path string, args []string) {
 *
  */
 func Reboot() error {
-	cmd := exec.Command("sudo", "reboot")
+	cmd := exec.Command("reboot")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
