@@ -99,8 +99,7 @@ func UpgradeFirmWare(c *gin.Context, ruleEngine typex.RuleX) {
 		return
 	}
 	c.JSON(common.HTTP_OK, common.Ok())
-	ossupport.StartUpgradeProcess("/usr/local/rulex", []string{"upgrade", "-oldpid",
-		fmt.Sprintf("%d", os.Getpid())})
+	ossupport.StartUpgradeProcess()
 
 }
 

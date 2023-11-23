@@ -28,6 +28,7 @@ import (
 
 type _serverConfig struct {
 	DbPath string `ini:"dbpath"`
+	Port   int    `ini:"port"`
 }
 type ApiServerPlugin struct {
 	uuid       string
@@ -38,7 +39,7 @@ type ApiServerPlugin struct {
 func NewHttpApiServer(ruleEngine typex.RuleX) *ApiServerPlugin {
 	return &ApiServerPlugin{
 		uuid:       "HTTP-API-SERVER",
-		mainConfig: _serverConfig{},
+		mainConfig: _serverConfig{Port: 2580},
 		ruleEngine: ruleEngine,
 	}
 }
@@ -473,7 +474,7 @@ func (hs *ApiServerPlugin) LoadRoute() {
 func (hs *ApiServerPlugin) Start(r typex.RuleX) error {
 	hs.ruleEngine = r
 	hs.LoadRoute()
-	glogger.GLogger.Infof("Http server started on :%v", hs.mainConfig.DbPath)
+	glogger.GLogger.Infof("Http server started on :%v", 2580)
 	return nil
 }
 

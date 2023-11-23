@@ -100,8 +100,10 @@ __remove_files() {
 }
 
 uninstall() {
-    "$service_file" stop
-    "$service_file" disable
+    if [ -e "$service_file" ]; then
+        $service_file stop
+        $service_file disable
+    fi
     __remove_files $service_file
     __remove_files "$WORKING_DIRECTORY/rulex"
     __remove_files "$WORKING_DIRECTORY/rulex.ini"
@@ -112,8 +114,9 @@ uninstall() {
     __remove_files "$WORKING_DIRECTORY/LICENSE"
     __remove_files "$WORKING_DIRECTORY/md5.sum"
     __remove_files "$WORKING_DIRECTORY/upload/"
-    __remove_files "$WORKING_DIRECTORY/"*.txt
-    __remove_files "$WORKING_DIRECTORY/"*.txt.gz
+    __remove_files "$WORKING_DIRECTORY/*.txt"
+    __remove_files "$WORKING_DIRECTORY/run-nohup-log.txt"
+    __remove_files "$WORKING_DIRECTORY/*.txt.gz"
     log INFO "Rulex has been uninstalled."
 }
 
