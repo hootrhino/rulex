@@ -17,10 +17,10 @@ package ossupport
 
 import (
 	"fmt"
-	"io"
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 )
 
@@ -46,8 +46,8 @@ func StopRulex() error {
 * 重启
 *
  */
-func Restart() error {
-	cmd := exec.Command("/etc/systemd/system/rulex.service", "restart")
+func RestartRulex() error {
+	cmd := exec.Command("/etc/init.d/rulex.service", "restart")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("%s,%s", err, string(out))
@@ -66,23 +66,15 @@ func Restart() error {
 *
 */
 func StartRecoverProcess() {
-	cmd := exec.Command("/usr/local/rulex", "recover", "-recover=true")
+	cmd := exec.Command("./rulex", "recover", "-recover=true")
 	cmd.SysProcAttr = NewSysProcAttr()
 	cmd.Env = os.Environ()
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	if cmd.Process != nil {
-		cmd.Process.Release() // 用来分离进程用,简直天坑参数！！！
-	}
 	err := cmd.Start()
-	if cmd.Process != nil {
-		cmd.Process.Release() // 用来分离进程用,简直天坑参数！！！
-	}
-	log.Printf("Start Recover Process Pid=%d, Cmd:%s", cmd.Process.Pid, cmd.String())
 	if err != nil {
 		log.Println("Start Recover Process Failed:", err)
 		return
 	}
+	log.Printf("Start Recover Process Pid=%d, Cmd:%s\n", cmd.Process.Pid, cmd.String())
 	log.Println("Old Process Exited:", os.Getpid())
 	os.Exit(0)
 }
@@ -92,24 +84,16 @@ func StartRecoverProcess() {
 * 启用升级进程
 *
  */
-func StartUpgradeProcess(path string, args []string) {
-	cmd := exec.Command("bash", "-c", path+" "+strings.Join(args, " "))
+func StartUpgradeProcess() {
+	cmd := exec.Command("./rulex", "upgrade", "-oldpid=", fmt.Sprintf("%d", os.Getpid()))
 	cmd.SysProcAttr = NewSysProcAttr()
 	cmd.Env = os.Environ()
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	if cmd.Process != nil {
-		cmd.Process.Release() // 用来分离进程用,简直天坑参数！！！
-	}
 	err := cmd.Start()
-	if cmd.Process != nil {
-		cmd.Process.Release() // 用来分离进程用,简直天坑参数！！！
-	}
-	log.Printf("Start Upgrade Process Pid=%d, Cmd:%s", cmd.Process.Pid, cmd.String())
 	if err != nil {
 		log.Println("Start Upgrade Process Failed:", err)
 		return
 	}
+	log.Printf("Start Upgrade Process Pid=%d, Cmd:%s", cmd.Process.Pid, cmd.String())
 	log.Println("Old Process Exited:", os.Getpid())
 	os.Exit(0)
 }
@@ -149,25 +133,14 @@ func UnzipFirmware(zipFile, destDir string) error {
 *
  */
 func MoveFile(sourcePath, destPath string) error {
-	inputFile, err := os.Open(sourcePath)
-	if err != nil {
-		return fmt.Errorf("couldn't open source file: %s", err)
+
+	destDir := filepath.Dir(destPath)
+	if err := os.MkdirAll(destDir, 0755); err != nil {
+		return fmt.Errorf("failed to create destination directory: %w", err)
 	}
-	outputFile, err := os.Create(destPath)
+	err := os.Rename(sourcePath, destPath)
 	if err != nil {
-		inputFile.Close()
-		return fmt.Errorf("couldn't open dest file: %s", err)
-	}
-	defer outputFile.Close()
-	_, err = io.Copy(outputFile, inputFile)
-	inputFile.Close()
-	if err != nil {
-		return fmt.Errorf("Writing to output file failed: %s", err)
-	}
-	// The copy was successful, so now delete the original file
-	err = os.Remove(sourcePath)
-	if err != nil {
-		return fmt.Errorf("Failed removing original file: %s", err)
+		return fmt.Errorf("failed to move file: %w", err)
 	}
 	return nil
 }

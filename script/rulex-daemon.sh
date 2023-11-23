@@ -33,27 +33,34 @@ install(){
     local config_file="/usr/local/rulex.ini"
     local db_file="/usr/local/rulex.db"
 cat > "$service_file" << EOL
-#!/bin/sh $service_file
+#!/bin/sh
 # Create Time: $(date +'%Y-%m-%d %H:%M:%S')
+
+WORKING_DIRECTORY="/usr/local"
+PID_FILE="/var/run/rulex.pid"
+executable="/usr/local/rulex"
+config_file="/usr/local/rulex.ini"
+
 log() {
     local level=\$1
     shift
-    echo "[$level] $(date +'%Y-%m-%d %H:%M:%S') - $@"
+    echo "[\$level] \$(date +'%Y-%m-%d %H:%M:%S') - \$@"
 }
 
 start() {
     log INFO "Starting rulex..."
-    nohup $executable run -config=$config_file nohup.log 2>&1 &
-    echo $! > "$PID_FILE"
+    cd \$WORKING_DIRECTORY
+    nohup \$executable run -config=\$config_file > run-nohup-log.txt 2>&1 &
+    echo \$! > "\$PID_FILE"
     log INFO "Starting rulex Finished"
 }
 
 stop() {
     # Check if rulex process is running
     if pgrep -x "rulex" > /dev/null; then
-        pid=$(pgrep -x "rulex")
-        log INFO "Killing rulex process with PID $pid"
-        kill "$pid"
+        pid=\$(pgrep -x "rulex")
+        log INFO "Killing rulex process with PID \$pid"
+        kill "\$pid"
     else
         log INFO "rulex process is not running."
     fi
@@ -66,13 +73,33 @@ restart() {
 
 status() {
     log INFO "Checking rulex status..."
-    pid=$(pgrep -x "rulex")
-    if [ -n "$pid" ]; then
-        log INFO "rulex is running with Pid:${pid}"
+    pid=\$(pgrep -x "rulex")
+    if [ -n "\$pid" ]; then
+        log INFO "rulex is running with Pid:\${pid}"
     else
         log INFO "rulex is not running."
     fi
 }
+
+case "\$1" in
+    start)
+        start
+    ;;
+    restart)
+        stop
+        start
+    ;;
+    stop)
+        stop
+    ;;
+    status)
+        status
+    ;;
+    *)
+        log ERROR "Usage: \$0 {start|restart|stop|status}"
+        exit 1
+    ;;
+esac
 
 EOL
 
@@ -107,6 +134,10 @@ __remove_files() {
 }
 
 uninstall(){
+    if [ -e "$service_file" ]; then
+        $service_file stop
+        $service_file disable
+    fi
     __remove_files $service_file
     __remove_files "$WORKING_DIRECTORY/rulex"
     __remove_files "$WORKING_DIRECTORY/rulex.ini"
@@ -117,42 +148,25 @@ uninstall(){
     __remove_files "$WORKING_DIRECTORY/LICENSE"
     __remove_files "$WORKING_DIRECTORY/md5.sum"
     __remove_files "$WORKING_DIRECTORY/upload/"
-    __remove_files "$WORKING_DIRECTORY/"*.txt
-    __remove_files "$WORKING_DIRECTORY/"*.txt.gz
+    __remove_files "$WORKING_DIRECTORY/*.txt"
+    __remove_files "$WORKING_DIRECTORY/*.txt.gz"
     log INFO "Rulex has been uninstalled."
 }
 
 start() {
-    log INFO "Starting $SERVICE_NAME..."
-    nohup $EXECUTABLE_PATH run -config $CONFIG_PATH >output.log 2>&1 &
-    echo "$!" > "$PID_FILE" && log INFO "Service started."
+    $service_file start
+}
+
+restart() {
+    $service_file restart
 }
 
 stop() {
-    log INFO "Stopping $SERVICE_NAME..."
-    rm -f "$PID_FILE" && log INFO "PID file removed."
-    pid=$(pgrep -x "$SERVICE_NAME")
-    if [ -n "$pid" ]; then
-        kill -15 "$pid" && log INFO "Process $pid (rulex) terminated."
-        pkill -f "$SERVICE_NAME"
-    else
-        log INFO "Process rulex not found."
-    fi
-}
-
-restart(){
-    stop
-    start
+    $service_file stop
 }
 
 status() {
-    log INFO "Checking $SERVICE_NAME status..."
-    pid=$(pgrep -x "$SERVICE_NAME")
-    if [ -n "$pid" ]; then
-        log INFO "$SERVICE_NAME is running with Pid:${pid}"
-    else
-        log INFO "$SERVICE_NAME is not running."
-    fi
+    $service_file status
 }
 
 case "$1" in

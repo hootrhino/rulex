@@ -60,7 +60,7 @@ func main() {
 				Action: func(c *cli.Context) error {
 					fmt.Println(typex.Banner)
 					engine.RunRulex(c.String("config"))
-					log.Printf("[RULEX UPGRADE] Run rulex successfully.")
+					fmt.Printf("[RULEX UPGRADE] Run rulex successfully.")
 					return nil
 				},
 			},
@@ -76,32 +76,40 @@ func main() {
 					},
 				},
 				Action: func(c *cli.Context) error {
+					file, err := os.Create("./local-upgrade-log.txt")
+					if err != nil {
+						fmt.Println(err)
+						return err
+					}
+					defer file.Close()
+					os.Stdout = file
+					os.Stderr = file
 					OldPid := c.Int("oldpid")
-					log.Println("[RULEX UPGRADE] Updater Pid=",
+					fmt.Println("[RULEX UPGRADE] Updater Pid=",
 						os.Getpid(), "Gid=", os.Getegid(), " OldPid:", OldPid)
 					if OldPid < 0 {
-						log.Printf("[RULEX UPGRADE] Invalid OldPid:%d", OldPid)
+						fmt.Printf("[RULEX UPGRADE] Invalid OldPid:%d", OldPid)
 						return nil
 					}
 					// Try 5 times
 					killOld := true
-					log.Println("[RULEX UPGRADE] Try to kill Old Process:", OldPid)
+					fmt.Println("[RULEX UPGRADE] Try to kill Old Process:", OldPid)
 					if killOld {
 						// EEKITH3 Use SystemCtl manage RULEX
 						env := os.Getenv("ARCHSUPPORT")
 						if runtime.GOOS == "linux" {
-							log.Println("[RULEX UPGRADE] Ready to Upgrade on product:", env)
+							fmt.Println("[RULEX UPGRADE] Ready to Upgrade on product:", env)
 							if err := ossupport.UnzipFirmware(
 								"/usr/local/upload/Firmware/Firmware.zip",
 								"/usr/local"); err != nil {
-								log.Println("[RULEX UPGRADE] Unzip error:", err)
+								fmt.Println("[RULEX UPGRADE] Unzip error:", err)
 								return err
 							}
-							if err := ossupport.Restart(); err != nil {
-								log.Println("[RULEX UPGRADE] Restart rulex error", err)
+							if err := ossupport.RestartRulex(); err != nil {
+								fmt.Println("[RULEX UPGRADE] Restart rulex error", err)
 								return err
 							}
-							log.Println("[RULEX UPGRADE] Restart rulex success, Upgrade Process Exited")
+							fmt.Println("[RULEX UPGRADE] Restart rulex success, Upgrade Process Exited")
 						}
 					}
 					os.Exit(0)
@@ -121,29 +129,37 @@ func main() {
 					},
 				},
 				Action: func(c *cli.Context) error {
+					file, err := os.Create("./local-recover-log.txt")
+					if err != nil {
+						fmt.Println(err)
+						return err
+					}
+					defer file.Close()
+					os.Stdout = file
+					os.Stderr = file
 					if !c.Bool("recover") {
-						return fmt.Errorf("[DATA RECOVER] Nothing todo")
+						fmt.Println("[DATA RECOVER] Nothing todo")
+						return nil
 					}
-					if err := ossupport.StopRulex(); err != nil {
-						log.Println("[DATA RECOVER] Stop rulex error", err)
-						return err
+					fmt.Println("[DATA RECOVER] Remove Old Db File")
+					if err := os.Remove("./rulex.db"); err != nil {
+						fmt.Println("[DATA RECOVER] Remove Old Db File error:", err)
+						return nil
 					}
-					recoveryDb := "/usr/local/upload/Backup/recovery.db"
-					log.Println("[DATA RECOVER] Move Db File")
-					if err := os.Remove("/usr/local/rulex.db"); err != nil {
-						return fmt.Errorf("[DATA RECOVER] Remove Old Db File error:%s", err)
+					fmt.Println("[DATA RECOVER] Remove Old Db File Finished")
+					fmt.Println("[DATA RECOVER] Move New Db File")
+					recoveryDb := "./upload/Backup/recovery.db"
+					if err := ossupport.MoveFile(recoveryDb, "./rulex.db"); err != nil {
+						fmt.Println("[DATA RECOVER] Move New Db File error", err)
+						return nil
 					}
-					if err := ossupport.MoveFile(recoveryDb, "/usr/local/rulex.db"); err != nil {
-						log.Println("[DATA RECOVER] Move Db File error", err)
-						return err
+					fmt.Println("[DATA RECOVER] Move New Db File Finished")
+					fmt.Println("[DATA RECOVER] Try to Restart rulex")
+					if err := ossupport.RestartRulex(); err != nil {
+						fmt.Println("[DATA RECOVER] Restart rulex error", err)
+						return nil
 					}
-					log.Println("[DATA RECOVER] Move Db File Finished")
-					log.Println("[DATA RECOVER] Try to Restart rulex")
-					if err := ossupport.Restart(); err != nil {
-						log.Println("[DATA RECOVER] Restart rulex error", err)
-						return err
-					}
-					log.Println("[DATA RECOVER] Restart rulex success, Recover Process Exited")
+					fmt.Println("[DATA RECOVER] Restart rulex success, Recover Process Exited")
 					os.Exit(0)
 					return nil
 				},
@@ -185,7 +201,7 @@ func main() {
 						return err
 					}
 					// commercial version will implement it
-					log.Printf("[LICENCE ACTIVE]: Admin(%s,%s), mac addr:[%s] try to request license from %s\n",
+					fmt.Printf("[LICENCE ACTIVE]: Admin(%s,%s), mac addr:[%s] try to request license from %s\n",
 						username, password, macAddr, host)
 					return nil
 				},
