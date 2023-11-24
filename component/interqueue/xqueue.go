@@ -73,8 +73,12 @@ func (q *DataCacheQueue) GetSize() int {
 *
  */
 func (q *DataCacheQueue) Push(d QueueData) error {
-	if len(q.Queue)+1 > 52428800 { // 50Mb
-		msg := fmt.Sprintf("attached max queue size, max size is:%v, current size is: %v", q.GetSize(), len(q.Queue)+1)
+	// 动态扩容
+	// if len(q.Queue)+1 > q.GetSize() {
+	// }
+	if len(q.Queue)+1 > q.GetSize() {
+		msg := fmt.Sprintf("attached max queue size, max size is:%v, current size is: %v",
+			q.GetSize(), len(q.Queue)+1)
 		glogger.GLogger.Error(msg)
 		return errors.New(msg)
 	} else {
@@ -92,8 +96,7 @@ func (q *DataCacheQueue) GetQueue() chan QueueData {
 	return q.Queue
 }
 
-// 此处内置的消息队列用了go的channel, 看似好像很简单，但是经过测试发现完全满足网关需求，甚至都性能过剩了
-// 因此大家看到这里务必担心, 我也知道有很精美的高级框架, 但是用简单的方法来实现功能不是更好吗？
+// TODO: 下个版本更换为可扩容的Chan
 func StartDataCacheQueue() {
 
 	go func(ctx context.Context, xQueue XQueue) {
@@ -101,6 +104,8 @@ func StartDataCacheQueue() {
 			select {
 			case <-ctx.Done():
 				return
+			// 这个地方不能阻塞，需要借助一个外部queue
+			// push qd -> Queue
 			case qd := <-xQueue.GetQueue():
 				{
 					//

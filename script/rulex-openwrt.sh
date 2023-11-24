@@ -114,9 +114,8 @@ uninstall() {
     __remove_files "$WORKING_DIRECTORY/LICENSE"
     __remove_files "$WORKING_DIRECTORY/md5.sum"
     __remove_files "$WORKING_DIRECTORY/upload/"
-    __remove_files "$WORKING_DIRECTORY/*.txt"
-    __remove_files "$WORKING_DIRECTORY/run-nohup-log.txt"
-    __remove_files "$WORKING_DIRECTORY/*.txt.gz"
+    rm -f "$WORKING_DIRECTORY/*.txt"
+    rm -f "$WORKING_DIRECTORY/*.txt.gz"
     log INFO "Rulex has been uninstalled."
 }
 

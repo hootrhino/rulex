@@ -105,7 +105,8 @@ uninstall(){
     remove_files $working_directory/upload/
     remove_files $working_directory/license.key
     remove_files $working_directory/license.lic
-    remove_files $working_directory/*.txt.gz
+    rm -f "$WORKING_DIRECTORY/*.txt"
+    rm -f "$WORKING_DIRECTORY/*.txt.gz"
     systemctl daemon-reload
     systemctl reset-failed
     echo "[√] Rulex has been uninstalled."
