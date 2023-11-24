@@ -17,7 +17,7 @@ WORKING_DIRECTORY="/usr/local"
 WAIT_TIME_SECONDS=3
 CHECK_INTERVAL_SECONDS=1
 PID_FILE="/var/run/$SERVICE_NAME.pid"
-SCRIPT_PATH="/etc/init.d/rulex.sh"
+service_file="/etc/init.d/rulex.sh"
 PID_FILE="/var/run/rulex.pid"
 service_file="/etc/init.d/rulex.service"
 log() {
@@ -109,6 +109,7 @@ EOL
     cp -rfp "$source_dir/rulex.ini" "$config_file"
     cp -rfp "$source_dir/license.lic" "$WORKING_DIRECTORY/"
     cp -rfp "$source_dir/license.key" "$WORKING_DIRECTORY/"
+    __add_to_rc_local
     chmod 777 $service_file
     if [ $? -eq 0 ]; then
         log INFO "Rulex service has been created and extracted."
@@ -132,11 +133,44 @@ __remove_files() {
         log INFO "$file not found. No need to remove."
     fi
 }
+__remove_from_rc_local() {
+    local rc_local_path="/etc/rc.local"
+    if [ ! -f "$rc_local_path" ]; then
+        log ERROR "Error: /etc/rc.local does not exist. Check your system configuration."
+        return 1
+    fi
+    if ! grep -qF "$service_file start" "$rc_local_path"; then
+        log INFO "Script not found in /etc/rc.local. No changes made."
+        return 0
+    fi
+    sed -i "\|$service_file start|d" "$rc_local_path"
+    log INFO "Script removed from /etc/rc.local."
+    return 0
+}
+
+__add_to_rc_local() {
+    local rc_local_path="/etc/rc.local"
+    if [ ! -f "$rc_local_path" ]; then
+        log INFO "Error: /etc/rc.local does not exist. Create the file manually or check your system configuration."
+        return 1
+    fi
+    if grep -qF "$service_file start" "$rc_local_path"; then
+        log INFO "Script already present in /etc/rc.local. No changes made."
+        return 0
+    fi
+    local last_line_number=$(awk '/^[^#[:space:]]/{n=$0} END{print NR}' "$rc_local_path")
+    if [ -n "$last_line_number" ]; then
+        sed -i "${last_line_number}i $service_file start" "$rc_local_path"
+    else
+        echo "$service_file start" >> "$rc_local_path"
+    fi
+    log INFO "Script added to /etc/rc.local."
+    return 0
+}
 
 uninstall(){
     if [ -e "$service_file" ]; then
         $service_file stop
-        $service_file disable
     fi
     __remove_files $service_file
     __remove_files "$WORKING_DIRECTORY/rulex"
@@ -148,8 +182,9 @@ uninstall(){
     __remove_files "$WORKING_DIRECTORY/LICENSE"
     __remove_files "$WORKING_DIRECTORY/md5.sum"
     __remove_files "$WORKING_DIRECTORY/upload/"
-    __remove_files "$WORKING_DIRECTORY/*.txt"
-    __remove_files "$WORKING_DIRECTORY/*.txt.gz"
+    __remove_from_rc_local
+    rm -f "$WORKING_DIRECTORY/*.txt"
+    rm -f "$WORKING_DIRECTORY/*.txt.gz"
     log INFO "Rulex has been uninstalled."
 }
 
