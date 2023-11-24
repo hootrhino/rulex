@@ -58,12 +58,17 @@ func RestartRulex() error {
 *
 * 恢复上传的DB
 1 停止RULEX
-2 删除DB
-3 复制DB过去
-4 重启
+2 删除老DB
+3 复制新DB到路径
+3 删除PID,停止守护进程
+4 重启(脚本会新建PID)
 - path: /usr/local/rulex, args: recover=true
 *
 */
+func fileExists(filename string) bool {
+	_, err := os.Stat(filename)
+	return !os.IsNotExist(err)
+}
 func StartRecoverProcess() {
 	cmd := exec.Command("./rulex", "recover", "-recover=true")
 	cmd.SysProcAttr = NewSysProcAttr()
@@ -74,6 +79,15 @@ func StartRecoverProcess() {
 		return
 	}
 	log.Printf("Start Recover Process Pid=%d, Cmd:%s\n", cmd.Process.Pid, cmd.String())
+	fmt.Println("Remove Old Pid File")
+	pidFile := "/var/run/rulex.pid"
+	if fileExists(pidFile) {
+		if err := os.Remove(pidFile); err != nil {
+			fmt.Println("Remove Old Pid File error:", err)
+			return
+		}
+	}
+	fmt.Println("Remove Old Pid File Finished")
 	log.Println("Old Process Exited:", os.Getpid())
 	os.Exit(0)
 }
@@ -84,7 +98,7 @@ func StartRecoverProcess() {
 *
  */
 func StartUpgradeProcess() {
-	cmd := exec.Command("./rulex", "upgrade", "-oldpid=", fmt.Sprintf("%d", os.Getpid()))
+	cmd := exec.Command("./rulex", "upgrade", "-upgrade=", "true")
 	cmd.SysProcAttr = NewSysProcAttr()
 	cmd.Env = os.Environ()
 	err := cmd.Start()
@@ -93,6 +107,15 @@ func StartUpgradeProcess() {
 		return
 	}
 	log.Printf("Start Upgrade Process Pid=%d, Cmd:%s", cmd.Process.Pid, cmd.String())
+	fmt.Println("Remove Old Pid File")
+	pidFile := "/var/run/rulex.pid"
+	if fileExists(pidFile) {
+		if err := os.Remove(pidFile); err != nil {
+			fmt.Println("Remove Old Pid File error:", err)
+			return
+		}
+	}
+	fmt.Println("Remove Old Pid File Finished")
 	log.Println("Old Process Exited:", os.Getpid())
 	os.Exit(0)
 }
