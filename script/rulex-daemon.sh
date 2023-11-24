@@ -10,16 +10,14 @@
 # Description:       Rulex Service
 ### END INIT INFO
 
-EXECUTABLE_PATH="/usr/local/rulex"
-CONFIG_PATH="/usr/local/rulex.ini"
 SERVICE_NAME="rulex"
 WORKING_DIRECTORY="/usr/local"
-WAIT_TIME_SECONDS=3
-CHECK_INTERVAL_SECONDS=1
+EXECUTABLE_PATH="$WORKING_DIRECTORY/$SERVICE_NAME"
+CONFIG_PATH="$WORKING_DIRECTORY/$SERVICE_NAME.ini"
+
 PID_FILE="/var/run/$SERVICE_NAME.pid"
-service_file="/etc/init.d/rulex.sh"
 PID_FILE="/var/run/rulex.pid"
-service_file="/etc/init.d/rulex.service"
+SERVICE_FILE="/etc/init.d/rulex.service"
 log() {
     local level=$1
     shift
@@ -29,17 +27,15 @@ log() {
 
 install(){
     local source_dir="$PWD"
-    local executable="/usr/local/rulex"
-    local config_file="/usr/local/rulex.ini"
     local db_file="/usr/local/rulex.db"
-cat > "$service_file" << EOL
+cat > "$SERVICE_FILE" << EOL
 #!/bin/sh
 # Create Time: $(date +'%Y-%m-%d %H:%M:%S')
 
 WORKING_DIRECTORY="/usr/local"
 PID_FILE="/var/run/rulex.pid"
-executable="/usr/local/rulex"
-config_file="/usr/local/rulex.ini"
+EXECUTABLE_PATH="\$WORKING_DIRECTORY/rulex"
+CONFIG_PATH="\$WORKING_DIRECTORY/rulex.ini"
 
 log() {
     local level=\$1
@@ -48,19 +44,23 @@ log() {
 }
 
 start() {
-    log INFO "Starting rulex..."
+    pid=\$(pgrep -x -n "rulex")
+    if [ -n "\$pid" ]; then
+        log INFO "rulex is running with Pid:\${pid}"
+        exit 0
+    fi
+    log INFO "Starting rulex."
     cd \$WORKING_DIRECTORY
-    nohup \$executable run -config=\$config_file > run-nohup-log.txt 2>&1 &
     echo \$! > "\$PID_FILE"
+    daemon > rulex-daemon-log.txt 2>&1 &
     log INFO "Starting rulex Finished"
 }
 
 stop() {
-    # Check if rulex process is running
-    if pgrep -x "rulex" > /dev/null; then
-        pid=\$(pgrep -x "rulex")
-        log INFO "Killing rulex process with PID \$pid"
+    if pgrep -x -n "rulex" > /dev/null; then
+        pid=\$(pgrep -x -n "rulex")
         kill "\$pid"
+        log INFO "Killing rulex process with PID \$pid"
     else
         log INFO "rulex process is not running."
     fi
@@ -72,13 +72,25 @@ restart() {
 }
 
 status() {
-    log INFO "Checking rulex status..."
-    pid=\$(pgrep -x "rulex")
+    log INFO "Checking rulex status."
+    pid=\$(pgrep -x -n "rulex")
     if [ -n "\$pid" ]; then
         log INFO "rulex is running with Pid:\${pid}"
     else
         log INFO "rulex is not running."
     fi
+}
+
+daemon(){
+    while true; do
+        $EXECUTABLE_PATH run -config=\$CONFIG_PATH
+        wait \$!
+        sleep 5
+        if [ ! -f "\$PID_FILE" ]; then
+            log INFO "Pid File Remove detected, RULEX Daemon Exit."
+            exit 0
+        fi
+    done
 }
 
 case "\$1" in
@@ -105,12 +117,19 @@ EOL
 
     mkdir -p $WORKING_DIRECTORY
     chmod +x $source_dir/rulex
-    cp -rfp "$source_dir/rulex" "$executable"
-    cp -rfp "$source_dir/rulex.ini" "$config_file"
+    log INFO "Copy rulex to $WORKING_DIRECTORY"
+    cp -rfp "$source_dir/rulex" "$EXECUTABLE_PATH"
+
+    log INFO "Copy rulex.ini to $WORKING_DIRECTORY"
+    cp -rfp "$source_dir/rulex.ini" "$CONFIG_PATH"
+
+    log INFO "Copy license.lic to $WORKING_DIRECTORY"
     cp -rfp "$source_dir/license.lic" "$WORKING_DIRECTORY/"
+
+    log INFO "Copy license.key to $WORKING_DIRECTORY"
     cp -rfp "$source_dir/license.key" "$WORKING_DIRECTORY/"
     __add_to_rc_local
-    chmod 777 $service_file
+    chmod 777 $SERVICE_FILE
     if [ $? -eq 0 ]; then
         log INFO "Rulex service has been created and extracted."
     else
@@ -121,7 +140,7 @@ EOL
 
 __remove_files() {
     local file=$1
-    log INFO "Removing $file..."
+    log INFO "Removing $file."
     if [ -e "$file" ]; then
         if [ -d "$file" ]; then
             rm -rf "$file"
@@ -139,11 +158,11 @@ __remove_from_rc_local() {
         log ERROR "Error: /etc/rc.local does not exist. Check your system configuration."
         return 1
     fi
-    if ! grep -qF "$service_file start" "$rc_local_path"; then
+    if ! grep -qF "$SERVICE_FILE start" "$rc_local_path"; then
         log INFO "Script not found in /etc/rc.local. No changes made."
         return 0
     fi
-    sed -i "\|$service_file start|d" "$rc_local_path"
+    sed -i "\|$SERVICE_FILE start|d" "$rc_local_path"
     log INFO "Script removed from /etc/rc.local."
     return 0
 }
@@ -154,54 +173,54 @@ __add_to_rc_local() {
         log INFO "Error: /etc/rc.local does not exist. Create the file manually or check your system configuration."
         return 1
     fi
-    if grep -qF "$service_file start" "$rc_local_path"; then
+    if grep -qF "$SERVICE_FILE start" "$rc_local_path"; then
         log INFO "Script already present in /etc/rc.local. No changes made."
         return 0
     fi
     local last_line_number=$(awk '/^[^#[:space:]]/{n=$0} END{print NR}' "$rc_local_path")
     if [ -n "$last_line_number" ]; then
-        sed -i "${last_line_number}i $service_file start" "$rc_local_path"
+        sed -i "${last_line_number}i $SERVICE_FILE start" "$rc_local_path"
     else
-        echo "$service_file start" >> "$rc_local_path"
+        echo "$SERVICE_FILE start" >> "$rc_local_path"
     fi
     log INFO "Script added to /etc/rc.local."
     return 0
 }
 
 uninstall(){
-    if [ -e "$service_file" ]; then
-        $service_file stop
+    if [ -e "$SERVICE_FILE" ]; then
+        $SERVICE_FILE stop
     fi
-    __remove_files $service_file
+    __remove_files "$PID_FILE"
+    __remove_files "$SERVICE_FILE"
     __remove_files "$WORKING_DIRECTORY/rulex"
     __remove_files "$WORKING_DIRECTORY/rulex.ini"
     __remove_files "$WORKING_DIRECTORY/rulex.db"
     __remove_files "$WORKING_DIRECTORY/license.lic"
     __remove_files "$WORKING_DIRECTORY/license.key"
     __remove_files "$WORKING_DIRECTORY/RULEX_INTERNAL_DATACENTER.db"
-    __remove_files "$WORKING_DIRECTORY/LICENSE"
-    __remove_files "$WORKING_DIRECTORY/md5.sum"
     __remove_files "$WORKING_DIRECTORY/upload/"
+    __remove_files "$WORKING_DIRECTORY/rulex-nohup-log.txt"
+    __remove_files "$WORKING_DIRECTORY/rulexlog.txt"
+    __remove_files "$WORKING_DIRECTORY/rulex-recover-log.txt"
     __remove_from_rc_local
-    rm -f "$WORKING_DIRECTORY/*.txt"
-    rm -f "$WORKING_DIRECTORY/*.txt.gz"
     log INFO "Rulex has been uninstalled."
 }
 
 start() {
-    $service_file start
+    $SERVICE_FILE start
 }
 
 restart() {
-    $service_file restart
+    $SERVICE_FILE restart
 }
 
 stop() {
-    $service_file stop
+    $SERVICE_FILE stop
 }
 
 status() {
-    $service_file status
+    $SERVICE_FILE status
 }
 
 case "$1" in

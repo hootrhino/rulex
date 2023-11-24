@@ -55,10 +55,10 @@ restart() {
 }
 
 status() {
-    log INFO "Checking rulex status..."
-    pid=$(pgrep -x "rulex")
-    if [ -n "$pid" ]; then
-        log INFO "rulex is running with Pid:${pid}"
+    log INFO "Checking rulex status."
+    pid=\$(pgrep -x -n "rulex")
+    if [ -n "\$pid" ]; then
+        log INFO "rulex is running with Pid:\${pid}"
     else
         log INFO "rulex is not running."
     fi
@@ -132,7 +132,7 @@ stop() {
 }
 
 status() {
-    $service_file running
+    $service_file status
 }
 
 main() {

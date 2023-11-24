@@ -3,16 +3,17 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/hootrhino/rulex/engine"
-	"github.com/hootrhino/rulex/ossupport"
-	"github.com/hootrhino/rulex/typex"
-	"github.com/hootrhino/rulex/utils"
-	"github.com/urfave/cli/v2"
 	"log"
 	_ "net/http/pprof"
 	"os"
 	"runtime"
 	"time"
+
+	"github.com/hootrhino/rulex/engine"
+	"github.com/hootrhino/rulex/ossupport"
+	"github.com/hootrhino/rulex/typex"
+	"github.com/hootrhino/rulex/utils"
+	"github.com/urfave/cli/v2"
 )
 
 func init() {
@@ -69,49 +70,46 @@ func main() {
 				Hidden: true,
 				Usage:  "! JUST FOR Upgrade FirmWare",
 				Flags: []cli.Flag{
-					&cli.IntFlag{
-						Name:  "oldpid",
+					&cli.BoolFlag{
+						Name:  "upgrade",
 						Usage: "! THIS PARAMENT IS JUST FOR Upgrade FirmWare",
-						Value: -1,
+						Value: false,
 					},
 				},
 				Action: func(c *cli.Context) error {
+					if runtime.GOOS != "linux" {
+						fmt.Println("[RULEX UPGRADE] Only Support Linux")
+						return nil
+					}
 					file, err := os.Create("./local-upgrade-log.txt")
 					if err != nil {
 						fmt.Println(err)
-						return err
+						return nil
 					}
 					defer file.Close()
 					os.Stdout = file
 					os.Stderr = file
-					OldPid := c.Int("oldpid")
-					fmt.Println("[RULEX UPGRADE] Updater Pid=",
-						os.Getpid(), "Gid=", os.Getegid(), " OldPid:", OldPid)
-					if OldPid < 0 {
-						fmt.Printf("[RULEX UPGRADE] Invalid OldPid:%d", OldPid)
+					if !c.Bool("upgrade") {
+						fmt.Println("[RULEX UPGRADE] Nothing todo")
 						return nil
 					}
-					// Try 5 times
-					killOld := true
-					fmt.Println("[RULEX UPGRADE] Try to kill Old Process:", OldPid)
-					if killOld {
-						// EEKITH3 Use SystemCtl manage RULEX
-						env := os.Getenv("ARCHSUPPORT")
-						if runtime.GOOS == "linux" {
-							fmt.Println("[RULEX UPGRADE] Ready to Upgrade on product:", env)
-							if err := ossupport.UnzipFirmware(
-								"/usr/local/upload/Firmware/Firmware.zip",
-								"/usr/local"); err != nil {
-								fmt.Println("[RULEX UPGRADE] Unzip error:", err)
-								return err
-							}
-							if err := ossupport.RestartRulex(); err != nil {
-								fmt.Println("[RULEX UPGRADE] Restart rulex error", err)
-								return err
-							}
-							fmt.Println("[RULEX UPGRADE] Restart rulex success, Upgrade Process Exited")
-						}
+					// unzip Firmware
+					if err := ossupport.UnzipFirmware(
+						"/usr/local/upload/Firmware/Firmware.zip",
+						"/usr/local"); err != nil {
+						fmt.Println("[RULEX UPGRADE] Unzip error:", err)
+						return nil
 					}
+					if err := ossupport.RestartRulex(); err != nil {
+						fmt.Println("[RULEX UPGRADE] Restart rulex error", err)
+						return nil
+					}
+					// Remove old package
+					if err := os.Remove("/usr/local/upload/Firmware/Firmware.zip"); err != nil {
+						fmt.Println("[RULEX UPGRADE] Restart rulex error", err)
+						return nil
+					}
+					fmt.Println("[RULEX UPGRADE] Restart rulex success, Upgrade Process Exited")
 					os.Exit(0)
 					return nil
 				},
@@ -129,10 +127,14 @@ func main() {
 					},
 				},
 				Action: func(c *cli.Context) error {
-					file, err := os.Create("./local-recover-log.txt")
+					if runtime.GOOS != "linux" {
+						fmt.Println("[DATA RECOVER] Only Support Linux")
+						return nil
+					}
+					file, err := os.Create("./rulex-recover-log.txt")
 					if err != nil {
 						fmt.Println(err)
-						return err
+						return nil
 					}
 					defer file.Close()
 					os.Stdout = file
@@ -219,7 +221,7 @@ func main() {
 				Action: func(*cli.Context) error {
 					version := fmt.Sprintf("[%v-%v-%v]",
 						runtime.GOOS, runtime.GOARCH, typex.DefaultVersion.Version)
-					fmt.Println("[*] Current Version: " + version)
+					fmt.Println("[*] Rulex Version: " + version)
 					return nil
 				},
 			},
