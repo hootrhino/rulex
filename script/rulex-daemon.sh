@@ -85,7 +85,7 @@ daemon(){
     while true; do
         $EXECUTABLE_PATH run -config=\$CONFIG_PATH
         wait \$!
-        sleep 5
+        sleep 3
         if [ ! -f "\$PID_FILE" ]; then
             log INFO "Pid File Remove detected, RULEX Daemon Exit."
             exit 0
