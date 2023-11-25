@@ -15,10 +15,12 @@ type Version struct {
 	Version     string
 	ReleaseTime string
 	Arch        string
+	Product     string
 	Dist        string
 }
 
 var DefaultVersion = Version{
+	Product:        "COMMON",
 	Version:   \`${VERSION}\`,
 	ReleaseTime: "$(echo $(date "+%Y-%m-%d %H:%M:%S"))",
 }

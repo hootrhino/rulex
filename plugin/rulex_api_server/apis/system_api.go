@@ -116,6 +116,7 @@ func System(c *gin.Context, ruleEngine typex.RuleX) {
 		"cpuPercent": calculateCpuPercent(cpuPercent),
 		"osArch":     ruleEngine.Version().Arch,
 		"osDist":     ruleEngine.Version().Dist,
+		"product":    typex.DefaultVersion.Product,
 		"startedAt":  __StartedAt,
 		"osUpTime": func() string {
 			result, err := ossupport.GetUptime()
@@ -270,40 +271,7 @@ func GetUarts(c *gin.Context, ruleEngine typex.RuleX) {
 *
  */
 func GetUartList(c *gin.Context, ruleEngine typex.RuleX) {
-	ports, _ := serial.GetPortsList()
-	List := []map[string]interface{}{}
-	for _, port := range ports {
-		// 明确知道有这么多端口，啰嗦代码是为了标记以免以后忘记
-		if port == "/dev/ttyS0" {
-			continue
-		}
-		if port == "/dev/ttyS3" {
-			continue
-		}
-		if port == "/dev/ttyUSB0" {
-			continue
-		}
-		if port == "/dev/ttyUSB1" {
-			continue
-		}
-		if port == "/dev/ttyUSB2" {
-			continue
-		}
-
-		List = append(List, map[string]interface{}{
-			"port": port,
-			"alias": func(port string) string {
-				if port == "/dev/ttyS1" {
-					return "RS4851(A1B1)"
-				}
-				if port == "/dev/ttyS2" {
-					return "RS4851(A2B2)"
-				}
-				return port
-			}(port)})
-
-	}
-	c.JSON(common.HTTP_OK, common.OkWithData(List))
+	c.JSON(common.HTTP_OK, common.OkWithData(service.GetOsPort()))
 }
 
 /*

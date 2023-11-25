@@ -16,14 +16,13 @@ EXECUTABLE_PATH="$WORKING_DIRECTORY/$SERVICE_NAME"
 CONFIG_PATH="$WORKING_DIRECTORY/$SERVICE_NAME.ini"
 
 PID_FILE="/var/run/$SERVICE_NAME.pid"
-PID_FILE="/var/run/rulex.pid"
-SERVICE_FILE="/etc/init.d/rulex.service"
+SERVICE_FILE="/etc/init.d/$SERVICE_NAME.service"
+
 log() {
     local level=$1
     shift
     echo "[$level] $(date +'%Y-%m-%d %H:%M:%S') - $@"
 }
-
 
 install(){
     local source_dir="$PWD"
@@ -44,30 +43,34 @@ log() {
 }
 
 start() {
-    pid=\$(pgrep -x -n "rulex")
+    pid=\$(pgrep -x -n -f "/usr/local/rulex run -config=/usr/local/rulex.ini")
     if [ -n "\$pid" ]; then
         log INFO "rulex is running with Pid:\${pid}"
         exit 0
     fi
     log INFO "Starting rulex."
-    cd \$WORKING_DIRECTORY
-    echo \$! > "\$PID_FILE"
-    daemon > rulex-daemon-log.txt 2>&1 &
-    log INFO "Starting rulex Finished"
+    $EXECUTABLE_PATH run -config=$CONFIG_PATH &
+    echo "\$!" > "\$PID_FILE"
+    log INFO "rulex started with PID \$(cat "\$PID_FILE")."
+    daemon
 }
 
 stop() {
-    if pgrep -x -n "rulex" > /dev/null; then
-        pid=\$(pgrep -x -n "rulex")
+    if [ -f "$PID_FILE" ]; then
+        pid=\$(cat "$PID_FILE")
+        log INFO "Stopping rulex process with PID \$pid."
         kill "\$pid"
-        log INFO "Killing rulex process with PID \$pid"
+        wait "\$pid"
+        rm "$PID_FILE"
+        log INFO "rulex process with PID \$pid stopped."
     else
-        log INFO "rulex process is not running."
+        log INFO "PID file $PID_FILE not found. No rulex process to stop."
     fi
 }
 
 restart() {
     stop
+    sleep 1
     start
 }
 
@@ -81,15 +84,18 @@ status() {
     fi
 }
 
-daemon(){
+daemon() {
     while true; do
-        $EXECUTABLE_PATH run -config=\$CONFIG_PATH
-        wait \$!
-        sleep 3
-        if [ ! -f "\$PID_FILE" ]; then
-            log INFO "Pid File Remove detected, RULEX Daemon Exit."
+        if [ ! -f "$PID_FILE" ]; then
+            log INFO "PID file $PID_FILE not found. Exiting."
             exit 0
         fi
+        pid=\$(cat "$PID_FILE")
+        if ! pgrep -x "rulex" > /dev/null; then
+            log INFO "Detected that rulex process is not running. Restarting..."
+            $EXECUTABLE_PATH run -config=$CONFIG_PATH &
+        fi
+        sleep 5
     done
 }
 
@@ -98,8 +104,7 @@ case "\$1" in
         start
     ;;
     restart)
-        stop
-        start
+        restart
     ;;
     stop)
         stop
@@ -200,9 +205,10 @@ uninstall(){
     __remove_files "$WORKING_DIRECTORY/license.key"
     __remove_files "$WORKING_DIRECTORY/RULEX_INTERNAL_DATACENTER.db"
     __remove_files "$WORKING_DIRECTORY/upload/"
-    __remove_files "$WORKING_DIRECTORY/rulex-nohup-log.txt"
+    __remove_files "$WORKING_DIRECTORY/rulex-daemon-log.txt"
     __remove_files "$WORKING_DIRECTORY/rulexlog.txt"
     __remove_files "$WORKING_DIRECTORY/rulex-recover-log.txt"
+    __remove_files "$WORKING_DIRECTORY/rulex-upgrade-log.txt"
     __remove_from_rc_local
     log INFO "Rulex has been uninstalled."
 }

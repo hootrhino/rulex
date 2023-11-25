@@ -17,6 +17,7 @@ import (
 )
 
 func init() {
+
 	go func() {
 		for {
 			select {
@@ -28,6 +29,19 @@ func init() {
 			}
 		}
 	}()
+	env := os.Getenv("ARCHSUPPORT")
+	if env == "EEKITT507" {
+		typex.DefaultVersion.Product = env
+	}
+	if env == "EEKITH3" {
+		typex.DefaultVersion.Product = env
+	}
+	if env == "WKYS805" {
+		typex.DefaultVersion.Product = env
+	}
+	if env == "RPI4B" {
+		typex.DefaultVersion.Product = env
+	}
 	dist, err := utils.GetOSDistribution()
 	if err != nil {
 		panic(err)
