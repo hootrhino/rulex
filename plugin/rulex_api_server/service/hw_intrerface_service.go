@@ -22,6 +22,7 @@ import (
 	"github.com/hootrhino/rulex/component/interdb"
 	"github.com/hootrhino/rulex/ossupport"
 	"github.com/hootrhino/rulex/plugin/rulex_api_server/model"
+	"github.com/hootrhino/rulex/typex"
 	"go.bug.st/serial"
 )
 
@@ -94,7 +95,7 @@ func GetHwPortConfig(uuid string) (model.MHwPort, error) {
 *
  */
 func InitHwPortConfig() error {
-	for _, portName := range getOsPort() {
+	for _, portName := range GetOsPort() {
 		Port := model.MHwPort{
 			UUID: portName,
 			Name: portName,
@@ -130,7 +131,7 @@ func InitHwPortConfig() error {
 * 获取系统串口
 *
  */
-func getOsPort() []string {
+func GetOsPort() []string {
 	var ports []string
 	if runtime.GOOS == "windows" {
 		ports, _ = serial.GetPortsList()
@@ -139,24 +140,23 @@ func getOsPort() []string {
 	}
 	List := []string{}
 	for _, port := range ports {
-		// 明确知道有这么多端口是被占用的，啰嗦代码是为了标记以免以后忘记
-		if port == "COM0" {
-			continue
-		}
-		if port == "/dev/ttyS0" {
-			continue
-		}
-		if port == "/dev/ttyS3" {
-			continue
-		}
-		if port == "/dev/ttyUSB0" {
-			continue
-		}
-		if port == "/dev/ttyUSB1" {
-			continue
-		}
-		if port == "/dev/ttyUSB2" {
-			continue
+		if typex.DefaultVersion.Product == "EEKIIH3" {
+			// H3的下列串口被网卡占用
+			if port == "/dev/ttyS0" {
+				continue
+			}
+			if port == "/dev/ttyS3" {
+				continue
+			}
+			if port == "/dev/ttyUSB0" {
+				continue
+			}
+			if port == "/dev/ttyUSB1" {
+				continue
+			}
+			if port == "/dev/ttyUSB2" {
+				continue
+			}
 		}
 		List = append(List, port)
 	}
