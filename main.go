@@ -171,10 +171,20 @@ func main() {
 					}
 					fmt.Println("[DATA RECOVER] Move New Db File Finished")
 					fmt.Println("[DATA RECOVER] Try to Restart rulex")
+					// upgrade lock
+					if err := os.WriteFile("/var/run/rulex-upgrade.lock", []byte{48}, 0755); err != nil {
+						fmt.Println("[DATA RECOVER] Write Recover Lock File error:", err)
+						return nil
+					}
 					if err := ossupport.RestartRulex(); err != nil {
 						fmt.Println("[DATA RECOVER] Restart rulex error", err)
 					} else {
 						fmt.Println("[DATA RECOVER] Restart rulex success, Recover Process Exited")
+					}
+					// upgrade lock
+					if err := os.Remove("/var/run/rulex-upgrade.lock"); err != nil {
+						fmt.Println("[DATA RECOVER] Remove Recover Lock File error:", err)
+						return nil
 					}
 					os.Exit(0)
 					return nil
