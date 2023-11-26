@@ -53,6 +53,7 @@ start() {
         exit 0
     fi
     daemon&
+    exit 0
 }
 
 stop() {
