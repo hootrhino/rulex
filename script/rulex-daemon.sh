@@ -18,6 +18,9 @@ CONFIG_PATH="$WORKING_DIRECTORY/$SERVICE_NAME.ini"
 PID_FILE="/var/run/$SERVICE_NAME.pid"
 SERVICE_FILE="/etc/init.d/$SERVICE_NAME.service"
 
+STOP_SIGNAL="/var/run/rulex-stop.sinal"
+UPGRADE_SIGNAL="/var/run/rulex-upgrade.lock"
+
 log() {
     local level=$1
     shift
@@ -43,28 +46,23 @@ log() {
 }
 
 start() {
-    pid=\$(pgrep -x -n -f "/usr/local/rulex run -config=/usr/local/rulex.ini")
+    rm -f $STOP_SIGNAL
+    pid=\$(pgrep -x -n -f "$EXECUTABLE_PATH run -config=$CONFIG_PATH")
     if [ -n "\$pid" ]; then
         log INFO "rulex is running with Pid:\${pid}"
         exit 0
     fi
-    log INFO "Starting rulex."
-    $EXECUTABLE_PATH run -config=$CONFIG_PATH > rulex-daemon-log.txt&
-    echo "\$!" > "\$PID_FILE"
-    log INFO "rulex started with PID \$(cat "\$PID_FILE")."
-    daemon
+    daemon&
 }
 
 stop() {
-    if [ -f "$PID_FILE" ]; then
-        pid=\$(cat "$PID_FILE")
-        log INFO "Stopping rulex process with PID \$pid."
-        kill "\$pid"
-        wait "\$pid"
-        rm "$PID_FILE"
-        log INFO "rulex process with PID \$pid stopped."
+    echo "1" > $STOP_SIGNAL
+    if pgrep -x "rulex" > /dev/null; then
+        log INFO "rulex process is running. Killing it..."
+        pkill -x "rulex"
+        log INFO "rulex process has been killed."
     else
-        log INFO "PID file $PID_FILE not found. No rulex process to stop."
+        log WARNING "rulex process is not running."
     fi
 }
 
@@ -84,28 +82,22 @@ status() {
     fi
 }
 
-
 daemon() {
-    sleep 1
-    local old_pid=\$(cat "$PID_FILE")
     while true; do
-        if [ ! -f "$PID_FILE" ]; then
-            log INFO "PID file $PID_FILE not found. Exiting."
-            exit 0
-        fi
-        new_pid=\$(cat "$PID_FILE")
-        if [ "\$old_pid" != "\$new_pid" ]; then
-            log INFO "$PID_FILE value changed. Exiting."
-            exit 0
-        fi
         if ! pgrep -x "rulex" > /dev/null; then
-            log INFO "Detected that rulex process is not running. Restarting..."
-            $EXECUTABLE_PATH run -config=$CONFIG_PATH > rulex-daemon-log.txt &
-            sleep 5
-            old_pid=\$(cat "$PID_FILE")
-            continue
+            if [ -e "$UPGRADE_SIGNAL" ]; then
+                log INFO "File $UPGRADE_SIGNAL exists. May upgrade now."
+            elif [ -e "$STOP_SIGNAL" ]; then
+                log INFO "$STOP_SIGNAL file found. Exiting."
+                exit 0
+            else
+                log WARNING "Detected that rulex process is interrupted. Restarting..."
+                $EXECUTABLE_PATH run -config=$CONFIG_PATH > rulex-daemon-log.txt
+                wait $!
+                log WARNING "Detected that rulex process is interrupted"
+            fi
         fi
-        sleep 5
+        sleep 4
     done
 }
 
@@ -194,7 +186,7 @@ __add_to_rc_local() {
     fi
     local last_line_number=$(awk '/^[^#[:space:]]/{n=$0} END{print NR}' "$rc_local_path")
     if [ -n "$last_line_number" ]; then
-        sed -i "${last_line_number}i $SERVICE_FILE start" "$rc_local_path"
+        sed -i "${last_line_number}i $SERVICE_FILE start || true" "$rc_local_path"
     else
         echo "$SERVICE_FILE start" >> "$rc_local_path"
     fi
@@ -206,7 +198,6 @@ uninstall(){
     if [ -e "$SERVICE_FILE" ]; then
         $SERVICE_FILE stop
     fi
-    __remove_files "$PID_FILE"
     __remove_files "$SERVICE_FILE"
     __remove_files "$WORKING_DIRECTORY/rulex"
     __remove_files "$WORKING_DIRECTORY/rulex.ini"
@@ -215,8 +206,8 @@ uninstall(){
     __remove_files "$WORKING_DIRECTORY/license.key"
     __remove_files "$WORKING_DIRECTORY/RULEX_INTERNAL_DATACENTER.db"
     __remove_files "$WORKING_DIRECTORY/upload/"
-    __remove_files "$WORKING_DIRECTORY/rulex-daemon-log.txt"
     __remove_files "$WORKING_DIRECTORY/rulexlog.txt"
+    __remove_files "$WORKING_DIRECTORY/rulex-daemon-log.txt"
     __remove_files "$WORKING_DIRECTORY/rulex-recover-log.txt"
     __remove_files "$WORKING_DIRECTORY/rulex-upgrade-log.txt"
     __remove_from_rc_local
