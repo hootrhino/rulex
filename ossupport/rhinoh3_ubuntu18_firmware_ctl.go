@@ -48,9 +48,12 @@ func StopRulex() error {
  */
 func RestartRulex() error {
 	cmd := exec.Command("/etc/init.d/rulex.service", "restart")
-	out, err := cmd.CombinedOutput()
+	cmd.SysProcAttr = NewSysProcAttr()
+	cmd.Env = os.Environ()
+	err := cmd.Start()
 	if err != nil {
-		return fmt.Errorf("%s,%s", err, string(out))
+		log.Println("Restart Rulex Failed:", err)
+		return err
 	}
 	return nil
 }

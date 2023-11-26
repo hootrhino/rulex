@@ -173,10 +173,9 @@ func main() {
 					fmt.Println("[DATA RECOVER] Try to Restart rulex")
 					if err := ossupport.RestartRulex(); err != nil {
 						fmt.Println("[DATA RECOVER] Restart rulex error", err)
-						os.Exit(0)
-						return nil
+					} else {
+						fmt.Println("[DATA RECOVER] Restart rulex success, Recover Process Exited")
 					}
-					fmt.Println("[DATA RECOVER] Restart rulex success, Recover Process Exited")
 					os.Exit(0)
 					return nil
 				},

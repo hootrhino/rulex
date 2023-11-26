@@ -49,7 +49,7 @@ start() {
         exit 0
     fi
     log INFO "Starting rulex."
-    $EXECUTABLE_PATH run -config=$CONFIG_PATH &
+    $EXECUTABLE_PATH run -config=$CONFIG_PATH > rulex-daemon-log.txt&
     echo "\$!" > "\$PID_FILE"
     log INFO "rulex started with PID \$(cat "\$PID_FILE")."
     daemon
@@ -84,16 +84,26 @@ status() {
     fi
 }
 
+
 daemon() {
+    sleep 1
+    local old_pid=\$(cat "$PID_FILE")
     while true; do
         if [ ! -f "$PID_FILE" ]; then
             log INFO "PID file $PID_FILE not found. Exiting."
             exit 0
         fi
-        pid=\$(cat "$PID_FILE")
+        new_pid=\$(cat "$PID_FILE")
+        if [ "\$old_pid" != "\$new_pid" ]; then
+            log INFO "$PID_FILE value changed. Exiting."
+            exit 0
+        fi
         if ! pgrep -x "rulex" > /dev/null; then
             log INFO "Detected that rulex process is not running. Restarting..."
-            $EXECUTABLE_PATH run -config=$CONFIG_PATH &
+            $EXECUTABLE_PATH run -config=$CONFIG_PATH > rulex-daemon-log.txt &
+            sleep 5
+            old_pid=\$(cat "$PID_FILE")
+            continue
         fi
         sleep 5
     done
