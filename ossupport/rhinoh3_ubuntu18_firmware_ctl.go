@@ -21,7 +21,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"time"
 )
 
 /*
@@ -80,18 +79,6 @@ func FileExists(filename string) bool {
 *
  */
 func StartRecoverProcess() {
-	// rm pid file
-	fmt.Println("Remove Old Pid File")
-	pidFile := "/var/run/rulex.pid"
-	if FileExists(pidFile) {
-		if err := os.Remove(pidFile); err != nil {
-			log.Println("Remove Old Pid File error:", err)
-			return
-		}
-	}
-	time.Sleep(3 * time.Second) // Wait Daemon Exit
-	log.Println("Remove Old Pid File Finished")
-	// Cmd
 	cmd := exec.Command("./rulex", "recover", "-recover=true")
 	cmd.SysProcAttr = NewSysProcAttr()
 	cmd.Env = os.Environ()
@@ -100,9 +87,6 @@ func StartRecoverProcess() {
 		log.Println("Start Recover Process Failed:", err)
 		return
 	}
-
-	log.Printf("Start Recover Process Pid=%d, Cmd:%s\n", cmd.Process.Pid, cmd.String())
-	log.Println("Old Process Exited:", os.Getpid())
 	os.Exit(0)
 }
 
@@ -120,8 +104,6 @@ func StartUpgradeProcess() {
 		log.Println("Start Upgrade Process Failed:", err)
 		return
 	}
-	log.Printf("Start Upgrade Process Pid=%d, Cmd:%s", cmd.Process.Pid, cmd.String())
-	log.Println("Old Process Exited:", os.Getpid())
 	os.Exit(0)
 }
 

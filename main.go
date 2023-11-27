@@ -91,6 +91,18 @@ func main() {
 					},
 				},
 				Action: func(c *cli.Context) error {
+					// upgrade lock
+					if err := os.WriteFile("/var/run/rulex-upgrade.lock", []byte{48}, 0755); err != nil {
+						fmt.Println("[DATA RECOVER] Write Recover Lock File error:", err)
+						return nil
+					}
+					defer func() {
+						// upgrade lock
+						if err := os.Remove("/var/run/rulex-upgrade.lock"); err != nil {
+							fmt.Println("[DATA RECOVER] Remove Recover Lock File error:", err)
+							return
+						}
+					}()
 					if runtime.GOOS != "linux" {
 						fmt.Println("[RULEX UPGRADE] Only Support Linux")
 						return nil
@@ -176,16 +188,19 @@ func main() {
 						fmt.Println("[DATA RECOVER] Write Recover Lock File error:", err)
 						return nil
 					}
+					defer func() {
+						// upgrade lock
+						if err := os.Remove("/var/run/rulex-upgrade.lock"); err != nil {
+							fmt.Println("[DATA RECOVER] Remove Recover Lock File error:", err)
+							return
+						}
+					}()
 					if err := ossupport.RestartRulex(); err != nil {
 						fmt.Println("[DATA RECOVER] Restart rulex error", err)
 					} else {
 						fmt.Println("[DATA RECOVER] Restart rulex success, Recover Process Exited")
 					}
-					// upgrade lock
-					if err := os.Remove("/var/run/rulex-upgrade.lock"); err != nil {
-						fmt.Println("[DATA RECOVER] Remove Recover Lock File error:", err)
-						return nil
-					}
+
 					os.Exit(0)
 					return nil
 				},

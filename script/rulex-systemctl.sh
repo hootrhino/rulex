@@ -22,7 +22,7 @@ install(){
     local source_dir="$PWD"
     local service_file="/etc/systemd/system/rulex.service"
     local executable="/usr/local/rulex"
-    local working_directory="/usr/local/"
+    local WORKING_DIRECTORY="/usr/local/"
     local config_file="/usr/local/rulex.ini"
     local db_file="/usr/local/rulex.db"
 cat > "$service_file" << EOL
@@ -32,8 +32,9 @@ After=network.target
 
 [Service]
 Environment="ARCHSUPPORT=EEKITH3"
-WorkingDirectory=$working_directory
+WorkingDirectory=$WORKING_DIRECTORY
 ExecStart=$executable run -config=$config_file -db=$db_file
+ConditionPathExists=!/var/run/rulex-upgrade.lock
 Restart=always
 User=root
 Group=root
@@ -43,9 +44,9 @@ RestartSec=5
 WantedBy=multi-user.target
 EOL
     chmod +x $source_dir/rulex
-    echo "[.] Copy $source_dir/rulex to $working_directory."
+    echo "[.] Copy $source_dir/rulex to $WORKING_DIRECTORY."
     cp "$source_dir/rulex" "$executable"
-    echo "[.] Copy $source_dir/rulex.ini to $working_directory."
+    echo "[.] Copy $source_dir/rulex.ini to $WORKING_DIRECTORY."
     cp "$source_dir/rulex.ini" "$config_file"
     echo "[.] Copy $source_dir/license.key to /usr/local/license.key."
     cp "$source_dir/license.key" "/usr/local/license.key"
@@ -94,39 +95,20 @@ remove_files() {
 }
 
 uninstall(){
-    local working_directory="/usr/local"
     systemctl stop rulex
     systemctl disable rulex
     remove_files /etc/systemd/system/rulex.service
-    remove_files $working_directory/rulex
-    remove_files $working_directory/rulex.ini
-    remove_files $working_directory/rulex.db
-    remove_files $working_directory/*.txt
-    remove_files $working_directory/upload/
-    remove_files $working_directory/license.key
-    remove_files $working_directory/license.lic
+    remove_files $WORKING_DIRECTORY/rulex
+    remove_files $WORKING_DIRECTORY/rulex.ini
+    remove_files $WORKING_DIRECTORY/rulex.db
+    remove_files $WORKING_DIRECTORY/upload/
+    remove_files $WORKING_DIRECTORY/license.key
+    remove_files $WORKING_DIRECTORY/license.lic
     rm -f "$WORKING_DIRECTORY/*.txt"
     rm -f "$WORKING_DIRECTORY/*.txt.gz"
     systemctl daemon-reload
     systemctl reset-failed
     echo "[√] Rulex has been uninstalled."
-}
-
-# create a default user
-create_user(){
-    response=$(curl -X POST -H "Content-Type: application/json" -d '{
-    "role": "admin",
-    "username": "admin",
-    "password": "admin",
-    "description": "system admin"
-    }' http://127.0.0.1:2580/api/v1/users -w "%{http_code}")
-
-    if [ "$response" = "201" ]; then
-        echo "[√] User created"
-    else
-        echo "[x] User creation failed"
-    fi
-
 }
 #
 #

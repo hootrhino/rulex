@@ -1,21 +1,10 @@
 #!/bin/bash
 
-### BEGIN INIT INFO
-# Provides:          rulex
-# Required-Start:    $network $local_fs $remote_fs
-# Required-Stop:     $network $local_fs $remote_fs
-# Default-Start:     2 3 4 5
-# Default-Stop:      0 1 6
-# Short-Description: Rulex Service
-# Description:       Rulex Service
-### END INIT INFO
-
 SERVICE_NAME="rulex"
 WORKING_DIRECTORY="/usr/local"
 EXECUTABLE_PATH="$WORKING_DIRECTORY/$SERVICE_NAME"
 CONFIG_PATH="$WORKING_DIRECTORY/$SERVICE_NAME.ini"
 
-PID_FILE="/var/run/$SERVICE_NAME.pid"
 SERVICE_FILE="/etc/init.d/$SERVICE_NAME.service"
 
 STOP_SIGNAL="/var/run/rulex-stop.sinal"
@@ -32,10 +21,20 @@ install(){
     local db_file="/usr/local/rulex.db"
 cat > "$SERVICE_FILE" << EOL
 #!/bin/sh
-# Create Time: $(date +'%Y-%m-%d %H:%M:%S')
 
+### BEGIN INIT INFO
+# Provides:          rulex
+# Required-Start:    \$network \$local_fs \$remote_fs
+# Required-Stop:     \$network \$local_fs \$remote_fs
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Rulex Service
+# Description:       Rulex Service
+### END INIT INFO
+
+
+# Create Time: $(date +'%Y-%m-%d %H:%M:%S')
 WORKING_DIRECTORY="/usr/local"
-PID_FILE="/var/run/rulex.pid"
 EXECUTABLE_PATH="\$WORKING_DIRECTORY/rulex"
 CONFIG_PATH="\$WORKING_DIRECTORY/rulex.ini"
 
@@ -52,8 +51,8 @@ start() {
         log INFO "rulex is running with Pid:\${pid}"
         exit 0
     fi
-    daemon&
-    exit 0
+    nohup $EXECUTABLE_PATH run -config=$CONFIG_PATH &
+    daemon
 }
 
 stop() {
@@ -85,17 +84,23 @@ status() {
 
 daemon() {
     while true; do
+        if pgrep -x "rulex" > /dev/null; then
+            log INFO "rulex process exists"
+            sleep 3
+            continue
+        fi
         if ! pgrep -x "rulex" > /dev/null; then
             if [ -e "$UPGRADE_SIGNAL" ]; then
                 log INFO "File $UPGRADE_SIGNAL exists. May upgrade now."
+                sleep 2
+                continue
             elif [ -e "$STOP_SIGNAL" ]; then
                 log INFO "$STOP_SIGNAL file found. Exiting."
                 exit 0
             else
                 log WARNING "Detected that rulex process is interrupted. Restarting..."
-                $EXECUTABLE_PATH run -config=$CONFIG_PATH > rulex-daemon-log.txt
-                wait $!
-                log WARNING "Detected that rulex process is interrupted"
+                nohup $EXECUTABLE_PATH run -config=$CONFIG_PATH &
+                log WARNING "Detected that rulex process has Restarted."
             fi
         fi
         sleep 4
@@ -136,7 +141,6 @@ EOL
 
     log INFO "Copy license.key to $WORKING_DIRECTORY"
     cp -rfp "$source_dir/license.key" "$WORKING_DIRECTORY/"
-    __add_to_rc_local
     chmod 777 $SERVICE_FILE
     if [ $? -eq 0 ]; then
         log INFO "Rulex service has been created and extracted."
@@ -160,40 +164,6 @@ __remove_files() {
         log INFO "$file not found. No need to remove."
     fi
 }
-__remove_from_rc_local() {
-    local rc_local_path="/etc/rc.local"
-    if [ ! -f "$rc_local_path" ]; then
-        log ERROR "Error: /etc/rc.local does not exist. Check your system configuration."
-        return 1
-    fi
-    if ! grep -qF "$SERVICE_FILE start" "$rc_local_path"; then
-        log INFO "Script not found in /etc/rc.local. No changes made."
-        return 0
-    fi
-    sed -i "\|$SERVICE_FILE start|d" "$rc_local_path"
-    log INFO "Script removed from /etc/rc.local."
-    return 0
-}
-
-__add_to_rc_local() {
-    local rc_local_path="/etc/rc.local"
-    if [ ! -f "$rc_local_path" ]; then
-        log INFO "Error: /etc/rc.local does not exist. Create the file manually or check your system configuration."
-        return 1
-    fi
-    if grep -qF "$SERVICE_FILE start" "$rc_local_path"; then
-        log INFO "Script already present in /etc/rc.local. No changes made."
-        return 0
-    fi
-    local last_line_number=$(awk '/^[^#[:space:]]/{n=$0} END{print NR}' "$rc_local_path")
-    if [ -n "$last_line_number" ]; then
-        sed -i "${last_line_number}i $SERVICE_FILE start || true" "$rc_local_path"
-    else
-        echo "$SERVICE_FILE start" >> "$rc_local_path"
-    fi
-    log INFO "Script added to /etc/rc.local."
-    return 0
-}
 
 uninstall(){
     if [ -e "$SERVICE_FILE" ]; then
@@ -211,7 +181,6 @@ uninstall(){
     __remove_files "$WORKING_DIRECTORY/rulex-daemon-log.txt"
     __remove_files "$WORKING_DIRECTORY/rulex-recover-log.txt"
     __remove_files "$WORKING_DIRECTORY/rulex-upgrade-log.txt"
-    __remove_from_rc_local
     log INFO "Rulex has been uninstalled."
 }
 
