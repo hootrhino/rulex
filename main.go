@@ -9,6 +9,7 @@ import (
 	"runtime"
 	"time"
 
+	_ "github.com/hootrhino/rulex/component/cron_task/docs"
 	"github.com/hootrhino/rulex/engine"
 	"github.com/hootrhino/rulex/ossupport"
 	"github.com/hootrhino/rulex/typex"
