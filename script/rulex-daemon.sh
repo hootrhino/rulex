@@ -10,6 +10,9 @@ SERVICE_FILE="/etc/init.d/$SERVICE_NAME.service"
 STOP_SIGNAL="/var/run/rulex-stop.sinal"
 UPGRADE_SIGNAL="/var/run/rulex-upgrade.lock"
 
+SOURCE_DIR="$PWD"
+
+
 log() {
     local level=$1
     shift
@@ -17,8 +20,6 @@ log() {
 }
 
 install(){
-    local source_dir="$PWD"
-    local db_file="/usr/local/rulex.db"
 cat > "$SERVICE_FILE" << EOL
 #!/bin/sh
 
@@ -32,11 +33,11 @@ cat > "$SERVICE_FILE" << EOL
 # Description:       Rulex Service
 ### END INIT INFO
 
-
+#
 # Create Time: $(date +'%Y-%m-%d %H:%M:%S')
-WORKING_DIRECTORY="/usr/local"
-EXECUTABLE_PATH="\$WORKING_DIRECTORY/rulex"
-CONFIG_PATH="\$WORKING_DIRECTORY/rulex.ini"
+#
+EXECUTABLE_PATH="$WORKING_DIRECTORY/rulex"
+CONFIG_PATH="$WORKING_DIRECTORY/rulex.ini"
 
 log() {
     local level=\$1
@@ -45,13 +46,14 @@ log() {
 }
 
 start() {
+    rm -f $UPGRADE_SIGNAL
     rm -f $STOP_SIGNAL
     pid=\$(pgrep -x -n -f "$EXECUTABLE_PATH run -config=$CONFIG_PATH")
     if [ -n "\$pid" ]; then
         log INFO "rulex is running with Pid:\${pid}"
         exit 0
     fi
-    nohup $EXECUTABLE_PATH run -config=$CONFIG_PATH &
+    cd $WORKING_DIRECTORY
     daemon
 }
 
@@ -99,7 +101,8 @@ daemon() {
                 exit 0
             else
                 log WARNING "Detected that rulex process is interrupted. Restarting..."
-                nohup $EXECUTABLE_PATH run -config=$CONFIG_PATH &
+                cd $WORKING_DIRECTORY
+                $EXECUTABLE_PATH run -config=$CONFIG_PATH
                 log WARNING "Detected that rulex process has Restarted."
             fi
         fi
@@ -129,18 +132,18 @@ esac
 EOL
 
     mkdir -p $WORKING_DIRECTORY
-    chmod +x $source_dir/rulex
+    chmod +x $SOURCE_DIR/rulex
     log INFO "Copy rulex to $WORKING_DIRECTORY"
-    cp -rfp "$source_dir/rulex" "$EXECUTABLE_PATH"
+    cp -rfp "$SOURCE_DIR/rulex" "$EXECUTABLE_PATH"
 
     log INFO "Copy rulex.ini to $WORKING_DIRECTORY"
-    cp -rfp "$source_dir/rulex.ini" "$CONFIG_PATH"
+    cp -rfp "$SOURCE_DIR/rulex.ini" "$CONFIG_PATH"
 
     log INFO "Copy license.lic to $WORKING_DIRECTORY"
-    cp -rfp "$source_dir/license.lic" "$WORKING_DIRECTORY/"
+    cp -rfp "$SOURCE_DIR/license.lic" "$WORKING_DIRECTORY/"
 
     log INFO "Copy license.key to $WORKING_DIRECTORY"
-    cp -rfp "$source_dir/license.key" "$WORKING_DIRECTORY/"
+    cp -rfp "$SOURCE_DIR/license.key" "$WORKING_DIRECTORY/"
     chmod 777 $SERVICE_FILE
     if [ $? -eq 0 ]; then
         log INFO "Rulex service has been created and extracted."
