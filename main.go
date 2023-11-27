@@ -73,7 +73,7 @@ func main() {
 					},
 				},
 				Action: func(c *cli.Context) error {
-					fmt.Println(typex.Banner)
+					utils.CLog(typex.Banner)
 					engine.RunRulex(c.String("config"))
 					fmt.Printf("[RULEX UPGRADE] Run rulex successfully.")
 					return nil
@@ -91,51 +91,54 @@ func main() {
 					},
 				},
 				Action: func(c *cli.Context) error {
-					// upgrade lock
-					if err := os.WriteFile("/var/run/rulex-upgrade.lock", []byte{48}, 0755); err != nil {
-						fmt.Println("[DATA RECOVER] Write Recover Lock File error:", err)
-						return nil
-					}
-					defer func() {
-						// upgrade lock
-						if err := os.Remove("/var/run/rulex-upgrade.lock"); err != nil {
-							fmt.Println("[DATA RECOVER] Remove Recover Lock File error:", err)
-							return
-						}
-					}()
-					if runtime.GOOS != "linux" {
-						fmt.Println("[RULEX UPGRADE] Only Support Linux")
-						return nil
-					}
 					file, err := os.Create("./local-upgrade-log.txt")
 					if err != nil {
-						fmt.Println(err)
+						utils.CLog(err.Error())
 						return nil
 					}
 					defer file.Close()
 					os.Stdout = file
 					os.Stderr = file
+					// upgrade lock
+					lockFile := "/var/run/rulex-upgrade.lock"
+					if err := os.WriteFile(lockFile, []byte{48} /*48 -> 0*/, 0755); err != nil {
+						utils.CLog("[DATA RECOVER] Write Recover Lock File error:%s", err.Error())
+						return nil
+					}
+					defer func() {
+						// upgrade lock
+						if err := os.Remove(lockFile); err != nil {
+							utils.CLog("[DATA RECOVER] Remove Recover Lock File error:%s", err.Error())
+							return
+						}
+						utils.CLog("[DATA RECOVER] Remove Recover Lock File Finished")
+					}()
+					if runtime.GOOS != "linux" {
+						utils.CLog("[RULEX UPGRADE] Only Support Linux")
+						return nil
+					}
+
 					if !c.Bool("upgrade") {
-						fmt.Println("[RULEX UPGRADE] Nothing todo")
+						utils.CLog("[RULEX UPGRADE] Nothing todo")
 						return nil
 					}
 					// unzip Firmware
 					if err := ossupport.UnzipFirmware(
 						"/usr/local/upload/Firmware/Firmware.zip",
 						"/usr/local"); err != nil {
-						fmt.Println("[RULEX UPGRADE] Unzip error:", err)
+						utils.CLog("[RULEX UPGRADE] Unzip error:%s", err.Error())
 						return nil
 					}
 					if err := ossupport.RestartRulex(); err != nil {
-						fmt.Println("[RULEX UPGRADE] Restart rulex error", err)
+						utils.CLog("[RULEX UPGRADE] Restart rulex error:%s", err.Error())
 						return nil
 					}
 					// Remove old package
 					if err := os.Remove("/usr/local/upload/Firmware/Firmware.zip"); err != nil {
-						fmt.Println("[RULEX UPGRADE] Restart rulex error", err)
+						utils.CLog("[RULEX UPGRADE] Restart rulex error:%s", err.Error())
 						return nil
 					}
-					fmt.Println("[RULEX UPGRADE] Restart rulex success, Upgrade Process Exited")
+					utils.CLog("[RULEX UPGRADE] Restart rulex success, Upgrade Process Exited")
 					os.Exit(0)
 					return nil
 				},
@@ -153,54 +156,56 @@ func main() {
 					},
 				},
 				Action: func(c *cli.Context) error {
-					if runtime.GOOS != "linux" {
-						fmt.Println("[DATA RECOVER] Only Support Linux")
-						return nil
-					}
 					file, err := os.Create("./rulex-recover-log.txt")
 					if err != nil {
-						fmt.Println(err)
+						utils.CLog(err.Error())
 						return nil
 					}
 					defer file.Close()
 					os.Stdout = file
 					os.Stderr = file
-					if !c.Bool("recover") {
-						fmt.Println("[DATA RECOVER] Nothing todo")
-						return nil
-					}
-					fmt.Println("[DATA RECOVER] Remove Old Db File")
-					if err := os.Remove("./rulex.db"); err != nil {
-						fmt.Println("[DATA RECOVER] Remove Old Db File error:", err)
-						return nil
-					}
-					fmt.Println("[DATA RECOVER] Remove Old Db File Finished")
-					fmt.Println("[DATA RECOVER] Move New Db File")
-					recoveryDb := "./upload/Backup/recovery.db"
-					if err := ossupport.MoveFile(recoveryDb, "./rulex.db"); err != nil {
-						fmt.Println("[DATA RECOVER] Move New Db File error", err)
-						return nil
-					}
-					fmt.Println("[DATA RECOVER] Move New Db File Finished")
-					fmt.Println("[DATA RECOVER] Try to Restart rulex")
+					lockFile := "/var/run/rulex-upgrade.lock"
 					// upgrade lock
-					if err := os.WriteFile("/var/run/rulex-upgrade.lock", []byte{48}, 0755); err != nil {
-						fmt.Println("[DATA RECOVER] Write Recover Lock File error:", err)
+					if err := os.WriteFile(lockFile, []byte{48}, 0755); err != nil {
+						utils.CLog("[DATA RECOVER] Write Recover Lock File error:%s", err.Error())
 						return nil
 					}
 					defer func() {
 						// upgrade lock
-						if err := os.Remove("/var/run/rulex-upgrade.lock"); err != nil {
-							fmt.Println("[DATA RECOVER] Remove Recover Lock File error:", err)
+						if err := os.Remove(lockFile); err != nil {
+							utils.CLog("[DATA RECOVER] Remove Recover Lock File error:%s", err.Error())
 							return
 						}
+						utils.CLog("[DATA RECOVER] Remove Recover Lock File Finished")
 					}()
-					if err := ossupport.RestartRulex(); err != nil {
-						fmt.Println("[DATA RECOVER] Restart rulex error", err)
-					} else {
-						fmt.Println("[DATA RECOVER] Restart rulex success, Recover Process Exited")
+					if runtime.GOOS != "linux" {
+						utils.CLog("[DATA RECOVER] Only Support Linux")
+						return nil
 					}
 
+					if !c.Bool("recover") {
+						utils.CLog("[DATA RECOVER] Nothing todo")
+						return nil
+					}
+					utils.CLog("[DATA RECOVER] Remove Old Db File")
+					if err := os.Remove("./rulex.db"); err != nil {
+						utils.CLog("[DATA RECOVER] Remove Old Db File error:%s", err.Error())
+						return nil
+					}
+					utils.CLog("[DATA RECOVER] Remove Old Db File Finished")
+					utils.CLog("[DATA RECOVER] Move New Db File")
+					recoveryDb := "./upload/Backup/recovery.db"
+					if err := ossupport.MoveFile(recoveryDb, "./rulex.db"); err != nil {
+						utils.CLog("[DATA RECOVER] Move New Db File error:%s", err.Error())
+						return nil
+					}
+					utils.CLog("[DATA RECOVER] Move New Db File Finished")
+					utils.CLog("[DATA RECOVER] Try to Restart rulex")
+					if err := ossupport.RestartRulex(); err != nil {
+						utils.CLog("[DATA RECOVER] Restart rulex error:%s", err.Error())
+					} else {
+						utils.CLog("[DATA RECOVER] Restart rulex success, Recover Process Exited")
+					}
 					os.Exit(0)
 					return nil
 				},
@@ -242,7 +247,7 @@ func main() {
 						return err
 					}
 					// commercial version will implement it
-					fmt.Printf("[LICENCE ACTIVE]: Admin(%s,%s), mac addr:[%s] try to request license from %s\n",
+					utils.CLog("[LICENCE ACTIVE]: Admin(%s,%s), mac addr:[%s] try to request license from %s\n",
 						username, password, macAddr, host)
 					return nil
 				},
@@ -260,7 +265,7 @@ func main() {
 				Action: func(*cli.Context) error {
 					version := fmt.Sprintf("[%v-%v-%v]",
 						runtime.GOOS, runtime.GOARCH, typex.DefaultVersion.Version)
-					fmt.Println("[*] Rulex Version: " + version)
+					utils.CLog("[*] Rulex Version: " + version)
 					return nil
 				},
 			},
