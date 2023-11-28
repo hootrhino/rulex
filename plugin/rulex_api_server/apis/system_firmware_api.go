@@ -55,7 +55,7 @@ func UploadFirmWare(c *gin.Context, ruleEngine typex.RuleX) {
 		return
 	}
 
-	c.JSON(common.HTTP_OK, common.OkWithData(saveDir+fileName))
+	c.JSON(common.HTTP_OK, common.Ok())
 }
 
 /*
