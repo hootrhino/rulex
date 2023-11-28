@@ -63,6 +63,6 @@ func RecoverNew(c *gin.Context, ruleEngine typex.RuleX) {
 *
  */
 func GetUpGradeLog(c *gin.Context, ruleEngine typex.RuleX) {
-	byteS, _ := os.ReadFile("local-upgrade-log.txt")
+	byteS, _ := os.ReadFile(ossupport.UpgradeLogPath)
 	c.JSON(common.HTTP_OK, common.OkWithData(string(byteS)))
 }
