@@ -1,6 +1,6 @@
 #! /bin/bash
 VERSION="$(git describe --tags $(git rev-list --tags --max-count=1))"
-HASH=$(git rev-list --tags --max-count=1)
+HASH=$(git rev-parse HEAD)
 
 #######################################################################
 ## Gen Version
