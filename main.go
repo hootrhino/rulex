@@ -59,7 +59,7 @@ func main() {
 		Commands: []*cli.Command{
 			{
 				Name:  "run",
-				Usage: "Start rulex, Must with config: -config path/rulex.ini",
+				Usage: "Start rulex, Must with config: -config=path/rulex.ini",
 				Flags: []cli.Flag{
 					&cli.StringFlag{
 						Name:  "db",
@@ -91,7 +91,7 @@ func main() {
 					},
 				},
 				Action: func(c *cli.Context) error {
-					file, err := os.Create("./local-upgrade-log.txt")
+					file, err := os.Create(ossupport.UpgradeLogPath)
 					if err != nil {
 						utils.CLog(err.Error())
 						return nil
@@ -100,14 +100,13 @@ func main() {
 					os.Stdout = file
 					os.Stderr = file
 					// upgrade lock
-					lockFile := "/var/run/rulex-upgrade.lock"
-					if err := os.WriteFile(lockFile, []byte{48} /*48 -> 0*/, 0755); err != nil {
+					if err := os.WriteFile(ossupport.UpgradeLockPath, []byte{48} /*48 -> 0*/, 0755); err != nil {
 						utils.CLog("[DATA RECOVER] Write Recover Lock File error:%s", err.Error())
 						return nil
 					}
 					defer func() {
 						// upgrade lock
-						if err := os.Remove(lockFile); err != nil {
+						if err := os.Remove(ossupport.UpgradeLockPath); err != nil {
 							utils.CLog("[DATA RECOVER] Remove Recover Lock File error:%s", err.Error())
 							return
 						}
@@ -124,8 +123,7 @@ func main() {
 					}
 					// unzip Firmware
 					if err := ossupport.UnzipFirmware(
-						"/usr/local/upload/Firmware/Firmware.zip",
-						"/usr/local"); err != nil {
+						ossupport.FirmwarePath, ossupport.MainWorkDir); err != nil {
 						utils.CLog("[RULEX UPGRADE] Unzip error:%s", err.Error())
 						return nil
 					}
@@ -134,7 +132,7 @@ func main() {
 						return nil
 					}
 					// Remove old package
-					if err := os.Remove("/usr/local/upload/Firmware/Firmware.zip"); err != nil {
+					if err := os.Remove(ossupport.FirmwarePath); err != nil {
 						utils.CLog("[RULEX UPGRADE] Restart rulex error:%s", err.Error())
 						return nil
 					}
@@ -156,7 +154,7 @@ func main() {
 					},
 				},
 				Action: func(c *cli.Context) error {
-					file, err := os.Create("./rulex-recover-log.txt")
+					file, err := os.Create(ossupport.RecoverLogPath)
 					if err != nil {
 						utils.CLog(err.Error())
 						return nil
@@ -164,15 +162,14 @@ func main() {
 					defer file.Close()
 					os.Stdout = file
 					os.Stderr = file
-					lockFile := "/var/run/rulex-upgrade.lock"
 					// upgrade lock
-					if err := os.WriteFile(lockFile, []byte{48}, 0755); err != nil {
+					if err := os.WriteFile(ossupport.UpgradeLockPath, []byte{48}, 0755); err != nil {
 						utils.CLog("[DATA RECOVER] Write Recover Lock File error:%s", err.Error())
 						return nil
 					}
 					defer func() {
 						// upgrade lock
-						if err := os.Remove(lockFile); err != nil {
+						if err := os.Remove(ossupport.UpgradeLockPath); err != nil {
 							utils.CLog("[DATA RECOVER] Remove Recover Lock File error:%s", err.Error())
 							return
 						}
@@ -188,14 +185,14 @@ func main() {
 						return nil
 					}
 					utils.CLog("[DATA RECOVER] Remove Old Db File")
-					if err := os.Remove("./rulex.db"); err != nil {
+					if err := os.Remove(ossupport.RunDbPath); err != nil {
 						utils.CLog("[DATA RECOVER] Remove Old Db File error:%s", err.Error())
 						return nil
 					}
 					utils.CLog("[DATA RECOVER] Remove Old Db File Finished")
 					utils.CLog("[DATA RECOVER] Move New Db File")
-					recoveryDb := "./upload/Backup/recovery.db"
-					if err := ossupport.MoveFile(recoveryDb, "./rulex.db"); err != nil {
+					if err := ossupport.MoveFile(ossupport.RecoveryDbPath,
+						ossupport.RunDbPath); err != nil {
 						utils.CLog("[DATA RECOVER] Move New Db File error:%s", err.Error())
 						return nil
 					}
