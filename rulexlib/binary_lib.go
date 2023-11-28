@@ -515,16 +515,24 @@ func HexToNumber(s string) (int64, error) {
 func BinToFloat32(rx typex.RuleX) func(*lua.LState) int {
 	return func(l *lua.LState) int {
 		bin := l.ToString(2)
-		bits := binary.BigEndian.Uint32([]byte(bin))
-		l.Push(lua.LNumber(math.Float32frombits(bits)))
+		dBytes, err := hex.DecodeString(bin)
+		if err != nil {
+			l.Push(lua.LNil)
+			return 1
+		}
+		l.Push(lua.LNumber(math.Float32frombits(binary.BigEndian.Uint32(dBytes))))
 		return 1
 	}
 }
 func BinToFloat64(rx typex.RuleX) func(*lua.LState) int {
 	return func(l *lua.LState) int {
 		bin := l.ToString(2)
-		bits := binary.BigEndian.Uint64([]byte(bin))
-		l.Push(lua.LNumber(math.Float64frombits(bits)))
+		dBytes, err := hex.DecodeString(bin)
+		if err != nil {
+			l.Push(lua.LNil)
+			return 1
+		}
+		l.Push(lua.LNumber(math.Float64frombits(binary.BigEndian.Uint64(dBytes))))
 		return 1
 	}
 }
