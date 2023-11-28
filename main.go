@@ -100,43 +100,48 @@ func main() {
 					os.Stdout = file
 					os.Stderr = file
 					// upgrade lock
-					if err := os.WriteFile(ossupport.UpgradeLockPath, []byte{48} /*48 -> 0*/, 0755); err != nil {
-						utils.CLog("[DATA RECOVER] Write Recover Lock File error:%s", err.Error())
+					if err := os.WriteFile(ossupport.UpgradeLockPath, []byte{48}, 0755); err != nil {
+						utils.CLog("[RULEX UPGRADE] Write Upgrade Lock File error:%s", err.Error())
 						return nil
 					}
 					defer func() {
 						// upgrade lock
 						if err := os.Remove(ossupport.UpgradeLockPath); err != nil {
-							utils.CLog("[DATA RECOVER] Remove Recover Lock File error:%s", err.Error())
+							utils.CLog("[RULEX UPGRADE] Remove Upgrade Lock File error:%s", err.Error())
 							return
 						}
-						utils.CLog("[DATA RECOVER] Remove Recover Lock File Finished")
+						utils.CLog("[RULEX UPGRADE] Remove Upgrade Lock File Finished")
 					}()
 					if runtime.GOOS != "linux" {
 						utils.CLog("[RULEX UPGRADE] Only Support Linux")
 						return nil
 					}
-
 					if !c.Bool("upgrade") {
 						utils.CLog("[RULEX UPGRADE] Nothing todo")
 						return nil
 					}
 					// unzip Firmware
+					utils.CLog("[RULEX UPGRADE] Unzip Firmware")
 					if err := ossupport.UnzipFirmware(
 						ossupport.FirmwarePath, ossupport.MainWorkDir); err != nil {
 						utils.CLog("[RULEX UPGRADE] Unzip error:%s", err.Error())
 						return nil
 					}
+					utils.CLog("[RULEX UPGRADE] Unzip Firmware finished")
+					// Remove old package
+					utils.CLog("[RULEX UPGRADE] Remove Firmware")
+					if err := os.Remove(ossupport.FirmwarePath); err != nil {
+						utils.CLog("[RULEX UPGRADE] Remove Firmware error:%s", err.Error())
+						return nil
+					}
+					utils.CLog("[RULEX UPGRADE] Remove Firmware finished")
+					//
+					utils.CLog("[RULEX UPGRADE] Restart rulex")
 					if err := ossupport.RestartRulex(); err != nil {
 						utils.CLog("[RULEX UPGRADE] Restart rulex error:%s", err.Error())
 						return nil
 					}
-					// Remove old package
-					if err := os.Remove(ossupport.FirmwarePath); err != nil {
-						utils.CLog("[RULEX UPGRADE] Restart rulex error:%s", err.Error())
-						return nil
-					}
-					utils.CLog("[RULEX UPGRADE] Restart rulex success, Upgrade Process Exited")
+					utils.CLog("[RULEX UPGRADE] Restart rulex finished, Upgrade Process Exited")
 					os.Exit(0)
 					return nil
 				},
