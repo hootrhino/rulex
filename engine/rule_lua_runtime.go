@@ -156,6 +156,9 @@ func LoadBuildInLuaLib(e typex.RuleX, r *typex.Rule) {
 	r.AddLib(e, "datacenter", "DBQuery", rulexlib.LocalDBQuery(e))
 	//
 	r.AddLib(e, "network", "Ping", rulexlib.PingIp(e))
+	// Http
+	r.AddLib(e, "http", "Get", rulexlib.HttpGet(e))
+	r.AddLib(e, "http", "Post", rulexlib.HttpPost(e))
 
 }
 

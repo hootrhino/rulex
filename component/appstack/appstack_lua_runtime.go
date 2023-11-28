@@ -215,4 +215,8 @@ func LoadAppLib(app *Application, e typex.RuleX) {
 	addAppLib(app, e, "jq", "Execute", rulexlib.JqSelect(e))
 	// Ping
 	addAppLib(app, e, "network", "Ping", rulexlib.PingIp(e))
+	// http
+	addAppLib(app, e, "http", "Get", rulexlib.HttpGet(e))
+	addAppLib(app, e, "http", "Post", rulexlib.HttpPost(e))
+
 }
