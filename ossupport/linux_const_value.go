@@ -27,14 +27,14 @@ const (
 	RunDbPath = "/usr/local/rulex.db"
 	// 固件保存路径
 	FirmwarePath = "/usr/local/upload/Firmware/Firmware.zip"
-	// 升级锁
-	UpgradeLockPath = "/var/run/rulex-upgrade.lock"
 	// 升级日志
-	UpgradeLogPath = "/var/run/local-upgrade-log.txt"
+	UpgradeLogPath = "/usr/local/local-upgrade-log.txt"
 	// 数据恢复日志
-	RecoverLogPath = "/var/run/local-recover-log.txt"
+	RecoverLogPath = "/usr/local/local-recover-log.txt"
 	// 备份锁
 	BackupLockPath = "/var/run/rulex-upgrade.lock"
+	// 升级锁
+	UpgradeLockPath = BackupLockPath
 	// 备份数据库
 	RecoveryDbPath = "/usr/local/upload/Backup/recovery.db"
 )

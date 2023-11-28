@@ -96,7 +96,7 @@ func StartRecoverProcess() {
 *
  */
 func StartUpgradeProcess() {
-	cmd := exec.Command("./rulex", "upgrade", "-upgrade=", "true")
+	cmd := exec.Command("./rulex", "upgrade", "-upgrade=true")
 	cmd.SysProcAttr = NewSysProcAttr()
 	cmd.Env = os.Environ()
 	err := cmd.Start()
