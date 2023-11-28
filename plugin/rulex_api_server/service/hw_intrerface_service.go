@@ -128,7 +128,7 @@ func InitHwPortConfig() error {
 
 /*
 *
-* 获取系统串口
+* 获取系统串口, 这个接口比较特殊，当运行在特殊硬件上的时候，某些系统占用的直接不显示
 *
  */
 func GetOsPort() []string {
@@ -148,13 +148,13 @@ func GetOsPort() []string {
 			if port == "/dev/ttyS3" {
 				continue
 			}
-			if port == "/dev/ttyUSB0" {
+			if port == "/dev/ttyUSB0" { // 4G
 				continue
 			}
-			if port == "/dev/ttyUSB1" {
+			if port == "/dev/ttyUSB1" { // Lora
 				continue
 			}
-			if port == "/dev/ttyUSB2" {
+			if port == "/dev/ttyUSB2" { // 外部扩展卡
 				continue
 			}
 		}
