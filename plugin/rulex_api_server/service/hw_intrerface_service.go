@@ -23,6 +23,7 @@ import (
 	"github.com/hootrhino/rulex/ossupport"
 	"github.com/hootrhino/rulex/plugin/rulex_api_server/model"
 	"github.com/hootrhino/rulex/typex"
+	"github.com/hootrhino/rulex/utils"
 	"go.bug.st/serial"
 )
 
@@ -96,6 +97,7 @@ func GetHwPortConfig(uuid string) (model.MHwPort, error) {
  */
 func InitHwPortConfig() error {
 	for _, portName := range GetOsPort() {
+
 		Port := model.MHwPort{
 			UUID: portName,
 			Name: portName,
@@ -105,6 +107,17 @@ func InitHwPortConfig() error {
 				return portName
 			}(),
 			Description: portName,
+		}
+		// 兼容代码,识别H3网关的参数
+		if typex.DefaultVersion.Product == "EEKIIH3" {
+			if portName == "/dev/ttyS1" {
+				Port.Alias = "RS485接口1(A1B1)"
+				Port.Name = "RS4851(A1B1)"
+			}
+			if portName == "/dev/ttyS2" {
+				Port.Alias = "RS485接口2(A2B2)"
+				Port.Name = "RS4852(A2B2)"
+			}
 		}
 		uartCfg := UartConfigDto{
 			Timeout:  3000,
@@ -129,7 +142,7 @@ func InitHwPortConfig() error {
 /*
 *
 * 获取系统串口, 这个接口比较特殊，当运行在特殊硬件上的时候，某些系统占用的直接不显示
-*
+* 这个接口需要兼容各类特殊硬件
  */
 func GetOsPort() []string {
 	var ports []string
@@ -141,20 +154,18 @@ func GetOsPort() []string {
 	List := []string{}
 	for _, port := range ports {
 		if typex.DefaultVersion.Product == "EEKIIH3" {
-			// H3的下列串口被网卡占用
-			if port == "/dev/ttyS0" {
-				continue
-			}
-			if port == "/dev/ttyS3" {
-				continue
-			}
-			if port == "/dev/ttyUSB0" { // 4G
-				continue
-			}
-			if port == "/dev/ttyUSB1" { // Lora
-				continue
-			}
-			if port == "/dev/ttyUSB2" { // 外部扩展卡
+			// H3的下列串口被系统占用
+			if utils.SContains([]string{
+				"/dev/ttyS0",
+				"/dev/ttyS3",
+				"/dev/ttyS4",   // Linux System
+				"/dev/ttyS5",   // Linux System
+				"/dev/ttyS6",   // Linux System
+				"/dev/ttyS7",   // Linux System
+				"/dev/ttyUSB0", // 4G
+				"/dev/ttyUSB1", // 4G
+				"/dev/ttyUSB2", // 4G
+			}, port) {
 				continue
 			}
 		}

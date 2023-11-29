@@ -42,7 +42,7 @@ func StopRulex() error {
 
 /*
 *
-* 重启
+* 重启, 依赖于守护进程脚本, 因此这个不是通用的
 *
  */
 func RestartRulex() error {

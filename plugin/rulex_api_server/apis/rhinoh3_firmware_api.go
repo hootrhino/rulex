@@ -50,7 +50,7 @@ func Reboot(c *gin.Context, ruleEngine typex.RuleX) {
 
 /*
 *
-* 回复出厂
+* 回复出厂, 直接删除配置即可,但是现阶段暂时不实现
 *
  */
 func RecoverNew(c *gin.Context, ruleEngine typex.RuleX) {
