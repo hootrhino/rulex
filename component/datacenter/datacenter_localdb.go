@@ -87,6 +87,5 @@ func (ldb *LocalDb) Query(goodsId, query string) ([]map[string]any, error) {
 		result := []map[string]any{}
 		return result, ldb.Sqlite.db.Raw(query).Scan(&result).Error
 	}
-
-	return []map[string]any{}, ldb.Sqlite.db.Raw(query).Error
+	return []map[string]any{}, ldb.Sqlite.db.Exec(query).Error
 }
