@@ -38,6 +38,7 @@ USE_PROCD=1
 
 start() {
     procd_open_instance
+    cd $WORKING_DIRECTORY
     procd_set_param command "$executable run -config=$config_file -db=$db_file"
     procd_set_param respawn 0
     procd_set_param stdout 1
