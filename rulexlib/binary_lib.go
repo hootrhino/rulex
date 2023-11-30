@@ -536,6 +536,30 @@ func BinToFloat64(rx typex.RuleX) func(*lua.LState) int {
 		return 1
 	}
 }
+func BinToFloat32Little(rx typex.RuleX) func(*lua.LState) int {
+	return func(l *lua.LState) int {
+		bin := l.ToString(2)
+		dBytes, err := hex.DecodeString(bin)
+		if err != nil {
+			l.Push(lua.LNil)
+			return 1
+		}
+		l.Push(lua.LNumber(math.Float32frombits(binary.LittleEndian.Uint32(dBytes))))
+		return 1
+	}
+}
+func BinToFloat64Little(rx typex.RuleX) func(*lua.LState) int {
+	return func(l *lua.LState) int {
+		bin := l.ToString(2)
+		dBytes, err := hex.DecodeString(bin)
+		if err != nil {
+			l.Push(lua.LNil)
+			return 1
+		}
+		l.Push(lua.LNumber(math.Float64frombits(binary.LittleEndian.Uint64(dBytes))))
+		return 1
+	}
+}
 
 /*
 *

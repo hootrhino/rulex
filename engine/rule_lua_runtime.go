@@ -63,6 +63,10 @@ func LoadBuildInLuaLib(e typex.RuleX, r *typex.Rule) {
 		r.AddLib(e, "binary", "BS2B", rulexlib.BitStringToBytes(e))
 		r.AddLib(e, "binary", "Bin2F32", rulexlib.BinToFloat32(e))
 		r.AddLib(e, "binary", "Bin2F64", rulexlib.BinToFloat64(e))
+		r.AddLib(e, "binary", "Bin2F32Big", rulexlib.BinToFloat32(e))
+		r.AddLib(e, "binary", "Bin2F64Big", rulexlib.BinToFloat64(e))
+		r.AddLib(e, "binary", "Bin2F32Little", rulexlib.BinToFloat32Little(e))
+		r.AddLib(e, "binary", "Bin2F64Little", rulexlib.BinToFloat64Little(e))
 	}
 	{
 		// URL处理
