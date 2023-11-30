@@ -104,6 +104,10 @@ func LoadAppLib(app *Application, e typex.RuleX) {
 		// 浮点数处理
 		addAppLib(app, e, "binary", "Bin2F32", rulexlib.BinToFloat32(e))
 		addAppLib(app, e, "binary", "Bin2F64", rulexlib.BinToFloat64(e))
+		addAppLib(app, e, "binary", "Bin2F32Big", rulexlib.BinToFloat32(e))
+		addAppLib(app, e, "binary", "Bin2F64Big", rulexlib.BinToFloat64(e))
+		addAppLib(app, e, "binary", "Bin2F32Little", rulexlib.BinToFloat32Little(e))
+		addAppLib(app, e, "binary", "Bin2F64Little", rulexlib.BinToFloat64Little(e))
 	}
 	{
 		addAppLib(app, e, "hex", "HToN", rulexlib.HToN(e))
