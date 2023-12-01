@@ -66,7 +66,14 @@ func Execute(vm *lua.LState, k string, args ...lua.LValue) (interface{}, error) 
 	return nil, errors.New("target:" + k + " is not a lua function")
 }
 
-// callLuaFunc
+/*
+*
+*
+
+	callLuaFunc
+
+*
+*/
 func callLuaFunc(vm *lua.LState, callable *lua.LFunction, args ...lua.LValue) ([]lua.LValue, error) {
 	if callable == nil {
 		return nil, errors.New("callable function is not exists")
@@ -79,9 +86,40 @@ func callLuaFunc(vm *lua.LState, callable *lua.LFunction, args ...lua.LValue) ([
 	if err != nil {
 		return nil, err
 	}
-	vm.Pop(-1)
-	vm.Pop(-2)
-	vm.Pop(-3)
+	//vm.Pop(-1)
+	//vm.Pop(-2)
+	//vm.Pop(-3) // 这是我很早以前写的代码，
+	//           // 但是今天突然发现看不懂为啥这里要Pop栈？
+	// 2023 12-01 删除
+	// return data, true|false
 	return []lua.LValue{vm.Get(-2), vm.Get(-1)}, nil
 
 }
+
+// #include <lua.h>
+// #include <lauxlib.h>
+// #include <lualib.h>
+
+// int main() {
+//     lua_State *L = luaL_newstate();
+//     luaL_openlibs(L);
+//     if (luaL_dofile(L, "example.lua") != LUA_OK) {
+//         fprintf(stderr, "Error running Lua script: %s\n", lua_tostring(L, -1));
+//         lua_close(L);
+//         return 1;
+//     }
+//     lua_getglobal(L, "my_lua_function");
+//     lua_pushinteger(L, 10);
+//     lua_pushinteger(L, 20);
+//     if (lua_pcall(L, 2, 2, 0) != LUA_OK) {
+//         fprintf(stderr, "Error calling Lua function: %s\n", lua_tostring(L, -1));
+//         lua_close(L);
+//         return 1;
+//     }
+//     int result1 = lua_tointeger(L, -2);
+//     int result2 = lua_tointeger(L, -1);
+//     printf("Result 1: %d\n", result1);
+//     printf("Result 2: %d\n", result2);
+//     lua_close(L);
+//     return 0;
+// }

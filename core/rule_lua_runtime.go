@@ -20,7 +20,6 @@ import (
 
 	lua "github.com/hootrhino/gopher-lua"
 	"github.com/hootrhino/rulex/component/interpipeline"
-	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/typex"
 )
 
@@ -51,27 +50,33 @@ func ExecuteActions(rule *typex.Rule, arg lua.LValue) (lua.LValue, error) {
 	luaOriginTable := rule.LuaVM.GetGlobal(ACTIONS_KEY)
 	if luaOriginTable != nil && luaOriginTable.Type() == lua.LTTable {
 		// 断言成包含回调的 table
-		funcsTable := luaOriginTable.(*lua.LTable)
-		funcs := make(map[string]*lua.LFunction, funcsTable.Len())
-		var err error = nil
-		funcsTable.ForEach(func(idx, f lua.LValue) {
-			if f.Type() == lua.LTFunction {
-				funcs[idx.String()] = f.(*lua.LFunction)
-			} else {
-				err = errors.New(f.String() + " not a lua function")
-				return
+		switch funcsTable := luaOriginTable.(type) {
+		case *lua.LTable:
+			{
+				funcs := make(map[string]*lua.LFunction, funcsTable.Len())
+				var err error = nil
+				funcsTable.ForEach(func(idx, f lua.LValue) {
+					if f.Type() == lua.LTFunction {
+						funcs[idx.String()] = f.(*lua.LFunction)
+					} else {
+						err = errors.New(f.String() + " not a lua function")
+						return
+					}
+				})
+				if err != nil {
+					return nil, err
+				}
+				// Rule may stop
+				if rule.Status != typex.RULE_STOP {
+					return interpipeline.RunPipline(rule.LuaVM, funcs, arg)
+				}
+				return lua.LNil, nil
 			}
-		})
-		if err != nil {
-			return nil, err
+		default:
+			{
+				return nil, errors.New("'Actions' is not functions type Table")
+			}
 		}
-		if rule.Status != typex.RULE_STOP {
-			return interpipeline.RunPipline(rule.LuaVM, funcs, arg)
-		}
-		// if stopped, log warning information
-		glogger.GLogger.Warn("Rule has stopped:" + rule.UUID)
-		return lua.LNil, nil
-
 	}
 	return nil, errors.New("'Actions' not a lua table or not exist")
 
