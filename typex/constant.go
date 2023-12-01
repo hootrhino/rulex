@@ -47,37 +47,14 @@ func (i InEndType) String() string {
 }
 
 const (
-	MQTT        InEndType = "MQTT"
-	HTTP        InEndType = "HTTP"
-	COAP        InEndType = "COAP"
-	GRPC        InEndType = "GRPC"
-	UART_MODULE InEndType = "UART_MODULE"
-	//
-	// MODBUS_MASTER
-	//
-	MODBUS_MASTER InEndType = "MODBUS_MASTER"
-	//
-	// MODBUS_SLAVER
-	//
-	MODBUS_SLAVER InEndType = "MODBUS_SLAVER"
-	//
-	// From snmp server provider
-	//
-	SNMP_SERVER InEndType = "SNMP_SERVER"
-	//
-	// NATS.IO SERVER
-	//
-	NATS_SERVER InEndType = "NATS_SERVER"
-	//
-	// 西门子S7客户端
-	//
-	SIEMENS_S7 InEndType = "SIEMENS_S7"
-	//
-	// RULEX UDP 自定义简单协议
-	//
-	RULEX_UDP InEndType = "RULEX_UDP"
-	// 通用IotHUB
+	MQTT            InEndType = "MQTT"
+	HTTP            InEndType = "HTTP"
+	COAP            InEndType = "COAP"
+	GRPC            InEndType = "GRPC"
+	NATS_SERVER     InEndType = "NATS_SERVER"
+	RULEX_UDP       InEndType = "RULEX_UDP"
 	GENERIC_IOT_HUB InEndType = "GENERIC_IOT_HUB"
+	INTERNAL_EVENT  InEndType = "INTERNAL_EVENT" // 内部消息
 )
 
 // TargetType
@@ -102,9 +79,7 @@ const (
 	PGSQL_TARGET  TargetType = "PGSQL"
 	NATS_TARGET   TargetType = "NATS"
 	HTTP_TARGET   TargetType = "HTTP"
-	//
 	// TDENGINE
-	//
 	TDENGINE_TARGET TargetType = "TDENGINE"
 	// GRPC
 	GRPC_CODEC_TARGET TargetType = "GRPC_CODEC_TARGET"

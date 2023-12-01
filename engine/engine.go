@@ -212,17 +212,17 @@ func (e *RuleEngine) RunSourceCallbacks(in *typex.InEnd, callbackArgs string) {
 	for _, rule := range in.BindRules {
 		if rule.Status == typex.RULE_RUNNING {
 			if rule.Type == "lua" {
-				_, err := core.ExecuteActions(&rule, lua.LString(callbackArgs))
-				if err != nil {
-					glogger.GLogger.Error("RunLuaCallbacks error:", err)
-					_, err := core.ExecuteFailed(rule.LuaVM, lua.LString(err.Error()))
-					if err != nil {
-						glogger.GLogger.Error(err)
+				_, errA := core.ExecuteActions(&rule, lua.LString(callbackArgs))
+				if errA != nil {
+					glogger.GLogger.Error("RunLuaCallbacks error:", errA)
+					_, err0 := core.ExecuteFailed(rule.LuaVM, lua.LString(errA.Error()))
+					if err0 != nil {
+						glogger.GLogger.Error(err0)
 					}
 				} else {
-					_, err := core.ExecuteSuccess(rule.LuaVM)
-					if err != nil {
-						glogger.GLogger.Error(err)
+					_, errS := core.ExecuteSuccess(rule.LuaVM)
+					if errS != nil {
+						glogger.GLogger.Error(errS)
 						return // lua 是规则链，有短路原则，中途出错会中断
 					}
 				}
@@ -240,17 +240,17 @@ func (e *RuleEngine) RunDeviceCallbacks(Device *typex.Device, callbackArgs strin
 	for _, rule := range Device.BindRules {
 		if rule.Status == typex.RULE_RUNNING {
 			if rule.Type == "lua" {
-				_, err := core.ExecuteActions(&rule, lua.LString(callbackArgs))
-				if err != nil {
-					glogger.GLogger.Error("RunLuaCallbacks error:", err)
-					_, err := core.ExecuteFailed(rule.LuaVM, lua.LString(err.Error()))
-					if err != nil {
-						glogger.GLogger.Error(err)
+				_, errA := core.ExecuteActions(&rule, lua.LString(callbackArgs))
+				if errA != nil {
+					glogger.GLogger.Error("RunLuaCallbacks error:", errA)
+					_, err1 := core.ExecuteFailed(rule.LuaVM, lua.LString(errA.Error()))
+					if err1 != nil {
+						glogger.GLogger.Error(err1)
 					}
 				} else {
-					_, err := core.ExecuteSuccess(rule.LuaVM)
-					if err != nil {
-						glogger.GLogger.Error(err)
+					_, err2 := core.ExecuteSuccess(rule.LuaVM)
+					if err2 != nil {
+						glogger.GLogger.Error(err2)
 						return
 					}
 				}
@@ -580,6 +580,12 @@ func (e *RuleEngine) InitSourceTypeManager() error {
 		&typex.XConfig{
 			Engine:    e,
 			NewSource: source.NewIoTHubSource,
+		},
+	)
+	e.SourceTypeManager.Register(typex.INTERNAL_EVENT,
+		&typex.XConfig{
+			Engine:    e,
+			NewSource: source.NewInternalEventSource,
 		},
 	)
 	return nil

@@ -23,6 +23,7 @@ func NewUdpInEndSource(e typex.RuleX) typex.XSource {
 	u.RuleEngine = e
 	return &u
 }
+
 func (u *udpSource) Start(cctx typex.CCTX) error {
 	u.Ctx = cctx.Ctx
 	u.CancelCTX = cctx.CancelCTX

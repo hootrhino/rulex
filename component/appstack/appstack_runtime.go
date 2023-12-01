@@ -92,8 +92,8 @@ func StartApp(uuid string) error {
 		glogger.GLogger.Debugf("Ready to run app:%s", app.UUID)
 		app.AppState = 1
 		err := app.VM().CallByParam(lua.P{
-			Fn:      app.GetMainFunc(),
-			NRet:    1,
+			Fn:   app.GetMainFunc(),
+			NRet: 1,
 			// Protect: true, // If ``Protect`` is false,
 			// GopherLua will panic instead of returning an ``error`` value.
 			Handler: &lua.LFunction{
@@ -119,11 +119,11 @@ func StartApp(uuid string) error {
 		if err != nil {
 			time.Sleep(5 * time.Second)
 			if app.KilledBy == "RULEX" {
-				glogger.GLogger.Infof("App %s Killed By RULEX, No need to rescue", app.UUID)
+				glogger.GLogger.Errorf("App %s Killed By RULEX, No need to rescue", app.UUID)
 				return
 			}
 			if app.KilledBy == "NORMAL" {
-				glogger.GLogger.Infof("App %s NORMAL Exited,  No need to rescue", app.UUID)
+				glogger.GLogger.Errorf("App %s NORMAL Exited,  No need to rescue", app.UUID)
 				return
 			}
 			glogger.GLogger.Warnf("App %s Exited With error: %s, May be accident, Try to survive",
@@ -131,7 +131,7 @@ func StartApp(uuid string) error {
 			// TODO 到底要不要设置一个尝试重启的阈值？
 			// if tryTimes >= Max -> return
 			if app.AutoStart {
-				glogger.GLogger.Infof("App %s Try to restart", app.UUID)
+				glogger.GLogger.Warnf("App %s Try to restart", app.UUID)
 				go StartApp(uuid)
 				return
 			}
