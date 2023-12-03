@@ -26,6 +26,7 @@ jobs:
                gcc-aarch64-linux-gnu -y
           cloc ./
           go get
+          go get -t github.com/hootrhino/rulex/test
           make
           # for test mqtt
           echo "Start Mqtt Server"
