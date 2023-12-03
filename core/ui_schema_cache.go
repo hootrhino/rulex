@@ -33,7 +33,7 @@ var __lock sync.Mutex
 * 初始化缓冲器
 *
  */
-func InitInternalSchemaCache() {
+func InitInternalSchemaCache(rulex typex.RuleX) {
 	__InternalSchemaCache = make(map[string]typex.DataSchema)
 	__lock = sync.Mutex{}
 }

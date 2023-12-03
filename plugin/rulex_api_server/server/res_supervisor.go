@@ -2,8 +2,10 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"time"
 
+	"github.com/hootrhino/rulex/component/intereventbus"
 	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/typex"
 )
@@ -41,8 +43,15 @@ func StartInSupervisor(ctx context.Context, in *typex.InEnd, ruleEngine typex.Ru
 		}
 		// 资源可能不会及时DOWN
 		if currentIn.Source.Status() == typex.SOURCE_DOWN {
-			glogger.GLogger.Debugf("Source:%v DOWN, supervisor try to Restart", UUID)
-			time.Sleep(2 * time.Second)
+			info := fmt.Sprintf("Source:%v DOWN, supervisor try to Restart", UUID)
+			glogger.GLogger.Debugf(info)
+			intereventbus.Push(intereventbus.BaseEvent{
+				Type:  "SOURCE",
+				Event: "event.down",
+				Ts:    uint64(time.Now().UnixNano()),
+				Info:  info,
+			})
+			time.Sleep(4 * time.Second)
 			go LoadNewestInEnd(UUID, ruleEngine)
 			return
 		}
@@ -83,8 +92,15 @@ func StartOutSupervisor(ctx context.Context, out *typex.OutEnd, ruleEngine typex
 		}
 		// 资源可能不会及时DOWN
 		if currentOut.Target.Status() == typex.SOURCE_DOWN {
-			glogger.GLogger.Debugf("OutEnd:%v DOWN, supervisor try to Restart", UUID)
-			time.Sleep(5 * time.Second)
+			info := fmt.Sprintf("OutEnd:%v DOWN, supervisor try to Restart", UUID)
+			glogger.GLogger.Debugf(info)
+			intereventbus.Push(intereventbus.BaseEvent{
+				Type:  "TARGET",
+				Event: "event.down",
+				Ts:    uint64(time.Now().UnixNano()),
+				Info:  info,
+			})
+			time.Sleep(4 * time.Second)
 			go LoadNewestOutEnd(UUID, ruleEngine)
 			return
 		}
@@ -125,8 +141,15 @@ func StartDeviceSupervisor(ctx context.Context, device *typex.Device, ruleEngine
 		}
 		// 资源可能不会及时DOWN
 		if currentDevice.Device.Status() == typex.DEV_DOWN {
-			glogger.GLogger.Debugf("Device:%v DOWN, supervisor try to Restart", UUID)
-			time.Sleep(2 * time.Second)
+			info := fmt.Sprintf("Device:%v DOWN, supervisor try to Restart", UUID)
+			glogger.GLogger.Debugf(info)
+			intereventbus.Push(intereventbus.BaseEvent{
+				Type:  "DEVICE",
+				Event: "event.down",
+				Ts:    uint64(time.Now().UnixNano()),
+				Info:  info,
+			})
+			time.Sleep(4 * time.Second)
 			go LoadNewestDevice(UUID, ruleEngine)
 			return
 		}

@@ -17,12 +17,14 @@ package intereventbus
 
 import (
 	"context"
+	"errors"
+	"fmt"
 
 	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/typex"
 )
 
-var __DefaultInternalEventSource *InternalEventBus
+var __DefaultInternalEventBus *InternalEventBus
 
 // ---------------------------------------------------------
 // Type
@@ -34,6 +36,28 @@ type BaseEvent struct {
 	Info  interface{}
 }
 
+/*
+*
+* Push
+*
+ */
+func Push(e BaseEvent) error {
+	if len(__DefaultInternalEventBus.Queue)+1 > __DefaultInternalEventBus.GetSize() {
+		msg := fmt.Sprintf("attached max queue size, max size is:%v, current size is: %v",
+			__DefaultInternalEventBus.GetSize(), len(__DefaultInternalEventBus.Queue)+1)
+		glogger.GLogger.Error(msg)
+		return errors.New(msg)
+	} else {
+		__DefaultInternalEventBus.Queue <- e
+		return nil
+	}
+}
+
+/*
+*
+* 内部事件总线
+*
+ */
 type InternalEventBus struct {
 	Queue chan BaseEvent
 	Rulex typex.RuleX
@@ -50,10 +74,11 @@ func (q *InternalEventBus) GetSize() int {
 
 *
 */
-func InitInternalEventSource(r typex.RuleX) *InternalEventBus {
-	__DefaultInternalEventSource = new(InternalEventBus)
-	__DefaultInternalEventSource.Rulex = r
-	return __DefaultInternalEventSource
+func InitInternalEventBus(r typex.RuleX, MaxQueueSize int) *InternalEventBus {
+	__DefaultInternalEventBus = new(InternalEventBus)
+	__DefaultInternalEventBus.Queue = make(chan BaseEvent, MaxQueueSize)
+	__DefaultInternalEventBus.Rulex = r
+	return __DefaultInternalEventBus
 }
 
 /*
@@ -62,17 +87,17 @@ func InitInternalEventSource(r typex.RuleX) *InternalEventBus {
 *
  */
 func StartInternalEventQueue() {
-	go func(ctx context.Context, InternalEventBus InternalEventBus) {
+	go func(ctx context.Context, InternalEventBus *InternalEventBus) {
 		for {
 			select {
 			case <-ctx.Done():
 				return
-			case Event := <-__DefaultInternalEventSource.Queue:
+			case Event := <-InternalEventBus.Queue:
 				{
-					glogger.GLogger.Debug("Event:", Event)
-
+					// Push to device Queue
+					glogger.GLogger.Debug("Internal Event:", Event)
 				}
 			}
 		}
-	}(typex.GCTX, *__DefaultInternalEventSource)
+	}(typex.GCTX, __DefaultInternalEventBus)
 }

@@ -44,7 +44,6 @@ type MRule struct {
 	RulexModel
 	UUID        string     `gorm:"not null"`
 	Name        string     `gorm:"not null"`
-	Type        string     // 脚本类型，目前支持"lua"
 	FromSource  StringList `gorm:"not null type:string[]"`
 	FromDevice  StringList `gorm:"not null type:string[]"`
 	Actions     string     `gorm:"not null"`

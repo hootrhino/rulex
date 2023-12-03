@@ -20,6 +20,11 @@ import (
 	"github.com/hootrhino/rulex/utils"
 )
 
+/*
+*
+* 用来将内部消息总线的事件推到资源脚本
+*
+ */
 type __InternalEventSourceConfig struct {
 }
 type InternalEventSource struct {

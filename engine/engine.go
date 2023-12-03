@@ -28,6 +28,7 @@ import (
 	"github.com/hootrhino/rulex/component/datacenter"
 	"github.com/hootrhino/rulex/component/hwportmanager"
 	"github.com/hootrhino/rulex/component/interdb"
+	"github.com/hootrhino/rulex/component/intereventbus"
 	"github.com/hootrhino/rulex/component/intermetric"
 	"github.com/hootrhino/rulex/component/interqueue"
 	"github.com/hootrhino/rulex/component/rtspserver"
@@ -82,6 +83,14 @@ func InitRuleEngine(config typex.RulexConfig) typex.RuleX {
 	}
 	// Internal DB
 	interdb.Init(__DefaultRuleEngine, __DEFAULT_DB_PATH)
+	// Internal Bus
+	intereventbus.InitInternalEventBus(__DefaultRuleEngine, core.GlobalConfig.MaxQueueSize)
+	// 前后交互组件
+	interqueue.InitInteractQueue(__DefaultRuleEngine, core.GlobalConfig.MaxQueueSize)
+	// Web Pipeline
+	core.InitWebDataPipe(__DefaultRuleEngine)
+	// Internal Schema
+	core.InitInternalSchemaCache(__DefaultRuleEngine)
 	// Load hardware Port Manager
 	hwportmanager.InitHwPortsManager(__DefaultRuleEngine)
 	// Internal Metric
@@ -96,21 +105,26 @@ func InitRuleEngine(config typex.RulexConfig) typex.RuleX {
 	interqueue.InitDataCacheQueue(__DefaultRuleEngine, core.GlobalConfig.MaxQueueSize)
 	// Data center
 	datacenter.InitDataCenter(__DefaultRuleEngine)
+	// Rtsp server
+	rtspserver.InitRtspServer(__DefaultRuleEngine)
 	return __DefaultRuleEngine
 }
 
+/*
+*
+* Engine Start
+*
+ */
 func (e *RuleEngine) Start() *typex.RulexConfig {
+	// Resource Manager
 	e.InitDeviceTypeManager()
 	e.InitSourceTypeManager()
 	e.InitTargetTypeManager()
 	// 内部队列
-	interqueue.InitDataCacheQueue(e, core.GlobalConfig.MaxQueueSize)
 	interqueue.StartDataCacheQueue()
-	// 前后交互组件
-	interqueue.InitInteractQueue(e, core.GlobalConfig.MaxQueueSize)
-	core.InitWebDataPipe(e)
-	core.InitInternalSchemaCache()
-	rtspserver.InitRtspServer()
+	// InternalEventQueue
+	intereventbus.StartInternalEventQueue()
+	// WebDataPip
 	go core.StartWebDataPipe()
 	return e.Config
 }
@@ -211,20 +225,18 @@ func (e *RuleEngine) RunSourceCallbacks(in *typex.InEnd, callbackArgs string) {
 	// 执行来自资源的脚本
 	for _, rule := range in.BindRules {
 		if rule.Status == typex.RULE_RUNNING {
-			if rule.Type == "lua" {
-				_, errA := core.ExecuteActions(&rule, lua.LString(callbackArgs))
-				if errA != nil {
-					glogger.GLogger.Error("RunLuaCallbacks error:", errA)
-					_, err0 := core.ExecuteFailed(rule.LuaVM, lua.LString(errA.Error()))
-					if err0 != nil {
-						glogger.GLogger.Error(err0)
-					}
-				} else {
-					_, errS := core.ExecuteSuccess(rule.LuaVM)
-					if errS != nil {
-						glogger.GLogger.Error(errS)
-						return // lua 是规则链，有短路原则，中途出错会中断
-					}
+			_, errA := core.ExecuteActions(&rule, lua.LString(callbackArgs))
+			if errA != nil {
+				glogger.GLogger.Error("RunLuaCallbacks error:", errA)
+				_, err0 := core.ExecuteFailed(rule.LuaVM, lua.LString(errA.Error()))
+				if err0 != nil {
+					glogger.GLogger.Error(err0)
+				}
+			} else {
+				_, errS := core.ExecuteSuccess(rule.LuaVM)
+				if errS != nil {
+					glogger.GLogger.Error(errS)
+					return // lua 是规则链，有短路原则，中途出错会中断
 				}
 			}
 		}
@@ -239,23 +251,20 @@ func (e *RuleEngine) RunSourceCallbacks(in *typex.InEnd, callbackArgs string) {
 func (e *RuleEngine) RunDeviceCallbacks(Device *typex.Device, callbackArgs string) {
 	for _, rule := range Device.BindRules {
 		if rule.Status == typex.RULE_RUNNING {
-			if rule.Type == "lua" {
-				_, errA := core.ExecuteActions(&rule, lua.LString(callbackArgs))
-				if errA != nil {
-					glogger.GLogger.Error("RunLuaCallbacks error:", errA)
-					_, err1 := core.ExecuteFailed(rule.LuaVM, lua.LString(errA.Error()))
-					if err1 != nil {
-						glogger.GLogger.Error(err1)
-					}
-				} else {
-					_, err2 := core.ExecuteSuccess(rule.LuaVM)
-					if err2 != nil {
-						glogger.GLogger.Error(err2)
-						return
-					}
+			_, errA := core.ExecuteActions(&rule, lua.LString(callbackArgs))
+			if errA != nil {
+				glogger.GLogger.Error("RunLuaCallbacks error:", errA)
+				_, err1 := core.ExecuteFailed(rule.LuaVM, lua.LString(errA.Error()))
+				if err1 != nil {
+					glogger.GLogger.Error(err1)
+				}
+			} else {
+				_, err2 := core.ExecuteSuccess(rule.LuaVM)
+				if err2 != nil {
+					glogger.GLogger.Error(err2)
+					return
 				}
 			}
-
 		}
 	}
 }

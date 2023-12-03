@@ -41,6 +41,11 @@ func (s DeviceState) String() string {
 
 type DeviceType string
 
+func (d DeviceType) String() string {
+	return string(d)
+
+}
+
 // 支持的设备类型
 const (
 	TSS200V02                  DeviceType = "TSS200V02"                  // Multi params Sensor
