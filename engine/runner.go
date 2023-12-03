@@ -22,8 +22,8 @@ import (
 	"syscall"
 
 	wdog "github.com/hootrhino/rulex/plugin/generic_watchdog"
+	modbusscrc "github.com/hootrhino/rulex/plugin/modbus_crc_tools"
 	modbusscanner "github.com/hootrhino/rulex/plugin/modbus_scanner"
-	modbusscrc "github.com/hootrhino/rulex/plugin/modbuscrc_tools"
 	mqttserver "github.com/hootrhino/rulex/plugin/mqtt_server"
 	netdiscover "github.com/hootrhino/rulex/plugin/net_discover"
 	ttyterminal "github.com/hootrhino/rulex/plugin/ttyd_terminal"
@@ -117,7 +117,7 @@ func loadPlugin(engine typex.RuleX) {
 		if name == "ttyd" {
 			plugin = ttyterminal.NewWebTTYPlugin()
 		}
-		if name == "modbuscrc_tools" {
+		if name == "modbus_crc_tools" {
 			plugin = modbusscrc.NewModbusCrcCalculator()
 		}
 		if name == "soft_wdog" {

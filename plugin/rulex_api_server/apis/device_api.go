@@ -2,6 +2,7 @@ package apis
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"strconv"
 
@@ -141,7 +142,6 @@ func DeleteDevice(c *gin.Context, ruleEngine typex.RuleX) {
 
 // 创建设备
 func CreateDevice(c *gin.Context, ruleEngine typex.RuleX) {
-
 	form := DeviceVo{}
 	if err := c.ShouldBindJSON(&form); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
@@ -150,6 +150,23 @@ func CreateDevice(c *gin.Context, ruleEngine typex.RuleX) {
 	configJson, err := json.Marshal(form.Config)
 	if err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
+	isSingle := false
+	// 红外线是单例模式
+	if form.Type == typex.INTERNAL_EVENT.String() {
+		ruleEngine.AllDevices().Range(func(key, value any) bool {
+			In := value.(*typex.Device)
+			if In.Type.String() == form.Type {
+				isSingle = true
+				return false
+			}
+			return true
+		})
+	}
+	if isSingle {
+		msg := fmt.Errorf("the %s is singleton Device, can not create again", form.Name)
+		c.JSON(common.HTTP_OK, common.Error400(msg))
 		return
 	}
 	newUUID := utils.DeviceUuid()

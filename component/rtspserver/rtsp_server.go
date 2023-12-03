@@ -53,7 +53,7 @@ type rtspServer struct {
 }
 
 // NewRouter Gin 路由配置
-func InitRtspServer() *rtspServer {
+func InitRtspServer(rulex typex.RuleX) *rtspServer {
 	gin.SetMode(gin.ReleaseMode)
 	__DefaultRtspServer = &rtspServer{
 		webServer:              gin.New(),

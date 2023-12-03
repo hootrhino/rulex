@@ -1,6 +1,8 @@
 package apis
 
 import (
+	"fmt"
+
 	"github.com/gin-gonic/gin"
 	common "github.com/hootrhino/rulex/plugin/rulex_api_server/common"
 	"github.com/hootrhino/rulex/plugin/rulex_api_server/model"
@@ -84,7 +86,23 @@ func CreateInend(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err1))
 		return
 	}
-
+	isSingle := false
+	// 内部消息总线是单例模式
+	if form.Type == typex.INTERNAL_EVENT.String() {
+		ruleEngine.AllInEnd().Range(func(key, value any) bool {
+			In := value.(*typex.InEnd)
+			if In.Type.String() == form.Type {
+				isSingle = true
+				return false
+			}
+			return true
+		})
+	}
+	if isSingle {
+		msg := fmt.Errorf("the %s is singleton Source, can not create again", form.Name)
+		c.JSON(common.HTTP_OK, common.Error400(msg))
+		return
+	}
 	newUUID := utils.InUuid()
 
 	if err := service.InsertMInEnd(&model.MInEnd{
