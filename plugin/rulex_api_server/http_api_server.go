@@ -210,6 +210,7 @@ func (hs *ApiServerPlugin) Init(config *ini.Section) error {
 		&model.MCronTask{},
 		&model.MCronResult{},
 		&model.MHwPort{},
+		&model.MInternalNotify{},
 	)
 	// 初始化所有预制参数
 	server.DefaultApiServer.InitializeGenericOSData()
@@ -442,6 +443,13 @@ func (hs *ApiServerPlugin) LoadRoute() {
 		HwIFaceApi.GET("/list", server.AddRoute(apis.AllHwPorts))
 		HwIFaceApi.POST("/update", server.AddRoute(apis.UpdateHwPortConfig))
 		HwIFaceApi.GET("/refresh", server.AddRoute(apis.RefreshPortList))
+	}
+	// 站内公告
+	internalNotifyApi := server.DefaultApiServer.GetGroup(server.ContextUrl("/notify"))
+	{
+		internalNotifyApi.GET("/header", server.AddRoute(apis.InternalNotifiesHeader))
+		internalNotifyApi.GET("/list", server.AddRoute(apis.InternalNotifies))
+		internalNotifyApi.PUT("/clear", server.AddRoute(apis.ClearInternalNotifies))
 	}
 	//
 	// 系统设置
