@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/hootrhino/rulex/component/intereventbus"
+	"github.com/hootrhino/rulex/component/internotify"
 	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/typex"
 )
@@ -45,7 +45,7 @@ func StartInSupervisor(ctx context.Context, in *typex.InEnd, ruleEngine typex.Ru
 		if currentIn.Source.Status() == typex.SOURCE_DOWN {
 			info := fmt.Sprintf("Source:%v DOWN, supervisor try to Restart", UUID)
 			glogger.GLogger.Debugf(info)
-			intereventbus.Push(intereventbus.BaseEvent{
+			internotify.Push(internotify.BaseEvent{
 				Type:  "SOURCE",
 				Event: "event.down",
 				Ts:    uint64(time.Now().UnixNano()),
@@ -94,7 +94,7 @@ func StartOutSupervisor(ctx context.Context, out *typex.OutEnd, ruleEngine typex
 		if currentOut.Target.Status() == typex.SOURCE_DOWN {
 			info := fmt.Sprintf("OutEnd:%v DOWN, supervisor try to Restart", UUID)
 			glogger.GLogger.Debugf(info)
-			intereventbus.Push(intereventbus.BaseEvent{
+			internotify.Push(internotify.BaseEvent{
 				Type:  "TARGET",
 				Event: "event.down",
 				Ts:    uint64(time.Now().UnixNano()),
@@ -143,7 +143,7 @@ func StartDeviceSupervisor(ctx context.Context, device *typex.Device, ruleEngine
 		if currentDevice.Device.Status() == typex.DEV_DOWN {
 			info := fmt.Sprintf("Device:%v DOWN, supervisor try to Restart", UUID)
 			glogger.GLogger.Debugf(info)
-			intereventbus.Push(intereventbus.BaseEvent{
+			internotify.Push(internotify.BaseEvent{
 				Type:  "DEVICE",
 				Event: "event.down",
 				Ts:    uint64(time.Now().UnixNano()),
