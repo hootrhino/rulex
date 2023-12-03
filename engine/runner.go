@@ -80,6 +80,7 @@ func RunRulex(iniPath string) {
 
 	s := <-c
 	glogger.GLogger.Warn("RULEX Receive Stop Signal: ", s)
+	typex.GCancel()
 	engine.Stop()
 	os.Exit(0)
 }

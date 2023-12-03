@@ -36,6 +36,13 @@ type BaseEvent struct {
 	Info  interface{}
 }
 
+func (be *BaseEvent) String() string {
+	return fmt.Sprintf(
+		`BaseEvent@ Type:%s, Event:%s, Ts:%d, Info:%s`,
+		be.Type, be.Event, be.Ts, be.Info)
+
+}
+
 /*
 *
 * Push
