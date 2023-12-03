@@ -27,3 +27,4 @@ plugin/rulex_api_server/www/index.html
 plugin/rulex_api_server/server/www/index.html
 test/script/_temp/*
 upload/*
+go.sum
