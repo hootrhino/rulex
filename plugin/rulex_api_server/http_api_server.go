@@ -189,6 +189,8 @@ func (hs *ApiServerPlugin) Init(config *ini.Section) error {
 		return err
 	}
 	server.StartRulexApiServer(hs.ruleEngine)
+
+	interdb.DB().Exec("VACUUM;")
 	interdb.RegisterModel(
 		&model.MInEnd{},
 		&model.MOutEnd{},
@@ -450,6 +452,7 @@ func (hs *ApiServerPlugin) LoadRoute() {
 		internalNotifyApi.GET("/header", server.AddRoute(apis.InternalNotifiesHeader))
 		internalNotifyApi.GET("/list", server.AddRoute(apis.InternalNotifies))
 		internalNotifyApi.PUT("/clear", server.AddRoute(apis.ClearInternalNotifies))
+		internalNotifyApi.PUT("/read", server.AddRoute(apis.ReadInternalNotifies))
 	}
 	//
 	// 系统设置
