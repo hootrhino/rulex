@@ -28,8 +28,8 @@ import (
 	"github.com/hootrhino/rulex/component/datacenter"
 	"github.com/hootrhino/rulex/component/hwportmanager"
 	"github.com/hootrhino/rulex/component/interdb"
-	"github.com/hootrhino/rulex/component/intereventbus"
 	"github.com/hootrhino/rulex/component/intermetric"
+	"github.com/hootrhino/rulex/component/internotify"
 	"github.com/hootrhino/rulex/component/interqueue"
 	"github.com/hootrhino/rulex/component/rtspserver"
 	"github.com/hootrhino/rulex/component/trailer"
@@ -84,7 +84,7 @@ func InitRuleEngine(config typex.RulexConfig) typex.RuleX {
 	// Internal DB
 	interdb.Init(__DefaultRuleEngine, __DEFAULT_DB_PATH)
 	// Internal Bus
-	intereventbus.InitInternalEventBus(__DefaultRuleEngine, core.GlobalConfig.MaxQueueSize)
+	internotify.InitInternalEventBus(__DefaultRuleEngine, core.GlobalConfig.MaxQueueSize)
 	// 前后交互组件
 	interqueue.InitInteractQueue(__DefaultRuleEngine, core.GlobalConfig.MaxQueueSize)
 	// Web Pipeline
@@ -123,7 +123,7 @@ func (e *RuleEngine) Start() *typex.RulexConfig {
 	// 内部队列
 	interqueue.StartDataCacheQueue()
 	// InternalEventQueue
-	intereventbus.StartInternalEventQueue()
+	internotify.StartInternalEventQueue()
 	// WebDataPip
 	go core.StartWebDataPipe()
 	return e.Config

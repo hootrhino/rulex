@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package intereventbus
+package internotify
 
 import (
 	"context"
@@ -29,6 +29,12 @@ var __DefaultInternalEventBus *InternalEventBus
 // ---------------------------------------------------------
 // Type
 // ---------------------------------------------------------
+// - SOURCE: 南向事件
+// - DEVICE: 设备事件
+// - TARGET: 北向事件
+// - SYSTEM: 系统内部事件
+// - HARDWARE: 硬件事件
+
 type BaseEvent struct {
 	Type  string
 	Event string
@@ -66,12 +72,24 @@ func Push(e BaseEvent) error {
 *
  */
 type InternalEventBus struct {
-	Queue chan BaseEvent
-	Rulex typex.RuleX
+	Queue       chan BaseEvent
+	Rulex       typex.RuleX
+	SourceCount uint
 }
 
 func (q *InternalEventBus) GetSize() int {
 	return cap(q.Queue)
+}
+func RemoveSource() {
+	if __DefaultInternalEventBus.SourceCount > 0 {
+		__DefaultInternalEventBus.SourceCount--
+	}
+}
+func AddSource() {
+	__DefaultInternalEventBus.SourceCount++
+}
+func GetQueue() chan BaseEvent {
+	return __DefaultInternalEventBus.Queue
 }
 
 /*
@@ -96,13 +114,15 @@ func InitInternalEventBus(r typex.RuleX, MaxQueueSize int) *InternalEventBus {
 func StartInternalEventQueue() {
 	go func(ctx context.Context, InternalEventBus *InternalEventBus) {
 		for {
-			select {
-			case <-ctx.Done():
-				return
-			case Event := <-InternalEventBus.Queue:
-				{
-					// Push to device Queue
-					glogger.GLogger.Debug("Internal Event:", Event)
+			// 当无订阅者时，及时释放channel里面的数据
+			if __DefaultInternalEventBus.SourceCount == 0 {
+				select {
+				case <-ctx.Done():
+					return
+				case Event := <-InternalEventBus.Queue:
+					{
+						glogger.GLogger.Debug("Internal Event:", Event)
+					}
 				}
 			}
 		}
