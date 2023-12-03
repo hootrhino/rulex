@@ -25,6 +25,7 @@ jobs:
                gcc-mingw-w64 \
                gcc-aarch64-linux-gnu -y
           cloc ./
+          go get
           make
           # for test mqtt
           echo "Start Mqtt Server"
