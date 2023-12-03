@@ -3,7 +3,7 @@ package typex
 import "context"
 
 // Global context
-var GCTX = context.Background()
+var GCTX, GCancel = context.WithCancel(context.Background())
 
 // child context
 type CCTX struct {
