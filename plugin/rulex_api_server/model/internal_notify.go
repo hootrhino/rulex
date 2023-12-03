@@ -20,8 +20,10 @@ package model
 *
  */
 type MInternalNotify struct {
+	RulexModel
 	UUID    string `gorm:"not null"` // UUID
 	Type    string `gorm:"not null"` // INFO | ERROR | WARNING
+	Status  int    `gorm:"not null"` // 1 未读 2 已读
 	Event   string `gorm:"not null"` // 字符串
 	Ts      uint64 `gorm:"not null"` // 时间戳
 	Summary string `gorm:"not null"` // 概览，为了节省流量，在消息列表只显示这个字段，Info值为“”

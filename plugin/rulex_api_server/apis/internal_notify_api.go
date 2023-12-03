@@ -30,6 +30,7 @@ import (
 type InternalNotifyVo struct {
 	UUID    string `json:"uuid"`           // UUID
 	Type    string `json:"type"`           // INFO | ERROR | WARNING
+	Status  int    `json:"status"`         // 1 未读 2 已读
 	Event   string `json:"event"`          // 字符串
 	Ts      uint64 `json:"ts"`             // 时间戳
 	Summary string `json:"summary"`        // 概览，为了节省流量，在消息列表只显示这个字段，Info值为“”
@@ -51,6 +52,7 @@ func InternalNotifiesHeader(c *gin.Context, ruleEngine typex.RuleX) {
 			Event:   model.Event,
 			Ts:      model.Ts,
 			Summary: model.Summary,
+			Status:  model.Status,
 		})
 
 	}
@@ -73,6 +75,7 @@ func InternalNotifies(c *gin.Context, ruleEngine typex.RuleX) {
 			Ts:      model.Ts,
 			Summary: model.Summary,
 			Info:    model.Info,
+			Status:  model.Status,
 		})
 
 	}
@@ -86,6 +89,20 @@ func InternalNotifies(c *gin.Context, ruleEngine typex.RuleX) {
  */
 func ClearInternalNotifies(c *gin.Context, ruleEngine typex.RuleX) {
 	if err := service.ClearInternalNotifies(); err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
+	c.JSON(common.HTTP_OK, common.Ok())
+}
+
+/*
+*
+* 阅读
+*
+ */
+func ReadInternalNotifies(c *gin.Context, ruleEngine typex.RuleX) {
+	uuid, _ := c.GetQuery("uuid")
+	if err := service.ReadInternalNotifies(uuid); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}

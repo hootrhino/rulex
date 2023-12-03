@@ -20,10 +20,15 @@ import (
 	"github.com/hootrhino/rulex/plugin/rulex_api_server/model"
 )
 
+/*
+*
+* InsertInternalNotifies
+*
+ */
 func InsertInternalNotifies(m model.MInternalNotify) error {
-
 	var count int64
 	interdb.DB().Model(&m).Count(&count)
+	// 超过100条记录就清空
 	if count > 100 {
 		if err := ClearInternalNotifies(); err != nil {
 			return err
@@ -39,7 +44,7 @@ func InsertInternalNotifies(m model.MInternalNotify) error {
  */
 func AllInternalNotifiesHeader() []model.MInternalNotify {
 	m := []model.MInternalNotify{}
-	interdb.DB().Model(&model.MInternalNotify{}).Limit(6).Find(&m)
+	interdb.DB().Table("m_internal_notifies").Where("status=1").Limit(6).Find(&m)
 	return m
 }
 
@@ -50,7 +55,7 @@ func AllInternalNotifiesHeader() []model.MInternalNotify {
  */
 func AllInternalNotifies() []model.MInternalNotify {
 	m := []model.MInternalNotify{}
-	interdb.DB().Model(&model.MInternalNotify{}).Limit(100).Find(&m)
+	interdb.DB().Table("m_internal_notifies").Where("status=1").Limit(100).Find(&m)
 	return m
 }
 
@@ -61,4 +66,13 @@ func AllInternalNotifies() []model.MInternalNotify {
  */
 func ClearInternalNotifies() error {
 	return interdb.DB().Exec("DELETE FROM m_internal_notifies;VACUUM;").Error
+}
+
+/*
+*
+* 点击已读
+*
+ */
+func ReadInternalNotifies(uuid string) error {
+	return interdb.DB().Where("uuid=?", uuid).Delete(&model.MInternalNotify{}).Error
 }

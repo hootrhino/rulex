@@ -51,6 +51,7 @@ func Init(engine typex.RuleX, dbPath string) error {
 	if err != nil {
 		glogger.GLogger.Fatal(err)
 	}
+	__Sqlite.db.Exec("VACUUM;")
 	return err
 }
 
