@@ -16,10 +16,15 @@
 package apis
 
 import (
+	"fmt"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	common "github.com/hootrhino/rulex/plugin/rulex_api_server/common"
+	"github.com/hootrhino/rulex/plugin/rulex_api_server/model"
 	"github.com/hootrhino/rulex/plugin/rulex_api_server/service"
 	"github.com/hootrhino/rulex/typex"
+	"github.com/hootrhino/rulex/utils"
 )
 
 /*
@@ -105,6 +110,21 @@ func ReadInternalNotifies(c *gin.Context, ruleEngine typex.RuleX) {
 	if err := service.ReadInternalNotifies(uuid); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
+	}
+	c.JSON(common.HTTP_OK, common.Ok())
+}
+
+func TestCreateNotifies(c *gin.Context, ruleEngine typex.RuleX) {
+	for i := 0; i < 50; i++ {
+		service.InsertInternalNotify(model.MInternalNotify{
+			UUID:    utils.MakeUUID("NOTIFY"), // UUID
+			Type:    `WARNING`,                // INFO | ERROR | WARNING
+			Status:  1,
+			Event:   `event.down`, // 字符串
+			Ts:      uint64(time.Now().UnixMilli()),
+			Info:    "位于某处的某个设备已经离线, 请及时检查处理,这是测试数据而已",
+			Summary: fmt.Sprintf(`测试数据：设备 %d 离线`, i),
+		})
 	}
 	c.JSON(common.HTTP_OK, common.Ok())
 }

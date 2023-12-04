@@ -453,6 +453,7 @@ func (hs *ApiServerPlugin) LoadRoute() {
 		internalNotifyApi.GET("/list", server.AddRoute(apis.InternalNotifies))
 		internalNotifyApi.PUT("/clear", server.AddRoute(apis.ClearInternalNotifies))
 		internalNotifyApi.PUT("/read", server.AddRoute(apis.ReadInternalNotifies))
+		internalNotifyApi.POST("/test", server.AddRoute(apis.TestCreateNotifies))
 	}
 	//
 	// 系统设置
