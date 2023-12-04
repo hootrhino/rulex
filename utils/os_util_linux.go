@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"runtime"
 )
 
 /*
@@ -139,17 +140,23 @@ func GetSystemDevices() (SystemDevices, error) {
  */
 func CatOsRelease() (map[string]string, error) {
 	returnMap := map[string]string{}
-	cfg, err := ini.ShadowLoad("/etc/os-release")
-	if err != nil {
-		return nil, err
-	}
-	DefaultSection, err := cfg.GetSection("DEFAULT")
-	if err != nil {
-		return nil, err
-	}
-	for _, Key := range DefaultSection.KeyStrings() {
-		V, _ := DefaultSection.GetKey(Key)
-		returnMap[Key] = V.String()
+	if runtime.GOOS == "linux" {
+		if PathExists("/etc/os-release") {
+			cfg, err := ini.ShadowLoad("/etc/os-release")
+			if err != nil {
+				return nil, err
+			}
+			DefaultSection, err := cfg.GetSection("DEFAULT")
+			if err != nil {
+				return nil, err
+			}
+			for _, Key := range DefaultSection.KeyStrings() {
+				V, _ := DefaultSection.GetKey(Key)
+				returnMap[Key] = V.String()
+			}
+		} else {
+			returnMap["OS Version"] = "UNKNOWN"
+		}
 	}
 	return returnMap, nil
 
