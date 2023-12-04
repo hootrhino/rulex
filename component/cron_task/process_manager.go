@@ -61,10 +61,13 @@ func (pm *ProcessManager) RunProcess(file io.Writer, task model.MCronTask) error
 	}
 	command.Env = envSlice
 
+	if err = command.Start(); err != nil {
+		return err
+	}
 	pm.runningProcess.Store(task.ID, command)
 	defer pm.runningProcess.Delete(task.ID)
 
-	err = command.Run()
+	err = command.Wait()
 	if err != nil {
 		return err
 	}
