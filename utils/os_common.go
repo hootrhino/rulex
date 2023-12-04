@@ -94,29 +94,41 @@ func GetOSDistribution() (string, error) {
 	}
 	// Linux 有很多发行版, 目前特别要识别一下Openwrt
 	if runtime.GOOS == "linux" {
-		cmd := exec.Command("cat", "/etc/os-release")
-		output, err := cmd.Output()
-		if err != nil {
-			return runtime.GOOS, err
-		}
-		osIssue := strings.ToLower(string(output))
-		if strings.Contains((osIssue), "openwrt") {
-			return "openwrt", nil
-		}
-		if strings.Contains((osIssue), "ubuntu") {
-			return "ubuntu", nil
-		}
-		if strings.Contains((osIssue), "debian") {
-			return "debian", nil
-		}
-		if strings.Contains((osIssue), "armbian") {
-			return "armbian", nil
-		}
-		if strings.Contains((osIssue), "deepin") {
-			return "deepin", nil
+		if PathExists("/etc/os-release") {
+			cmd := exec.Command("cat", "/etc/os-release")
+			output, err := cmd.Output()
+			if err != nil {
+				return runtime.GOOS, err
+			}
+			osIssue := strings.ToLower(string(output))
+			if strings.Contains((osIssue), "openwrt") {
+				return "openwrt", nil
+			}
+			if strings.Contains((osIssue), "ubuntu") {
+				return "ubuntu", nil
+			}
+			if strings.Contains((osIssue), "debian") {
+				return "debian", nil
+			}
+			if strings.Contains((osIssue), "armbian") {
+				return "armbian", nil
+			}
+			if strings.Contains((osIssue), "deepin") {
+				return "deepin", nil
+			}
 		}
 	}
 	return runtime.GOOS, nil
+}
+func PathExists(path string) bool {
+	_, err := os.Stat(path)
+	if err == nil {
+		return true
+	}
+	if os.IsNotExist(err) {
+		return false
+	}
+	return false
 }
 
 /*
