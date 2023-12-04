@@ -64,6 +64,9 @@ func (d *modBusRtuDriver) Read(cmd []byte, data []byte) (int, error) {
 	var results []byte
 	dataMap := map[string]common.RegisterRW{}
 	count := len(d.Registers)
+	if count == 0 {
+		return 0, nil
+	}
 	for _, r := range d.Registers {
 		d.handler.SlaveId = r.SlaverId
 		if r.Function == common.READ_COIL {
@@ -135,7 +138,7 @@ func (d *modBusRtuDriver) Read(cmd []byte, data []byte) (int, error) {
 			}
 			dataMap[r.Tag] = value
 		}
-		time.Sleep(time.Duration(d.frequency) * time.Millisecond)
+		time.Sleep(time.Duration(r.Frequency) * time.Millisecond)
 	}
 	bytes, _ := json.Marshal(dataMap)
 	copy(data, bytes)

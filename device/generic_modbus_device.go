@@ -192,7 +192,6 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 			mdev.tcpHandler.Logger = golog.New(glogger.GLogger.Writer(),
 				"Modbus TCP Mode: "+mdev.PointId+", ", golog.LstdFlags)
 		}
-
 		if err := mdev.tcpHandler.Connect(); err != nil {
 			return err
 		}
@@ -222,7 +221,9 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 				if err != nil {
 					glogger.GLogger.Error(err)
 					mdev.retryTimes++
-				} else {
+					continue
+				}
+				if n > 0 {
 					mdev.RuleEngine.WorkDevice(mdev.Details(), string(buffer[:n]))
 				}
 			}
