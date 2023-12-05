@@ -17,14 +17,10 @@ profile*
 _release*
 _build*
 lua-log*
-*.txt
-*.txt.gz
-plugin/rulex_api_server/www/*
-plugin/rulex_api_server/server/www/*
+*.txt*
 dist/
 apps/*.lua
-plugin/rulex_api_server/www/index.html
-plugin/rulex_api_server/server/www/index.html
 test/script/_temp/*
 upload/*
 go.sum
+component/rulex_api_server/server/www/*

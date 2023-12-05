@@ -4,9 +4,9 @@ import (
 	"testing"
 	"time"
 
+	httpserver "github.com/hootrhino/rulex/component/rulex_api_server"
 	"github.com/hootrhino/rulex/glogger"
 	mqttserver "github.com/hootrhino/rulex/plugin/mqtt_server"
-	httpserver "github.com/hootrhino/rulex/plugin/rulex_api_server"
 	"github.com/hootrhino/rulex/typex"
 )
 

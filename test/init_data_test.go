@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"testing"
 
+	httpserver "github.com/hootrhino/rulex/component/rulex_api_server"
+	"github.com/hootrhino/rulex/component/rulex_api_server/model"
+	"github.com/hootrhino/rulex/component/rulex_api_server/service"
 	"github.com/hootrhino/rulex/core"
 	"github.com/hootrhino/rulex/engine"
 	"github.com/hootrhino/rulex/glogger"
-	httpserver "github.com/hootrhino/rulex/plugin/rulex_api_server"
-	"github.com/hootrhino/rulex/plugin/rulex_api_server/model"
-	"github.com/hootrhino/rulex/plugin/rulex_api_server/service"
 	"github.com/hootrhino/rulex/typex"
 )
 
