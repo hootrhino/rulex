@@ -5,9 +5,8 @@ type CronTaskCreateDTO struct {
 	CronExpr string   `form:"cronExpr" binding:"required" json:"cronExpr"`
 	TaskType string   `form:"taskType" binding:"required" json:"taskType"` // CRON_TASK_TYPE
 	Args     *string  `form:"args" json:"args"`                            // "param1 param2 param3"
-	IsRoot   string   `form:"isRoot" json:"isRoot"`                        // 0-false 1-true
 	Env      []string `form:"env" json:"env"`                              // ["A=e1", "B=e2", "C=e3"]
-	Script   string   `form:"script" json:"script"`
+	Script   string   `form:"script" json:"script"`                        // 脚本内容，base64编码
 }
 
 type CronTaskUpdateDTO struct {
@@ -16,7 +15,6 @@ type CronTaskUpdateDTO struct {
 	CronExpr string   `form:"cronExpr" json:"cronExpr"`
 	TaskType string   `form:"taskType" json:"taskType"` // CRON_TASK_TYPE
 	Args     *string  `form:"args" json:"args"`         // "param1 param2 param3"
-	IsRoot   string   `form:"isRoot" json:"isRoot"`     // 0-false 1-true
 	Env      []string `form:"env" json:"env"`           // ["A=e1", "B=e2", "C=e3"]
-	Script   string   `form:"script" json:"script"`
+	Script   string   `form:"script" json:"script"`     // 脚本内容，base64编码
 }

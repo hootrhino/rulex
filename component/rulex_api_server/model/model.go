@@ -259,11 +259,11 @@ type MCronTask struct {
 	UUID      string    `gorm:"not null; default:''" json:"uuid"`
 	Name      string    `gorm:"not null;" json:"name"`
 	CronExpr  string    `gorm:"not null" json:"cronExpr"` // quartz cron expr
-	Enable    string    `json:"enable"`                   // "0"-disable "1"-enable
-	TaskType  string    `json:"taskType"`                 // CRON_TASK_TYPE，目前只有CRON_TASK_TYPE_LINUX_SHELL
+	Enable    *bool     `json:"enable"`                   // 是否启用定时任务
+	TaskType  string    `json:"taskType"`                 // CRON_TASK_TYPE，目前只有LINUX_SHELL
 	Command   string    `json:"command"`                  // 根据TaskType而定，TaskType=LINUX_SHELL时Command=/bin/bash
 	Args      *string   `json:"args"`                     // "-param1 -param2 -param3"
-	IsRoot    string    `json:"isRoot"`                   // "0"-false "1"-true
+	IsRoot    *bool     `json:"isRoot"`                   // 是否使用root用户运行，目前不使用，默认和rulex用户一致
 	WorkDir   string    `json:"workDir"`                  // 目前不使用，默认工作路径和网关工作路径保持一致
 	Env       string    `json:"env"`                      // ["A=e1", "B=e2", "C=e3"]
 	Script    string    `json:"script"`                   // 脚本内容，base64编码

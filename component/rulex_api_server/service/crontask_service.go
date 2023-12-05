@@ -17,10 +17,9 @@ func CreateScheduleTask(data *dto.CronTaskCreateDTO) (*model.MCronTask, error) {
 		UUID:     utils.CronTaskUuid(),
 		Name:     data.Name,
 		CronExpr: data.CronExpr,
-		Enable:   "0",
+		Enable:   &cron_task.CRON_TASK_DISABLE,
 		TaskType: data.TaskType,
 		Args:     data.Args,
-		IsRoot:   data.IsRoot,
 		Script:   data.Script,
 	}
 	if data.Env != nil {
@@ -73,14 +72,13 @@ func UpdateScheduleTask(data *dto.CronTaskUpdateDTO) (*model.MCronTask, error) {
 	if tx.RowsAffected == 0 {
 		return nil, errors.New("定时任务不存在")
 	}
-	if cronTask.Enable == "1" {
+	if cronTask.Enable != nil && *cronTask.Enable == cron_task.CRON_TASK_DISABLE {
 		return nil, errors.New("请先暂停任务")
 	}
 	task := &model.MCronTask{
 		Name:     data.Name,
 		CronExpr: data.CronExpr,
 		TaskType: data.TaskType,
-		IsRoot:   data.IsRoot,
 		Args:     data.Args,
 	}
 
