@@ -11,7 +11,7 @@ import (
 	"testing"
 
 	"github.com/go-playground/assert/v2"
-	"github.com/hootrhino/rulex/plugin/rulex_api_server/model"
+	"github.com/hootrhino/rulex/component/rulex_api_server/model"
 )
 
 /*

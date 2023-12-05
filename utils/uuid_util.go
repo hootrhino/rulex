@@ -51,6 +51,11 @@ func RuleUuid() string {
 }
 
 // MakeUUID
+func UserLuaUuid() string {
+	return MakeUUID("USERLUA")
+}
+
+// MakeUUID
 func MakeUUID(prefix string) string {
 	return prefix + strings.ToUpper(shortuuid.New()[:6])
 }

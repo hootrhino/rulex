@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"github.com/hootrhino/rulex/component/interdb"
+	"github.com/hootrhino/rulex/component/rulex_api_server/model"
 	"github.com/hootrhino/rulex/glogger"
-	"github.com/hootrhino/rulex/plugin/rulex_api_server/model"
 	"github.com/robfig/cron/v3"
 )
 

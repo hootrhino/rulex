@@ -5,12 +5,12 @@ import (
 	"testing"
 	"time"
 
+	httpserver "github.com/hootrhino/rulex/component/rulex_api_server"
 	"github.com/hootrhino/rulex/component/rulexrpc"
 	"github.com/hootrhino/rulex/core"
 	"github.com/hootrhino/rulex/engine"
 	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/plugin/demo_plugin"
-	httpserver "github.com/hootrhino/rulex/plugin/rulex_api_server"
 	"github.com/hootrhino/rulex/typex"
 
 	"google.golang.org/grpc"

@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/hootrhino/rulex/component/appstack"
-	httpserver "github.com/hootrhino/rulex/plugin/rulex_api_server"
+	httpserver "github.com/hootrhino/rulex/component/rulex_api_server"
 	"github.com/hootrhino/rulex/typex"
 )
 

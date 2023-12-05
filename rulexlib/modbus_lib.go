@@ -96,27 +96,30 @@ func F5(rx typex.RuleX) func(l *lua.LState) int {
 			}
 		}
 		Device := rx.GetDevice(devUUID)
-		if Device != nil {
-			if Device.Type != typex.GENERIC_MODBUS {
-				l.Push(lua.LString("Only support GENERIC_MODBUS device"))
-				return 1
-			}
-			if Device.Device.Status() == typex.DEV_UP {
-				args, _ := json.Marshal([]common.RegisterW{
-					{
-						Function: 5,
-						SlaverId: byte(slaverId),
-						Address:  uint16(Address),
-						Values:   HexValues,
-					},
-				})
-				_, err := Device.Device.OnWrite([]byte("F5"), args)
-				if err != nil {
-					l.Push(lua.LString(err.Error()))
-					return 1
-				}
-			}
-			l.Push(lua.LString("Device down:" + devUUID))
+		if Device == nil {
+			l.Push(lua.LString("Device is not exists"))
+			return 1
+		}
+
+		if Device.Type != typex.GENERIC_MODBUS {
+			l.Push(lua.LString("Only support GENERIC_MODBUS device"))
+			return 1
+		}
+		if Device.Device.Status() != typex.DEV_UP {
+			l.Push(lua.LString("device down:" + devUUID))
+			return 1
+		}
+		args, _ := json.Marshal([]common.RegisterW{
+			{
+				Function: 5,
+				SlaverId: byte(slaverId),
+				Address:  uint16(Address),
+				Values:   HexValues,
+			},
+		})
+		_, err0 := Device.Device.OnWrite([]byte("F5"), args)
+		if err0 != nil {
+			l.Push(lua.LString(err0.Error()))
 			return 1
 		}
 		l.Push(lua.LNil)
@@ -142,27 +145,30 @@ func F6(rx typex.RuleX) func(l *lua.LState) int {
 			return 1
 		}
 		Device := rx.GetDevice(devUUID)
-		if Device != nil {
-			if Device.Type != typex.GENERIC_MODBUS {
-				l.Push(lua.LString("Only support GENERIC_MODBUS device"))
-				return 1
-			}
-			if Device.Device.Status() == typex.DEV_UP {
-				args, _ := json.Marshal(common.RegisterW{
-					Function: 6,
-					SlaverId: byte(slaverId),
-					Address:  uint16(Address),
-					Quantity: uint16(1), //2字节
-					Values:   HexValues,
-				})
-				_, err := Device.Device.OnWrite([]byte("F6"), args)
-				if err != nil {
-					glogger.GLogger.Error(err)
-					l.Push(lua.LString(err.Error()))
-					return 1
-				}
-			}
+		if Device == nil {
+			l.Push(lua.LString("Device is not exists"))
+			return 1
+		}
+
+		if Device.Type != typex.GENERIC_MODBUS {
+			l.Push(lua.LString("Only support GENERIC_MODBUS device"))
+			return 1
+		}
+		if Device.Device.Status() != typex.DEV_UP {
 			l.Push(lua.LString("device down:" + devUUID))
+			return 1
+		}
+		args, _ := json.Marshal(common.RegisterW{
+			Function: 6,
+			SlaverId: byte(slaverId),
+			Address:  uint16(Address),
+			Quantity: uint16(1), //2字节
+			Values:   HexValues,
+		})
+		_, err0 := Device.Device.OnWrite([]byte("F6"), args)
+		if err0 != nil {
+			glogger.GLogger.Error(err0)
+			l.Push(lua.LString(err0.Error()))
 			return 1
 		}
 		l.Push(lua.LNil)
@@ -190,27 +196,29 @@ func F15(rx typex.RuleX) func(l *lua.LState) int {
 			return 1
 		}
 		Device := rx.GetDevice(devUUID)
-		if Device != nil {
-			if Device.Type != typex.GENERIC_MODBUS {
-				l.Push(lua.LString("Only support GENERIC_MODBUS device"))
-				return 1
-			}
-			if Device.Device.Status() == typex.DEV_UP {
-				args, _ := json.Marshal(common.RegisterW{
-					Function: 15,
-					SlaverId: byte(slaverId),
-					Address:  uint16(Address),
-					Quantity: uint16(Quantity),
-					Values:   HexValues,
-				})
-				_, err := Device.Device.OnWrite([]byte("F15"), args)
-				if err != nil {
-					glogger.GLogger.Error(err)
-					l.Push(lua.LString(err.Error()))
-					return 1
-				}
-			}
+		if Device == nil {
+			l.Push(lua.LString("Device is not exists"))
+			return 1
+		}
+		if Device.Type != typex.GENERIC_MODBUS {
+			l.Push(lua.LString("Only support GENERIC_MODBUS device"))
+			return 1
+		}
+		if Device.Device.Status() != typex.DEV_UP {
 			l.Push(lua.LString("device down:" + devUUID))
+			return 1
+		}
+		args, _ := json.Marshal(common.RegisterW{
+			Function: 15,
+			SlaverId: byte(slaverId),
+			Address:  uint16(Address),
+			Quantity: uint16(Quantity),
+			Values:   HexValues,
+		})
+		_, err0 := Device.Device.OnWrite([]byte("F15"), args)
+		if err0 != nil {
+			glogger.GLogger.Error(err0)
+			l.Push(lua.LString(err0.Error()))
 			return 1
 		}
 		l.Push(lua.LNil)
@@ -236,26 +244,30 @@ func F16(rx typex.RuleX) func(l *lua.LState) int {
 			return 1
 		}
 		Device := rx.GetDevice(devUUID)
-		if Device != nil {
-			if Device.Type != typex.GENERIC_MODBUS {
-				l.Push(lua.LString("Only support GENERIC_MODBUS device"))
-				return 1
-			}
-			if Device.Device.Status() == typex.DEV_UP {
-				args, _ := json.Marshal(common.RegisterW{
-					Function: 16,
-					SlaverId: byte(slaverId),
-					Address:  uint16(Address),
-					Quantity: uint16(Quantity),
-					Values:   HexValues,
-				})
-				_, err := Device.Device.OnWrite([]byte("F16"), args)
-				if err != nil {
-					glogger.GLogger.Error(err)
-					l.Push(lua.LString(err.Error()))
-					return 1
-				}
-			}
+		if Device == nil {
+			l.Push(lua.LString("Device is not exists"))
+			return 1
+		}
+		if Device.Type != typex.GENERIC_MODBUS {
+			l.Push(lua.LString("Only support GENERIC_MODBUS device"))
+			return 1
+		}
+		if Device.Device.Status() != typex.DEV_UP {
+			l.Push(lua.LString("device down:" + devUUID))
+			return 1
+		}
+		args, _ := json.Marshal(common.RegisterW{
+			Function: 16,
+			SlaverId: byte(slaverId),
+			Address:  uint16(Address),
+			Quantity: uint16(Quantity),
+			Values:   HexValues,
+		})
+		_, err0 := Device.Device.OnWrite([]byte("F16"), args)
+		if err0 != nil {
+			glogger.GLogger.Error(err0)
+			l.Push(lua.LString(err0.Error()))
+			return 1
 		}
 		l.Push(lua.LNil)
 		return 1

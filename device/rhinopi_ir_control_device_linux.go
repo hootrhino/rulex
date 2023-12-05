@@ -27,25 +27,25 @@ Found /sys/class/rc/rc0/ (/dev/input/event1) with:
 	bus: 25, vendor/product: 0001:0001, version: 0x0100
 	Repeat delay = 500 ms, repeat period = 125 ms
 */
+type __IrConfig struct {
+	InputHandle string `json:"inputHandle"` // 信号源
+}
 type IR struct {
 	typex.XStatus
 	status typex.DeviceState
 	irFd   int
 	// irFd       syscall.Handle windows
 	RuleEngine typex.RuleX
+	mainConfig __IrConfig
 }
 
 func NewIRDevice(e typex.RuleX) typex.XDevice {
 	uart := new(IR)
 	uart.RuleEngine = e
+	uart.mainConfig = __IrConfig{
+		InputHandle: __IR_DEV,
+	}
 	return uart
-}
-
-//  初始化
-func (ird *IR) Init(devId string, configMap map[string]interface{}) error {
-	ird.PointId = devId
-
-	return nil
 }
 
 type timeval struct {
@@ -64,12 +64,19 @@ func (v irInputEvent) String() string {
 	return string(b)
 }
 
+//  初始化
+func (ird *IR) Init(devId string, configMap map[string]interface{}) error {
+	ird.PointId = devId
+
+	return nil
+}
+
 // 启动
 func (ird *IR) Start(cctx typex.CCTX) error {
 	ird.Ctx = cctx.Ctx
 	ird.CancelCTX = cctx.CancelCTX
 
-	fd, err := syscall.Open("/dev/input/event1", syscall.O_RDONLY, 0777)
+	fd, err := syscall.Open(ird.mainConfig.InputHandle, syscall.O_RDONLY, 0777)
 	if err != nil {
 		fmt.Printf("device open failed\r\n")
 		syscall.Close(fd)
@@ -89,17 +96,19 @@ func (ird *IR) Start(cctx typex.CCTX) error {
 				{
 				}
 			}
-			n, e := syscall.Read(fd, buf)
+			n1, e := syscall.Read(fd, buf)
 			if e != nil {
 				glogger.GLogger.Error(e)
 				continue
 			}
-			if n > 0 {
+			if n1 > 0 {
 				event := irInputEvent{}
-				_, err := syscall.Read(fd, (*[24]byte)(unsafe.Pointer(&event))[:])
+				n2, err := syscall.Read(fd, (*[24]byte)(unsafe.Pointer(&event))[:])
 				if err != nil {
 					glogger.GLogger.Error(err)
-				} else {
+					continue
+				}
+				if n2 > 0 {
 					ird.RuleEngine.WorkDevice(ird.Details(), event.String())
 				}
 			}
