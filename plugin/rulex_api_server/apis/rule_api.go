@@ -140,14 +140,6 @@ func CreateRule(c *gin.Context, ruleEngine typex.RuleX) {
 			c.JSON(common.HTTP_OK, common.Error(`inend not exists: `+inId))
 			return
 		}
-		BindRules := []string{rule.UUID}
-		InEnd.BindRules = BindRules
-		if err := service.UpdateMInEnd(InEnd.UUID, &model.MInEnd{
-			BindRules: BindRules,
-		}); err != nil {
-			c.JSON(common.HTTP_OK, common.Error400(err))
-			return
-		}
 		// SaveDB
 		//
 		mRule := &model.MRule{
@@ -160,6 +152,26 @@ func CreateRule(c *gin.Context, ruleEngine typex.RuleX) {
 			Failed:      form.Failed,
 			Actions:     form.Actions,
 		}
+		// 去重旧的
+		ruleMap := map[string]string{}
+		for _, rule := range InEnd.BindRules {
+			ruleMap[rule] = rule
+		}
+		// 追加新的ID
+		ruleMap[inId] = mRule.UUID
+		// 最后ID列表
+		BindRules := []string{}
+		for _, iid := range ruleMap {
+			BindRules = append(BindRules, iid)
+		}
+		InEnd.BindRules = BindRules
+		if err := service.UpdateMInEnd(InEnd.UUID, &model.MInEnd{
+			BindRules: BindRules,
+		}); err != nil {
+			c.JSON(common.HTTP_OK, common.Error400(err))
+			return
+		}
+
 		if err := service.InsertMRule(mRule); err != nil {
 			c.JSON(common.HTTP_OK, common.Error400(err))
 			return
@@ -179,14 +191,10 @@ func CreateRule(c *gin.Context, ruleEngine typex.RuleX) {
 			c.JSON(common.HTTP_OK, common.Error(`device not exists: `+devId))
 			return
 		}
-		// 最后ID列表
-		BindRules := []string{rule.UUID}
-		Device.BindRules = BindRules
-		if err := service.UpdateDevice(Device.UUID, &model.MDevice{
-			BindRules: BindRules,
-		}); err != nil {
-			c.JSON(common.HTTP_OK, common.Error400(err))
-			return
+		// 去重旧的
+		ruleMap := map[string]string{}
+		for _, rule := range Device.BindRules {
+			ruleMap[rule] = rule // for ["", "", "" ....]
 		}
 		// SaveDB
 		mRule := &model.MRule{
@@ -199,6 +207,21 @@ func CreateRule(c *gin.Context, ruleEngine typex.RuleX) {
 			Failed:      form.Failed,
 			Actions:     form.Actions,
 		}
+		// 追加新的ID
+		ruleMap[devId] = mRule.UUID // append New Rule UUID
+		// 最后ID列表
+		BindRules := []string{}
+		for _, iid := range ruleMap {
+			BindRules = append(BindRules, iid)
+		}
+		Device.BindRules = BindRules
+		if err := service.UpdateDevice(Device.UUID, &model.MDevice{
+			BindRules: BindRules,
+		}); err != nil {
+			c.JSON(common.HTTP_OK, common.Error400(err))
+			return
+		}
+
 		if err := service.InsertMRule(mRule); err != nil {
 			c.JSON(common.HTTP_OK, common.Error400(err))
 			return
@@ -339,10 +362,10 @@ func UpdateRule(c *gin.Context, ruleEngine typex.RuleX) {
 			// 去重旧的
 			ruleMap := map[string]string{}
 			for _, rule := range Device.BindRules {
-				ruleMap[rule] = rule
+				ruleMap[rule] = rule // for ["", "", "" ....]
 			}
 			// 追加新的ID
-			ruleMap[devId] = mRule.UUID
+			ruleMap[devId] = mRule.UUID // append New Rule UUID
 			// 最后ID列表
 			BindRules := []string{}
 			for _, iid := range ruleMap {

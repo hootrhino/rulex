@@ -10,28 +10,16 @@ import (
 // -----------------------------------------------------------------------------------
 func GetMRule(uuid string) (*model.MRule, error) {
 	m := new(model.MRule)
-	if err := interdb.DB().Where("uuid=?", uuid).First(m).Error; err != nil {
-		return nil, err
-	} else {
-		return m, nil
-	}
+	return m, interdb.DB().Where("uuid=?", uuid).First(m).Error
 }
 func GetAllMRule() ([]model.MRule, error) {
 	m := []model.MRule{}
-	if err := interdb.DB().Find(&m).Error; err != nil {
-		return nil, err
-	} else {
-		return m, nil
-	}
+	return m, interdb.DB().Find(&m).Error
 }
 
 func GetMRuleWithUUID(uuid string) (*model.MRule, error) {
 	m := new(model.MRule)
-	if err := interdb.DB().Where("uuid=?", uuid).First(m).Error; err != nil {
-		return nil, err
-	} else {
-		return m, nil
-	}
+	return m, interdb.DB().Where("uuid=?", uuid).First(m).Error
 }
 
 func InsertMRule(r *model.MRule) error {
