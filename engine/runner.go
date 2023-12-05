@@ -30,11 +30,11 @@ import (
 	usbmonitor "github.com/hootrhino/rulex/plugin/usb_monitor"
 	"gopkg.in/ini.v1"
 
+	httpserver "github.com/hootrhino/rulex/component/rulex_api_server"
 	"github.com/hootrhino/rulex/core"
 	"github.com/hootrhino/rulex/glogger"
 	icmpsender "github.com/hootrhino/rulex/plugin/icmp_sender"
 	license_manager "github.com/hootrhino/rulex/plugin/license_manager"
-	httpserver "github.com/hootrhino/rulex/plugin/rulex_api_server"
 	"github.com/hootrhino/rulex/typex"
 )
 
