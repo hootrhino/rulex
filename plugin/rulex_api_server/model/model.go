@@ -258,10 +258,10 @@ type MCronTask struct {
 	RulexModel
 	UUID      string    `gorm:"not null; default:''" json:"uuid"`
 	Name      string    `gorm:"not null;" json:"name"`
-	CronExpr  string    `gorm:"not null" json:"cronExpr"` // linux cron standard
+	CronExpr  string    `gorm:"not null" json:"cronExpr"` // quartz cron expr
 	Enable    string    `json:"enable"`                   // 0-disable 1-enable
-	TaskType  int       `json:"taskType"`                 // 1-shell 目前
-	Command   string    `json:"command"`                  // 目前不使用，默认都是linux shell
+	TaskType  string    `json:"taskType"`                 // CRON_TASK_TYPE，目前只有CRON_TASK_TYPE_LINUX_SHELL
+	Command   string    `json:"command"`                  // 目前不使用，默认都是/bin/bash
 	Args      *string   `json:"args"`                     // "-param1 -param2 -param3"
 	IsRoot    string    `json:"isRoot"`                   // 0-false 1-true
 	WorkDir   string    `json:"workDir"`                  // 目前不使用，默认工作路径和网关工作路径保持一致
@@ -276,7 +276,7 @@ type MCronTask struct {
 type MCronResult struct {
 	RulexModel
 	TaskUuid  string    `gorm:"not null; default:''" json:"taskUuid,omitempty"`
-	Status    string    `json:"status"`             // 1-running 2-end
+	Status    string    `json:"status"`             // CRON_RESULT_STATUS
 	ExitCode  string    `json:"exitCode,omitempty"` // 0-success other-failed
 	LogPath   string    `json:"logPath,omitempty"`
 	StartTime time.Time `json:"startTime"`

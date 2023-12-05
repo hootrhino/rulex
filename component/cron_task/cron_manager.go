@@ -68,7 +68,7 @@ func (m *CronManager) AddTask(task model.MCronTask) error {
 		// create a task execute log record
 		result := model.MCronResult{
 			TaskUuid:  task.UUID,
-			Status:    "1",
+			Status:    CRON_RESULT_STATUS_RUNNING,
 			StartTime: time.Now(),
 		}
 		saveResults(&result)
@@ -93,7 +93,7 @@ func (m *CronManager) AddTask(task model.MCronTask) error {
 		taskLogger.Info("---------------End   task---------------")
 
 		result.EndTime = time.Now()
-		result.Status = "2"
+		result.Status = CRON_RESULT_STATUS_END
 		result.ExitCode = strconv.Itoa(exitCode)
 		saveResults(&result)
 	})
