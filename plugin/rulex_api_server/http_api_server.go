@@ -213,6 +213,7 @@ func (hs *ApiServerPlugin) Init(config *ini.Section) error {
 		&model.MCronResult{},
 		&model.MHwPort{},
 		&model.MInternalNotify{},
+		&model.MUserLuaTemplate{},
 	)
 	// 初始化所有预制参数
 	server.DefaultApiServer.InitializeGenericOSData()
@@ -394,6 +395,18 @@ func (hs *ApiServerPlugin) LoadRoute() {
 		// 缩略图
 		visualApi.POST("/thumbnail", server.AddRoute(apis.UploadFile))
 		visualApi.GET("/thumbnail", server.AddRoute(apis.GetThumbnail))
+	}
+	//
+	// 用户LUA代码段管理
+	//
+	userLuaApi := server.RouteGroup(server.ContextUrl("/userlua"))
+	{
+		userLuaApi.POST("/create", server.AddRoute(apis.CreateUserLuaTemplate))
+		userLuaApi.PUT("/update", server.AddRoute(apis.UpdateUserLuaTemplate))
+		userLuaApi.GET("/listByGroup", server.AddRoute(apis.ListUserLuaTemplateByGroup))
+		userLuaApi.GET("/detail", server.AddRoute(apis.UserLuaTemplateDetail))
+		userLuaApi.GET("/group", server.AddRoute(apis.ListUserLuaTemplateGroup))
+		userLuaApi.DELETE("/delete", server.AddRoute(apis.DeleteUserLuaTemplate))
 	}
 	/*
 	*

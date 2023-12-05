@@ -233,6 +233,12 @@ func initStaticModel() {
 		Name:   "默认分组",
 		Parent: "NULL",
 	})
+	service.InitGenericGroup(&model.MGenericGroup{
+		UUID:   "ULTROOT",
+		Type:   "USER_LUA_TEMPLATE",
+		Name:   "默认分组",
+		Parent: "NULL",
+	})
 	// 初始化网站配置
 	service.InitSiteConfig(model.MSiteConfig{
 		SiteName: "Rhino EEKit",
