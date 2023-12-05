@@ -180,7 +180,7 @@ func ListVisual(c *gin.Context, ruleEngine typex.RuleX) {
 func ListVisualByGroup(c *gin.Context, ruleEngine typex.RuleX) {
 	Gid, _ := c.GetQuery("uuid")
 	visuals := []VisualVo{}
-	MVisuals, _ := service.FindByType(Gid, "VISUAL")
+	MVisuals := service.FindVisualByGroup(Gid)
 	for _, vv := range MVisuals {
 		Vo := VisualVo{
 			UUID:      vv.UUID,

@@ -68,7 +68,7 @@ func DeviceDetail(c *gin.Context, ruleEngine typex.RuleX) {
 func ListDeviceByGroup(c *gin.Context, ruleEngine typex.RuleX) {
 	Gid, _ := c.GetQuery("uuid")
 	devices := []DeviceVo{}
-	_, MDevices := service.FindByType(Gid, "DEVICE")
+	MDevices := service.FindDeviceByGroup(Gid)
 	for _, mdev := range MDevices {
 		DeviceVo := DeviceVo{}
 		DeviceVo.UUID = mdev.UUID

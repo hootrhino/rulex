@@ -34,30 +34,65 @@ func ListByGroupType(t string) []model.MGenericGroup {
 
 /*
 *
-  - 根据分组类型查询:DEVICE, VISUAL
-
-*~
-*/
-func FindByType(uuid, t string) ([]model.MVisual, []model.MDevice) {
+* 查询分组下的设备
+*
+ */
+func FindDeviceByGroup(uuid string) []model.MDevice {
 	sql := `
 WHERE uuid IN (
 	SELECT m_generic_group_relations.rid
 	  FROM m_generic_groups
 		LEFT JOIN
 		m_generic_group_relations ON (m_generic_groups.uuid = m_generic_group_relations.gid)
-	  WHERE type = ? AND gid = ?
+	  WHERE type = 'DEVICE' AND gid = ?
 );`
-	if t == "VISUAL" {
-		m := []model.MVisual{}
-		interdb.DB().Raw(`SELECT * FROM m_visuals `+sql, t, uuid).Find(&m)
-		return m, nil
-	}
-	if t == "DEVICE" {
-		m := []model.MDevice{}
-		interdb.DB().Raw(`SELECT * FROM m_devices `+sql, t, uuid).Find(&m)
-		return nil, m
-	}
-	return nil, nil
+
+	m := []model.MDevice{}
+	interdb.DB().Raw(`SELECT * FROM m_devices `+sql, uuid).Find(&m)
+	return m
+
+}
+
+/*
+*
+* 查询分组吓得大屏
+*
+ */
+func FindVisualByGroup(uuid string) []model.MVisual {
+	sql := `
+WHERE uuid IN (
+	SELECT m_generic_group_relations.rid
+	  FROM m_generic_groups
+		LEFT JOIN
+		m_generic_group_relations ON (m_generic_groups.uuid = m_generic_group_relations.gid)
+	  WHERE type = 'VISUAL' AND gid = ?
+);`
+
+	m := []model.MVisual{}
+	interdb.DB().Raw(`SELECT * FROM m_visuals `+sql, uuid).Find(&m)
+	return m
+
+}
+
+/*
+*
+  - 根据分组类型查询:代码模板
+
+*~
+*/
+func FindUserTemplateByGroup(uuid string) []model.MUserLuaTemplate {
+	sql := `
+WHERE uuid IN (
+	SELECT m_generic_group_relations.rid
+	  FROM m_generic_groups
+		LEFT JOIN
+		m_generic_group_relations ON (m_generic_groups.uuid = m_generic_group_relations.gid)
+	  WHERE type = 'USER_LUA_TEMPLATE' AND gid = ?
+);`
+	m := []model.MUserLuaTemplate{}
+	interdb.DB().Raw(`SELECT * FROM m_user_lua_templates `+sql, uuid).Find(&m)
+	return m
+
 }
 
 func GetGenericGroupWithUUID(uuid string) (*model.MGenericGroup, error) {
