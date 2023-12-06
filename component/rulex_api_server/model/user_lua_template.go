@@ -21,8 +21,9 @@ package model
  */
 type MUserLuaTemplate struct {
 	RulexModel
-	UUID  string
-	Type  string // 类型 固定为 'function'
-	Label string //快捷代码名称
-	Apply string //快捷代码
+	UUID   string
+	Type   string // 类型 固定为 'function'
+	Label  string //快捷代码名称
+	Apply  string //快捷代码
+	Detail string
 }
