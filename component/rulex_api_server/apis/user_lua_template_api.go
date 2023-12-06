@@ -10,11 +10,12 @@ import (
 )
 
 type UserLuaTemplateVo struct {
-	Gid   string `json:"gid,omitempty"`  // 分组ID
-	UUID  string `json:"uuid,omitempty"` // 名称
-	Label string `json:"label"`          //快捷代码名称
-	Apply string `json:"apply"`          //快捷代码
-	Type  string `json:"type"`           // 类型 固定为function类型detail
+	Gid    string `json:"gid,omitempty"`  // 分组ID
+	UUID   string `json:"uuid,omitempty"` // 名称
+	Label  string `json:"label"`          //快捷代码名称
+	Apply  string `json:"apply"`          //快捷代码
+	Type   string `json:"type"`           // 类型 固定为function类型detail
+	Detail string `json:"detail"`
 }
 
 /*
@@ -35,10 +36,11 @@ func CreateUserLuaTemplate(c *gin.Context, ruleEngine typex.RuleX) {
 		return
 	}
 	MUserLuaTemplate := model.MUserLuaTemplate{
-		UUID:  utils.UserLuaUuid(),
-		Label: form.Label,
-		Type:  "function",
-		Apply: form.Apply,
+		UUID:   utils.UserLuaUuid(),
+		Label:  form.Label,
+		Type:   "function",
+		Apply:  form.Apply,
+		Detail: form.Detail,
 	}
 	if err := service.InsertUserLuaTemplate(MUserLuaTemplate); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
@@ -68,10 +70,11 @@ func UpdateUserLuaTemplate(c *gin.Context, ruleEngine typex.RuleX) {
 		return
 	}
 	MUserLuaTemplate := model.MUserLuaTemplate{
-		UUID:  form.UUID,
-		Label: form.Label,
-		Type:  form.Type,
-		Apply: form.Apply,
+		UUID:   form.UUID,
+		Label:  form.Label,
+		Type:   form.Type,
+		Apply:  form.Apply,
+		Detail: form.Detail,
 	}
 
 	if err := service.UpdateUserLuaTemplate(MUserLuaTemplate); err != nil {
@@ -131,10 +134,11 @@ func ListUserLuaTemplate(c *gin.Context, ruleEngine typex.RuleX) {
 	UserLuaTemplates := []UserLuaTemplateVo{}
 	for _, vv := range service.AllUserLuaTemplate() {
 		Vo := UserLuaTemplateVo{
-			UUID:  vv.UUID,
-			Label: vv.Label,
-			Type:  vv.Type,
-			Apply: vv.Apply,
+			UUID:   vv.UUID,
+			Label:  vv.Label,
+			Type:   vv.Type,
+			Apply:  vv.Apply,
+			Detail: vv.Detail,
 		}
 		Group := service.GetUserLuaTemplateGroup(vv.UUID)
 		if Group.UUID != "" {
@@ -159,10 +163,11 @@ func ListUserLuaTemplateByGroup(c *gin.Context, ruleEngine typex.RuleX) {
 	MUserLuaTemplates := service.FindUserTemplateByGroup(Gid)
 	for _, vv := range MUserLuaTemplates {
 		Vo := UserLuaTemplateVo{
-			UUID:  vv.UUID,
-			Label: vv.Label,
-			Type:  vv.Type,
-			Apply: vv.Apply,
+			UUID:   vv.UUID,
+			Label:  vv.Label,
+			Type:   vv.Type,
+			Apply:  vv.Apply,
+			Detail: vv.Detail,
 		}
 		Group := service.GetUserLuaTemplateGroup(vv.UUID)
 		Vo.Gid = Group.UUID
@@ -184,10 +189,11 @@ func UserLuaTemplateDetail(c *gin.Context, ruleEngine typex.RuleX) {
 		return
 	}
 	Vo := UserLuaTemplateVo{
-		UUID:  mUserLuaTemplate.UUID,
-		Label: mUserLuaTemplate.Label,
-		Type:  mUserLuaTemplate.Type,
-		Apply: mUserLuaTemplate.Apply,
+		UUID:   mUserLuaTemplate.UUID,
+		Label:  mUserLuaTemplate.Label,
+		Type:   mUserLuaTemplate.Type,
+		Apply:  mUserLuaTemplate.Apply,
+		Detail: mUserLuaTemplate.Detail,
 	}
 	Group := service.GetUserLuaTemplateGroup(mUserLuaTemplate.UUID)
 	if Group.UUID != "" {
