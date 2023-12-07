@@ -407,6 +407,7 @@ func (hs *ApiServerPlugin) LoadRoute() {
 		userLuaApi.GET("/detail", server.AddRoute(apis.UserLuaTemplateDetail))
 		userLuaApi.GET("/group", server.AddRoute(apis.ListUserLuaTemplateGroup))
 		userLuaApi.DELETE("/del", server.AddRoute(apis.DeleteUserLuaTemplate))
+		userLuaApi.GET("/search", server.AddRoute(apis.SearchUserLuaTemplateGroup))
 	}
 	/*
 	*

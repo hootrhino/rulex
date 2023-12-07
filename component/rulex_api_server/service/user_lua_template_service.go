@@ -16,6 +16,8 @@
 package service
 
 import (
+	"fmt"
+
 	"github.com/hootrhino/rulex/component/interdb"
 	"github.com/hootrhino/rulex/component/rulex_api_server/model"
 )
@@ -26,6 +28,20 @@ func AllUserLuaTemplate() []model.MUserLuaTemplate {
 	interdb.DB().Find(&m)
 	return m
 
+}
+
+// 模糊查询
+// SELECT * FROM m_user_lua_templates
+// WHERE label like "%%"
+// OR detail like "%%"
+func SearchUserLuaTemplate(label, detail string) []model.MUserLuaTemplate {
+	m := []model.MUserLuaTemplate{}
+	sql := `
+SELECT * FROM m_user_lua_templates
+WHERE label like "%%%s%%"
+OR detail like "%%%s%%"`
+	interdb.DB().Raw(fmt.Sprintf(sql, label, detail)).Scan(&m)
+	return m
 }
 
 /*
