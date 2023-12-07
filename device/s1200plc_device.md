@@ -8,3 +8,76 @@ PLC S1200系列设备通常用于控制和监视各种工业过程，例如生�
 PLC S1200系列设备提供了丰富的输入输出接口、通信接口和编程功能，以满足各种自动化控制需求。通过编程，用户可以定义逻辑控制规则、配置输入输出映射、实现数据处理和通信功能等。
 
 需要注意的是，PLC S1200是西门子（Siemens）公司的商标产品，更详细的信息和技术规格可以参考西门子官方文档或与其联系。
+
+## 参数
+```json
+{
+    "name": "S1200PLC",
+    "type": "S1200PLC",
+    "gid": "DROOT",
+    "config": {
+        "host": "127.0.0.1:1500",
+        "rack": 0,
+        "slot": 1,
+        "model": "S1200PLC",
+        "timeout": 1000,
+        "autoRequest": true,
+        "idleTimeout": 1000,
+        "frequency": 1000,
+        "blocks": [
+            {
+                "tag": "Value",
+                "frequency": 1000,
+                "type": "DB",
+                "address": 1,
+                "start": 100,
+                "size": 16
+            }
+        ]
+    },
+    "description": "S1200PLC"
+}
+```
+## 脚本示例
+```lua
+
+-- Actions
+-- 采集到的数据:
+-- {
+--     "tag":"Value",
+--     "type":"DB",
+--     "frequency":0,
+--     "address":1,
+--     "start":100,
+--     "size":16,
+--     "value":"00000001000000020000000300000004"
+-- }
+Actions =
+{
+    function(args)
+        local dataT, err = json:J2T(args)
+        if (err ~= nil) then
+            stdlib:Debug('parse json error:' .. err)
+            return true, args
+        end
+        for key, value in pairs(dataT) do
+            --data: 00000001000000020000000300000004
+            local MatchHexS = hex:MatchUInt("a:[0,3];b:[4,7];c:[8,11];d:[12,15]", value['value'])
+            local ts = time:Time()
+            local Json = json:T2J(
+                {
+                    tag = key,
+                    ts = ts,
+                    a = MatchHexS['a'],
+                    b = MatchHexS['b'],
+                    c = MatchHexS['c'],
+                    d = MatchHexS['d'],
+                }
+            )
+            stdlib:Debug(Json)
+        end
+        return true, args
+    end
+}
+
+```
