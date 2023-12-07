@@ -127,6 +127,26 @@ func ListUserLuaTemplateGroup(c *gin.Context, ruleEngine typex.RuleX) {
 
 /*
 *
+* 模糊查询
+*
+ */
+func SearchUserLuaTemplateGroup(c *gin.Context, ruleEngine typex.RuleX) {
+	visuals := []UserLuaTemplateVo{}
+	keyword, _ := c.GetQuery("keyword")
+	for _, vv := range service.SearchUserLuaTemplate(keyword, keyword) {
+		visuals = append(visuals, UserLuaTemplateVo{
+			UUID:   vv.UUID,
+			Label:  vv.Label,
+			Type:   vv.Type,
+			Apply:  vv.Apply,
+			Detail: vv.Detail,
+		})
+	}
+	c.JSON(common.HTTP_OK, common.OkWithData(visuals))
+}
+
+/*
+*
 * 用户模板列表
 *
  */
