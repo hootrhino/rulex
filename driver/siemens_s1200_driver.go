@@ -1,8 +1,9 @@
 package driver
 
 import (
+	"encoding/hex"
 	"encoding/json"
-	"sync"
+	"time"
 
 	"github.com/hootrhino/rulex/common"
 	"github.com/hootrhino/rulex/glogger"
@@ -22,7 +23,6 @@ type siemens_s1200_driver struct {
 	device     *typex.Device
 	RuleEngine typex.RuleX
 	dbs        []common.S1200Block // PLC 的DB块
-	lock       sync.Mutex
 }
 
 func NewS1200Driver(d *typex.Device,
@@ -35,7 +35,6 @@ func NewS1200Driver(d *typex.Device,
 		RuleEngine: e,
 		s7client:   s7client,
 		dbs:        dbs,
-		lock:       sync.Mutex{},
 	}
 }
 
@@ -68,24 +67,53 @@ func (s1200 *siemens_s1200_driver) State() typex.DriverState {
 
 // 字节格式:[dbNumber1, start1, size1, dbNumber2, start2, size2]
 // 读: db --> dbNumber, start, size, buffer[]
-func (s1200 *siemens_s1200_driver) Read(cmd []byte, data []byte) (int, error) {
-	values := []common.S1200BlockValue{}
-	for _, db := range s1200.dbs {
-		rData := []byte{}
-		s1200.lock.Lock()
-		if err := s1200.s7client.AGReadDB(db.Address, db.Start, db.Size, rData); err != nil {
-			s1200.lock.Unlock()
-			return 0, err
-		}
-		s1200.lock.Unlock()
-		values = append(values, common.S1200BlockValue{
-			Tag:     db.Tag,
-			Address: db.Address,
-			Start:   db.Start,
-			Size:    db.Size,
-			Value:   rData,
-		})
+var rData = [common.T_2KB]byte{} // 一次最大接受2KB数据
 
+func (s1200 *siemens_s1200_driver) Read(cmd []byte, data []byte) (int, error) {
+	values := []common.S1200Block{}
+	for _, db := range s1200.dbs {
+		//DB 4字节
+		if db.Type == "DB" {
+			// 00.00.00.01 | 00.00.00.02 | 00.00.00.03 | 00.00.00.04
+			if err := s1200.s7client.AGReadDB(db.Address, db.Start, db.Size, rData[:]); err != nil {
+				return 0, err
+			}
+			count := db.Size
+			if db.Size*2 > 2000 {
+				count = 2000
+			}
+			values = append(values, common.S1200Block{
+				Tag:     db.Tag,
+				Address: db.Address,
+				Type:    db.Type,
+				Start:   db.Start,
+				Size:    db.Size,
+				Value:   hex.EncodeToString(rData[:count]),
+			})
+		}
+		//
+		if db.Type == "MB" {
+			// 00.00.00.01 | 00.00.00.02 | 00.00.00.03 | 00.00.00.04
+			if err := s1200.s7client.AGReadMB(db.Start, db.Size, rData[:]); err != nil {
+				return 0, err
+			}
+			count := db.Size
+			if db.Size*2 > 2000 {
+				count = 2000
+			}
+			values = append(values, common.S1200Block{
+				Tag:     db.Tag,
+				Type:    db.Type,
+				Address: db.Address,
+				Start:   db.Start,
+				Size:    db.Size,
+				Value:   hex.EncodeToString(rData[:count]),
+			})
+		}
+		if db.Frequency < 100 {
+			db.Frequency = 100 // 不能太快
+		}
+		time.Sleep(time.Duration(db.Frequency) * time.Millisecond)
 	}
 	bytes, _ := json.Marshal(values)
 	copy(data, bytes)
@@ -105,23 +133,21 @@ func (s1200 *siemens_s1200_driver) Read(cmd []byte, data []byte) (int, error) {
 //
 // ]
 func (s1200 *siemens_s1200_driver) Write(cmd []byte, data []byte) (int, error) {
-	blocks := []common.S1200BlockValue{}
+	blocks := []common.S1200Block{}
 	if err := json.Unmarshal(data, &blocks); err != nil {
 		return 0, err
 	}
 	//
 	for _, block := range blocks {
-		s1200.lock.Lock()
+		hexV, _ := hex.DecodeString(block.Value)
 		if err := s1200.s7client.AGWriteDB(
 			block.Address,
 			block.Start,
 			block.Size,
-			block.Value,
+			hexV,
 		); err != nil {
-			s1200.lock.Unlock()
 			return 0, err
 		}
-		s1200.lock.Unlock()
 	}
 	return 0, nil
 }
