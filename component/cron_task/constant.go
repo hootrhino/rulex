@@ -5,6 +5,9 @@ const (
 	CRON_TASK_TYPE_LINUX_SHELL = "LINUX_SHELL"
 )
 
+// CRON
+const LINUX_SHELL = "/bin/bash"
+
 const PERM_0777 = 0777
 
 // CRON_RESULT_STATUS

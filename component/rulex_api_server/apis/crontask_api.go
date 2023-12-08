@@ -47,7 +47,7 @@ func CreateCronTask(c *gin.Context, ruleEngine typex.RuleX) (any, error) {
 // @Accept json
 // @Produce json
 // @Success 200 {object} httpserver.R
-// @Router /crontask/delete [delete]
+// @Router /crontask/del [delete]
 func DeleteCronTask(c *gin.Context, ruleEngine typex.RuleX) (any, error) {
 	uuid := c.Query("uuid")
 	err := service.DeleteScheduleTask(uuid)

@@ -90,7 +90,7 @@ paths:
       summary: 创建定时任务
       tags:
       - crontask
-  /crontask/delete:
+  /crontask/del:
     delete:
       consumes:
       - application/json

@@ -30,7 +30,7 @@ func CreateScheduleTask(data *dto.CronTaskCreateDTO) (*model.MCronTask, error) {
 	}
 
 	if data.TaskType == cron_task.CRON_TASK_TYPE_LINUX_SHELL {
-		task.Command = "/bin/bash"
+		task.Command = cron_task.LINUX_SHELL
 	}
 
 	tx := db.Create(&task)
@@ -80,6 +80,10 @@ func UpdateScheduleTask(data *dto.CronTaskUpdateDTO) (*model.MCronTask, error) {
 		CronExpr: data.CronExpr,
 		TaskType: data.TaskType,
 		Args:     data.Args,
+	}
+
+	if data.TaskType == cron_task.CRON_TASK_TYPE_LINUX_SHELL {
+		task.Command = cron_task.LINUX_SHELL
 	}
 
 	tx = db.Model(&task)
