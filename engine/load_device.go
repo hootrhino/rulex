@@ -95,7 +95,7 @@ func (e *RuleEngine) loadDevices(abstractDevice typex.XDevice, deviceInfo *typex
 	config := e.GetDevice(deviceInfo.UUID).Config
 	if config == nil {
 		e.RemoveDevice(deviceInfo.UUID)
-		err := fmt.Errorf("device [%v] config is nil", deviceInfo.Name)
+		err := fmt.Errorf("Device [%v] config is nil", deviceInfo.Name)
 		return err
 	}
 	if err := abstractDevice.Init(deviceInfo.UUID, config); err != nil {
@@ -103,14 +103,14 @@ func (e *RuleEngine) loadDevices(abstractDevice typex.XDevice, deviceInfo *typex
 		return err
 	}
 	startDevice(abstractDevice, e, ctx, cancelCTX)
-	glogger.GLogger.Infof("device [%v, %v] load successfully", deviceInfo.Name, deviceInfo.UUID)
+	glogger.GLogger.Infof("Device [%v, %v] load successfully", deviceInfo.Name, deviceInfo.UUID)
 	return nil
 }
 
 func startDevice(abstractDevice typex.XDevice, e *RuleEngine,
 	ctx context.Context, cancelCTX context.CancelFunc) error {
 	if err := abstractDevice.Start(typex.CCTX{Ctx: ctx, CancelCTX: cancelCTX}); err != nil {
-		glogger.GLogger.Error("abstractDevice start error:", err)
+		glogger.GLogger.Error("Device start error:", err)
 		return err
 	}
 	// LoadNewestDevice

@@ -2,26 +2,48 @@ package device
 
 import (
 	"context"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"sync"
 	"time"
 
 	"github.com/hootrhino/rulex/common"
-	"github.com/hootrhino/rulex/driver"
 	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/typex"
 	"github.com/hootrhino/rulex/utils"
 	"github.com/robinson/gos7"
 )
 
+type S1200Block struct {
+	Tag       string `json:"tag" validate:"required"`       // 数据tag
+	Type      string `json:"type" validate:"required"`      // 块类型 MB | DB |FB
+	Frequency *int64 `json:"frequency" validate:"required"` // 采集频率
+	Address   *int   `json:"address" validate:"required"`   // 块地址
+	Start     *int   `json:"start" validate:"required"`     // 起始地址
+	Size      *int   `json:"size" validate:"required"`      // 采集长度
+	Value     string `json:"value,omitempty"`               // 值
+}
+type S1200CommonConfig struct {
+	Host        string `json:"host" validate:"required"`        // 127.0.0.1:502
+	Model       string `json:"model" validate:"required"`       // s7-200 s7-1500
+	Rack        *int   `json:"rack" validate:"required"`        // 0
+	Slot        *int   `json:"slot" validate:"required"`        // 1
+	Timeout     *int   `json:"timeout" validate:"required"`     // 5s
+	IdleTimeout *int   `json:"idleTimeout" validate:"required"` // 5s
+	AutoRequest *bool  `json:"autoRequest" validate:"required"` // false
+}
+type S1200Config struct {
+	CommonConfig S1200CommonConfig `json:"commonConfig" validate:"required"` // 通用配置
+	Blocks       []S1200Block      `json:"blocks" validate:"required"`       //点位表
+}
+
 // https://www.ad.siemens.com.cn/productportal/prods/s7-1200_plc_easy_plus/07-Program/02-basic/01-Data_Type/01-basic.html
 type s1200plc struct {
 	typex.XStatus
 	status     typex.DeviceState
 	RuleEngine typex.RuleX
-	driver     typex.XExternalDriver
-	mainConfig common.S1200Config
+	mainConfig S1200Config
 	client     gos7.Client
 	lock       sync.Mutex
 }
@@ -40,12 +62,14 @@ func NewS1200plc(e typex.RuleX) typex.XDevice {
 	Timeout := 1000
 	IdleTimeout := 3000
 	AutoRequest := false
-	s1200.mainConfig = common.S1200Config{
-		Rack:        &Rack,
-		Slot:        &Slot,
-		Timeout:     &Timeout,
-		IdleTimeout: &IdleTimeout,
-		AutoRequest: &AutoRequest,
+	s1200.mainConfig = S1200Config{
+		CommonConfig: S1200CommonConfig{
+			Rack:        &Rack,
+			Slot:        &Slot,
+			Timeout:     &Timeout,
+			IdleTimeout: &IdleTimeout,
+			AutoRequest: &AutoRequest,
+		},
 	}
 	return s1200
 }
@@ -74,27 +98,25 @@ func (s1200 *s1200plc) Start(cctx typex.CCTX) error {
 	s1200.CancelCTX = cctx.CancelCTX
 	//
 	handler := gos7.NewTCPClientHandler(
-		// 127.0.0.1:1500
-		s1200.mainConfig.Host,
-		*s1200.mainConfig.Rack,
-		*s1200.mainConfig.Slot)
-	handler.Timeout = 5 * time.Second
+		s1200.mainConfig.CommonConfig.Host,  // 127.0.0.1:1500
+		*s1200.mainConfig.CommonConfig.Rack, // 0
+		*s1200.mainConfig.CommonConfig.Slot) // 1
+	handler.Timeout = time.Duration(
+		*s1200.mainConfig.CommonConfig.Timeout) * time.Millisecond
+	handler.IdleTimeout = time.Duration(
+		*s1200.mainConfig.CommonConfig.IdleTimeout) * time.Millisecond
 	if err := handler.Connect(); err != nil {
 		return err
 	}
-	handler.Timeout = time.Duration(*s1200.mainConfig.Timeout) * time.Second
-	handler.IdleTimeout = time.Duration(*s1200.mainConfig.IdleTimeout) * time.Second
+
 	s1200.client = gos7.NewClient(handler)
-	s1200.driver = driver.NewS1200Driver(s1200.Details(),
-		s1200.RuleEngine, s1200.client, s1200.mainConfig.Blocks)
-	if !*s1200.mainConfig.AutoRequest {
+	if !*s1200.mainConfig.CommonConfig.AutoRequest {
 		s1200.status = typex.DEV_UP
 		return nil
 	}
 	go func(ctx context.Context) {
 		// 数据缓冲区,最大4KB
 		dataBuffer := make([]byte, common.T_4KB)
-		s1200.driver.Read([]byte{}, dataBuffer) //清理缓存
 		for {
 			select {
 			case <-ctx.Done():
@@ -105,12 +127,9 @@ func (s1200 *s1200plc) Start(cctx typex.CCTX) error {
 				{
 				}
 			}
-			if s1200.driver == nil {
-				return
-			}
 			s1200.lock.Lock()
 			// CMD 参数无用
-			n, err := s1200.driver.Read([]byte(""), dataBuffer)
+			n, err := s1200.Read([]byte(""), dataBuffer)
 			s1200.lock.Unlock()
 			if err != nil {
 				glogger.GLogger.Error(err)
@@ -132,37 +151,25 @@ func (s1200 *s1200plc) Start(cctx typex.CCTX) error {
 
 // 从设备里面读数据出来
 func (s1200 *s1200plc) OnRead(cmd []byte, data []byte) (int, error) {
-	return s1200.driver.Read(cmd, data)
+	return s1200.Read(cmd, data)
 }
 
 // 把数据写入设备
 //
 // db.Address:int, db.Start:int, db.Size:int, rData[]
-// [
-//
-//	{
-//	    "tag":"V",
-//	    "address":1,
-//	    "start":1,
-//	    "size":1,
-//	    "value":"AAECAwQ="
-//	}
-//
-// ]
+
 func (s1200 *s1200plc) OnWrite(cmd []byte, data []byte) (int, error) {
-	blocks := []common.S1200Block{}
+	blocks := []S1200Block{}
 	if err := json.Unmarshal(data, &blocks); err != nil {
 		return 0, err
 	}
-	return s1200.driver.Write(cmd, data)
+	return s1200.Write(cmd, data)
 }
 
 // 设备当前状态
 func (s1200 *s1200plc) Status() typex.DeviceState {
-	if s1200.driver != nil {
-		if s1200.driver.State() == typex.DRIVER_UP {
-			return typex.DEV_UP
-		}
+	if s1200.client != nil {
+		return typex.DEV_UP
 	}
 	return typex.DEV_DOWN
 
@@ -173,9 +180,6 @@ func (s1200 *s1200plc) Stop() {
 	s1200.status = typex.DEV_DOWN
 	if s1200.CancelCTX != nil {
 		s1200.CancelCTX()
-	}
-	if s1200.driver != nil {
-		s1200.driver.Stop()
 	}
 }
 
@@ -196,7 +200,7 @@ func (s1200 *s1200plc) SetState(status typex.DeviceState) {
 
 // 驱动
 func (s1200 *s1200plc) Driver() typex.XExternalDriver {
-	return s1200.driver
+	return nil
 }
 
 func (s1200 *s1200plc) OnDCACall(UUID string, Command string, Args interface{}) typex.DCAResult {
@@ -204,4 +208,78 @@ func (s1200 *s1200plc) OnDCACall(UUID string, Command string, Args interface{}) 
 }
 func (s1200 *s1200plc) OnCtrl(cmd []byte, args []byte) ([]byte, error) {
 	return []byte{}, nil
+}
+func (s1200 *s1200plc) Write(cmd []byte, data []byte) (int, error) {
+	blocks := []S1200Block{}
+	if err := json.Unmarshal(data, &blocks); err != nil {
+		return 0, err
+	}
+	//
+	for _, block := range blocks {
+		hexV, _ := hex.DecodeString(block.Value)
+		if err := s1200.client.AGWriteDB(
+			*block.Address,
+			*block.Start,
+			*block.Size,
+			hexV,
+		); err != nil {
+			return 0, err
+		}
+	}
+	return 0, nil
+}
+
+// 字节格式:[dbNumber1, start1, size1, dbNumber2, start2, size2]
+// 读: db --> dbNumber, start, size, buffer[]
+var rData = [common.T_2KB]byte{} // 一次最大接受2KB数据
+
+func (s1200 *s1200plc) Read(cmd []byte, data []byte) (int, error) {
+	values := []S1200Block{}
+	for _, db := range s1200.mainConfig.Blocks {
+		//DB 4字节
+		if db.Type == "DB" {
+			// 00.00.00.01 | 00.00.00.02 | 00.00.00.03 | 00.00.00.04
+			if err := s1200.client.AGReadDB(*db.Address, *db.Start, *db.Size, rData[:]); err != nil {
+				return 0, err
+			}
+			count := db.Size
+			if *db.Size*2 > 2000 {
+				*count = 2000
+			}
+			values = append(values, S1200Block{
+				Tag:     db.Tag,
+				Address: db.Address,
+				Type:    db.Type,
+				Start:   db.Start,
+				Size:    db.Size,
+				Value:   hex.EncodeToString(rData[:*count]),
+			})
+		}
+		//
+		if db.Type == "MB" {
+			// 00.00.00.01 | 00.00.00.02 | 00.00.00.03 | 00.00.00.04
+			if err := s1200.client.AGReadMB(*db.Start, *db.Size, rData[:]); err != nil {
+				return 0, err
+			}
+			count := db.Size
+			if *db.Size*2 > 2000 {
+				*count = 2000
+			}
+			values = append(values, S1200Block{
+				Tag:     db.Tag,
+				Type:    db.Type,
+				Address: db.Address,
+				Start:   db.Start,
+				Size:    db.Size,
+				Value:   hex.EncodeToString(rData[:*count]),
+			})
+		}
+		if *db.Frequency < 100 {
+			*db.Frequency = 100 // 不能太快
+		}
+		time.Sleep(time.Duration(*db.Frequency) * time.Millisecond)
+	}
+	bytes, _ := json.Marshal(values)
+	copy(data, bytes)
+	return len(bytes), nil
 }
