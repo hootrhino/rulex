@@ -1,17 +1,11 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "This is a sample server celler server.",
-        "title": "Swagger Example API",
-        "termsOfService": "http://swagger.io/terms/",
+        "description": "Rulex Swagger API",
+        "title": "Rulex API",
         "contact": {
             "name": "API Support",
-            "url": "http://www.swagger.io/support",
-            "email": "support@swagger.io"
-        },
-        "license": {
-            "name": "Apache 2.0",
-            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+            "url": "https://github.com/hootrhino/rulex"
         },
         "version": "1.0"
     },
@@ -50,7 +44,7 @@
                 }
             }
         },
-        "/crontask/del": {
+        "/crontask/delete": {
             "delete": {
                 "consumes": [
                     "application/json"
@@ -255,19 +249,16 @@
                         "type": "string"
                     }
                 },
-                "isRoot": {
-                    "description": "0-false 1-true",
-                    "type": "string"
-                },
                 "name": {
                     "type": "string"
                 },
                 "script": {
+                    "description": "脚本内容，base64编码",
                     "type": "string"
                 },
                 "taskType": {
-                    "description": "1-shell 2-cmd",
-                    "type": "integer"
+                    "description": "CRON_TASK_TYPE",
+                    "type": "string"
                 }
             }
         },
@@ -291,19 +282,16 @@
                         "type": "string"
                     }
                 },
-                "isRoot": {
-                    "description": "0-false 1-true",
-                    "type": "string"
-                },
                 "name": {
                     "type": "string"
                 },
                 "script": {
+                    "description": "脚本内容，base64编码",
                     "type": "string"
                 },
                 "taskType": {
-                    "description": "1-shell 2-cmd",
-                    "type": "integer"
+                    "description": "CRON_TASK_TYPE",
+                    "type": "string"
                 },
                 "uuid": {
                     "type": "string"
@@ -326,14 +314,5 @@
                 }
             }
         }
-    },
-    "securityDefinitions": {
-        "BasicAuth": {
-            "type": "basic"
-        }
-    },
-    "externalDocs": {
-        "description": "OpenAPI",
-        "url": "https://swagger.io/resources/open-api/"
     }
 }

@@ -54,7 +54,7 @@ func DeleteScheduleTask(uuid string) error {
 func ListScheduleTask(task model.MCronTask) (any, error) {
 	db := interdb.DB()
 	var records []model.MCronTask
-	tx := db.Find(&records)
+	tx := db.Order("created_at desc").Find(&records)
 	if tx.Error != nil {
 		return nil, tx.Error
 	}
