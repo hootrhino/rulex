@@ -9,21 +9,26 @@ import (
 	"time"
 
 	"github.com/hootrhino/rulex/common"
+	"github.com/hootrhino/rulex/component/interdb"
 	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/typex"
 	"github.com/hootrhino/rulex/utils"
 	"github.com/robinson/gos7"
 )
 
-type S1200Block struct {
-	Tag       string `json:"tag" validate:"required"`       // 数据tag
-	Type      string `json:"type" validate:"required"`      // 块类型 MB | DB |FB
-	Frequency *int64 `json:"frequency" validate:"required"` // 采集频率
-	Address   *int   `json:"address" validate:"required"`   // 块地址
-	Start     *int   `json:"start" validate:"required"`     // 起始地址
-	Size      *int   `json:"size" validate:"required"`      // 采集长度
-	Value     string `json:"value,omitempty"`               // 值
+// 点位表
+type SiemensDataPoint struct {
+	UUID       string `json:"uuid"` // 当UUID为空时新建
+	DeviceUuid string `json:"device_uuid"`
+	Tag        string `json:"tag,omitempty"`
+	Type       string `json:"type,omitempty"`
+	Frequency  *int64 `json:"frequency,omitempty"`
+	Address    *int   `json:"address,omitempty"`
+	Start      *int   `json:"start,omitempty"`
+	Size       *int   `json:"size,omitempty"`
+	Value      string `json:"value"` // 采集到的值
 }
+
 type S1200CommonConfig struct {
 	Host        string `json:"host" validate:"required"`        // 127.0.0.1:502
 	Model       string `json:"model" validate:"required"`       // s7-200 s7-1500
@@ -35,17 +40,17 @@ type S1200CommonConfig struct {
 }
 type S1200Config struct {
 	CommonConfig S1200CommonConfig `json:"commonConfig" validate:"required"` // 通用配置
-	Blocks       []S1200Block      `json:"blocks" validate:"required"`       //点位表
 }
 
 // https://www.ad.siemens.com.cn/productportal/prods/s7-1200_plc_easy_plus/07-Program/02-basic/01-Data_Type/01-basic.html
 type s1200plc struct {
 	typex.XStatus
-	status     typex.DeviceState
-	RuleEngine typex.RuleX
-	mainConfig S1200Config
-	client     gos7.Client
-	lock       sync.Mutex
+	status            typex.DeviceState
+	RuleEngine        typex.RuleX
+	mainConfig        S1200Config
+	client            gos7.Client
+	lock              sync.Mutex
+	SiemensDataPoints []SiemensDataPoint
 }
 
 /*
@@ -81,13 +86,19 @@ func (s1200 *s1200plc) Init(devId string, configMap map[string]interface{}) erro
 		glogger.GLogger.Error(err)
 		return err
 	}
-	// 检查Tag有没有重复
-	tags := []string{}
-	for _, block := range s1200.mainConfig.Blocks {
-		tags = append(tags, block.Tag)
+	// 合并数据库里面的点位表
+	var list []SiemensDataPoint
+	errDb := interdb.DB().Table("m_siemens_data_points").
+		Where("device_uuid=?", devId).Find(&list).Error
+	if errDb != nil {
+		return errDb
 	}
-	if utils.IsListDuplicated(tags) {
-		return errors.New("tag duplicated")
+	for _, v := range list {
+		// 频率不能太快
+		if *v.Frequency < 50 {
+			return errors.New("'frequency' must grate than 50 millisecond")
+		}
+		s1200.SiemensDataPoints = append(s1200.SiemensDataPoints, v)
 	}
 	return nil
 }
@@ -159,7 +170,7 @@ func (s1200 *s1200plc) OnRead(cmd []byte, data []byte) (int, error) {
 // db.Address:int, db.Start:int, db.Size:int, rData[]
 
 func (s1200 *s1200plc) OnWrite(cmd []byte, data []byte) (int, error) {
-	blocks := []S1200Block{}
+	blocks := []SiemensDataPoint{}
 	if err := json.Unmarshal(data, &blocks); err != nil {
 		return 0, err
 	}
@@ -210,7 +221,7 @@ func (s1200 *s1200plc) OnCtrl(cmd []byte, args []byte) ([]byte, error) {
 	return []byte{}, nil
 }
 func (s1200 *s1200plc) Write(cmd []byte, data []byte) (int, error) {
-	blocks := []S1200Block{}
+	blocks := []SiemensDataPoint{}
 	if err := json.Unmarshal(data, &blocks); err != nil {
 		return 0, err
 	}
@@ -234,8 +245,8 @@ func (s1200 *s1200plc) Write(cmd []byte, data []byte) (int, error) {
 var rData = [common.T_2KB]byte{} // 一次最大接受2KB数据
 
 func (s1200 *s1200plc) Read(cmd []byte, data []byte) (int, error) {
-	values := []S1200Block{}
-	for _, db := range s1200.mainConfig.Blocks {
+	values := []SiemensDataPoint{}
+	for _, db := range s1200.SiemensDataPoints {
 		//DB 4字节
 		if db.Type == "DB" {
 			// 00.00.00.01 | 00.00.00.02 | 00.00.00.03 | 00.00.00.04
@@ -246,7 +257,7 @@ func (s1200 *s1200plc) Read(cmd []byte, data []byte) (int, error) {
 			if *db.Size*2 > 2000 {
 				*count = 2000
 			}
-			values = append(values, S1200Block{
+			values = append(values, SiemensDataPoint{
 				Tag:     db.Tag,
 				Address: db.Address,
 				Type:    db.Type,
@@ -265,7 +276,7 @@ func (s1200 *s1200plc) Read(cmd []byte, data []byte) (int, error) {
 			if *db.Size*2 > 2000 {
 				*count = 2000
 			}
-			values = append(values, S1200Block{
+			values = append(values, SiemensDataPoint{
 				Tag:     db.Tag,
 				Type:    db.Type,
 				Address: db.Address,

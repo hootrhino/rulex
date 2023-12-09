@@ -8,8 +8,8 @@ import (
 )
 
 type RulexModel struct {
-	ID        uint `gorm:"primarykey"`
-	CreatedAt time.Time
+	ID        uint      `gorm:"primarykey" json:"id"`
+	CreatedAt time.Time `json:"created_at"`
 }
 type StringList []string
 
@@ -166,17 +166,6 @@ type MAiBase struct {
 	Version     string `gorm:"not null"` // 版本号
 	Filepath    string `gorm:"not null"` // 文件路径, 是相对于main的apps目录
 	Description string `gorm:"not null"`
-}
-
-// MModbusPointPosition modbus数据点位
-type MModbusPointPosition struct {
-	RulexModel
-	DeviceUuid   string `json:"deviceUuid"    gorm:"not null"`
-	Tag          string `json:"tag"           gorm:"not null"`
-	Function     int    `json:"function"      gorm:"not null"`
-	SlaverId     byte   `json:"slaverId"      gorm:"not null"`
-	StartAddress uint16 `json:"startAddress"  gorm:"not null"`
-	Quality      uint16 `json:"quality"       gorm:"not null"`
 }
 
 //--------------------------------------------------------------------------------------------------

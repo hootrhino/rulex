@@ -31,7 +31,7 @@ func NewModBusRtuDriver(
 	e typex.RuleX,
 	Registers []common.RegisterRW,
 	handler *modbus.RTUClientHandler,
-	client modbus.Client, frequency int64) typex.XExternalDriver {
+	client modbus.Client) typex.XExternalDriver {
 	return &modBusRtuDriver{
 		state:      typex.DRIVER_UP,
 		device:     d,
@@ -39,7 +39,6 @@ func NewModBusRtuDriver(
 		client:     client,
 		handler:    handler,
 		Registers:  Registers,
-		frequency:  frequency,
 	}
 
 }

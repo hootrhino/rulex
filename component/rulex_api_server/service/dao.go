@@ -3,8 +3,6 @@ package service
 import (
 	"github.com/hootrhino/rulex/component/interdb"
 	"github.com/hootrhino/rulex/component/rulex_api_server/model"
-
-	"gorm.io/gorm"
 )
 
 // -----------------------------------------------------------------------------------
@@ -199,51 +197,6 @@ func UpdateDevice(uuid string, o *model.MDevice) error {
 		interdb.DB().Model(m).Updates(*o)
 		return nil
 	}
-}
-
-// -------------------------------------------------------------------------------------
-// ModbusPointPositions
-// -------------------------------------------------------------------------------------
-
-// InsertModbusPointPosition 插入modbus点位表
-func InsertModbusPointPosition(list []model.MModbusPointPosition) error {
-	m := model.MModbusPointPosition{}
-	return interdb.DB().Model(m).Create(list).Error
-}
-
-// DeleteModbusPointAndDevice 删除modbus点位与设备
-func DeleteModbusPointAndDevice(deviceUuid string) error {
-	return interdb.DB().Transaction(func(tx *gorm.DB) (err error) {
-
-		err = tx.Where("device_uuid = ?", deviceUuid).Delete(&model.MModbusPointPosition{}).Error
-		if err != nil {
-			return err
-		}
-
-		err = tx.Where("uuid = ?", deviceUuid).Delete(&model.MDevice{}).Error
-		if err != nil {
-			return err
-		}
-		return nil
-	})
-}
-
-// UpdateModbusPoint 更新modbus点位
-func UpdateModbusPoint(mm model.MModbusPointPosition) error {
-	m := model.MDevice{}
-	if err := interdb.DB().Where("id = ?", mm.ID).First(&m).Error; err != nil {
-		return err
-	} else {
-		interdb.DB().Model(m).Updates(&m)
-		return nil
-	}
-}
-
-// AllModbusPointByDeviceUuid 根据设备UUID查询设备点位
-func AllModbusPointByDeviceUuid(deviceUuid string) (list []model.MModbusPointPosition, err error) {
-
-	err = interdb.DB().Where("device_uuid = ?", deviceUuid).Find(&list).Error
-	return
 }
 
 // -------------------------------------------------------------------------------------

@@ -15,7 +15,7 @@
 
 function Main(arg)
     local dataTable = {
-        device_id = 1,
+        device_uuid = 1,
         recv_time = "2023-11-28T11=11=36+08=00",
         bat_voltage = 0,
         longitude = 0,

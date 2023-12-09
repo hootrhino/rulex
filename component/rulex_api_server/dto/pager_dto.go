@@ -12,19 +12,18 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
-package model
 
-/*
-*
-* 用户自定义代码模板
-*
- */
-type MUserLuaTemplate struct {
-	RulexModel
-	UUID   string
-	Gid    string // 分组
-	Type   string // 类型 固定为 'function'
-	Label  string //快捷代码名称
-	Apply  string //快捷代码
-	Detail string
+package dto
+
+type PageRequest struct {
+	Current     int `json:"current,omitempty"`
+	Size        int `json:"size,omitempty"`
+	SearchCount int `json:"searchCount,omitempty"`
+}
+
+type PageResult struct {
+	Current int `json:"current"`
+	Size    int `json:"size"`
+	Total   int `json:"total"`
+	Records any `json:"records"`
 }
