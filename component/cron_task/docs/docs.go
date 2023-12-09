@@ -9,15 +9,9 @@ const docTemplate = `{
     "info": {
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
-        "termsOfService": "http://swagger.io/terms/",
         "contact": {
             "name": "API Support",
-            "url": "http://www.swagger.io/support",
-            "email": "support@swagger.io"
-        },
-        "license": {
-            "name": "Apache 2.0",
-            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+            "url": "https://github.com/hootrhino/rulex"
         },
         "version": "{{.Version}}"
     },
@@ -262,19 +256,16 @@ const docTemplate = `{
                         "type": "string"
                     }
                 },
-                "isRoot": {
-                    "description": "0-false 1-true",
-                    "type": "string"
-                },
                 "name": {
                     "type": "string"
                 },
                 "script": {
+                    "description": "脚本内容，base64编码",
                     "type": "string"
                 },
                 "taskType": {
-                    "description": "1-shell 2-cmd",
-                    "type": "integer"
+                    "description": "CRON_TASK_TYPE",
+                    "type": "string"
                 }
             }
         },
@@ -298,19 +289,16 @@ const docTemplate = `{
                         "type": "string"
                     }
                 },
-                "isRoot": {
-                    "description": "0-false 1-true",
-                    "type": "string"
-                },
                 "name": {
                     "type": "string"
                 },
                 "script": {
+                    "description": "脚本内容，base64编码",
                     "type": "string"
                 },
                 "taskType": {
-                    "description": "1-shell 2-cmd",
-                    "type": "integer"
+                    "description": "CRON_TASK_TYPE",
+                    "type": "string"
                 },
                 "uuid": {
                     "type": "string"
@@ -333,15 +321,6 @@ const docTemplate = `{
                 }
             }
         }
-    },
-    "securityDefinitions": {
-        "BasicAuth": {
-            "type": "basic"
-        }
-    },
-    "externalDocs": {
-        "description": "OpenAPI",
-        "url": "https://swagger.io/resources/open-api/"
     }
 }`
 
@@ -351,8 +330,8 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "",
 	BasePath:         "/api/v1",
 	Schemes:          []string{},
-	Title:            "Swagger Example API",
-	Description:      "This is a sample server celler server.",
+	Title:            "Rulex API",
+	Description:      "Rulex Swagger API",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

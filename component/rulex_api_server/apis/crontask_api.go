@@ -47,7 +47,7 @@ func CreateCronTask(c *gin.Context, ruleEngine typex.RuleX) (any, error) {
 // @Accept json
 // @Produce json
 // @Success 200 {object} httpserver.R
-// @Router /crontask/delete [delete]
+// @Router /crontask/del [delete]
 func DeleteCronTask(c *gin.Context, ruleEngine typex.RuleX) (any, error) {
 	uuid := c.Query("uuid")
 	err := service.DeleteScheduleTask(uuid)
@@ -109,7 +109,7 @@ func StartTask(c *gin.Context, ruleEngine typex.RuleX) (any, error) {
 	// 0. 更新数据库
 	db := interdb.DB()
 	task := model.MCronTask{}
-	task.Enable = "1"
+	task.Enable = &cron_task.CRON_TASK_EANBLE
 	tx := db.Where("uuid = ?", uuid).Updates(&task)
 	if tx.Error != nil {
 		return nil, tx.Error
@@ -148,7 +148,7 @@ func StopTask(c *gin.Context, ruleEngine typex.RuleX) (any, error) {
 	// 0. 更新数据库
 	db := interdb.DB()
 	task := model.MCronTask{}
-	task.Enable = "0"
+	task.Enable = &cron_task.CRON_TASK_DISABLE
 	tx := db.Where("uuid = ?", uuid).Updates(&task)
 	if tx.Error != nil {
 		return nil, tx.Error

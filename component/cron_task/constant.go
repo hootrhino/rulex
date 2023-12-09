@@ -2,12 +2,19 @@ package cron_task
 
 // CRON_TASK_TYPE
 const (
-	CRON_TASK_TYPE_LINUX_SHELL = 1
-	CRON_TASK_TYPE_WINDOWS_CMD = CRON_TASK_TYPE_LINUX_SHELL + 1
+	CRON_TASK_TYPE_LINUX_SHELL = "LINUX_SHELL"
 )
+
+// CRON
+const LINUX_SHELL = "/bin/bash"
 
 const PERM_0777 = 0777
 
-const CRON_ASSETS = "cron_assets"
+// CRON_RESULT_STATUS
+const (
+	CRON_RESULT_STATUS_RUNNING = "RUNNING"
+	CRON_RESULT_STATUS_END     = "END"
+)
 
-const CRON_LOGS = "cron_logs"
+var CRON_TASK_EANBLE = true
+var CRON_TASK_DISABLE = false

@@ -31,25 +31,22 @@ func (pm *ProcessManager) RunProcess(file io.Writer, task model.MCronTask) error
 
 	var command *exec.Cmd
 	args := make([]string, 0)
-	var name string
 	script, err := base64.StdEncoding.DecodeString(task.Script)
 	if err != nil {
 		glogger.GLogger.Error("parse script failed", err)
 		return err
 	}
 	if task.TaskType == CRON_TASK_TYPE_LINUX_SHELL {
-		name = "/bin/bash"
 		args = append(args, "-c")
 		args = append(args, string(script))
 		args = append(args, "bash") // 占据$0位置
 		if task.Args != nil {
 			args = append(args, *task.Args) // 占据$1位置，此时$@与$1相同
 		}
-
 	} else {
 		return errors.New("unknown taskType")
 	}
-	command = exec.Command(name, args...)
+	command = exec.Command(task.Command, args...)
 	command.SysProcAttr = GetSysProcAttr()
 	command.Stderr = file
 	command.Stdout = file
@@ -61,10 +58,13 @@ func (pm *ProcessManager) RunProcess(file io.Writer, task model.MCronTask) error
 	}
 	command.Env = envSlice
 
+	if err = command.Start(); err != nil {
+		return err
+	}
 	pm.runningProcess.Store(task.ID, command)
 	defer pm.runningProcess.Delete(task.ID)
 
-	err = command.Run()
+	err = command.Wait()
 	if err != nil {
 		return err
 	}
