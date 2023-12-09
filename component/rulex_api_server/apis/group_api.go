@@ -33,8 +33,9 @@ func CreateGroup(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	if !utils.SContains([]string{"VISUAL", "DEVICE"}, vvo.Type) {
-		c.JSON(common.HTTP_OK, common.Error400(fmt.Errorf("invalid type [%s]", vvo.Type)))
+	if !utils.SContains([]string{"VISUAL", "DEVICE", "USER_LUA_TEMPLATE"}, vvo.Type) {
+		c.JSON(common.HTTP_OK, common.Error400(fmt.Errorf("invalid group type [%s]", vvo.Type)))
+		return
 	}
 	Model := model.MGenericGroup{
 		UUID:   utils.GroupUuid(),

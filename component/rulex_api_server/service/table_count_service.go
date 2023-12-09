@@ -12,19 +12,29 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
-package model
+
+package service
+
+import "github.com/hootrhino/rulex/component/interdb"
 
 /*
 *
-* 用户自定义代码模板
+* 计算 Count
 *
  */
-type MUserLuaTemplate struct {
-	RulexModel
-	UUID   string
-	Gid    string // 分组
-	Type   string // 类型 固定为 'function'
-	Label  string //快捷代码名称
-	Apply  string //快捷代码
-	Detail string
+func CountModel(m any) int64 {
+	var count int64
+	interdb.DB().Model(m).Count(&count)
+	return count
+}
+
+/*
+*
+* 计算 Count
+*
+ */
+func CountTable(table string) int64 {
+	var count int64
+	interdb.DB().Table(table).Count(&count)
+	return count
 }

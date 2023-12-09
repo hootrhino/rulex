@@ -199,8 +199,6 @@ func (hs *ApiServerPlugin) Init(config *ini.Section) error {
 		&model.MDevice{},
 		&model.MGoods{},
 		&model.MApp{},
-		&model.MAiBase{},
-		&model.MModbusPointPosition{},
 		&model.MVisual{},
 		&model.MGenericGroup{},
 		&model.MGenericGroupRelation{},
@@ -214,6 +212,8 @@ func (hs *ApiServerPlugin) Init(config *ini.Section) error {
 		&model.MHwPort{},
 		&model.MInternalNotify{},
 		&model.MUserLuaTemplate{},
+		&model.MModbusDataPoint{},
+		&model.MSiemensDataPoint{},
 	)
 	// 初始化所有预制参数
 	server.DefaultApiServer.InitializeGenericOSData()
@@ -332,12 +332,19 @@ func (hs *ApiServerPlugin) LoadRoute() {
 		deviceApi.PUT(("/update"), server.AddRoute(apis.UpdateDevice))
 		deviceApi.DELETE(("/del"), server.AddRoute(apis.DeleteDevice))
 		deviceApi.GET(("/detail"), server.AddRoute(apis.DeviceDetail))
-		deviceApi.POST(("/modbus/sheetImport"), server.AddRoute(apis.ModbusSheetImport))
-		deviceApi.PUT(("/modbus/point"), server.AddRoute(apis.UpdateModbusPoint))
-		deviceApi.GET(("/modbus"), server.AddRoute(apis.ModbusPoints))
 		deviceApi.GET("/group", server.AddRoute(apis.ListDeviceGroup))
 		deviceApi.GET("/listByGroup", server.AddRoute(apis.ListDeviceByGroup))
 
+	}
+	// Modbus 点位表
+	modbusApi := server.RouteGroup(server.ContextUrl("/modbus_data_sheet"))
+	{
+		modbusApi.POST(("/import"), server.AddRoute(apis.ModbusSheetImport))
+		modbusApi.GET(("/export"), server.AddRoute(apis.ModbusPointsExport))
+		modbusApi.GET(("/list"), server.AddRoute(apis.ModbusSheetPageList))
+		modbusApi.POST(("/update"), server.AddRoute(apis.ModbusSheetUpdate))
+		modbusApi.DELETE(("/delIds"), server.AddRoute(apis.ModbusSheetDelete))
+		modbusApi.DELETE(("/delAll"), server.AddRoute(apis.ModbusSheetDelete))
 	}
 
 	// ----------------------------------------------------------------------------------------------

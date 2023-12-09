@@ -31,7 +31,7 @@ func NewModBusTCPDriver(
 	e typex.RuleX,
 	Registers []common.RegisterRW,
 	handler *modbus.TCPClientHandler,
-	client modbus.Client, frequency int64) typex.XExternalDriver {
+	client modbus.Client) typex.XExternalDriver {
 	return &modBusTCPDriver{
 		state:      typex.DRIVER_UP,
 		device:     d,
@@ -39,7 +39,6 @@ func NewModBusTCPDriver(
 		client:     client,
 		handler:    handler,
 		Registers:  Registers,
-		frequency:  frequency,
 	}
 
 }

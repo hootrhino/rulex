@@ -12,8 +12,8 @@ import (
 type UserLuaTemplateVo struct {
 	Gid    string `json:"gid,omitempty"`  // 分组ID
 	UUID   string `json:"uuid,omitempty"` // 名称
-	Label  string `json:"label"`          //快捷代码名称
-	Apply  string `json:"apply"`          //快捷代码
+	Label  string `json:"label"`          // 快捷代码名称
+	Apply  string `json:"apply"`          // 快捷代码
 	Type   string `json:"type"`           // 类型 固定为function类型detail
 	Detail string `json:"detail"`
 }
@@ -41,6 +41,7 @@ func CreateUserLuaTemplate(c *gin.Context, ruleEngine typex.RuleX) {
 		Type:   "function",
 		Apply:  form.Apply,
 		Detail: form.Detail,
+		Gid:    form.Gid,
 	}
 	if err := service.InsertUserLuaTemplate(MUserLuaTemplate); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
@@ -75,6 +76,7 @@ func UpdateUserLuaTemplate(c *gin.Context, ruleEngine typex.RuleX) {
 		Type:   form.Type,
 		Apply:  form.Apply,
 		Detail: form.Detail,
+		Gid:    form.Gid,
 	}
 
 	if err := service.UpdateUserLuaTemplate(MUserLuaTemplate); err != nil {
@@ -140,6 +142,7 @@ func SearchUserLuaTemplateGroup(c *gin.Context, ruleEngine typex.RuleX) {
 			Type:   vv.Type,
 			Apply:  vv.Apply,
 			Detail: vv.Detail,
+			Gid:    vv.Gid,
 		})
 	}
 	c.JSON(common.HTTP_OK, common.OkWithData(visuals))
@@ -159,6 +162,7 @@ func ListUserLuaTemplate(c *gin.Context, ruleEngine typex.RuleX) {
 			Type:   vv.Type,
 			Apply:  vv.Apply,
 			Detail: vv.Detail,
+			Gid:    vv.Gid,
 		}
 		Group := service.GetUserLuaTemplateGroup(vv.UUID)
 		if Group.UUID != "" {
@@ -188,6 +192,7 @@ func ListUserLuaTemplateByGroup(c *gin.Context, ruleEngine typex.RuleX) {
 			Type:   vv.Type,
 			Apply:  vv.Apply,
 			Detail: vv.Detail,
+			Gid:    vv.Gid,
 		}
 		Group := service.GetUserLuaTemplateGroup(vv.UUID)
 		Vo.Gid = Group.UUID

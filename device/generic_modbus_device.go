@@ -25,6 +25,7 @@ import (
 
 	"github.com/hootrhino/rulex/common"
 	"github.com/hootrhino/rulex/component/hwportmanager"
+	"github.com/hootrhino/rulex/component/interdb"
 	"github.com/hootrhino/rulex/core"
 	"github.com/hootrhino/rulex/driver"
 	"github.com/hootrhino/rulex/glogger"
@@ -58,13 +59,28 @@ import (
 type _GMODCommonConfig struct {
 	Mode        string `json:"mode" title:"工作模式" info:"UART/TCP"`
 	AutoRequest *bool  `json:"autoRequest" title:"启动轮询"`
-	Frequency   int64  `json:"frequency" validate:"required" title:"采集频率"`
 }
 type _GMODConfig struct {
-	CommonConfig _GMODCommonConfig   `json:"commonConfig" validate:"required"`
-	PortUuid     string              `json:"portUuid"`
-	HostConfig   common.HostConfig   `json:"hostConfig"`
-	Registers    []common.RegisterRW `json:"registers" validate:"required" title:"寄存器配置"`
+	CommonConfig _GMODCommonConfig `json:"commonConfig" validate:"required"`
+	PortUuid     string            `json:"portUuid"`
+	HostConfig   common.HostConfig `json:"hostConfig"`
+}
+
+/*
+*
+* 点位表
+*
+ */
+type ModbusPoint struct {
+	UUID      string `json:"uuid,omitempty"` // 当UUID为空时新建
+	Tag       string `json:"tag"`
+	Alias     string `json:"alias"`
+	Function  int    `json:"function"`
+	SlaverId  byte   `json:"slaverId"`
+	Address   uint16 `json:"address"`
+	Frequency int64  `json:"frequency"`
+	Quantity  uint16 `json:"quantity"`
+	Value     string `json:"value,omitempty"`
 }
 type generic_modbus_device struct {
 	typex.XStatus
@@ -76,6 +92,7 @@ type generic_modbus_device struct {
 	mainConfig   _GMODConfig
 	retryTimes   int
 	hwPortConfig hwportmanager.UartConfig
+	Registers    []common.RegisterRW
 }
 
 /*
@@ -107,22 +124,33 @@ func (mdev *generic_modbus_device) Init(devId string, configMap map[string]inter
 	if err := utils.BindSourceConfig(configMap, &mdev.mainConfig); err != nil {
 		return err
 	}
-	// 频率不能太快
-	if mdev.mainConfig.CommonConfig.Frequency < 50 {
-		return errors.New("'frequency' must grate than 50 millisecond")
-
-	}
-	// 检查Tag有没有重复
-	tags := []string{}
-	for _, register := range mdev.mainConfig.Registers {
-		tags = append(tags, register.Tag)
-	}
-	if utils.IsListDuplicated(tags) {
-		return errors.New("tag duplicated")
-	}
 	if !utils.SContains([]string{"UART", "TCP"}, mdev.mainConfig.CommonConfig.Mode) {
 		return errors.New("unsupported mode, only can be one of 'TCP' or 'UART'")
 	}
+	// 合并数据库里面的点位表
+	var list []ModbusPoint
+	errDb := interdb.DB().Table("m_modbus_data_points").
+		Where("device_uuid=?", devId).Find(&list).Error
+	if errDb != nil {
+		return errDb
+	}
+	for _, v := range list {
+		// 频率不能太快
+		if v.Frequency < 50 {
+			return errors.New("'frequency' must grate than 50 millisecond")
+		}
+		mdev.Registers = append(mdev.Registers,
+			common.RegisterRW{
+				Tag:       v.Tag,
+				Alias:     v.Alias,
+				Function:  v.Function,
+				SlaverId:  v.SlaverId,
+				Address:   v.Address,
+				Quantity:  v.Quantity,
+				Frequency: v.Frequency,
+			})
+	}
+
 	if mdev.mainConfig.CommonConfig.Mode == "UART" {
 		hwPort, err := hwportmanager.GetHwPort(mdev.mainConfig.PortUuid)
 		if err != nil {
@@ -181,8 +209,9 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 		})
 		client := modbus.NewClient(mdev.rtuHandler)
 		mdev.driver = driver.NewModBusRtuDriver(mdev.Details(),
-			mdev.RuleEngine, mdev.mainConfig.Registers, mdev.rtuHandler,
-			client, mdev.mainConfig.CommonConfig.Frequency)
+			mdev.RuleEngine,
+			mdev.Registers, mdev.rtuHandler,
+			client)
 	}
 	if mdev.mainConfig.CommonConfig.Mode == "TCP" {
 		mdev.tcpHandler = modbus.NewTCPClientHandler(
@@ -197,8 +226,7 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 		}
 		client := modbus.NewClient(mdev.tcpHandler)
 		mdev.driver = driver.NewModBusTCPDriver(mdev.Details(),
-			mdev.RuleEngine, mdev.mainConfig.Registers, mdev.tcpHandler, client,
-			mdev.mainConfig.CommonConfig.Frequency)
+			mdev.RuleEngine, mdev.Registers, mdev.tcpHandler, client)
 	}
 	//---------------------------------------------------------------------------------
 	// Start
