@@ -17,10 +17,9 @@ func CreateScheduleTask(data *dto.CronTaskCreateDTO) (*model.MCronTask, error) {
 		UUID:     utils.CronTaskUuid(),
 		Name:     data.Name,
 		CronExpr: data.CronExpr,
-		Enable:   "0",
+		Enable:   &cron_task.CRON_TASK_DISABLE,
 		TaskType: data.TaskType,
 		Args:     data.Args,
-		IsRoot:   data.IsRoot,
 		Script:   data.Script,
 	}
 	if data.Env != nil {
@@ -28,6 +27,10 @@ func CreateScheduleTask(data *dto.CronTaskCreateDTO) (*model.MCronTask, error) {
 		task.Env = string(marshal)
 	} else {
 		task.Env = "[]"
+	}
+
+	if data.TaskType == cron_task.CRON_TASK_TYPE_LINUX_SHELL {
+		task.Command = cron_task.LINUX_SHELL
 	}
 
 	tx := db.Create(&task)
@@ -51,7 +54,7 @@ func DeleteScheduleTask(uuid string) error {
 func ListScheduleTask(task model.MCronTask) (any, error) {
 	db := interdb.DB()
 	var records []model.MCronTask
-	tx := db.Find(&records)
+	tx := db.Order("created_at desc").Find(&records)
 	if tx.Error != nil {
 		return nil, tx.Error
 	}
@@ -69,15 +72,18 @@ func UpdateScheduleTask(data *dto.CronTaskUpdateDTO) (*model.MCronTask, error) {
 	if tx.RowsAffected == 0 {
 		return nil, errors.New("定时任务不存在")
 	}
-	if cronTask.Enable == "1" {
+	if cronTask.Enable != nil && *cronTask.Enable == cron_task.CRON_TASK_DISABLE {
 		return nil, errors.New("请先暂停任务")
 	}
 	task := &model.MCronTask{
 		Name:     data.Name,
 		CronExpr: data.CronExpr,
 		TaskType: data.TaskType,
-		IsRoot:   data.IsRoot,
 		Args:     data.Args,
+	}
+
+	if data.TaskType == cron_task.CRON_TASK_TYPE_LINUX_SHELL {
+		task.Command = cron_task.LINUX_SHELL
 	}
 
 	tx = db.Model(&task)

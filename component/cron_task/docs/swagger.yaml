@@ -12,16 +12,14 @@ definitions:
         items:
           type: string
         type: array
-      isRoot:
-        description: 0-false 1-true
-        type: string
       name:
         type: string
       script:
+        description: 脚本内容，base64编码
         type: string
       taskType:
-        description: 1-shell 2-cmd
-        type: integer
+        description: CRON_TASK_TYPE
+        type: string
     required:
     - cronExpr
     - name
@@ -39,16 +37,14 @@ definitions:
         items:
           type: string
         type: array
-      isRoot:
-        description: 0-false 1-true
-        type: string
       name:
         type: string
       script:
+        description: 脚本内容，base64编码
         type: string
       taskType:
-        description: 1-shell 2-cmd
-        type: integer
+        description: CRON_TASK_TYPE
+        type: string
       uuid:
         type: string
     required:
@@ -65,20 +61,12 @@ definitions:
     - code
     - msg
     type: object
-externalDocs:
-  description: OpenAPI
-  url: https://swagger.io/resources/open-api/
 info:
   contact:
-    email: support@swagger.io
     name: API Support
-    url: http://www.swagger.io/support
-  description: This is a sample server celler server.
-  license:
-    name: Apache 2.0
-    url: http://www.apache.org/licenses/LICENSE-2.0.html
-  termsOfService: http://swagger.io/terms/
-  title: Swagger Example API
+    url: https://github.com/hootrhino/rulex
+  description: Rulex Swagger API
+  title: Rulex API
   version: "1.0"
 paths:
   /crontask/create:
@@ -102,7 +90,7 @@ paths:
       summary: 创建定时任务
       tags:
       - crontask
-  /crontask/delete:
+  /crontask/del:
     delete:
       consumes:
       - application/json
@@ -218,7 +206,4 @@ paths:
       summary: 更新定时任务
       tags:
       - crontask
-securityDefinitions:
-  BasicAuth:
-    type: basic
 swagger: "2.0"

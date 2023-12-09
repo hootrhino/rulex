@@ -52,6 +52,14 @@ func init() {
 	typex.DefaultVersion.Arch = arch
 }
 
+// @title           Rulex API
+// @version         1.0
+// @description     Rulex Swagger API
+
+// @contact.name   API Support
+// @contact.url    https://github.com/hootrhino/rulex
+// @BasePath  /api/v1
+//
 //go:generate bash ./gen_info.sh
 func main() {
 	app := &cli.App{
