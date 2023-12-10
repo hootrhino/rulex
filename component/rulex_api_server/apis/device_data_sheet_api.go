@@ -102,6 +102,24 @@ func ModbusSheetPageList(c *gin.Context, ruleEngine typex.RuleX) {
 * 删除单行
 *
  */
+func ModbusSheetDeleteAll(c *gin.Context, ruleEngine typex.RuleX) {
+	type Form struct {
+		UUIDs      []string `json:"uuids"`
+		DeviceUUID string   `json:"device_uuid"`
+	}
+	form := Form{}
+	if Error := c.ShouldBindJSON(&form); Error != nil {
+		c.JSON(common.HTTP_OK, common.Error400(Error))
+		return
+	}
+	err := service.DeleteAllModbusPointByDevice(form.DeviceUUID)
+	if err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
+	c.JSON(common.HTTP_OK, common.Ok())
+
+}
 func ModbusSheetDelete(c *gin.Context, ruleEngine typex.RuleX) {
 	type Form struct {
 		UUIDs      []string `json:"uuids"`
