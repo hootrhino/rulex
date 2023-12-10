@@ -155,13 +155,14 @@ func ModbusSheetUpdate(c *gin.Context, ruleEngine typex.RuleX) {
 		if ModbusDataPoint.UUID == "" {
 			NewRow := model.MModbusDataPoint{}
 			copier.Copy(&NewRow, &ModbusDataPoint)
+			NewRow.DeviceUuid = ModbusDataPoint.DeviceUUID
+			NewRow.UUID = utils.ModbusPointUUID()
 			service.InsertModbusPointPosition(NewRow)
 		} else {
-			OldRow := model.MModbusDataPoint{
-				DeviceUuid: ModbusDataPoint.DeviceUUID,
-				UUID:       ModbusDataPoint.UUID,
-			}
+			OldRow := model.MModbusDataPoint{}
 			copier.Copy(&OldRow, &ModbusDataPoint)
+			OldRow.DeviceUuid = ModbusDataPoint.DeviceUUID
+			OldRow.UUID = ModbusDataPoint.UUID
 			service.UpdateModbusPoint(OldRow)
 		}
 	}
@@ -270,7 +271,7 @@ func parseModbusPointExcel(
 		address, _ := strconv.ParseUint(row[5], 10, 16)
 		quantity, _ := strconv.ParseUint(row[6], 10, 16)
 		model := model.MModbusDataPoint{
-			UUID:       utils.MakeUUID("MDTB"),
+			UUID:       utils.ModbusPointUUID(),
 			DeviceUuid: deviceUuid,
 			Tag:        tag,
 			Alias:      alias,

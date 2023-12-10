@@ -33,7 +33,7 @@ func InsertModbusPointPositions(list []model.MModbusDataPoint) error {
 
 // InsertModbusPointPosition 插入modbus点位表
 func InsertModbusPointPosition(P model.MModbusDataPoint) error {
-	return interdb.DB().Model(P).Create(P).Error
+	return interdb.DB().Model(P).Create(&P).Error
 }
 
 // DeleteModbusPointByDevice 删除modbus点位与设备
