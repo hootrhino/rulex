@@ -35,11 +35,14 @@ func InsertModbusPointPositions(list []model.MModbusDataPoint) error {
 
 // InsertModbusPointPosition 插入modbus点位表
 func InsertModbusPointPosition(P model.MModbusDataPoint) error {
+	IgnoreUUID := P.UUID
 	Count := int64(0)
-	interdb.DB().Model(P).Count(&Count)
+	P.UUID = ""
+	interdb.DB().Model(P).Where(P).Count(&Count)
 	if Count > 0 {
-		return fmt.Errorf("already exists same record:%s", P.UUID)
+		return fmt.Errorf("already exists same record:%s", IgnoreUUID)
 	}
+	P.UUID = IgnoreUUID
 	return interdb.DB().Model(P).Create(&P).Error
 }
 
