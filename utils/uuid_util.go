@@ -56,8 +56,13 @@ func UserLuaUuid() string {
 }
 
 // MakeUUID
+func ModbusPointUUID() string {
+	return MakeUUID("MDTB")
+}
+
+// MakeUUID
 func MakeUUID(prefix string) string {
-	return prefix + strings.ToUpper(shortuuid.New()[:6])
+	return prefix + strings.ToUpper(shortuuid.New()[:8])
 }
 func MakeLongUUID(prefix string) string {
 	return prefix + strings.ToUpper(shortuuid.New())
