@@ -344,7 +344,7 @@ func (hs *ApiServerPlugin) LoadRoute() {
 		modbusApi.GET(("/list"), server.AddRoute(apis.ModbusSheetPageList))
 		modbusApi.POST(("/update"), server.AddRoute(apis.ModbusSheetUpdate))
 		modbusApi.DELETE(("/delIds"), server.AddRoute(apis.ModbusSheetDelete))
-		modbusApi.DELETE(("/delAll"), server.AddRoute(apis.ModbusSheetDelete))
+		modbusApi.DELETE(("/delAll"), server.AddRoute(apis.ModbusSheetDeleteAll))
 	}
 
 	// ----------------------------------------------------------------------------------------------
