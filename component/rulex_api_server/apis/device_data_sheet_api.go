@@ -16,9 +16,12 @@
 package apis
 
 import (
+	"encoding/csv"
 	"errors"
+	"fmt"
 	"io"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/hootrhino/rulex/component/interdb"
@@ -46,12 +49,21 @@ type ModbusPointVo struct {
 /*
 *
 * 特殊设备需要和外界交互，这里主要就是一些设备的点位表导入导出等支持
-*
+*  http://127.0.0.1:2580/api/v1/modbus_data_sheet/export
  */
 
 // ModbusPoints 获取modbus_excel类型的点位数据
 func ModbusPointsExport(c *gin.Context, ruleEngine typex.RuleX) {
-	c.JSON(common.HTTP_OK, common.Ok())
+	c.Header("Content-Type", "text/csv")
+	c.Header("Content-Disposition", fmt.Sprintf("attachment;filename=%v.csv", time.Now().UnixMilli()))
+	csvWriter := csv.NewWriter(c.Writer)
+	csvWriter.WriteAll([][]string{
+		{"h1", "h2", "h3"},
+		{"11", "12", "13"},
+		{"21", "22", "23"},
+		{"31", "32", "33"},
+	})
+	csvWriter.Flush()
 }
 
 // 分页获取
