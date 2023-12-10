@@ -40,7 +40,7 @@ type ModbusPointVo struct {
 	Tag        string  `json:"tag"`
 	Alias      string  `json:"alias"`
 	Function   *int    `json:"function"`
-	SlaverId   *byte   `json:"slaver_id"`
+	SlaverId   *byte   `json:"slaverId"`
 	Address    *uint16 `json:"address"`
 	Frequency  *int64  `json:"frequency"`
 	Quantity   *uint16 `json:"quantity"`

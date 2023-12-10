@@ -17,7 +17,7 @@ package model
 
 // modbus数据点位表
 type MModbusDataPoint struct {
-	RulexModel
+	RulexModel `json:"-"`
 	UUID       string  `gorm:"not null" json:"uuid"`
 	DeviceUuid string  `gorm:"not null" json:"device_uuid"`
 	Tag        string  `gorm:"not null" json:"tag"`
