@@ -35,15 +35,15 @@ import (
 )
 
 type ModbusPointVo struct {
-	UUID       string `json:"uuid,omitempty"`
-	DeviceUUID string `json:"device_uuid"`
-	Tag        string `json:"tag"`
-	Alias      string `json:"alias"`
-	Function   int    `json:"function"`
-	SlaverId   byte   `json:"slaverId"`
-	Address    uint16 `json:"address"`
-	Frequency  int64  `json:"frequency"`
-	Quantity   uint16 `json:"quantity"`
+	UUID       string  `json:"uuid,omitempty"`
+	DeviceUUID string  `json:"device_uuid"`
+	Tag        string  `json:"tag"`
+	Alias      string  `json:"alias"`
+	Function   *int    `json:"function"`
+	SlaverId   *byte   `json:"slaver_id"`
+	Address    *uint16 `json:"address"`
+	Frequency  *int64  `json:"frequency"`
+	Quantity   *uint16 `json:"quantity"`
 }
 
 /*
@@ -157,13 +157,21 @@ func ModbusSheetUpdate(c *gin.Context, ruleEngine typex.RuleX) {
 			copier.Copy(&NewRow, &ModbusDataPoint)
 			NewRow.DeviceUuid = ModbusDataPoint.DeviceUUID
 			NewRow.UUID = utils.ModbusPointUUID()
-			service.InsertModbusPointPosition(NewRow)
+			err0 := service.InsertModbusPointPosition(NewRow)
+			if err0 != nil {
+				c.JSON(common.HTTP_OK, common.Error400(err0))
+				return
+			}
 		} else {
 			OldRow := model.MModbusDataPoint{}
 			copier.Copy(&OldRow, &ModbusDataPoint)
 			OldRow.DeviceUuid = ModbusDataPoint.DeviceUUID
 			OldRow.UUID = ModbusDataPoint.UUID
-			service.UpdateModbusPoint(OldRow)
+			err0 := service.UpdateModbusPoint(OldRow)
+			if err0 != nil {
+				c.JSON(common.HTTP_OK, common.Error400(err0))
+				return
+			}
 		}
 	}
 	c.JSON(common.HTTP_OK, common.Ok())
@@ -270,16 +278,21 @@ func parseModbusPointExcel(
 		slaverId, _ := strconv.ParseInt(row[4], 10, 8)
 		address, _ := strconv.ParseUint(row[5], 10, 16)
 		quantity, _ := strconv.ParseUint(row[6], 10, 16)
+		Function := int(function)
+		SlaverId := byte(slaverId)
+		Address := uint16(address)
+		Frequency := int64(frequency)
+		Quantity := uint16(quantity)
 		model := model.MModbusDataPoint{
 			UUID:       utils.ModbusPointUUID(),
 			DeviceUuid: deviceUuid,
 			Tag:        tag,
 			Alias:      alias,
-			Function:   int(function),
-			SlaverId:   byte(slaverId),
-			Address:    uint16(address),
-			Frequency:  frequency, //ms
-			Quantity:   uint16(quantity),
+			Function:   &Function,
+			SlaverId:   &SlaverId,
+			Address:    &Address,
+			Frequency:  &Frequency, //ms
+			Quantity:   &Quantity,
 		}
 		list = append(list, model)
 	}
