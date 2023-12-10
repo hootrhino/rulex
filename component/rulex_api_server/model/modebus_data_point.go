@@ -23,7 +23,7 @@ type MModbusDataPoint struct {
 	Tag        string  `gorm:"not null" json:"tag"`
 	Alias      string  `gorm:"not null" json:"alias"`
 	Function   *int    `gorm:"not null" json:"function"`
-	SlaverId   *byte   `gorm:"not null" json:"slaver_id"`
+	SlaverId   *byte   `gorm:"not null" json:"slaverId"`
 	Address    *uint16 `gorm:"not null" json:"address"`
 	Frequency  *int64  `gorm:"not null" json:"frequency"`
 	Quantity   *uint16 `gorm:"not null" json:"quantity"`
