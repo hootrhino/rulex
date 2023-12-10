@@ -16,6 +16,8 @@
 package service
 
 import (
+	"fmt"
+
 	"github.com/hootrhino/rulex/component/interdb"
 	"github.com/hootrhino/rulex/component/rulex_api_server/model"
 )
@@ -33,6 +35,11 @@ func InsertModbusPointPositions(list []model.MModbusDataPoint) error {
 
 // InsertModbusPointPosition 插入modbus点位表
 func InsertModbusPointPosition(P model.MModbusDataPoint) error {
+	Count := int64(0)
+	interdb.DB().Model(P).Count(&Count)
+	if Count > 0 {
+		return fmt.Errorf("already exists same record:%s", P.UUID)
+	}
 	return interdb.DB().Model(P).Create(&P).Error
 }
 
