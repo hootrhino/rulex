@@ -144,6 +144,7 @@ func (s1200 *s1200plc) Start(cctx typex.CCTX) error {
 			s1200.lock.Unlock()
 			if err != nil {
 				glogger.GLogger.Error(err)
+				s1200.status = typex.DEV_DOWN
 				return
 			}
 			ok, err := s1200.RuleEngine.WorkDevice(
@@ -179,10 +180,10 @@ func (s1200 *s1200plc) OnWrite(cmd []byte, data []byte) (int, error) {
 
 // 设备当前状态
 func (s1200 *s1200plc) Status() typex.DeviceState {
-	if s1200.client != nil {
-		return typex.DEV_UP
+	if s1200.client == nil {
+		return typex.DEV_DOWN
 	}
-	return typex.DEV_DOWN
+	return s1200.status
 
 }
 
