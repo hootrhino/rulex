@@ -21,9 +21,10 @@ type MSiemensDataPoint struct {
 	UUID       string `gorm:"not null"`
 	DeviceUuid string `gorm:"not null"`
 	Tag        string `gorm:"not null"`
+	Alias      string `gorm:"not null"`
 	Type       string `gorm:"not null"`
-	Frequency  int64  `gorm:"not null"`
-	Address    int    `gorm:"not null"`
-	Start      int    `gorm:"not null"`
-	Size       int    `gorm:"not null"`
+	Frequency  *int64 `gorm:"not null"`
+	Address    *int   `gorm:"not null"`
+	Start      *int   `gorm:"not null"`
+	Size       *int   `gorm:"not null"`
 }

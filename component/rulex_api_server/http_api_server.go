@@ -339,12 +339,22 @@ func (hs *ApiServerPlugin) LoadRoute() {
 	// Modbus 点位表
 	modbusApi := server.RouteGroup(server.ContextUrl("/modbus_data_sheet"))
 	{
-		modbusApi.POST(("/import"), server.AddRoute(apis.ModbusSheetImport))
-		modbusApi.GET(("/export"), server.AddRoute(apis.ModbusPointsExport))
+		modbusApi.POST(("/sheetImport"), server.AddRoute(apis.ModbusSheetImport))
+		modbusApi.GET(("/sheetExport"), server.AddRoute(apis.ModbusPointsExport))
 		modbusApi.GET(("/list"), server.AddRoute(apis.ModbusSheetPageList))
 		modbusApi.POST(("/update"), server.AddRoute(apis.ModbusSheetUpdate))
 		modbusApi.DELETE(("/delIds"), server.AddRoute(apis.ModbusSheetDelete))
 		modbusApi.DELETE(("/delAll"), server.AddRoute(apis.ModbusSheetDeleteAll))
+	}
+	// S1200 点位表
+	S1200Plc := server.RouteGroup(server.ContextUrl("/s1200_data_sheet"))
+	{
+		S1200Plc.POST(("/sheetImport"), server.AddRoute(apis.SiemensSheetImport))
+		S1200Plc.GET(("/sheetExport"), server.AddRoute(apis.SiemensPointsExport))
+		S1200Plc.GET(("/list"), server.AddRoute(apis.SiemensSheetPageList))
+		S1200Plc.POST(("/update"), server.AddRoute(apis.SiemensSheetUpdate))
+		S1200Plc.DELETE(("/delIds"), server.AddRoute(apis.SiemensSheetDelete))
+		S1200Plc.DELETE(("/delAll"), server.AddRoute(apis.SiemensSheetDeleteAll))
 	}
 
 	// ----------------------------------------------------------------------------------------------
