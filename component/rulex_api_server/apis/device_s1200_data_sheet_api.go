@@ -34,26 +34,29 @@ import (
 	"github.com/xuri/excelize/v2"
 )
 
-type ModbusPointVo struct {
-	UUID       string  `json:"uuid,omitempty"`
-	DeviceUUID string  `json:"device_uuid"`
-	Tag        string  `json:"tag"`
-	Alias      string  `json:"alias"`
-	Function   *int    `json:"function"`
-	SlaverId   *byte   `json:"slaverId"`
-	Address    *uint16 `json:"address"`
-	Frequency  *int64  `json:"frequency"`
-	Quantity   *uint16 `json:"quantity"`
+type SiemensPointVo struct {
+	UUID          string `json:"uuid,omitempty"`
+	DeviceUUID    string `json:"device_uuid"`
+	Tag           string `json:"tag"`
+	Alias         string `json:"alias"`
+	Type          string `json:"type"`
+	Frequency     *int64 `json:"frequency"`
+	Address       *int   `json:"address"`
+	Start         *int   `json:"start"`
+	Size          *int   `json:"size"`
+	Status        *int   `json:"status"`        // 运行时数据
+	LastFetchTime uint64 `json:"lastFetchTime"` // 运行时数据
+	Value         string `json:"value"`         // 运行时数据
 }
 
 /*
 *
 * 特殊设备需要和外界交互，这里主要就是一些设备的点位表导入导出等支持
-*  http://127.0.0.1:2580/api/v1/modbus_data_sheet/export
+*  http://127.0.0.1:2580/api/v1/Siemens_data_sheet/export
  */
 
-// ModbusPoints 获取modbus_excel类型的点位数据
-func ModbusPointsExport(c *gin.Context, ruleEngine typex.RuleX) {
+// SiemensPoints 获取Siemens_excel类型的点位数据
+func SiemensPointsExport(c *gin.Context, ruleEngine typex.RuleX) {
 	c.Header("Content-Type", "text/csv")
 	c.Header("Content-Disposition", fmt.Sprintf("attachment;filename=%v.csv", time.Now().UnixMilli()))
 	csvWriter := csv.NewWriter(c.Writer)
@@ -67,11 +70,11 @@ func ModbusPointsExport(c *gin.Context, ruleEngine typex.RuleX) {
 }
 
 // 分页获取
-// SELECT * FROM `m_modbus_data_points` WHERE
-// `m_modbus_data_points`.`device_uuid` = "DEVICEDQNLO8"
+// SELECT * FROM `m_Siemens_data_points` WHERE
+// `m_Siemens_data_points`.`device_uuid` = "DEVICEDQNLO8"
 // ORDER BY
 // created_at DESC LIMIT 2 OFFSET 10
-func ModbusSheetPageList(c *gin.Context, ruleEngine typex.RuleX) {
+func SiemensSheetPageList(c *gin.Context, ruleEngine typex.RuleX) {
 	pager, err := service.ReadPageRequest(c)
 	if err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
@@ -81,19 +84,37 @@ func ModbusSheetPageList(c *gin.Context, ruleEngine typex.RuleX) {
 	db := interdb.DB()
 	tx := db.Scopes(service.Paginate(*pager))
 	var count int64
-	err1 := interdb.DB().Model(&model.MModbusDataPoint{}).Count(&count).Error
+	err1 := interdb.DB().Model(&model.MSiemensDataPoint{}).Count(&count).Error
 	if err1 != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err1))
 		return
 	}
-	var records []model.MModbusDataPoint
+	var records []model.MSiemensDataPoint
 	result := tx.Order("created_at DESC").Find(&records,
-		&model.MModbusDataPoint{DeviceUuid: deviceUuid})
+		&model.MSiemensDataPoint{DeviceUuid: deviceUuid})
 	if result.Error != nil {
 		c.JSON(common.HTTP_OK, common.Error400(result.Error))
 		return
 	}
-	Result := service.WrapPageResult(*pager, records, count)
+	recordsVo := []SiemensPointVo{}
+
+	for _, record := range records {
+		Status := 1
+		recordsVo = append(recordsVo, SiemensPointVo{
+			UUID:          record.UUID,
+			DeviceUUID:    record.DeviceUuid,
+			Tag:           record.Tag,
+			Alias:         record.Alias,
+			Address:       record.Address,
+			Frequency:     record.Frequency,
+			Start:         record.Start,
+			Size:          record.Size,
+			Status:        &Status,                        // 运行时
+			LastFetchTime: uint64(time.Now().UnixMilli()), // 运行时
+			Value:         "00000000",                     // 运行时
+		})
+	}
+	Result := service.WrapPageResult(*pager, recordsVo, count)
 	c.JSON(common.HTTP_OK, common.OkWithData(Result))
 }
 
@@ -102,7 +123,7 @@ func ModbusSheetPageList(c *gin.Context, ruleEngine typex.RuleX) {
 * 删除单行
 *
  */
-func ModbusSheetDeleteAll(c *gin.Context, ruleEngine typex.RuleX) {
+func SiemensSheetDeleteAll(c *gin.Context, ruleEngine typex.RuleX) {
 	type Form struct {
 		UUIDs      []string `json:"uuids"`
 		DeviceUUID string   `json:"device_uuid"`
@@ -112,7 +133,7 @@ func ModbusSheetDeleteAll(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(Error))
 		return
 	}
-	err := service.DeleteAllModbusPointByDevice(form.DeviceUUID)
+	err := service.DeleteAllSiemensPointByDevice(form.DeviceUUID)
 	if err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
@@ -120,7 +141,7 @@ func ModbusSheetDeleteAll(c *gin.Context, ruleEngine typex.RuleX) {
 	c.JSON(common.HTTP_OK, common.Ok())
 
 }
-func ModbusSheetDelete(c *gin.Context, ruleEngine typex.RuleX) {
+func SiemensSheetDelete(c *gin.Context, ruleEngine typex.RuleX) {
 	type Form struct {
 		UUIDs      []string `json:"uuids"`
 		DeviceUUID string   `json:"device_uuid"`
@@ -130,7 +151,7 @@ func ModbusSheetDelete(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(Error))
 		return
 	}
-	err := service.DeleteModbusPointByDevice(form.UUIDs, form.DeviceUUID)
+	err := service.DeleteSiemensPointByDevice(form.UUIDs, form.DeviceUUID)
 	if err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
@@ -144,30 +165,30 @@ func ModbusSheetDelete(c *gin.Context, ruleEngine typex.RuleX) {
 * 更新点位表
 *
  */
-func ModbusSheetUpdate(c *gin.Context, ruleEngine typex.RuleX) {
-	ModbusDataPoints := []ModbusPointVo{}
-	err := c.ShouldBindJSON(&ModbusDataPoints)
+func SiemensSheetUpdate(c *gin.Context, ruleEngine typex.RuleX) {
+	SiemensDataPoints := []SiemensPointVo{}
+	err := c.ShouldBindJSON(&SiemensDataPoints)
 	if err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	for _, ModbusDataPoint := range ModbusDataPoints {
-		if ModbusDataPoint.UUID == "" {
-			NewRow := model.MModbusDataPoint{}
-			copier.Copy(&NewRow, &ModbusDataPoint)
-			NewRow.DeviceUuid = ModbusDataPoint.DeviceUUID
-			NewRow.UUID = utils.ModbusPointUUID()
-			err0 := service.InsertModbusPointPosition(NewRow)
+	for _, SiemensDataPoint := range SiemensDataPoints {
+		if SiemensDataPoint.UUID == "" {
+			NewRow := model.MSiemensDataPoint{}
+			copier.Copy(&NewRow, &SiemensDataPoint)
+			NewRow.DeviceUuid = SiemensDataPoint.DeviceUUID
+			NewRow.UUID = utils.SiemensPointUUID()
+			err0 := service.InsertSiemensPointPosition(NewRow)
 			if err0 != nil {
 				c.JSON(common.HTTP_OK, common.Error400(err0))
 				return
 			}
 		} else {
-			OldRow := model.MModbusDataPoint{}
-			copier.Copy(&OldRow, &ModbusDataPoint)
-			OldRow.DeviceUuid = ModbusDataPoint.DeviceUUID
-			OldRow.UUID = ModbusDataPoint.UUID
-			err0 := service.UpdateModbusPoint(OldRow)
+			OldRow := model.MSiemensDataPoint{}
+			copier.Copy(&OldRow, &SiemensDataPoint)
+			OldRow.DeviceUuid = SiemensDataPoint.DeviceUUID
+			OldRow.UUID = SiemensDataPoint.UUID
+			err0 := service.UpdateSiemensPoint(OldRow)
 			if err0 != nil {
 				c.JSON(common.HTTP_OK, common.Error400(err0))
 				return
@@ -178,8 +199,8 @@ func ModbusSheetUpdate(c *gin.Context, ruleEngine typex.RuleX) {
 
 }
 
-// ModbusSheetImport 上传Excel文件
-func ModbusSheetImport(c *gin.Context, ruleEngine typex.RuleX) {
+// SiemensSheetImport 上传Excel文件
+func SiemensSheetImport(c *gin.Context, ruleEngine typex.RuleX) {
 	// 解析 multipart/form-data 类型的请求体
 	err := c.Request.ParseMultipartForm(1024 * 1024 * 10)
 	if err != nil {
@@ -207,9 +228,9 @@ func ModbusSheetImport(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(errDb))
 		return
 	}
-	if Device.Type != typex.GENERIC_MODBUS.String() {
+	if Device.Type != typex.S1200PLC.String() {
 		c.JSON(common.HTTP_OK,
-			common.Error("Invalid Device Type, Only Support Import Modbus Device"))
+			common.Error("Invalid Device Type, Only Support Import Siemens Device"))
 		return
 	}
 	contentType := header.Header.Get("Content-Type")
@@ -223,22 +244,22 @@ func ModbusSheetImport(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error("Excel file size cannot be greater than 10MB"))
 		return
 	}
-	list, err := parseModbusPointExcel(file, "Sheet1", deviceUuid)
+	list, err := parseSiemensPointExcel(file, "Sheet1", deviceUuid)
 	if err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	if err = service.InsertModbusPointPositions(list); err != nil {
+	if err = service.InsertSiemensPointPositions(list); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
 	c.JSON(common.HTTP_OK, common.Ok())
 }
 
-func parseModbusPointExcel(
+func parseSiemensPointExcel(
 	r io.Reader,
 	sheetName string,
-	deviceUuid string) (list []model.MModbusDataPoint, err error) {
+	deviceUuid string) (list []model.MSiemensDataPoint, err error) {
 	excelFile, err := excelize.OpenReader(r)
 	if err != nil {
 		return nil, err
@@ -252,47 +273,47 @@ func parseModbusPointExcel(
 		return nil, err
 	}
 	// 判断首行标头
-	// tag, alias, function, frequency, slaverId, startAddress, quality
+	//
 	err1 := errors.New("invalid Sheet Header")
 	if len(rows[0]) < 7 {
 		return nil, err1
 	}
+	//tag alias type frequency address size
 	if rows[0][0] != "tag" ||
 		rows[0][1] != "alias" ||
-		rows[0][2] != "function" ||
+		rows[0][2] != "type" ||
 		rows[0][3] != "frequency" ||
-		rows[0][4] != "slaverId" ||
-		rows[0][5] != "startAddress" ||
-		rows[0][6] != "quality" {
+		rows[0][4] != "address" ||
+		rows[0][5] != "start" ||
+		rows[0][6] != "size" {
 		return nil, err1
 	}
 
-	list = make([]model.MModbusDataPoint, 0)
-	// tag, alias, function, frequency, slaverId, startAddress, quality
+	list = make([]model.MSiemensDataPoint, 0)
+	//tag alias type frequency address start size
 	for i := 1; i < len(rows); i++ {
 		row := rows[i]
 		tag := row[0]
 		alias := row[1]
-		function, _ := strconv.ParseInt(row[2], 10, 8)
+		DbType := row[2]
 		frequency, _ := strconv.ParseInt(row[3], 10, 8)
-		slaverId, _ := strconv.ParseInt(row[4], 10, 8)
-		address, _ := strconv.ParseUint(row[5], 10, 16)
-		quantity, _ := strconv.ParseUint(row[6], 10, 16)
-		Function := int(function)
-		SlaverId := byte(slaverId)
-		Address := uint16(address)
+		address, _ := strconv.ParseUint(row[4], 10, 16)
+		start, _ := strconv.ParseUint(row[5], 10, 16)
+		size, _ := strconv.ParseUint(row[6], 10, 16)
+		Address := int(address)
 		Frequency := int64(frequency)
-		Quantity := uint16(quantity)
-		model := model.MModbusDataPoint{
-			UUID:       utils.ModbusPointUUID(),
+		Start := int(start)
+		Size := int(size)
+		model := model.MSiemensDataPoint{
+			UUID:       utils.SiemensPointUUID(),
 			DeviceUuid: deviceUuid,
 			Tag:        tag,
 			Alias:      alias,
-			Function:   &Function,
-			SlaverId:   &SlaverId,
+			Type:       DbType,
+			Frequency:  &Frequency,
 			Address:    &Address,
-			Frequency:  &Frequency, //ms
-			Quantity:   &Quantity,
+			Start:      &Start,
+			Size:       &Size,
 		}
 		list = append(list, model)
 	}
