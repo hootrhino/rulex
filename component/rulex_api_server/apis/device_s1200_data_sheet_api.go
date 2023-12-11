@@ -44,7 +44,7 @@ type SiemensPointVo struct {
 	Address       *int   `json:"address"`
 	Start         *int   `json:"start"`
 	Size          *int   `json:"size"`
-	Status        *int   `json:"status"`        // 运行时数据
+	Status        int    `json:"status"`        // 运行时数据
 	LastFetchTime uint64 `json:"lastFetchTime"` // 运行时数据
 	Value         string `json:"value"`         // 运行时数据
 }
@@ -99,17 +99,17 @@ func SiemensSheetPageList(c *gin.Context, ruleEngine typex.RuleX) {
 	recordsVo := []SiemensPointVo{}
 
 	for _, record := range records {
-		Status := 1
 		recordsVo = append(recordsVo, SiemensPointVo{
 			UUID:          record.UUID,
 			DeviceUUID:    record.DeviceUuid,
 			Tag:           record.Tag,
+			Type:          record.Type,
 			Alias:         record.Alias,
 			Address:       record.Address,
 			Frequency:     record.Frequency,
 			Start:         record.Start,
 			Size:          record.Size,
-			Status:        &Status,                        // 运行时
+			Status:        1,                              // 运行时
 			LastFetchTime: uint64(time.Now().UnixMilli()), // 运行时
 			Value:         "00000000",                     // 运行时
 		})
