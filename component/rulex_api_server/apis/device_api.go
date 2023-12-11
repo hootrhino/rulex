@@ -117,8 +117,9 @@ func DeleteDevice(c *gin.Context, ruleEngine typex.RuleX) {
 			return
 		}
 	}
+	// 西门子的
 	if Mdev.Type == "S1200PLC" {
-		if err := service.DeleteAllModbusPointByDevice(uuid); err != nil {
+		if err := service.DeleteAllSiemensPointByDevice(uuid); err != nil {
 			c.JSON(common.HTTP_OK, common.Error400(err))
 			return
 		}
@@ -128,6 +129,11 @@ func DeleteDevice(c *gin.Context, ruleEngine typex.RuleX) {
 		if old.Device.Status() == typex.DEV_UP {
 			old.Device.Stop()
 		}
+	}
+	err1 := service.DeleteDevice(uuid)
+	if err1 != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err1))
+		return
 	}
 
 	ruleEngine.RemoveDevice(uuid)

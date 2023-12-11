@@ -18,15 +18,17 @@ import (
 
 // 点位表
 type SiemensDataPoint struct {
-	UUID       string `json:"uuid"` // 当UUID为空时新建
-	DeviceUuid string `json:"device_uuid"`
-	Tag        string `json:"tag,omitempty"`
-	Type       string `json:"type,omitempty"`
-	Frequency  *int64 `json:"frequency,omitempty"`
-	Address    *int   `json:"address,omitempty"`
-	Start      *int   `json:"start,omitempty"`
-	Size       *int   `json:"size,omitempty"`
-	Value      string `json:"value"` // 采集到的值
+	UUID          string `json:"uuid"` // 当UUID为空时新建
+	DeviceUuid    string `json:"device_uuid"`
+	Tag           string `json:"tag,omitempty"`
+	Type          string `json:"type,omitempty"`
+	Frequency     *int64 `json:"frequency,omitempty"`
+	Address       *int   `json:"address,omitempty"`
+	Start         *int   `json:"start"`
+	Size          *int   `json:"size"`
+	Status        int    `json:"status"`        // 运行时数据
+	LastFetchTime uint64 `json:"lastFetchTime"` // 运行时数据
+	Value         string `json:"value"`         // 运行时数据
 }
 
 type S1200CommonConfig struct {
@@ -50,7 +52,7 @@ type s1200plc struct {
 	mainConfig        S1200Config
 	client            gos7.Client
 	lock              sync.Mutex
-	SiemensDataPoints []SiemensDataPoint
+	SiemensDataPoints map[string]*SiemensDataPoint
 }
 
 /*
@@ -76,6 +78,7 @@ func NewS1200plc(e typex.RuleX) typex.XDevice {
 			AutoRequest: &AutoRequest,
 		},
 	}
+	s1200.SiemensDataPoints = map[string]*SiemensDataPoint{}
 	return s1200
 }
 
@@ -98,7 +101,7 @@ func (s1200 *s1200plc) Init(devId string, configMap map[string]interface{}) erro
 		if *v.Frequency < 50 {
 			return errors.New("'frequency' must grate than 50 millisecond")
 		}
-		s1200.SiemensDataPoints = append(s1200.SiemensDataPoints, v)
+		s1200.SiemensDataPoints[v.UUID] = &v
 	}
 	return nil
 }
@@ -118,6 +121,8 @@ func (s1200 *s1200plc) Start(cctx typex.CCTX) error {
 		*s1200.mainConfig.CommonConfig.IdleTimeout) * time.Millisecond
 	if err := handler.Connect(); err != nil {
 		return err
+	} else {
+		s1200.status = typex.DEV_UP
 	}
 
 	s1200.client = gos7.NewClient(handler)
@@ -222,22 +227,6 @@ func (s1200 *s1200plc) OnCtrl(cmd []byte, args []byte) ([]byte, error) {
 	return []byte{}, nil
 }
 func (s1200 *s1200plc) Write(cmd []byte, data []byte) (int, error) {
-	blocks := []SiemensDataPoint{}
-	if err := json.Unmarshal(data, &blocks); err != nil {
-		return 0, err
-	}
-	//
-	for _, block := range blocks {
-		hexV, _ := hex.DecodeString(block.Value)
-		if err := s1200.client.AGWriteDB(
-			*block.Address,
-			*block.Start,
-			*block.Size,
-			hexV,
-		); err != nil {
-			return 0, err
-		}
-	}
 	return 0, nil
 }
 
@@ -247,25 +236,31 @@ var rData = [common.T_2KB]byte{} // 一次最大接受2KB数据
 
 func (s1200 *s1200plc) Read(cmd []byte, data []byte) (int, error) {
 	values := []SiemensDataPoint{}
-	for _, db := range s1200.SiemensDataPoints {
+	for uuid, db := range s1200.SiemensDataPoints {
 		//DB 4字节
 		if db.Type == "DB" {
 			// 00.00.00.01 | 00.00.00.02 | 00.00.00.03 | 00.00.00.04
 			if err := s1200.client.AGReadDB(*db.Address, *db.Start, *db.Size, rData[:]); err != nil {
+				s1200.SiemensDataPoints[uuid].Status = 0
 				return 0, err
 			}
 			count := db.Size
 			if *db.Size*2 > 2000 {
 				*count = 2000
 			}
+			Value := hex.EncodeToString(rData[:*count])
 			values = append(values, SiemensDataPoint{
-				Tag:     db.Tag,
-				Address: db.Address,
-				Type:    db.Type,
-				Start:   db.Start,
-				Size:    db.Size,
-				Value:   hex.EncodeToString(rData[:*count]),
+				DeviceUuid: db.DeviceUuid,
+				Tag:        db.Tag,
+				Address:    db.Address,
+				Type:       db.Type,
+				Start:      db.Start,
+				Size:       db.Size,
+				Value:      Value,
 			})
+			s1200.SiemensDataPoints[uuid].Value = Value
+			s1200.SiemensDataPoints[uuid].Status = 1
+			s1200.SiemensDataPoints[uuid].LastFetchTime = uint64(time.Now().UnixMilli())
 		}
 		//
 		if db.Type == "MB" {
@@ -277,14 +272,18 @@ func (s1200 *s1200plc) Read(cmd []byte, data []byte) (int, error) {
 			if *db.Size*2 > 2000 {
 				*count = 2000
 			}
+			Value := hex.EncodeToString(rData[:*count])
 			values = append(values, SiemensDataPoint{
 				Tag:     db.Tag,
 				Type:    db.Type,
 				Address: db.Address,
 				Start:   db.Start,
 				Size:    db.Size,
-				Value:   hex.EncodeToString(rData[:*count]),
+				Value:   Value,
 			})
+			s1200.SiemensDataPoints[uuid].Value = Value
+			s1200.SiemensDataPoints[uuid].Status = 1
+			s1200.SiemensDataPoints[uuid].LastFetchTime = uint64(time.Now().UnixMilli())
 		}
 		if *db.Frequency < 100 {
 			*db.Frequency = 100 // 不能太快
