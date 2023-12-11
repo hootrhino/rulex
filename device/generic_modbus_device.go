@@ -17,6 +17,9 @@ package device
 
 import (
 	"context"
+	"encoding/binary"
+	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
 	golog "log"
@@ -27,7 +30,6 @@ import (
 	"github.com/hootrhino/rulex/component/hwportmanager"
 	"github.com/hootrhino/rulex/component/interdb"
 	"github.com/hootrhino/rulex/core"
-	"github.com/hootrhino/rulex/driver"
 	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/typex"
 	"github.com/hootrhino/rulex/utils"
@@ -57,8 +59,8 @@ import (
 //	    }
 //	}
 type _GMODCommonConfig struct {
-	Mode        string `json:"mode" title:"工作模式" info:"UART/TCP"`
-	AutoRequest *bool  `json:"autoRequest" title:"启动轮询"`
+	Mode        string `json:"mode"`
+	AutoRequest *bool  `json:"autoRequest"`
 }
 type _GMODConfig struct {
 	CommonConfig _GMODCommonConfig `json:"commonConfig" validate:"required"`
@@ -84,15 +86,17 @@ type ModbusPoint struct {
 }
 type generic_modbus_device struct {
 	typex.XStatus
-	status       typex.DeviceState
-	RuleEngine   typex.RuleX
-	driver       typex.XExternalDriver
-	rtuHandler   *modbus.RTUClientHandler
-	tcpHandler   *modbus.TCPClientHandler
+	status     typex.DeviceState
+	RuleEngine typex.RuleX
+	//
+	rtuHandler *modbus.RTUClientHandler
+	tcpHandler *modbus.TCPClientHandler
+	Client     modbus.Client
+	//
 	mainConfig   _GMODConfig
 	retryTimes   int
 	hwPortConfig hwportmanager.UartConfig
-	Registers    []common.RegisterRW
+	Registers    map[string]*common.RegisterRW
 }
 
 /*
@@ -113,6 +117,7 @@ func NewGenericModbusDevice(e typex.RuleX) typex.XDevice {
 		PortUuid:   "/dev/ttyS0",
 		HostConfig: common.HostConfig{Host: "127.0.0.1", Port: 502, Timeout: 3000},
 	}
+	mdev.Registers = map[string]*common.RegisterRW{}
 	mdev.Busy = false
 	mdev.status = typex.DEV_DOWN
 	return mdev
@@ -139,16 +144,15 @@ func (mdev *generic_modbus_device) Init(devId string, configMap map[string]inter
 		if v.Frequency < 50 {
 			return errors.New("'frequency' must grate than 50 millisecond")
 		}
-		mdev.Registers = append(mdev.Registers,
-			common.RegisterRW{
-				Tag:       v.Tag,
-				Alias:     v.Alias,
-				Function:  v.Function,
-				SlaverId:  v.SlaverId,
-				Address:   v.Address,
-				Quantity:  v.Quantity,
-				Frequency: v.Frequency,
-			})
+		mdev.Registers[v.UUID] = &common.RegisterRW{
+			Tag:       v.Tag,
+			Alias:     v.Alias,
+			Function:  v.Function,
+			SlaverId:  v.SlaverId,
+			Address:   v.Address,
+			Quantity:  v.Quantity,
+			Frequency: v.Frequency,
+		}
 	}
 
 	if mdev.mainConfig.CommonConfig.Mode == "UART" {
@@ -207,11 +211,7 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 			Type: "DEVICE",
 			Name: mdev.Details().Name,
 		})
-		client := modbus.NewClient(mdev.rtuHandler)
-		mdev.driver = driver.NewModBusRtuDriver(mdev.Details(),
-			mdev.RuleEngine,
-			mdev.Registers, mdev.rtuHandler,
-			client)
+		mdev.Client = modbus.NewClient(mdev.rtuHandler)
 	}
 	if mdev.mainConfig.CommonConfig.Mode == "TCP" {
 		mdev.tcpHandler = modbus.NewTCPClientHandler(
@@ -224,16 +224,14 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 		if err := mdev.tcpHandler.Connect(); err != nil {
 			return err
 		}
-		client := modbus.NewClient(mdev.tcpHandler)
-		mdev.driver = driver.NewModBusTCPDriver(mdev.Details(),
-			mdev.RuleEngine, mdev.Registers, mdev.tcpHandler, client)
+		mdev.Client = modbus.NewClient(mdev.tcpHandler)
 	}
 	//---------------------------------------------------------------------------------
 	// Start
 	//---------------------------------------------------------------------------------
 	if *mdev.mainConfig.CommonConfig.AutoRequest {
 		mdev.retryTimes = 0
-		go func(ctx context.Context, Driver typex.XExternalDriver) {
+		go func(ctx context.Context) {
 			buffer := make([]byte, common.T_64KB)
 			for {
 				select {
@@ -245,7 +243,14 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 					{
 					}
 				}
-				n, err := Driver.Read([]byte{}, buffer)
+				n := 0
+				var err error
+				if mdev.mainConfig.CommonConfig.Mode == "TCP" {
+					n, err = mdev.RTURead(buffer)
+				}
+				if mdev.mainConfig.CommonConfig.Mode == "RTU" {
+					n, err = mdev.TCPRead(buffer)
+				}
 				if err != nil {
 					glogger.GLogger.Error(err)
 					mdev.retryTimes++
@@ -256,7 +261,7 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 				}
 			}
 
-		}(mdev.Ctx, mdev.driver)
+		}(mdev.Ctx)
 	}
 
 	mdev.status = typex.DEV_UP
@@ -265,21 +270,75 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 
 // 从设备里面读数据出来
 func (mdev *generic_modbus_device) OnRead(cmd []byte, data []byte) (int, error) {
-
-	n, err := mdev.driver.Read(cmd, data)
-	if err != nil {
-		glogger.GLogger.Error(err)
-		mdev.retryTimes++
-	}
-	return n, err
+	return 0, nil
 }
 
 // 把数据写入设备
 func (mdev *generic_modbus_device) OnWrite(cmd []byte, data []byte) (int, error) {
-	if mdev.Busy {
-		return 0, fmt.Errorf("device busing now")
+	RegisterW := common.RegisterW{}
+	if err := json.Unmarshal(data, &RegisterW); err != nil {
+		return 0, err
 	}
-	return mdev.driver.Write(cmd, data)
+	dataMap := [1]common.RegisterW{RegisterW}
+	for _, r := range dataMap {
+		if mdev.mainConfig.CommonConfig.Mode == "TCP" {
+			mdev.tcpHandler.SlaveId = r.SlaverId
+		}
+		if mdev.mainConfig.CommonConfig.Mode == "RTU" {
+			mdev.rtuHandler.SlaveId = r.SlaverId
+		}
+		// 5
+		if r.Function == common.WRITE_SINGLE_COIL {
+			if len(r.Values) > 0 {
+				if r.Values[0] == 0 {
+					_, err := mdev.Client.WriteSingleCoil(r.Address,
+						binary.BigEndian.Uint16([]byte{0x00, 0x00}))
+					if err != nil {
+						return 0, err
+					}
+				}
+				if r.Values[0] == 1 {
+					_, err := mdev.Client.WriteSingleCoil(r.Address,
+						binary.BigEndian.Uint16([]byte{0xFF, 0x00}))
+					if err != nil {
+						return 0, err
+					}
+				}
+
+			}
+
+		}
+		// 15
+		if r.Function == common.WRITE_MULTIPLE_COILS {
+			_, err := mdev.Client.WriteMultipleCoils(r.Address, r.Quantity, r.Values)
+			if err != nil {
+				return 0, err
+			}
+		}
+		// 6
+		if r.Function == common.WRITE_SINGLE_HOLDING_REGISTER {
+			_, err := mdev.Client.WriteSingleRegister(r.Address, binary.BigEndian.Uint16(r.Values))
+			if err != nil {
+				return 0, err
+			}
+		}
+		// 16
+		if r.Function == common.WRITE_MULTIPLE_HOLDING_REGISTERS {
+
+			_, err := mdev.Client.WriteMultipleRegisters(r.Address,
+				uint16(len(r.Values))/2, maybePrependZero(r.Values))
+			if err != nil {
+				return 0, err
+			}
+		}
+	}
+	return 0, nil
+}
+func maybePrependZero(slice []byte) []byte {
+	if len(slice)%2 != 0 {
+		slice = append([]byte{0}, slice...)
+	}
+	return slice
 }
 
 // 设备当前状态
@@ -293,13 +352,17 @@ func (mdev *generic_modbus_device) Status() typex.DeviceState {
 
 // 停止设备
 func (mdev *generic_modbus_device) Stop() {
-	mdev.CancelCTX()
 	mdev.status = typex.DEV_DOWN
-	if mdev.driver != nil {
-		mdev.driver.Stop()
-	}
+	mdev.CancelCTX()
 	if mdev.mainConfig.CommonConfig.Mode == "UART" {
 		hwportmanager.FreeInterfaceBusy(mdev.mainConfig.PortUuid)
+		mdev.rtuHandler.Close()
+	}
+	if mdev.mainConfig.CommonConfig.Mode == "UART" {
+		mdev.rtuHandler.Close()
+	}
+	if mdev.mainConfig.CommonConfig.Mode == "TCP" {
+		mdev.tcpHandler.Close()
 	}
 }
 
@@ -320,11 +383,139 @@ func (mdev *generic_modbus_device) SetState(status typex.DeviceState) {
 
 // 驱动
 func (mdev *generic_modbus_device) Driver() typex.XExternalDriver {
-	return mdev.driver
+	return nil
 }
 func (mdev *generic_modbus_device) OnDCACall(UUID string, Command string, Args interface{}) typex.DCAResult {
 	return typex.DCAResult{}
 }
-func (mdev *generic_modbus_device) OnCtrl(cmd []byte, args []byte) ([]byte, error) {
+func (mdev *generic_modbus_device) OnCtrl([]byte, []byte) ([]byte, error) {
 	return []byte{}, nil
+}
+
+/*
+*
+* 串口模式
+*
+ */
+func (mdev *generic_modbus_device) modbusRead(buffer []byte) (int, error) {
+	var err error
+	var results []byte
+	dataMap := map[string]common.RegisterRW{}
+	count := len(mdev.Registers)
+	if count == 0 {
+		return 0, nil
+	}
+	if mdev.Client == nil {
+		return 0, fmt.Errorf("modbus client id not valid")
+	}
+	for uuid, r := range mdev.Registers {
+		if mdev.mainConfig.CommonConfig.Mode == "TCP" {
+			mdev.tcpHandler.SlaveId = r.SlaverId
+		}
+		if mdev.mainConfig.CommonConfig.Mode == "RTU" {
+			mdev.rtuHandler.SlaveId = r.SlaverId
+		}
+		if r.Function == common.READ_COIL {
+			results, err = mdev.Client.ReadCoils(r.Address, r.Quantity)
+			if err != nil {
+				count--
+				mdev.Registers[uuid].Status = 0
+				glogger.GLogger.Error(err)
+			}
+			Value := covertEmptyHex(results)
+			value := common.RegisterRW{
+				Tag:      r.Tag,
+				Function: r.Function,
+				SlaverId: r.SlaverId,
+				Address:  r.Address,
+				Quantity: r.Quantity,
+				Alias:    r.Alias,
+				Value:    Value,
+			}
+			mdev.Registers[uuid].Value = Value
+			mdev.Registers[uuid].Status = 1
+			mdev.Registers[uuid].LastFetchTime = uint64(time.Now().UnixMilli())
+			dataMap[r.Tag] = value
+		}
+		if r.Function == common.READ_DISCRETE_INPUT {
+			results, err = mdev.Client.ReadDiscreteInputs(r.Address, r.Quantity)
+			if err != nil {
+				count--
+				glogger.GLogger.Error(err)
+			}
+			Value := covertEmptyHex(results)
+			value := common.RegisterRW{
+				Tag:      r.Tag,
+				Function: r.Function,
+				SlaverId: r.SlaverId,
+				Address:  r.Address,
+				Quantity: r.Quantity,
+				Alias:    r.Alias,
+				Value:    Value,
+			}
+			mdev.Registers[uuid].Value = Value
+			mdev.Registers[uuid].Status = 1
+			mdev.Registers[uuid].LastFetchTime = uint64(time.Now().UnixMilli())
+			dataMap[r.Tag] = value
+
+		}
+		if r.Function == common.READ_HOLDING_REGISTERS {
+			results, err = mdev.Client.ReadHoldingRegisters(r.Address, r.Quantity)
+			if err != nil {
+				count--
+				glogger.GLogger.Error(err)
+			}
+			Value := covertEmptyHex(results)
+			value := common.RegisterRW{
+				Tag:      r.Tag,
+				Function: r.Function,
+				SlaverId: r.SlaverId,
+				Address:  r.Address,
+				Quantity: r.Quantity,
+				Alias:    r.Alias,
+				Value:    Value,
+			}
+			mdev.Registers[uuid].Value = Value
+			mdev.Registers[uuid].Status = 1
+			mdev.Registers[uuid].LastFetchTime = uint64(time.Now().UnixMilli())
+			dataMap[r.Tag] = value
+		}
+		if r.Function == common.READ_INPUT_REGISTERS {
+			results, err = mdev.Client.ReadInputRegisters(r.Address, r.Quantity)
+			if err != nil {
+				count--
+				glogger.GLogger.Error(err)
+			}
+			Value := covertEmptyHex(results)
+			value := common.RegisterRW{
+				Tag:      r.Tag,
+				Function: r.Function,
+				SlaverId: r.SlaverId,
+				Address:  r.Address,
+				Quantity: r.Quantity,
+				Alias:    r.Alias,
+				Value:    Value,
+			}
+			mdev.Registers[uuid].Value = Value
+			mdev.Registers[uuid].Status = 1
+			mdev.Registers[uuid].LastFetchTime = uint64(time.Now().UnixMilli())
+			dataMap[r.Tag] = value
+		}
+		time.Sleep(time.Duration(r.Frequency) * time.Millisecond)
+	}
+	bytes, _ := json.Marshal(dataMap)
+	copy(buffer, bytes)
+	return len(bytes), nil
+}
+func (mdev *generic_modbus_device) RTURead(buffer []byte) (int, error) {
+	return mdev.modbusRead(buffer)
+}
+func (mdev *generic_modbus_device) TCPRead(buffer []byte) (int, error) {
+	return mdev.modbusRead(buffer)
+}
+func covertEmptyHex(v []byte) string {
+	if len(v) < 1 {
+		return ""
+	}
+	return hex.EncodeToString(v)
 }

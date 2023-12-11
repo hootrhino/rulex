@@ -21,7 +21,7 @@ type modBusTCPDriver struct {
 	handler    *modbus.TCPClientHandler
 	client     modbus.Client
 	RuleEngine typex.RuleX
-	Registers  []common.RegisterRW
+	Registers  map[string]*common.RegisterRW
 	device     *typex.Device
 	frequency  int64
 }
@@ -29,7 +29,7 @@ type modBusTCPDriver struct {
 func NewModBusTCPDriver(
 	d *typex.Device,
 	e typex.RuleX,
-	Registers []common.RegisterRW,
+	Registers map[string]*common.RegisterRW,
 	handler *modbus.TCPClientHandler,
 	client modbus.Client) typex.XExternalDriver {
 	return &modBusTCPDriver{

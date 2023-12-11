@@ -39,14 +39,16 @@ type Registers struct {
 *
  */
 type RegisterRW struct {
-	Tag       string `json:"tag" validate:"required" title:"数据Tag"`         // 数据Tag
-	Alias     string `json:"alias" validate:"required" title:"别名"`          // 别名
-	Function  int    `json:"function" validate:"required" title:"Modbus功能"` // Function
-	SlaverId  byte   `json:"slaverId" validate:"required" title:"从机ID"`     // 从机ID
-	Address   uint16 `json:"address" validate:"required" title:"地址"`        // Address
-	Frequency int64  `json:"frequency" validate:"required" title:"采集频率"`    // 间隔
-	Quantity  uint16 `json:"quantity" validate:"required" title:"数量"`       // Quantity
-	Value     string `json:"value" title:"值" info:"本地系统的串口路径"`              // Value
+	Tag           string `json:"tag" validate:"required" title:"数据Tag"`         // 数据Tag
+	Alias         string `json:"alias" validate:"required" title:"别名"`          // 别名
+	Function      int    `json:"function" validate:"required" title:"Modbus功能"` // Function
+	SlaverId      byte   `json:"slaverId" validate:"required" title:"从机ID"`     // 从机ID
+	Address       uint16 `json:"address" validate:"required" title:"地址"`        // Address
+	Frequency     int64  `json:"frequency" validate:"required" title:"采集频率"`    // 间隔
+	Quantity      uint16 `json:"quantity" validate:"required" title:"数量"`       // Quantity
+	Status        int    `json:"status"`                                        // 运行时数据
+	LastFetchTime uint64 `json:"lastFetchTime"`                                 // 运行时数据
+	Value         string `json:"value"`                                         // 运行时数据
 }
 
 /*

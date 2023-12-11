@@ -21,7 +21,7 @@ type modBusRtuDriver struct {
 	handler    *modbus.RTUClientHandler
 	client     modbus.Client
 	RuleEngine typex.RuleX
-	Registers  []common.RegisterRW
+	Registers  map[string]*common.RegisterRW
 	device     *typex.Device
 	frequency  int64
 }
@@ -29,7 +29,7 @@ type modBusRtuDriver struct {
 func NewModBusRtuDriver(
 	d *typex.Device,
 	e typex.RuleX,
-	Registers []common.RegisterRW,
+	Registers map[string]*common.RegisterRW,
 	handler *modbus.RTUClientHandler,
 	client modbus.Client) typex.XExternalDriver {
 	return &modBusRtuDriver{
@@ -66,14 +66,16 @@ func (d *modBusRtuDriver) Read(cmd []byte, data []byte) (int, error) {
 	if count == 0 {
 		return 0, nil
 	}
-	for _, r := range d.Registers {
+	for uuid, r := range d.Registers {
 		d.handler.SlaveId = r.SlaverId
 		if r.Function == common.READ_COIL {
 			results, err = d.client.ReadCoils(r.Address, r.Quantity)
 			if err != nil {
 				count--
+				d.Registers[uuid].Status = 0
 				glogger.GLogger.Error(err)
 			}
+			Value := covertEmptyHex(results)
 			value := common.RegisterRW{
 				Tag:      r.Tag,
 				Function: r.Function,
@@ -81,8 +83,11 @@ func (d *modBusRtuDriver) Read(cmd []byte, data []byte) (int, error) {
 				Address:  r.Address,
 				Quantity: r.Quantity,
 				Alias:    r.Alias,
-				Value:    covertEmptyHex(results),
+				Value:    Value,
 			}
+			d.Registers[uuid].Value = Value
+			d.Registers[uuid].Status = 1
+			d.Registers[uuid].LastFetchTime = uint64(time.Now().UnixMilli())
 			dataMap[r.Tag] = value
 		}
 		if r.Function == common.READ_DISCRETE_INPUT {
