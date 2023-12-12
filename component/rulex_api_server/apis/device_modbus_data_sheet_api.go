@@ -138,6 +138,7 @@ func ModbusSheetDeleteAll(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
+	ruleEngine.RestartDevice(form.DeviceUUID)
 	c.JSON(common.HTTP_OK, common.Ok())
 
 }
@@ -156,6 +157,7 @@ func ModbusSheetDelete(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
+	ruleEngine.RestartDevice(form.DeviceUUID)
 	c.JSON(common.HTTP_OK, common.Ok())
 
 }
@@ -166,13 +168,18 @@ func ModbusSheetDelete(c *gin.Context, ruleEngine typex.RuleX) {
 *
  */
 func ModbusSheetUpdate(c *gin.Context, ruleEngine typex.RuleX) {
-	ModbusDataPoints := []ModbusPointVo{}
-	err := c.ShouldBindJSON(&ModbusDataPoints)
+	type Form struct {
+		DeviceUUID       string          `json:"device_uuid"`
+		ModbusDataPoints []ModbusPointVo `json:"modbus_data_points"`
+	}
+	// ModbusDataPoints := []ModbusPointVo{}
+	form := Form{}
+	err := c.ShouldBindJSON(&form)
 	if err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	for _, ModbusDataPoint := range ModbusDataPoints {
+	for _, ModbusDataPoint := range form.ModbusDataPoints {
 		if ModbusDataPoint.UUID == "" {
 			NewRow := model.MModbusDataPoint{}
 			copier.Copy(&NewRow, &ModbusDataPoint)
@@ -195,6 +202,7 @@ func ModbusSheetUpdate(c *gin.Context, ruleEngine typex.RuleX) {
 			}
 		}
 	}
+	ruleEngine.RestartDevice(form.DeviceUUID)
 	c.JSON(common.HTTP_OK, common.Ok())
 
 }
@@ -253,6 +261,7 @@ func ModbusSheetImport(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
+	ruleEngine.RestartDevice(deviceUuid)
 	c.JSON(common.HTTP_OK, common.Ok())
 }
 
@@ -273,7 +282,7 @@ func parseModbusPointExcel(
 		return nil, err
 	}
 	// 判断首行标头
-	// tag, alias, function, frequency, slaverId, startAddress, quality
+	// tag, alias, function, frequency, slaverId, address, quality
 	err1 := errors.New("invalid Sheet Header")
 	if len(rows[0]) < 7 {
 		return nil, err1
@@ -283,13 +292,13 @@ func parseModbusPointExcel(
 		rows[0][2] != "function" ||
 		rows[0][3] != "frequency" ||
 		rows[0][4] != "slaverId" ||
-		rows[0][5] != "startAddress" ||
+		rows[0][5] != "address" ||
 		rows[0][6] != "quality" {
 		return nil, err1
 	}
 
 	list = make([]model.MModbusDataPoint, 0)
-	// tag, alias, function, frequency, slaverId, startAddress, quality
+	// tag, alias, function, frequency, slaverId, address, quality
 	for i := 1; i < len(rows); i++ {
 		row := rows[i]
 		tag := row[0]

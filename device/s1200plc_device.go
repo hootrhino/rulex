@@ -90,6 +90,9 @@ func (s1200 *s1200plc) Init(devId string, configMap map[string]interface{}) erro
 		return err
 	}
 	// 合并数据库里面的点位表
+	// TODO 这里需要优化一下，而不是直接查表这种形式，应该从物模型组件来加载
+	// DataSchema = schema.load(uuid)
+	// DataSchema.update(k, v)
 	var list []SiemensDataPoint
 	errDb := interdb.DB().Table("m_siemens_data_points").
 		Where("device_uuid=?", devId).Find(&list).Error

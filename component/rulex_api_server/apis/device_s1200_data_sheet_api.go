@@ -138,6 +138,7 @@ func SiemensSheetDeleteAll(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
+	ruleEngine.RestartDevice(form.DeviceUUID)
 	c.JSON(common.HTTP_OK, common.Ok())
 
 }
@@ -156,6 +157,7 @@ func SiemensSheetDelete(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
+	ruleEngine.RestartDevice(form.DeviceUUID)
 	c.JSON(common.HTTP_OK, common.Ok())
 
 }
@@ -166,13 +168,18 @@ func SiemensSheetDelete(c *gin.Context, ruleEngine typex.RuleX) {
 *
  */
 func SiemensSheetUpdate(c *gin.Context, ruleEngine typex.RuleX) {
-	SiemensDataPoints := []SiemensPointVo{}
-	err := c.ShouldBindJSON(&SiemensDataPoints)
+	type Form struct {
+		DeviceUUID        string           `json:"device_uuid"`
+		SiemensDataPoints []SiemensPointVo `json:"siemens_data_points"`
+	}
+	form := Form{}
+	// SiemensDataPoints := []SiemensPointVo{}
+	err := c.ShouldBindJSON(&form)
 	if err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	for _, SiemensDataPoint := range SiemensDataPoints {
+	for _, SiemensDataPoint := range form.SiemensDataPoints {
 		if SiemensDataPoint.UUID == "" {
 			NewRow := model.MSiemensDataPoint{}
 			copier.Copy(&NewRow, &SiemensDataPoint)
@@ -195,6 +202,7 @@ func SiemensSheetUpdate(c *gin.Context, ruleEngine typex.RuleX) {
 			}
 		}
 	}
+	ruleEngine.RestartDevice(form.DeviceUUID)
 	c.JSON(common.HTTP_OK, common.Ok())
 
 }
@@ -253,6 +261,7 @@ func SiemensSheetImport(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
+	ruleEngine.RestartDevice(deviceUuid)
 	c.JSON(common.HTTP_OK, common.Ok())
 }
 
