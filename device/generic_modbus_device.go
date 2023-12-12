@@ -248,7 +248,7 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 				if mdev.mainConfig.CommonConfig.Mode == "TCP" {
 					n, err = mdev.RTURead(buffer)
 				}
-				if mdev.mainConfig.CommonConfig.Mode == "RTU" {
+				if mdev.mainConfig.CommonConfig.Mode == "UART" {
 					n, err = mdev.TCPRead(buffer)
 				}
 				if err != nil {
@@ -284,7 +284,7 @@ func (mdev *generic_modbus_device) OnWrite(cmd []byte, data []byte) (int, error)
 		if mdev.mainConfig.CommonConfig.Mode == "TCP" {
 			mdev.tcpHandler.SlaveId = r.SlaverId
 		}
-		if mdev.mainConfig.CommonConfig.Mode == "RTU" {
+		if mdev.mainConfig.CommonConfig.Mode == "UART" {
 			mdev.rtuHandler.SlaveId = r.SlaverId
 		}
 		// 5
@@ -412,7 +412,7 @@ func (mdev *generic_modbus_device) modbusRead(buffer []byte) (int, error) {
 		if mdev.mainConfig.CommonConfig.Mode == "TCP" {
 			mdev.tcpHandler.SlaveId = r.SlaverId
 		}
-		if mdev.mainConfig.CommonConfig.Mode == "RTU" {
+		if mdev.mainConfig.CommonConfig.Mode == "UART" {
 			mdev.rtuHandler.SlaveId = r.SlaverId
 		}
 		if r.Function == common.READ_COIL {

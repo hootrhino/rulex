@@ -269,13 +269,13 @@ func (hs *ApiServerPlugin) LoadRoute() {
 	server.DefaultApiServer.Route().GET(server.ContextUrl("info"), server.AddRoute(apis.Info))
 	//
 	InEndApi := server.RouteGroup(server.ContextUrl("/inends"))
-
 	{
 		InEndApi.GET(("/detail"), server.AddRoute(apis.InEndDetail))
 		InEndApi.GET(("/list"), server.AddRoute(apis.InEnds))
 		InEndApi.POST(("/create"), server.AddRoute(apis.CreateInend))
 		InEndApi.DELETE(("/del"), server.AddRoute(apis.DeleteInEnd))
 		InEndApi.PUT(("/update"), server.AddRoute(apis.UpdateInend))
+		InEndApi.PUT("/restart", server.AddRoute(apis.RestartInEnd))
 	}
 
 	rulesApi := server.RouteGroup(server.ContextUrl("/rules"))
@@ -299,6 +299,7 @@ func (hs *ApiServerPlugin) LoadRoute() {
 		OutEndApi.POST(("/create"), server.AddRoute(apis.CreateOutEnd))
 		OutEndApi.DELETE(("/del"), server.AddRoute(apis.DeleteOutEnd))
 		OutEndApi.PUT(("/update"), server.AddRoute(apis.UpdateOutEnd))
+		OutEndApi.PUT("/restart", server.AddRoute(apis.RestartOutEnd))
 	}
 
 	//
@@ -313,10 +314,9 @@ func (hs *ApiServerPlugin) LoadRoute() {
 	{
 		osApi.GET(("/netInterfaces"), server.AddRoute(apis.GetNetInterfaces))
 		osApi.GET(("/osRelease"), server.AddRoute(apis.CatOsRelease))
-		osApi.GET(("/uarts"), server.AddRoute(apis.GetUartList))
+		// osApi.GET(("/uarts"), server.AddRoute(apis.GetUartList))
 		osApi.GET(("/system"), server.AddRoute(apis.System))
 		osApi.GET(("/startedAt"), server.AddRoute(apis.StartedAt))
-
 	}
 	backupApi := server.RouteGroup(server.ContextUrl("/backup"))
 	{
@@ -334,7 +334,7 @@ func (hs *ApiServerPlugin) LoadRoute() {
 		deviceApi.GET(("/detail"), server.AddRoute(apis.DeviceDetail))
 		deviceApi.GET("/group", server.AddRoute(apis.ListDeviceGroup))
 		deviceApi.GET("/listByGroup", server.AddRoute(apis.ListDeviceByGroup))
-
+		deviceApi.PUT("/restart", server.AddRoute(apis.RestartDevice))
 	}
 	// Modbus 点位表
 	modbusApi := server.RouteGroup(server.ContextUrl("/modbus_data_sheet"))

@@ -123,6 +123,16 @@ func CreateInend(c *gin.Context, ruleEngine typex.RuleX) {
 	c.JSON(common.HTTP_OK, common.Ok())
 
 }
+func RestartInEnd(c *gin.Context, ruleEngine typex.RuleX) {
+	uuid, _ := c.GetQuery("uuid")
+	err := ruleEngine.RestartInEnd(uuid)
+	if err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
+	c.JSON(common.HTTP_OK, common.Ok())
+
+}
 
 /*
 *

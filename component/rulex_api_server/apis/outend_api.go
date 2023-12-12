@@ -145,6 +145,16 @@ func CreateOutEnd(c *gin.Context, ruleEngine typex.RuleX) {
 	c.JSON(common.HTTP_OK, common.Ok())
 
 }
+func RestartOutEnd(c *gin.Context, ruleEngine typex.RuleX) {
+	uuid, _ := c.GetQuery("uuid")
+	err := ruleEngine.RestartOutEnd(uuid)
+	if err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
+	c.JSON(common.HTTP_OK, common.Ok())
+
+}
 
 // 更新
 func UpdateOutEnd(c *gin.Context, ruleEngine typex.RuleX) {
