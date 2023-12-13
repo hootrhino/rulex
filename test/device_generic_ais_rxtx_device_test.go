@@ -35,7 +35,7 @@ func Test_AIS_SEND_PACKET(t *testing.T) {
 * AIS 数据发送模拟器
 *
  */
-func ais_sender_emulator_udp() {
+func Ais_sender_emulator_udp() {
 	// Server address
 	serverAddr := "localhost:6005"
 
@@ -74,7 +74,7 @@ func ais_sender_emulator_udp() {
 	fmt.Println("Response from server:", response)
 }
 
-func ais_sender_emulator_tcp() {
+func Ais_sender_emulator_tcp() {
 	// Connect to the server
 	s1 := `!ABVDM,1,1,5,B,H69EvShlTpID@TpMUG3COOL0000,2*14`
 	conn, err := net.Dial("tcp", "localhost:6005")

@@ -31,32 +31,6 @@ import (
 //	    ]
 //	}
 func Test_gen_config(t *testing.T) {
-	port := 1800
-	Rack := 0
-	Slot := 1
-	Timeout := 5
-	IdleTimeout := 5
-	ReadFrequency := 5
-	c := common.S1200Config{
-		Host:        "127.0.0.1",
-		Port:        &port,
-		Rack:        &Rack,
-		Slot:        &Slot,
-		Model:       "S1200",
-		Timeout:     &Timeout,
-		IdleTimeout: &IdleTimeout,
-		Frequency:   int64(ReadFrequency),
-		Blocks: []common.S1200Block{
-			{
-				Tag:     "V1",
-				Address: 1,
-				Start:   1,
-				Size:    10,
-			},
-		},
-	}
-	b, _ := json.MarshalIndent(c, "", " ")
-	t.Log(string(b))
 
 }
 func Test_parse_config(t *testing.T) {
@@ -136,7 +110,7 @@ func Test_RULEX_WITH_S1200PLC(t *testing.T) {
 	EMQX_BROKER := typex.NewOutEnd(typex.MQTT_TARGET,
 		"内网MQTT桥接",
 		"内网MQTT桥接", map[string]interface{}{
-			"Host":      "emqx.dev.inrobot.cloud",
+			"Host":      "emqx.dev.com",
 			"Port":      1883,
 			"DataTopic": "iothub/upstream/YK0801",
 			"ClientId":  "YK0801",

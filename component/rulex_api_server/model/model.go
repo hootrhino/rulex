@@ -8,7 +8,7 @@ import (
 )
 
 type RulexModel struct {
-	ID        uint      `gorm:"primarykey" json:"id"`
+	ID        uint      `gorm:"primaryKey" json:"id"`
 	CreatedAt time.Time `json:"created_at"`
 }
 type StringList []string
