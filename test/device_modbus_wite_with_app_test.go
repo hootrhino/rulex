@@ -13,12 +13,12 @@ import (
 )
 
 // 读出来的字节缓冲默认大小
-const __DEFAULT_BUFFER_SIZE = 100
+// const __DEFAULT_BUFFER_SIZE = 100
 
 // 传输形式：
 // `rawtcp`, `rawudp`, `rawserial`
-const rawtcp string = "TCP"
-const rawudp string = "rawudp"
+// const rawtcp string = "TCP"
+// const rawudp string = "rawudp"
 const rawserial string = "UART"
 
 type _CPDCommonConfig struct {

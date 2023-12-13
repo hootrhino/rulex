@@ -32,13 +32,14 @@ type SiemensDataPoint struct {
 }
 
 type S1200CommonConfig struct {
-	Host        string `json:"host" validate:"required"`        // 127.0.0.1:502
-	Model       string `json:"model" validate:"required"`       // s7-200 s7-1500
-	Rack        *int   `json:"rack" validate:"required"`        // 0
-	Slot        *int   `json:"slot" validate:"required"`        // 1
-	Timeout     *int   `json:"timeout" validate:"required"`     // 5s
-	IdleTimeout *int   `json:"idleTimeout" validate:"required"` // 5s
-	AutoRequest *bool  `json:"autoRequest" validate:"required"` // false
+	Host  string `json:"host" validate:"required"`  // 127.0.0.1:502
+	Model string `json:"model" validate:"required"` // s7-200 s7-1500
+	// https://cloudvpn.beijerelectronics.com/hc/en-us/articles/4406049761169-Siemens-S7
+	Rack        *int  `json:"rack" validate:"required"`        // 0
+	Slot        *int  `json:"slot" validate:"required"`        // 1
+	Timeout     *int  `json:"timeout" validate:"required"`     // 5s
+	IdleTimeout *int  `json:"idleTimeout" validate:"required"` // 5s
+	AutoRequest *bool `json:"autoRequest" validate:"required"` // false
 }
 type S1200Config struct {
 	CommonConfig S1200CommonConfig `json:"commonConfig" validate:"required"` // 通用配置
@@ -245,6 +246,7 @@ func (s1200 *s1200plc) Read(cmd []byte, data []byte) (int, error) {
 			// 00.00.00.01 | 00.00.00.02 | 00.00.00.03 | 00.00.00.04
 			if err := s1200.client.AGReadDB(*db.Address, *db.Start, *db.Size, rData[:]); err != nil {
 				s1200.SiemensDataPoints[uuid].Status = 0
+				glogger.GLogger.Error(err)
 				return 0, err
 			}
 			count := db.Size
@@ -269,6 +271,7 @@ func (s1200 *s1200plc) Read(cmd []byte, data []byte) (int, error) {
 		if db.Type == "MB" {
 			// 00.00.00.01 | 00.00.00.02 | 00.00.00.03 | 00.00.00.04
 			if err := s1200.client.AGReadMB(*db.Start, *db.Size, rData[:]); err != nil {
+				glogger.GLogger.Error(err)
 				return 0, err
 			}
 			count := db.Size
