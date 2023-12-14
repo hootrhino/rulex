@@ -8,6 +8,8 @@ import (
 	"sync"
 	"time"
 
+	siemenscache "github.com/hootrhino/rulex/component/intercache/siemens"
+
 	"github.com/hootrhino/rulex/common"
 	"github.com/hootrhino/rulex/component/interdb"
 	"github.com/hootrhino/rulex/glogger"
@@ -18,17 +20,15 @@ import (
 
 // 点位表
 type SiemensDataPoint struct {
-	UUID          string `json:"uuid"` // 当UUID为空时新建
-	DeviceUuid    string `json:"device_uuid"`
-	Tag           string `json:"tag,omitempty"`
-	Type          string `json:"type,omitempty"`
-	Frequency     *int64 `json:"frequency,omitempty"`
-	Address       *int   `json:"address,omitempty"`
-	Start         *int   `json:"start"`
-	Size          *int   `json:"size"`
-	Status        int    `json:"status"`        // 运行时数据
-	LastFetchTime uint64 `json:"lastFetchTime"` // 运行时数据
-	Value         string `json:"value"`         // 运行时数据
+	UUID       string `json:"uuid"` // 当UUID为空时新建
+	DeviceUuid string `json:"device_uuid"`
+	Tag        string `json:"tag,omitempty"`
+	Type       string `json:"type,omitempty"`
+	Frequency  *int64 `json:"frequency,omitempty"`
+	Address    *int   `json:"address,omitempty"`
+	Start      *int   `json:"start"`
+	Size       *int   `json:"size"`
+	Value      string `json:"value"`
 }
 
 type S1200CommonConfig struct {
@@ -46,7 +46,7 @@ type S1200Config struct {
 }
 
 // https://www.ad.siemens.com.cn/productportal/prods/s7-1200_plc_easy_plus/07-Program/02-basic/01-Data_Type/01-basic.html
-type s1200plc struct {
+type SIEMENS_PLC struct {
 	typex.XStatus
 	status            typex.DeviceState
 	RuleEngine        typex.RuleX
@@ -61,8 +61,8 @@ type s1200plc struct {
 * 西门子 S1200 系列 PLC
 *
  */
-func NewS1200plc(e typex.RuleX) typex.XDevice {
-	s1200 := new(s1200plc)
+func NewSIEMENS_PLC(e typex.RuleX) typex.XDevice {
+	s1200 := new(SIEMENS_PLC)
 	s1200.RuleEngine = e
 	s1200.lock = sync.Mutex{}
 	Rack := 0
@@ -84,8 +84,9 @@ func NewS1200plc(e typex.RuleX) typex.XDevice {
 }
 
 // 初始化
-func (s1200 *s1200plc) Init(devId string, configMap map[string]interface{}) error {
+func (s1200 *SIEMENS_PLC) Init(devId string, configMap map[string]interface{}) error {
 	s1200.PointId = devId
+	siemenscache.RegisterSlot(s1200.PointId)
 	if err := utils.BindSourceConfig(configMap, &s1200.mainConfig); err != nil {
 		glogger.GLogger.Error(err)
 		return err
@@ -106,12 +107,19 @@ func (s1200 *s1200plc) Init(devId string, configMap map[string]interface{}) erro
 			return errors.New("'frequency' must grate than 50 millisecond")
 		}
 		s1200.SiemensDataPoints[v.UUID] = &v
+
+		siemenscache.SetValue(s1200.PointId, v.UUID, siemenscache.SiemensPoint{
+			UUID:          v.UUID,
+			Status:        0,
+			LastFetchTime: 0,
+			Value:         "0",
+		})
 	}
 	return nil
 }
 
 // 启动
-func (s1200 *s1200plc) Start(cctx typex.CCTX) error {
+func (s1200 *SIEMENS_PLC) Start(cctx typex.CCTX) error {
 	s1200.Ctx = cctx.Ctx
 	s1200.CancelCTX = cctx.CancelCTX
 	//
@@ -171,7 +179,7 @@ func (s1200 *s1200plc) Start(cctx typex.CCTX) error {
 }
 
 // 从设备里面读数据出来
-func (s1200 *s1200plc) OnRead(cmd []byte, data []byte) (int, error) {
+func (s1200 *SIEMENS_PLC) OnRead(cmd []byte, data []byte) (int, error) {
 	return s1200.Read(cmd, data)
 }
 
@@ -179,7 +187,7 @@ func (s1200 *s1200plc) OnRead(cmd []byte, data []byte) (int, error) {
 //
 // db.Address:int, db.Start:int, db.Size:int, rData[]
 
-func (s1200 *s1200plc) OnWrite(cmd []byte, data []byte) (int, error) {
+func (s1200 *SIEMENS_PLC) OnWrite(cmd []byte, data []byte) (int, error) {
 	blocks := []SiemensDataPoint{}
 	if err := json.Unmarshal(data, &blocks); err != nil {
 		return 0, err
@@ -188,7 +196,7 @@ func (s1200 *s1200plc) OnWrite(cmd []byte, data []byte) (int, error) {
 }
 
 // 设备当前状态
-func (s1200 *s1200plc) Status() typex.DeviceState {
+func (s1200 *SIEMENS_PLC) Status() typex.DeviceState {
 	if s1200.client == nil {
 		return typex.DEV_DOWN
 	}
@@ -197,40 +205,41 @@ func (s1200 *s1200plc) Status() typex.DeviceState {
 }
 
 // 停止设备
-func (s1200 *s1200plc) Stop() {
+func (s1200 *SIEMENS_PLC) Stop() {
 	s1200.status = typex.DEV_DOWN
 	if s1200.CancelCTX != nil {
 		s1200.CancelCTX()
 	}
+	siemenscache.UnRegisterSlot(s1200.PointId)
 }
 
 // 设备属性，是一系列属性描述
-func (s1200 *s1200plc) Property() []typex.DeviceProperty {
+func (s1200 *SIEMENS_PLC) Property() []typex.DeviceProperty {
 	return []typex.DeviceProperty{}
 }
 
 // 真实设备
-func (s1200 *s1200plc) Details() *typex.Device {
+func (s1200 *SIEMENS_PLC) Details() *typex.Device {
 	return s1200.RuleEngine.GetDevice(s1200.PointId)
 }
 
 // 状态
-func (s1200 *s1200plc) SetState(status typex.DeviceState) {
+func (s1200 *SIEMENS_PLC) SetState(status typex.DeviceState) {
 	s1200.status = status
 }
 
 // 驱动
-func (s1200 *s1200plc) Driver() typex.XExternalDriver {
+func (s1200 *SIEMENS_PLC) Driver() typex.XExternalDriver {
 	return nil
 }
 
-func (s1200 *s1200plc) OnDCACall(UUID string, Command string, Args interface{}) typex.DCAResult {
+func (s1200 *SIEMENS_PLC) OnDCACall(UUID string, Command string, Args interface{}) typex.DCAResult {
 	return typex.DCAResult{}
 }
-func (s1200 *s1200plc) OnCtrl(cmd []byte, args []byte) ([]byte, error) {
+func (s1200 *SIEMENS_PLC) OnCtrl(cmd []byte, args []byte) ([]byte, error) {
 	return []byte{}, nil
 }
-func (s1200 *s1200plc) Write(cmd []byte, data []byte) (int, error) {
+func (s1200 *SIEMENS_PLC) Write(cmd []byte, data []byte) (int, error) {
 	return 0, nil
 }
 
@@ -238,14 +247,20 @@ func (s1200 *s1200plc) Write(cmd []byte, data []byte) (int, error) {
 // 读: db --> dbNumber, start, size, buffer[]
 var rData = [common.T_2KB]byte{} // 一次最大接受2KB数据
 
-func (s1200 *s1200plc) Read(cmd []byte, data []byte) (int, error) {
+func (s1200 *SIEMENS_PLC) Read(cmd []byte, data []byte) (int, error) {
 	values := []SiemensDataPoint{}
 	for uuid, db := range s1200.SiemensDataPoints {
 		//DB 4字节
 		if db.Type == "DB" {
 			// 00.00.00.01 | 00.00.00.02 | 00.00.00.03 | 00.00.00.04
 			if err := s1200.client.AGReadDB(*db.Address, *db.Start, *db.Size, rData[:]); err != nil {
-				s1200.SiemensDataPoints[uuid].Status = 0
+				Status := 0
+				LastFetchTime := uint64(time.Now().UnixMilli())
+				siemenscache.SetValue(s1200.PointId, uuid, siemenscache.SiemensPoint{
+					UUID:          uuid,
+					Status:        Status,
+					LastFetchTime: LastFetchTime,
+				})
 				glogger.GLogger.Error(err)
 				return 0, err
 			}
@@ -263,14 +278,26 @@ func (s1200 *s1200plc) Read(cmd []byte, data []byte) (int, error) {
 				Size:       db.Size,
 				Value:      Value,
 			})
-			s1200.SiemensDataPoints[uuid].Value = Value
-			s1200.SiemensDataPoints[uuid].Status = 1
-			s1200.SiemensDataPoints[uuid].LastFetchTime = uint64(time.Now().UnixMilli())
+			Status := 1
+			LastFetchTime := uint64(time.Now().UnixMilli())
+			siemenscache.SetValue(s1200.PointId, uuid, siemenscache.SiemensPoint{
+				UUID:          uuid,
+				Status:        Status,
+				LastFetchTime: LastFetchTime,
+				Value:         Value,
+			})
 		}
 		//
 		if db.Type == "MB" {
 			// 00.00.00.01 | 00.00.00.02 | 00.00.00.03 | 00.00.00.04
 			if err := s1200.client.AGReadMB(*db.Start, *db.Size, rData[:]); err != nil {
+				Status := 0
+				LastFetchTime := uint64(time.Now().UnixMilli())
+				siemenscache.SetValue(s1200.PointId, uuid, siemenscache.SiemensPoint{
+					UUID:          uuid,
+					Status:        Status,
+					LastFetchTime: LastFetchTime,
+				})
 				glogger.GLogger.Error(err)
 				return 0, err
 			}
@@ -287,9 +314,14 @@ func (s1200 *s1200plc) Read(cmd []byte, data []byte) (int, error) {
 				Size:    db.Size,
 				Value:   Value,
 			})
-			s1200.SiemensDataPoints[uuid].Value = Value
-			s1200.SiemensDataPoints[uuid].Status = 1
-			s1200.SiemensDataPoints[uuid].LastFetchTime = uint64(time.Now().UnixMilli())
+			Status := 1
+			LastFetchTime := uint64(time.Now().UnixMilli())
+			siemenscache.SetValue(s1200.PointId, uuid, siemenscache.SiemensPoint{
+				UUID:          uuid,
+				Status:        Status,
+				LastFetchTime: LastFetchTime,
+				Value:         Value,
+			})
 		}
 		if *db.Frequency < 100 {
 			*db.Frequency = 100 // 不能太快

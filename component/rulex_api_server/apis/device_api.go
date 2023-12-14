@@ -3,10 +3,12 @@ package apis
 import (
 	"fmt"
 
+	"github.com/hootrhino/rulex/component/interdb"
 	common "github.com/hootrhino/rulex/component/rulex_api_server/common"
 	"github.com/hootrhino/rulex/component/rulex_api_server/model"
 	"github.com/hootrhino/rulex/component/rulex_api_server/server"
 	"github.com/hootrhino/rulex/component/rulex_api_server/service"
+	"gorm.io/gorm"
 
 	"github.com/hootrhino/rulex/typex"
 	"github.com/hootrhino/rulex/utils"
@@ -130,7 +132,7 @@ func DeleteDevice(c *gin.Context, ruleEngine typex.RuleX) {
 		}
 	}
 	// 西门子的
-	if Mdev.Type == "S1200PLC" {
+	if Mdev.Type == "SIEMENS_PLC" {
 		if err := service.DeleteAllSiemensPointByDevice(uuid); err != nil {
 			c.JSON(common.HTTP_OK, common.Error400(err))
 			return
@@ -241,16 +243,37 @@ func UpdateDevice(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	// 取消绑定分组,删除原来旧的分组
+
+	// 只有检查到分组变了才更改
 	Group := service.GetVisualGroup(Device.UUID)
-	if err := service.UnBindResource(Group.UUID, Device.UUID); err != nil {
-		c.JSON(common.HTTP_OK, common.Error400(err))
-		return
-	}
-	// 重新绑定分组
-	if err := service.BindResource(form.Gid, Device.UUID); err != nil {
-		c.JSON(common.HTTP_OK, common.Error400(err))
-		return
+	if Group.UUID != form.Gid {
+		// 取消绑定分组,删除原来旧的分组
+		txErr := interdb.DB().Transaction(func(tx *gorm.DB) error {
+			err1 := tx.Where("gid=? and rid =?", Group.UUID, Device.UUID).
+				Delete(&model.MGenericGroupRelation{}).Error
+			if err1 != nil {
+				c.JSON(common.HTTP_OK, common.Error400(err))
+				return err1
+			}
+			// 重新绑定分组,首先确定分组是否存在
+			MGroup := model.MGenericGroup{}
+			if err2 := interdb.DB().Where("uuid=?", Group.UUID).First(&MGroup).Error; err2 != nil {
+				return err2
+			}
+			Relation := model.MGenericGroupRelation{
+				Gid: MGroup.UUID,
+				Rid: Device.UUID,
+			}
+			err3 := tx.Save(&Relation).Error
+			if err3 != nil {
+				return err3
+			}
+			return nil
+		})
+		if txErr != nil {
+			c.JSON(common.HTTP_OK, common.Error400(txErr))
+			return
+		}
 	}
 	if err := server.LoadNewestDevice(form.UUID, ruleEngine); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))

@@ -66,14 +66,14 @@ func Test_parse_config(t *testing.T) {
 
 /*
 *
-* 测试RULEX加载 S1200PLC
+* 测试RULEX加载 SIEMENS_PLC
 *
  */
-func Test_RULEX_WITH_S1200PLC(t *testing.T) {
+func Test_RULEX_WITH_SIEMENS_PLC(t *testing.T) {
 	engine := RunTestEngine()
 	engine.Start()
 
-	S1200PLC := typex.NewDevice(typex.S1200PLC,
+	SIEMENS_PLC := typex.NewDevice(typex.SIEMENS_PLC,
 		"PLC工站系统", "PLC工站系统", map[string]interface{}{
 			"host":          "127.0.0.1",
 			"port":          1800,
@@ -99,10 +99,10 @@ func Test_RULEX_WITH_S1200PLC(t *testing.T) {
 			},
 		},
 	)
-	S1200PLC.UUID = "S1200PLC"
+	SIEMENS_PLC.UUID = "SIEMENS_PLC"
 	ctx, cancelF := typex.NewCCTX()
-	if err := engine.LoadDeviceWithCtx(S1200PLC, ctx, cancelF); err != nil {
-		t.Error("S1200PLC load failed:", err)
+	if err := engine.LoadDeviceWithCtx(SIEMENS_PLC, ctx, cancelF); err != nil {
+		t.Error("SIEMENS_PLC load failed:", err)
 	}
 	//
 	// 透传到内部EMQX

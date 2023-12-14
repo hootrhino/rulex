@@ -24,6 +24,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	modbuscache "github.com/hootrhino/rulex/component/intercache/modbus"
 	"github.com/hootrhino/rulex/component/interdb"
 	common "github.com/hootrhino/rulex/component/rulex_api_server/common"
 	"github.com/hootrhino/rulex/component/rulex_api_server/model"
@@ -99,7 +100,9 @@ func ModbusSheetPageList(c *gin.Context, ruleEngine typex.RuleX) {
 	recordsVo := []ModbusPointVo{}
 
 	for _, record := range records {
-		recordsVo = append(recordsVo, ModbusPointVo{
+		Slot := modbuscache.GetSlot(deviceUuid)
+		Value, ok := Slot[record.UUID]
+		Vo := ModbusPointVo{
 			UUID:          record.UUID,
 			DeviceUUID:    record.DeviceUuid,
 			Tag:           record.Tag,
@@ -109,10 +112,22 @@ func ModbusSheetPageList(c *gin.Context, ruleEngine typex.RuleX) {
 			Address:       record.Address,
 			Frequency:     record.Frequency,
 			Quantity:      record.Quantity,
-			Status:        1,                              // 运行时
-			LastFetchTime: uint64(time.Now().UnixMilli()), // 运行时
-			Value:         "00000000",                     // 运行时
-		})
+			LastFetchTime: Value.LastFetchTime, // 运行时
+			Value:         Value.Value,         // 运行时
+		}
+		if ok {
+			Vo.Status = func() int {
+				if Value.Value == "" {
+					return 0
+				}
+				return 1
+			}() // 运行时
+			Vo.LastFetchTime = Value.LastFetchTime // 运行时
+			Vo.Value = Value.Value                 // 运行时
+			recordsVo = append(recordsVo, Vo)
+		} else {
+			recordsVo = append(recordsVo, Vo)
+		}
 	}
 	Result := service.WrapPageResult(*pager, recordsVo, count)
 	c.JSON(common.HTTP_OK, common.OkWithData(Result))
