@@ -17,7 +17,7 @@ func LoadDt() {
 	DM.Register(typex.TSS200V02, &typex.XConfig{})
 	DM.Register(typex.RTU485_THER, &typex.XConfig{})
 	DM.Register(typex.YK08_RELAY, &typex.XConfig{})
-	DM.Register(typex.S1200PLC, &typex.XConfig{})
+	DM.Register(typex.SIEMENS_PLC, &typex.XConfig{})
 	DM.Register(typex.GENERIC_MODBUS, &typex.XConfig{})
 	DM.Register(typex.GENERIC_MODBUS_POINT_EXCEL, &typex.XConfig{})
 	DM.Register(typex.GENERIC_UART, &typex.XConfig{})

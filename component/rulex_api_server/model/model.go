@@ -55,7 +55,7 @@ type MRule struct {
 type MInEnd struct {
 	RulexModel
 	// UUID for origin source ID
-	UUID      string     `gorm:"not null"`
+	UUID      string     `gorm:"uniqueIndex"`
 	Type      string     `gorm:"not null"`
 	Name      string     `gorm:"not null"`
 	BindRules StringList `json:"bindRules"` // 与之关联的规则表["A","B","C"]
@@ -77,7 +77,7 @@ func (md MInEnd) GetConfig() map[string]interface{} {
 type MOutEnd struct {
 	RulexModel
 	// UUID for origin source ID
-	UUID        string `gorm:"not null"`
+	UUID        string `gorm:"uniqueIndex"`
 	Type        string `gorm:"not null"`
 	Name        string `gorm:"not null"`
 	Description string
@@ -104,7 +104,7 @@ type MUser struct {
 // 设备元数据
 type MDevice struct {
 	RulexModel
-	UUID        string `gorm:"not null"`
+	UUID        string `gorm:"uniqueIndex"`
 	Name        string `gorm:"not null"`
 	Type        string `gorm:"not null"`
 	Config      string
@@ -127,7 +127,7 @@ func (md MDevice) GetConfig() map[string]interface{} {
 
 type MGoods struct {
 	RulexModel
-	UUID        string `gorm:"not null"`
+	UUID        string `gorm:"uniqueIndex"`
 	LocalPath   string `gorm:"not null"`
 	GoodsType   string `gorm:"not null"` // LOCAL, EXTERNAL
 	ExecuteType string `gorm:"not null"` // exe,elf,js,py....
@@ -144,12 +144,12 @@ type MGoods struct {
  */
 type MApp struct {
 	RulexModel
-	UUID        string `gorm:"not null"` // 名称
-	Name        string `gorm:"not null"` // 名称
-	Version     string `gorm:"not null"` // 版本号
-	AutoStart   *bool  `gorm:"not null"` // 允许启动
-	LuaSource   string `gorm:"not null"` // LuaSource
-	Description string `gorm:"not null"` // 文件路径, 是相对于main的apps目录
+	UUID        string `gorm:"uniqueIndex"` // 名称
+	Name        string `gorm:"not null"`    // 名称
+	Version     string `gorm:"not null"`    // 版本号
+	AutoStart   *bool  `gorm:"not null"`    // 允许启动
+	LuaSource   string `gorm:"not null"`    // LuaSource
+	Description string `gorm:"not null"`    // 文件路径, 是相对于main的apps目录
 }
 
 /*
@@ -159,12 +159,12 @@ type MApp struct {
  */
 type MAiBase struct {
 	RulexModel
-	UUID        string `gorm:"not null"` // 名称
-	Name        string `gorm:"not null"` // 名称
-	Type        string `gorm:"not null"` // 类型
-	IsBuildIn   bool   `gorm:"not null"` // 是否内建
-	Version     string `gorm:"not null"` // 版本号
-	Filepath    string `gorm:"not null"` // 文件路径, 是相对于main的apps目录
+	UUID        string `gorm:"uniqueIndex"` // 名称
+	Name        string `gorm:"not null"`    // 名称
+	Type        string `gorm:"not null"`    // 类型
+	IsBuildIn   bool   `gorm:"not null"`    // 是否内建
+	Version     string `gorm:"not null"`    // 版本号
+	Filepath    string `gorm:"not null"`    // 文件路径, 是相对于main的apps目录
 	Description string `gorm:"not null"`
 }
 
@@ -178,12 +178,12 @@ type MAiBase struct {
  */
 type MVisual struct {
 	RulexModel
-	UUID      string `gorm:"not null"` // 名称
-	Name      string `gorm:"not null"` // 名称
-	Type      string `gorm:"not null"` // 类型
-	Status    bool   `gorm:"not null"` // 状态, EDITING, PUBLISH
-	Content   string `gorm:"not null"` // 大屏的内容
-	Thumbnail string `gorm:"not null"` // 缩略图
+	UUID      string `gorm:"uniqueIndex"` // 名称
+	Name      string `gorm:"not null"`    // 名称
+	Type      string `gorm:"not null"`    // 类型
+	Status    bool   `gorm:"not null"`    // 状态, EDITING, PUBLISH
+	Content   string `gorm:"not null"`    // 大屏的内容
+	Thumbnail string `gorm:"not null"`    // 缩略图
 }
 
 /*
@@ -193,7 +193,7 @@ type MVisual struct {
  */
 type MGenericGroup struct {
 	RulexModel
-	UUID   string `gorm:"not null"`
+	UUID   string `gorm:"uniqueIndex"`
 	Name   string `gorm:"not null"` // 名称
 	Type   string `gorm:"not null"` // 组的类型, DEVICE: 设备分组
 	Parent string `gorm:"not null"` // 上级, 如果是0表示根节点
@@ -206,7 +206,7 @@ type MGenericGroup struct {
  */
 type MGenericGroupRelation struct {
 	RulexModel
-	UUID string `gorm:"not null"`
+	UUID string `gorm:"uniqueIndex"`
 	Gid  string `gorm:"not null"` // 分组ID
 	Rid  string `gorm:"not null"` // 被绑定方
 }
@@ -245,7 +245,7 @@ type MWifiConfig struct {
  */
 type MCronTask struct {
 	RulexModel
-	UUID      string    `gorm:"not null; default:''" json:"uuid"`
+	UUID      string    `gorm:"uniqueIndex,not null; default:''" json:"uuid"`
 	Name      string    `gorm:"not null;" json:"name"`
 	CronExpr  string    `gorm:"not null" json:"cronExpr"` // quartz cron expr
 	Enable    *bool     `json:"enable"`                   // 是否启用定时任务

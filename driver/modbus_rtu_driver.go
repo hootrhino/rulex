@@ -66,13 +66,12 @@ func (d *modBusRtuDriver) Read(cmd []byte, data []byte) (int, error) {
 	if count == 0 {
 		return 0, nil
 	}
-	for uuid, r := range d.Registers {
+	for _, r := range d.Registers {
 		d.handler.SlaveId = r.SlaverId
 		if r.Function == common.READ_COIL {
 			results, err = d.client.ReadCoils(r.Address, r.Quantity)
 			if err != nil {
 				count--
-				d.Registers[uuid].Status = 0
 				glogger.GLogger.Error(err)
 			}
 			Value := covertEmptyHex(results)
@@ -85,9 +84,6 @@ func (d *modBusRtuDriver) Read(cmd []byte, data []byte) (int, error) {
 				Alias:    r.Alias,
 				Value:    Value,
 			}
-			d.Registers[uuid].Value = Value
-			d.Registers[uuid].Status = 1
-			d.Registers[uuid].LastFetchTime = uint64(time.Now().UnixMilli())
 			dataMap[r.Tag] = value
 		}
 		if r.Function == common.READ_DISCRETE_INPUT {

@@ -28,6 +28,7 @@ import (
 
 	"github.com/hootrhino/rulex/common"
 	"github.com/hootrhino/rulex/component/hwportmanager"
+	modbuscache "github.com/hootrhino/rulex/component/intercache/modbus"
 	"github.com/hootrhino/rulex/component/interdb"
 	"github.com/hootrhino/rulex/core"
 	"github.com/hootrhino/rulex/glogger"
@@ -126,6 +127,7 @@ func NewGenericModbusDevice(e typex.RuleX) typex.XDevice {
 //  初始化
 func (mdev *generic_modbus_device) Init(devId string, configMap map[string]interface{}) error {
 	mdev.PointId = devId
+	modbuscache.RegisterSlot(mdev.PointId)
 	if err := utils.BindSourceConfig(configMap, &mdev.mainConfig); err != nil {
 		return err
 	}
@@ -153,6 +155,13 @@ func (mdev *generic_modbus_device) Init(devId string, configMap map[string]inter
 			Quantity:  v.Quantity,
 			Frequency: v.Frequency,
 		}
+		Status := 0
+		LastFetchTime := uint64(time.Now().UnixMilli())
+		modbuscache.SetValue(mdev.PointId, v.UUID, modbuscache.RegisterPoint{
+			UUID:          v.UUID,
+			Status:        Status,
+			LastFetchTime: LastFetchTime,
+		})
 	}
 
 	if mdev.mainConfig.CommonConfig.Mode == "UART" {
@@ -356,7 +365,6 @@ func (mdev *generic_modbus_device) Stop() {
 	mdev.CancelCTX()
 	if mdev.mainConfig.CommonConfig.Mode == "UART" {
 		hwportmanager.FreeInterfaceBusy(mdev.mainConfig.PortUuid)
-		mdev.rtuHandler.Close()
 	}
 	if mdev.mainConfig.CommonConfig.Mode == "UART" {
 		mdev.rtuHandler.Close()
@@ -364,6 +372,8 @@ func (mdev *generic_modbus_device) Stop() {
 	if mdev.mainConfig.CommonConfig.Mode == "TCP" {
 		mdev.tcpHandler.Close()
 	}
+	modbuscache.UnRegisterSlot(mdev.PointId)
+
 }
 
 // 设备属性，是一系列属性描述
@@ -419,11 +429,10 @@ func (mdev *generic_modbus_device) modbusRead(buffer []byte) (int, error) {
 			results, err = mdev.Client.ReadCoils(r.Address, r.Quantity)
 			if err != nil {
 				count--
-				mdev.Registers[uuid].Status = 0
 				glogger.GLogger.Error(err)
 			}
 			Value := covertEmptyHex(results)
-			value := common.RegisterRW{
+			Reg := common.RegisterRW{
 				Tag:      r.Tag,
 				Function: r.Function,
 				SlaverId: r.SlaverId,
@@ -432,19 +441,23 @@ func (mdev *generic_modbus_device) modbusRead(buffer []byte) (int, error) {
 				Alias:    r.Alias,
 				Value:    Value,
 			}
-			mdev.Registers[uuid].Value = Value
-			mdev.Registers[uuid].Status = 1
-			mdev.Registers[uuid].LastFetchTime = uint64(time.Now().UnixMilli())
-			dataMap[r.Tag] = value
+			dataMap[r.Tag] = Reg
+			modbuscache.SetValue(mdev.PointId, uuid, modbuscache.RegisterPoint{
+				UUID:          uuid,
+				Status:        0,
+				Value:         Value,
+				LastFetchTime: uint64(time.Now().UnixMilli()),
+			})
 		}
 		if r.Function == common.READ_DISCRETE_INPUT {
 			results, err = mdev.Client.ReadDiscreteInputs(r.Address, r.Quantity)
 			if err != nil {
 				count--
 				glogger.GLogger.Error(err)
+				continue
 			}
 			Value := covertEmptyHex(results)
-			value := common.RegisterRW{
+			Reg := common.RegisterRW{
 				Tag:      r.Tag,
 				Function: r.Function,
 				SlaverId: r.SlaverId,
@@ -453,11 +466,13 @@ func (mdev *generic_modbus_device) modbusRead(buffer []byte) (int, error) {
 				Alias:    r.Alias,
 				Value:    Value,
 			}
-			mdev.Registers[uuid].Value = Value
-			mdev.Registers[uuid].Status = 1
-			mdev.Registers[uuid].LastFetchTime = uint64(time.Now().UnixMilli())
-			dataMap[r.Tag] = value
-
+			dataMap[r.Tag] = Reg
+			modbuscache.SetValue(mdev.PointId, uuid, modbuscache.RegisterPoint{
+				UUID:          uuid,
+				Status:        0,
+				Value:         Value,
+				LastFetchTime: uint64(time.Now().UnixMilli()),
+			})
 		}
 		if r.Function == common.READ_HOLDING_REGISTERS {
 			results, err = mdev.Client.ReadHoldingRegisters(r.Address, r.Quantity)
@@ -466,7 +481,7 @@ func (mdev *generic_modbus_device) modbusRead(buffer []byte) (int, error) {
 				glogger.GLogger.Error(err)
 			}
 			Value := covertEmptyHex(results)
-			value := common.RegisterRW{
+			Reg := common.RegisterRW{
 				Tag:      r.Tag,
 				Function: r.Function,
 				SlaverId: r.SlaverId,
@@ -475,10 +490,14 @@ func (mdev *generic_modbus_device) modbusRead(buffer []byte) (int, error) {
 				Alias:    r.Alias,
 				Value:    Value,
 			}
-			mdev.Registers[uuid].Value = Value
-			mdev.Registers[uuid].Status = 1
-			mdev.Registers[uuid].LastFetchTime = uint64(time.Now().UnixMilli())
-			dataMap[r.Tag] = value
+			dataMap[r.Tag] = Reg
+			modbuscache.SetValue(mdev.PointId, uuid, modbuscache.RegisterPoint{
+				UUID:          uuid,
+				Status:        0,
+				Value:         Value,
+				LastFetchTime: uint64(time.Now().UnixMilli()),
+			})
+
 		}
 		if r.Function == common.READ_INPUT_REGISTERS {
 			results, err = mdev.Client.ReadInputRegisters(r.Address, r.Quantity)
@@ -487,7 +506,7 @@ func (mdev *generic_modbus_device) modbusRead(buffer []byte) (int, error) {
 				glogger.GLogger.Error(err)
 			}
 			Value := covertEmptyHex(results)
-			value := common.RegisterRW{
+			Reg := common.RegisterRW{
 				Tag:      r.Tag,
 				Function: r.Function,
 				SlaverId: r.SlaverId,
@@ -496,10 +515,18 @@ func (mdev *generic_modbus_device) modbusRead(buffer []byte) (int, error) {
 				Alias:    r.Alias,
 				Value:    Value,
 			}
-			mdev.Registers[uuid].Value = Value
-			mdev.Registers[uuid].Status = 1
-			mdev.Registers[uuid].LastFetchTime = uint64(time.Now().UnixMilli())
-			dataMap[r.Tag] = value
+			dataMap[r.Tag] = Reg
+			modbuscache.SetValue(mdev.PointId, uuid, modbuscache.RegisterPoint{
+				UUID: uuid,
+				Status: func() int {
+					if Value == "" {
+						return 0
+					}
+					return 1
+				}(),
+				Value:         Value,
+				LastFetchTime: uint64(time.Now().UnixMilli()),
+			})
 		}
 		time.Sleep(time.Duration(r.Frequency) * time.Millisecond)
 	}

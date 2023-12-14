@@ -12,14 +12,14 @@ PLC S1200系列设备提供了丰富的输入输出接口、通信接口和编�
 ## 参数
 ```json
 {
-    "name": "S1200PLC",
-    "type": "S1200PLC",
+    "name": "SIEMENS_PLC",
+    "type": "SIEMENS_PLC",
     "gid": "DROOT",
     "config": {
         "host": "127.0.0.1:1500",
         "rack": 0,
         "slot": 1,
-        "model": "S1200PLC",
+        "model": "SIEMENS_PLC",
         "timeout": 1000,
         "autoRequest": true,
         "idleTimeout": 1000,
@@ -35,7 +35,7 @@ PLC S1200系列设备提供了丰富的输入输出接口、通信接口和编�
             }
         ]
     },
-    "description": "S1200PLC"
+    "description": "SIEMENS_PLC"
 }
 ```
 ## 脚本示例

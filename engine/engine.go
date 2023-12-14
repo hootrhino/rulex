@@ -27,6 +27,8 @@ import (
 	"github.com/hootrhino/rulex/component/appstack"
 	"github.com/hootrhino/rulex/component/datacenter"
 	"github.com/hootrhino/rulex/component/hwportmanager"
+	modbuscache "github.com/hootrhino/rulex/component/intercache/modbus"
+	siemenscache "github.com/hootrhino/rulex/component/intercache/siemens"
 	"github.com/hootrhino/rulex/component/interdb"
 	"github.com/hootrhino/rulex/component/intermetric"
 	"github.com/hootrhino/rulex/component/internotify"
@@ -83,6 +85,10 @@ func InitRuleEngine(config typex.RulexConfig) typex.RuleX {
 	}
 	// Internal DB
 	interdb.Init(__DefaultRuleEngine, __DEFAULT_DB_PATH)
+	// Init Modbus Point Cache
+	modbuscache.InitModbusPointCache(__DefaultRuleEngine)
+	// Init Siemens Point Cache
+	siemenscache.InitSiemensPointCache(__DefaultRuleEngine)
 	// Internal Bus
 	internotify.InitInternalEventBus(__DefaultRuleEngine, core.GlobalConfig.MaxQueueSize)
 	// 前后交互组件
@@ -193,7 +199,10 @@ func (e *RuleEngine) Stop() {
 		glogger.GLogger.Info("Stop Device:", Device.Name, " Successfully")
 		return true
 	})
-
+	glogger.GLogger.Info("Flush Modbus Point sheet Cache")
+	modbuscache.Flush()
+	glogger.GLogger.Info("Flush Siemens Point sheet Cache")
+	siemenscache.Flush()
 	glogger.GLogger.Info("[√] Stop Rulex successfully")
 	if err := glogger.Close(); err != nil {
 		fmt.Println("Close logger error: ", err)
@@ -444,7 +453,8 @@ func (e *RuleEngine) RestartDevice(uuid string) error {
 	if Value, ok := e.Devices.Load(uuid); ok {
 		Device := Value.(*typex.Device)
 		if Device.Device != nil {
-			Device.Device.Stop() // Down 以后会被自动拉起来
+			// Device.Device.Stop() // Down 以后会被自动拉起来
+			Device.Device.SetState(typex.DEV_DOWN) // Down 以后会被自动拉起来
 		}
 		return nil
 	}
@@ -487,10 +497,10 @@ func (e *RuleEngine) InitDeviceTypeManager() error {
 			NewDevice: device.NewRtu485Ther,
 		},
 	)
-	e.DeviceTypeManager.Register(typex.S1200PLC,
+	e.DeviceTypeManager.Register(typex.SIEMENS_PLC,
 		&typex.XConfig{
 			Engine:    e,
-			NewDevice: device.NewS1200plc,
+			NewDevice: device.NewSIEMENS_PLC,
 		},
 	)
 	e.DeviceTypeManager.Register(typex.GENERIC_MODBUS,

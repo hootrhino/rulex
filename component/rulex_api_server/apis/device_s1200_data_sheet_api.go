@@ -236,7 +236,7 @@ func SiemensSheetImport(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(errDb))
 		return
 	}
-	if Device.Type != typex.S1200PLC.String() {
+	if Device.Type != typex.SIEMENS_PLC.String() {
 		c.JSON(common.HTTP_OK,
 			common.Error("Invalid Device Type, Only Support Import Siemens Device"))
 		return
