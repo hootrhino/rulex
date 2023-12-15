@@ -18,6 +18,7 @@ package service
 import (
 	"github.com/hootrhino/rulex/component/interdb"
 	"github.com/hootrhino/rulex/component/rulex_api_server/model"
+	"github.com/hootrhino/rulex/utils"
 )
 
 // 获取GenericGroup列表
@@ -149,8 +150,9 @@ func BindResource(gid, rid string) error {
 		return err
 	}
 	Relation := model.MGenericGroupRelation{
-		Gid: m.UUID,
-		Rid: rid,
+		UUID: utils.MakeUUID("GR"),
+		Gid:  m.UUID,
+		Rid:  rid,
 	}
 	if err := interdb.DB().Save(&Relation).Error; err != nil {
 		return err

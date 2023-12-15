@@ -144,15 +144,27 @@ func DeleteDevice(c *gin.Context, ruleEngine typex.RuleX) {
 			old.Device.Stop()
 		}
 	}
-	err1 := service.DeleteDevice(uuid)
-	if err1 != nil {
-		c.JSON(common.HTTP_OK, common.Error400(err1))
+	// 事务
+	txErr := interdb.DB().Transaction(func(tx *gorm.DB) error {
+		Group := service.GetVisualGroup(uuid)
+		err3 := service.DeleteDevice(uuid)
+		if err3 != nil {
+			return err3
+		}
+		// 解除关联
+		err2 := interdb.DB().Where("gid=? and rid =?", Group.UUID, uuid).
+			Delete(&model.MGenericGroupRelation{}).Error
+		if err2 != nil {
+			return err2
+		}
+		ruleEngine.RemoveDevice(uuid)
+		return nil
+	})
+	if txErr != nil {
+		c.JSON(common.HTTP_OK, common.Error400(txErr))
 		return
 	}
-
-	ruleEngine.RemoveDevice(uuid)
 	c.JSON(common.HTTP_OK, common.Ok())
-
 }
 
 // 创建设备
@@ -249,6 +261,7 @@ func UpdateDevice(c *gin.Context, ruleEngine typex.RuleX) {
 	if Group.UUID != form.Gid {
 		// 取消绑定分组,删除原来旧的分组
 		txErr := interdb.DB().Transaction(func(tx *gorm.DB) error {
+			// 解除关联
 			err1 := tx.Where("gid=? and rid =?", Group.UUID, Device.UUID).
 				Delete(&model.MGenericGroupRelation{}).Error
 			if err1 != nil {
