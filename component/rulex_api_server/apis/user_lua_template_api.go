@@ -2,11 +2,13 @@ package apis
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/hootrhino/rulex/component/interdb"
 	common "github.com/hootrhino/rulex/component/rulex_api_server/common"
 	"github.com/hootrhino/rulex/component/rulex_api_server/model"
 	"github.com/hootrhino/rulex/component/rulex_api_server/service"
 	"github.com/hootrhino/rulex/typex"
 	"github.com/hootrhino/rulex/utils"
+	"gorm.io/gorm"
 )
 
 type UserLuaTemplateVo struct {
@@ -107,8 +109,22 @@ func UpdateUserLuaTemplate(c *gin.Context, ruleEngine typex.RuleX) {
  */
 func DeleteUserLuaTemplate(c *gin.Context, ruleEngine typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
-	if err := service.DeleteUserLuaTemplate(uuid); err != nil {
-		c.JSON(common.HTTP_OK, common.Error400(err))
+	txErr := interdb.DB().Transaction(func(tx *gorm.DB) error {
+		Group := service.GetVisualGroup(uuid)
+		if err1 := service.DeleteUserLuaTemplate(uuid); err1 != nil {
+			c.JSON(common.HTTP_OK, common.Error400(err1))
+			return err1
+		}
+		// 解除关联
+		err2 := interdb.DB().Where("gid=? and rid =?", Group.UUID, uuid).
+			Delete(&model.MGenericGroupRelation{}).Error
+		if err2 != nil {
+			return err2
+		}
+		return nil
+	})
+	if txErr != nil {
+		c.JSON(common.HTTP_OK, common.Error400(txErr))
 		return
 	}
 	c.JSON(common.HTTP_OK, common.Ok())
