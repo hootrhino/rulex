@@ -5,6 +5,9 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -163,6 +166,10 @@ func (s1200 *SIEMENS_PLC) Start(cctx typex.CCTX) error {
 				glogger.GLogger.Error(err)
 				s1200.status = typex.DEV_DOWN
 				return
+			}
+			// [] {} ""
+			if n < 3 {
+				continue
 			}
 			ok, err := s1200.RuleEngine.WorkDevice(
 				s1200.RuleEngine.GetDevice(s1200.PointId),
@@ -331,4 +338,44 @@ func (s1200 *SIEMENS_PLC) Read(cmd []byte, data []byte) (int, error) {
 	bytes, _ := json.Marshal(values)
 	copy(data, bytes)
 	return len(bytes), nil
+}
+
+/*
+*
+- 符号地址（Symbolic Addressing）：
+使用符号名称来表示变量或输入/输出地址。这种方式更加直观和易于理解，适用于高级编程语言和工程师使用。例如，可以使用变量名"MotorSpeed"或输入名"I1"来表示对应的地址。
+- 基于字节的地址（Byte-based Addressing）：
+使用字节地址和位地址的组合来表示变量或输入/输出地址。字节地址表示内存中的字节偏移，而位地址表示字节中的位偏移。例如，使用地址"DB1.DBX10.3"表示数据块1中偏移为10的字节的第3位。
+- 基于字的地址（Word-based Addressing）：
+类似于基于字节的地址，但是将地址表示为字（16位）的偏移。例如，使用地址"DB1.DBD20"表示数据块1中偏移为20的字。
+- 基于地址区域的地址（Address Area-based Addressing）：
+将地址按照不同的区域进行划分，如输入区域（I），输出区域（Q），数据块区域（DB）等。每个区域都有特定的地址范围。例如，使用地址"I10.3"表示输入区域的第10个输入的第3位。
+*
+*/
+
+// AddressInfo 包含解析后的地址信息
+type AddressInfo struct {
+	DataBlockNumber int    // 数据块号
+	DataType        string // 数据类型
+	ElementNumber   int    // 元素号
+}
+
+// 解析DB
+func ParseDB_D(s string) string {
+	return ""
+}
+
+// 解析DBX格式
+func ParseDB_X(s string) string {
+	return ""
+}
+
+// 解析I格式
+func ParseADDR_I(s string) string {
+	return ""
+}
+
+// 解析Q格式
+func ParseADDR_Q(s string) string {
+	return ""
 }
