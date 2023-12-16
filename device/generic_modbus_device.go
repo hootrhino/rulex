@@ -265,9 +265,11 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 					mdev.retryTimes++
 					continue
 				}
-				if n > 0 {
-					mdev.RuleEngine.WorkDevice(mdev.Details(), string(buffer[:n]))
+				// [] {} ""
+				if n < 3 {
+					continue
 				}
+				mdev.RuleEngine.WorkDevice(mdev.Details(), string(buffer[:n]))
 			}
 
 		}(mdev.Ctx)
@@ -410,7 +412,7 @@ func (mdev *generic_modbus_device) OnCtrl([]byte, []byte) ([]byte, error) {
 func (mdev *generic_modbus_device) modbusRead(buffer []byte) (int, error) {
 	var err error
 	var results []byte
-	dataMap := map[string]common.RegisterRW{}
+	RegisterRWs := []common.RegisterRW{}
 	count := len(mdev.Registers)
 	if count == 0 {
 		return 0, nil
@@ -441,7 +443,7 @@ func (mdev *generic_modbus_device) modbusRead(buffer []byte) (int, error) {
 				Alias:    r.Alias,
 				Value:    Value,
 			}
-			dataMap[r.Tag] = Reg
+			RegisterRWs = append(RegisterRWs, Reg)
 			modbuscache.SetValue(mdev.PointId, uuid, modbuscache.RegisterPoint{
 				UUID:          uuid,
 				Status:        0,
@@ -466,7 +468,7 @@ func (mdev *generic_modbus_device) modbusRead(buffer []byte) (int, error) {
 				Alias:    r.Alias,
 				Value:    Value,
 			}
-			dataMap[r.Tag] = Reg
+			RegisterRWs = append(RegisterRWs, Reg)
 			modbuscache.SetValue(mdev.PointId, uuid, modbuscache.RegisterPoint{
 				UUID:          uuid,
 				Status:        0,
@@ -490,7 +492,7 @@ func (mdev *generic_modbus_device) modbusRead(buffer []byte) (int, error) {
 				Alias:    r.Alias,
 				Value:    Value,
 			}
-			dataMap[r.Tag] = Reg
+			RegisterRWs = append(RegisterRWs, Reg)
 			modbuscache.SetValue(mdev.PointId, uuid, modbuscache.RegisterPoint{
 				UUID:          uuid,
 				Status:        0,
@@ -515,7 +517,7 @@ func (mdev *generic_modbus_device) modbusRead(buffer []byte) (int, error) {
 				Alias:    r.Alias,
 				Value:    Value,
 			}
-			dataMap[r.Tag] = Reg
+			RegisterRWs = append(RegisterRWs, Reg)
 			modbuscache.SetValue(mdev.PointId, uuid, modbuscache.RegisterPoint{
 				UUID: uuid,
 				Status: func() int {
@@ -530,7 +532,7 @@ func (mdev *generic_modbus_device) modbusRead(buffer []byte) (int, error) {
 		}
 		time.Sleep(time.Duration(r.Frequency) * time.Millisecond)
 	}
-	bytes, _ := json.Marshal(dataMap)
+	bytes, _ := json.Marshal(RegisterRWs)
 	copy(buffer, bytes)
 	return len(bytes), nil
 }
