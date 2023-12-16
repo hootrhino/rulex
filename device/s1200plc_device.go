@@ -5,9 +5,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
-	"fmt"
-	"strconv"
-	"strings"
 	"sync"
 	"time"
 
@@ -110,7 +107,6 @@ func (s1200 *SIEMENS_PLC) Init(devId string, configMap map[string]interface{}) e
 			return errors.New("'frequency' must grate than 50 millisecond")
 		}
 		s1200.SiemensDataPoints[v.UUID] = &v
-
 		siemenscache.SetValue(s1200.PointId, v.UUID, siemenscache.SiemensPoint{
 			UUID:          v.UUID,
 			Status:        0,
@@ -261,13 +257,6 @@ func (s1200 *SIEMENS_PLC) Read(cmd []byte, data []byte) (int, error) {
 		if db.Type == "DB" {
 			// 00.00.00.01 | 00.00.00.02 | 00.00.00.03 | 00.00.00.04
 			if err := s1200.client.AGReadDB(*db.Address, *db.Start, *db.Size, rData[:]); err != nil {
-				Status := 0
-				LastFetchTime := uint64(time.Now().UnixMilli())
-				siemenscache.SetValue(s1200.PointId, uuid, siemenscache.SiemensPoint{
-					UUID:          uuid,
-					Status:        Status,
-					LastFetchTime: LastFetchTime,
-				})
 				glogger.GLogger.Error(err)
 				return 0, err
 			}
@@ -285,12 +274,10 @@ func (s1200 *SIEMENS_PLC) Read(cmd []byte, data []byte) (int, error) {
 				Size:       db.Size,
 				Value:      Value,
 			})
-			Status := 1
-			LastFetchTime := uint64(time.Now().UnixMilli())
 			siemenscache.SetValue(s1200.PointId, uuid, siemenscache.SiemensPoint{
 				UUID:          uuid,
-				Status:        Status,
-				LastFetchTime: LastFetchTime,
+				Status:        0,
+				LastFetchTime: uint64(time.Now().UnixMilli()),
 				Value:         Value,
 			})
 		}
@@ -298,13 +285,6 @@ func (s1200 *SIEMENS_PLC) Read(cmd []byte, data []byte) (int, error) {
 		if db.Type == "MB" {
 			// 00.00.00.01 | 00.00.00.02 | 00.00.00.03 | 00.00.00.04
 			if err := s1200.client.AGReadMB(*db.Start, *db.Size, rData[:]); err != nil {
-				Status := 0
-				LastFetchTime := uint64(time.Now().UnixMilli())
-				siemenscache.SetValue(s1200.PointId, uuid, siemenscache.SiemensPoint{
-					UUID:          uuid,
-					Status:        Status,
-					LastFetchTime: LastFetchTime,
-				})
 				glogger.GLogger.Error(err)
 				return 0, err
 			}
@@ -321,12 +301,10 @@ func (s1200 *SIEMENS_PLC) Read(cmd []byte, data []byte) (int, error) {
 				Size:    db.Size,
 				Value:   Value,
 			})
-			Status := 1
-			LastFetchTime := uint64(time.Now().UnixMilli())
 			siemenscache.SetValue(s1200.PointId, uuid, siemenscache.SiemensPoint{
 				UUID:          uuid,
-				Status:        Status,
-				LastFetchTime: LastFetchTime,
+				Status:        0,
+				LastFetchTime: uint64(time.Now().UnixMilli()),
 				Value:         Value,
 			})
 		}

@@ -519,13 +519,8 @@ func (mdev *generic_modbus_device) modbusRead(buffer []byte) (int, error) {
 			}
 			RegisterRWs = append(RegisterRWs, Reg)
 			modbuscache.SetValue(mdev.PointId, uuid, modbuscache.RegisterPoint{
-				UUID: uuid,
-				Status: func() int {
-					if Value == "" {
-						return 0
-					}
-					return 1
-				}(),
+				UUID:          uuid,
+				Status:        0,
 				Value:         Value,
 				LastFetchTime: uint64(time.Now().UnixMilli()),
 			})
