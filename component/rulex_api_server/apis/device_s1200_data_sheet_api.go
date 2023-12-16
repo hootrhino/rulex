@@ -24,8 +24,10 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	siemenscache "github.com/hootrhino/rulex/component/intercache/siemens"
 	"github.com/hootrhino/rulex/component/interdb"
 	common "github.com/hootrhino/rulex/component/rulex_api_server/common"
+
 	"github.com/hootrhino/rulex/component/rulex_api_server/model"
 	"github.com/hootrhino/rulex/component/rulex_api_server/service"
 	"github.com/hootrhino/rulex/typex"
@@ -97,9 +99,10 @@ func SiemensSheetPageList(c *gin.Context, ruleEngine typex.RuleX) {
 		return
 	}
 	recordsVo := []SiemensPointVo{}
-
 	for _, record := range records {
-		recordsVo = append(recordsVo, SiemensPointVo{
+		Slot := siemenscache.GetSlot(deviceUuid)
+		Value, ok := Slot[record.UUID]
+		Vo := SiemensPointVo{
 			UUID:          record.UUID,
 			DeviceUUID:    record.DeviceUuid,
 			Tag:           record.Tag,
@@ -109,10 +112,22 @@ func SiemensSheetPageList(c *gin.Context, ruleEngine typex.RuleX) {
 			Frequency:     record.Frequency,
 			Start:         record.Start,
 			Size:          record.Size,
-			Status:        1,                              // 运行时
-			LastFetchTime: uint64(time.Now().UnixMilli()), // 运行时
-			Value:         "00000000",                     // 运行时
-		})
+			LastFetchTime: Value.LastFetchTime, // 运行时
+			Value:         Value.Value,         // 运行时
+		}
+		if ok {
+			Vo.Status = func() int {
+				if Value.Value == "" {
+					return 0
+				}
+				return 1
+			}() // 运行时
+			Vo.LastFetchTime = Value.LastFetchTime // 运行时
+			Vo.Value = Value.Value                 // 运行时
+			recordsVo = append(recordsVo, Vo)
+		} else {
+			recordsVo = append(recordsVo, Vo)
+		}
 	}
 	Result := service.WrapPageResult(*pager, recordsVo, count)
 	c.JSON(common.HTTP_OK, common.OkWithData(Result))
