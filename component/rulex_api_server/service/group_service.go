@@ -19,6 +19,7 @@ import (
 	"github.com/hootrhino/rulex/component/interdb"
 	"github.com/hootrhino/rulex/component/rulex_api_server/model"
 	"github.com/hootrhino/rulex/utils"
+	"gorm.io/gorm"
 )
 
 // 获取GenericGroup列表
@@ -199,4 +200,52 @@ func CheckAlreadyBinding(gid, rid string) (uint, error) {
 		return 0, err
 	}
 	return uint(count), nil
+}
+
+/*
+*
+* 重新绑定分组需要事务支持
+*
+ */
+func ReBindResource(action func(tx *gorm.DB) error, Rid, Gid string) error {
+	return interdb.DB().Transaction(func(tx *gorm.DB) error {
+		// 1 执行的操作
+		if err0 := action(tx); err0 != nil {
+			return err0
+		}
+		// 2 解除分组关联
+		sql := `
+SELECT m_generic_groups.*
+FROM m_generic_group_relations
+LEFT JOIN
+m_generic_groups ON (m_generic_groups.uuid = m_generic_group_relations.gid)
+WHERE m_generic_group_relations.rid = ?;
+		`
+		OldGroup := model.MGenericGroup{}
+		if errA := tx.Raw(sql, Rid).Find(&OldGroup).Error; errA != nil {
+			return errA
+		}
+		if err1 := tx.Model(model.MGenericGroupRelation{}).
+			Where("gid=? and rid =?", OldGroup.UUID, Rid).
+			Delete(&model.MGenericGroupRelation{}).Error; err1 != nil {
+			return err1
+		}
+		// 3 重新绑定分组,首先确定分组是否存在
+		MGroup := model.MGenericGroup{}
+		if err2 := tx.Model(MGroup).
+			Where("uuid=?", Gid).
+			First(&MGroup).Error; err2 != nil {
+			return err2
+		}
+		// 4 重新绑定分组
+		err3 := tx.Save(&model.MGenericGroupRelation{
+			UUID: utils.MakeUUID("GRLT"),
+			Gid:  Gid,
+			Rid:  Rid,
+		}).Error
+		if err3 != nil {
+			return err3
+		}
+		return nil
+	})
 }

@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/hootrhino/rulex/component/interdb"
 	common "github.com/hootrhino/rulex/component/rulex_api_server/common"
+	"github.com/hootrhino/rulex/component/rulex_api_server/dto"
 	"github.com/hootrhino/rulex/component/rulex_api_server/model"
 	"github.com/hootrhino/rulex/component/rulex_api_server/service"
 	"github.com/hootrhino/rulex/typex"
@@ -12,12 +13,13 @@ import (
 )
 
 type UserLuaTemplateVo struct {
-	Gid    string `json:"gid,omitempty"`  // 分组ID
-	UUID   string `json:"uuid,omitempty"` // 名称
-	Label  string `json:"label"`          // 快捷代码名称
-	Apply  string `json:"apply"`          // 快捷代码
-	Type   string `json:"type"`           // 类型 固定为function类型detail
-	Detail string `json:"detail"`
+	Gid       string                     `json:"gid,omitempty"`  // 分组ID
+	UUID      string                     `json:"uuid,omitempty"` // 名称
+	Label     string                     `json:"label"`          // 快捷代码名称
+	Apply     string                     `json:"apply"`          // 快捷代码
+	Type      string                     `json:"type"`           // 类型 固定为function类型detail
+	Detail    string                     `json:"detail"`         // 细节
+	Variables []dto.LuaTemplateVariables `json:"variables"`      // 变量
 }
 
 /*
@@ -80,20 +82,20 @@ func UpdateUserLuaTemplate(c *gin.Context, ruleEngine typex.RuleX) {
 		Detail: form.Detail,
 		Gid:    form.Gid,
 	}
-
-	if err := service.UpdateUserLuaTemplate(MUserLuaTemplate); err != nil {
-		c.JSON(common.HTTP_OK, common.Error400(err))
+	Variables, errVariables := MUserLuaTemplate.GenVariables(form.Variables)
+	if errVariables != nil {
+		c.JSON(common.HTTP_OK, common.Error400(errVariables))
 		return
 	}
-	// 取消绑定分组,删除原来旧的分组
-	Group := service.GetUserLuaTemplateGroup(MUserLuaTemplate.UUID)
-	if err := service.UnBindResource(Group.UUID, MUserLuaTemplate.UUID); err != nil {
-		c.JSON(common.HTTP_OK, common.Error400(err))
-		return
-	}
-	// 重新绑定分组
-	if err := service.BindResource(form.Gid, MUserLuaTemplate.UUID); err != nil {
-		c.JSON(common.HTTP_OK, common.Error400(err))
+	MUserLuaTemplate.Variables = Variables
+	// 事务
+	txErr := service.ReBindResource(func(tx *gorm.DB) error {
+		return tx.Model(MUserLuaTemplate).
+			Where("uuid=?", MUserLuaTemplate.UUID).
+			Updates(&MUserLuaTemplate).Error
+	}, form.UUID, form.Gid)
+	if txErr != nil {
+		c.JSON(common.HTTP_OK, common.Error400(txErr))
 		return
 	}
 	// 返回新建的用户模板字段 用来跳转编辑器
@@ -173,12 +175,13 @@ func ListUserLuaTemplate(c *gin.Context, ruleEngine typex.RuleX) {
 	UserLuaTemplates := []UserLuaTemplateVo{}
 	for _, vv := range service.AllUserLuaTemplate() {
 		Vo := UserLuaTemplateVo{
-			UUID:   vv.UUID,
-			Label:  vv.Label,
-			Type:   vv.Type,
-			Apply:  vv.Apply,
-			Detail: vv.Detail,
-			Gid:    vv.Gid,
+			UUID:      vv.UUID,
+			Label:     vv.Label,
+			Type:      vv.Type,
+			Apply:     vv.Apply,
+			Detail:    vv.Detail,
+			Gid:       vv.Gid,
+			Variables: vv.GetVariables(),
 		}
 		Group := service.GetUserLuaTemplateGroup(vv.UUID)
 		if Group.UUID != "" {
@@ -203,12 +206,13 @@ func ListUserLuaTemplateByGroup(c *gin.Context, ruleEngine typex.RuleX) {
 	MUserLuaTemplates := service.FindUserTemplateByGroup(Gid)
 	for _, vv := range MUserLuaTemplates {
 		Vo := UserLuaTemplateVo{
-			UUID:   vv.UUID,
-			Label:  vv.Label,
-			Type:   vv.Type,
-			Apply:  vv.Apply,
-			Detail: vv.Detail,
-			Gid:    vv.Gid,
+			UUID:      vv.UUID,
+			Label:     vv.Label,
+			Type:      vv.Type,
+			Apply:     vv.Apply,
+			Detail:    vv.Detail,
+			Gid:       vv.Gid,
+			Variables: vv.GetVariables(),
 		}
 		Group := service.GetUserLuaTemplateGroup(vv.UUID)
 		Vo.Gid = Group.UUID
@@ -230,11 +234,12 @@ func UserLuaTemplateDetail(c *gin.Context, ruleEngine typex.RuleX) {
 		return
 	}
 	Vo := UserLuaTemplateVo{
-		UUID:   mUserLuaTemplate.UUID,
-		Label:  mUserLuaTemplate.Label,
-		Type:   mUserLuaTemplate.Type,
-		Apply:  mUserLuaTemplate.Apply,
-		Detail: mUserLuaTemplate.Detail,
+		UUID:      mUserLuaTemplate.UUID,
+		Label:     mUserLuaTemplate.Label,
+		Type:      mUserLuaTemplate.Type,
+		Apply:     mUserLuaTemplate.Apply,
+		Detail:    mUserLuaTemplate.Detail,
+		Variables: mUserLuaTemplate.GetVariables(),
 	}
 	Group := service.GetUserLuaTemplateGroup(mUserLuaTemplate.UUID)
 	if Group.UUID != "" {
