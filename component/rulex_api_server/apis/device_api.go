@@ -239,59 +239,26 @@ func UpdateDevice(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error("missing 'uuid' fields"))
 		return
 	}
-	// 更新的时候从数据库往外面拿
-	Device, err := service.GetMDeviceWithUUID(form.UUID)
-	if err != nil {
-		c.JSON(common.HTTP_OK, err)
-		return
-	}
-	MDevice := model.MDevice{
-		Type:        form.Type,
-		Name:        form.Name,
-		Description: form.Description,
-		Config:      string(configJson),
-	}
-	if err := service.UpdateDevice(Device.UUID, &MDevice); err != nil {
-		c.JSON(common.HTTP_OK, common.Error400(err))
-		return
-	}
-
-	// 只有检查到分组变了才更改
-	Group := service.GetVisualGroup(Device.UUID)
-	if Group.UUID != form.Gid {
-		// 取消绑定分组,删除原来旧的分组
-		txErr := interdb.DB().Transaction(func(tx *gorm.DB) error {
-			// 解除关联
-			err1 := tx.Where("gid=? and rid =?", Group.UUID, Device.UUID).
-				Delete(&model.MGenericGroupRelation{}).Error
-			if err1 != nil {
-				c.JSON(common.HTTP_OK, common.Error400(err))
-				return err1
-			}
-			// 重新绑定分组,首先确定分组是否存在
-			MGroup := model.MGenericGroup{}
-			if err2 := interdb.DB().Where("uuid=?", Group.UUID).First(&MGroup).Error; err2 != nil {
-				return err2
-			}
-			Relation := model.MGenericGroupRelation{
-				Gid: MGroup.UUID,
-				Rid: Device.UUID,
-			}
-			err3 := tx.Save(&Relation).Error
-			if err3 != nil {
-				return err3
-			}
-			return nil
-		})
-		if txErr != nil {
-			c.JSON(common.HTTP_OK, common.Error400(txErr))
-			return
+	//
+	// 取消绑定分组,删除原来旧的分组
+	txErr := service.ReBindResource(func(tx *gorm.DB) error {
+		MDevice := model.MDevice{
+			Type:        form.Type,
+			Name:        form.Name,
+			Description: form.Description,
+			Config:      string(configJson),
 		}
+		return tx.Model(MDevice).
+			Where("uuid=?", form.UUID).
+			Updates(&MDevice).Error
+	}, form.UUID, form.Gid)
+	if txErr != nil {
+		c.JSON(common.HTTP_OK, common.Error400(txErr))
+		return
 	}
 	if err := server.LoadNewestDevice(form.UUID, ruleEngine); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-
 	c.JSON(common.HTTP_OK, common.Ok())
 }

@@ -79,31 +79,25 @@ func UpdateVisual(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	MVisual := model.MVisual{
-		UUID:    form.UUID,
-		Name:    form.Name,
-		Type:    form.Type,
-		Content: form.Content,
-	}
-
-	if err := service.UpdateVisual(MVisual); err != nil {
-		c.JSON(common.HTTP_OK, common.Error400(err))
-		return
-	}
 	// 取消绑定分组,删除原来旧的分组
-	Group := service.GetVisualGroup(MVisual.UUID)
-	if err := service.UnBindResource(Group.UUID, MVisual.UUID); err != nil {
-		c.JSON(common.HTTP_OK, common.Error400(err))
-		return
-	}
-	// 重新绑定分组
-	if err := service.BindResource(form.Gid, MVisual.UUID); err != nil {
-		c.JSON(common.HTTP_OK, common.Error400(err))
+	txErr := service.ReBindResource(func(tx *gorm.DB) error {
+		MVisual := model.MVisual{
+			UUID:    form.UUID,
+			Name:    form.Name,
+			Type:    form.Type,
+			Content: form.Content,
+		}
+		return tx.Model(MVisual).
+			Where("uuid=?", MVisual.UUID).
+			Updates(&MVisual).Error
+	}, form.UUID, form.Gid)
+	if txErr != nil {
+		c.JSON(common.HTTP_OK, common.Error400(txErr))
 		return
 	}
 	// 返回新建的大屏字段 用来跳转编辑器
 	c.JSON(common.HTTP_OK, common.OkWithData(map[string]string{
-		"uuid": MVisual.UUID,
+		"uuid": form.UUID,
 	}))
 }
 
