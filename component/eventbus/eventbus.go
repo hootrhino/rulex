@@ -35,7 +35,7 @@ type EventMessage struct {
 }
 
 func (E EventMessage) String() string {
-	return fmt.Sprintf("Event Message@ Payload: %s",  E.Payload)
+	return fmt.Sprintf("Event Message@ Payload: %s", E.Payload)
 }
 
 type Topic struct {
@@ -118,8 +118,10 @@ func UnSubscribe(topic string, subscribe Subscriber) {
 			delete(__DefaultEventBus.Topics[topic].Subscribers, subscribe.id)
 		}
 	}
+	// 当没有订阅者的时候直接删除这个Topic
 	if len(T.Subscribers) == 0 {
 		T.cancel()
+		delete(__DefaultEventBus.Topics, topic)
 	}
 }
 
