@@ -14,7 +14,7 @@ import (
 )
 
 type _SNMPCommonConfig struct {
-	AutoRequest bool  `json:"autoRequest" title:"启动轮询"`
+	AutoRequest bool  `json:"autoRequest" validate:"required"`
 	Frequency   int64 `json:"frequency" validate:"required" title:"采集频率"`
 }
 

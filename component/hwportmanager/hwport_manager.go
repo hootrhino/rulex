@@ -171,10 +171,9 @@ func FreeInterfaceBusy(name string) {
 	defer __HwPortsManager.lock.Unlock()
 	if Port, ok := __HwPortsManager.Interfaces[name]; ok {
 		if Port.OccupyBy.Type == "DEVICE" {
-			// OccupierDevice := __HwPortsManager.rulex.GetDevice(Port.OccupyBy.UUID)
 			Port.Busy = false
 			Port.OccupyBy = HwPortOccupy{
-				"", "", "",
+				"-", "-", "-",
 			}
 			__HwPortsManager.Interfaces[name] = Port
 		}

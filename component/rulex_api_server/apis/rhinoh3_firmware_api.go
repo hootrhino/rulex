@@ -17,7 +17,10 @@
 package apis
 
 import (
+	"fmt"
+	"net/http"
 	"os"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	common "github.com/hootrhino/rulex/component/rulex_api_server/common"
@@ -65,4 +68,32 @@ func RecoverNew(c *gin.Context, ruleEngine typex.RuleX) {
 func GetUpGradeLog(c *gin.Context, ruleEngine typex.RuleX) {
 	byteS, _ := os.ReadFile(ossupport.UpgradeLogPath)
 	c.JSON(common.HTTP_OK, common.OkWithData(string(byteS)))
+}
+
+/*
+*
+* 下载运行日志
+*
+ */
+func GetRunningLog(c *gin.Context, ruleEngine typex.RuleX) {
+	c.Writer.WriteHeader(http.StatusOK)
+	if RunningLogPathExists(ossupport.RunningLogPath) {
+		c.FileAttachment(ossupport.RunningLogPath,
+			fmt.Sprintf("running_log_%d_.txt", time.Now().UnixNano()))
+	} else {
+		js := `<script>alert("log file not found");</script>`
+		c.Writer.Write([]byte(js))
+	}
+	c.Writer.Flush()
+
+}
+func RunningLogPathExists(path string) bool {
+	_, err := os.Stat(path)
+	if err == nil {
+		return true
+	}
+	if os.IsNotExist(err) {
+		return false
+	}
+	return false
 }

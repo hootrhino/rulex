@@ -11,7 +11,7 @@ RULEX对USR-G776做了一个非常简单的支持：直接向串口透传数据�
 type _G776CommonConfig struct {
 	Tag         string `json:"tag" validate:"required" title:"数据Tag" info:"给数据打标签"`
 	Frequency   int64  `json:"frequency" validate:"required" title:"采集频率"`
-	AutoRequest bool   `json:"autoRequest" title:"启动轮询"`
+	AutoRequest bool  `json:"autoRequest" validate:"required"`
 }
 type CommonUartConfig struct {
 	Timeout  int    `json:"timeout" validate:"required"`
