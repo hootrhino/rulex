@@ -139,7 +139,11 @@ func System(c *gin.Context, ruleEngine typex.RuleX) {
 *
  */
 func SnapshotDump(c *gin.Context, ruleEngine typex.RuleX) {
-	c.JSON(common.HTTP_OK, common.OkWithData(ruleEngine.SnapshotDump()))
+	c.Header("Content-Type", "text/plain")
+	c.Header("Content-Disposition",
+		fmt.Sprintf("attachment;filename=SnapshotDump_%v.json", time.Now().UnixMilli()))
+	c.Writer.Write([]byte(ruleEngine.SnapshotDump()))
+	c.Writer.Flush()
 }
 
 // Get all Drivers

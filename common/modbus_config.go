@@ -81,7 +81,7 @@ type ModBusConfig struct {
 	Mode    string `json:"mode" title:"工作模式" info:"UART/TCP"`
 	Timeout int    `json:"timeout" validate:"required" title:"连接超时"`
 	// Weather allow AutoRequest?
-	AutoRequest bool `json:"autoRequest" title:"启动轮询"`
+	AutoRequest bool `json:"autoRequest" validate:"required"`
 	// Request Frequency, default 5 second
 	Frequency int64        `json:"frequency" validate:"required" title:"采集频率"`
 	Config    interface{}  `json:"config" validate:"required" title:"工作模式"`

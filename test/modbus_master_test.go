@@ -13,13 +13,10 @@ type registerParam struct {
 }
 
 type ModBusConfig struct {
-	Mode     string `json:"mode" title:"工作模式" info:"可以在 UART/TCP 两个模式之间切换"`
-	Timeout  int    `json:"timeout" validate:"required" title:"连接超时"`
-	SlaverId byte   `json:"slaverId" validate:"required" title:"TCP端口"`
-	//
-	// Weather allow AutoRequest?
-	AutoRequest bool `json:"autoRequest" title:"启动轮询"`
-	// Request Frequency, default 5 second
+	Mode           string          `json:"mode" title:"工作模式" info:"可以在 UART/TCP 两个模式之间切换"`
+	Timeout        int             `json:"timeout" validate:"required" title:"连接超时"`
+	SlaverId       byte            `json:"slaverId" validate:"required" title:"TCP端口"`
+	AutoRequest    bool            `json:"autoRequest" validate:"required"`
 	Frequency      int64           `json:"frequency" validate:"required" title:"采集频率"`
 	Config         interface{}     `json:"config" validate:"required" title:"工作模式配置"`
 	RegisterParams []registerParam `json:"registerParams" validate:"required" title:"寄存器配置"`

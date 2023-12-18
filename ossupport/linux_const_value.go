@@ -29,6 +29,8 @@ const (
 	FirmwarePath = "/usr/local/upload/Firmware/Firmware.zip"
 	// 升级日志
 	UpgradeLogPath = "/usr/local/local-upgrade-log.txt"
+	// 运行时日志
+	RunningLogPath = "/usr/local/rulexlog.txt"
 	// 数据恢复日志
 	RecoverLogPath = "/usr/local/local-recover-log.txt"
 	// 备份锁

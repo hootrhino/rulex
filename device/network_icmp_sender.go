@@ -16,7 +16,7 @@ import (
 type _IcmpSenderCommonConfig struct {
 	Timeout int `json:"timeout" validate:"required"`
 	// // Weather allow AutoRequest?
-	AutoRequest bool `json:"autoRequest" title:"启动轮询"`
+	AutoRequest bool `json:"autoRequest" validate:"required"`
 	// // Request Frequency, default 5 second
 	Frequency int64 `json:"frequency" validate:"required" title:"采集频率"`
 }

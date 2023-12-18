@@ -64,6 +64,7 @@ const (
 	GENERIC_AIS_RECEIVER       DeviceType = "GENERIC_AIS_RECEIVER"       // 通用AIS
 	GENERIC_BACNET_IP          DeviceType = "GENERIC_BACNET_IP"          // 通用BacnetIP
 	RHINOPI_IR                 DeviceType = "RHINOPI_IR"                 // 大犀牛PI的红外线接收器
+	GENERIC_HTTP_DEVICE        DeviceType = "GENERIC_HTTP_DEVICE"        // GENERIC_HTTP
 )
 
 // 设备元数据, 本质是保存在配置里面的数据的一个内存映射实例

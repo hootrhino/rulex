@@ -233,7 +233,6 @@ func (hs *ApiServerPlugin) LoadRoute() {
 	systemApi := server.RouteGroup(server.ContextUrl("/"))
 	{
 		systemApi.GET(("/ping"), server.AddRoute(apis.Ping))
-		systemApi.POST(("/logout"), server.AddRoute(apis.LogOut))
 	}
 
 	//
@@ -245,7 +244,6 @@ func (hs *ApiServerPlugin) LoadRoute() {
 	// Get statistics data
 	//
 	server.DefaultApiServer.Route().GET(server.ContextUrl("statistics"), server.AddRoute(apis.Statistics))
-	server.DefaultApiServer.Route().GET(server.ContextUrl("snapshot"), server.AddRoute(apis.SnapshotDump))
 	//
 	// Auth
 	//
@@ -322,6 +320,8 @@ func (hs *ApiServerPlugin) LoadRoute() {
 	{
 		backupApi.GET(("/download"), server.AddRoute(apis.DownloadSqlite))
 		backupApi.POST(("/upload"), server.AddRoute(apis.UploadSqlite))
+		backupApi.GET(("/snapshot"), server.AddRoute(apis.SnapshotDump))
+		backupApi.GET(("/runningLog"), server.AddRoute(apis.GetRunningLog))
 	}
 	//
 	// 设备管理

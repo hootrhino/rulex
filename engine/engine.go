@@ -467,6 +467,12 @@ func (e *RuleEngine) RestartDevice(uuid string) error {
 *
  */
 func (e *RuleEngine) InitDeviceTypeManager() error {
+	e.DeviceTypeManager.Register(typex.GENERIC_HTTP_DEVICE,
+		&typex.XConfig{
+			Engine:    e,
+			NewDevice: device.NewGenericHttpDevice,
+		},
+	)
 	e.DeviceTypeManager.Register(typex.GENERIC_CAMERA,
 		&typex.XConfig{
 			Engine:    e,
