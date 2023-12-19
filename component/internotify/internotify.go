@@ -121,7 +121,11 @@ func StartInternalEventQueue() {
 					return
 				case Event := <-InternalEventBus.Queue:
 					{
+						//
+						// TODO 内部事件应该写入数据库, 主要是起通知作用
+						//
 						glogger.GLogger.Debug("Internal Event:", Event)
+
 					}
 				}
 			}

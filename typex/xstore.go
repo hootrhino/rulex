@@ -16,5 +16,5 @@ type XStore interface {
 	Count() int
 	// 模糊查询匹配
 	// 支持: *AAA AAA* A*B
-	FuzzyGet(k string) string
+	FuzzyGet(k string) any
 }

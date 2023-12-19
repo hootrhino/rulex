@@ -107,6 +107,11 @@ func (e *RuleEngine) loadDevices(abstractDevice typex.XDevice, deviceInfo *typex
 	return nil
 }
 
+/*
+*
+* Start是异步进行的,当设备的GetStatus返回状态UP时，正常运行，当Down时重启
+*
+ */
 func startDevice(abstractDevice typex.XDevice, e *RuleEngine,
 	ctx context.Context, cancelCTX context.CancelFunc) error {
 	if err := abstractDevice.Start(typex.CCTX{Ctx: ctx, CancelCTX: cancelCTX}); err != nil {
