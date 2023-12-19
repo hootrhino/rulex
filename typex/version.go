@@ -14,10 +14,10 @@ type Version struct {
 var DefaultVersion = Version{
 	Product:        "COMMON",
 	Version:   `v0.6.4`,
-	ReleaseTime: "2023-12-19 13:36:12",
+	ReleaseTime: "2023-12-19 18:39:58",
 }
 var Banner = `
  **  Welcome to RULEX framework world <'_'>
-**   Version: v0.6.4-9478c389bf9eda5
+**   Version: v0.6.4-c088a66f466d66c
  **  Document: https://hootrhino.github.io
 `

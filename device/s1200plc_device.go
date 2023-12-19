@@ -52,6 +52,7 @@ type SIEMENS_PLC struct {
 	RuleEngine        typex.RuleX
 	mainConfig        S1200Config
 	client            gos7.Client
+	handler           *gos7.TCPClientHandler
 	lock              sync.Mutex
 	SiemensDataPoints map[string]*SiemensDataPoint
 }
@@ -122,21 +123,21 @@ func (s1200 *SIEMENS_PLC) Start(cctx typex.CCTX) error {
 	s1200.Ctx = cctx.Ctx
 	s1200.CancelCTX = cctx.CancelCTX
 	//
-	handler := gos7.NewTCPClientHandler(
+	s1200.handler = gos7.NewTCPClientHandler(
 		s1200.mainConfig.CommonConfig.Host,  // 127.0.0.1:1500
 		*s1200.mainConfig.CommonConfig.Rack, // 0
 		*s1200.mainConfig.CommonConfig.Slot) // 1
-	handler.Timeout = time.Duration(
+	s1200.handler.Timeout = time.Duration(
 		*s1200.mainConfig.CommonConfig.Timeout) * time.Millisecond
-	handler.IdleTimeout = time.Duration(
+	s1200.handler.IdleTimeout = time.Duration(
 		*s1200.mainConfig.CommonConfig.IdleTimeout) * time.Millisecond
-	if err := handler.Connect(); err != nil {
+	if err := s1200.handler.Connect(); err != nil {
 		return err
 	} else {
 		s1200.status = typex.DEV_UP
 	}
 
-	s1200.client = gos7.NewClient(handler)
+	s1200.client = gos7.NewClient(s1200.handler)
 	if !*s1200.mainConfig.CommonConfig.AutoRequest {
 		s1200.status = typex.DEV_UP
 		return nil
@@ -212,6 +213,9 @@ func (s1200 *SIEMENS_PLC) Stop() {
 	s1200.status = typex.DEV_DOWN
 	if s1200.CancelCTX != nil {
 		s1200.CancelCTX()
+	}
+	if s1200.handler != nil {
+		s1200.handler.Close()
 	}
 	siemenscache.UnRegisterSlot(s1200.PointId)
 }

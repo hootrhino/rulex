@@ -104,8 +104,6 @@ func RefreshPort(Port RhinoH3HwPort) {
 *
  */
 func refreshHwPort(name string) {
-	__HwPortsManager.lock.Lock()
-	defer __HwPortsManager.lock.Unlock()
 	Port, ok := __HwPortsManager.Interfaces[name]
 	if !ok {
 		return

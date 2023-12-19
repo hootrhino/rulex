@@ -12,9 +12,9 @@ import (
 )
 
 type __HttpCommonConfig struct {
-	Timeout     int   `json:"timeout" validate:"required"`
-	AutoRequest bool  `json:"autoRequest" validate:"required"`
-	Frequency   int64 `json:"frequency" validate:"required"`
+	Timeout     *int   `json:"timeout" validate:"required"`
+	AutoRequest *bool  `json:"autoRequest" validate:"required"`
+	Frequency   *int64 `json:"frequency" validate:"required"`
 }
 type __HttpMainConfig struct {
 	CommonConfig __HttpCommonConfig `json:"commonConfig" validate:"required"`
@@ -60,9 +60,9 @@ func (hd *GenericHttpDevice) Start(cctx typex.CCTX) error {
 	hd.Ctx = cctx.Ctx
 	hd.CancelCTX = cctx.CancelCTX
 
-	if hd.mainConfig.CommonConfig.AutoRequest {
+	if *hd.mainConfig.CommonConfig.AutoRequest {
 		ticker := time.NewTicker(
-			time.Duration(hd.mainConfig.CommonConfig.Frequency) * time.Millisecond)
+			time.Duration(*hd.mainConfig.CommonConfig.Frequency) * time.Millisecond)
 		go func() {
 			for {
 				select {
