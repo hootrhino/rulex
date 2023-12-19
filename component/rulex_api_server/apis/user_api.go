@@ -152,21 +152,6 @@ func Login(c *gin.Context, ruleEngine typex.RuleX) {
 	}
 }
 
-/*
-*
-* 日志管理
-*
- */
-func Logs(c *gin.Context, ruleEngine typex.RuleX) {
-	type Data struct {
-		Id      int    `json:"id" binding:"required"`
-		Content string `json:"content" binding:"required"`
-	}
-	//TODO 日志暂时不记录
-	logs := []Data{}
-	c.JSON(common.HTTP_OK, common.OkWithData(logs))
-}
-
 func LogOut(c *gin.Context, ruleEngine typex.RuleX) {
 	c.JSON(common.HTTP_OK, common.Ok())
 }

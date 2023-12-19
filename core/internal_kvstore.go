@@ -16,6 +16,7 @@
 package core
 
 import (
+	"strings"
 	"time"
 
 	"github.com/hootrhino/rulex/glogger"
@@ -82,7 +83,18 @@ func (rs *RulexStore) Count() int {
 
 // 模糊查询匹配
 // 支持: *AAA AAA* A*B
-func (rs *RulexStore) FuzzyGet(k string) string {
-	// TODO 未来实现
+func (rs *RulexStore) FuzzyGet(Key string) any {
+	for k, v := range rs.cache.Items() {
+		if fuzzyMatch(k, Key) {
+			return v
+		}
+	}
 	return ""
+}
+
+// 将主字符串和子字符串都转换为小写，以进行不区分大小写的匹配
+func fuzzyMatch(mainStr, subStr string) bool {
+	mainStr = strings.ToLower(mainStr)
+	subStr = strings.ToLower(subStr)
+	return strings.Contains(mainStr, subStr)
 }
