@@ -371,10 +371,14 @@ func (mdev *generic_modbus_device) Stop() {
 		hwportmanager.FreeInterfaceBusy(mdev.mainConfig.PortUuid)
 	}
 	if mdev.mainConfig.CommonConfig.Mode == "UART" {
-		mdev.rtuHandler.Close()
+		if mdev.rtuHandler != nil {
+			mdev.rtuHandler.Close()
+		}
 	}
 	if mdev.mainConfig.CommonConfig.Mode == "TCP" {
-		mdev.tcpHandler.Close()
+		if mdev.tcpHandler != nil {
+			mdev.tcpHandler.Close()
+		}
 	}
 	modbuscache.UnRegisterSlot(mdev.PointId)
 
