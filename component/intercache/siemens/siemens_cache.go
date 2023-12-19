@@ -15,6 +15,8 @@
 package siemens
 
 import (
+	"sync"
+
 	"github.com/hootrhino/rulex/component/intercache"
 	"github.com/hootrhino/rulex/typex"
 )
@@ -57,48 +59,62 @@ func Flush() {
 type SiemensPointCache struct {
 	Slots      map[string]map[string]SiemensPoint
 	ruleEngine typex.RuleX
+	lock       sync.Mutex
 }
 
 func InitSiemensPointCache(ruleEngine typex.RuleX) intercache.InterCache {
 	__DefaultSiemensPointCache = &SiemensPointCache{
 		ruleEngine: ruleEngine,
 		Slots:      map[string]map[string]SiemensPoint{},
+		lock:       sync.Mutex{},
 	}
 	return __DefaultSiemensPointCache
 }
-func (M SiemensPointCache) RegisterSlot(Slot string) {
+func (M *SiemensPointCache) RegisterSlot(Slot string) {
+	M.lock.Lock()
+	defer M.lock.Unlock()
 	M.Slots[Slot] = map[string]SiemensPoint{}
 }
-func (M SiemensPointCache) GetSlot(Slot string) map[string]SiemensPoint {
+func (M *SiemensPointCache) GetSlot(Slot string) map[string]SiemensPoint {
+	M.lock.Lock()
+	defer M.lock.Unlock()
 	if S, ok := M.Slots[Slot]; ok {
 		return S
 	}
 	return nil
 }
-func (M SiemensPointCache) SetValue(Slot, K string, V SiemensPoint) {
+func (M *SiemensPointCache) SetValue(Slot, K string, V SiemensPoint) {
+	M.lock.Lock()
+	defer M.lock.Unlock()
 	if S, ok := M.Slots[Slot]; ok {
 		S[K] = V
 		M.Slots[Slot] = S
 	}
 }
-func (M SiemensPointCache) GetValue(Slot, K string) SiemensPoint {
+func (M *SiemensPointCache) GetValue(Slot, K string) SiemensPoint {
+	M.lock.Lock()
+	defer M.lock.Unlock()
 	if S, ok := M.Slots[Slot]; ok {
 		return S[K]
 	}
 	return SiemensPoint{}
 }
-func (M SiemensPointCache) DeleteValue(Slot, K string) {
+func (M *SiemensPointCache) DeleteValue(Slot, K string) {
+	M.lock.Lock()
+	defer M.lock.Unlock()
 	if S, ok := M.Slots[Slot]; ok {
 		delete(S, Slot)
 	}
 }
-func (M SiemensPointCache) UnRegisterSlot(Slot string) {
+func (M *SiemensPointCache) UnRegisterSlot(Slot string) {
+	M.lock.Lock()
+	defer M.lock.Unlock()
 	delete(M.Slots, Slot)
 }
-func (M SiemensPointCache) Size() uint64 {
+func (M *SiemensPointCache) Size() uint64 {
 	return uint64(len(M.Slots))
 }
-func (M SiemensPointCache) Flush() {
+func (M *SiemensPointCache) Flush() {
 	for slotName, slot := range M.Slots {
 		for k, _ := range slot {
 			delete(slot, k)

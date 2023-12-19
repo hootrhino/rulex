@@ -15,6 +15,8 @@
 package modbus
 
 import (
+	"sync"
+
 	"github.com/hootrhino/rulex/component/intercache"
 	"github.com/hootrhino/rulex/typex"
 )
@@ -59,48 +61,62 @@ func Flush() {
 type ModbusPointCache struct {
 	Slots      map[string]map[string]RegisterPoint
 	ruleEngine typex.RuleX
+	lock       sync.Mutex
 }
 
 func InitModbusPointCache(ruleEngine typex.RuleX) intercache.InterCache {
 	__DefaultModbusPointCache = &ModbusPointCache{
 		ruleEngine: ruleEngine,
 		Slots:      map[string]map[string]RegisterPoint{},
+		lock:       sync.Mutex{},
 	}
 	return __DefaultModbusPointCache
 }
-func (M ModbusPointCache) RegisterSlot(Slot string) {
+func (M *ModbusPointCache) RegisterSlot(Slot string) {
+	M.lock.Lock()
+	defer M.lock.Unlock()
 	M.Slots[Slot] = map[string]RegisterPoint{}
 }
-func (M ModbusPointCache) GetSlot(Slot string) map[string]RegisterPoint {
+func (M *ModbusPointCache) GetSlot(Slot string) map[string]RegisterPoint {
+	M.lock.Lock()
+	defer M.lock.Unlock()
 	if S, ok := M.Slots[Slot]; ok {
 		return S
 	}
 	return nil
 }
-func (M ModbusPointCache) SetValue(Slot, K string, V RegisterPoint) {
+func (M *ModbusPointCache) SetValue(Slot, K string, V RegisterPoint) {
+	M.lock.Lock()
+	defer M.lock.Unlock()
 	if S, ok := M.Slots[Slot]; ok {
 		S[K] = V
 		M.Slots[Slot] = S
 	}
 }
-func (M ModbusPointCache) GetValue(Slot, K string) RegisterPoint {
+func (M *ModbusPointCache) GetValue(Slot, K string) RegisterPoint {
+	M.lock.Lock()
+	defer M.lock.Unlock()
 	if S, ok := M.Slots[Slot]; ok {
 		return S[K]
 	}
 	return RegisterPoint{}
 }
-func (M ModbusPointCache) DeleteValue(Slot, K string) {
+func (M *ModbusPointCache) DeleteValue(Slot, K string) {
+	M.lock.Lock()
+	defer M.lock.Unlock()
 	if S, ok := M.Slots[Slot]; ok {
 		delete(S, Slot)
 	}
 }
-func (M ModbusPointCache) UnRegisterSlot(Slot string) {
+func (M *ModbusPointCache) UnRegisterSlot(Slot string) {
+	M.lock.Lock()
+	defer M.lock.Unlock()
 	delete(M.Slots, Slot)
 }
-func (M ModbusPointCache) Size() uint64 {
+func (M *ModbusPointCache) Size() uint64 {
 	return uint64(len(M.Slots))
 }
-func (M ModbusPointCache) Flush() {
+func (M *ModbusPointCache) Flush() {
 	for slotName, slot := range M.Slots {
 		for k, _ := range slot {
 			delete(slot, k)
