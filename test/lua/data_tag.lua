@@ -3,9 +3,9 @@
 --     {"tag":"add2", "id": "002", "value": 0x0002},
 -- ]
 
-function ParseData(data)
+function ParseData(args)
     -- data: {"in":"AA0011...","out":"AABBCDD..."}
-    local DataT, err = rulexlib:J2T(data)
+    local DataT, err = rulexlib:J2T(args)
     if err ~= nil then
         return true, args
     end

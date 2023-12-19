@@ -83,18 +83,25 @@ func MatchUInt(rx typex.RuleX) func(*lua.LState) int {
 		ntb := lua.LTable{}
 		for _, v := range mhs {
 			size := len(v.Value)
-
-			if size == 2 {
+			// 空
+			if size == 0 {
+				ntb.RawSetString(v.Name, lua.LNumber(0))
+			}
+			// 单字节
+			if size == 1 {
+				ntb.RawSetString(v.Name, lua.LNumber(v.ToUint8()))
+			}
+			// 长度是 2 3 字节全看成2字节
+			if size == 2 || size == 3 {
 				ntb.RawSetString(v.Name, lua.LNumber(v.ToUint16()))
 			}
-			if size == 4 {
+			// 长度是 4 5 6 7 字节全看成4字节
+			if size == 4 || size == 5 || size == 6 || size == 7 {
 				ntb.RawSetString(v.Name, lua.LNumber(v.ToUint32()))
 			}
-			if size == 8 {
+			// 不支持超过8位的
+			if size >= 8 {
 				ntb.RawSetString(v.Name, lua.LNumber(v.ToUInt64()))
-			}
-			if size > 8 {
-				ntb.RawSetString(v.Name, lua.LNumber(-0xFFFFFFFF))
 			}
 		}
 		l.Push(&ntb)
@@ -102,6 +109,11 @@ func MatchUInt(rx typex.RuleX) func(*lua.LState) int {
 	}
 }
 
+/*
+*
+* 十六进制字节表示字符串
+*
+ */
 type HexSegment struct {
 	Name  string
 	Value []byte
@@ -111,14 +123,35 @@ func (sgm HexSegment) ToHexString() string {
 	return fmt.Sprintf("%X", sgm.Value)
 }
 
+func (sgm HexSegment) ToUint8() uint8 {
+	return uint8(sgm.Value[0])
+}
+
+/*
+*
+* 大端表示法
+*
+ */
 func (sgm HexSegment) ToUint16() uint16 {
 	value := binary.BigEndian.Uint16(sgm.Value)
 	return value
 }
+
+/*
+*
+* 大端表示法
+*
+ */
 func (sgm HexSegment) ToUint32() uint32 {
 	value := binary.BigEndian.Uint32(sgm.Value)
 	return value
 }
+
+/*
+*
+* 大端表示法
+*
+ */
 func (sgm HexSegment) ToUInt64() uint64 {
 	value := binary.BigEndian.Uint64(sgm.Value)
 	return value
@@ -177,3 +210,17 @@ func extHex(hexStr string, start, end int) string {
 	}
 	return hexStr[start*2 : (end+1)*2]
 }
+
+// func extHex(hexStr string, start, end int) string {
+// 	// 检查输入边界的有效性
+// 	if start < 0 || end < 0 || start > end || end*2 >= len(hexStr) {
+// 		return ""
+// 	}
+
+// 	// 计算起始和结束索引
+// 	startIdx := start * 2
+// 	endIdx := (end + 1) * 2
+
+// 	// 切片并返回结果
+// 	return hexStr[startIdx:endIdx]
+// }

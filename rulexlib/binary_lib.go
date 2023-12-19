@@ -231,7 +231,7 @@ func bitStringToBytes(s string) ([]byte, error) {
 	for i := 0; i < len(s); i++ {
 		c := s[i]
 		if c < '0' || c > '1' {
-			return nil, errors.New("bitstring to bytes error, bit value out of range, only can be 0 or 1")
+			return nil, errors.New("bit string to bytes error, bit value out of range, only can be 0 or 1")
 		}
 		b[i>>3] |= (c - '0') << uint(7-i&7)
 	}
@@ -520,10 +520,20 @@ func BinToFloat32(rx typex.RuleX) func(*lua.LState) int {
 			l.Push(lua.LNil)
 			return 1
 		}
-		l.Push(lua.LNumber(math.Float32frombits(binary.BigEndian.Uint32(dBytes))))
+		if len(dBytes) == 4 {
+			l.Push(lua.LNumber(math.Float32frombits(binary.BigEndian.Uint32(dBytes))))
+		} else {
+			l.Push(lua.LNumber(0))
+		}
 		return 1
 	}
 }
+
+/*
+*
+* 二进制转浮点数
+*
+ */
 func BinToFloat64(rx typex.RuleX) func(*lua.LState) int {
 	return func(l *lua.LState) int {
 		bin := l.ToString(2)
@@ -532,10 +542,20 @@ func BinToFloat64(rx typex.RuleX) func(*lua.LState) int {
 			l.Push(lua.LNil)
 			return 1
 		}
-		l.Push(lua.LNumber(math.Float64frombits(binary.BigEndian.Uint64(dBytes))))
+		if len(dBytes) == 8 {
+			l.Push(lua.LNumber(math.Float64frombits(binary.BigEndian.Uint64(dBytes))))
+		} else {
+			l.Push(lua.LNumber(0))
+		}
 		return 1
 	}
 }
+
+/*
+*
+* 二进制转浮点小端
+*
+ */
 func BinToFloat32Little(rx typex.RuleX) func(*lua.LState) int {
 	return func(l *lua.LState) int {
 		bin := l.ToString(2)
@@ -544,10 +564,20 @@ func BinToFloat32Little(rx typex.RuleX) func(*lua.LState) int {
 			l.Push(lua.LNil)
 			return 1
 		}
-		l.Push(lua.LNumber(math.Float32frombits(binary.LittleEndian.Uint32(dBytes))))
+		if len(dBytes) == 4 {
+			l.Push(lua.LNumber(math.Float32frombits(binary.LittleEndian.Uint32(dBytes))))
+		} else {
+			l.Push(lua.LNumber(0))
+		}
 		return 1
 	}
 }
+
+/*
+*
+* 二进制转8字节浮点小端
+*
+ */
 func BinToFloat64Little(rx typex.RuleX) func(*lua.LState) int {
 	return func(l *lua.LState) int {
 		bin := l.ToString(2)
@@ -556,7 +586,11 @@ func BinToFloat64Little(rx typex.RuleX) func(*lua.LState) int {
 			l.Push(lua.LNil)
 			return 1
 		}
-		l.Push(lua.LNumber(math.Float64frombits(binary.LittleEndian.Uint64(dBytes))))
+		if len(dBytes) == 8 {
+			l.Push(lua.LNumber(math.Float64frombits(binary.LittleEndian.Uint64(dBytes))))
+		} else {
+			l.Push(lua.LNumber(0))
+		}
 		return 1
 	}
 }
