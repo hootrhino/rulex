@@ -106,7 +106,9 @@ func (hd *GenericHttpDevice) Status() typex.DeviceState {
 // 停止设备
 func (hd *GenericHttpDevice) Stop() {
 	hd.status = typex.DEV_STOP
-	hd.CancelCTX()
+	if hd.CancelCTX != nil {
+		hd.CancelCTX()
+	}
 }
 
 // 设备属性，是一系列属性描述
