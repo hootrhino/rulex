@@ -33,7 +33,7 @@ var __mkv_playing bool = false
 
 func __MPVPlay(filePath string, duration time.Duration) error {
 	if __mkv_playing {
-		return fmt.Errorf("Audio output device busying now")
+		return fmt.Errorf("audio output device busying now")
 	}
 	__mkv_playing = true
 	cmd := exec.Command("mpv", filePath)
