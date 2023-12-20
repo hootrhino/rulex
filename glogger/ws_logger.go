@@ -117,18 +117,24 @@ func WsLogger(c *gin.Context) {
 	wsConn.SetReadDeadline(time.Time{})
 	token := string(b)
 	if token != "WsTerminal" {
+		private_GRealtimeLogger.lock.Lock()
 		wsConn.WriteMessage(1, []byte("Invalid client token"))
+		private_GRealtimeLogger.lock.Unlock()
 		wsConn.Close()
 		return
 	}
 	// 最多允许连接10个客户端，实际情况下根本用不了那么多
 	if len(private_GRealtimeLogger.Clients) > 5 {
+		private_GRealtimeLogger.lock.Lock()
 		wsConn.WriteMessage(websocket.CloseMessage, []byte{})
+		private_GRealtimeLogger.lock.Unlock()
 		wsConn.Close()
 		return
 	}
 	private_GRealtimeLogger.Clients[wsConn.RemoteAddr().String()] = wsConn
+	private_GRealtimeLogger.lock.Lock()
 	wsConn.WriteMessage(websocket.TextMessage, []byte("Connected"))
+	private_GRealtimeLogger.lock.Unlock()
 	GLogger.Info("WebSocket Terminal connected:" + wsConn.RemoteAddr().String())
 	wsConn.SetCloseHandler(func(code int, text string) error {
 		GLogger.Info("wsConn Auto Close:", wsConn.RemoteAddr().String())
@@ -166,7 +172,10 @@ func WsLogger(c *gin.Context) {
 			if err != nil {
 				break
 			}
+			private_GRealtimeLogger.lock.Lock()
 			err = wsConn.WriteMessage(websocket.PingMessage, []byte{})
+			private_GRealtimeLogger.lock.Unlock()
+
 			if err != nil {
 				break
 			}
