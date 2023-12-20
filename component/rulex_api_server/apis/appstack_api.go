@@ -20,14 +20,14 @@ import (
 *
  */
 type appStackDto struct {
-	UUID        string `json:"uuid,omitempty"`      // 名称
-	Name        string `json:"name,omitempty"`      // 名称
-	Version     string `json:"version,omitempty"`   // 版本号
-	AutoStart   *bool  `json:"autoStart,omitempty"` // 自动启动
-	AppState    int    `json:"appState,omitempty"`  // 状态: 1 运行中, 0 停止
-	Type        string `json:"type,omitempty"`      // 默认就是lua, 留个扩展以后可能支持别的
-	LuaSource   string `json:"luaSource,omitempty"`
-	Description string `json:"description,omitempty"`
+	UUID        string `json:"uuid,omitempty"` // 名称
+	Name        string `json:"name"`           // 名称
+	Version     string `json:"version"`        // 版本号
+	AutoStart   *bool  `json:"autoStart"`      // 自动启动
+	AppState    int    `json:"appState"`       // 状态: 1 运行中, 0 停止
+	Type        string `json:"type"`           // 默认就是lua, 留个扩展以后可能支持别的
+	LuaSource   string `json:"luaSource"`      // Lua源码
+	Description string `json:"description"`
 }
 
 /*
