@@ -560,9 +560,6 @@ func TestOutEndCallback(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error(fmt.Sprintf("'OutEnd' not exists: %v", form.UUID)))
 		return
 	}
-	glogger.GLogger.WithFields(logrus.Fields{
-		"topic": "rule/test/" + form.UUID,
-	}).Debug(form.TestData)
 	err1 := interqueue.DefaultDataCacheQueue.PushOutQueue(outend, form.TestData)
 	if err1 != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err1))
