@@ -28,3 +28,11 @@ unzip rulex-arm32linux-$VERSION.zip -d rulex
 # 状态
 ./rulex-openwrt.sh status
 ```
+
+## 守护进程
+```sh
+# 打开crontab
+sudo crontab -e
+# 输入
+@reboot (export ARCHSUPPORT=EEKITH3 && /etc/init.d/rulex.service start > /var/log/rulex.log 2>&1)
+```
