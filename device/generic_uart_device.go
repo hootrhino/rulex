@@ -17,8 +17,8 @@ import (
 
 type _GUDCommonConfig struct {
 	Tag         string `json:"tag" validate:"required"`
-	Frequency   int64  `json:"frequency"`
-	AutoRequest bool   `json:"autoRequest" validate:"required"`
+	Frequency   *int64 `json:"frequency"`
+	AutoRequest *bool  `json:"autoRequest" validate:"required"`
 	// 协议报文结束符号
 	Separator string `json:"separator"`
 }
@@ -90,7 +90,7 @@ func (uart *genericUartDevice) Start(cctx typex.CCTX) error {
 		return err
 	}
 	uart.driver = driver.NewRawUartDriver(uart.Ctx, uart.RuleEngine, uart.Details(), serialPort)
-	if !uart.mainConfig.CommonConfig.AutoRequest {
+	if !*uart.mainConfig.CommonConfig.AutoRequest {
 		uart.status = typex.DEV_UP
 		return nil
 	}

@@ -9,7 +9,7 @@ type GenericUartConfig struct {
 	// 结束符, 默认是 '\n'；但是可以自己定义
 	Decollator string `json:"decollator" title:"协议分隔符"`
 	// Weather allow AutoRequest?
-	AutoRequest bool  `json:"autoRequest" validate:"required"`
+	AutoRequest *bool  `json:"autoRequest" validate:"required"`
 	// Request Frequency, default 5 second
 	Frequency int64  `json:"frequency" validate:"required" title:"采集频率"`
 	Timeout   int    `json:"timeout" validate:"required" title:"连接超时"`

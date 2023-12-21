@@ -14,7 +14,7 @@ import (
 )
 
 type _SNMPCommonConfig struct {
-	AutoRequest bool  `json:"autoRequest" validate:"required"`
+	AutoRequest *bool `json:"autoRequest" validate:"required"`
 	Frequency   int64 `json:"frequency" validate:"required" title:"采集频率"`
 }
 
@@ -82,7 +82,7 @@ func (sd *genericSnmpDevice) Start(cctx typex.CCTX) error {
 	//---------------------------------------------------------------------------------
 	// Start
 	//---------------------------------------------------------------------------------
-	if !sd.mainConfig.CommonConfig.AutoRequest {
+	if !*sd.mainConfig.CommonConfig.AutoRequest {
 		sd.status = typex.DEV_UP
 		return nil
 	}

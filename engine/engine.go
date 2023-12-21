@@ -485,24 +485,6 @@ func (e *RuleEngine) InitDeviceTypeManager() error {
 			NewDevice: device.NewIRDevice,
 		},
 	)
-	e.DeviceTypeManager.Register(typex.TSS200V02,
-		&typex.XConfig{
-			Engine:    e,
-			NewDevice: device.NewTS200Sensor,
-		},
-	)
-	e.DeviceTypeManager.Register(typex.YK08_RELAY,
-		&typex.XConfig{
-			Engine:    e,
-			NewDevice: device.NewYK8Controller,
-		},
-	)
-	e.DeviceTypeManager.Register(typex.RTU485_THER,
-		&typex.XConfig{
-			Engine:    e,
-			NewDevice: device.NewRtu485Ther,
-		},
-	)
 	e.DeviceTypeManager.Register(typex.SIEMENS_PLC,
 		&typex.XConfig{
 			Engine:    e,
@@ -525,12 +507,6 @@ func (e *RuleEngine) InitDeviceTypeManager() error {
 		&typex.XConfig{
 			Engine:    e,
 			NewDevice: device.NewGenericSnmpDevice,
-		},
-	)
-	e.DeviceTypeManager.Register(typex.USER_G776,
-		&typex.XConfig{
-			Engine:    e,
-			NewDevice: device.NewUsrG776DTU,
 		},
 	)
 	e.DeviceTypeManager.Register(typex.ICMP_SENDER,

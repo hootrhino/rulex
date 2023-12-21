@@ -39,7 +39,11 @@ func NewGenericHttpDevice(e typex.RuleX) typex.XDevice {
 	hd := new(GenericHttpDevice)
 	hd.locker = &sync.Mutex{}
 	hd.client = *http.DefaultClient
-	hd.mainConfig = __HttpMainConfig{}
+	hd.mainConfig = __HttpMainConfig{
+		CommonConfig: __HttpCommonConfig{
+			AutoRequest: new(bool),
+		},
+	}
 	hd.RuleEngine = e
 	return hd
 }
