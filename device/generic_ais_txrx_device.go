@@ -29,7 +29,7 @@ var __AisCodec = aislib.CodecNew(false, false, false)
 // --------------------------------------------------------------------------------------------------
 type _AISCommonConfig struct {
 	Mode     string `json:"mode" title:"工作模式" info:"UART/TCP"`
-	ParseAis bool   `json:"parseAis"`
+	ParseAis *bool  `json:"parseAis"`
 	GwSN     string `json:"gwsn"`
 }
 type _AISDeviceMasterConfig struct {
@@ -66,7 +66,7 @@ func NewAISDeviceMaster(e typex.RuleX) typex.XDevice {
 		},
 		CommonConfig: _AISCommonConfig{
 			Mode:     "TCP",
-			ParseAis: false,
+			ParseAis: new(bool),
 			GwSN:     "HR0001",
 		},
 	}
@@ -235,7 +235,7 @@ func (aism *AISDeviceMaster) Start(cctx typex.CCTX) error {
 				}
 
 				// 如果不需要解析,直接原文透传
-				if !aism.mainConfig.CommonConfig.ParseAis {
+				if !*aism.mainConfig.CommonConfig.ParseAis {
 					// {
 					//     "ais_receiver_device":"%s",
 					//     "gwsn":"%s"
@@ -425,7 +425,7 @@ func (aism *AISDeviceMaster) handleIO(session *__AISDeviceSession) {
 			return
 		}
 		// 如果不需要解析,直接原文透传
-		if !aism.mainConfig.CommonConfig.ParseAis {
+		if !*aism.mainConfig.CommonConfig.ParseAis {
 			// {
 			//     "ais_receiver_device":"%s",
 			//     "ais_data":"%s"

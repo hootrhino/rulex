@@ -14,7 +14,7 @@ SNMP协议支持各种版本，其中最常用的是SNMPv1、SNMPv2c和SNMPv3。
 ```go
 
 type _SNMPCommonConfig struct {
-	AutoRequest bool  `json:"autoRequest" validate:"required"`
+	AutoRequest *bool  `json:"autoRequest" validate:"required"`
 	Frequency   int64 `json:"frequency" validate:"required" title:"采集频率"`
 }
 type GenericSnmpConfig struct {

@@ -48,15 +48,11 @@ func (d DeviceType) String() string {
 
 // 支持的设备类型
 const (
-	TSS200V02                  DeviceType = "TSS200V02"                  // Multi params Sensor
-	RTU485_THER                DeviceType = "RTU485_THER"                // RS485 Sensor
-	YK08_RELAY                 DeviceType = "YK08_RELAY"                 // YK8 RS485 Relay
 	SIEMENS_PLC                DeviceType = "SIEMENS_PLC"                // SIEMENS-S71200
 	GENERIC_MODBUS             DeviceType = "GENERIC_MODBUS"             // 通用Modbus
 	GENERIC_MODBUS_POINT_EXCEL DeviceType = "GENERIC_MODBUS_POINT_EXCEL" // 通用Modbus通过Excel表配置点位
 	GENERIC_UART               DeviceType = "GENERIC_UART"               // 通用串口
 	GENERIC_SNMP               DeviceType = "GENERIC_SNMP"               // SNMP 支持
-	USER_G776                  DeviceType = "USER_G776"                  // 有人 G776 4G模组
 	ICMP_SENDER                DeviceType = "ICMP_SENDER"                // ICMP_SENDER
 	GENERIC_PROTOCOL           DeviceType = "GENERIC_PROTOCOL"           // 通用自定义协议处理器
 	GENERIC_OPCUA              DeviceType = "GENERIC_OPCUA"              // 通用OPCUA

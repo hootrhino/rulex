@@ -16,7 +16,7 @@ import (
 type _IcmpSenderCommonConfig struct {
 	Timeout int `json:"timeout" validate:"required"`
 	// // Weather allow AutoRequest?
-	AutoRequest bool `json:"autoRequest" validate:"required"`
+	AutoRequest *bool `json:"autoRequest" validate:"required"`
 	// // Request Frequency, default 5 second
 	Frequency int64 `json:"frequency" validate:"required" title:"采集频率"`
 }
@@ -55,7 +55,7 @@ func (sender *IcmpSender) Init(devId string, configMap map[string]interface{}) e
 			return errors.New("invalid ip:" + ip)
 		}
 	}
-	if !sender.mainConfig.CommonConfig.AutoRequest {
+	if !*sender.mainConfig.CommonConfig.AutoRequest {
 		sender.status = typex.DEV_UP
 		return nil
 	}

@@ -14,14 +14,10 @@ var DM typex.DeviceRegistry
  */
 func LoadDt() {
 	DM = core.NewDeviceTypeManager()
-	DM.Register(typex.TSS200V02, &typex.XConfig{})
-	DM.Register(typex.RTU485_THER, &typex.XConfig{})
-	DM.Register(typex.YK08_RELAY, &typex.XConfig{})
 	DM.Register(typex.SIEMENS_PLC, &typex.XConfig{})
 	DM.Register(typex.GENERIC_MODBUS, &typex.XConfig{})
 	DM.Register(typex.GENERIC_MODBUS_POINT_EXCEL, &typex.XConfig{})
 	DM.Register(typex.GENERIC_UART, &typex.XConfig{})
 	DM.Register(typex.GENERIC_SNMP, &typex.XConfig{})
-	DM.Register(typex.USER_G776, &typex.XConfig{})
 	DM.Register(typex.ICMP_SENDER, &typex.XConfig{})
 }
