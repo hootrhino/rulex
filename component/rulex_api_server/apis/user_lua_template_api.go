@@ -47,10 +47,17 @@ func CreateUserLuaTemplate(c *gin.Context, ruleEngine typex.RuleX) {
 		Detail: form.Detail,
 		Gid:    form.Gid,
 	}
+	Variables, err1 := MUserLuaTemplate.GenVariables(form.Variables)
+	if err1 != nil {
+		c.JSON(common.HTTP_OK, common.Error("Group not found"))
+		return
+	}
+	MUserLuaTemplate.Variables = Variables
 	if err := service.InsertUserLuaTemplate(MUserLuaTemplate); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
+
 	// 新建用户模板的时候必须给一个分组
 	if err := service.BindResource(form.Gid, MUserLuaTemplate.UUID); err != nil {
 		c.JSON(common.HTTP_OK, common.Error("Group not found"))
@@ -155,12 +162,13 @@ func SearchUserLuaTemplateGroup(c *gin.Context, ruleEngine typex.RuleX) {
 	keyword, _ := c.GetQuery("keyword")
 	for _, vv := range service.SearchUserLuaTemplate(keyword, keyword) {
 		visuals = append(visuals, UserLuaTemplateVo{
-			UUID:   vv.UUID,
-			Label:  vv.Label,
-			Type:   vv.Type,
-			Apply:  vv.Apply,
-			Detail: vv.Detail,
-			Gid:    vv.Gid,
+			UUID:      vv.UUID,
+			Label:     vv.Label,
+			Type:      vv.Type,
+			Apply:     vv.Apply,
+			Detail:    vv.Detail,
+			Gid:       vv.Gid,
+			Variables: vv.GetVariables(),
 		})
 	}
 	c.JSON(common.HTTP_OK, common.OkWithData(visuals))
