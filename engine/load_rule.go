@@ -39,23 +39,16 @@ func (e *RuleEngine) LoadRule(r *typex.Rule) error {
 	// Load LoadBuildInLuaLib
 	//--------------------------------------------------------------
 	LoadBuildInLuaLib(e, r)
-
 	glogger.GLogger.Infof("Rule [%v, %v] load successfully", r.Name, r.UUID)
-	// 绑定输入资源
-	for _, inUUId := range r.FromSource {
-		// 查找输入定义的资源是否存在
-		if in := e.GetInEnd(inUUId); in != nil {
-			(in.BindRules)[r.UUID] = *r
-			return nil
-		}
+	// 查找输入定义的资源是否存在
+	if in := e.GetInEnd(r.FromSource); in != nil {
+		(in.BindRules)[r.UUID] = *r
+		return nil
 	}
-	// 绑定设备
-	for _, devUUId := range r.FromDevice {
-		// 查找输入定义的资源是否存在
-		if Device := e.GetDevice(devUUId); Device != nil {
-			// 绑定资源和规则，建立关联关系
-			(Device.BindRules)[r.UUID] = *r
-		}
+	// 查找输入定义的资源是否存在
+	if Device := e.GetDevice(r.FromDevice); Device != nil {
+		// 绑定资源和规则，建立关联关系
+		(Device.BindRules)[r.UUID] = *r
 	}
 	return nil
 

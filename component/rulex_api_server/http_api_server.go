@@ -312,7 +312,6 @@ func (hs *ApiServerPlugin) LoadRoute() {
 	{
 		osApi.GET(("/netInterfaces"), server.AddRoute(apis.GetNetInterfaces))
 		osApi.GET(("/osRelease"), server.AddRoute(apis.CatOsRelease))
-		// osApi.GET(("/uarts"), server.AddRoute(apis.GetUartList))
 		osApi.GET(("/system"), server.AddRoute(apis.System))
 		osApi.GET(("/startedAt"), server.AddRoute(apis.StartedAt))
 	}

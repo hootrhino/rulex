@@ -23,8 +23,8 @@ type Rule struct {
 	Type        string      `json:"type"` // 脚本类型，目前支持"lua"
 	Status      RuleStatus  `json:"status"`
 	Name        string      `json:"name"`
-	FromSource  []string    `json:"fromSource"` // 来自数据源
-	FromDevice  []string    `json:"fromDevice"` // 来自设备
+	FromSource  string      `json:"fromSource"` // 来自数据源
+	FromDevice  string      `json:"fromDevice"` // 来自设备
 	Actions     string      `json:"actions"`
 	Success     string      `json:"success"`
 	Failed      string      `json:"failed"`
@@ -36,8 +36,8 @@ func NewLuaRule(e RuleX,
 	uuid string,
 	name string,
 	description string,
-	fromSource []string,
-	fromDevice []string,
+	fromSource string,
+	fromDevice string,
 	success string,
 	actions string,
 	failed string) *Rule {
@@ -58,8 +58,8 @@ func NewRule(e RuleX,
 	uuid string,
 	name string,
 	description string,
-	fromSource []string,
-	fromDevice []string,
+	fromSource string,
+	fromDevice string,
 	success string,
 	actions string,
 	failed string) *Rule {

@@ -43,6 +43,7 @@ import (
 	"github.com/hootrhino/rulex/typex"
 	"github.com/hootrhino/rulex/utils"
 	"github.com/shirou/gopsutil/v3/disk"
+	"github.com/sirupsen/logrus"
 )
 
 /*
@@ -259,20 +260,22 @@ func (e *RuleEngine) RunSourceCallbacks(in *typex.InEnd, callbackArgs string) {
  */
 func (e *RuleEngine) RunDeviceCallbacks(Device *typex.Device, callbackArgs string) {
 	for _, rule := range Device.BindRules {
-		if rule.Status == typex.RULE_RUNNING {
-			_, errA := core.ExecuteActions(&rule, lua.LString(callbackArgs))
-			if errA != nil {
-				glogger.GLogger.Error("RunLuaCallbacks error:", errA)
-				_, err1 := core.ExecuteFailed(rule.LuaVM, lua.LString(errA.Error()))
-				if err1 != nil {
-					glogger.GLogger.Error(err1)
-				}
-			} else {
-				_, err2 := core.ExecuteSuccess(rule.LuaVM)
-				if err2 != nil {
-					glogger.GLogger.Error(err2)
-					return
-				}
+		_, errA := core.ExecuteActions(&rule, lua.LString(callbackArgs))
+		if errA != nil {
+			glogger.GLogger.WithFields(logrus.Fields{
+				"topic": "rule/log/" + rule.UUID,
+			}).Info("RunLuaCallbacks error:", errA)
+			_, err1 := core.ExecuteFailed(rule.LuaVM, lua.LString(errA.Error()))
+			if err1 != nil {
+				glogger.GLogger.Error(err1)
+			}
+		} else {
+			_, err2 := core.ExecuteSuccess(rule.LuaVM)
+			if err2 != nil {
+				glogger.GLogger.WithFields(logrus.Fields{
+					"topic": "rule/log/" + rule.UUID,
+				}).Info("RunLuaCallbacks error:", err2)
+				return
 			}
 		}
 	}

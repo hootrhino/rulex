@@ -101,7 +101,7 @@ func GetQueue() chan BaseEvent {
 */
 func InitInternalEventBus(r typex.RuleX, MaxQueueSize int) *InternalEventBus {
 	__DefaultInternalEventBus = new(InternalEventBus)
-	__DefaultInternalEventBus.Queue = make(chan BaseEvent, MaxQueueSize)
+	__DefaultInternalEventBus.Queue = make(chan BaseEvent, 1024)
 	__DefaultInternalEventBus.Rulex = r
 	return __DefaultInternalEventBus
 }
