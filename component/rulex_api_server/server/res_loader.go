@@ -56,8 +56,8 @@ func LoadNewestInEnd(uuid string, ruleEngine typex.RuleX) error {
 			mRule.UUID,
 			mRule.Name,
 			mRule.Description,
-			mRule.FromSource,
-			mRule.FromDevice,
+			mRule.SourceId,
+			mRule.DeviceId,
 			mRule.Success,
 			mRule.Actions,
 			mRule.Failed)
@@ -148,8 +148,8 @@ func LoadNewestDevice(uuid string, ruleEngine typex.RuleX) error {
 			mRule.UUID,
 			mRule.Name,
 			mRule.Description,
-			mRule.FromSource,
-			mRule.FromDevice,
+			mRule.SourceId,
+			mRule.DeviceId,
 			mRule.Success,
 			mRule.Actions,
 			mRule.Failed)

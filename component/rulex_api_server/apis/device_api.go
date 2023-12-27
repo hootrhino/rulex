@@ -107,11 +107,6 @@ func DeleteDevice(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	// 要处理这个空字符串 ""
-	if Mdev.BindRules.Len() == 1 && len(Mdev.BindRules[0]) != 0 {
-		c.JSON(common.HTTP_OK, common.Error("Can't remove, Already have rule bind:"+Mdev.BindRules.String()))
-		return
-	}
 	// 检查是否有规则被绑定了
 	for _, ruleId := range Mdev.BindRules {
 		if ruleId != "" {
@@ -120,6 +115,8 @@ func DeleteDevice(c *gin.Context, ruleEngine typex.RuleX) {
 				c.JSON(common.HTTP_OK, common.Error400(err0))
 				return
 			}
+			c.JSON(common.HTTP_OK, common.Error("Can't remove, Already have rule bind:"+Mdev.BindRules.String()))
+			return
 		}
 
 	}

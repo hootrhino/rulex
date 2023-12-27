@@ -42,13 +42,13 @@ func (f StringList) Len() int {
 
 type MRule struct {
 	RulexModel
-	UUID        string     `gorm:"not null"`
-	Name        string     `gorm:"not null"`
-	FromSource  StringList `gorm:"not null type:string[]"`
-	FromDevice  StringList `gorm:"not null type:string[]"`
-	Actions     string     `gorm:"not null"`
-	Success     string     `gorm:"not null"`
-	Failed      string     `gorm:"not null"`
+	UUID        string `gorm:"not null"`
+	Name        string `gorm:"not null"`
+	SourceId    string `gorm:"not null"`
+	DeviceId    string `gorm:"not null"`
+	Actions     string `gorm:"not null"`
+	Success     string `gorm:"not null"`
+	Failed      string `gorm:"not null"`
 	Description string
 }
 

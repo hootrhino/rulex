@@ -167,7 +167,7 @@ func GetUptime() (string, error) {
 	var info unix.Sysinfo_t
 
 	if err := unix.Sysinfo(&info); err != nil {
-		return "0:0:0", err
+		return "0 Year 0 Month 0 Days 0 Hours 0 Minutes 0 Seconds", err
 	}
 
 	return formatUptime(int64(info.Uptime)), nil
@@ -178,6 +178,5 @@ func formatUptime(uptime int64) string {
 	hours := (uptime % 86400) / 3600
 	minutes := (uptime % 3600) / 60
 	seconds := uptime % 60
-
-	return fmt.Sprintf("%d days, %02d:%02d:%02d", days, hours, minutes, seconds)
+	return fmt.Sprintf("%d days %d Hours %02d Minutes %02d Seconds", days, hours, minutes, seconds)
 }

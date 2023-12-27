@@ -1,7 +1,10 @@
 package device
 
 import (
+	"fmt"
+	"io"
 	"net/http"
+	"net/url"
 	"sync"
 	"time"
 
@@ -55,7 +58,9 @@ func (hd *GenericHttpDevice) Init(devId string, configMap map[string]interface{}
 		glogger.GLogger.Error(err)
 		return err
 	}
-
+	if _, err := isValidHTTP_URL(hd.mainConfig.HttpConfig.Url); err != nil {
+		return fmt.Errorf("invalid url format:%s, %s", hd.mainConfig.HttpConfig.Url, err)
+	}
 	return nil
 }
 
@@ -79,7 +84,7 @@ func (hd *GenericHttpDevice) Start(cctx typex.CCTX) error {
 					{
 					}
 				}
-				body := utils.Get(hd.client, hd.mainConfig.HttpConfig.Url)
+				body := httpGet(hd.client, hd.mainConfig.HttpConfig.Url)
 				if body != "" {
 					hd.RuleEngine.WorkDevice(hd.Details(), body)
 				}
@@ -145,4 +150,48 @@ func (hd *GenericHttpDevice) OnDCACall(UUID string, Command string, Args interfa
 }
 func (hd *GenericHttpDevice) OnCtrl(cmd []byte, args []byte) ([]byte, error) {
 	return []byte{}, nil
+}
+
+/*
+*
+* HTTP GET
+*
+ */
+func httpGet(client http.Client, url string) string {
+	var err error
+	client.Timeout = 2 * time.Second
+	request, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		glogger.GLogger.Warn(err)
+		return ""
+	}
+
+	response, err := client.Do(request)
+	if err != nil {
+		glogger.GLogger.Warn(err)
+		return ""
+	}
+	defer response.Body.Close()
+	body, err := io.ReadAll(response.Body)
+	if err != nil {
+		glogger.GLogger.Warn(err)
+		return ""
+	}
+	return string(body)
+}
+
+/*
+*
+* 验证URL语法
+*
+ */
+func isValidHTTP_URL(urlStr string) (bool, error) {
+	r, err := url.Parse(urlStr)
+	if err != nil {
+		return false, fmt.Errorf("error parsing URL: %w", err)
+	}
+	if r.Scheme != "http" && r.Scheme != "https" {
+		return false, fmt.Errorf("invalid scheme; must be http or https")
+	}
+	return true, nil
 }

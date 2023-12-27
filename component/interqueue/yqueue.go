@@ -48,8 +48,8 @@ type InteractQueue struct {
 
 func InitInteractQueue(rulex typex.RuleX, maxQueueSize int) *InteractQueue {
 	__DefaultInteractQueue = InteractQueue{
-		inQueue:  make(chan InteractQueueData, maxQueueSize),
-		outQueue: make(chan InteractQueueData, maxQueueSize),
+		inQueue:  make(chan InteractQueueData, 1),
+		outQueue: make(chan InteractQueueData, 1),
 		rulex:    rulex,
 	}
 	return &__DefaultInteractQueue
