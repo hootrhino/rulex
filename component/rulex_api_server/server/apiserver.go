@@ -58,12 +58,12 @@ var err1crash = errors.New("http server crash, try to recovery")
 * 开启Server
 *
  */
-func StartRulexApiServer(ruleEngine typex.RuleX) {
+func StartRulexApiServer(ruleEngine typex.RuleX, port int) {
 	gin.SetMode(gin.ReleaseMode)
 	server := RulexApiServer{
 		ginEngine:  gin.New(),
 		ruleEngine: ruleEngine,
-		config:     serverConfig{Port: 2580},
+		config:     serverConfig{Port: port},
 	}
 	server.ginEngine.Use(static.Serve("/", WWWRoot("")))
 	server.ginEngine.Use(Authorize())
