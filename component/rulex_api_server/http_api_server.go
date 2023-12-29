@@ -188,7 +188,7 @@ func (hs *ApiServerPlugin) Init(config *ini.Section) error {
 	if err := utils.InIMapToStruct(config, &hs.mainConfig); err != nil {
 		return err
 	}
-	server.StartRulexApiServer(hs.ruleEngine)
+	server.StartRulexApiServer(hs.ruleEngine, hs.mainConfig.Port)
 
 	interdb.DB().Exec("VACUUM;")
 	interdb.RegisterModel(
