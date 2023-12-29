@@ -374,7 +374,7 @@ func (hs *ApiServerPlugin) LoadRoute() {
 	// ----------------------------------------------------------------------------------------------
 	pluginsApi := server.RouteGroup(server.ContextUrl("/plugware"))
 	{
-		pluginsApi.GET(("/"), server.AddRoute(apis.Plugins))
+		pluginsApi.GET(("/list"), server.AddRoute(apis.Plugins))
 		pluginsApi.POST(("/service"), server.AddRoute(apis.PluginService))
 		pluginsApi.GET(("/detail"), server.AddRoute(apis.PluginDetail))
 	}
