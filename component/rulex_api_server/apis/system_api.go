@@ -110,13 +110,13 @@ func System(c *gin.Context, ruleEngine typex.RuleX) {
 	// ip, err0 := utils.HostNameI()
 	memPercent, _ := service.GetMemPercent()
 	hardWareInfo := map[string]interface{}{
-		"version":    ruleEngine.Version().Version,
+		"version":    typex.MainVersion,
 		"diskInfo":   calculateDiskInfo(diskInfo),
 		"memPercent": memPercent,
 		"cpuPercent": calculateCpuPercent(cpuPercent),
 		"osArch":     ruleEngine.Version().Arch,
 		"osDist":     ruleEngine.Version().Dist,
-		"product":    typex.DefaultVersion.Product,
+		"product":    typex.DefaultVersionInfo.Product,
 		"startedAt":  __StartedAt,
 		"osUpTime": func() string {
 			result, err := ossupport.GetUptime()

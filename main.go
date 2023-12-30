@@ -32,24 +32,24 @@ func init() {
 	}()
 	env := os.Getenv("ARCHSUPPORT")
 	if env == "EEKITT507" {
-		typex.DefaultVersion.Product = env
+		typex.DefaultVersionInfo.Product = env
 	}
 	if env == "EEKITH3" {
-		typex.DefaultVersion.Product = env
+		typex.DefaultVersionInfo.Product = env
 	}
 	if env == "WKYS805" {
-		typex.DefaultVersion.Product = env
+		typex.DefaultVersionInfo.Product = env
 	}
 	if env == "RPI4B" {
-		typex.DefaultVersion.Product = env
+		typex.DefaultVersionInfo.Product = env
 	}
 	dist, err := utils.GetOSDistribution()
 	if err != nil {
 		panic(err)
 	}
-	typex.DefaultVersion.Dist = dist
-	arch := fmt.Sprintf("%s-%s", typex.DefaultVersion.Dist, runtime.GOARCH)
-	typex.DefaultVersion.Arch = arch
+	typex.DefaultVersionInfo.Dist = dist
+	arch := fmt.Sprintf("%s-%s", typex.DefaultVersionInfo.Dist, runtime.GOARCH)
+	typex.DefaultVersionInfo.Arch = arch
 }
 
 // @title           Rulex API
@@ -275,7 +275,7 @@ func main() {
 				},
 				Action: func(*cli.Context) error {
 					version := fmt.Sprintf("[%v-%v-%v]",
-						runtime.GOOS, runtime.GOARCH, typex.DefaultVersion.Version)
+						runtime.GOOS, runtime.GOARCH, typex.MainVersion)
 					utils.CLog("[*] Rulex Version: " + version)
 					return nil
 				},

@@ -135,7 +135,7 @@ func (dm *NetDiscover) Start(typex.RuleX) error {
 				var m runtime.MemStats
 				runtime.ReadMemStats(&m)
 				hardWareInfo := map[string]interface{}{
-					"version":     typex.DefaultVersion,
+					"version":     typex.MainVersion,
 					"diskInfo":    int(diskInfo.UsedPercent),
 					"systemMem":   bToMb(m.Sys),
 					"allocMem":    bToMb(m.Alloc),
