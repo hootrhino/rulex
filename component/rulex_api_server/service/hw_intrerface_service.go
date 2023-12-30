@@ -109,7 +109,7 @@ func InitHwPortConfig() error {
 			Description: portName,
 		}
 		// 兼容代码,识别H3网关的参数
-		if typex.DefaultVersion.Product == "EEKIIH3" {
+		if typex.DefaultVersionInfo.Product == "EEKIIH3" {
 			if portName == "/dev/ttyS1" {
 				Port.Alias = "RS485接口1(A1B1)"
 				Port.Name = "RS4851(A1B1)"
@@ -153,7 +153,7 @@ func GetOsPort() []string {
 	}
 	List := []string{}
 	for _, port := range ports {
-		if typex.DefaultVersion.Product == "EEKIIH3" {
+		if typex.DefaultVersionInfo.Product == "EEKIIH3" {
 			// H3的下列串口被系统占用
 			if utils.SContains([]string{
 				"/dev/ttyS0",

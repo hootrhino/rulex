@@ -143,8 +143,8 @@ func (e *RuleEngine) AllPlugins() *sync.Map {
 	return e.Plugins
 }
 
-func (e *RuleEngine) Version() typex.Version {
-	return typex.DefaultVersion
+func (e *RuleEngine) Version() typex.VersionInfo {
+	return typex.DefaultVersionInfo
 }
 
 func (e *RuleEngine) GetConfig() *typex.RulexConfig {
@@ -401,7 +401,7 @@ func (e *RuleEngine) SnapshotDump() string {
 	runtime.ReadMemStats(&m)
 
 	system := map[string]interface{}{
-		"version":  e.Version().Version,
+		"version":  typex.MainVersion,
 		"diskInfo": int(diskInfo.UsedPercent),
 		"system":   utils.BToMb(m.Sys),
 		"alloc":    utils.BToMb(m.Alloc),

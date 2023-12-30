@@ -122,7 +122,7 @@ type RuleX interface {
 	//
 	// 获取版本
 	//
-	Version() Version
+	Version() VersionInfo
 
 	//
 	// 停止规则引擎
