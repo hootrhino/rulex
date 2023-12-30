@@ -84,16 +84,15 @@ func (icmp *ICMPSender) Service(arg typex.ServiceArg) typex.ServiceResult {
 				for i := 0; i < 5; i++ {
 					switch ip := tt[0].(type) {
 					case string:
-						if Duration, err := pingQ(ip, 2000*time.Millisecond); err != nil {
+						if Duration, err := pingQ(ip, 1000*time.Millisecond); err != nil {
 							glogger.GLogger.WithFields(Fields).Info(fmt.Sprintf(
-								"[Count:%d] Ping Error:%s", i,
-								err.Error()))
+								"[Count:%d] Ping Error:%s", i, err.Error()))
 						} else {
 							glogger.GLogger.WithFields(Fields).Info(fmt.Sprintf(
-								"[Count:%d] Ping Reply From %s: time=%v ms TTL=128", i,
-								tt, Duration))
+								"[Count:%d] Ping Reply From %s: time=%v ms TTL=128", i, tt, Duration))
 						}
-						time.Sleep(1 * time.Second)
+						// 300毫秒
+						time.Sleep(100 * time.Millisecond)
 					}
 
 				}
