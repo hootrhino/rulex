@@ -156,14 +156,16 @@ func (s *RulexApiServer) InitializeGenericOSData() {
 	initStaticModel()
 }
 func (s *RulexApiServer) InitializeUnixData() {
+	glogger.GLogger.Info("Initialize Unix Default Data")
 }
 func (s *RulexApiServer) InitializeWindowsData() {
+	glogger.GLogger.Info("Initialize Windows Default Data")
 }
 
 func (s *RulexApiServer) InitializeEEKITData() {
 	env := os.Getenv("ARCHSUPPORT")
 	if env == "EEKITH3" {
-
+		glogger.GLogger.Info("Initialize Rhino EEKIT Pi Default Data")
 	}
 }
 
