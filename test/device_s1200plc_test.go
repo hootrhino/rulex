@@ -128,8 +128,8 @@ func Test_RULEX_WITH_SIEMENS_PLC(t *testing.T) {
 		"uuid",
 		"FROM TENCENT_IOT_INEND",
 		"FROM TENCENT_IOT_INEND",
-		[]string{EMQX_BROKER.UUID},
-		[]string{},
+		[]string{EMQX_BROKER.UUID}[0],
+		"",
 		`function Success()end`,
 		`
 	Actions = {

@@ -82,8 +82,8 @@ func Test_modbus_485_sensor_gateway(t *testing.T) {
 		"uuid",
 		"数据推送至IOTHUB",
 		"数据推送至IOTHUB",
-		[]string{},
-		[]string{RTU485Device.UUID}, // 数据来自网关设备,所以这里需要配置设备ID
+		"",
+		[]string{RTU485Device.UUID}[0], // 数据来自网关设备,所以这里需要配置设备ID
 		`function Success() print("[LUA Success Callback]=> OK") end`,
 		`
 Actions = {function(args)

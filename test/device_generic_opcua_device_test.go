@@ -58,8 +58,8 @@ func Test_Generic_opcua_device(t *testing.T) {
 		"uuid",
 		"Just a test",
 		"Just a test",
-		[]string{},
-		[]string{GENERIC_OPCUA.UUID},
+		"",
+		[]string{GENERIC_OPCUA.UUID}[0],
 		`function Success() print("[LUA Success Callback]=> OK") end`,
 		`
 		Actions = {

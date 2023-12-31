@@ -53,8 +53,8 @@ func Test_snapshot_dump(t *testing.T) {
 		"uuid",
 		"Just a test",
 		"Just a test",
-		[]string{grpcInend.UUID},
-		[]string{},
+		[]string{grpcInend.UUID}[0],
+		"",
 		`function Success() print("[LUA Success Callback]=> OK") end`,
 		`
 		Actions = {

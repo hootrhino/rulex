@@ -271,7 +271,7 @@ func UpdateApp(app *model.MApp) error {
 	if err := interdb.DB().Where("uuid=?", app.UUID).First(&m).Error; err != nil {
 		return err
 	} else {
-		interdb.DB().Model(m).Updates(*app)
+		interdb.DB().Model(m).Where("uuid=?", app.UUID).Updates(*app)
 		return nil
 	}
 }

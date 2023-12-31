@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"syscall"
 
+	"github.com/hootrhino/rulex/component/iotschema"
 	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/typex"
 	"github.com/hootrhino/rulex/utils"
@@ -135,8 +136,8 @@ func (vc *videoCamera) Stop() {
 	vc.stopFFMPEGProcess()
 }
 
-func (vc *videoCamera) Property() []typex.DeviceProperty {
-	return []typex.DeviceProperty{}
+func (vc *videoCamera) Property() []iotschema.IoTSchema {
+	return []iotschema.IoTSchema{}
 }
 
 func (vc *videoCamera) Details() *typex.Device {

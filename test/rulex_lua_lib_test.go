@@ -32,8 +32,8 @@ func Test_rulex_base_lib(t *testing.T) {
 		"uuid4",
 		"rule4",
 		"rule4",
-		[]string{grpcInend.UUID},
-		[]string{},
+		[]string{grpcInend.UUID}[0],
+		"",
 		`function Success() print("[Success Callback]=> OK") end`,
 		`
 	Actions = {

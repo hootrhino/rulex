@@ -27,8 +27,10 @@ import (
 	"github.com/hootrhino/rulex/component/appstack"
 	"github.com/hootrhino/rulex/component/datacenter"
 	"github.com/hootrhino/rulex/component/hwportmanager"
+	iotschema "github.com/hootrhino/rulex/component/intercache/iotschema"
 	modbuscache "github.com/hootrhino/rulex/component/intercache/modbus"
 	siemenscache "github.com/hootrhino/rulex/component/intercache/siemens"
+
 	"github.com/hootrhino/rulex/component/interdb"
 	"github.com/hootrhino/rulex/component/intermetric"
 	"github.com/hootrhino/rulex/component/internotify"
@@ -97,7 +99,7 @@ func InitRuleEngine(config typex.RulexConfig) typex.RuleX {
 	// Web Pipeline
 	core.InitWebDataPipe(__DefaultRuleEngine)
 	// Internal Schema
-	core.InitInternalSchemaCache(__DefaultRuleEngine)
+	iotschema.InitInternalSchemaCache(__DefaultRuleEngine)
 	// Load hardware Port Manager
 	hwportmanager.InitHwPortsManager(__DefaultRuleEngine)
 	// Internal Metric

@@ -32,8 +32,8 @@ func Test_AIBASE_ANN_MNIST(t *testing.T) {
 		"uuid",
 		"Just a test",
 		"Just a test",
-		[]string{grpcInend.UUID},
-		[]string{},
+		grpcInend.UUID,
+		"",
 		`function Success() print("[LUA Success Callback]=> OK") end`,
 		`
 		Actions = {

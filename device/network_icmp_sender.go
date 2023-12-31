@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/hootrhino/rulex/common"
+	"github.com/hootrhino/rulex/component/iotschema"
 	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/typex"
 	"github.com/hootrhino/rulex/utils"
@@ -123,8 +124,8 @@ func (sender *IcmpSender) Stop() {
 }
 
 // 设备属性，是一系列属性描述
-func (sender *IcmpSender) Property() []typex.DeviceProperty {
-	return []typex.DeviceProperty{}
+func (sender *IcmpSender) Property() []iotschema.IoTSchema {
+	return []iotschema.IoTSchema{}
 }
 
 // 真实设备

@@ -60,8 +60,8 @@ func Test_Generic_modbus_device_tcp_mode(t *testing.T) {
 		"uuid",
 		"Just a test",
 		"Just a test",
-		[]string{},
-		[]string{GMODBUS.UUID},
+		"",
+		[]string{GMODBUS.UUID}[0],
 		`function Success() print("[LUA Success Callback]=> OK") end`,
 		`
 		Actions = {

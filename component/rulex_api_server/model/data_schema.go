@@ -17,13 +17,12 @@ package model
 
 /*
 *
-* Type: SIMPLE_LINE(简单一线),COMPLEX_LINE(复杂多线)
+* 物模型
 *
  */
-type MDataSchema struct {
+type MIotSchema struct {
 	RulexModel
 	UUID   string `gorm:"not null"`
 	Name   string `gorm:"not null"` // 名称
-	Type   string `gorm:"not null"` // 类型, LINE,PINE,BAR,TXT
-	Schema string `gorm:"not null"` // 数据规范
+	Schema string `gorm:"not null"` // 物模型,JSON
 }

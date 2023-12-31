@@ -53,8 +53,8 @@ func Test_http_source(t *testing.T) {
 		"uuid1",
 		"rule1",
 		"rule1",
-		[]string{httpInend.UUID},
-		[]string{},
+		[]string{httpInend.UUID}[0],
+		"",
 		`function Success() print("[Test_data_to_http Success Callback]=> OK") end`,
 		callback,
 		`function Failed(error) print("[Test_data_to_http Failed Callback]", error) end`)
