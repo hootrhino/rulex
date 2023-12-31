@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/hootrhino/rulex/common"
+	"github.com/hootrhino/rulex/component/iotschema"
 	"github.com/hootrhino/rulex/driver"
 	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/typex"
@@ -160,8 +161,8 @@ func (uart *genericUartDevice) Stop() {
 }
 
 // 设备属性，是一系列属性描述
-func (uart *genericUartDevice) Property() []typex.DeviceProperty {
-	return []typex.DeviceProperty{}
+func (uart *genericUartDevice) Property() []iotschema.IoTSchema {
+	return []iotschema.IoTSchema{}
 }
 
 // 真实设备

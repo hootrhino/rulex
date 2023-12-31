@@ -9,6 +9,7 @@ import (
 	"time"
 
 	siemenscache "github.com/hootrhino/rulex/component/intercache/siemens"
+	"github.com/hootrhino/rulex/component/iotschema"
 
 	"github.com/hootrhino/rulex/common"
 	"github.com/hootrhino/rulex/component/interdb"
@@ -221,8 +222,8 @@ func (s1200 *SIEMENS_PLC) Stop() {
 }
 
 // 设备属性，是一系列属性描述
-func (s1200 *SIEMENS_PLC) Property() []typex.DeviceProperty {
-	return []typex.DeviceProperty{}
+func (s1200 *SIEMENS_PLC) Property() []iotschema.IoTSchema {
+	return []iotschema.IoTSchema{}
 }
 
 // 真实设备

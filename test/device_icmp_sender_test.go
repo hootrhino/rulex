@@ -41,8 +41,8 @@ func Test_IcmpSender_Device(t *testing.T) {
 		"uuid",
 		"test",
 		"test",
-		[]string{},
-		[]string{ICMP_SENDER.UUID},
+		"",
+		[]string{ICMP_SENDER.UUID}[0],
 		`function Success() print("[LUA Success Callback]=> OK") end`,
 		`
 		Actions = {

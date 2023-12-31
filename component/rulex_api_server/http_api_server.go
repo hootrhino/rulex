@@ -1,8 +1,6 @@
 package httpserver
 
 import (
-	"encoding/json"
-
 	"github.com/hootrhino/rulex/component/cron_task"
 	"github.com/hootrhino/rulex/component/hwportmanager"
 
@@ -13,7 +11,6 @@ import (
 	"github.com/hootrhino/rulex/component/rulex_api_server/server"
 	"github.com/hootrhino/rulex/component/rulex_api_server/service"
 	"github.com/hootrhino/rulex/component/trailer"
-	"github.com/hootrhino/rulex/core"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 
@@ -56,26 +53,6 @@ func initRulex(engine typex.RuleX) {
 	*
 	 */
 	loadAllPortConfig()
-	/*
-	*
-	* 加载schema到内存中
-	*
-	 */
-	for _, mDataSchema := range service.AllDataSchema() {
-		dataDefine := []typex.DataDefine{}
-		err := json.Unmarshal([]byte(mDataSchema.Schema), &dataDefine)
-		if err != nil {
-			glogger.GLogger.Error(err)
-			continue
-		}
-		// 初始化装入ne
-		core.SchemaSet(mDataSchema.UUID, typex.DataSchema{
-			UUID:   mDataSchema.UUID,
-			Name:   mDataSchema.Name,
-			Type:   mDataSchema.Type,
-			Schema: dataDefine,
-		})
-	}
 	//
 	// Load inend from sqlite
 	//
@@ -204,7 +181,7 @@ func (hs *ApiServerPlugin) Init(config *ini.Section) error {
 		&model.MGenericGroupRelation{},
 		&model.MNetworkConfig{},
 		&model.MWifiConfig{},
-		&model.MDataSchema{},
+		&model.MIotSchema{},
 		&model.MSiteConfig{},
 		&model.MIpRoute{},
 		&model.MCronTask{},

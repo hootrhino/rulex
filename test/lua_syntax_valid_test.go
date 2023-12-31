@@ -24,8 +24,8 @@ func TestLuaSyntax1(t *testing.T) {
 		"uuid",
 		"Just a test",
 		"Just a test",
-		[]string{grpcInend.UUID},
-		[]string{},
+		[]string{grpcInend.UUID}[0],
+		"",
 		`function Success() print("[LUA Success]==========================> OK") end`,
 		`
 		Actions = {
@@ -56,8 +56,8 @@ func TestLuaSyntax2(t *testing.T) {
 		"uuid",
 		"Just a test",
 		"Just a test",
-		[]string{grpcInend.UUID},
-		[]string{},
+		[]string{grpcInend.UUID}[0],
+		"",
 		`function Success() print("[LUA Success]==========================> OK") end`,
 		`
 		Actions = {

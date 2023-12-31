@@ -107,8 +107,8 @@ func TestCustomProtocolDevice(t *testing.T) {
 		"uuid",
 		"test",
 		"test",
-		[]string{},
-		[]string{dev1.UUID},
+		"",
+		[]string{dev1.UUID}[0],
 		`function Success() print("[LUA Success Callback]=> OK") end`,
 		`
 		Actions = {

@@ -1,5 +1,10 @@
 package test
 
+/*
+*
+* 物模型
+*
+ */
 type Mapping struct {
 	Type  string
 	Value string

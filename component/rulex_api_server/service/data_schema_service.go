@@ -21,38 +21,31 @@ import (
 )
 
 // 获取DataSchema列表
-func AllDataSchema() []model.MDataSchema {
-	m := []model.MDataSchema{}
+func AllDataSchema() []model.MIotSchema {
+	m := []model.MIotSchema{}
 	interdb.DB().Find(&m)
 	return m
 
 }
-func GetDataSchemaWithUUID(uuid string) (*model.MDataSchema, error) {
-	m := model.MDataSchema{}
-	if err := interdb.DB().Where("uuid=?", uuid).First(&m).Error; err != nil {
-		return nil, err
-	} else {
-		return &m, nil
-	}
+func GetDataSchemaWithUUID(uuid string) (model.MIotSchema, error) {
+	m := model.MIotSchema{}
+	return m, interdb.DB().Where("uuid=?", uuid).First(&m).Error
 }
 
 // 删除DataSchema
 func DeleteDataSchema(uuid string) error {
-	return interdb.DB().Where("uuid=?", uuid).Delete(&model.MDataSchema{}).Error
+	return interdb.DB().Where("uuid=?", uuid).Delete(&model.MIotSchema{}).Error
 }
 
 // 创建DataSchema
-func InsertDataSchema(DataSchema model.MDataSchema) error {
+func InsertDataSchema(DataSchema model.MIotSchema) error {
 	return interdb.DB().Create(&DataSchema).Error
 }
 
 // 更新DataSchema
-func UpdateDataSchema(DataSchema model.MDataSchema) error {
-	m := model.MDataSchema{}
-	if err := interdb.DB().Where("uuid=?", DataSchema.UUID).First(&m).Error; err != nil {
-		return err
-	} else {
-		interdb.DB().Model(m).Updates(DataSchema)
-		return nil
-	}
+func UpdateDataSchema(DataSchema model.MIotSchema) error {
+	return interdb.DB().
+		Model(DataSchema).
+		Where("uuid=?", DataSchema.UUID).
+		Updates(&DataSchema).Error
 }

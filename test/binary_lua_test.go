@@ -45,8 +45,8 @@ func Test_Binary_LUA_Parse(t *testing.T) {
 		"uuid",
 		"Just a test",
 		"Just a test",
-		[]string{grpcInend.UUID},
-		[]string{},
+		grpcInend.UUID,
+		"",
 		`function Success() print("[LUA Success Callback]=> OK") end`,
 		`
 		Actions = {

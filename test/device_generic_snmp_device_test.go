@@ -38,8 +38,8 @@ func Test_Generic_snmp_device(t *testing.T) {
 		"uuid",
 		"Just a test",
 		"Just a test",
-		[]string{},
-		[]string{GENERIC_SNMP.UUID},
+		"",
+		[]string{GENERIC_SNMP.UUID}[0],
 		`function Success() print("[LUA Success Callback]=> OK") end`,
 		`
 		Actions = {

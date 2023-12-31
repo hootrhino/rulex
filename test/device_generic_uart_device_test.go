@@ -46,8 +46,8 @@ func Test_UART_Device(t *testing.T) {
 		"uuid",
 		"test",
 		"test",
-		[]string{},
-		[]string{GUART.UUID},
+		"",
+		[]string{GUART.UUID}[0],
 		`function Success() print("[LUA Success Callback]=> OK") end`,
 		`
 		Actions = {

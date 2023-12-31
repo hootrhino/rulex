@@ -7,6 +7,7 @@
 package typex
 
 import (
+	"github.com/hootrhino/rulex/component/iotschema"
 	"github.com/hootrhino/rulex/utils"
 )
 
@@ -96,12 +97,6 @@ func NewDevice(t DeviceType,
 	}
 }
 
-// 设备的属性，是个描述结构
-type DeviceProperty struct {
-	Name  string
-	Type  string
-	Value interface{}
-}
 type DCAModel struct {
 	UUID    string      `json:"uuid"`
 	Command string      `json:"command"`
@@ -132,7 +127,7 @@ type XDevice interface {
 	// 0.5.2 新增 Reload() error
 	//
 	// 设备属性，是一系列属性描述
-	Property() []DeviceProperty
+	Property() []iotschema.IoTSchema
 	// 链接指向真实设备，保存在内存里面，和SQLite里的数据是对应关系
 	Details() *Device
 	// 状态

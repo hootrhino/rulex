@@ -59,8 +59,8 @@ func Test_dac_call_device(t *testing.T) {
 		"uuid",
 		"Just a test",
 		"Just a test",
-		[]string{},
-		[]string{GMODBUS.UUID},
+		"",
+		GMODBUS.UUID,
 		`function Success() print("[LUA Success Callback]=> OK") end`,
 		`
 		Actions = {

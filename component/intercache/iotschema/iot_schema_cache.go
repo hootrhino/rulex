@@ -12,11 +12,12 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
-package core
+package iotschema
 
 import (
 	"sync"
 
+	"github.com/hootrhino/rulex/component/iotschema"
 	"github.com/hootrhino/rulex/typex"
 )
 
@@ -25,7 +26,7 @@ import (
 * 全局缓冲器，用来保存内部的数据模型用
 *
  */
-var __InternalSchemaCache map[string]typex.DataSchema
+var __InternalSchemaCache map[string]iotschema.IoTSchema
 var __lock sync.Mutex
 
 /*
@@ -34,7 +35,7 @@ var __lock sync.Mutex
 *
  */
 func InitInternalSchemaCache(rulex typex.RuleX) {
-	__InternalSchemaCache = make(map[string]typex.DataSchema)
+	__InternalSchemaCache = make(map[string]iotschema.IoTSchema)
 	__lock = sync.Mutex{}
 }
 
@@ -43,7 +44,9 @@ func InitInternalSchemaCache(rulex typex.RuleX) {
 * 第一次缓冲
 *
  */
-func FirstCache(id string, schema typex.DataSchema) typex.DataSchema {
+func FirstCache(id string, schema iotschema.IoTSchema) iotschema.IoTSchema {
+	__lock.Lock()
+	defer __lock.Unlock()
 	if DataSchema, ok := __InternalSchemaCache[id]; ok {
 		return DataSchema
 	}
@@ -56,10 +59,10 @@ func FirstCache(id string, schema typex.DataSchema) typex.DataSchema {
 * 增加一条缓存数据
 *
  */
-func SchemaSet(id string, schema typex.DataSchema) {
+func SchemaSet(id string, schema iotschema.IoTSchema) {
 	__lock.Lock()
+	defer __lock.Unlock()
 	__InternalSchemaCache[id] = schema
-	__lock.Unlock()
 }
 
 /*
@@ -67,7 +70,7 @@ func SchemaSet(id string, schema typex.DataSchema) {
 * 获取某个模型
 *
  */
-func SchemaGet(id string) (typex.DataSchema, bool) {
+func SchemaGet(id string) (iotschema.IoTSchema, bool) {
 	v, ok := __InternalSchemaCache[id]
 	return v, ok
 }
@@ -78,6 +81,8 @@ func SchemaGet(id string) (typex.DataSchema, bool) {
 *
  */
 func SchemaDelete(id string) {
+	__lock.Lock()
+	defer __lock.Unlock()
 	delete(__InternalSchemaCache, id)
 }
 
@@ -96,6 +101,8 @@ func SchemaCount() int {
 *
  */
 func SchemaFlush() {
+	__lock.Lock()
+	defer __lock.Unlock()
 	for key := range __InternalSchemaCache {
 		delete(__InternalSchemaCache, key)
 	}
@@ -106,6 +113,6 @@ func SchemaFlush() {
 * 所有
 *
  */
-func AllSchema() map[string]typex.DataSchema {
+func AllSchema() map[string]iotschema.IoTSchema {
 	return __InternalSchemaCache
 }

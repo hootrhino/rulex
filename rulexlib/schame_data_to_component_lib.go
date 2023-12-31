@@ -18,7 +18,6 @@ package rulexlib
 import (
 	lua "github.com/hootrhino/gopher-lua"
 	"github.com/hootrhino/rulex/component/interqueue"
-	"github.com/hootrhino/rulex/core"
 	"github.com/hootrhino/rulex/typex"
 )
 
@@ -35,26 +34,13 @@ func FilterSingleDataWithSchema(map[string]interface{}, []typex.DataDefine) map[
 
 func DataToUiComponent(rx typex.RuleX) func(l *lua.LState) int {
 	return func(l *lua.LState) int {
-		ComponentId := l.ToString(2)
-		SchemaId := l.ToString(3)
-		Data := l.ToTable(4)
-		InMap := map[string]interface{}{}
-		Data.ForEach(func(l1, l2 lua.LValue) {
-			InMap[l1.String()] = l2
-		})
-		// SIMPLE_DATE_LINE     简单一线,一轴为时间走势
-		// COMPLEX_DATE_LINE    复杂多线,一轴为时间走势
-		// COMPLEX_CROSS_LINE   复杂线，其中X、Y轴可以互相变换
-		if schema, ok := core.SchemaGet(SchemaId); ok {
-			if schema.Type == "SIMPLE_DATE_LINE" {
-				result := core.FilterSingleDataWithSchema(InMap, schema.Schema)
-				dataToUiComponent(ComponentId, result)
-				goto END
-			}
-			l.Push(lua.LString("Schema not found:" + SchemaId))
-			return 1
-		}
-	END:
+		// ComponentId := l.ToString(2)
+		// SchemaId := l.ToString(3)
+		// Data := l.ToTable(4)
+		// InMap := map[string]interface{}{}
+		// Data.ForEach(func(l1, l2 lua.LValue) {
+		// 	InMap[l1.String()] = l2
+		// })
 		l.Push(lua.LNil)
 		return 1
 	}
