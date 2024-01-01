@@ -27,7 +27,8 @@ type InterClockTask func(any) error
 *
  */
 type InterClock struct {
-	Interval time.Duration    // 轮转圈数
+	Interval time.Duration    // 轮转圈数, 默认为10
 	Ticker   *time.Ticker     // 时钟指针计时器
+	Period   int              // 旋转一周的时间, 默认为 T= 1/10秒=100毫秒一圈
 	Tasks    []InterClockTask // 任务列表
 }
