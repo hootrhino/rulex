@@ -2,12 +2,11 @@ APP=rulex
 # 获取操作系统信息
 distro=$(shell cat /etc/os-release | grep PRETTY_NAME | cut -d '"' -f 2)
 kernel=$(shell uname -r)
-cpu=$(shell uname -m)
 host=$(shell hostname)
 ip=$(shell hostname -I)
 memory=$(shell free -m | awk 'NR==2{printf "%.2fGB\n", $$2/1000}')
 disk=$(shell df -h | awk '$$NF=="/"{printf "%s\n", $$2}')
-arch=$(uname -m)
+arch=$(shell uname -m)
 version=$(shell git describe --tags $(git rev-list --tags --max-count=1))
 shortVersion=-X 'github.com/hootrhino/rulex/typex.MainVersion=$(version)'
 .PHONY: all
@@ -15,7 +14,6 @@ all:
 	@echo "\e[41m[*] Distro \e[0m: \e[36m ${distro} \e[0m"
 	@echo "\e[41m[*] Arch   \e[0m: \e[36m ${arch} \e[0m"
 	@echo "\e[41m[*] Kernel \e[0m: \e[36m ${kernel} \e[0m"
-	@echo "\e[41m[*] Cpu    \e[0m: \e[36m ${cpu} \e[0m"
 	@echo "\e[41m[*] Memory \e[0m: \e[36m ${memory} \e[0m"
 	@echo "\e[41m[*] Host   \e[0m: \e[36m ${host} \e[0m"
 	@echo "\e[41m[*] IP     \e[0m: \e[36m ${ip} \e[0m"
