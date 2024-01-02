@@ -20,27 +20,34 @@ import (
 )
 
 // 点位表
-type SiemensDataPoint struct {
-	UUID       string `json:"uuid"` // 当UUID为空时新建
-	DeviceUuid string `json:"device_uuid"`
-	Tag        string `json:"tag,omitempty"`
-	Type       string `json:"type,omitempty"`
-	Frequency  *int64 `json:"frequency,omitempty"`
-	Address    *int   `json:"address,omitempty"`
-	Start      *int   `json:"start"`
-	Size       *int   `json:"size"`
-	Value      string `json:"value"`
+type __SiemensDataPoint struct {
+	UUID            string `json:"uuid"`
+	DeviceUUID      string `json:"device_uuid"`
+	SiemensAddress  string `json:"siemensAddress"` // 西门子的地址字符串
+	Tag             string `json:"tag"`
+	Alias           string `json:"alias"`
+	Frequency       *int64 `json:"frequency"`
+	Status          int    `json:"status"`          // 运行时数据
+	LastFetchTime   uint64 `json:"lastFetchTime"`   // 运行时数据
+	Value           string `json:"value"`           // 运行时数据
+	AddressType     string `json:"addressType"`     // // 西门子解析后的地址信息: 寄存器类型: DB I Q
+	DataBlockType   string `json:"dataBlockType"`   // // 西门子解析后的地址信息: 数据类型: INT UINT ....
+	DataBlockOrder  string `json:"dataOrder"`       //  西门子解析后的地址信息: 数据类型: INT UINT ....
+	DataBlockNumber int    `json:"dataBlockNumber"` // // 西门子解析后的地址信息: 数据块号: 100...
+	ElementNumber   int    `json:"elementNumber"`   // // 西门子解析后的地址信息: 元素号:1000...
+	DataSize        int    `json:"dataSize"`        // // 西门子解析后的地址信息: 位号,0-8，只针对I、Q
+	BitNumber       int    `json:"bitNumber"`       // // 西门子解析后的地址信息: 位号,0-8，只针对I、Q
 }
 
+// https://cloudvpn.beijerelectronics.com/hc/en-us/articles/4406049761169-Siemens-S7
 type S1200CommonConfig struct {
-	Host  string `json:"host" validate:"required"`  // 127.0.0.1:502
-	Model string `json:"model" validate:"required"` // s7-200 s7-1500
-	// https://cloudvpn.beijerelectronics.com/hc/en-us/articles/4406049761169-Siemens-S7
-	Rack        *int  `json:"rack" validate:"required"`        // 0
-	Slot        *int  `json:"slot" validate:"required"`        // 1
-	Timeout     *int  `json:"timeout" validate:"required"`     // 5s
-	IdleTimeout *int  `json:"idleTimeout" validate:"required"` // 5s
-	AutoRequest *bool `json:"autoRequest" validate:"required"` // false
+	Host        string `json:"host" validate:"required"`        // 127.0.0.1:502
+	Model       string `json:"model" validate:"required"`       // s7-200 s7-1500
+	Rack        *int   `json:"rack" validate:"required"`        // 0
+	Slot        *int   `json:"slot" validate:"required"`        // 1
+	Timeout     *int   `json:"timeout" validate:"required"`     // 5s
+	IdleTimeout *int   `json:"idleTimeout" validate:"required"` // 5s
+	AutoRequest *bool  `json:"autoRequest" validate:"required"` // false
 }
 type S1200Config struct {
 	CommonConfig S1200CommonConfig `json:"commonConfig" validate:"required"` // 通用配置
@@ -49,13 +56,13 @@ type S1200Config struct {
 // https://www.ad.siemens.com.cn/productportal/prods/s7-1200_plc_easy_plus/07-Program/02-basic/01-Data_Type/01-basic.html
 type SIEMENS_PLC struct {
 	typex.XStatus
-	status            typex.DeviceState
-	RuleEngine        typex.RuleX
-	mainConfig        S1200Config
-	client            gos7.Client
-	handler           *gos7.TCPClientHandler
-	lock              sync.Mutex
-	SiemensDataPoints map[string]*SiemensDataPoint
+	status              typex.DeviceState
+	RuleEngine          typex.RuleX
+	mainConfig          S1200Config
+	client              gos7.Client
+	handler             *gos7.TCPClientHandler
+	lock                sync.Mutex
+	__SiemensDataPoints map[string]*__SiemensDataPoint
 }
 
 /*
@@ -81,7 +88,7 @@ func NewSIEMENS_PLC(e typex.RuleX) typex.XDevice {
 			AutoRequest: &AutoRequest,
 		},
 	}
-	s1200.SiemensDataPoints = map[string]*SiemensDataPoint{}
+	s1200.__SiemensDataPoints = map[string]*__SiemensDataPoint{}
 	return s1200
 }
 
@@ -97,25 +104,45 @@ func (s1200 *SIEMENS_PLC) Init(devId string, configMap map[string]interface{}) e
 	// TODO 这里需要优化一下，而不是直接查表这种形式，应该从物模型组件来加载
 	// DataSchema = schema.load(uuid)
 	// DataSchema.update(k, v)
-	var list []SiemensDataPoint
+	var list []__SiemensDataPoint
 	errDb := interdb.DB().Table("m_siemens_data_points").
 		Where("device_uuid=?", devId).Find(&list).Error
 	if errDb != nil {
 		return errDb
 	}
-	for _, v := range list {
+	// 开始解析地址表
+	for _, SiemensDataPoint := range list {
 		// 频率不能太快
-		if *v.Frequency < 50 {
+		if *SiemensDataPoint.Frequency < 50 {
 			return errors.New("'frequency' must grate than 50 millisecond")
 		}
-		s1200.SiemensDataPoints[v.UUID] = &v
-		siemenscache.SetValue(s1200.PointId, v.UUID, siemenscache.SiemensPoint{
-			UUID:          v.UUID,
+		//
+		AddressInfo, err1 := utils.ParseSiemensDB(SiemensDataPoint.SiemensAddress)
+		if err1 != nil {
+			return err1
+		}
+		SiemensDataPoint.DataBlockNumber = AddressInfo.DataBlockNumber
+		SiemensDataPoint.ElementNumber = AddressInfo.ElementNumber
+		SiemensDataPoint.AddressType = AddressInfo.AddressType
+		SiemensDataPoint.BitNumber = AddressInfo.BitNumber
+
+		DataSize, errParse2 := utils.ParseRequestSize(SiemensDataPoint.DataBlockType)
+		if errParse2 != nil {
+			return errParse2
+		} else {
+			SiemensDataPoint.DataSize = DataSize
+		}
+
+		// 提前缓冲
+		s1200.__SiemensDataPoints[SiemensDataPoint.UUID] = &SiemensDataPoint
+		siemenscache.SetValue(s1200.PointId, SiemensDataPoint.UUID, siemenscache.SiemensPoint{
+			UUID:          SiemensDataPoint.UUID,
 			Status:        0,
 			LastFetchTime: 0,
 			Value:         "0",
 		})
 	}
+
 	return nil
 }
 
@@ -193,7 +220,7 @@ func (s1200 *SIEMENS_PLC) OnRead(cmd []byte, data []byte) (int, error) {
 // db.Address:int, db.Start:int, db.Size:int, rData[]
 
 func (s1200 *SIEMENS_PLC) OnWrite(cmd []byte, data []byte) (int, error) {
-	blocks := []SiemensDataPoint{}
+	blocks := []__SiemensDataPoint{}
 	if err := json.Unmarshal(data, &blocks); err != nil {
 		return 0, err
 	}
@@ -256,55 +283,29 @@ func (s1200 *SIEMENS_PLC) Write(cmd []byte, data []byte) (int, error) {
 var rData = [common.T_2KB]byte{} // 一次最大接受2KB数据
 
 func (s1200 *SIEMENS_PLC) Read(cmd []byte, data []byte) (int, error) {
-	values := []SiemensDataPoint{}
-	for uuid, db := range s1200.SiemensDataPoints {
+	values := []__SiemensDataPoint{}
+	for uuid, db := range s1200.__SiemensDataPoints {
 		//DB 4字节
-		if db.Type == "DB" {
+		if db.AddressType == "DB" {
 			// 00.00.00.01 | 00.00.00.02 | 00.00.00.03 | 00.00.00.04
-			if err := s1200.client.AGReadDB(*db.Address, *db.Start, *db.Size, rData[:]); err != nil {
+			// 根据类型解析长度
+			if err := s1200.client.AGReadDB(db.DataBlockNumber,
+				db.ElementNumber, db.DataSize, rData[:]); err != nil {
 				glogger.GLogger.Error(err)
 				return 0, err
 			}
-			count := db.Size
-			if *db.Size*2 > 2000 {
-				*count = 2000
-			}
-			Value := hex.EncodeToString(rData[:*count])
-			values = append(values, SiemensDataPoint{
-				DeviceUuid: db.DeviceUuid,
-				Tag:        db.Tag,
-				Address:    db.Address,
-				Type:       db.Type,
-				Start:      db.Start,
-				Size:       db.Size,
-				Value:      Value,
-			})
-			siemenscache.SetValue(s1200.PointId, uuid, siemenscache.SiemensPoint{
-				UUID:          uuid,
-				Status:        0,
-				LastFetchTime: uint64(time.Now().UnixMilli()),
-				Value:         Value,
-			})
-		}
-		//
-		if db.Type == "MB" {
-			// 00.00.00.01 | 00.00.00.02 | 00.00.00.03 | 00.00.00.04
-			if err := s1200.client.AGReadMB(*db.Start, *db.Size, rData[:]); err != nil {
-				glogger.GLogger.Error(err)
-				return 0, err
-			}
-			count := db.Size
-			if *db.Size*2 > 2000 {
-				*count = 2000
-			}
-			Value := hex.EncodeToString(rData[:*count])
-			values = append(values, SiemensDataPoint{
-				Tag:     db.Tag,
-				Type:    db.Type,
-				Address: db.Address,
-				Start:   db.Start,
-				Size:    db.Size,
-				Value:   Value,
+			parseSiemensValue(db.DataBlockType, db.DataBlockOrder, rData[:db.DataSize])
+			Value := hex.EncodeToString(rData[:db.DataSize])
+			values = append(values, __SiemensDataPoint{
+				DeviceUUID:      db.DeviceUUID,
+				Tag:             db.Tag,
+				Value:           Value,
+				SiemensAddress:  db.SiemensAddress,
+				AddressType:     db.AddressType,
+				DataBlockType:   db.DataBlockType,
+				DataBlockNumber: db.DataBlockNumber,
+				ElementNumber:   db.ElementNumber,
+				BitNumber:       db.BitNumber,
 			})
 			siemenscache.SetValue(s1200.PointId, uuid, siemenscache.SiemensPoint{
 				UUID:          uuid,
@@ -321,4 +322,43 @@ func (s1200 *SIEMENS_PLC) Read(cmd []byte, data []byte) (int, error) {
 	bytes, _ := json.Marshal(values)
 	copy(data, bytes)
 	return len(bytes), nil
+}
+
+/*
+*
+*解析西门子的值
+*
+ */
+func parseSiemensValue(DataBlockType string, DataBlockOrder string, Value []byte) string {
+	switch DataBlockType {
+	case "I", "Q":
+		{
+			glogger.GLogger.Debug("parseSiemensValue IQ")
+		}
+	case "BYTE":
+		{
+			glogger.GLogger.Debug("parseSiemensValue BYTE")
+		}
+	case "SHORT":
+		{
+			glogger.GLogger.Debug("parseSiemensValue SHORT")
+
+		}
+	case "INT":
+		// ABCD
+		if DataBlockOrder == "ABCD" {
+			glogger.GLogger.Debug("parseSiemensValue INT ABCD")
+
+		}
+		if DataBlockOrder == "CDAB" {
+			glogger.GLogger.Debug("parseSiemensValue INT CDAB")
+
+		}
+		if DataBlockOrder == "DCBA" {
+			glogger.GLogger.Debug("parseSiemensValue INT DCBA")
+
+		}
+
+	}
+	return ""
 }

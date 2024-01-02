@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"io"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -37,18 +38,17 @@ import (
 )
 
 type SiemensPointVo struct {
-	UUID          string `json:"uuid,omitempty"`
-	DeviceUUID    string `json:"device_uuid"`
-	Tag           string `json:"tag"`
-	Alias         string `json:"alias"`
-	Type          string `json:"type"`
-	Frequency     *int64 `json:"frequency"`
-	Address       *int   `json:"address"`
-	Start         *int   `json:"start"`
-	Size          *int   `json:"size"`
-	Status        int    `json:"status"`        // 运行时数据
-	LastFetchTime uint64 `json:"lastFetchTime"` // 运行时数据
-	Value         string `json:"value"`         // 运行时数据
+	UUID           string `json:"uuid"`
+	DeviceUUID     string `json:"device_uuid"`
+	SiemensAddress string `json:"siemensAddress"` // 西门子的地址字符串
+	Tag            string `json:"tag"`
+	Alias          string `json:"alias"`
+	DataOrder      string `json:"dataOrder"` // 字节序
+	DataType       string `json:"dataType"`
+	Frequency      *int64 `json:"frequency"`
+	Status         int    `json:"status"`        // 运行时数据
+	LastFetchTime  uint64 `json:"lastFetchTime"` // 运行时数据
+	Value          string `json:"value"`         // 运行时数据
 }
 
 /*
@@ -103,17 +103,16 @@ func SiemensSheetPageList(c *gin.Context, ruleEngine typex.RuleX) {
 		Slot := siemenscache.GetSlot(deviceUuid)
 		Value, ok := Slot[record.UUID]
 		Vo := SiemensPointVo{
-			UUID:          record.UUID,
-			DeviceUUID:    record.DeviceUuid,
-			Tag:           record.Tag,
-			Type:          record.Type,
-			Alias:         record.Alias,
-			Address:       record.Address,
-			Frequency:     record.Frequency,
-			Start:         record.Start,
-			Size:          record.Size,
-			LastFetchTime: Value.LastFetchTime, // 运行时
-			Value:         Value.Value,         // 运行时
+			UUID:           record.UUID,
+			DeviceUUID:     record.DeviceUuid,
+			SiemensAddress: record.SiemensAddress,
+			Tag:            record.Tag,
+			Alias:          record.Alias,
+			Frequency:      record.Frequency,
+			DataType:       record.DataBlockType,
+			DataOrder:      record.DataBlockOrder,
+			LastFetchTime:  Value.LastFetchTime, // 运行时
+			Value:          Value.Value,         // 运行时
 		}
 		if ok {
 			Vo.Status = func() int {
@@ -279,7 +278,20 @@ func SiemensSheetImport(c *gin.Context, ruleEngine typex.RuleX) {
 	ruleEngine.RestartDevice(deviceUuid)
 	c.JSON(common.HTTP_OK, common.Ok())
 }
-
+func parseRequestSizeByType(s string) (int, error) {
+	switch s {
+	case "BYTE":
+		return 1, nil
+	case "SHORT":
+		return 2, nil
+	case "INT":
+		return 4, nil
+	case "FLOAT":
+		return 4, nil
+	default:
+		return 0, errors.New("Invalid Block Type")
+	}
+}
 func parseSiemensPointExcel(
 	r io.Reader,
 	sheetName string,
@@ -299,45 +311,48 @@ func parseSiemensPointExcel(
 	// 判断首行标头
 	//
 	err1 := errors.New("invalid Sheet Header")
-	if len(rows[0]) < 7 {
+	if len(rows[0]) < 6 {
 		return nil, err1
 	}
-	//tag alias type frequency address size
-	if rows[0][0] != "tag" ||
-		rows[0][1] != "alias" ||
-		rows[0][2] != "type" ||
-		rows[0][3] != "frequency" ||
-		rows[0][4] != "address" ||
-		rows[0][5] != "start" ||
-		rows[0][6] != "size" {
+	// Address Tag Alias Type Order Frequency
+
+	if strings.ToLower(rows[0][0]) != "address" ||
+		strings.ToLower(rows[0][1]) != "tag" ||
+		strings.ToLower(rows[0][2]) != "alias" ||
+		strings.ToLower(rows[0][3]) != "type" ||
+		strings.ToLower(rows[0][4]) != "order" ||
+		strings.ToLower(rows[0][5]) != "frequency" {
 		return nil, err1
 	}
 
 	list = make([]model.MSiemensDataPoint, 0)
-	//tag alias type frequency address start size
+	// Address Tag Alias Type Order Frequency
 	for i := 1; i < len(rows); i++ {
 		row := rows[i]
-		tag := row[0]
-		alias := row[1]
-		DbType := row[2]
-		frequency, _ := strconv.ParseInt(row[3], 10, 8)
-		address, _ := strconv.ParseUint(row[4], 10, 16)
-		start, _ := strconv.ParseUint(row[5], 10, 16)
-		size, _ := strconv.ParseUint(row[6], 10, 16)
-		Address := int(address)
+		SiemensAddress := row[0]
+		Tag := row[1]
+		Alias := row[2]
+		Type := row[3]
+		Order := row[4]
+		frequency, _ := strconv.ParseInt(row[5], 10, 8)
 		Frequency := int64(frequency)
-		Start := int(start)
-		Size := int(size)
+		Info, errParse1 := utils.ParseSiemensDB(SiemensAddress)
+		if errParse1 != nil {
+			return nil, errParse1
+		}
+		_, errParse2 := utils.ParseRequestSize(Info.DataBlockType)
+		if errParse2 != nil {
+			return nil, errParse2
+		}
 		model := model.MSiemensDataPoint{
-			UUID:       utils.SiemensPointUUID(),
-			DeviceUuid: deviceUuid,
-			Tag:        tag,
-			Alias:      alias,
-			Type:       DbType,
-			Frequency:  &Frequency,
-			Address:    &Address,
-			Start:      &Start,
-			Size:       &Size,
+			UUID:           utils.SiemensPointUUID(),
+			DeviceUuid:     deviceUuid,
+			SiemensAddress: SiemensAddress,
+			Tag:            Tag,
+			Alias:          Alias,
+			DataBlockType:  Type,
+			DataBlockOrder: Order,
+			Frequency:      &Frequency,
 		}
 		list = append(list, model)
 	}

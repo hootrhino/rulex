@@ -17,6 +17,8 @@ package iotschema
 
 import (
 	"fmt"
+
+	"github.com/hootrhino/rulex/utils"
 )
 
 type IoTPropertyType string
@@ -68,13 +70,14 @@ type IoTPropertyRule struct {
 
 // 物模型属性
 type IoTProperty struct {
-	Label string          `json:"label"`           // UI显示的那个文本
-	Name  string          `json:"name"`            // 变量关联名
-	Type  IoTPropertyType `json:"type"`            // 类型, 只能是上面几种
-	Rw    int             `json:"rw"`              // 1读 2写 3读写
-	Unit  string          `json:"unit"`            // 单位 例如：摄氏度、米、牛等等
-	Value any             `json:"value,omitempty"` // Value 是运行时值, 前端不用填写
-	Rule  IoTPropertyRule `json:"rule"`            // 规则
+	Label       string          `json:"label"`           // UI显示的那个文本
+	Name        string          `json:"name"`            // 变量关联名
+	Description string          `json:"description"`     // 额外信息
+	Type        IoTPropertyType `json:"type"`            // 类型, 只能是上面几种
+	Rw          string          `json:"rw"`              // R读 W写 RW读写
+	Unit        string          `json:"unit"`            // 单位 例如：摄氏度、米、牛等等
+	Value       any             `json:"value,omitempty"` // Value 是运行时值, 前端不用填写
+	Rule        IoTPropertyRule `json:"rule"`            // 规则
 }
 
 func (I *IoTProperty) StringValue() string {
@@ -124,6 +127,19 @@ func (I *IoTProperty) BoolValue() bool {
 		}
 	}
 	return false
+}
+
+/*
+*
+* 验证类型
+*
+ */
+func (V IoTProperty) ValidateFields() error {
+	if utils.SContains([]string{"R", "W", "RW"}, V.Rw) {
+		return fmt.Errorf("RW Value Only Support 'R' or 'W' or 'RW'")
+	}
+	return nil
+
 }
 
 /*
