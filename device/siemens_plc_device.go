@@ -2,9 +2,10 @@ package device
 
 import (
 	"context"
-	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"math"
 	"sync"
 	"time"
 
@@ -125,13 +126,7 @@ func (s1200 *SIEMENS_PLC) Init(devId string, configMap map[string]interface{}) e
 		SiemensDataPoint.ElementNumber = AddressInfo.ElementNumber
 		SiemensDataPoint.AddressType = AddressInfo.AddressType
 		SiemensDataPoint.BitNumber = AddressInfo.BitNumber
-
-		DataSize, errParse2 := utils.ParseRequestSize(SiemensDataPoint.DataBlockType)
-		if errParse2 != nil {
-			return errParse2
-		} else {
-			SiemensDataPoint.DataSize = DataSize
-		}
+		SiemensDataPoint.DataSize = AddressInfo.DataBlockSize
 
 		// 提前缓冲
 		s1200.__SiemensDataPoints[SiemensDataPoint.UUID] = &SiemensDataPoint
@@ -294,8 +289,10 @@ func (s1200 *SIEMENS_PLC) Read(cmd []byte, data []byte) (int, error) {
 				glogger.GLogger.Error(err)
 				return 0, err
 			}
-			parseSiemensValue(db.DataBlockType, db.DataBlockOrder, rData[:db.DataSize])
-			Value := hex.EncodeToString(rData[:db.DataSize])
+			ValidData := [4]byte{} // 固定4字节，以后有8自己的时候再支持
+			copy(ValidData[:], rData[:db.DataSize])
+			Value := ParseSiemensSignedValue(db.DataBlockType, db.DataBlockOrder, ValidData)
+			// Value := hex.EncodeToString(rData[:db.DataSize])
 			values = append(values, __SiemensDataPoint{
 				DeviceUUID:      db.DeviceUUID,
 				Tag:             db.Tag,
@@ -326,39 +323,86 @@ func (s1200 *SIEMENS_PLC) Read(cmd []byte, data []byte) (int, error) {
 
 /*
 *
-*解析西门子的值
+*解析西门子的值 有符号
 *
  */
-func parseSiemensValue(DataBlockType string, DataBlockOrder string, Value []byte) string {
+func ParseSiemensSignedValue(DataBlockType string, DataBlockOrder string, byteSlice [4]byte) string {
 	switch DataBlockType {
 	case "I", "Q":
 		{
-			glogger.GLogger.Debug("parseSiemensValue IQ")
+			return fmt.Sprintf("%d", byteSlice[0])
 		}
 	case "BYTE":
 		{
-			glogger.GLogger.Debug("parseSiemensValue BYTE")
+			return fmt.Sprintf("%d", byteSlice[0])
 		}
 	case "SHORT":
 		{
-			glogger.GLogger.Debug("parseSiemensValue SHORT")
+			// AB: 1234
+			// BA: 3412
+			if DataBlockOrder == "AB" {
+				uint16Value := uint16(byteSlice[1]) | uint16(byteSlice[0])<<8
+				return fmt.Sprintf("%d", uint16Value)
+
+			}
+			if DataBlockOrder == "BA" {
+				uint16Value := uint16(byteSlice[0]) | uint16(byteSlice[1])<<8
+				return fmt.Sprintf("%d", uint16Value)
+			}
 
 		}
 	case "INT":
 		// ABCD
 		if DataBlockOrder == "ABCD" {
-			glogger.GLogger.Debug("parseSiemensValue INT ABCD")
+			intValue := int32(byteSlice[0]) | int32(byteSlice[1])<<8 |
+				int32(byteSlice[2])<<16 | int32(byteSlice[3])<<24
+			return fmt.Sprintf("%d", intValue)
 
 		}
 		if DataBlockOrder == "CDAB" {
-			glogger.GLogger.Debug("parseSiemensValue INT CDAB")
-
+			slice := [4]byte{}
+			slice[0], slice[1] = byteSlice[2], byteSlice[3]
+			slice[2], slice[3] = byteSlice[0], byteSlice[1]
+			intValue := int32(slice[0]) | int32(slice[1])<<8 |
+				int32(slice[2])<<16 | int32(slice[3])<<24
+			return fmt.Sprintf("%d", intValue)
 		}
+		// 大端字节序转换为int32
 		if DataBlockOrder == "DCBA" {
-			glogger.GLogger.Debug("parseSiemensValue INT DCBA")
-
+			intValue := int32(byteSlice[3]) | int32(byteSlice[2])<<8 |
+				int32(byteSlice[1])<<16 | int32(byteSlice[0])<<24
+			return fmt.Sprintf("%d", intValue)
 		}
-
+	case "FLOAT": // 3.14159:DCBA -> 40490FDC
+		// ABCD
+		if DataBlockOrder == "ABCD" {
+			intValue := int32(byteSlice[0]) | int32(byteSlice[1])<<8 |
+				int32(byteSlice[2])<<16 | int32(byteSlice[3])<<24
+			floatValue := float32(math.Float32frombits(uint32(intValue)))
+			return fmt.Sprintf("%f", floatValue)
+		}
+		if DataBlockOrder == "CDAB" {
+			intValue := int32(byteSlice[2]) | int32(byteSlice[3])<<8 |
+				int32(byteSlice[0])<<16 | int32(byteSlice[1])<<24
+			floatValue := float32(math.Float32frombits(uint32(intValue)))
+			return fmt.Sprintf("%f", floatValue)
+		}
+		// 大端字节序转换为int32
+		if DataBlockOrder == "DCBA" {
+			intValue := int32(byteSlice[3]) | int32(byteSlice[2])<<8 |
+				int32(byteSlice[1])<<16 | int32(byteSlice[0])<<24
+			floatValue := float32(math.Float32frombits(uint32(intValue)))
+			return fmt.Sprintf("%f", floatValue)
+		}
 	}
+	return ""
+}
+
+/*
+*
+*解析西门子的值 无符号
+*
+ */
+func ParseSiemensUSignedValue(DataBlockType string, DataBlockOrder string, byteSlice [4]byte) string {
 	return ""
 }
