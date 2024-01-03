@@ -199,6 +199,8 @@ func SiemensSheetUpdate(c *gin.Context, ruleEngine typex.RuleX) {
 			copier.Copy(&NewRow, &SiemensDataPoint)
 			NewRow.DeviceUuid = SiemensDataPoint.DeviceUUID
 			NewRow.UUID = utils.SiemensPointUUID()
+			NewRow.DataBlockType = SiemensDataPoint.DataType
+			NewRow.DataBlockOrder = SiemensDataPoint.DataOrder
 			err0 := service.InsertSiemensPointPosition(NewRow)
 			if err0 != nil {
 				c.JSON(common.HTTP_OK, common.Error400(err0))
@@ -209,6 +211,8 @@ func SiemensSheetUpdate(c *gin.Context, ruleEngine typex.RuleX) {
 			copier.Copy(&OldRow, &SiemensDataPoint)
 			OldRow.DeviceUuid = SiemensDataPoint.DeviceUUID
 			OldRow.UUID = SiemensDataPoint.UUID
+			OldRow.DataBlockType = SiemensDataPoint.DataType
+			OldRow.DataBlockOrder = SiemensDataPoint.DataOrder
 			err0 := service.UpdateSiemensPoint(OldRow)
 			if err0 != nil {
 				c.JSON(common.HTTP_OK, common.Error400(err0))
@@ -278,20 +282,7 @@ func SiemensSheetImport(c *gin.Context, ruleEngine typex.RuleX) {
 	ruleEngine.RestartDevice(deviceUuid)
 	c.JSON(common.HTTP_OK, common.Ok())
 }
-func parseRequestSizeByType(s string) (int, error) {
-	switch s {
-	case "BYTE":
-		return 1, nil
-	case "SHORT":
-		return 2, nil
-	case "INT":
-		return 4, nil
-	case "FLOAT":
-		return 4, nil
-	default:
-		return 0, errors.New("Invalid Block Type")
-	}
-}
+
 func parseSiemensPointExcel(
 	r io.Reader,
 	sheetName string,
@@ -336,13 +327,9 @@ func parseSiemensPointExcel(
 		Order := row[4]
 		frequency, _ := strconv.ParseInt(row[5], 10, 8)
 		Frequency := int64(frequency)
-		Info, errParse1 := utils.ParseSiemensDB(SiemensAddress)
+		_, errParse1 := utils.ParseSiemensDB(SiemensAddress)
 		if errParse1 != nil {
 			return nil, errParse1
-		}
-		_, errParse2 := utils.ParseRequestSize(Info.DataBlockType)
-		if errParse2 != nil {
-			return nil, errParse2
 		}
 		model := model.MSiemensDataPoint{
 			UUID:           utils.SiemensPointUUID(),

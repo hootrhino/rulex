@@ -182,6 +182,7 @@ func (hs *ApiServerPlugin) Init(config *ini.Section) error {
 		&model.MNetworkConfig{},
 		&model.MWifiConfig{},
 		&model.MIotSchema{},
+		&model.MIotProperty{},
 		&model.MSiteConfig{},
 		&model.MIpRoute{},
 		&model.MCronTask{},
@@ -406,11 +407,18 @@ func (hs *ApiServerPlugin) LoadRoute() {
 	 */
 	schemaApi := server.RouteGroup(server.ContextUrl("/schema"))
 	{
+		// 物模型
 		schemaApi.POST("/create", server.AddRoute(apis.CreateDataSchema))
 		schemaApi.DELETE("/del", server.AddRoute(apis.DeleteDataSchema))
 		schemaApi.PUT("/update", server.AddRoute(apis.UpdateDataSchema))
 		schemaApi.GET("/list", server.AddRoute(apis.ListDataSchema))
 		schemaApi.GET(("/detail"), server.AddRoute(apis.DataSchemaDetail))
+		// 属性
+		schemaApi.POST(("/properties/create"), server.AddRoute(apis.CreateIotSchemaProperty))
+		schemaApi.PUT(("/properties/update"), server.AddRoute(apis.UpdateIotSchemaProperty))
+		schemaApi.DELETE(("/properties/del"), server.AddRoute(apis.DeleteIotSchemaProperty))
+		schemaApi.GET(("/properties/list"), server.AddRoute(apis.IotSchemaPropertyPageList))
+		schemaApi.GET(("/properties/detail"), server.AddRoute(apis.IotSchemaPropertyDetail))
 
 	}
 	siteConfigApi := server.RouteGroup(server.ContextUrl("/site"))

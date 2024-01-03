@@ -17,7 +17,6 @@ package utils
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -40,6 +39,7 @@ import (
 type AddressInfo struct {
 	AddressType     string // 寄存器类型: DB I Q
 	DataBlockType   string // 数据类型: BYTE SHORT INT
+	DataBlockSize   int    // 数据长度
 	DataBlockOrder  string // 字节序
 	DataBlockNumber int    // 数据块号
 	ElementNumber   int    // 元素号
@@ -51,24 +51,6 @@ func (O AddressInfo) String() string {
 		return ""
 	} else {
 		return string(bytes)
-	}
-}
-
-/*
-*
-* 解析数据长度(字节)
-*
- */
-func ParseRequestSize(AddressType string) (int, error) {
-	switch AddressType {
-	case "BYTE":
-		return 1, nil
-	case "SHORT":
-		return 2, nil
-	case "INT", "FLOAT":
-		return 4, nil
-	default:
-		return 0, errors.New("Invalid Block Type")
 	}
 }
 
@@ -107,7 +89,7 @@ func _ParseDB_DX(s string) (AddressInfo, error) {
 	AddressInfo := AddressInfo{}
 	Len := len(s)
 	if Len < 3 {
-		return AddressInfo, fmt.Errorf("invalid Address format:%s", s)
+		return AddressInfo, fmt.Errorf("Invalid Address length:%s", s)
 	}
 	// DB4900.DBD2108
 	if s[:2] == "DB" {
@@ -115,7 +97,7 @@ func _ParseDB_DX(s string) (AddressInfo, error) {
 		parts := strings.Split(s[2:], ".")
 		// 4900.DBD2108
 		if len(parts) != 2 {
-			return AddressInfo, fmt.Errorf("Invalid ElementNumber Address format:%s", s)
+			return AddressInfo, fmt.Errorf("Invalid Element Number Address format:%s", s)
 		}
 		DataBlockNumber, err1 := strconv.Atoi(parts[0])
 		if err1 != nil {
@@ -124,28 +106,25 @@ func _ParseDB_DX(s string) (AddressInfo, error) {
 		AddressInfo.DataBlockNumber = DataBlockNumber
 		// DBD2108
 		if len(parts[1]) < 4 {
-			return AddressInfo, fmt.Errorf("Invalid ElementNumber Address format:%s", s)
+			return AddressInfo, fmt.Errorf("Invalid Element Number Address format:%s", s)
 		}
 		ElementNumber, err2 := strconv.Atoi(parts[1][3:]) //DBD...
 		if err2 != nil {
-			return AddressInfo, fmt.Errorf("ElementNumber %s Atoi failed:%s", s, err2)
+			return AddressInfo, fmt.Errorf("Element Number %s Atoi failed:%s", s, err2)
 		}
-		// // DBD: 4字节
-		// if parts[1][2] == 'D' {
-		// 	AddressInfo.DataBlockType = "INT"
-		// }
-		// // DBD: 4字节
-		// if parts[1][2] == 'W' {
-		// 	AddressInfo.DataBlockType = "SHORT"
-		// }
-		// // DBX: 1字节
-		// if parts[1][2] == 'B' {
-		// 	AddressInfo.DataBlockType = "BYTE"
-		// }
-		// // DBX: 1字节
-		// if parts[1][2] == 'X' {
-		// 	AddressInfo.DataBlockType = "BIT"
-		// }
+		switch parts[1][2] {
+
+		case 'D': // DBD: 4字节
+			AddressInfo.DataBlockSize = 4
+		case 'W': // DBw: 2字节
+			AddressInfo.DataBlockSize = 2
+		case 'B': // DBB: 1字节
+			AddressInfo.DataBlockSize = 1
+		case 'X': // DBX: 1字节
+			AddressInfo.DataBlockSize = 1
+		default:
+			return AddressInfo, fmt.Errorf("Invalid Element Type:%s", parts[1][2])
+		}
 		AddressInfo.ElementNumber = ElementNumber
 	}
 	return AddressInfo, nil

@@ -18,6 +18,7 @@ package service
 import (
 	"github.com/hootrhino/rulex/component/interdb"
 	"github.com/hootrhino/rulex/component/rulex_api_server/model"
+	"gorm.io/gorm"
 )
 
 // 获取DataSchema列表
@@ -33,8 +34,19 @@ func GetDataSchemaWithUUID(uuid string) (model.MIotSchema, error) {
 }
 
 // 删除DataSchema
-func DeleteDataSchema(uuid string) error {
-	return interdb.DB().Where("uuid=?", uuid).Delete(&model.MIotSchema{}).Error
+func DeleteDataSchemaAndProperty(schemaUuid string) error {
+	err := interdb.DB().Transaction(func(tx *gorm.DB) error {
+		err2 := tx.Where("uuid=?", schemaUuid).Delete(&model.MIotSchema{}).Error
+		if err2 != nil {
+			return err2
+		}
+		err1 := tx.Where("schema_id=?", schemaUuid).Delete(model.MIotProperty{}).Error
+		if err1 != nil {
+			return err1
+		}
+		return nil
+	})
+	return err
 }
 
 // 创建DataSchema
@@ -48,4 +60,28 @@ func UpdateDataSchema(DataSchema model.MIotSchema) error {
 		Model(DataSchema).
 		Where("uuid=?", DataSchema.UUID).
 		Updates(&DataSchema).Error
+}
+
+// 更新DataSchema
+func UpdateIotSchemaProperty(MIotProperty model.MIotProperty) error {
+	return interdb.DB().
+		Model(MIotProperty).
+		Where("uuid=?", MIotProperty.UUID).
+		Updates(&MIotProperty).Error
+}
+
+// 创建DataSchema
+func FindIotSchemaProperty(uuid string) (model.MIotProperty, error) {
+	MIotProperty := model.MIotProperty{}
+	return MIotProperty, interdb.DB().Where("uuid=?", uuid).Find(&MIotProperty).Error
+}
+
+// 创建DataSchema
+func InsertIotSchemaProperty(MIotProperty model.MIotProperty) error {
+	return interdb.DB().Create(&MIotProperty).Error
+}
+
+// 删除
+func DeleteIotSchemaProperty(uuid string) error {
+	return interdb.DB().Where("uuid=?", uuid).Delete(model.MIotProperty{}).Error
 }
