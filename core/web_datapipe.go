@@ -132,6 +132,8 @@ func dataPipLoop(c *gin.Context) {
 	wsConn.SetReadDeadline(time.Now().Add(5 * time.Second))
 	_, b, err := wsConn.ReadMessage()
 	if err != nil {
+		wsConn.WriteMessage(websocket.CloseMessage, []byte("Invalid client token"))
+		wsConn.Close()
 		return
 	}
 	wsConn.SetReadDeadline(time.Time{})
