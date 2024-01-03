@@ -11,6 +11,7 @@ import (
 
 	siemenscache "github.com/hootrhino/rulex/component/intercache/siemens"
 	"github.com/hootrhino/rulex/component/iotschema"
+	"github.com/jinzhu/copier"
 
 	"github.com/hootrhino/rulex/common"
 	"github.com/hootrhino/rulex/component/interdb"
@@ -28,16 +29,16 @@ type __SiemensDataPoint struct {
 	Tag             string `json:"tag"`
 	Alias           string `json:"alias"`
 	Frequency       *int64 `json:"frequency"`
-	Status          int    `json:"status"`          // 运行时数据
-	LastFetchTime   uint64 `json:"lastFetchTime"`   // 运行时数据
-	Value           string `json:"value"`           // 运行时数据
-	AddressType     string `json:"addressType"`     // // 西门子解析后的地址信息: 寄存器类型: DB I Q
-	DataBlockType   string `json:"dataBlockType"`   // // 西门子解析后的地址信息: 数据类型: INT UINT ....
-	DataBlockOrder  string `json:"dataOrder"`       //  西门子解析后的地址信息: 数据类型: INT UINT ....
-	DataBlockNumber int    `json:"dataBlockNumber"` // // 西门子解析后的地址信息: 数据块号: 100...
-	ElementNumber   int    `json:"elementNumber"`   // // 西门子解析后的地址信息: 元素号:1000...
-	DataSize        int    `json:"dataSize"`        // // 西门子解析后的地址信息: 位号,0-8，只针对I、Q
-	BitNumber       int    `json:"bitNumber"`       // // 西门子解析后的地址信息: 位号,0-8，只针对I、Q
+	Status          int    `json:"status"`        // 运行时数据
+	LastFetchTime   uint64 `json:"lastFetchTime"` // 运行时数据
+	Value           string `json:"value"`         // 运行时数据
+	AddressType     string `json:"-"`             // // 西门子解析后的地址信息: 寄存器类型: DB I Q
+	DataBlockType   string `json:"-"`             // // 西门子解析后的地址信息: 数据类型: INT UINT ....
+	DataBlockOrder  string `json:"-"`             //  西门子解析后的地址信息: 数据类型: INT UINT ....
+	DataBlockNumber int    `json:"-"`             // // 西门子解析后的地址信息: 数据块号: 100...
+	ElementNumber   int    `json:"-"`             // // 西门子解析后的地址信息: 元素号:1000...
+	DataSize        int    `json:"-"`             // // 西门子解析后的地址信息: 位号,0-8，只针对I、Q
+	BitNumber       int    `json:"-"`             // // 西门子解析后的地址信息: 位号,0-8，只针对I、Q
 }
 
 // https://cloudvpn.beijerelectronics.com/hc/en-us/articles/4406049761169-Siemens-S7
@@ -129,7 +130,9 @@ func (s1200 *SIEMENS_PLC) Init(devId string, configMap map[string]interface{}) e
 		SiemensDataPoint.DataSize = AddressInfo.DataBlockSize
 
 		// 提前缓冲
-		s1200.__SiemensDataPoints[SiemensDataPoint.UUID] = &SiemensDataPoint
+		NewSiemensDataPoint := __SiemensDataPoint{}
+		copier.Copy(&NewSiemensDataPoint, &SiemensDataPoint)
+		s1200.__SiemensDataPoints[SiemensDataPoint.UUID] = &NewSiemensDataPoint
 		siemenscache.SetValue(s1200.PointId, SiemensDataPoint.UUID, siemenscache.SiemensPoint{
 			UUID:          SiemensDataPoint.UUID,
 			Status:        0,
@@ -294,15 +297,10 @@ func (s1200 *SIEMENS_PLC) Read(cmd []byte, data []byte) (int, error) {
 			Value := ParseSiemensSignedValue(db.DataBlockType, db.DataBlockOrder, ValidData)
 			// Value := hex.EncodeToString(rData[:db.DataSize])
 			values = append(values, __SiemensDataPoint{
-				DeviceUUID:      db.DeviceUUID,
-				Tag:             db.Tag,
-				Value:           Value,
-				SiemensAddress:  db.SiemensAddress,
-				AddressType:     db.AddressType,
-				DataBlockType:   db.DataBlockType,
-				DataBlockNumber: db.DataBlockNumber,
-				ElementNumber:   db.ElementNumber,
-				BitNumber:       db.BitNumber,
+				DeviceUUID:     db.DeviceUUID,
+				Tag:            db.Tag,
+				Value:          Value,
+				SiemensAddress: db.SiemensAddress,
 			})
 			siemenscache.SetValue(s1200.PointId, uuid, siemenscache.SiemensPoint{
 				UUID:          uuid,
