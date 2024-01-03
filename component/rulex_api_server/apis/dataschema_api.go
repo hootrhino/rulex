@@ -194,9 +194,15 @@ func CreateIotSchemaProperty(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	_, err := service.GetDataSchemaWithUUID(IotPropertyVo.SchemaId)
+	Schema, err := service.GetDataSchemaWithUUID(IotPropertyVo.SchemaId)
 	if err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
+	// 不允许重复name
+	count := service.CountIotSchemaProperty(IotPropertyVo.Name, Schema.UUID)
+	if count > 0 {
+		c.JSON(common.HTTP_OK, common.Error("Already Exists Property:"+IotPropertyVo.Name))
 		return
 	}
 	err2 := service.InsertIotSchemaProperty(model.MIotProperty{
@@ -230,7 +236,7 @@ func UpdateIotSchemaProperty(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	err2 := service.InsertIotSchemaProperty(model.MIotProperty{
+	err2 := service.UpdateIotSchemaProperty(model.MIotProperty{
 		SchemaId:    IotPropertyVo.SchemaId,
 		UUID:        IotPropertyVo.UUID,
 		Label:       IotPropertyVo.Label,
@@ -295,6 +301,12 @@ func IotSchemaPropertyDetail(c *gin.Context, ruleEngine typex.RuleX) {
 
 	c.JSON(common.HTTP_OK, common.OkWithData(IotPropertyVo))
 }
+
+/*
+*
+* 列表
+*
+ */
 func IotSchemaPropertyPageList(c *gin.Context, ruleEngine typex.RuleX) {
 	pager, err := service.ReadPageRequest(c)
 	if err != nil {

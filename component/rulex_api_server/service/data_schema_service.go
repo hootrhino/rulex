@@ -76,6 +76,14 @@ func FindIotSchemaProperty(uuid string) (model.MIotProperty, error) {
 	return MIotProperty, interdb.DB().Where("uuid=?", uuid).Find(&MIotProperty).Error
 }
 
+// 统计DataSchema
+func CountIotSchemaProperty(name, schema_id string) int64 {
+	var count int64
+	interdb.DB().Model(model.MIotProperty{}).
+		Where("name=? and schema_id=?", name, schema_id).Count(&count)
+	return count
+}
+
 // 创建DataSchema
 func InsertIotSchemaProperty(MIotProperty model.MIotProperty) error {
 	return interdb.DB().Create(&MIotProperty).Error
