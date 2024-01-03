@@ -38,7 +38,6 @@ type IotPropertyVo struct {
 	Rw          string            `json:"rw"`          // R读 W写 RW读写
 	Unit        string            `json:"unit"`        // 单位 例如：摄氏度、米、牛等等
 	Rule        IoTPropertyRuleVo `json:"rule"`        // 规则,IoTPropertyRule
-	Value       any               `json:"value"`       // 运行时数据
 }
 type IoTPropertyRuleVo struct {
 	DefaultValue any    `json:"defaultValue"` // 默认值
@@ -269,12 +268,32 @@ func DeleteIotSchemaProperty(c *gin.Context, ruleEngine typex.RuleX) {
  */
 func IotSchemaPropertyDetail(c *gin.Context, ruleEngine typex.RuleX) {
 	uuid, _ := c.GetQuery("uuid")
-	SchemaProperty, err := service.FindIotSchemaProperty(uuid)
+	record, err := service.FindIotSchemaProperty(uuid)
 	if err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	c.JSON(common.HTTP_OK, common.OkWithData(SchemaProperty))
+	IotPropertyVo := IotPropertyVo{
+		SchemaId:    record.SchemaId,
+		UUID:        record.UUID,
+		Label:       record.Label,
+		Name:        record.Name,
+		Description: record.Description,
+		Type:        record.Type,
+		Rw:          record.Rw,
+		Unit:        record.Unit,
+	}
+	IoTPropertyRuleVo := IoTPropertyRuleVo{}
+	if err0 := IoTPropertyRuleVo.ParseRuleFromModel(record.Rule); err0 != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err0))
+		return
+	}
+	if IoTPropertyRuleVo.DefaultValue == nil {
+		IoTPropertyRuleVo.DefaultValue = ""
+	}
+	IotPropertyVo.Rule = IoTPropertyRuleVo
+
+	c.JSON(common.HTTP_OK, common.OkWithData(IotPropertyVo))
 }
 func IotSchemaPropertyPageList(c *gin.Context, ruleEngine typex.RuleX) {
 	pager, err := service.ReadPageRequest(c)
@@ -314,7 +333,6 @@ func IotSchemaPropertyPageList(c *gin.Context, ruleEngine typex.RuleX) {
 			Type:        record.Type,
 			Rw:          record.Rw,
 			Unit:        record.Unit,
-			Value:       "TODO",
 		}
 		if IoTPropertyRuleVo.DefaultValue == nil {
 			IoTPropertyRuleVo.DefaultValue = ""
