@@ -70,7 +70,7 @@ func UpdateIotSchemaProperty(MIotProperty model.MIotProperty) error {
 		Updates(&MIotProperty).Error
 }
 
-// 创建DataSchema
+// 查找DataSchema
 func FindIotSchemaProperty(uuid string) (model.MIotProperty, error) {
 	MIotProperty := model.MIotProperty{}
 	return MIotProperty, interdb.DB().Where("uuid=?", uuid).Find(&MIotProperty).Error

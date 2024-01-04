@@ -39,20 +39,42 @@ func ListByGroupType(t string) []model.MGenericGroup {
 * 查询分组下的设备
 *
  */
-func FindDeviceByGroup(uuid string) []model.MDevice {
+func FindDeviceByGroup(gid string) []model.MDevice {
 	sql := `
 WHERE uuid IN (
 	SELECT m_generic_group_relations.rid
 	  FROM m_generic_groups
 		LEFT JOIN
 		m_generic_group_relations ON (m_generic_groups.uuid = m_generic_group_relations.gid)
-	  WHERE type = 'DEVICE' AND gid = ?
-);`
+	WHERE type = 'DEVICE' AND gid = ?
+) ORDER BY created_at DESC;`
 
 	m := []model.MDevice{}
-	interdb.DB().Raw(`SELECT * FROM m_devices `+sql, uuid).Find(&m)
+	interdb.DB().Raw(`SELECT * FROM m_devices `+sql, gid).Find(&m)
 	return m
 
+}
+
+/*
+*
+* 新增的分页获取
+*
+ */
+func PageDeviceByGroup(current, size int, gid string) (int64, []model.MDevice) {
+	sql := `
+SELECT * FROM m_devices WHERE uuid IN (
+	SELECT m_generic_group_relations.rid
+	  FROM m_generic_groups
+		LEFT JOIN m_generic_group_relations ON
+		(m_generic_groups.uuid = m_generic_group_relations.gid)
+	WHERE type = 'DEVICE' AND gid = ?
+) ORDER BY created_at DESC limit ? offset ?;`
+	MDevices := []model.MDevice{}
+	offset := (current - 1) * size
+	interdb.DB().Raw(sql, gid, size, offset).Find(&MDevices)
+	var count int64
+	interdb.DB().Model(&model.MDevice{}).Count(&count)
+	return count, MDevices
 }
 
 /*
@@ -68,7 +90,7 @@ WHERE uuid IN (
 		LEFT JOIN
 		m_generic_group_relations ON (m_generic_groups.uuid = m_generic_group_relations.gid)
 	  WHERE type = 'VISUAL' AND gid = ?
-);`
+) ORDER BY created_at DESC;`
 
 	m := []model.MVisual{}
 	interdb.DB().Raw(`SELECT * FROM m_visuals `+sql, uuid).Find(&m)
@@ -90,7 +112,7 @@ WHERE uuid IN (
 		LEFT JOIN
 		m_generic_group_relations ON (m_generic_groups.uuid = m_generic_group_relations.gid)
 	  WHERE type = 'USER_LUA_TEMPLATE' AND gid = ?
-);`
+) ORDER BY created_at DESC;`
 	m := []model.MUserLuaTemplate{}
 	interdb.DB().Raw(`SELECT * FROM m_user_lua_templates `+sql, uuid).Find(&m)
 	return m

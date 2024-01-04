@@ -156,11 +156,10 @@ func (mdev *generic_modbus_device) Init(devId string, configMap map[string]inter
 			Quantity:  v.Quantity,
 			Frequency: v.Frequency,
 		}
-		Status := 0
 		LastFetchTime := uint64(time.Now().UnixMilli())
 		modbuscache.SetValue(mdev.PointId, v.UUID, modbuscache.RegisterPoint{
 			UUID:          v.UUID,
-			Status:        Status,
+			Status:        0,
 			LastFetchTime: LastFetchTime,
 		})
 	}
