@@ -63,9 +63,19 @@ func DeviceDetail(c *gin.Context, ruleEngine typex.RuleX) {
 *
  */
 func ListDeviceByGroup(c *gin.Context, ruleEngine typex.RuleX) {
+	pager, err := service.ReadPageRequest(c)
+	if err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
 	Gid, _ := c.GetQuery("uuid")
+	count, MDevices := service.PageDeviceByGroup(pager.Current, pager.Size, Gid)
+	err1 := interdb.DB().Model(&model.MDevice{}).Count(&count).Error
+	if err1 != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err1))
+		return
+	}
 	devices := []DeviceVo{}
-	MDevices := service.FindDeviceByGroup(Gid)
 	for _, mdev := range MDevices {
 		DeviceVo := DeviceVo{}
 		DeviceVo.UUID = mdev.UUID
@@ -84,7 +94,9 @@ func ListDeviceByGroup(c *gin.Context, ruleEngine typex.RuleX) {
 		DeviceVo.Gid = Group.UUID
 		devices = append(devices, DeviceVo)
 	}
-	c.JSON(common.HTTP_OK, common.OkWithData(devices))
+
+	Result := service.WrapPageResult(*pager, devices, count)
+	c.JSON(common.HTTP_OK, common.OkWithData(Result))
 }
 
 // 重启
@@ -258,4 +270,77 @@ func UpdateDevice(c *gin.Context, ruleEngine typex.RuleX) {
 		return
 	}
 	c.JSON(common.HTTP_OK, common.Ok())
+}
+
+/*
+*
+* 属性
+*
+ */
+type DevicePropertyVo struct {
+	Label       string `json:"label"`       // UI显示的那个文本
+	Name        string `json:"name"`        // 变量关联名
+	Description string `json:"description"` // 额外信息
+	Type        string `json:"type"`        // 类型, 只能是上面几种
+	Rw          string `json:"rw"`          // R读 W写 RW读写
+	Unit        string `json:"unit"`        // 单位 例如：摄氏度、米、牛等等
+	Value       string `json:"value"`       // 值
+}
+
+/*
+*
+*物模型
+*
+ */
+func DevicePropertiesPage(c *gin.Context, ruleEngine typex.RuleX) {
+	pager, err := service.ReadPageRequest(c)
+	if err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
+	uuid, _ := c.GetQuery("uuid")
+	MDevice, err := service.GetMDeviceWithUUID(uuid)
+	if err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
+	db := interdb.DB()
+	tx := db.Scopes(service.Paginate(*pager))
+	var count int64
+	err1 := interdb.DB().Model(&model.MIotProperty{}).Count(&count).Error
+	if err1 != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err1))
+		return
+	}
+	var records []model.MIotProperty
+	result := tx.Order("created_at DESC").Find(&records,
+		&model.MIotProperty{SchemaId: MDevice.SchemaId})
+	if result.Error != nil {
+		c.JSON(common.HTTP_OK, common.Error400(result.Error))
+		return
+	}
+	recordsVoList := []DevicePropertyVo{}
+	for _, record := range records {
+		IoTPropertyRuleVo := IoTPropertyRuleVo{}
+		if err0 := IoTPropertyRuleVo.ParseRuleFromModel(record.Rule); err0 != nil {
+			c.JSON(common.HTTP_OK, common.Error400(err0))
+			return
+		}
+		// 物模型定义从数据库拿
+		// 而 Value 要去设备自己的物模型里面拿
+		// 当设备离线的时候应该是空值
+		// Value := Device.Property()
+		IotPropertyVo := DevicePropertyVo{
+			Label:       record.Label,
+			Name:        record.Name,
+			Rw:          record.Rw,
+			Type:        record.Type,
+			Unit:        record.Unit,
+			Value:       "",
+			Description: record.Description,
+		}
+		recordsVoList = append(recordsVoList, IotPropertyVo)
+	}
+	Result := service.WrapPageResult(*pager, recordsVoList, count)
+	c.JSON(common.HTTP_OK, common.OkWithData(Result))
 }

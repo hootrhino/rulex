@@ -107,6 +107,7 @@ type MDevice struct {
 	UUID        string `gorm:"uniqueIndex"`
 	Name        string `gorm:"not null"`
 	Type        string `gorm:"not null"`
+	SchemaId    string `gorm:"not null"`
 	Config      string
 	BindRules   StringList `json:"bindRules"` // 与之关联的规则表["A","B","C"]
 	Description string
