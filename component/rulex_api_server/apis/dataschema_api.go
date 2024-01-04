@@ -41,11 +41,11 @@ type IotPropertyVo struct {
 }
 type IoTPropertyRuleVo struct {
 	DefaultValue any    `json:"defaultValue"` // 默认值
-	Max          int    `json:"max"`          // 最大值
-	Min          int    `json:"min"`          // 最小值
+	Max          *int   `json:"max"`          // 最大值
+	Min          *int   `json:"min"`          // 最小值
 	TrueLabel    string `json:"trueLabel"`    // 真值label
 	FalseLabel   string `json:"falseLabel"`   // 假值label
-	Round        int    `json:"round"`        // 小数点位
+	Round        *int   `json:"round"`        // 小数点位
 }
 
 /*
@@ -54,6 +54,18 @@ type IoTPropertyRuleVo struct {
 *
  */
 func (O IoTPropertyRuleVo) String() string {
+	if O.Max == nil {
+		O.Max = new(int)
+	}
+	if O.Min == nil {
+		O.Min = new(int)
+	}
+	if O.Round == nil {
+		O.Round = new(int)
+	}
+	if O.DefaultValue == nil {
+		O.DefaultValue = ""
+	}
 	if bytes, err := json.Marshal(O); err != nil {
 		return "{}"
 	} else {
@@ -78,7 +90,21 @@ func (O IoTPropertyRuleVo) IoTPropertyRuleFromString(s string) error {
 * 从数据库保存的String字符串反解析规则
 *
  */
-func (P IoTPropertyRuleVo) ParseRuleFromModel(s string) error {
+func (P *IoTPropertyRuleVo) ParseRuleFromModel(s string) error {
+	if P.Max == nil {
+		P.Max = new(int)
+	}
+	if P.Min == nil {
+		P.Min = new(int)
+	}
+	if P.Round == nil {
+		P.Round = new(int)
+	}
+
+	if P.DefaultValue == nil {
+		P.DefaultValue = ""
+	}
+
 	if err := json.Unmarshal([]byte(s), &P); err != nil {
 		return err
 	} else {
@@ -294,11 +320,7 @@ func IotSchemaPropertyDetail(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err0))
 		return
 	}
-	if IoTPropertyRuleVo.DefaultValue == nil {
-		IoTPropertyRuleVo.DefaultValue = ""
-	}
 	IotPropertyVo.Rule = IoTPropertyRuleVo
-
 	c.JSON(common.HTTP_OK, common.OkWithData(IotPropertyVo))
 }
 
@@ -345,9 +367,6 @@ func IotSchemaPropertyPageList(c *gin.Context, ruleEngine typex.RuleX) {
 			Type:        record.Type,
 			Rw:          record.Rw,
 			Unit:        record.Unit,
-		}
-		if IoTPropertyRuleVo.DefaultValue == nil {
-			IoTPropertyRuleVo.DefaultValue = ""
 		}
 		IotPropertyVo.Rule = IoTPropertyRuleVo
 		recordsVoList = append(recordsVoList, IotPropertyVo)

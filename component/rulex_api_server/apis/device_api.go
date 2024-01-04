@@ -22,6 +22,7 @@ type DeviceVo struct {
 	Gid         string                 `json:"gid"`
 	Name        string                 `json:"name"`
 	Type        string                 `json:"type"`
+	SchemaId    string                 `json:"schemaId"`
 	State       int                    `json:"state"`
 	Config      map[string]interface{} `json:"config"`
 	Description string                 `json:"description"`
@@ -43,6 +44,7 @@ func DeviceDetail(c *gin.Context, ruleEngine typex.RuleX) {
 	DeviceVo.UUID = mdev.UUID
 	DeviceVo.Name = mdev.Name
 	DeviceVo.Type = mdev.Type
+	DeviceVo.SchemaId = mdev.SchemaId
 	DeviceVo.Description = mdev.Description
 	DeviceVo.Config = mdev.GetConfig()
 	//
@@ -81,6 +83,7 @@ func ListDeviceByGroup(c *gin.Context, ruleEngine typex.RuleX) {
 		DeviceVo.UUID = mdev.UUID
 		DeviceVo.Name = mdev.Name
 		DeviceVo.Type = mdev.Type
+		DeviceVo.SchemaId = mdev.SchemaId
 		DeviceVo.Description = mdev.Description
 		DeviceVo.Config = mdev.GetConfig()
 		//
@@ -92,6 +95,7 @@ func ListDeviceByGroup(c *gin.Context, ruleEngine typex.RuleX) {
 		}
 		Group := service.GetVisualGroup(mdev.UUID)
 		DeviceVo.Gid = Group.UUID
+
 		devices = append(devices, DeviceVo)
 	}
 
@@ -212,6 +216,7 @@ func CreateDevice(c *gin.Context, ruleEngine typex.RuleX) {
 		Name:        form.Name,
 		Description: form.Description,
 		Config:      string(configJson),
+		SchemaId:    form.SchemaId,
 		BindRules:   []string{},
 	}
 	if err := service.InsertDevice(&MDevice); err != nil {
@@ -254,6 +259,7 @@ func UpdateDevice(c *gin.Context, ruleEngine typex.RuleX) {
 		MDevice := model.MDevice{
 			Type:        form.Type,
 			Name:        form.Name,
+			SchemaId:    form.SchemaId,
 			Description: form.Description,
 			Config:      string(configJson),
 		}
