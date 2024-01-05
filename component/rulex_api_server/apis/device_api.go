@@ -313,18 +313,10 @@ func DevicePropertiesPage(c *gin.Context, ruleEngine typex.RuleX) {
 	db := interdb.DB()
 	tx := db.Scopes(service.Paginate(*pager))
 	var count int64
-	err1 := interdb.DB().Model(&model.MIotProperty{}).Count(&count).Error
-	if err1 != nil {
-		c.JSON(common.HTTP_OK, common.Error400(err1))
-		return
-	}
+	tx.Model(&model.MIotProperty{}).
+		Where("schema_id=?", MDevice.SchemaId).Count(&count)
 	var records []model.MIotProperty
-	result := tx.Order("created_at DESC").Find(&records,
-		&model.MIotProperty{SchemaId: MDevice.SchemaId})
-	if result.Error != nil {
-		c.JSON(common.HTTP_OK, common.Error400(result.Error))
-		return
-	}
+	tx.Order("created_at DESC").Where("schema_id=?", MDevice.SchemaId).Find(&records)
 	recordsVoList := []DevicePropertyVo{}
 	for _, record := range records {
 		IoTPropertyRuleVo := IoTPropertyRuleVo{}

@@ -19,7 +19,6 @@ import (
 	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/typex"
 	"github.com/hootrhino/rulex/utils"
-	"github.com/jinzhu/copier"
 	serial "github.com/wwhai/goserial"
 )
 
@@ -215,6 +214,13 @@ func (aism *AISDeviceMaster) Start(cctx typex.CCTX) error {
 					aism.status = typex.DEV_DOWN
 					return
 				}
+				// 可能会收到心跳包: !HRT710,Q,003,0*06
+				if strings.HasPrefix(rawAiSString, "!HRT") {
+					continue
+				}
+				if strings.HasPrefix(rawAiSString, "!DYA") {
+					continue
+				}
 				// 这段是个兼容代码，现阶段适配了一款AIS USB 串口接收器，以后会自己做
 				{
 					if strings.HasPrefix("NONE", rawAiSString) {
@@ -238,18 +244,23 @@ func (aism *AISDeviceMaster) Start(cctx typex.CCTX) error {
 				// 如果不需要解析,直接原文透传
 				if !*aism.mainConfig.CommonConfig.ParseAis {
 					// {
-					//     "ais_receiver_device":"%s",
+					//
 					//     "gwsn":"%s"
 					//     "ais_data":"%s"
 					// }
-					ds := `{"ais_receiver_device":"%s","gwsn":"%s","ais_data":"%s"}`
+					ds := `{"gwsn":"%s","ais_data":"%s"}`
 					lens := len(rawAiSString)
 					if lens > 2 {
 						aism.RuleEngine.WorkDevice(aism.Details(),
-							fmt.Sprintf(ds, aism.mainConfig.CommonConfig.GwSN,
-								aism.mainConfig.CommonConfig.GwSN, rawAiSString), // \r\n
-						)
+							fmt.Sprintf(ds, aism.mainConfig.CommonConfig.GwSN, rawAiSString))
 					}
+				} else {
+					errParseAisToJson := aism.ParseAisToJson(rawAiSString)
+					if errParseAisToJson != nil {
+						glogger.GLogger.Error("ParseAisToJson error:", errParseAisToJson)
+						continue
+					}
+
 				}
 			}
 		}()
@@ -425,18 +436,6 @@ func (aism *AISDeviceMaster) handleIO(session *__AISDeviceSession) {
 			aism.status = typex.DEV_DOWN
 			return
 		}
-		// 如果不需要解析,直接原文透传
-		if !*aism.mainConfig.CommonConfig.ParseAis {
-			// {
-			//     "ais_receiver_device":"%s",
-			//     "ais_data":"%s"
-			//     "gwsn":"%s"
-			// }
-			ds := `{"ais_receiver_device":"%s","gwsn":"%s","ais_data":"%s"}`
-			aism.RuleEngine.WorkDevice(aism.Details(), fmt.Sprintf(ds, session.SN,
-				aism.mainConfig.CommonConfig.GwSN, rawAiSString))
-			continue
-		}
 		// 可能会收到心跳包: !HRT710,Q,003,0*06
 		if strings.HasPrefix(rawAiSString, "!HRT") {
 			glogger.GLogger.Debug("Heart beat from:", session.SN, session.Transport.RemoteAddr())
@@ -446,55 +445,145 @@ func (aism *AISDeviceMaster) handleIO(session *__AISDeviceSession) {
 			glogger.GLogger.Debug("DYA Message from:", session.SN, session.Transport.RemoteAddr())
 			continue
 		}
-		sentence, err := nmea.Parse(rawAiSString)
-		if err != nil {
-			glogger.GLogger.Error(err, rawAiSString)
+		// 如果不需要解析,直接原文透传
+		if !*aism.mainConfig.CommonConfig.ParseAis {
+			// {
+			//
+			//     "ais_data":"%s"
+			//     "gwsn":"%s"
+			// }
+			ds := `{"gwsn":"%s","ais_data":"%s"}`
+			aism.RuleEngine.WorkDevice(aism.Details(),
+				fmt.Sprintf(ds, aism.mainConfig.CommonConfig.GwSN, rawAiSString))
 			continue
-		}
-		// glogger.GLogger.Info("Received data:", sentence.DataType(), sentence)
-		if sentence.DataType() == nmea.TypeRMC {
-			rmc1 := sentence.(nmea.RMC)
-			rmc := RMC{}
-			copier.Copy(&rmc, &rmc1)
-			data := rmc.String()
-			glogger.GLogger.Debug("Received RMC data:", data)
-			if data != "" {
-				aism.RuleEngine.WorkDevice(aism.Details(), data)
-			}
-		}
-		if sentence.DataType() == nmea.TypeGNS {
-			gns1 := sentence.(nmea.GNS)
-			gns := GNS{}
-			copier.Copy(&gns, &gns1)
-			data := gns.String()
-			glogger.GLogger.Debug("Received GNS data:", data)
-			if data != "" {
-				aism.RuleEngine.WorkDevice(aism.Details(), data)
-			}
-		}
-		if sentence.DataType() == nmea.TypeVDM {
-			vdmo1 := sentence.(nmea.VDMVDO)
-			vdmo := VDMVDO{}
-			copier.Copy(&vdmo, &vdmo1)
-			data := vdmo.PayloadInfo()
-			glogger.GLogger.Debug("Received VDM data:", data)
-			if data != "" {
-				aism.RuleEngine.WorkDevice(aism.Details(), data)
-			}
-		}
-		if sentence.DataType() == nmea.TypeVDO {
-			vdmo1 := sentence.(nmea.VDMVDO)
-			vdmo := VDMVDO{}
-			copier.Copy(&vdmo, &vdmo1)
-			data := vdmo.PayloadInfo()
-			glogger.GLogger.Debug("Received VDO data:", data)
-			if data != "" {
-				aism.RuleEngine.WorkDevice(aism.Details(), data)
+		} else {
+			errParseAisToJson := aism.ParseAisToJson(rawAiSString)
+			if errParseAisToJson != nil {
+				glogger.GLogger.Error("ParseAisToJson error:", errParseAisToJson)
+				continue
 			}
 		}
 
 	}
 
+}
+
+/*
+*
+* 将AIS解析成JSON
+CREATE STABLE IF NOT EXISTS ais_transmitter (
+
+	`ts` TIMESTAMP,
+	`mmsi` BINARY(20),
+	`name` BINARY(20),
+	`call_num` BINARY(20),
+	`length` FLOAT,
+	`width` FLOAT,
+	`draft` FLOAT,
+	`main_angle` FLOAT,
+	`trace_angle` FLOAT,
+	`latitude` FLOAT,
+	`longitude` FLOAT,
+	`speed` FLOAT
+
+) TAGS (
+
+	ais_transmitter_id BINARY(64),
+	ais_transmitter_area BINARY(64),
+	ais_transmitter_bznz_master BINARY(64)
+
+);
+*/
+
+func (aism *AISDeviceMaster) ParseAisToJson(rawAiSString string) error {
+	if rawAiSString == "" {
+		return fmt.Errorf("empty ais string")
+	}
+	sentence, err := nmea.Parse(rawAiSString)
+	if err != nil {
+		return err
+	}
+	DataType := sentence.DataType()
+	if DataType == nmea.TypeRMC {
+		rmc1 := sentence.(nmea.RMC)
+		rmc := RMC{
+			GwID:      aism.mainConfig.CommonConfig.GwSN,
+			Type:      rmc1.Type,
+			Validity:  rmc1.Validity,
+			Latitude:  rmc1.Latitude,
+			Longitude: rmc1.Longitude,
+			Speed:     rmc1.Speed,
+			Course:    rmc1.Course,
+			Variation: rmc1.Variation,
+			FFAMode:   rmc1.FFAMode,
+			NavStatus: rmc1.NavStatus,
+		}
+		Date := fmt.Sprintf("%d-%02d-%02d", rmc1.Date.DD, rmc1.Date.MM, rmc1.Date.YY)
+		seconds := float64(rmc1.Time.Second) + float64(rmc1.Time.Millisecond)/1000
+		Time := fmt.Sprintf("%02d:%02d:%07.4f", rmc1.Time.Hour, rmc1.Time.Minute, seconds)
+		rmc.DateTime = fmt.Sprintf("%s %s", Date, Time)
+		if bytes, err := json.Marshal(rmc); err != nil {
+			return err
+		} else {
+			aism.RuleEngine.WorkDevice(aism.Details(), string(bytes))
+		}
+		return nil
+	}
+	// GNS 是GPS定位信息
+	if DataType == nmea.TypeGNS {
+		gns1 := sentence.(nmea.GNS)
+		gns := GNS{
+			Type:       gns1.Type,
+			GwID:       aism.mainConfig.CommonConfig.GwSN,
+			Latitude:   gns1.Latitude,
+			Longitude:  gns1.Longitude,
+			Mode:       gns1.Mode,
+			SVs:        gns1.SVs,
+			HDOP:       gns1.HDOP,
+			Altitude:   gns1.Altitude,
+			Separation: gns1.Separation,
+			Age:        gns1.Age,
+			Station:    gns1.Station,
+			NavStatus:  gns1.NavStatus,
+		}
+		if bytes, err := json.Marshal(gns); err != nil {
+			return err
+		} else {
+			aism.RuleEngine.WorkDevice(aism.Details(), string(bytes))
+		}
+		return nil
+
+	}
+	// VDM 是AIS报文
+	if DataType == nmea.TypeVDM {
+		vdmo1 := sentence.(nmea.VDMVDO)
+		ParsedAis := Parse_AIVDM_VDO_PayloadInfo(aism.mainConfig.CommonConfig.GwSN,
+			vdmo1.DataType(), vdmo1.Payload)
+		if ParsedAis != "" {
+			aism.RuleEngine.WorkDevice(aism.Details(), ParsedAis)
+		}
+		return nil
+
+	}
+	if DataType == nmea.TypeVDO {
+		vdmo1 := sentence.(nmea.VDMVDO)
+		ParsedAis := Parse_AIVDM_VDO_PayloadInfo(aism.mainConfig.CommonConfig.GwSN,
+			vdmo1.DataType(), vdmo1.Payload)
+		if ParsedAis != "" {
+			aism.RuleEngine.WorkDevice(aism.Details(), ParsedAis)
+		}
+		return nil
+	}
+	return fmt.Errorf("Unsupported AIS Message Type:%s", DataType)
+}
+
+/*
+*
+* 解析GPS信息
+*
+ */
+func Parse_GNS_RMC() string {
+	return ""
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -521,27 +610,19 @@ func (s BaseSentence) TalkerID() string {
 	return s.Talker
 }
 
-type TagBlock struct {
-	Time         int64  `json:"time"`          // TypeUnixTime unix timestamp (unit is likely to be s, but might be ms, YMMV), parameter: -c
-	RelativeTime int64  `json:"relative_time"` // TypeRelativeTime relative time, parameter: -r
-	Destination  string `json:"destination"`   // TypeDestinationID destination identification 15 char max, parameter: -d
-	Grouping     string `json:"grouping"`      // TypeGrouping sentence grouping, parameter: -g
-	LineCount    int64  `json:"line_count"`    // TypeLineCount line count, parameter: -n
-	Source       string `json:"source"`        // TypeSourceID source identification 15 char max, parameter: -s
-	Text         string `json:"text"`          // TypeTextString valid character string, parameter -t
-}
 type RMC struct {
-	BaseSentence `json:"base"` // base
-	Time         Time          `json:"time"`       // Time Stamp
-	Validity     string        `json:"validity"`   // validity - A-ok, V-invalid
-	Latitude     float64       `json:"latitude"`   // Latitude
-	Longitude    float64       `json:"longitude"`  // Longitude
-	Speed        float64       `json:"speed"`      // Speed in knots
-	Course       float64       `json:"course"`     // True course
-	Date         Date          `json:"date"`       // Date
-	Variation    float64       `json:"variation"`  // Magnetic variation
-	FFAMode      string        `json:"ffa_mode"`   // FAA mode indicator (filled in NMEA 2.3 and later)
-	NavStatus    string        `json:"nav_status"` // Nav Status (NMEA 4.1 and later)
+	// Talker    string  `json:"talker"`     // The talker id (e.g GP)
+	Type      string  `json:"type"` // The data type (e.g GSA)
+	GwID      string  `json:"gwid"`
+	Validity  string  `json:"validity"`   // validity - A-ok, V-invalid
+	Latitude  float64 `json:"latitude"`   // Latitude
+	Longitude float64 `json:"longitude"`  // Longitude
+	Speed     float64 `json:"speed"`      // Speed in knots
+	Course    float64 `json:"course"`     // True course
+	DateTime  string  `json:"date"`       // Date
+	Variation float64 `json:"variation"`  // Magnetic variation
+	FFAMode   string  `json:"ffa_mode"`   // FAA mode indicator (filled in NMEA 2.3 and later)
+	NavStatus string  `json:"nav_status"` // Nav Status (NMEA 4.1 and later)
 }
 
 func (s RMC) String() string {
@@ -558,79 +639,123 @@ func (s RMC) String() string {
 *
  */
 type VDMVDO struct {
-	BaseSentence   `json:"base"`
-	NumFragments   int64         `json:"numFragments"`
-	FragmentNumber int64         `json:"fragmentNumber"`
-	MessageID      int64         `json:"messageId"`
-	Channel        string        `json:"channel"`
-	Payload        []byte        `json:"-"`
-	MessageContent aislib.Packet `json:"messageContent"`
+	MessageID      int64  `json:"message_id"`
+	GwID           string `json:"gwid"`
+	Type           string `json:"type"` // The data type (e.g GSA)
+	NumFragments   int64  `json:"numFragments"`
+	FragmentNumber int64  `json:"fragmentNumber"`
+	Channel        string `json:"channel"`
+	Payload        []byte `json:"-"`
 }
 type __PositionReport struct {
-	MessageID uint8   `json:"message_id,omitempty"`
-	UserID    uint32  `json:"user_id,omitempty"`
-	Longitude float64 `json:"longitude,omitempty"`
-	Latitude  float64 `json:"latitude,omitempty"`
-	Timestamp uint8   `json:"timestamp,omitempty"`
+	GwID             string  `json:"gwid"`
+	Type             string  `json:"type"` // The data type (e.g GSA)
+	MessageID        uint8   `json:"message_id"`
+	UserID           uint32  `json:"user_id"`
+	Valid            bool    `json:"valid"`
+	Spare1           uint8   `json:"spare_1"`
+	PositionAccuracy bool    `json:"position_accuracy"`
+	Longitude        float64 `json:"longitude"`
+	Latitude         float64 `json:"latitude"`
+	Cog              float64 `json:"cog"`
+	TrueHeading      uint16  `json:"true_heading"`
+	Timestamp        uint8   `json:"timestamp"`
 }
 
-// StaticDataReportA is the A part of message 24
-type __StaticDataReportA struct {
-	Valid bool   `json:"valid,omitempty"`
-	Name  string `json:"name,omitempty"`
+// AIS 规范的一个扩展报文
+type __AIVDM_ExtendedClassBPositionReport struct {
+	Type        string  `json:"type"` // The data type (e.g GSA)
+	GwID        string  `json:"gwid"`
+	MessageID   uint8   `json:"message_id"`
+	UserID      uint32  `json:"user_id"`
+	Name        string  `json:"name"`
+	Sog         float64 `json:"sog"`
+	Longitude   float64 `json:"longitude"`
+	Latitude    float64 `json:"latitude"`
+	Cog         float64 `json:"cog"`
+	TrueHeading uint16  `json:"true_heading"`
+	Timestamp   uint8   `json:"timestamp"`
+}
+type __AIVDM_StaticDataReport struct {
+	Type           string `json:"type"` // The data type (e.g GSA)
+	GwID           string `json:"gwid"`
+	MessageID      uint8  `json:"message_id"`
+	UserID         uint32 `json:"user_id"`
+	PartNumber     bool   `json:"part_number"`
+	Valid          bool   `json:"valid"`
+	ShipType       uint8  `json:"ship_type"`
+	VendorIDName   string `json:"vendor_id_name"`
+	VenderIDModel  uint8  `json:"vender_id_model"`
+	VenderIDSerial uint32 `json:"vender_id_serial"`
+	CallSign       string `json:"call_sign"`
 }
 
-// StaticDataReportB is the B part of message 24
-type __StaticDataReportB struct {
-	Valid          bool   `json:"valid,omitempty"`
-	ShipType       uint8  `json:"ship_type,omitempty"`
-	VendorIDName   string `json:"vendor_id_name,omitempty"`
-	VenderIDModel  uint8  `json:"vender_id_model,omitempty"`
-	VenderIDSerial uint32 `json:"vender_id_serial,omitempty"`
-	CallSign       string `json:"call_sign,omitempty"`
-	FixType        uint8  `json:"fix_type,omitempty"`
-	Spare          uint8  `json:"spare,omitempty"`
-}
-
-type __StaticDataReport struct {
-	MessageID  uint8               `json:"message_id,omitempty"`
-	UserID     uint32              `json:"user_id,omitempty"`
-	Valid      bool                `json:"valid,omitempty"`
-	Reserved   uint8               `json:"reserved,omitempty"`
-	PartNumber bool                `json:"part_number,omitempty"`
-	ReportA    __StaticDataReportA `json:"report_a,omitempty"`
-	ReportB    __StaticDataReportB `json:"report_b,omitempty"`
-}
-
-func (v VDMVDO) PayloadInfo() string {
+func Parse_AIVDM_VDO_PayloadInfo(GwID, Type string, Payload []byte) string {
 	__AisCodec.DropSpace = true
-	pkt := __AisCodec.DecodePacket(v.Payload)
-	// aislib.StandardClassBPositionReport
+	pkt := __AisCodec.DecodePacket(Payload)
 	var _Type reflect.Type
 	if _Type = reflect.TypeOf(pkt); _Type == nil {
 		return ""
 	}
 	// 上报位置
-	if _Type.Name() == "StandardClassBPositionReport" {
+	TypeName := _Type.Name()
+	if TypeName == "StandardClassBPositionReport" {
 		spr := pkt.(aislib.StandardClassBPositionReport)
-		pos := __PositionReport{}
-		copier.Copy(&pos, &spr)
-		bytes, _ := json.Marshal(pos)
+		PositionReport := __PositionReport{
+			Type:             Type,
+			GwID:             GwID,
+			MessageID:        spr.MessageID,
+			UserID:           spr.UserID,
+			Valid:            spr.Valid,
+			Spare1:           spr.Spare1,
+			PositionAccuracy: spr.PositionAccuracy,
+			Longitude:        float64(spr.Latitude),
+			Latitude:         float64(spr.Latitude),
+			Cog:              float64(spr.Cog),
+			TrueHeading:      spr.TrueHeading,
+			Timestamp:        spr.Timestamp,
+		}
+		bytes, _ := json.Marshal(PositionReport)
 		return string(bytes)
 	}
 	// "StaticDataReport"
-	if _Type.Name() == "StaticDataReport" {
+	if TypeName == "StaticDataReport" {
 		spr := pkt.(aislib.StaticDataReport)
-		data := __StaticDataReport{}
-		copier.Copy(&data, &spr)
+		data := __AIVDM_StaticDataReport{
+			Type:           Type,
+			GwID:           GwID,
+			UserID:         spr.UserID,
+			MessageID:      spr.MessageID,
+			PartNumber:     spr.PartNumber,
+			Valid:          spr.Valid,
+			ShipType:       spr.ReportB.ShipType,
+			VendorIDName:   spr.ReportB.VendorIDName,
+			VenderIDModel:  spr.ReportB.VenderIDModel,
+			VenderIDSerial: spr.ReportB.VenderIDSerial,
+			CallSign:       spr.ReportB.CallSign,
+		}
+		bytes, _ := json.Marshal(data)
+		return string(bytes)
+	}
+	if TypeName == "ExtendedClassBPositionReport" {
+		spr := pkt.(aislib.ExtendedClassBPositionReport)
+		data := __AIVDM_ExtendedClassBPositionReport{
+			Type:        Type,
+			UserID:      spr.UserID,
+			GwID:        GwID,
+			MessageID:   spr.MessageID,
+			Sog:         float64(spr.Sog),
+			Longitude:   float64(spr.Longitude),
+			Latitude:    float64(spr.Latitude),
+			Cog:         float64(spr.Cog),
+			TrueHeading: spr.TrueHeading,
+			Timestamp:   spr.Timestamp,
+			Name:        spr.Name,
+		}
 		bytes, _ := json.Marshal(data)
 		return string(bytes)
 	}
 	return ""
-}
-func (s VDMVDO) String() string {
-	bytes, _ := json.Marshal(s)
-	return string(bytes)
 }
 
 type Time struct {
@@ -657,34 +782,25 @@ type Date struct {
 
 // String representation of date
 func (d Date) String() string {
-	return fmt.Sprintf("%02d/%02d/%02d", d.DD, d.MM, d.YY)
+	return fmt.Sprintf("%02d-%02d-%02d", d.DD, d.MM, d.YY)
 }
 
+/*
+*
+*经纬度
+*
+ */
 type GNS struct {
-	BaseSentence
-	Time      Time // UTC of position
-	Latitude  float64
-	Longitude float64
-	// FAA mode indicator for each satellite navigation system (constellation) supported by device.
-	//
-	// May be up to six characters (according to GPSD).
-	// '1' - GPS
-	// '2' - GLONASS
-	// '3' - Galileo
-	// '4' - BDS
-	// '5' - QZSS
-	// '6' - NavIC (IRNSS)
-	Mode       []string
-	SVs        int64   // Total number of satellites in use, 00-99
-	HDOP       float64 // Horizontal Dilution of Precision
-	Altitude   float64 // Antenna altitude, meters, re:mean-sea-level(geoid).
-	Separation float64 // Geoidal separation meters
-	Age        float64 // Age of differential data
-	Station    int64   // Differential reference station ID
-	NavStatus  string  // Navigation status (NMEA 4.1+). See NavStats* (`NavStatusAutonomous` etc) constants for possible values.
-}
-
-func (s GNS) String() string {
-	bytes, _ := json.Marshal(s)
-	return string(bytes)
+	Type       string   `json:"type"`
+	GwID       string   `json:"gwid"`
+	Latitude   float64  `json:"latitude"`
+	Longitude  float64  `json:"longitude"`
+	Mode       []string `json:"mode"`
+	SVs        int64    `json:"s_vs"`
+	HDOP       float64  `json:"hdop"`
+	Altitude   float64  `json:"altitude"`
+	Separation float64  `json:"separation"`
+	Age        float64  `json:"age"`
+	Station    int64    `json:"station"`
+	NavStatus  string   `json:"nav_status"`
 }

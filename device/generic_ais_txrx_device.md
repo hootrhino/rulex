@@ -1,4 +1,6 @@
 # 通用 AIS 数据接收处理器
+注意：*这个组件是针对一款特殊AIS设备开发的专有支持，不具备通用性，请不要随意在生产中使用！*
+
 ## 简介
 AIS是自动识别系统（Automatic Identification System）的缩写。它是一种用于船舶和船舶交通管理的技术，旨在提高航海安全、保护环境和增强航运效率。
 
@@ -67,8 +69,24 @@ AIS（Automatic Identification System）是一种用于船舶自动识别和通�
 8. **目标状态消息 (Safety-Related Message)**:
    - 消息类型: 18
    - 示例: `!AIVDM,1,1,,A,853OvPP02F91ACPFJ5Dr:0<4h@E`
+## 区别
+AIVDM (Automatic Identification System Data Message) 和 AIVDO (Automatic Identification System Data Object) 是两种在自动识别系统 (AIS) 中使用的数据格式。AIS 是一个用于船舶间通信的系统，它可以帮助船舶彼此识别和交换信息。 AIVDM 和 AIVDO 的主要区别在于它们所传输的信息内容和格式。
+### 信息内容：
+- AIVDM：AIVDM 消息用于传输更复杂的数据，例如船舶的详细信息、位置、速度、航行状态等。
+- AIVDO：AIVDO 对象用于传输简单的数据，例如文本消息、图像或音频文件等。
+### 数据格式：
+- AIVDM：AIVDM 消息使用一种称为“分块”(segmenting) 的方法来传输数据。数据被分成多个块，每个块都包含有关消息类型、消息长度和其他元数据的信息。
+- AIVDO：AIVDO 对象使用一种更加简单和直接的数据格式。它们不使用分块方法，而是直接传输数据。
+
+### 应用场景：
+- AIVDM：由于其传输的复杂数据，AIVDM 消息通常在需要交换大量船舶信息的情况下使用，例如在港口或近海区域。
+- AIVDO：AIVDO 对象更适合用于传输少量的数据，例如在简单的文本消息或文件传输情况下。
+## 设备支持：
+- AIVDM：许多 AIS 设备都支持 AIVDM 消息，因为它是在 AIS 系统中最常用的数据格式。
+- AIVDO：虽然一些 AIS 设备可能支持 AIVDO，但它不如 AIVDM 普及，并且通常在需要传输特定类型数据的情况下使用。
 
 以上只是一些常见的AIS消息类型及其示例。实际上，AIS有多种不同类型的消息，每种消息类型都包含特定的信息，例如船舶位置、速度、航向、船名等。消息的格式和字段根据AIS规范进行编码。
+
 ## 配置
 本插件是基于TCP来传输AIS报文，公共配置如下：
 ```go
