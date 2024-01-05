@@ -86,7 +86,8 @@ func SiemensSheetPageList(c *gin.Context, ruleEngine typex.RuleX) {
 	db := interdb.DB()
 	tx := db.Scopes(service.Paginate(*pager))
 	var count int64
-	err1 := interdb.DB().Model(&model.MSiemensDataPoint{}).Count(&count).Error
+	err1 := interdb.DB().Model(&model.MSiemensDataPoint{}).
+		Where("device_uuid=?", deviceUuid).Count(&count).Error
 	if err1 != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err1))
 		return

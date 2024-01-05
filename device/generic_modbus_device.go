@@ -254,10 +254,10 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 				}
 				n := 0
 				var err error
-				if mdev.mainConfig.CommonConfig.Mode == "TCP" {
+				if mdev.mainConfig.CommonConfig.Mode == "UART" {
 					n, err = mdev.RTURead(buffer)
 				}
-				if mdev.mainConfig.CommonConfig.Mode == "UART" {
+				if mdev.mainConfig.CommonConfig.Mode == "TCP" {
 					n, err = mdev.TCPRead(buffer)
 				}
 				if err != nil {
@@ -462,6 +462,7 @@ func (mdev *generic_modbus_device) modbusRead(buffer []byte) (int, error) {
 			if err != nil {
 				count--
 				glogger.GLogger.Error(err)
+				mdev.retryTimes++
 				continue
 			}
 			Value := covertEmptyHex(results)
@@ -487,6 +488,8 @@ func (mdev *generic_modbus_device) modbusRead(buffer []byte) (int, error) {
 			if err != nil {
 				count--
 				glogger.GLogger.Error(err)
+				mdev.retryTimes++
+				continue
 			}
 			Value := covertEmptyHex(results)
 			Reg := common.RegisterRW{
@@ -512,6 +515,8 @@ func (mdev *generic_modbus_device) modbusRead(buffer []byte) (int, error) {
 			if err != nil {
 				count--
 				glogger.GLogger.Error(err)
+				mdev.retryTimes++
+				continue
 			}
 			Value := covertEmptyHex(results)
 			Reg := common.RegisterRW{

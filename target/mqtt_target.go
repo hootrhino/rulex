@@ -116,7 +116,7 @@ func (mq *mqttOutEndTarget) Details() *typex.OutEnd {
 
 func (mq *mqttOutEndTarget) To(data interface{}) (interface{}, error) {
 	if mq.client != nil {
-		glogger.GLogger.Debug("mqtt Target publish:", mq.mainConfig.PubTopic, 1, false, data)
+		// glogger.GLogger.Debug("mqtt Target publish:", mq.mainConfig.PubTopic, 1, false, data)
 		token := mq.client.Publish(mq.mainConfig.PubTopic, 1, false, data)
 		return token.Error(), nil
 	}
