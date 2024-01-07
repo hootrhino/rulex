@@ -23,6 +23,7 @@ import (
 	"errors"
 	"fmt"
 	golog "log"
+	"math"
 
 	"time"
 
@@ -84,7 +85,10 @@ type ModbusPoint struct {
 	Address   uint16 `json:"address"`
 	Frequency int64  `json:"frequency"`
 	Quantity  uint16 `json:"quantity"`
-	Value     string `json:"value,omitempty"`
+	Value     string `json:"value,omitempty"` // 运行时数据
+	Type      string `json:"type"`            // 运行时数据
+	Order     string `json:"order"`           // 运行时数据
+
 }
 type generic_modbus_device struct {
 	typex.XStatus
@@ -548,9 +552,101 @@ func (mdev *generic_modbus_device) RTURead(buffer []byte) (int, error) {
 func (mdev *generic_modbus_device) TCPRead(buffer []byte) (int, error) {
 	return mdev.modbusRead(buffer)
 }
+
+/*
+*
+* TODO 使用ParseModbusSignedValue来解析
+*
+ */
 func covertEmptyHex(v []byte) string {
 	if len(v) < 1 {
 		return ""
 	}
 	return hex.EncodeToString(v)
+}
+
+/*
+*
+*解析西门子的值 有符号
+*
+ */
+func ParseModbusSignedValue(DataBlockType string, DataBlockOrder string, byteSlice [4]byte) string {
+	switch DataBlockType {
+	case "RAW":
+		{
+			return hex.EncodeToString(byteSlice[:])
+		}
+	case "BYTE":
+		{
+			return fmt.Sprintf("%d", byteSlice[0])
+		}
+	case "SHORT":
+		{
+			// AB: 1234
+			// BA: 3412
+			if DataBlockOrder == "AB" {
+				uint16Value := uint16(byteSlice[1]) | uint16(byteSlice[0])<<8
+				return fmt.Sprintf("%d", uint16Value)
+
+			}
+			if DataBlockOrder == "BA" {
+				uint16Value := uint16(byteSlice[0]) | uint16(byteSlice[1])<<8
+				return fmt.Sprintf("%d", uint16Value)
+			}
+
+		}
+	case "INT":
+		// ABCD
+		if DataBlockOrder == "ABCD" {
+			intValue := int32(byteSlice[0]) | int32(byteSlice[1])<<8 |
+				int32(byteSlice[2])<<16 | int32(byteSlice[3])<<24
+			return fmt.Sprintf("%d", intValue)
+
+		}
+		if DataBlockOrder == "CDAB" {
+			slice := [4]byte{}
+			slice[0], slice[1] = byteSlice[2], byteSlice[3]
+			slice[2], slice[3] = byteSlice[0], byteSlice[1]
+			intValue := int32(slice[0]) | int32(slice[1])<<8 |
+				int32(slice[2])<<16 | int32(slice[3])<<24
+			return fmt.Sprintf("%d", intValue)
+		}
+		// 大端字节序转换为int32
+		if DataBlockOrder == "DCBA" {
+			intValue := int32(byteSlice[3]) | int32(byteSlice[2])<<8 |
+				int32(byteSlice[1])<<16 | int32(byteSlice[0])<<24
+			return fmt.Sprintf("%d", intValue)
+		}
+	case "FLOAT": // 3.14159:DCBA -> 40490FDC
+		// ABCD
+		if DataBlockOrder == "ABCD" {
+			intValue := int32(byteSlice[0]) | int32(byteSlice[1])<<8 |
+				int32(byteSlice[2])<<16 | int32(byteSlice[3])<<24
+			floatValue := float32(math.Float32frombits(uint32(intValue)))
+			return fmt.Sprintf("%f", floatValue)
+		}
+		if DataBlockOrder == "CDAB" {
+			intValue := int32(byteSlice[2]) | int32(byteSlice[3])<<8 |
+				int32(byteSlice[0])<<16 | int32(byteSlice[1])<<24
+			floatValue := float32(math.Float32frombits(uint32(intValue)))
+			return fmt.Sprintf("%f", floatValue)
+		}
+		// 大端字节序转换为int32
+		if DataBlockOrder == "DCBA" {
+			intValue := int32(byteSlice[3]) | int32(byteSlice[2])<<8 |
+				int32(byteSlice[1])<<16 | int32(byteSlice[0])<<24
+			floatValue := float32(math.Float32frombits(uint32(intValue)))
+			return fmt.Sprintf("%f", floatValue)
+		}
+	}
+	return ""
+}
+
+/*
+*
+*解析西门子的值 无符号
+*
+ */
+func ParseModbusUSignedValue(DataBlockType string, DataBlockOrder string, byteSlice [4]byte) string {
+	return ""
 }

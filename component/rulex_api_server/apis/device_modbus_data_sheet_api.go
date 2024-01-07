@@ -31,7 +31,6 @@ import (
 	"github.com/hootrhino/rulex/component/rulex_api_server/service"
 	"github.com/hootrhino/rulex/typex"
 	"github.com/hootrhino/rulex/utils"
-	"github.com/jinzhu/copier"
 	"github.com/xuri/excelize/v2"
 )
 
@@ -48,6 +47,9 @@ type ModbusPointVo struct {
 	Status        int     `json:"status"`        // 运行时数据
 	LastFetchTime uint64  `json:"lastFetchTime"` // 运行时数据
 	Value         string  `json:"value"`         // 运行时数据
+	Type          string  `json:"type"`          // 运行时数据
+	Order         string  `json:"order"`         // 运行时数据
+
 }
 
 /*
@@ -197,20 +199,38 @@ func ModbusSheetUpdate(c *gin.Context, ruleEngine typex.RuleX) {
 	}
 	for _, ModbusDataPoint := range form.ModbusDataPoints {
 		if ModbusDataPoint.UUID == "" {
-			NewRow := model.MModbusDataPoint{}
-			copier.Copy(&NewRow, &ModbusDataPoint)
-			NewRow.DeviceUuid = ModbusDataPoint.DeviceUUID
-			NewRow.UUID = utils.ModbusPointUUID()
+			NewRow := model.MModbusDataPoint{
+				UUID:       utils.ModbusPointUUID(),
+				DeviceUuid: ModbusDataPoint.DeviceUUID,
+				Tag:        ModbusDataPoint.Tag,
+				Alias:      ModbusDataPoint.Alias,
+				Function:   ModbusDataPoint.Function,
+				SlaverId:   ModbusDataPoint.SlaverId,
+				Address:    ModbusDataPoint.Address,
+				Frequency:  ModbusDataPoint.Frequency,
+				Quantity:   ModbusDataPoint.Quantity,
+				Type:       ModbusDataPoint.Type,
+				Order:      ModbusDataPoint.Order,
+			}
 			err0 := service.InsertModbusPointPosition(NewRow)
 			if err0 != nil {
 				c.JSON(common.HTTP_OK, common.Error400(err0))
 				return
 			}
 		} else {
-			OldRow := model.MModbusDataPoint{}
-			copier.Copy(&OldRow, &ModbusDataPoint)
-			OldRow.DeviceUuid = ModbusDataPoint.DeviceUUID
-			OldRow.UUID = ModbusDataPoint.UUID
+			OldRow := model.MModbusDataPoint{
+				UUID:       ModbusDataPoint.UUID,
+				DeviceUuid: ModbusDataPoint.DeviceUUID,
+				Tag:        ModbusDataPoint.Tag,
+				Alias:      ModbusDataPoint.Alias,
+				Function:   ModbusDataPoint.Function,
+				SlaverId:   ModbusDataPoint.SlaverId,
+				Address:    ModbusDataPoint.Address,
+				Frequency:  ModbusDataPoint.Frequency,
+				Quantity:   ModbusDataPoint.Quantity,
+				Type:       ModbusDataPoint.Type,
+				Order:      ModbusDataPoint.Order,
+			}
 			err0 := service.UpdateModbusPoint(OldRow)
 			if err0 != nil {
 				c.JSON(common.HTTP_OK, common.Error400(err0))
@@ -300,7 +320,7 @@ func parseModbusPointExcel(
 	// 判断首行标头
 	// tag, alias, function, frequency, slaverId, address, quality
 	err1 := errors.New("invalid Sheet Header")
-	if len(rows[0]) < 7 {
+	if len(rows[0]) < 9 {
 		return nil, err1
 	}
 	if rows[0][0] != "tag" ||
@@ -309,7 +329,9 @@ func parseModbusPointExcel(
 		rows[0][3] != "frequency" ||
 		rows[0][4] != "slaverId" ||
 		rows[0][5] != "address" ||
-		rows[0][6] != "quality" {
+		rows[0][6] != "quality" ||
+		rows[0][7] != "type" ||
+		rows[0][8] != "order" {
 		return nil, err1
 	}
 
@@ -324,6 +346,8 @@ func parseModbusPointExcel(
 		slaverId, _ := strconv.ParseInt(row[4], 10, 8)
 		address, _ := strconv.ParseUint(row[5], 10, 16)
 		quantity, _ := strconv.ParseUint(row[6], 10, 16)
+		Type := row[7]
+		Order := row[8]
 		Function := int(function)
 		SlaverId := byte(slaverId)
 		Address := uint16(address)
@@ -339,6 +363,8 @@ func parseModbusPointExcel(
 			Address:    &Address,
 			Frequency:  &Frequency, //ms
 			Quantity:   &Quantity,
+			Type:       Type,
+			Order:      Order,
 		}
 		list = append(list, model)
 	}
