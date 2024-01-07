@@ -27,4 +27,6 @@ type MModbusDataPoint struct {
 	Address    *uint16 `gorm:"not null" json:"address"`
 	Frequency  *int64  `gorm:"not null" json:"frequency"`
 	Quantity   *uint16 `gorm:"not null" json:"quantity"`
+	Type       string  `gorm:"not null"` // 数据类型
+	Order      string  `gorm:"not null"` // 字节序
 }
