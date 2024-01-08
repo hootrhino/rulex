@@ -115,6 +115,8 @@ func ModbusSheetPageList(c *gin.Context, ruleEngine typex.RuleX) {
 			Address:       record.Address,
 			Frequency:     record.Frequency,
 			Quantity:      record.Quantity,
+			Type:          record.Type,
+			Order:         record.Order,
 			LastFetchTime: Value.LastFetchTime, // 运行时
 			Value:         Value.Value,         // 运行时
 		}
