@@ -17,7 +17,7 @@
 }
 ```
 ## 测试
-勃播放地址:`ws://127.0.0.1:9400/ws?token=WebRtspPlayer&liveId=a97607e47c81d43dba8ef6fa48a2cd45`,其中：
+播放地址:`ws://127.0.0.1:9400/ws?token=WebRtspPlayer&liveId=a97607e47c81d43dba8ef6fa48a2cd45`,其中：
 - URL: 固定路径`ws://127.0.0.1:9400/ws`
 - token：固定值`WebRtspPlayer`
 - liveId：播放源的名称的**md5Hash**,例如`USB2.0 PC CAMERA`的 liveId 是 `a97607e47c81d43dba8ef6fa48a2cd45`。

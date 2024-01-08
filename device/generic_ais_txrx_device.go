@@ -577,38 +577,9 @@ func (aism *AISDeviceMaster) ParseAisToJson(rawAiSString string) error {
 	return fmt.Errorf("Unsupported AIS Message Type:%s", DataType)
 }
 
-/*
-*
-* 解析GPS信息
-*
- */
-func Parse_GNS_RMC() string {
-	return ""
-}
-
 //--------------------------------------------------------------------------------------------------
 // AIS 结构, 下面这些结构是从nema包里面拿过来的，删除了一些无用字段，主要为了方便JSON编码操作
 //--------------------------------------------------------------------------------------------------
-
-type BaseSentence struct {
-	Talker string `json:"talker"` // The talker id (e.g GP)
-	Type   string `json:"type"`   // The data type (e.g GSA)
-}
-
-// Prefix returns the talker and type of message
-func (s BaseSentence) Prefix() string {
-	return s.Talker + s.Type
-}
-
-// DataType returns the type of the message
-func (s BaseSentence) DataType() string {
-	return s.Type
-}
-
-// TalkerID returns the talker of the message
-func (s BaseSentence) TalkerID() string {
-	return s.Talker
-}
 
 type RMC struct {
 	// Talker    string  `json:"talker"`     // The talker id (e.g GP)
