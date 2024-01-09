@@ -29,28 +29,28 @@ func Test_parse_siemens_address(t *testing.T) {
 	DBX := "DB2.DBX34"
 
 	{
-		V, err := utils.ParseADDR_I(I)
+		V, err := utils.ParseSiemensDB(I)
 		if err != nil {
 			t.Fatal(err)
 		}
 		t.Log(V)
 	}
 	{
-		V, err := utils.ParseADDR_Q(Q)
+		V, err := utils.ParseSiemensDB(Q)
 		if err != nil {
 			t.Fatal(err)
 		}
 		t.Log(V)
 	}
 	{
-		V, err := utils.ParseDB(DBD)
+		V, err := utils.ParseSiemensDB(DBD)
 		if err != nil {
 			t.Fatal(err)
 		}
 		t.Log(V)
 	}
 	{
-		V, err := utils.ParseDB(DBX)
+		V, err := utils.ParseSiemensDB(DBX)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -66,28 +66,28 @@ func Test_parse_siemens_address_error(t *testing.T) {
 	DBX := "DB2"
 
 	{
-		V, err := utils.ParseADDR_I(I)
+		V, err := utils.ParseSiemensDB(I)
 		if err != nil {
 			t.Log(err)
 		}
 		t.Log(V)
 	}
 	{
-		V, err := utils.ParseADDR_Q(Q)
+		V, err := utils.ParseSiemensDB(Q)
 		if err != nil {
 			t.Log(err)
 		}
 		t.Log(V)
 	}
 	{
-		V, err := utils.ParseDB(DBD)
+		V, err := utils.ParseSiemensDB(DBD)
 		if err != nil {
 			t.Log(err)
 		}
 		t.Log(V)
 	}
 	{
-		V, err := utils.ParseDB(DBX)
+		V, err := utils.ParseSiemensDB(DBX)
 		if err != nil {
 			t.Log(err)
 		}
