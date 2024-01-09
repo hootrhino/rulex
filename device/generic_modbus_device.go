@@ -567,21 +567,10 @@ func (mdev *generic_modbus_device) TCPRead(buffer []byte) (int, error) {
 
 /*
 *
-* TODO 使用ParseModbusSignedValue来解析
+*解析 Modbus 的值 有符号,
+注意：如果想解析值，必须不能超过4字节，目前常见的数一般都是4字节，也许后期会有8字节，但是目前暂时不支持
 *
- */
-func covertEmptyHex(v []byte) string {
-	if len(v) < 1 {
-		return ""
-	}
-	return hex.EncodeToString(v)
-}
-
-/*
-*
-*解析西门子的值 有符号
-*
- */
+*/
 func ParseModbusSignedValue(DataBlockType string, DataBlockOrder string, byteSlice [4]byte) string {
 	switch DataBlockType {
 	case "RAW":

@@ -4,7 +4,6 @@ import (
 	"crypto/md5"
 	"fmt"
 	"io"
-	"os"
 	"os/exec"
 	"regexp"
 	"syscall"
@@ -15,14 +14,14 @@ import (
 	"github.com/hootrhino/rulex/utils"
 )
 
+// RTSP URL格式= rtsp://<username>:<password>@<ip>:<port>，
 type _MainConfig struct {
-	InputMode   string `json:"inputMode" validate:"required"` // 视频输入模式：RTSP | LOCAL
-	LocalDevice string `json:"device"`                        // 本地视频设备路径，在输入模式=LOCAL时生效
-	// RTSP URL格式= rtsp://<username>:<password>@<ip>:<port>，
-	RtspUrl    string `json:"rtspUrl"`                        // 远程视频设备地址，在输入模式=RTSP时生效
-	OutputMode string `json:"outputMode" validate:"required"` // 输出模式：JPEG_STREAM | H264_STREAM
-	outputAddr string // 输出地址, 格式为: "Ip:Port",例如127.0.0.1:7890
-	playAddr   string // 输出地址, 格式为: "Ip:Port",例如127.0.0.1:7890
+	InputMode   string `json:"inputMode" validate:"required"`  // 视频输入模式：RTSP | LOCAL
+	LocalDevice string `json:"device"`                         // 本地视频设备路径，在输入模式=LOCAL时生效
+	RtspUrl     string `json:"rtspUrl"`                        // 远程视频设备地址，在输入模式=RTSP时生效
+	OutputMode  string `json:"outputMode" validate:"required"` // 输出模式：JPEG_STREAM | H264_STREAM
+	outputAddr  string // 输出地址, 格式为: "Ip:Port",例如127.0.0.1:7890
+	playAddr    string // 输出地址, 格式为: "Ip:Port",例如127.0.0.1:7890
 }
 
 // 摄像头
@@ -100,9 +99,7 @@ func (vc *videoCamera) Start(cctx typex.CCTX) error {
 			vc.mainConfig.outputAddr = url2
 			vc.status = typex.DEV_UP
 		}
-
 	}
-
 	return nil
 }
 
@@ -180,13 +177,13 @@ func (vc *videoCamera) startFFMPEGProcess(rtspUrl, pushAddr string) {
 	}
 
 	paramsRtsp := []string{
-		// rtsp://192.168.199.243:554/av0_0
 		"-hide_banner",
-		"-framerate", "24",
+		"-r", "24",
 		"-rtsp_transport",
 		"tcp",
 		"-re",
 		"-i",
+		// rtsp://192.168.199.243:554/av0_0
 		fmt.Sprintf("'%s'", rtspUrl),
 		"-q",
 		"5",
@@ -200,7 +197,7 @@ func (vc *videoCamera) startFFMPEGProcess(rtspUrl, pushAddr string) {
 		"-s",
 		"1920x1080",
 		// http://127.0.0.1:9400/stream/ffmpegPush?liveId=147a6d7ae5a785f6e3ea90f25d36c63e
-		pushAddr,
+		fmt.Sprintf("'%s'", pushAddr),
 	}
 	var cmd *exec.Cmd
 	if vc.mainConfig.InputMode == "LOCAL" {
@@ -215,10 +212,9 @@ func (vc *videoCamera) startFFMPEGProcess(rtspUrl, pushAddr string) {
 	}
 	glogger.GLogger.Info("Start FFMPEG ffmpegProcess with:", cmd.String())
 	// 启动 FFmpeg 推流
-	cmd.Env = os.Environ()
 	vc.ffmpegProcess = cmd
-	if output, err := cmd.CombinedOutput(); err != nil {
-		glogger.GLogger.Error("error: ", err, ", output: ", string(output))
+	if err := cmd.Run(); err != nil {
+		glogger.GLogger.Error("error: ", err, ", output: ", err)
 		return
 	}
 	glogger.GLogger.Info("stop Video Stream Endpoint:", rtspUrl)
