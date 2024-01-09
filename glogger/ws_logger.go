@@ -12,7 +12,6 @@ import (
 )
 
 var private_GRealtimeLogger *RealTimeLogger
-var lock sync.Mutex = sync.Mutex{}
 
 type wsLogHook struct {
 	levels []logrus.Level
@@ -171,7 +170,12 @@ func WsLogger(c *gin.Context) {
 			}
 			_, _, err := wsConn.ReadMessage()
 			if err != nil {
-				break
+				GLogger.Error("GRealtimeLogger error:", wsConn.RemoteAddr().String(), ", Error:", err)
+				wsConn.Close()
+				private_GRealtimeLogger.lock.Lock()
+				delete(private_GRealtimeLogger.Clients, wsConn.RemoteAddr().String())
+				private_GRealtimeLogger.lock.Unlock()
+				return
 			}
 			private_GRealtimeLogger.lock.Lock()
 			err = wsConn.WriteMessage(websocket.PingMessage, []byte{})

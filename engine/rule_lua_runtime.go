@@ -110,6 +110,7 @@ func LoadBuildInLuaLib(e typex.RuleX, r *typex.Rule) {
 		// String
 		r.AddLib(e, "string", "T2Str", rulexlib.T2Str(e))
 		r.AddLib(e, "string", "Bin2Str", rulexlib.Bin2Str(e))
+		r.AddLib(e, "string", "MakeUid", rulexlib.MakeUUID(e))
 	}
 	//------------------------------------------------------------------------
 	// 十六进制编码处理
