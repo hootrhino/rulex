@@ -17,6 +17,8 @@ jobs:
           go-version: 1.20.1
       - name: Linux 构建测试
         run: |
+          mkdir ./component/rulex_api_server/server/www
+          echo "hello">./component/rulex_api_server/server/www/index.html
           sudo apt update -y
           sudo apt install jq cloc protobuf-compiler \
                gcc-mingw-w64-x86-64 \
