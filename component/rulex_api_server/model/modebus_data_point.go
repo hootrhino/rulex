@@ -18,15 +18,16 @@ package model
 // modbus数据点位表
 type MModbusDataPoint struct {
 	RulexModel `json:"-"`
-	UUID       string  `gorm:"not null" json:"uuid"`
-	DeviceUuid string  `gorm:"not null" json:"device_uuid"`
-	Tag        string  `gorm:"not null" json:"tag"`
-	Alias      string  `gorm:"not null" json:"alias"`
-	Function   *int    `gorm:"not null" json:"function"`
-	SlaverId   *byte   `gorm:"not null" json:"slaverId"`
-	Address    *uint16 `gorm:"not null" json:"address"`
-	Frequency  *int64  `gorm:"not null" json:"frequency"`
-	Quantity   *uint16 `gorm:"not null" json:"quantity"`
-	Type       string  `gorm:"not null"` // 数据类型
-	Order      string  `gorm:"not null"` // 字节序
+	UUID       string   `gorm:"not null"`
+	DeviceUuid string   `gorm:"not null"`
+	Tag        string   `gorm:"not null"`
+	Alias      string   `gorm:"not null"`
+	Function   *int     `gorm:"not null"`
+	SlaverId   *byte    `gorm:"not null"`
+	Address    *uint16  `gorm:"not null"`
+	Frequency  *int64   `gorm:"not null"`
+	Quantity   *uint16  `gorm:"not null"`
+	Type       string   `gorm:"not null"` // 数据类型
+	Order      string   `gorm:"not null"` // 字节序
+	Weight     *float64 `gorm:"not null"` // 权重
 }

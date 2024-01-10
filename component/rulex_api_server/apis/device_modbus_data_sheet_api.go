@@ -35,20 +35,21 @@ import (
 )
 
 type ModbusPointVo struct {
-	UUID          string  `json:"uuid,omitempty"`
-	DeviceUUID    string  `json:"device_uuid"`
-	Tag           string  `json:"tag"`
-	Alias         string  `json:"alias"`
-	Function      *int    `json:"function"`
-	SlaverId      *byte   `json:"slaverId"`
-	Address       *uint16 `json:"address"`
-	Frequency     *int64  `json:"frequency"`
-	Quantity      *uint16 `json:"quantity"`
-	Status        int     `json:"status"`        // 运行时数据
-	LastFetchTime uint64  `json:"lastFetchTime"` // 运行时数据
-	Value         string  `json:"value"`         // 运行时数据
-	Type          string  `json:"type"`          // 运行时数据
-	Order         string  `json:"order"`         // 运行时数据
+	UUID          string   `json:"uuid,omitempty"`
+	DeviceUUID    string   `json:"device_uuid"`
+	Tag           string   `json:"tag"`
+	Alias         string   `json:"alias"`
+	Function      *int     `json:"function"`
+	SlaverId      *byte    `json:"slaverId"`
+	Address       *uint16  `json:"address"`
+	Frequency     *int64   `json:"frequency"`
+	Quantity      *uint16  `json:"quantity"`
+	Type          string   `json:"type"`          // 数据类型
+	Order         string   `json:"order"`         // 字节序
+	Weight        *float64 `json:"weight"`        // 权重
+	Status        int      `json:"status"`        // 运行时数据
+	LastFetchTime uint64   `json:"lastFetchTime"` // 运行时数据
+	Value         string   `json:"value"`         // 运行时数据
 
 }
 
@@ -117,6 +118,7 @@ func ModbusSheetPageList(c *gin.Context, ruleEngine typex.RuleX) {
 			Quantity:      record.Quantity,
 			Type:          record.Type,
 			Order:         record.Order,
+			Weight:        record.Weight,
 			LastFetchTime: Value.LastFetchTime, // 运行时
 			Value:         Value.Value,         // 运行时
 		}
@@ -213,6 +215,7 @@ func ModbusSheetUpdate(c *gin.Context, ruleEngine typex.RuleX) {
 				Quantity:   ModbusDataPoint.Quantity,
 				Type:       ModbusDataPoint.Type,
 				Order:      ModbusDataPoint.Order,
+				Weight:     ModbusDataPoint.Weight,
 			}
 			err0 := service.InsertModbusPointPosition(NewRow)
 			if err0 != nil {
@@ -232,6 +235,7 @@ func ModbusSheetUpdate(c *gin.Context, ruleEngine typex.RuleX) {
 				Quantity:   ModbusDataPoint.Quantity,
 				Type:       ModbusDataPoint.Type,
 				Order:      ModbusDataPoint.Order,
+				Weight:     ModbusDataPoint.Weight,
 			}
 			err0 := service.UpdateModbusPoint(OldRow)
 			if err0 != nil {
@@ -322,7 +326,7 @@ func parseModbusPointExcel(
 	// 判断首行标头
 	// tag, alias, function, frequency, slaverId, address, quality
 	err1 := errors.New("invalid Sheet Header")
-	if len(rows[0]) < 9 {
+	if len(rows[0]) < 10 {
 		return nil, err1
 	}
 	if rows[0][0] != "tag" ||
@@ -333,7 +337,8 @@ func parseModbusPointExcel(
 		rows[0][5] != "address" ||
 		rows[0][6] != "quality" ||
 		rows[0][7] != "type" ||
-		rows[0][8] != "order" {
+		rows[0][8] != "order" ||
+		rows[0][9] != "weight" {
 		return nil, err1
 	}
 
@@ -350,6 +355,10 @@ func parseModbusPointExcel(
 		quantity, _ := strconv.ParseUint(row[6], 10, 16)
 		Type := row[7]
 		Order := row[8]
+		Weight, _ := strconv.ParseFloat(row[9], 32)
+		if Weight == 0 {
+			Weight = 1 // 防止解析异常的时候系数0
+		}
 		Function := int(function)
 		SlaverId := byte(slaverId)
 		Address := uint16(address)
@@ -367,6 +376,7 @@ func parseModbusPointExcel(
 			Quantity:   &Quantity,
 			Type:       Type,
 			Order:      Order,
+			Weight:     &Weight,
 		}
 		list = append(list, model)
 	}
