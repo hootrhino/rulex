@@ -343,9 +343,9 @@ func parseModbusPointExcel(
 		row := rows[i]
 		tag := row[0]
 		alias := row[1]
-		function, _ := strconv.ParseInt(row[2], 10, 8)
-		frequency, _ := strconv.ParseInt(row[3], 10, 8)
-		slaverId, _ := strconv.ParseInt(row[4], 10, 8)
+		function, _ := strconv.ParseUint(row[2], 10, 8)
+		frequency, _ := strconv.ParseUint(row[3], 10, 8)
+		slaverId, _ := strconv.ParseUint(row[4], 10, 8)
 		address, _ := strconv.ParseUint(row[5], 10, 16)
 		quantity, _ := strconv.ParseUint(row[6], 10, 16)
 		Type := row[7]

@@ -326,7 +326,7 @@ func parseSiemensPointExcel(
 		Alias := row[2]
 		Type := row[3]
 		Order := row[4]
-		frequency, _ := strconv.ParseInt(row[5], 10, 8)
+		frequency, _ := strconv.ParseUint(row[5], 10, 8)
 		Frequency := int64(frequency)
 		_, errParse1 := utils.ParseSiemensDB(SiemensAddress)
 		if errParse1 != nil {
