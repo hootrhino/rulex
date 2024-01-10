@@ -198,8 +198,10 @@ func (mdev *CustomProtocolDevice) Status() typex.DeviceState {
 
 // 停止设备
 func (mdev *CustomProtocolDevice) Stop() {
-	mdev.CancelCTX()
 	mdev.status = typex.DEV_DOWN
+	if mdev.CancelCTX != nil {
+		mdev.CancelCTX()
+	}
 	if mdev.mainConfig.CommonConfig.Mode == "TCP" {
 		if mdev.tcpcon != nil {
 			mdev.tcpcon.Close()
