@@ -18,12 +18,10 @@ package device
 import (
 	"context"
 	"encoding/binary"
-	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
 	golog "log"
-	"math"
 
 	"time"
 
@@ -77,18 +75,18 @@ type _GMODConfig struct {
 *
  */
 type ModbusPoint struct {
-	UUID      string `json:"uuid,omitempty"` // 当UUID为空时新建
-	Tag       string `json:"tag"`
-	Alias     string `json:"alias"`
-	Function  int    `json:"function"`
-	SlaverId  byte   `json:"slaverId"`
-	Address   uint16 `json:"address"`
-	Frequency int64  `json:"frequency"`
-	Quantity  uint16 `json:"quantity"`
-	Value     string `json:"value,omitempty"` // 运行时数据
-	Type      string `json:"type"`            // 运行时数据
-	Order     string `json:"order"`           // 运行时数据
-
+	UUID      string  `json:"uuid,omitempty"` // 当UUID为空时新建
+	Tag       string  `json:"tag"`
+	Alias     string  `json:"alias"`
+	Function  int     `json:"function"`
+	SlaverId  byte    `json:"slaverId"`
+	Address   uint16  `json:"address"`
+	Frequency int64   `json:"frequency"`
+	Quantity  uint16  `json:"quantity"`
+	Value     string  `json:"value,omitempty"` // 运行时数据
+	Type      string  `json:"type"`            // 运行时数据
+	Order     string  `json:"order"`           // 运行时数据
+	Weight    float64 `json:"weight"`          // 权重
 }
 type generic_modbus_device struct {
 	typex.XStatus
@@ -445,7 +443,7 @@ func (mdev *generic_modbus_device) modbusRead(buffer []byte) (int, error) {
 			}
 			ValidData := [4]byte{0, 0, 0, 0}
 			copy(ValidData[:], results[:])
-			Value := ParseModbusSignedValue(r.Type, r.Order, ValidData)
+			Value := utils.ParseSignedValue(r.Type, r.Order, float32(r.Weight), ValidData)
 			Reg := common.RegisterRW{
 				Tag:      r.Tag,
 				Function: r.Function,
@@ -474,7 +472,7 @@ func (mdev *generic_modbus_device) modbusRead(buffer []byte) (int, error) {
 			}
 			ValidData := [4]byte{0, 0, 0, 0}
 			copy(ValidData[:], results[:])
-			Value := ParseModbusSignedValue(r.Type, r.Order, ValidData)
+			Value := utils.ParseSignedValue(r.Type, r.Order, float32(r.Weight), ValidData)
 			Reg := common.RegisterRW{
 				Tag:      r.Tag,
 				Function: r.Function,
@@ -504,7 +502,7 @@ func (mdev *generic_modbus_device) modbusRead(buffer []byte) (int, error) {
 			ValidData := [4]byte{0, 0, 0, 0}
 			copy(ValidData[:], results[:])
 			// _B0, _B1, _B2, _B3 := ValidData[3], ValidData[2], ValidData[1], ValidData[0]
-			Value := ParseModbusSignedValue(r.Type, r.Order, ValidData)
+			Value := utils.ParseSignedValue(r.Type, r.Order, float32(r.Weight), ValidData)
 			Reg := common.RegisterRW{
 				Tag:      r.Tag,
 				Function: r.Function,
@@ -534,7 +532,7 @@ func (mdev *generic_modbus_device) modbusRead(buffer []byte) (int, error) {
 			}
 			ValidData := [4]byte{0, 0, 0, 0}
 			copy(ValidData[:], results[:])
-			Value := ParseModbusSignedValue(r.Type, r.Order, ValidData)
+			Value := utils.ParseSignedValue(r.Type, r.Order, float32(r.Weight), ValidData)
 			Reg := common.RegisterRW{
 				Tag:      r.Tag,
 				Function: r.Function,
@@ -563,91 +561,4 @@ func (mdev *generic_modbus_device) RTURead(buffer []byte) (int, error) {
 }
 func (mdev *generic_modbus_device) TCPRead(buffer []byte) (int, error) {
 	return mdev.modbusRead(buffer)
-}
-
-/*
-*
-*解析 Modbus 的值 有符号,
-注意：如果想解析值，必须不能超过4字节，目前常见的数一般都是4字节，也许后期会有8字节，但是目前暂时不支持
-*
-*/
-func ParseModbusSignedValue(DataBlockType string, DataBlockOrder string, byteSlice [4]byte) string {
-	switch DataBlockType {
-	case "RAW":
-		{
-			return hex.EncodeToString(byteSlice[:])
-		}
-	case "BYTE":
-		{
-			return fmt.Sprintf("%d", byteSlice[0])
-		}
-	case "SHORT":
-		{
-			// AB: 1234
-			// BA: 3412
-			if DataBlockOrder == "AB" {
-				uint16Value := uint16(byteSlice[1]) | uint16(byteSlice[0])<<8
-				return fmt.Sprintf("%d", uint16Value)
-
-			}
-			if DataBlockOrder == "BA" {
-				uint16Value := uint16(byteSlice[0]) | uint16(byteSlice[1])<<8
-				return fmt.Sprintf("%d", uint16Value)
-			}
-
-		}
-	case "INT":
-		// ABCD
-		if DataBlockOrder == "ABCD" {
-			intValue := int32(byteSlice[0]) | int32(byteSlice[1])<<8 |
-				int32(byteSlice[2])<<16 | int32(byteSlice[3])<<24
-			return fmt.Sprintf("%d", intValue)
-
-		}
-		if DataBlockOrder == "CDAB" {
-			slice := [4]byte{}
-			slice[0], slice[1] = byteSlice[2], byteSlice[3]
-			slice[2], slice[3] = byteSlice[0], byteSlice[1]
-			intValue := int32(slice[0]) | int32(slice[1])<<8 |
-				int32(slice[2])<<16 | int32(slice[3])<<24
-			return fmt.Sprintf("%d", intValue)
-		}
-		// 大端字节序转换为int32
-		if DataBlockOrder == "DCBA" {
-			intValue := int32(byteSlice[3]) | int32(byteSlice[2])<<8 |
-				int32(byteSlice[1])<<16 | int32(byteSlice[0])<<24
-			return fmt.Sprintf("%d", intValue)
-		}
-	case "FLOAT": // 3.14159:DCBA -> 40490FDC
-		// ABCD
-		if DataBlockOrder == "ABCD" {
-			intValue := int32(byteSlice[0]) | int32(byteSlice[1])<<8 |
-				int32(byteSlice[2])<<16 | int32(byteSlice[3])<<24
-			floatValue := float32(math.Float32frombits(uint32(intValue)))
-			return fmt.Sprintf("%f", floatValue)
-		}
-		if DataBlockOrder == "CDAB" {
-			intValue := int32(byteSlice[2]) | int32(byteSlice[3])<<8 |
-				int32(byteSlice[0])<<16 | int32(byteSlice[1])<<24
-			floatValue := float32(math.Float32frombits(uint32(intValue)))
-			return fmt.Sprintf("%f", floatValue)
-		}
-		// 大端字节序转换为int32
-		if DataBlockOrder == "DCBA" {
-			intValue := int32(byteSlice[3]) | int32(byteSlice[2])<<8 |
-				int32(byteSlice[1])<<16 | int32(byteSlice[0])<<24
-			floatValue := float32(math.Float32frombits(uint32(intValue)))
-			return fmt.Sprintf("%f", floatValue)
-		}
-	}
-	return ""
-}
-
-/*
-*
-*解析西门子的值 无符号
-*
- */
-func ParseModbusUSignedValue(DataBlockType string, DataBlockOrder string, byteSlice [4]byte) string {
-	return ""
 }

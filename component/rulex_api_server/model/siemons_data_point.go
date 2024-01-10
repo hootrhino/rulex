@@ -18,12 +18,13 @@ package model
 // 西门子数据点位表
 type MSiemensDataPoint struct {
 	RulexModel
-	UUID           string `gorm:"not null"`
-	DeviceUuid     string `gorm:"not null"` // 所属设备
-	SiemensAddress string `gorm:"not null"` // 西门子的地址字符串
-	Tag            string `gorm:"not null"` // Tag
-	Alias          string `gorm:"not null"` // 别名
-	DataBlockType  string `gorm:"not null"` // 类型 INT UINT....
-	DataBlockOrder string `gorm:"not null"` // 字节序
-	Frequency      *int64 `gorm:"not null"` // 采集频率
+	UUID           string   `gorm:"not null"`
+	DeviceUuid     string   `gorm:"not null"` // 所属设备
+	SiemensAddress string   `gorm:"not null"` // 西门子的地址字符串
+	Tag            string   `gorm:"not null"` // Tag
+	Alias          string   `gorm:"not null"` // 别名
+	DataBlockType  string   `gorm:"not null"` // 类型 INT UINT....
+	DataBlockOrder string   `gorm:"not null"` // 字节序
+	Weight         *float64 `gorm:"not null"` // 权重
+	Frequency      *int64   `gorm:"not null"` // 采集频率
 }

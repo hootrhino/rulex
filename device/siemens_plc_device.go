@@ -2,10 +2,10 @@ package device
 
 import (
 	"context"
+
 	"encoding/json"
 	"errors"
-	"fmt"
-	"math"
+
 	"sync"
 	"time"
 
@@ -23,22 +23,23 @@ import (
 
 // 点位表
 type __SiemensDataPoint struct {
-	UUID            string `json:"uuid"`
-	DeviceUUID      string `json:"device_uuid"`
-	SiemensAddress  string `json:"siemensAddress"` // 西门子的地址字符串
-	Tag             string `json:"tag"`
-	Alias           string `json:"alias"`
-	Frequency       *int64 `json:"frequency"`
-	Status          int    `json:"status"`        // 运行时数据
-	LastFetchTime   uint64 `json:"lastFetchTime"` // 运行时数据
-	Value           string `json:"value"`         // 运行时数据
-	AddressType     string `json:"-"`             // // 西门子解析后的地址信息: 寄存器类型: DB I Q
-	DataBlockType   string `json:"-"`             // // 西门子解析后的地址信息: 数据类型: INT UINT ....
-	DataBlockOrder  string `json:"-"`             //  西门子解析后的地址信息: 数据类型: INT UINT ....
-	DataBlockNumber int    `json:"-"`             // // 西门子解析后的地址信息: 数据块号: 100...
-	ElementNumber   int    `json:"-"`             // // 西门子解析后的地址信息: 元素号:1000...
-	DataSize        int    `json:"-"`             // // 西门子解析后的地址信息: 位号,0-8，只针对I、Q
-	BitNumber       int    `json:"-"`             // // 西门子解析后的地址信息: 位号,0-8，只针对I、Q
+	UUID            string   `json:"uuid"`
+	DeviceUUID      string   `json:"device_uuid"`
+	SiemensAddress  string   `json:"siemensAddress"` // 西门子的地址字符串
+	Tag             string   `json:"tag"`
+	Alias           string   `json:"alias"`
+	Frequency       *int64   `json:"frequency"`
+	Status          int      `json:"status"`        // 运行时数据
+	LastFetchTime   uint64   `json:"lastFetchTime"` // 运行时数据
+	Value           string   `json:"value"`         // 运行时数据
+	AddressType     string   `json:"-"`             // // 西门子解析后的地址信息: 寄存器类型: DB I Q
+	DataBlockType   string   `json:"-"`             // // 西门子解析后的地址信息: 数据类型: INT UINT ....
+	DataBlockOrder  string   `json:"-"`             //  西门子解析后的地址信息: 数据类型: INT UINT ....
+	Weight          *float64 `json:"-"`             // 权重
+	DataBlockNumber int      `json:"-"`             // // 西门子解析后的地址信息: 数据块号: 100...
+	ElementNumber   int      `json:"-"`             // // 西门子解析后的地址信息: 元素号:1000...
+	DataSize        int      `json:"-"`             // // 西门子解析后的地址信息: 位号,0-8，只针对I、Q
+	BitNumber       int      `json:"-"`             // // 西门子解析后的地址信息: 位号,0-8，只针对I、Q
 }
 
 // https://cloudvpn.beijerelectronics.com/hc/en-us/articles/4406049761169-Siemens-S7
@@ -294,7 +295,7 @@ func (s1200 *SIEMENS_PLC) Read(cmd []byte, data []byte) (int, error) {
 			}
 			ValidData := [4]byte{} // 固定4字节，以后有8自己的时候再支持
 			copy(ValidData[:], rData[:db.DataSize])
-			Value := ParseSiemensSignedValue(db.DataBlockType, db.DataBlockOrder, ValidData)
+			Value := utils.ParseSignedValue(db.DataBlockType, db.DataBlockOrder, float32(*db.Weight), ValidData)
 			// Value := hex.EncodeToString(rData[:db.DataSize])
 			values = append(values, __SiemensDataPoint{
 				DeviceUUID:     db.DeviceUUID,
@@ -317,90 +318,4 @@ func (s1200 *SIEMENS_PLC) Read(cmd []byte, data []byte) (int, error) {
 	bytes, _ := json.Marshal(values)
 	copy(data, bytes)
 	return len(bytes), nil
-}
-
-/*
-*
-*解析西门子的值 有符号
-*
- */
-func ParseSiemensSignedValue(DataBlockType string, DataBlockOrder string, byteSlice [4]byte) string {
-	switch DataBlockType {
-	case "I", "Q":
-		{
-			return fmt.Sprintf("%d", byteSlice[0])
-		}
-	case "BYTE":
-		{
-			return fmt.Sprintf("%d", byteSlice[0])
-		}
-	case "SHORT":
-		{
-			// AB: 1234
-			// BA: 3412
-			if DataBlockOrder == "AB" {
-				uint16Value := uint16(byteSlice[1]) | uint16(byteSlice[0])<<8
-				return fmt.Sprintf("%d", uint16Value)
-
-			}
-			if DataBlockOrder == "BA" {
-				uint16Value := uint16(byteSlice[0]) | uint16(byteSlice[1])<<8
-				return fmt.Sprintf("%d", uint16Value)
-			}
-
-		}
-	case "INT":
-		// ABCD
-		if DataBlockOrder == "ABCD" {
-			intValue := int32(byteSlice[0]) | int32(byteSlice[1])<<8 |
-				int32(byteSlice[2])<<16 | int32(byteSlice[3])<<24
-			return fmt.Sprintf("%d", intValue)
-
-		}
-		if DataBlockOrder == "CDAB" {
-			slice := [4]byte{}
-			slice[0], slice[1] = byteSlice[2], byteSlice[3]
-			slice[2], slice[3] = byteSlice[0], byteSlice[1]
-			intValue := int32(slice[0]) | int32(slice[1])<<8 |
-				int32(slice[2])<<16 | int32(slice[3])<<24
-			return fmt.Sprintf("%d", intValue)
-		}
-		// 大端字节序转换为int32
-		if DataBlockOrder == "DCBA" {
-			intValue := int32(byteSlice[3]) | int32(byteSlice[2])<<8 |
-				int32(byteSlice[1])<<16 | int32(byteSlice[0])<<24
-			return fmt.Sprintf("%d", intValue)
-		}
-	case "FLOAT": // 3.14159:DCBA -> 40490FDC
-		// ABCD
-		if DataBlockOrder == "ABCD" {
-			intValue := int32(byteSlice[0]) | int32(byteSlice[1])<<8 |
-				int32(byteSlice[2])<<16 | int32(byteSlice[3])<<24
-			floatValue := float32(math.Float32frombits(uint32(intValue)))
-			return fmt.Sprintf("%f", floatValue)
-		}
-		if DataBlockOrder == "CDAB" {
-			intValue := int32(byteSlice[2]) | int32(byteSlice[3])<<8 |
-				int32(byteSlice[0])<<16 | int32(byteSlice[1])<<24
-			floatValue := float32(math.Float32frombits(uint32(intValue)))
-			return fmt.Sprintf("%f", floatValue)
-		}
-		// 大端字节序转换为int32
-		if DataBlockOrder == "DCBA" {
-			intValue := int32(byteSlice[3]) | int32(byteSlice[2])<<8 |
-				int32(byteSlice[1])<<16 | int32(byteSlice[0])<<24
-			floatValue := float32(math.Float32frombits(uint32(intValue)))
-			return fmt.Sprintf("%f", floatValue)
-		}
-	}
-	return ""
-}
-
-/*
-*
-*解析西门子的值 无符号
-*
- */
-func ParseSiemensUSignedValue(DataBlockType string, DataBlockOrder string, byteSlice [4]byte) string {
-	return ""
 }

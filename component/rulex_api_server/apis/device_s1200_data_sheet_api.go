@@ -38,17 +38,18 @@ import (
 )
 
 type SiemensPointVo struct {
-	UUID           string `json:"uuid"`
-	DeviceUUID     string `json:"device_uuid"`
-	SiemensAddress string `json:"siemensAddress"` // 西门子的地址字符串
-	Tag            string `json:"tag"`
-	Alias          string `json:"alias"`
-	DataOrder      string `json:"dataOrder"` // 字节序
-	DataType       string `json:"dataType"`
-	Frequency      *int64 `json:"frequency"`
-	Status         int    `json:"status"`        // 运行时数据
-	LastFetchTime  uint64 `json:"lastFetchTime"` // 运行时数据
-	Value          string `json:"value"`         // 运行时数据
+	UUID           string   `json:"uuid"`
+	DeviceUUID     string   `json:"device_uuid"`
+	SiemensAddress string   `json:"siemensAddress"` // 西门子的地址字符串
+	Tag            string   `json:"tag"`
+	Alias          string   `json:"alias"`
+	DataOrder      string   `json:"dataOrder"` // 字节序
+	DataType       string   `json:"dataType"`
+	Frequency      *int64   `json:"frequency"`
+	Weight         *float64 `json:"weight"`        // 权重
+	Status         int      `json:"status"`        // 运行时数据
+	LastFetchTime  uint64   `json:"lastFetchTime"` // 运行时数据
+	Value          string   `json:"value"`         // 运行时数据
 }
 
 /*
@@ -112,6 +113,7 @@ func SiemensSheetPageList(c *gin.Context, ruleEngine typex.RuleX) {
 			Frequency:      record.Frequency,
 			DataType:       record.DataBlockType,
 			DataOrder:      record.DataBlockOrder,
+			Weight:         record.Weight,
 			LastFetchTime:  Value.LastFetchTime, // 运行时
 			Value:          Value.Value,         // 运行时
 		}
@@ -202,6 +204,7 @@ func SiemensSheetUpdate(c *gin.Context, ruleEngine typex.RuleX) {
 			NewRow.UUID = utils.SiemensPointUUID()
 			NewRow.DataBlockType = SiemensDataPoint.DataType
 			NewRow.DataBlockOrder = SiemensDataPoint.DataOrder
+			NewRow.Weight = SiemensDataPoint.Weight
 			err0 := service.InsertSiemensPointPosition(NewRow)
 			if err0 != nil {
 				c.JSON(common.HTTP_OK, common.Error400(err0))
@@ -214,6 +217,7 @@ func SiemensSheetUpdate(c *gin.Context, ruleEngine typex.RuleX) {
 			OldRow.UUID = SiemensDataPoint.UUID
 			OldRow.DataBlockType = SiemensDataPoint.DataType
 			OldRow.DataBlockOrder = SiemensDataPoint.DataOrder
+			OldRow.Weight = SiemensDataPoint.Weight
 			err0 := service.UpdateSiemensPoint(OldRow)
 			if err0 != nil {
 				c.JSON(common.HTTP_OK, common.Error400(err0))
@@ -303,7 +307,7 @@ func parseSiemensPointExcel(
 	// 判断首行标头
 	//
 	err1 := errors.New("invalid Sheet Header")
-	if len(rows[0]) < 6 {
+	if len(rows[0]) < 7 {
 		return nil, err1
 	}
 	// Address Tag Alias Type Order Frequency
@@ -313,7 +317,8 @@ func parseSiemensPointExcel(
 		strings.ToLower(rows[0][2]) != "alias" ||
 		strings.ToLower(rows[0][3]) != "type" ||
 		strings.ToLower(rows[0][4]) != "order" ||
-		strings.ToLower(rows[0][5]) != "frequency" {
+		strings.ToLower(rows[0][5]) != "weight" ||
+		strings.ToLower(rows[0][6]) != "frequency" {
 		return nil, err1
 	}
 
@@ -326,7 +331,11 @@ func parseSiemensPointExcel(
 		Alias := row[2]
 		Type := row[3]
 		Order := row[4]
-		frequency, _ := strconv.ParseUint(row[5], 10, 8)
+		Weight, _ := strconv.ParseFloat(row[5], 32)
+		if Weight == 0 {
+			Weight = 1 // 防止解析异常的时候系数0
+		}
+		frequency, _ := strconv.ParseUint(row[6], 10, 8)
 		Frequency := int64(frequency)
 		_, errParse1 := utils.ParseSiemensDB(SiemensAddress)
 		if errParse1 != nil {
@@ -341,6 +350,7 @@ func parseSiemensPointExcel(
 			DataBlockType:  Type,
 			DataBlockOrder: Order,
 			Frequency:      &Frequency,
+			Weight:         &Weight,
 		}
 		list = append(list, model)
 	}
