@@ -171,3 +171,36 @@ func ParseUSignedValue(DataBlockType string, DataBlockOrder string,
 	}
 	return ""
 }
+
+/*
+*
+* 默认字节序
+*
+ */
+func GetDefaultDataOrder(Type, Order string) string {
+	if Order == "" {
+		switch Type {
+		case "INT", "UINT", "FLOAT", "UFLOAT":
+			return "DCBA"
+		case "BYTE", "I", "Q":
+			return "A"
+		case "SHORT", "USHORT":
+			return "BA"
+		case "LONG", "ULONG":
+			return "HGFEDCBA"
+		}
+	}
+	return Order
+}
+
+/*
+*
+* 处理空指针初始值
+*
+ */
+func HandleZeroValue[V int16 | int32 | int64 | float32 | float64](v *V) *V {
+	if v == nil {
+		return new(V)
+	}
+	return v
+}
