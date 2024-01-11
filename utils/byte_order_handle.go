@@ -43,12 +43,12 @@ func ParseSignedValue(DataBlockType string, DataBlockOrder string,
 			// AB: 1234
 			// BA: 3412
 			if DataBlockOrder == "AB" {
-				uint16Value := int16(byteSlice[1]) | int16(byteSlice[0])<<8
-				return fmt.Sprintf("%d", uint16Value)
+				uint16Value := int16(byteSlice[3]) | int16(byteSlice[2])<<8
+				return fmt.Sprintf("%d", uint16Value*int16(Weight))
 
 			}
 			if DataBlockOrder == "BA" {
-				uint16Value := int16(byteSlice[0]) | int16(byteSlice[1])<<8
+				uint16Value := int16(byteSlice[2]) | int16(byteSlice[3])<<8
 				return fmt.Sprintf("%d", uint16Value*int16(Weight))
 			}
 
@@ -115,12 +115,12 @@ func ParseUSignedValue(DataBlockType string, DataBlockOrder string,
 			// AB: 1234
 			// BA: 3412
 			if DataBlockOrder == "AB" {
-				uint16Value := uint16(byteSlice[1]) | uint16(byteSlice[0])<<8
+				uint16Value := uint16(byteSlice[3]) | uint16(byteSlice[2])<<8
 				return fmt.Sprintf("%d", uint16Value*uint16(Weight))
 
 			}
 			if DataBlockOrder == "BA" {
-				uint16Value := uint16(byteSlice[0]) | uint16(byteSlice[1])<<8
+				uint16Value := uint16(byteSlice[2]) | uint16(byteSlice[3])<<8
 				return fmt.Sprintf("%d", uint16Value*uint16(Weight))
 			}
 
