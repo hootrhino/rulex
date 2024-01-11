@@ -181,6 +181,60 @@ func SiemensSheetDelete(c *gin.Context, ruleEngine typex.RuleX) {
 
 /*
 *
+* 检查点位合法性
+*
+ */
+func checkSiemensDataPoints(M SiemensPointVo) error {
+	if M.Tag == "" {
+		return fmt.Errorf("Missing required param 'tag'")
+	}
+	if len(M.Tag) > 256 {
+		return fmt.Errorf("Tag length must range of 1-256")
+	}
+	if M.Alias == "" {
+		return fmt.Errorf("Missing required param 'alias'")
+	}
+	if len(M.Alias) > 256 {
+		return fmt.Errorf("Alias length must range of 1-256")
+	}
+	if M.SiemensAddress == "" {
+		return fmt.Errorf("Missing required param 'address'")
+	}
+
+	if M.Frequency == nil {
+		return fmt.Errorf("Missing required param 'frequency'")
+	}
+	if *M.Frequency < 50 {
+		return fmt.Errorf("Frequency must greater than 50ms")
+	}
+	if *M.Frequency > 100000 {
+		return fmt.Errorf("Frequency must little than 100s")
+	}
+
+	switch M.DataType {
+	case "I", "Q", "BYTE":
+		if M.DataOrder != "A" {
+			return fmt.Errorf("invalid '%s' order '%s'", M.DataType, M.DataOrder)
+		}
+	case "RAW", "INT", "UINT", "FLOAT", "UFLOAT":
+		if !utils.SContains([]string{"ABCD", "DCBA", "CDAB"}, M.DataOrder) {
+			return fmt.Errorf("invalid '%s' order '%s'", M.DataType, M.DataOrder)
+		}
+	case "SHORT", "USHORT":
+		if !utils.SContains([]string{"AB", "BA"}, M.DataOrder) {
+			return fmt.Errorf("invalid '%s' order '%s'", M.DataType, M.DataOrder)
+		}
+	default:
+		return fmt.Errorf("invalid '%s' order '%s'", M.DataType, M.DataOrder)
+	}
+	if M.Weight == nil {
+		return fmt.Errorf("invalid Weight value:%d", M.Weight)
+	}
+	return nil
+}
+
+/*
+*
 * 更新点位表
 *
  */
@@ -197,6 +251,10 @@ func SiemensSheetUpdate(c *gin.Context, ruleEngine typex.RuleX) {
 		return
 	}
 	for _, SiemensDataPoint := range form.SiemensDataPoints {
+		if err := checkSiemensDataPoints(SiemensDataPoint); err != nil {
+			c.JSON(common.HTTP_OK, common.Error400(err))
+			return
+		}
 		if SiemensDataPoint.UUID == "" {
 			NewRow := model.MSiemensDataPoint{}
 			copier.Copy(&NewRow, &SiemensDataPoint)
@@ -217,7 +275,8 @@ func SiemensSheetUpdate(c *gin.Context, ruleEngine typex.RuleX) {
 			OldRow.UUID = SiemensDataPoint.UUID
 			OldRow.DataBlockType = SiemensDataPoint.DataType
 			OldRow.DataBlockOrder = SiemensDataPoint.DataOrder
-			OldRow.Weight = SiemensDataPoint.Weight
+			OldRow.Weight = utils.HandleZeroValue(SiemensDataPoint.Weight)
+
 			err0 := service.UpdateSiemensPoint(OldRow)
 			if err0 != nil {
 				c.JSON(common.HTTP_OK, common.Error400(err0))
@@ -348,7 +407,7 @@ func parseSiemensPointExcel(
 			Tag:            Tag,
 			Alias:          Alias,
 			DataBlockType:  Type,
-			DataBlockOrder: Order,
+			DataBlockOrder: utils.GetDefaultDataOrder(Type, Order),
 			Frequency:      &Frequency,
 			Weight:         &Weight,
 		}
