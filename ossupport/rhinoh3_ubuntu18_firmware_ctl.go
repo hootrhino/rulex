@@ -128,7 +128,8 @@ func Reboot() error {
 *
  */
 func UnzipFirmware(zipFile, destDir string) error {
-	cmd := exec.Command("unzip", "-o", zipFile, "-d", destDir)
+	// unzip -o -d /usr/local /usr/local/upload/Firmware/Firmware.zip
+	cmd := exec.Command("unzip", "-o", "-d", destDir, zipFile)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("failed to unzip file: %s, %s", err.Error(), string(out))
