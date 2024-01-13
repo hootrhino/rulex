@@ -45,12 +45,11 @@ func UploadFirmWare(c *gin.Context, ruleEngine typex.RuleX) {
 		return
 	}
 	saveDir := "./upload/Firmware/"
-	fileName := "Firmware.zip" // 固定名称
 	if err := os.MkdirAll(filepath.Dir(saveDir), os.ModePerm); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	if err := c.SaveUploadedFile(file, saveDir+fileName); err != nil {
+	if err := c.SaveUploadedFile(file, saveDir+"Firmware.zip"); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
@@ -65,8 +64,8 @@ func UploadFirmWare(c *gin.Context, ruleEngine typex.RuleX) {
  */
 func UpgradeFirmWare(c *gin.Context, ruleEngine typex.RuleX) {
 	uploadPath := "./upload/Firmware/" // 固定路径
-	Firmware := "Firmware.zip"         // 固定路径
 	tempPath := uploadPath + "temp001" // 固定路径
+	Firmware := "Firmware.zip"         // 固定路径
 	err := os.MkdirAll(tempPath, os.ModePerm)
 	if err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
@@ -77,7 +76,7 @@ func UpgradeFirmWare(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	// 检查 /tmp/temp227209938/rulex 的Md5
+	// 检查 /tmp/temp001/rulex 的Md5
 	md51, err1 := sumMD5(tempPath + "/rulex")
 	if err1 != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err1))
