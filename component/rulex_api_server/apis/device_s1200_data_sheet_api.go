@@ -60,15 +60,36 @@ type SiemensPointVo struct {
 
 // SiemensPoints 获取Siemens_excel类型的点位数据
 func SiemensPointsExport(c *gin.Context, ruleEngine typex.RuleX) {
+	deviceUuid, _ := c.GetQuery("device_uuid")
 	c.Header("Content-Type", "text/csv")
-	c.Header("Content-Disposition", fmt.Sprintf("attachment;filename=%v.csv", time.Now().UnixMilli()))
+	c.Header("Content-Disposition", fmt.Sprintf("attachment;filename=%v.csv",
+		time.Now().UnixMilli()))
 	csvWriter := csv.NewWriter(c.Writer)
-	csvWriter.WriteAll([][]string{
-		{"h1", "h2", "h3"},
-		{"11", "12", "13"},
-		{"21", "22", "23"},
-		{"31", "32", "33"},
-	})
+	var records []model.MSiemensDataPoint
+	result := interdb.DB().Order("created_at DESC").Find(&records,
+		&model.MSiemensDataPoint{DeviceUuid: deviceUuid})
+	if result.Error != nil {
+		c.JSON(common.HTTP_OK, common.Error400(result.Error))
+		return
+	}
+	Headers := []string{
+		"address", "tag", "alias", "type", "order", "weight", "frequency",
+	}
+	Rows := [][]string{Headers}
+	for _, record := range records[0:] {
+		Row := []string{
+			record.SiemensAddress,
+			record.Tag,
+			record.Alias,
+			record.DataBlockType,
+			record.DataBlockOrder,
+			fmt.Sprintf("%f", *record.Weight),
+			fmt.Sprintf("%d", *record.Frequency),
+		}
+		Rows = append(Rows, Row)
+	}
+
+	csvWriter.WriteAll(Rows)
 	csvWriter.Flush()
 }
 

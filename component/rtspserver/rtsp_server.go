@@ -98,6 +98,7 @@ func InitRtspServer(rulex typex.RuleX) *rtspServer {
 }
 func pushToWebsocket(liveId string, data []byte) {
 	if C, Ok := __DefaultRtspServer.websocketPlayerManager.Clients[liveId]; Ok {
+		// println(liveId, data)
 		C.WriteMessage(websocket.BinaryMessage, data)
 	}
 
@@ -216,6 +217,10 @@ func wsServerEndpoint(c *gin.Context) {
 			}
 			_, _, err := wsConn.ReadMessage()
 			if err != nil {
+				glogger.GLogger.Info("wsConn CloseHandler:", wsConn.RemoteAddr().String())
+				__DefaultRtspServer.websocketPlayerManager.lock.Lock()
+				delete(__DefaultRtspServer.websocketPlayerManager.Clients, wsConn.RemoteAddr().String())
+				__DefaultRtspServer.websocketPlayerManager.lock.Unlock()
 				break
 			}
 			err = wsConn.WriteMessage(websocket.PingMessage, []byte{})

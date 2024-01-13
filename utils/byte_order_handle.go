@@ -19,6 +19,8 @@ import (
 	"encoding/hex"
 	"fmt"
 	"math"
+	"strconv"
+	"strings"
 )
 
 /*
@@ -27,9 +29,37 @@ import (
 注意：如果想解析值，必须不能超过4字节，目前常见的数一般都是4字节，也许后期会有8字节，但是目前暂时不支持
 *
 */
-func ParseSignedValue(DataBlockType string, DataBlockOrder string,
-	Weight float32, byteSlice [4]byte) string {
+func ParseModbusValue(
+	DataBlockType string,
+	DataBlockOrder string,
+	Weight float32,
+	byteSlice [256]byte) string {
+	lenFloatRound := 0
+	part := strings.Split(fmt.Sprint(Weight), ".")
+	if len(part) == 2 {
+		lenFloatRound = len(part[1])
+	}
 	switch DataBlockType {
+	case "UTF8":
+		{
+			acc := 0
+			for _, v := range byteSlice {
+				if v != 0 {
+					acc++
+				} else {
+					continue
+				}
+			}
+			if acc == 0 {
+				return ""
+			}
+			if DataBlockOrder == "BIG_ENDIAN" {
+				return string(byteSlice[:acc])
+			}
+			if DataBlockOrder == "LITTLE_ENDIAN" {
+				return stringReverse(string(byteSlice[:acc]))
+			}
+		}
 	case "RAW":
 		{
 			return hex.EncodeToString(byteSlice[:])
@@ -43,13 +73,16 @@ func ParseSignedValue(DataBlockType string, DataBlockOrder string,
 			// AB: 1234
 			// BA: 3412
 			if DataBlockOrder == "AB" {
-				uint16Value := int16(byteSlice[3]) | int16(byteSlice[2])<<8
-				return fmt.Sprintf("%d", uint16Value*int16(Weight))
-
+				uint16Value := int16(byteSlice[1]) | int16(byteSlice[0])<<8
+				floatValue := float32(uint16Value) * float32(Weight)
+				finalValue := strconv.FormatFloat(float64(floatValue), 'f', lenFloatRound, 32)
+				return finalValue
 			}
 			if DataBlockOrder == "BA" {
-				uint16Value := int16(byteSlice[2]) | int16(byteSlice[3])<<8
-				return fmt.Sprintf("%d", uint16Value*int16(Weight))
+				uint16Value := int16(byteSlice[0]) | int16(byteSlice[1])<<8
+				floatValue := float32(uint16Value) * float32(Weight)
+				finalValue := strconv.FormatFloat(float64(floatValue), 'f', lenFloatRound, 32)
+				return finalValue
 			}
 
 		}
@@ -58,8 +91,9 @@ func ParseSignedValue(DataBlockType string, DataBlockOrder string,
 		if DataBlockOrder == "ABCD" {
 			intValue := int32(byteSlice[0]) | int32(byteSlice[1])<<8 |
 				int32(byteSlice[2])<<16 | int32(byteSlice[3])<<24
-			return fmt.Sprintf("%d", intValue*int32(Weight))
-
+			floatValue := float32(intValue) * float32(Weight)
+			finalValue := strconv.FormatFloat(float64(floatValue), 'f', lenFloatRound, 32)
+			return finalValue
 		}
 		if DataBlockOrder == "CDAB" {
 			slice := [4]byte{}
@@ -67,13 +101,17 @@ func ParseSignedValue(DataBlockType string, DataBlockOrder string,
 			slice[2], slice[3] = byteSlice[0], byteSlice[1]
 			intValue := int32(slice[0]) | int32(slice[1])<<8 |
 				int32(slice[2])<<16 | int32(slice[3])<<24
-			return fmt.Sprintf("%d", intValue*int32(Weight))
+			floatValue := float32(intValue) * float32(Weight)
+			finalValue := strconv.FormatFloat(float64(floatValue), 'f', lenFloatRound, 32)
+			return finalValue
 		}
 		// 大端字节序转换为int32
 		if DataBlockOrder == "DCBA" {
 			intValue := int32(byteSlice[3]) | int32(byteSlice[2])<<8 |
 				int32(byteSlice[1])<<16 | int32(byteSlice[0])<<24
-			return fmt.Sprintf("%d", intValue*int32(Weight))
+			floatValue := float32(intValue) * float32(Weight)
+			finalValue := strconv.FormatFloat(float64(floatValue), 'f', lenFloatRound, 32)
+			return finalValue
 		}
 	case "FLOAT": // 3.14159:DCBA -> 40490FDC
 		// ABCD
@@ -81,20 +119,20 @@ func ParseSignedValue(DataBlockType string, DataBlockOrder string,
 			intValue := int32(byteSlice[0]) | int32(byteSlice[1])<<8 |
 				int32(byteSlice[2])<<16 | int32(byteSlice[3])<<24
 			floatValue := float32(math.Float32frombits(uint32(intValue)))
-			return fmt.Sprintf("%f", floatValue*Weight)
+			return fmt.Sprintf("%4f", math.Pow(float64(floatValue), float64(lenFloatRound)))
 		}
 		if DataBlockOrder == "CDAB" {
 			intValue := int32(byteSlice[2]) | int32(byteSlice[3])<<8 |
 				int32(byteSlice[0])<<16 | int32(byteSlice[1])<<24
 			floatValue := float32(math.Float32frombits(uint32(intValue)))
-			return fmt.Sprintf("%f", floatValue*Weight)
+			return fmt.Sprintf("%4f", math.Pow(float64(floatValue), float64(lenFloatRound)))
 		}
 		// 大端字节序转换为int32
 		if DataBlockOrder == "DCBA" {
 			intValue := int32(byteSlice[3]) | int32(byteSlice[2])<<8 |
 				int32(byteSlice[1])<<16 | int32(byteSlice[0])<<24
 			floatValue := float32(math.Float32frombits(uint32(intValue)))
-			return fmt.Sprintf("%f", floatValue*Weight)
+			return fmt.Sprintf("%4f", math.Pow(float64(floatValue), float64(lenFloatRound)))
 		}
 	default:
 		return ParseUSignedValue(DataBlockType, DataBlockOrder, Weight, byteSlice)
@@ -108,7 +146,7 @@ func ParseSignedValue(DataBlockType string, DataBlockOrder string,
 *
  */
 func ParseUSignedValue(DataBlockType string, DataBlockOrder string,
-	Weight float32, byteSlice [4]byte) string {
+	Weight float32, byteSlice [256]byte) string {
 	switch DataBlockType {
 	case "USHORT":
 		{
@@ -153,23 +191,33 @@ func ParseUSignedValue(DataBlockType string, DataBlockOrder string,
 			intValue := int32(byteSlice[0]) | int32(byteSlice[1])<<8 |
 				int32(byteSlice[2])<<16 | int32(byteSlice[3])<<24
 			floatValue := float32(math.Float32frombits(uint32(intValue)))
-			return fmt.Sprintf("%f", floatValue*Weight)
+			return fmt.Sprintf("%.2f", floatValue*Weight)
 		}
 		if DataBlockOrder == "CDAB" {
 			intValue := int32(byteSlice[2]) | int32(byteSlice[3])<<8 |
 				int32(byteSlice[0])<<16 | int32(byteSlice[1])<<24
 			floatValue := float32(math.Float32frombits(uint32(intValue)))
-			return fmt.Sprintf("%f", math.Abs(float64(floatValue*Weight)))
+			return fmt.Sprintf("%.2f", math.Abs(float64(floatValue*Weight)))
 		}
 		// 大端字节序转换为int32
 		if DataBlockOrder == "DCBA" {
 			intValue := int32(byteSlice[3]) | int32(byteSlice[2])<<8 |
 				int32(byteSlice[1])<<16 | int32(byteSlice[0])<<24
 			floatValue := float32(math.Float32frombits(uint32(intValue)))
-			return fmt.Sprintf("%f", math.Abs(float64(floatValue*Weight)))
+			return fmt.Sprintf("%.2f", math.Abs(float64(floatValue*Weight)))
 		}
 	}
 	return ""
+}
+
+func stringReverse(str string) string {
+	var bytes []byte = []byte(str)
+	for i := 0; i < len(str)/2; i++ {
+		tmp := bytes[len(str)-i-1]
+		bytes[len(str)-i-1] = bytes[i]
+		bytes[i] = tmp
+	}
+	return string(bytes)
 }
 
 /*

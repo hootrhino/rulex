@@ -37,7 +37,7 @@ func NewVideoCamera(e typex.RuleX) typex.XDevice {
 	videoCamera.RuleEngine = e
 	videoCamera.status = typex.DEV_DOWN
 	videoCamera.mainConfig = _MainConfig{
-		LocalDevice: "dev/video0",
+		LocalDevice: "0",
 		RtspUrl:     "rtsp://127.0.0.1",
 		InputMode:   "LOCAL",
 		OutputMode:  "H264_STREAM",
@@ -166,9 +166,9 @@ func (vc *videoCamera) startFFMPEGProcess(rtspUrl, pushAddr string) {
 	}()
 	paramsVideo := []string{
 		"-hide_banner",
-		"-framerate", "24",
+		"-r", "24",
 		"-f", "dshow",
-		"-i", fmt.Sprintf("video='%s'", rtspUrl),
+		"-i", fmt.Sprintf("video=\"%s\"", rtspUrl),
 		"-c:v", "libx264",
 		"-preset", "veryfast",
 		"-tune", "zerolatency",
@@ -184,7 +184,7 @@ func (vc *videoCamera) startFFMPEGProcess(rtspUrl, pushAddr string) {
 		"-re",
 		"-i",
 		// rtsp://192.168.199.243:554/av0_0
-		fmt.Sprintf("'%s'", rtspUrl),
+		rtspUrl,
 		"-q",
 		"5",
 		"-f",
@@ -192,12 +192,12 @@ func (vc *videoCamera) startFFMPEGProcess(rtspUrl, pushAddr string) {
 		"-fflags",
 		"nobuffer",
 		"-c:v",
-		"mpeg1video",
+		"libx264",
 		"-an",
 		"-s",
 		"1920x1080",
 		// http://127.0.0.1:9400/stream/ffmpegPush?liveId=147a6d7ae5a785f6e3ea90f25d36c63e
-		fmt.Sprintf("'%s'", pushAddr),
+		pushAddr,
 	}
 	var cmd *exec.Cmd
 	if vc.mainConfig.InputMode == "LOCAL" {
@@ -250,9 +250,12 @@ func (hk wsInOut) Read(p []byte) (n int, err error) {
 
 /*
 *
-* MD5 URL
+  - MD5 URL= 播放源进行Hash后的字符串
+    如果是RTSP，则Hash(URL)
+    如果是Local，则Hash(deviceName)
+
 *
- */
+*/
 func calculateMD5(inputString string) string {
 	hasher := md5.New()
 	io.WriteString(hasher, inputString)

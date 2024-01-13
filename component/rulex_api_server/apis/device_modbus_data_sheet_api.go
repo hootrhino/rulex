@@ -63,7 +63,8 @@ type ModbusPointVo struct {
 func ModbusPointsExport(c *gin.Context, ruleEngine typex.RuleX) {
 	deviceUuid, _ := c.GetQuery("device_uuid")
 	c.Header("Content-Type", "text/csv")
-	c.Header("Content-Disposition", fmt.Sprintf("attachment;filename=%v.csv", time.Now().UnixMilli()))
+	c.Header("Content-Disposition", fmt.Sprintf("attachment;filename=%v.csv",
+		time.Now().UnixMilli()))
 	csvWriter := csv.NewWriter(c.Writer)
 	var records []model.MModbusDataPoint
 	result := interdb.DB().Order("created_at DESC").Find(&records,
@@ -72,35 +73,26 @@ func ModbusPointsExport(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(result.Error))
 		return
 	}
-	Headers := []string{}
-	if len(records) > 0 {
-		// tag alias function frequency slaverId address quality type order weight
-		Headers = []string{
-			records[0].Tag,
-			records[0].Alias,
-			fmt.Sprintf("%d", records[0].Function),
-			fmt.Sprintf("%d", records[0].Frequency),
-			fmt.Sprintf("%d", records[0].SlaverId),
-			fmt.Sprintf("%d", records[0].Address),
-			fmt.Sprintf("%d", records[0].Quantity),
-			records[0].Type,
-			records[0].Order,
-			fmt.Sprintf("%d", records[0].Weight),
-		}
+	Headers := []string{
+		"tag", "alias",
+		"function", "frequency",
+		"slaverId", "address",
+		"quality", "type",
+		"order", "weight",
 	}
 	Rows := [][]string{Headers}
 	for _, record := range records[0:] {
 		Row := []string{
 			record.Tag,
 			record.Alias,
-			fmt.Sprintf("%d", record.Function),
-			fmt.Sprintf("%d", record.Frequency),
-			fmt.Sprintf("%d", record.SlaverId),
-			fmt.Sprintf("%d", record.Address),
-			fmt.Sprintf("%d", record.Quantity),
+			fmt.Sprintf("%d", *record.Function),
+			fmt.Sprintf("%d", *record.Frequency),
+			fmt.Sprintf("%d", *record.SlaverId),
+			fmt.Sprintf("%d", *record.Address),
+			fmt.Sprintf("%d", *record.Quantity),
 			record.Type,
 			record.Order,
-			fmt.Sprintf("%d", record.Weight),
+			fmt.Sprintf("%f", *record.Weight),
 		}
 		Rows = append(Rows, Row)
 	}
@@ -275,23 +267,30 @@ func checkModbusDataPoints(M ModbusPointVo) error {
 		return fmt.Errorf("Missing required param 'quantity'")
 	}
 	switch M.Type {
+	case "UTF8":
+		if (*M.Quantity * uint16(2)) > 255 {
+			return fmt.Errorf("Invalid 'UTF8' Length '%d'", (*M.Quantity * uint16(2)))
+		}
+		if !utils.SContains([]string{"BIG_ENDIAN", "LITTLE_ENDIAN"}, M.Order) {
+			return fmt.Errorf("Invalid '%s' order '%s'", M.Type, M.Order)
+		}
 	case "I", "Q", "BYTE":
 		if M.Order != "A" {
-			return fmt.Errorf("invalid '%s' order '%s'", M.Type, M.Order)
+			return fmt.Errorf("Invalid '%s' order '%s'", M.Type, M.Order)
 		}
 	case "RAW", "INT", "UINT", "FLOAT", "UFLOAT":
 		if !utils.SContains([]string{"ABCD", "DCBA", "CDAB"}, M.Order) {
-			return fmt.Errorf("invalid '%s' order '%s'", M.Type, M.Order)
+			return fmt.Errorf("Invalid '%s' order '%s'", M.Type, M.Order)
 		}
 	case "SHORT", "USHORT":
 		if !utils.SContains([]string{"AB", "BA"}, M.Order) {
-			return fmt.Errorf("invalid '%s' order '%s'", M.Type, M.Order)
+			return fmt.Errorf("Invalid '%s' order '%s'", M.Type, M.Order)
 		}
 	default:
-		return fmt.Errorf("invalid '%s' order '%s'", M.Type, M.Order)
+		return fmt.Errorf("Invalid '%s' order '%s'", M.Type, M.Order)
 	}
 	if M.Weight == nil {
-		return fmt.Errorf("invalid Weight value:%d", M.Weight)
+		return fmt.Errorf("Invalid Weight value:%d", M.Weight)
 	}
 	return nil
 }
@@ -445,7 +444,7 @@ func parseModbusPointExcel(r io.Reader, sheetName string,
 	}
 	// 判断首行标头
 	// tag, alias, function, frequency, slaverId, address, quality
-	err1 := errors.New("invalid Sheet Header")
+	err1 := errors.New("Invalid Sheet Header")
 	if len(rows[0]) < 10 {
 		return nil, err1
 	}

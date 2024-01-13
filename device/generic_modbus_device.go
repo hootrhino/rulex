@@ -159,6 +159,7 @@ func (mdev *generic_modbus_device) Init(devId string, configMap map[string]inter
 			Frequency: ModbusPoint.Frequency,
 			Type:      ModbusPoint.Type,
 			Order:     ModbusPoint.Order,
+			Weight:    ModbusPoint.Weight,
 		}
 		LastFetchTime := uint64(time.Now().UnixMilli())
 		modbuscache.SetValue(mdev.PointId, ModbusPoint.UUID, modbuscache.RegisterPoint{
@@ -427,8 +428,13 @@ func (mdev *generic_modbus_device) modbusRead(buffer []byte) (int, error) {
 	if mdev.Client == nil {
 		return 0, fmt.Errorf("modbus client id not valid")
 	}
+	// modbusRead: 当读多字节寄存器的时候，需要考虑UTF8
+	// Modbus收到的数据全部放进这个全局缓冲区内
+	var __modbusReadResult = [256]byte{0} // 放在栈上提高效率
 	for uuid, r := range mdev.Registers {
 		if mdev.mainConfig.CommonConfig.Mode == "TCP" {
+			// 下面这行代码在 SlaveId TCP末实现不会生效
+			// 主要和这个库有关，后期要把这个SlaverId拿到点位表里面去
 			mdev.tcpHandler.SlaveId = r.SlaverId
 		}
 		if mdev.mainConfig.CommonConfig.Mode == "UART" {
@@ -441,9 +447,9 @@ func (mdev *generic_modbus_device) modbusRead(buffer []byte) (int, error) {
 				count--
 				glogger.GLogger.Error(err)
 			}
-			ValidData := [4]byte{0, 0, 0, 0}
-			copy(ValidData[:], results[:])
-			Value := utils.ParseSignedValue(r.Type, r.Order, float32(r.Weight), ValidData)
+			// ValidData := [4]byte{0, 0, 0, 0}
+			copy(__modbusReadResult[:], results[:])
+			Value := utils.ParseModbusValue(r.Type, r.Order, float32(r.Weight), __modbusReadResult)
 			Reg := common.RegisterRW{
 				Tag:      r.Tag,
 				Function: r.Function,
@@ -470,9 +476,9 @@ func (mdev *generic_modbus_device) modbusRead(buffer []byte) (int, error) {
 				mdev.retryTimes++
 				continue
 			}
-			ValidData := [4]byte{0, 0, 0, 0}
-			copy(ValidData[:], results[:])
-			Value := utils.ParseSignedValue(r.Type, r.Order, float32(r.Weight), ValidData)
+			// ValidData := [4]byte{0, 0, 0, 0}
+			copy(__modbusReadResult[:], results[:])
+			Value := utils.ParseModbusValue(r.Type, r.Order, float32(r.Weight), __modbusReadResult)
 			Reg := common.RegisterRW{
 				Tag:      r.Tag,
 				Function: r.Function,
@@ -491,6 +497,7 @@ func (mdev *generic_modbus_device) modbusRead(buffer []byte) (int, error) {
 			})
 		}
 		// 2 字节
+		//
 		if r.Function == common.READ_HOLDING_REGISTERS {
 			results, err = mdev.Client.ReadHoldingRegisters(r.Address, r.Quantity)
 			if err != nil {
@@ -499,10 +506,9 @@ func (mdev *generic_modbus_device) modbusRead(buffer []byte) (int, error) {
 				mdev.retryTimes++
 				continue
 			}
-			ValidData := [4]byte{0, 0, 0, 0}
-			copy(ValidData[:], results[:])
-			// _B0, _B1, _B2, _B3 := ValidData[3], ValidData[2], ValidData[1], ValidData[0]
-			Value := utils.ParseSignedValue(r.Type, r.Order, float32(r.Weight), ValidData)
+			// ValidData := [4]byte{0, 0, 0, 0}
+			copy(__modbusReadResult[:], results[:])
+			Value := utils.ParseModbusValue(r.Type, r.Order, float32(r.Weight), __modbusReadResult)
 			Reg := common.RegisterRW{
 				Tag:      r.Tag,
 				Function: r.Function,
@@ -530,9 +536,9 @@ func (mdev *generic_modbus_device) modbusRead(buffer []byte) (int, error) {
 				mdev.retryTimes++
 				continue
 			}
-			ValidData := [4]byte{0, 0, 0, 0}
-			copy(ValidData[:], results[:])
-			Value := utils.ParseSignedValue(r.Type, r.Order, float32(r.Weight), ValidData)
+			// ValidData := [4]byte{0, 0, 0, 0}
+			copy(__modbusReadResult[:], results[:])
+			Value := utils.ParseModbusValue(r.Type, r.Order, float32(r.Weight), __modbusReadResult)
 			Reg := common.RegisterRW{
 				Tag:      r.Tag,
 				Function: r.Function,

@@ -5,18 +5,41 @@
 从本地或者远程摄像头拉流，支持本地USB和远程RTSP，Windows 下环境搭建可参考该文档: https://p.kdocs.cn/s/SHGXWBAA3U 。
 
 ## 配置
-
-```go
+本地摄像头：
+```json
 {
-	MaxThread  int    `json:"maxThread"`  // 最大连接数, 防止连接过多导致摄像头拉流失败
-	InputMode  string `json:"inputMode"`  // 视频输入模式：RTSP | LOCAL
-	Device     string `json:"device"`     // 本地视频设备路径，在输入模式=LOCAL时生效
-	RtspUrl    string `json:"rtspUrl"`    // 远程视频设备地址，在输入模式=RTSP时生效
-	OutputMode string `json:"outputMode"` // 输出模式：JPEG_STREAM | RTSP_STREAM
-	OutputAddr string `json:"outputAddr"` // 输出地址, 格式为: "Ip:Port",例如127.0.0.1:7890
+    "name": "GENERIC_CAMERA",
+    "type": "GENERIC_CAMERA",
+    "gid": "DROOT",
+    "description": "GENERIC_CAMERA",
+    "config": {
+        "inputMode": "LOCAL",
+        "device": "USB2.0 PC CAMERA",
+        "rtspUrl": "",
+        "outputMode": "H264_STREAM"
+    }
+}
+```
+远程摄像头：
+```json
+{
+    "name": "GENERIC_CAMERA",
+    "type": "GENERIC_CAMERA",
+    "gid": "DROOT",
+    "description": "GENERIC_CAMERA",
+    "config": {
+        "inputMode": "RTSP",
+        "device": "",
+        "rtspUrl": "rtsp://192.168.1.210:554/av0_0",
+        "outputMode": "H264_STREAM"
+    }
 }
 ```
 ## 测试
+使用下面的页面测试：
+- https://www.zngg.net/tool/detail/FlvPlayer或者
+- https://xqq.im/mpegts.js/demo/
+
 播放地址:`ws://127.0.0.1:9400/ws?token=WebRtspPlayer&liveId=a97607e47c81d43dba8ef6fa48a2cd45`,其中：
 - URL: 固定路径`ws://127.0.0.1:9400/ws`
 - token：固定值`WebRtspPlayer`
