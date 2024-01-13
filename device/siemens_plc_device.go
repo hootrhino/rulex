@@ -280,6 +280,8 @@ func (s1200 *SIEMENS_PLC) Write(cmd []byte, data []byte) (int, error) {
 // 字节格式:[dbNumber1, start1, size1, dbNumber2, start2, size2]
 // 读: db --> dbNumber, start, size, buffer[]
 var rData = [common.T_2KB]byte{} // 一次最大接受2KB数据
+// SIEMENS_PLC: 当读多字节寄存器的时候，需要考虑UTF8
+var __siemensReadResult = [256]byte{0}
 
 func (s1200 *SIEMENS_PLC) Read(cmd []byte, data []byte) (int, error) {
 	values := []__SiemensDataPoint{}
@@ -293,9 +295,10 @@ func (s1200 *SIEMENS_PLC) Read(cmd []byte, data []byte) (int, error) {
 				glogger.GLogger.Error(err)
 				return 0, err
 			}
-			ValidData := [4]byte{} // 固定4字节，以后有8自己的时候再支持
-			copy(ValidData[:], rData[:db.DataSize])
-			Value := utils.ParseSignedValue(db.DataBlockType, db.DataBlockOrder, float32(*db.Weight), ValidData)
+			// ValidData := [4]byte{} // 固定4字节，以后有8自己的时候再支持
+			copy(__siemensReadResult[:], rData[:db.DataSize])
+			Value := utils.ParseModbusValue(db.DataBlockType, db.DataBlockOrder,
+				float32(*db.Weight), __siemensReadResult)
 			// Value := hex.EncodeToString(rData[:db.DataSize])
 			values = append(values, __SiemensDataPoint{
 				DeviceUUID:     db.DeviceUUID,
