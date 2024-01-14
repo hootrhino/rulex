@@ -417,13 +417,26 @@ func (mdev *generic_modbus_device) OnCtrl([]byte, []byte) ([]byte, error) {
 
 /*
 *
+* 返回给Lua的数据结构,经过精简后的寄存器
+*
+ */
+type RegJsonValue struct {
+	Tag           string `json:"tag"`
+	Alias         string `json:"alias"`
+	SlaverId      byte   `json:"slaverId"`
+	LastFetchTime uint64 `json:"lastFetchTime"`
+	Value         string `json:"value"`
+}
+
+/*
+*
 * 串口模式
 *
  */
 func (mdev *generic_modbus_device) modbusRead(buffer []byte) (int, error) {
 	var err error
 	var results []byte
-	RegisterRWs := []common.RegisterRW{}
+	RegisterRWs := []RegJsonValue{}
 	count := len(mdev.Registers)
 	if mdev.Client == nil {
 		return 0, fmt.Errorf("modbus client id not valid")
@@ -450,21 +463,20 @@ func (mdev *generic_modbus_device) modbusRead(buffer []byte) (int, error) {
 			// ValidData := [4]byte{0, 0, 0, 0}
 			copy(__modbusReadResult[:], results[:])
 			Value := utils.ParseModbusValue(r.Type, r.Order, float32(r.Weight), __modbusReadResult)
-			Reg := common.RegisterRW{
-				Tag:      r.Tag,
-				Function: r.Function,
-				SlaverId: r.SlaverId,
-				Address:  r.Address,
-				Quantity: r.Quantity,
-				Alias:    r.Alias,
-				Value:    Value,
+			lastTimes := uint64(time.Now().UnixMilli())
+			Reg := RegJsonValue{
+				Tag:           r.Tag,
+				SlaverId:      r.SlaverId,
+				Alias:         r.Alias,
+				Value:         Value,
+				LastFetchTime: lastTimes,
 			}
 			RegisterRWs = append(RegisterRWs, Reg)
 			modbuscache.SetValue(mdev.PointId, uuid, modbuscache.RegisterPoint{
 				UUID:          uuid,
 				Status:        0,
 				Value:         Value,
-				LastFetchTime: uint64(time.Now().UnixMilli()),
+				LastFetchTime: lastTimes,
 			})
 		}
 		// 2 字节
@@ -479,21 +491,20 @@ func (mdev *generic_modbus_device) modbusRead(buffer []byte) (int, error) {
 			// ValidData := [4]byte{0, 0, 0, 0}
 			copy(__modbusReadResult[:], results[:])
 			Value := utils.ParseModbusValue(r.Type, r.Order, float32(r.Weight), __modbusReadResult)
-			Reg := common.RegisterRW{
-				Tag:      r.Tag,
-				Function: r.Function,
-				SlaverId: r.SlaverId,
-				Address:  r.Address,
-				Quantity: r.Quantity,
-				Alias:    r.Alias,
-				Value:    Value,
+			lastTimes := uint64(time.Now().UnixMilli())
+			Reg := RegJsonValue{
+				Tag:           r.Tag,
+				SlaverId:      r.SlaverId,
+				Alias:         r.Alias,
+				Value:         Value,
+				LastFetchTime: lastTimes,
 			}
 			RegisterRWs = append(RegisterRWs, Reg)
 			modbuscache.SetValue(mdev.PointId, uuid, modbuscache.RegisterPoint{
 				UUID:          uuid,
 				Status:        0,
 				Value:         Value,
-				LastFetchTime: uint64(time.Now().UnixMilli()),
+				LastFetchTime: lastTimes,
 			})
 		}
 		// 2 字节
@@ -509,21 +520,21 @@ func (mdev *generic_modbus_device) modbusRead(buffer []byte) (int, error) {
 			// ValidData := [4]byte{0, 0, 0, 0}
 			copy(__modbusReadResult[:], results[:])
 			Value := utils.ParseModbusValue(r.Type, r.Order, float32(r.Weight), __modbusReadResult)
-			Reg := common.RegisterRW{
-				Tag:      r.Tag,
-				Function: r.Function,
-				SlaverId: r.SlaverId,
-				Address:  r.Address,
-				Quantity: r.Quantity,
-				Alias:    r.Alias,
-				Value:    Value,
+			lastTimes := uint64(time.Now().UnixMilli())
+
+			Reg := RegJsonValue{
+				Tag:           r.Tag,
+				SlaverId:      r.SlaverId,
+				Alias:         r.Alias,
+				Value:         Value,
+				LastFetchTime: lastTimes,
 			}
 			RegisterRWs = append(RegisterRWs, Reg)
 			modbuscache.SetValue(mdev.PointId, uuid, modbuscache.RegisterPoint{
 				UUID:          uuid,
 				Status:        0,
 				Value:         Value,
-				LastFetchTime: uint64(time.Now().UnixMilli()),
+				LastFetchTime: lastTimes,
 			})
 
 		}
@@ -539,21 +550,20 @@ func (mdev *generic_modbus_device) modbusRead(buffer []byte) (int, error) {
 			// ValidData := [4]byte{0, 0, 0, 0}
 			copy(__modbusReadResult[:], results[:])
 			Value := utils.ParseModbusValue(r.Type, r.Order, float32(r.Weight), __modbusReadResult)
-			Reg := common.RegisterRW{
-				Tag:      r.Tag,
-				Function: r.Function,
-				SlaverId: r.SlaverId,
-				Address:  r.Address,
-				Quantity: r.Quantity,
-				Alias:    r.Alias,
-				Value:    Value,
+			lastTimes := uint64(time.Now().UnixMilli())
+			Reg := RegJsonValue{
+				Tag:           r.Tag,
+				SlaverId:      r.SlaverId,
+				Alias:         r.Alias,
+				Value:         Value,
+				LastFetchTime: lastTimes,
 			}
 			RegisterRWs = append(RegisterRWs, Reg)
 			modbuscache.SetValue(mdev.PointId, uuid, modbuscache.RegisterPoint{
 				UUID:          uuid,
 				Status:        0,
 				Value:         Value,
-				LastFetchTime: uint64(time.Now().UnixMilli()),
+				LastFetchTime: lastTimes,
 			})
 		}
 		time.Sleep(time.Duration(r.Frequency) * time.Millisecond)
