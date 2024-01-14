@@ -1,6 +1,7 @@
 # 通用 AIS 数据接收处理器
-注意：*这个组件是针对一款特殊AIS设备开发的专有支持，不具备通用性，请不要随意在生产中使用！*
 
+> [!WARNING]
+> 这个组件是针对一款特殊AIS设备开发的专有支持，不具备通用性，请不要随意在生产中使用！
 ## 简介
 AIS是自动识别系统（Automatic Identification System）的缩写。它是一种用于船舶和船舶交通管理的技术，旨在提高航海安全、保护环境和增强航运效率。
 
@@ -100,38 +101,56 @@ type _AISDeviceMasterConfig struct {
 
 ## 规则脚本
 ```lua
-Actions =
-{
-    function(args)
-        return true, args
+Actions = { function(args)
+    local error1, JsonT = json:J2T(args)
+    local t =
+    {
+        id = string:MakeUid(),
+        method = "thing.event.property.post",
+        params = {
+            ais_data = JsonT['ais_data']
+        }
+    }
+    local jsons = json:T2J(t)
+    local error = data:ToMqtt('OUTQAQXBVCU', jsons)
+    if error ~= nil then
+        stdlib:Throw(error)
     end
-}
-
+    return true, args
+end }
 ```
 ## 数据样例
 假设有一个设备发送了GNS报文,经过RULEX解析以后，规则脚本里面的 data 格式如下:
-```json
-{
-    "time":{
-        "valid":true,
-        "hour":15,
-        "minute":33,
-        "second":26,
-        "millisecond":0
-    },
-    "validity":"V",
-    "latitude":0,
-    "longitude":0,
-    "speed":0,
-    "course":0,
-    "date":{
-        "valid":true,
-        "dd":10,
-        "mm":10,
-        "yy":23
-    },
-    "variation":0,
-    "ffa_mode":"N",
-    "nav_status":""
-}
-```
+- RMC数据
+   ```json
+   {
+      "type":"RMC",
+      "gwid":"HR0001",
+      "validity":"A",
+      "latitude":48.11729999999999,
+      "longitude":11.516666666666667,
+      "speed":22.4,
+      "course":84.4,
+      "date":"23-03-94 12:35:19.0000",
+      "variation":-3.1,
+      "ffa_mode":"",
+      "nav_status":""
+   }
+   ```
+- VDM数据
+   ```json
+   {
+      "type":"VDM",
+      "gwid":"HR0001",
+      "message_id":19,
+      "user_id":413825345,
+      "name":"YUXINHUO16626",
+      "sog":3.2,
+      "longitude":114.347,
+      "latitude":30.62909,
+      "cog":226.3,
+      "true_heading":511,
+      "timestamp":35
+   }
+   ```
+

@@ -43,7 +43,10 @@ type mqttOutEndTarget struct {
 func NewMqttTarget(e typex.RuleX) typex.XTarget {
 	m := new(mqttOutEndTarget)
 	m.RuleEngine = e
-	m.mainConfig = common.MqttConfig{}
+	m.mainConfig = common.MqttConfig{
+		Host: "127.0.0.1",
+		Port: 1883,
+	}
 	m.status = typex.SOURCE_DOWN
 	return m
 }
@@ -67,7 +70,7 @@ func (mq *mqttOutEndTarget) Start(cctx typex.CCTX) error {
 	}
 
 	var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err error) {
-		glogger.GLogger.Warnf("Connect lost: %v, try to reconnect\n", err)
+		glogger.GLogger.Warn("Mqtt Connect lost:", err)
 	}
 	opts := mqtt.NewClientOptions()
 	opts.AddBroker(fmt.Sprintf("tcp://%s:%v", mq.mainConfig.Host, mq.mainConfig.Port))
@@ -76,6 +79,7 @@ func (mq *mqttOutEndTarget) Start(cctx typex.CCTX) error {
 	opts.SetPassword(mq.mainConfig.Password)
 	opts.OnConnect = connectHandler
 	opts.OnConnectionLost = connectLostHandler
+	opts.CleanSession = true
 	opts.SetAutoReconnect(false)    //不需要自动重连, 交给RULEX管理
 	opts.SetMaxReconnectInterval(0) // 不需要自动重连, 交给RULEX管理
 	mq.client = mqtt.NewClient(opts)
@@ -116,10 +120,14 @@ func (mq *mqttOutEndTarget) Details() *typex.OutEnd {
 
 func (mq *mqttOutEndTarget) To(data interface{}) (interface{}, error) {
 	if mq.client != nil {
-		// glogger.GLogger.Debug("mqtt Target publish:", mq.mainConfig.PubTopic, 1, false, data)
-		token := mq.client.Publish(mq.mainConfig.PubTopic, 1, false, data)
-		return token.Error(), nil
+		switch s := data.(type) {
+		case string:
+			// glogger.GLogger.Debug("mqtt Target publish:", mq.mainConfig.PubTopic, 1, false, data)
+			token := mq.client.Publish(mq.mainConfig.PubTopic, 1, false, s)
+			return nil, token.Error()
+		default:
+			return nil, errors.New("invalid mqtt data type")
+		}
 	}
 	return nil, errors.New("mqtt client is nil")
 }
-
