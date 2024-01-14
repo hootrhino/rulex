@@ -283,8 +283,15 @@ var rData = [common.T_2KB]byte{} // 一次最大接受2KB数据
 // SIEMENS_PLC: 当读多字节寄存器的时候，需要考虑UTF8
 var __siemensReadResult = [256]byte{0}
 
+type SiemensJsonValue struct {
+	Tag           string `json:"tag"`
+	Alias         string `json:"alias"`
+	LastFetchTime uint64 `json:"lastFetchTime"`
+	Value         string `json:"value"`
+}
+
 func (s1200 *SIEMENS_PLC) Read(cmd []byte, data []byte) (int, error) {
-	values := []__SiemensDataPoint{}
+	values := []SiemensJsonValue{}
 	for uuid, db := range s1200.__SiemensDataPoints {
 		//DB 4字节
 		if db.AddressType == "DB" {
@@ -299,17 +306,17 @@ func (s1200 *SIEMENS_PLC) Read(cmd []byte, data []byte) (int, error) {
 			copy(__siemensReadResult[:], rData[:db.DataSize])
 			Value := utils.ParseModbusValue(db.DataBlockType, db.DataBlockOrder,
 				float32(*db.Weight), __siemensReadResult)
-			// Value := hex.EncodeToString(rData[:db.DataSize])
-			values = append(values, __SiemensDataPoint{
-				DeviceUUID:     db.DeviceUUID,
-				Tag:            db.Tag,
-				Value:          Value,
-				SiemensAddress: db.SiemensAddress,
+			lastTimes := uint64(time.Now().UnixMilli())
+			values = append(values, SiemensJsonValue{
+				Tag:           db.Tag,
+				Alias:         db.Alias,
+				Value:         Value,
+				LastFetchTime: lastTimes,
 			})
 			siemenscache.SetValue(s1200.PointId, uuid, siemenscache.SiemensPoint{
 				UUID:          uuid,
 				Status:        0,
-				LastFetchTime: uint64(time.Now().UnixMilli()),
+				LastFetchTime: lastTimes,
 				Value:         Value,
 			})
 		}
