@@ -448,13 +448,15 @@ func (aism *AISDeviceMaster) handleIO(session *__AISDeviceSession) {
 		// 如果不需要解析,直接原文透传
 		if !*aism.mainConfig.CommonConfig.ParseAis {
 			// {
-			//
 			//     "ais_data":"%s"
 			//     "gwsn":"%s"
 			// }
 			ds := `{"gwsn":"%s","ais_data":"%s"}`
-			aism.RuleEngine.WorkDevice(aism.Details(),
-				fmt.Sprintf(ds, aism.mainConfig.CommonConfig.GwSN, rawAiSString))
+			Size := len(rawAiSString)
+			if Size > 2 {
+				aism.RuleEngine.WorkDevice(aism.Details(),
+					fmt.Sprintf(ds, aism.mainConfig.CommonConfig.GwSN, rawAiSString[:Size-2]))
+			}
 			continue
 		} else {
 			errParseAisToJson := aism.ParseAisToJson(rawAiSString)
