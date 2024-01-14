@@ -1,9 +1,6 @@
 # RULEX Framework
 
-**希望大家第一眼就看到这个说明 更多文档参考(国内可能需要科学上网): https://hootrhino.github.io**
-> 如果您阅读过 RULEX 的源码，你会发现里面有很多很愚蠢的设计（比如对资源的状态管理、类型硬编码设计等），因为特殊历史原因导致了其设计上有一些很糟粕的地方，如有建议请不吝赐教，一起让这个框架更加优秀！同时未来随着版本的迭代，很多低级问题会逐步被重构完善。
-
-### RULEX 是一个轻量级工业类边缘网关开发框架
+### RULEX 是一个轻量级边缘网关开发框架，助力快速实现边缘数据处理和云边协同方案。
 
 ## 架构设计
 
@@ -34,7 +31,8 @@ sudo apt install jq cloc protobuf-compiler \
      gcc-mingw-w64 \
      gcc-aarch64-linux-gnu -y
 ```
-> 推荐使用ubuntu开发。
+> [!TIP]
+> 推荐使用 ubuntu18.04 开发。
 
 #### 编译
 ```sh
@@ -42,7 +40,8 @@ make
 ```
 
 ### HelloWorld
-下面展示一个最简单的设备数据转发案例：
+下面展示一个最简单的设备数据转发案例,这个 DEMO 展示了如何把一个简单的数据推到 UDP 服务器端
+：
 ```go
 AppNAME = 'UdpServerTest'
 AppVERSION = '0.0.1'
@@ -58,10 +57,9 @@ end
 
 
 ```
-这个 DEMO 展示了如何把一个简单的数据推到 UDP 服务器端
-
 
 ## 支持的平台
+在下列系统上已经通过全面测试：
 
 | 架构   | 操作系统             | 测试 |
 | ------ | -------------------- | ---- |
@@ -70,32 +68,11 @@ end
 | ARM32  | ARM-32-Linux         | 通过 |
 | Mips   | Arm-Mips-Linux       | 通过 |
 
-除此之外，还可以在 Armbian、OpenWrt 等小众平台上编译成功。
 
-**！！！注意：现阶段只针对Ubuntu16.04和Ubuntu18.04做了大量支持，其他的系统也许能编译成功但是没测试功能是否可用**
+> [!WARNING]
+> 除此之外，还可以在 Armbian、OpenWrt 等小众平台上编译成功。现阶段只针对**Ubuntu16.04**和**Ubuntu18.04**做了大量支持，其他的系统也许能编译成功但是没测试功能是否可用**
 
 ## 规则引擎
-
-### 规则定义
-
-```lua
-
-function Success()
-    -- do some things
-end
-
-function Failed(error)
-    -- do some things
-end
-
-Actions = {
-    function(args)
-        return true, args
-    end
-}
-
-```
-
 ### 数据筛选
 
 ```lua
@@ -123,29 +100,6 @@ Actions = {
 }
 ```
 
-### 云端计算
-
-```lua
-function Main(Arg)
-    -- {1,2,3,4,5,6,7,8,9,10}
-    local cutterData, err = applib:ReadDevice('Dev1', 'D1', "count=10")
-    if err ~= nil then
-        error(err)
-        return
-    end
-    -- 交给 ID为'AI-001'的AI模型去计算结果
-    -- 输出结果是一个数组，维度取决于模型输出参数
-    -- Result: {1}
-    local Result, err = aibase:Infer('AI-001', cutterData)
-    if err ~= nil then
-        error(err)
-        return
-    end
-    print('Result =>', Result)
-    applib:save(Result)
-    return 0
-end
-```
 
 ## 社区
 
@@ -155,16 +109,21 @@ end
   <div style="text-align:center">
     <img src="./README_RES/wx.jpg" width="150px" />
   </div>
-- 博客1：https://wwhai.gitee.io
-- 博客2：https://wwhai.github.io
 
 ## 贡献者
 鸣谢各位给RULEX贡献代码的社区开发者。
 
 <a href="#">
   <img src="https://contributors-img.web.app/image?repo=hootrhino/rulex" />
+
+</a>
+
+<a href="#">
   <img src="https://contributors-img.web.app/image?repo=hootrhino/rulex-dashboard-vue-old" />
 </a>
+
+> [!NOTE]
+> 如果您阅读过 RULEX 的源码，你会发现里面有很多很愚蠢的设计（比如对资源的状态管理、类型硬编码设计等），因为特殊历史原因导致了其设计上有一些很糟粕的地方，如有建议请不吝赐教，一起让这个框架更加优秀！同时未来随着版本的迭代，很多低级问题会逐步被重构完善。
 
 ## Star
 <img src="https://starchart.cc/hootrhino/rulex.svg">

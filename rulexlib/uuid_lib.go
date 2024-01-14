@@ -15,9 +15,9 @@
 package rulexlib
 
 import (
+	"github.com/google/uuid"
 	lua "github.com/hootrhino/gopher-lua"
 	"github.com/hootrhino/rulex/typex"
-	"github.com/hootrhino/rulex/utils"
 )
 
 /*
@@ -27,7 +27,7 @@ import (
  */
 func MakeUUID(rx typex.RuleX) func(l *lua.LState) int {
 	return func(l *lua.LState) int {
-		l.Push(lua.LString(utils.MakeLongUUID("")))
+		l.Push(lua.LString(uuid.NewString()))
 		return 1
 	}
 }
