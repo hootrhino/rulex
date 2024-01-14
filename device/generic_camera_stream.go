@@ -167,8 +167,7 @@ func (vc *videoCamera) startFFMPEGProcess(rtspUrl, pushAddr string) {
 	paramsVideo := []string{
 		"-hide_banner",
 		"-r", "24",
-		"-f", "dshow",
-		"-i", fmt.Sprintf("video=\"%s\"", rtspUrl),
+		"-i", rtspUrl,
 		"-c:v", "libx264",
 		"-preset", "veryfast",
 		"-tune", "zerolatency",
