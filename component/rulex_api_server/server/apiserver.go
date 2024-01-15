@@ -7,6 +7,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"os/exec"
 
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
@@ -200,6 +201,24 @@ func (s *RulexApiServer) InitializeConfigCtl() {
 				IfaceFrom:   MIproute.IfaceFrom,
 				IfaceTo:     MIproute.IfaceTo,
 			})
+		}
+		{
+			// 4 配置WIFI
+			MWlan0, err := service.GetWlan0Config()
+			if err != nil {
+				return
+			}
+			// nmcli dev wifi connect SSID password pwd
+			s := "nmcli dev wifi connect \"%s\" password \"%s\""
+			cmd := exec.Command("sh", "-c",
+				fmt.Sprintf(s, MWlan0.SSID, MWlan0.Password))
+			out, err := cmd.CombinedOutput()
+			if err != nil {
+				glogger.GLogger.Error(err)
+				return
+			}
+			glogger.GLogger.Info(string(out))
+			return
 		}
 	}
 }
