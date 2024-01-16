@@ -1,0 +1,28 @@
+# The format of this file is documented in the dhcpd.leases(5) manual page.
+# This lease file was written by isc-dhcp-4.3.5
+
+# authoring-byte-order entry is generated, DO NOT DELETE
+authoring-byte-order little-endian;
+
+lease 192.168.64.101 {
+  starts 4 2023/09/21 13:18:07;
+  ends 4 2023/09/21 13:28:07;
+  tstp 4 2023/09/21 13:28:07;
+  cltt 4 2023/09/21 13:18:07;
+  binding state free;
+  hardware ethernet a8:a1:59:2e:a2:d9;
+  uid "\001\250\241Y.\242\331";
+  set vendor-class-identifier = "MSFT 5.0";
+}
+lease 192.168.64.101 {
+  starts 4 2023/09/21 14:12:23;
+  ends 4 2023/09/21 14:22:23;
+  cltt 4 2023/09/21 14:12:23;
+  binding state active;
+  next binding state free;
+  rewind binding state free;
+  hardware ethernet a8:a1:59:2e:a2:d9;
+  uid "\001\250\241Y.\242\331";
+  set vendor-class-identifier = "MSFT 5.0";
+  client-hostname "DESKTOP-EMD3M3C";
+}

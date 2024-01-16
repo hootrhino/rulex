@@ -17,8 +17,10 @@ package apis
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/gin-gonic/gin"
+	leases "github.com/hootrhino/go-dhcpd-leases"
 	common "github.com/hootrhino/rulex/component/rulex_api_server/common"
 	"github.com/hootrhino/rulex/component/rulex_api_server/model"
 	"github.com/hootrhino/rulex/component/rulex_api_server/service"
@@ -171,24 +173,29 @@ type DhcpLeaseVo struct {
 	Hostname   string `json:"hostname"`    // 主机名
 }
 
+/*
+*
+* 解析/var/lib/dhcp/dhcpd.leases文件获取DHCP客户端
+*
+ */
 func GetDhcpClients(c *gin.Context, ruleEngine typex.RuleX) {
-	// GetDhcpClients, err := ossupport.GetDhcpList()
-	// if err != nil {
-	// 	c.JSON(common.HTTP_OK, common.Error400(err))
-	// 	return
-	// }
-	// 测试假数据
-	Clients := []DhcpLeaseVo{
-		{
-			MacAddress: "a8:a1:59:2e:a2:d9",
-			IpAddress:  "192.168.1.175",
-			Hostname:   "rulex-h1",
-		},
-		{
-			MacAddress: "a8:a1:59:2e:a2:d9",
-			IpAddress:  "192.168.1.176",
-			Hostname:   "rulex-h2",
-		},
+	f, err := os.Open("/var/lib/dhcp/dhcpd.leases")
+	if err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+	}
+	leases := leases.Parse(f)
+	Clients := []DhcpLeaseVo{}
+	for _, lease := range leases {
+		Clients = append(Clients, DhcpLeaseVo{
+			IpAddress: lease.IP.String(),
+			Hostname: func() string {
+				if lease.ClientHostname != "" {
+					return lease.ClientHostname
+				}
+				return "UNKNOWN-HOSTNAME"
+			}(),
+			MacAddress: lease.Hardware.MAC,
+		})
 	}
 	c.JSON(common.HTTP_OK, common.OkWithData(Clients))
 }
