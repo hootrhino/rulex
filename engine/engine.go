@@ -607,6 +607,12 @@ func (e *RuleEngine) InitSourceTypeManager() error {
 			NewSource: source.NewInternalEventSource,
 		},
 	)
+	e.SourceTypeManager.Register(typex.GENERIC_MQTT,
+		&typex.XConfig{
+			Engine:    e,
+			NewSource: source.NewGenericMqttSource,
+		},
+	)
 	return nil
 }
 
