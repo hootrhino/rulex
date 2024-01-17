@@ -55,6 +55,7 @@ const (
 	RULEX_UDP       InEndType = "RULEX_UDP"
 	GENERIC_IOT_HUB InEndType = "GENERIC_IOT_HUB"
 	INTERNAL_EVENT  InEndType = "INTERNAL_EVENT" // 内部消息
+	GENERIC_MQTT    InEndType = "GENERIC_MQTT"   // 通用MQTT
 )
 
 // TargetType
