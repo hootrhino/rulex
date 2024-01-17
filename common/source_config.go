@@ -13,6 +13,16 @@ type GenericIoTHUBMqttConfig struct {
 	Password string `json:"password" validate:"required" title:"连接密码"`
 }
 
+type GenericMqttConfig struct {
+	Host      string   `json:"host" validate:"required" title:"服务地址"`
+	Port      int      `json:"port" validate:"required" title:"服务端口"`
+	ClientId  string   `json:"clientId" validate:"required" title:"客户端ID"`
+	Username  string   `json:"username" validate:"required" title:"连接账户"`
+	Password  string   `json:"password" validate:"required" title:"连接密码"`
+	Qos       int      `json:"qos" validate:"required" title:"数据质量"`
+	SubTopics []string `json:"subTopics" title:"订阅topic组"`
+}
+
 /*
 *
 * 自定义UDP协议
