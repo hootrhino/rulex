@@ -1,6 +1,7 @@
 package rulexlib
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 
@@ -52,6 +53,29 @@ func JSONE(rx typex.RuleX) func(l *lua.LState) int {
 func JSOND(rx typex.RuleX) func(l *lua.LState) int {
 	return apiDecode
 }
+func Base64J2T(rx typex.RuleX) func(l *lua.LState) int {
+	return apiBase64JsonToTable
+}
+
+func apiBase64JsonToTable(L *lua.LState) int {
+	str := L.CheckString(2)
+	bytes, err := base64.StdEncoding.DecodeString(str)
+	if err != nil {
+		L.Push(lua.LNil)
+		L.Push(lua.LString(err.Error()))
+		return 2
+	}
+	value, err := _Decode(L, bytes)
+	if err != nil {
+		L.Push(lua.LNil)
+		L.Push(lua.LString(err.Error()))
+		return 2
+	}
+	L.Push(value)
+	L.Push(lua.LNil)
+	return 2
+}
+
 func apiDecode(L *lua.LState) int {
 	str := L.CheckString(2)
 
