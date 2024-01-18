@@ -30,6 +30,7 @@ func NewGenericMqttSource(e typex.RuleX) typex.XSource {
 		Port:     1883,
 		ClientId: "rulex_mqtt_source_" + string(time.Now().Second()),
 	}
+	src.RuleEngine = e
 	src.status = typex.SOURCE_DOWN
 	return src
 }
