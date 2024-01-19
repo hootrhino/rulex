@@ -28,7 +28,7 @@ func NewGenericMqttSource(e typex.RuleX) typex.XSource {
 	src := new(genericMqttSource)
 	src.mainConfig = common.GenericMqttConfig{
 		Port:     1883,
-		ClientId: "rulex_mqtt_source_" + string(time.Now().Second()),
+		ClientId: fmt.Sprintf("rulex_mqtt_source_%d", (time.Now().Second())),
 	}
 	src.RuleEngine = e
 	src.status = typex.SOURCE_DOWN
@@ -118,6 +118,7 @@ func (tc *genericMqttSource) onMessage(client mqtt.Client, message mqtt.Message)
 	msg, err := json.Marshal(mqttMessage)
 	if err != nil {
 		glogger.GLogger.Error("handle message failed", err)
+		return
 	}
 	work, err := tc.RuleEngine.WorkInEnd(tc.RuleEngine.GetInEnd(tc.PointId), string(msg))
 	if !work {
