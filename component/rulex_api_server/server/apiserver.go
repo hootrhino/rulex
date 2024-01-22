@@ -208,16 +208,30 @@ func (s *RulexApiServer) InitializeConfigCtl() {
 			if err != nil {
 				return
 			}
-			// nmcli dev wifi connect SSID password pwd
-			s := "nmcli dev wifi connect \"%s\" password \"%s\""
-			cmd := exec.Command("sh", "-c",
-				fmt.Sprintf(s, MWlan0.SSID, MWlan0.Password))
-			out, err := cmd.CombinedOutput()
-			if err != nil {
-				glogger.GLogger.Error(err)
-				return
+			if ossupport.WifiAlreadyConfig(MWlan0.SSID) {
+				s := "nmcli connection up %s"
+				shell := fmt.Sprintf(s, MWlan0.SSID)
+				glogger.GLogger.Debug(shell)
+				cmd := exec.Command("sh", "-c", shell)
+				out, err := cmd.CombinedOutput()
+				if err != nil {
+					glogger.GLogger.Error(err)
+					return
+				}
+				glogger.GLogger.Debug(string(out))
+			} else {
+				s := "nmcli dev wifi connect \"%s\" password \"%s\""
+				shell := fmt.Sprintf(s, MWlan0.SSID, MWlan0.Password)
+				glogger.GLogger.Debug(shell)
+				cmd := exec.Command("sh", "-c", shell)
+				out, err := cmd.CombinedOutput()
+				if err != nil {
+					glogger.GLogger.Error(err)
+					return
+				}
+				glogger.GLogger.Debug(string(out))
 			}
-			glogger.GLogger.Info(string(out))
+
 			return
 		}
 	}

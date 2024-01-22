@@ -2,6 +2,7 @@ package ossupport
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
 	"strings"
 	"time"
@@ -15,7 +16,7 @@ import (
 nmcli device wifi rescan
 nmcli device wifi list
 
-获取WIFI网卡：iw dev | awk '$1=="Interface"{print $2}'
+获取WIFI网卡: iw dev | awk '$1=="Interface"{print $2}'
 扫描WIFI列表: iwlist wlx0cc6551c5026 scan | grep ESSID | awk -F: '{print $2}' | sed 's/"//g'
 *
 */
@@ -78,4 +79,27 @@ func ScanWIFIWithNmcli() ([]string, error) {
 	case <-finished:
 		return wifiListReturn, errReturn
 	}
+}
+
+/*
+*
+  - 初始化
+    // 删除之前的连接
+    // if exists ${name} -> nmcli connection delete ${name}
+    // 重新连接
+    // sudo nmcli dev wifi connect "ssid" password "password"
+*/
+func WifiAlreadyConfig(wifiSSIDName string) bool {
+	connectionsDir := "/etc/NetworkManager/system-connections/"
+	files, err := os.ReadDir(connectionsDir)
+	if err != nil {
+		fmt.Println("Error reading directory:", err)
+		return false
+	}
+	for _, file := range files {
+		if wifiSSIDName == file.Name() {
+			return true
+		}
+	}
+	return false
 }
