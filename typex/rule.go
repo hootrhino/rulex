@@ -6,6 +6,7 @@ import (
 
 type RuleStatus int
 
+// error: index out of range [_VM_Registry_MaxSize] with length
 const _VM_Registry_Size int = 1024 * 1024    // 默认堆栈大小
 const _VM_Registry_MaxSize int = 1024 * 1024 // 默认最大堆栈
 const _VM_Registry_GrowStep int = 32         // 默认CPU消耗
@@ -75,6 +76,7 @@ func NewRule(e RuleX,
 		Success:     success,
 		Failed:      failed,
 		LuaVM: lua.NewState(lua.Options{
+			// IncludeGoStackTrace: true,
 			RegistrySize:     _VM_Registry_Size,
 			RegistryMaxSize:  _VM_Registry_MaxSize,
 			RegistryGrowStep: _VM_Registry_GrowStep,
