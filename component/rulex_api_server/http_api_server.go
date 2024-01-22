@@ -198,6 +198,7 @@ func (hs *ApiServerPlugin) Init(config *ini.Section) error {
 	server.DefaultApiServer.InitializeEEKITData()
 	server.DefaultApiServer.InitializeWindowsData()
 	server.DefaultApiServer.InitializeUnixData()
+	server.DefaultApiServer.InitializeConfigCtl()
 	initRulex(hs.ruleEngine)
 	return nil
 }

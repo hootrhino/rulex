@@ -462,27 +462,6 @@ func UpdateTimeByNtp(c *gin.Context, ruleEngine typex.RuleX) {
 
 /*
 *
-* 生成最新的无线配置
-*
- */
-// func applyNewestNetplanWlanConfig() error {
-// 	MWlan0, err := service.GetWlan0Config()
-// 	if err != nil {
-// 		return err
-// 	}
-// 	Wlan0Config := service.WlanConfig{
-// 		Wlan0: service.WLANInterface{
-// 			Interface: MWlan0.Interface,
-// 			SSID:      MWlan0.SSID,
-// 			Password:  MWlan0.Password,
-// 			Security:  MWlan0.Security,
-// 		},
-// 	}
-// 	return Wlan0Config.ApplyWlan0Config()
-// }
-
-/*
-*
 * ubuntu1604网络, 使用一个 nmcli 指令
 *
  */
@@ -492,15 +471,26 @@ func applyNewestEtcWlanConfig() error {
 		return err
 	}
 	// nmcli dev wifi connect SSID password pwd
-	s := "nmcli dev wifi connect \"%s\" password \"%s\""
-	cmd := exec.Command("sh", "-c",
-		fmt.Sprintf(s, MWlan0.SSID, MWlan0.Password))
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		glogger.GLogger.Error(err)
-		return err
+	if ossupport.WifiAlreadyConfig(MWlan0.SSID) {
+		s := "nmcli connection up %s"
+		cmd := exec.Command("sh", "-c", fmt.Sprintf(s, MWlan0.SSID))
+		out, err := cmd.CombinedOutput()
+		if err != nil {
+			glogger.GLogger.Error(err)
+			return err
+		}
+		glogger.GLogger.Info(string(out))
+	} else {
+		s := "nmcli dev wifi connect \"%s\" password \"%s\""
+		cmd := exec.Command("sh", "-c",
+			fmt.Sprintf(s, MWlan0.SSID, MWlan0.Password))
+		out, err := cmd.CombinedOutput()
+		if err != nil {
+			glogger.GLogger.Error(err)
+			return err
+		}
+		glogger.GLogger.Info(string(out))
 	}
-	glogger.GLogger.Info(string(out))
 	return nil
 }
 

@@ -23,6 +23,8 @@ install(){
 cat > "$SERVICE_FILE" << EOL
 #!/bin/sh
 
+export PATH=\$PATH:/usr/local/bin:/usr/bin:/usr/sbin:/usr/local/sbin:/sbin
+
 ### BEGIN INIT INFO
 # Provides:          rulex
 # Required-Start:    \$network \$local_fs \$remote_fs
