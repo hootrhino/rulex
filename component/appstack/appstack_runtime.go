@@ -102,6 +102,10 @@ func StartApp(uuid string) error {
 				},
 			},
 		}, args)
+		// !!!非常关键的一个出栈操作!!!
+		app.VM().Pop(1) // 防止registry溢出
+		app.VM().Pop(2) // 防止registry溢出
+		//
 		// 检查是自己死的还是被RULEX杀死
 		// 1 正常结束
 		// 2 被rulex删除
