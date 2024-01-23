@@ -8,7 +8,11 @@ memory=$(shell free -m | awk 'NR==2{printf "%.2fGB\n", $$2/1000}')
 disk=$(shell df -h | awk '$$NF=="/"{printf "%s\n", $$2}')
 arch=$(shell uname -m)
 version=$(shell git describe --tags $(git rev-list --tags --max-count=1))
-shortVersion=-X 'github.com/hootrhino/rulex/typex.MainVersion=$(version)'
+
+XVersion=-X 'github.com/hootrhino/rulex/typex.MainVersion=$(version)'
+FLAGS="$(XVersion) -s -w -linkmode external -extldflags -static"
+TRIM_PATH=-gcflags=-trimpath=$$GOPATH -asmflags=-trimpath=$$GOPATH
+
 .PHONY: all
 all:
 	@echo "\e[41m[*] Distro \e[0m: \e[36m ${distro} \e[0m"
@@ -25,51 +29,51 @@ all:
 build:
 	CGO_ENABLED=1 GOOS=linux
 	go generate
-	go build -ldflags "$(shortVersion) -s -w" -v -o ${APP}
+	go build $(TRIM_PATH) -ldflags $(FLAGS) -o ${APP}
 
 .PHONY: x64linux
 x64linux:
 	go generate
 	CGO_ENABLED=1 GOOS=linux GOARCH=amd64 CC=gcc\
-	    go build -ldflags "$(shortVersion) -s -w" -v -o ${APP}-x64linux
+	    go build $(TRIM_PATH) -ldflags $(FLAGS) -o ${APP}-x64linux
 
 .PHONY: windows
 windows:
-	GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC=x86_64-w64-mingw32-gcc\
-	    go build -ldflags "$(shortVersion) -s -w" -o ${APP}-windows.exe
+	CGO_ENABLED=1 GOOS=windows GOARCH=amd64 CC=x86_64-w64-mingw32-gcc\
+	    go build $(TRIM_PATH) -ldflags $(FLAGS) -o ${APP}-windows.exe
 
 .PHONY: arm32
 arm32:
 	go generate
 	CGO_ENABLED=1 GOOS=linux GOARCH=arm CC=arm-linux-gnueabi-gcc\
-	    go build -ldflags "$(shortVersion) -s -w -linkmode external -extldflags -static" -o ${APP}-arm32linux
+	    go build  $(TRIM_PATH) -ldflags $(FLAGS) -o ${APP}-arm32linux
 
 .PHONY: arm64
 arm64:
 	go generate
 	CGO_ENABLED=1 GOOS=linux GOARCH=arm64 CC=aarch64-linux-gnu-gcc\
-	    go build -ldflags "$(shortVersion) -s -w -linkmode external -extldflags -static" -o ${APP}-arm64linux
+	    go build  $(TRIM_PATH) -ldflags $(FLAGS) -o ${APP}-arm64linux
 
 .PHONY: mips32
 mips32:
 	go generate
 	# sudo apt-get install gcc-mips-linux-gnu
 	GOOS=linux GOARCH=mips CGO_ENABLED=1 CC=mips-linux-gnu-gcc\
-	    go build -ldflags "$(shortVersion) -s -w -linkmode external -extldflags -static" -o ${APP}-mips32linux
+	    go build  $(TRIM_PATH) -ldflags $(FLAGS) -o ${APP}-mips32linux
 
 .PHONY: mips64
 mips64:
 	go generate
 	# sudo apt-get install gcc-mips-linux-gnu
 	GOOS=linux GOARCH=mips64 CGO_ENABLED=1 CC=mips-linux-gnu-gcc\
-	    go build -ldflags "$(shortVersion) -s -w -linkmode external -extldflags -static" -o ${APP}-mips64linux
+	    go build  $(TRIM_PATH) -ldflags $(FLAGS) -o ${APP}-mips64linux
 
 .PHONY: mipsel
 mipsle:
 	go generate
 	# sudo apt-get install gcc-mipsel-linux-gnu
 	GOOS=linux GOARCH=mipsle CGO_ENABLED=1 GOMIPS=softfloat CC=mipsel-linux-gnu-gcc\
-	    go build -ldflags "$(shortVersion) -s -w -linkmode external -extldflags -static" -o ${APP}-mipslelinux
+	    go build  $(TRIM_PATH) -ldflags $(FLAGS) -o ${APP}-mipslelinux
 
 .PHONY: release
 release:
