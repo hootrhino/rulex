@@ -26,6 +26,8 @@ func LoadSystemSettingsAPI() {
 	{
 		ifacesApi.GET(("/ifaces"), server.AddRoute(GetNetInterfaces))
 		ifacesApi.GET(("/uarts"), server.AddRoute(GetUartList))
+		ifacesApi.GET(("/netStatus"), server.AddRoute(GetNmcliDeviceStatus))
+		ifacesApi.GET(("/netDetails"), server.AddRoute(GetNmcliDeviceShow))
 	}
 	settingsApi := server.RouteGroup(server.ContextUrl("/settings"))
 	{
@@ -69,6 +71,8 @@ func LoadSystemSettingsAPI() {
 		settingsSoftRouterApi.GET("/dhcp", server.AddRoute(GetDHCP))
 		settingsSoftRouterApi.POST("/dhcp", server.AddRoute(SetDHCP))
 		settingsSoftRouterApi.GET("/dhcp/clients", server.AddRoute(GetDhcpClients))
+		settingsSoftRouterApi.DELETE("/dhcp/clients/del", server.AddRoute(DeleteDhcpClient))
+		settingsSoftRouterApi.DELETE("/dhcp/clients/clean", server.AddRoute(CleanDhcpClients))
 		// 默认 Ip route
 		settingsSoftRouterApi.POST("/iproute", server.AddRoute(SetNewDefaultIpRoute))
 		settingsSoftRouterApi.GET("/iproute", server.AddRoute(GetOldDefaultIpRoute))

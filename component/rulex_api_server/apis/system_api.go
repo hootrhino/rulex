@@ -2,10 +2,7 @@ package apis
 
 import (
 	"fmt"
-	"net"
 	"runtime"
-
-	// "runtime"
 	"strconv"
 	"time"
 
@@ -284,7 +281,7 @@ func GetUartList(c *gin.Context, ruleEngine typex.RuleX) {
 *
  */
 func GetNetInterfaces(c *gin.Context, ruleEngine typex.RuleX) {
-	interfaces, err := getAvailableInterfaces()
+	interfaces, err := ossupport.GetAvailableInterfaces()
 	if err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 	} else {
@@ -317,46 +314,6 @@ func calculateCpuPercent(cpus []float64) float64 {
 	return value
 }
 
-type NetInterfaceInfo struct {
-	Name string `json:"name,omitempty"`
-	Mac  string `json:"mac,omitempty"`
-	Addr string `json:"addr,omitempty"`
-}
-
-func getAvailableInterfaces() ([]NetInterfaceInfo, error) {
-	interfaces, err := net.Interfaces()
-	if err != nil {
-		return nil, err
-	}
-
-	netInterfaces := make([]NetInterfaceInfo, 0, len(interfaces))
-	for _, inter := range interfaces {
-		info := NetInterfaceInfo{
-			Name: inter.Name,
-			Mac:  inter.HardwareAddr.String(),
-		}
-		addrs, err := inter.Addrs()
-		if err != nil {
-			continue
-		}
-		for i := range addrs {
-			addr := addrs[i].String()
-			cidr, _, _ := net.ParseCIDR(addr)
-			if cidr == nil {
-				continue
-			}
-			if cidr.To4() != nil {
-				// 找到第一个ipv4地址
-				info.Addr = addr
-				break
-			}
-		}
-		netInterfaces = append(netInterfaces, info)
-
-	}
-
-	return netInterfaces, nil
-}
 func CatOsRelease(c *gin.Context, ruleEngine typex.RuleX) {
 	r, err := utils.CatOsRelease()
 	if err != nil {
