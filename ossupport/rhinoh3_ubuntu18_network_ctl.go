@@ -18,6 +18,7 @@ package ossupport
 import (
 	"fmt"
 	"math"
+	"net"
 	"os/exec"
 	"strings"
 )
@@ -221,4 +222,47 @@ func parseNmcliOutput(output string) []DeviceStatus {
 	}
 
 	return deviceStatuses
+}
+
+type NetInterfaceInfo struct {
+	Name string `json:"name"`
+	Mac  string `json:"mac"`
+	Addr string `json:"addr"`
+}
+
+/*
+*
+* 获取网卡
+*
+ */
+func GetAvailableInterfaces() ([]NetInterfaceInfo, error) {
+	interfaces, err := net.Interfaces()
+	if err != nil {
+		return nil, err
+	}
+
+	netInterfaces := make([]NetInterfaceInfo, 0, len(interfaces))
+	for _, inter := range interfaces {
+		info := NetInterfaceInfo{
+			Name: inter.Name,
+			Mac:  inter.HardwareAddr.String(),
+		}
+		addrs, err := inter.Addrs()
+		if err != nil {
+			continue
+		}
+		for i := range addrs {
+			addr := addrs[i].String()
+			cidr, _, _ := net.ParseCIDR(addr)
+			if cidr == nil {
+				continue
+			}
+			if cidr.To4() != nil {
+				info.Addr = addr
+				break
+			}
+		}
+		netInterfaces = append(netInterfaces, info)
+	}
+	return netInterfaces, nil
 }
