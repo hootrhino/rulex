@@ -53,7 +53,7 @@ func ScanWIFIWithNmcli() ([]string, error) {
 				errReturn = fmt.Errorf("get WLAN Interface error:%s,%s", string(output), err)
 				return
 			}
-			glogger.GLogger.Debug("ScanWIFIWithNmcli:", cmd.String(), " OutPut:", string(output))
+			glogger.GLogger.Debug("ScanWIFIWithNmcli:", cmd.String(), " OutPut:", WFace)
 
 		}
 
@@ -66,9 +66,13 @@ func ScanWIFIWithNmcli() ([]string, error) {
 				errReturn = fmt.Errorf("scan WIFI error:%s,%s", string(output), err)
 				return
 			}
-			// AAA\nBBB\nCCC\n
-			wifiListReturn = append(wifiListReturn, strings.Split(string(output), "\n")...)
-			glogger.GLogger.Debug("ScanWIFIWithNmcli:", cmd.String(), " OutPut :", string(output))
+			for _, v := range strings.Split(string(output), "\n") {
+				// AAA\nBBB\nCCC\n
+				if v != "" {
+					wifiListReturn = append(wifiListReturn, v)
+				}
+			}
+			glogger.GLogger.Debug("Scan WIFI With Nmcli:", cmd.String(), " OutPut :", wifiListReturn)
 		}
 		finished <- true
 	}()
