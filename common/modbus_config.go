@@ -39,6 +39,7 @@ type Registers struct {
 *
  */
 type RegisterRW struct {
+	UUID      string  `json:"UUID"`
 	Tag       string  `json:"tag" validate:"required" title:"数据Tag"`         // 数据Tag
 	Alias     string  `json:"alias" validate:"required" title:"别名"`          // 别名
 	Function  int     `json:"function" validate:"required" title:"Modbus功能"` // Function
@@ -50,6 +51,32 @@ type RegisterRW struct {
 	Order     string  `json:"order"`                                         // 运行时数据
 	Weight    float64 `json:"weight"`
 	Value     string  `json:"value,omitempty"` // 运行时数据. Type, Order不同值也不同
+}
+
+type RegisterList []*RegisterRW
+
+func (r RegisterList) Len() int {
+	return len(r)
+}
+
+func (r RegisterList) Less(i, j int) bool {
+	if r[i].SlaverId == r[j].SlaverId {
+		if r[i].Function == r[j].Function {
+			if r[i].Frequency == r[j].Frequency {
+				return r[i].Address < r[j].Address
+			} else {
+				return r[i].Frequency < r[j].Frequency
+			}
+		} else {
+			return r[i].Function < r[j].Function
+		}
+	} else {
+		return r[i].SlaverId < r[j].SlaverId
+	}
+}
+
+func (r RegisterList) Swap(i, j int) {
+	r[i], r[j] = r[j], r[i]
 }
 
 /*
