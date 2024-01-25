@@ -22,6 +22,7 @@ import (
 	"errors"
 	"fmt"
 	golog "log"
+	"sort"
 
 	"time"
 
@@ -60,13 +61,24 @@ import (
 //	    }
 //	}
 type _GMODCommonConfig struct {
-	Mode        string `json:"mode"`
-	AutoRequest *bool  `json:"autoRequest"`
+	Mode           string `json:"mode"`
+	AutoRequest    *bool  `json:"autoRequest"`
+	EnableOptimize bool   `json:"enableOptimize"`
+	MaxRegNum      uint16 `json:"maxNum"`
 }
 type _GMODConfig struct {
 	CommonConfig _GMODCommonConfig `json:"commonConfig" validate:"required"`
 	PortUuid     string            `json:"portUuid"`
 	HostConfig   common.HostConfig `json:"hostConfig"`
+}
+
+type GroupedTags struct {
+	Function  int    `json:"function"`
+	SlaverId  byte   `json:"slaverId"`
+	Address   uint16 `json:"address"`
+	Frequency int64  `json:"frequency"`
+	Quantity  uint16 `json:"quantity"`
+	Registers map[string]*common.RegisterRW
 }
 
 /*
@@ -97,10 +109,11 @@ type generic_modbus_device struct {
 	tcpHandler *modbus.TCPClientHandler
 	Client     modbus.Client
 	//
-	mainConfig   _GMODConfig
-	retryTimes   int
-	hwPortConfig hwportmanager.UartConfig
-	Registers    map[string]*common.RegisterRW
+	mainConfig     _GMODConfig
+	retryTimes     int
+	hwPortConfig   hwportmanager.UartConfig
+	Registers      map[string]*common.RegisterRW
+	RegisterGroups []*GroupedTags
 }
 
 /*
@@ -117,6 +130,7 @@ func NewGenericModbusDevice(e typex.RuleX) typex.XDevice {
 				b := false
 				return &b
 			}(),
+			MaxRegNum: 32,
 		},
 		PortUuid:   "/dev/ttyS0",
 		HostConfig: common.HostConfig{Host: "127.0.0.1", Port: 502, Timeout: 3000},
@@ -150,6 +164,7 @@ func (mdev *generic_modbus_device) Init(devId string, configMap map[string]inter
 			return errors.New("'frequency' must grate than 50 millisecond")
 		}
 		mdev.Registers[ModbusPoint.UUID] = &common.RegisterRW{
+			UUID:      ModbusPoint.UUID,
 			Tag:       ModbusPoint.Tag,
 			Alias:     ModbusPoint.Alias,
 			Function:  ModbusPoint.Function,
@@ -168,7 +183,15 @@ func (mdev *generic_modbus_device) Init(devId string, configMap map[string]inter
 			LastFetchTime: LastFetchTime,
 		})
 	}
-
+	if mdev.mainConfig.CommonConfig.EnableOptimize {
+		rws := make([]*common.RegisterRW, len(mdev.Registers))
+		idx := 0
+		for _, val := range mdev.Registers {
+			rws[idx] = val
+			idx++
+		}
+		mdev.RegisterGroups = mdev.groupTags(rws)
+	}
 	if mdev.mainConfig.CommonConfig.Mode == "UART" {
 		hwPort, err := hwportmanager.GetHwPort(mdev.mainConfig.PortUuid)
 		if err != nil {
@@ -189,6 +212,60 @@ func (mdev *generic_modbus_device) Init(devId string, configMap map[string]inter
 		}
 	}
 	return nil
+}
+
+func (mdev *generic_modbus_device) groupTags(registers []*common.RegisterRW) []*GroupedTags {
+	/**
+	0、分组，Frequency采集时间需要相同
+	1、寄存器类型分类
+	2、tag排序
+	3、限制单次数据采集数量为32个
+	4、tag address必须连续
+	*/
+	sort.Sort(common.RegisterList(registers))
+	result := make([]*GroupedTags, 0)
+	for i := 0; i < len(registers); {
+		start := i
+		end := i
+		cursor := i
+		tagGroup := &GroupedTags{
+			Function:  registers[start].Function,
+			SlaverId:  registers[start].SlaverId,
+			Address:   registers[start].Address,
+			Frequency: registers[start].Frequency,
+		}
+		result = append(result, tagGroup)
+		tagGroup.Registers = make(map[string]*common.RegisterRW)
+
+		for end < len(registers) {
+			curReg := registers[cursor]
+			evaluateReg := registers[end]
+			rAddress := curReg.Address + curReg.Quantity - 1
+			if tagGroup.SlaverId != evaluateReg.SlaverId {
+				break
+			}
+			if tagGroup.Function != evaluateReg.Function {
+				break
+			}
+			if tagGroup.Frequency != evaluateReg.Frequency {
+				break
+			}
+			if evaluateReg.Address > rAddress+1 {
+				break
+			}
+			totalQuantity := evaluateReg.Address + evaluateReg.Quantity - tagGroup.Address
+			if totalQuantity > mdev.mainConfig.CommonConfig.MaxRegNum {
+				// 寄存器数量超过单次最大采集寄存器个数
+				break
+			}
+			tagGroup.Registers[evaluateReg.UUID] = evaluateReg
+			tagGroup.Quantity = totalQuantity
+			cursor = end
+			end++
+		}
+		i = end
+	}
+	return result
 }
 
 // 启动
@@ -434,6 +511,14 @@ type RegJsonValue struct {
 *
  */
 func (mdev *generic_modbus_device) modbusRead(buffer []byte) (int, error) {
+	if mdev.mainConfig.CommonConfig.EnableOptimize {
+		return mdev.modbusGroupRead(buffer)
+	} else {
+		return mdev.modbusSingleRead(buffer)
+	}
+}
+
+func (mdev *generic_modbus_device) modbusSingleRead(buffer []byte) (int, error) {
 	var err error
 	var results []byte
 	RegisterRWs := []RegJsonValue{}
@@ -571,6 +656,147 @@ func (mdev *generic_modbus_device) modbusRead(buffer []byte) (int, error) {
 	bytes, _ := json.Marshal(RegisterRWs)
 	copy(buffer, bytes)
 	return len(bytes), nil
+}
+
+func (mdev *generic_modbus_device) modbusGroupRead(buffer []byte) (int, error) {
+	jsonValueGroups := make([]RegJsonValue, 0)
+	var __modbusReadResult = [256]byte{0} // 放在栈上提高效率
+
+	for _, group := range mdev.RegisterGroups {
+		if mdev.mainConfig.CommonConfig.Mode == "TCP" {
+			mdev.tcpHandler.SlaveId = group.SlaverId
+		}
+		if mdev.mainConfig.CommonConfig.Mode == "UART" {
+			mdev.rtuHandler.SlaveId = group.SlaverId
+		}
+		if group.Function == common.READ_COIL {
+			buf, err := mdev.Client.ReadCoils(group.Address, group.Quantity)
+			if err != nil {
+				glogger.GLogger.Error(err)
+				mdev.retryTimes++
+				continue
+			}
+			for uuid, r := range group.Registers {
+				offsetAddr := r.Address - group.Address
+				offsetByte := offsetAddr / uint16(8)
+				offsetBit := offsetAddr % uint16(8)
+				value := (buf[offsetByte] >> offsetBit) & 0x1
+
+				ts := time.Now().UnixMilli()
+				jsonVal := RegJsonValue{
+					Tag:           r.Tag,
+					SlaverId:      r.SlaverId,
+					Alias:         r.Alias,
+					Value:         string(value),
+					LastFetchTime: uint64(ts),
+				}
+				jsonValueGroups = append(jsonValueGroups, jsonVal)
+
+				modbuscache.SetValue(mdev.PointId, uuid, modbuscache.RegisterPoint{
+					UUID:          uuid,
+					Status:        0,
+					Value:         string(value),
+					LastFetchTime: uint64(ts),
+				})
+			}
+		} else if group.Function == common.READ_DISCRETE_INPUT {
+			buf, err := mdev.Client.ReadDiscreteInputs(group.Address, group.Quantity)
+			if err != nil {
+				glogger.GLogger.Error(err)
+				mdev.retryTimes++
+				continue
+			}
+			for uuid, r := range group.Registers {
+				offsetAddr := r.Address - group.Address
+				offsetByte := offsetAddr / uint16(8)
+				offsetBit := offsetAddr % uint16(8)
+				value := (buf[offsetByte] >> offsetBit) & 0x1
+
+				ts := time.Now().UnixMilli()
+				jsonVal := RegJsonValue{
+					Tag:           r.Tag,
+					SlaverId:      r.SlaverId,
+					Alias:         r.Alias,
+					Value:         string(value),
+					LastFetchTime: uint64(ts),
+				}
+				jsonValueGroups = append(jsonValueGroups, jsonVal)
+
+				modbuscache.SetValue(mdev.PointId, uuid, modbuscache.RegisterPoint{
+					UUID:          uuid,
+					Status:        0,
+					Value:         string(value),
+					LastFetchTime: uint64(ts),
+				})
+			}
+		} else if group.Function == common.READ_HOLDING_REGISTERS {
+			buf, err := mdev.Client.ReadHoldingRegisters(group.Address, group.Quantity)
+			if err != nil {
+				glogger.GLogger.Error(err)
+				mdev.retryTimes++
+				continue
+			}
+			for uuid, r := range group.Registers {
+				offsetByte := (r.Address - group.Address) * 2
+				offsetByteEnd := offsetByte + r.Quantity*2
+				copy(__modbusReadResult[:], buf[offsetByte:offsetByteEnd])
+				value := utils.ParseModbusValue(r.Type, r.Order, float32(r.Weight), __modbusReadResult)
+
+				ts := time.Now().UnixMilli()
+				jsonVal := RegJsonValue{
+					Tag:           r.Tag,
+					SlaverId:      r.SlaverId,
+					Alias:         r.Alias,
+					Value:         value,
+					LastFetchTime: uint64(ts),
+				}
+				jsonValueGroups = append(jsonValueGroups, jsonVal)
+
+				modbuscache.SetValue(mdev.PointId, uuid, modbuscache.RegisterPoint{
+					UUID:          uuid,
+					Status:        0,
+					Value:         value,
+					LastFetchTime: uint64(ts),
+				})
+			}
+		} else if group.Function == common.READ_INPUT_REGISTERS {
+			buf, err := mdev.Client.ReadHoldingRegisters(group.Address, group.Quantity)
+			if err != nil {
+				glogger.GLogger.Error(err)
+				mdev.retryTimes++
+				continue
+			}
+			for uuid, r := range group.Registers {
+				offsetByte := (r.Address - group.Address) * 2
+				offsetByteEnd := offsetByte + r.Quantity*2
+				copy(__modbusReadResult[:], buf[offsetByte:offsetByteEnd])
+				value := utils.ParseModbusValue(r.Type, r.Order, float32(r.Weight), __modbusReadResult)
+
+				ts := time.Now().UnixMilli()
+				jsonVal := RegJsonValue{
+					Tag:           r.Tag,
+					SlaverId:      r.SlaverId,
+					Alias:         r.Alias,
+					Value:         value,
+					LastFetchTime: uint64(ts),
+				}
+				jsonValueGroups = append(jsonValueGroups, jsonVal)
+
+				modbuscache.SetValue(mdev.PointId, uuid, modbuscache.RegisterPoint{
+					UUID:          uuid,
+					Status:        0,
+					Value:         value,
+					LastFetchTime: uint64(ts),
+				})
+			}
+		}
+	}
+	if len(jsonValueGroups) != 0 {
+		bytes, _ := json.Marshal(jsonValueGroups)
+		copy(buffer, bytes)
+		return len(bytes), nil
+	}
+	return 0, nil
 }
 func (mdev *generic_modbus_device) RTURead(buffer []byte) (int, error) {
 	return mdev.modbusRead(buffer)
