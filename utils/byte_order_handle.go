@@ -73,7 +73,7 @@ func ParseModbusValue(
 			// AB: 1234
 			// BA: 3412
 			if DataBlockOrder == "AB" {
-				uint16Value := int16(byteSlice[1]) | int16(byteSlice[0])<<8
+				uint16Value := int16(byteSlice[0])<<8 | int16(byteSlice[1])
 				floatValue := float32(uint16Value) * float32(Weight)
 				finalValue := strconv.FormatFloat(float64(floatValue), 'f', lenFloatRound, 32)
 				return finalValue
@@ -89,26 +89,23 @@ func ParseModbusValue(
 	case "INT":
 		// ABCD
 		if DataBlockOrder == "ABCD" {
-			intValue := int32(byteSlice[0]) | int32(byteSlice[1])<<8 |
-				int32(byteSlice[2])<<16 | int32(byteSlice[3])<<24
+			intValue := int32(byteSlice[0])<<24 | int32(byteSlice[1])<<16 |
+				int32(byteSlice[2])<<8 | int32(byteSlice[3])
 			floatValue := float32(intValue) * float32(Weight)
 			finalValue := strconv.FormatFloat(float64(floatValue), 'f', lenFloatRound, 32)
 			return finalValue
 		}
 		if DataBlockOrder == "CDAB" {
-			slice := [4]byte{}
-			slice[0], slice[1] = byteSlice[2], byteSlice[3]
-			slice[2], slice[3] = byteSlice[0], byteSlice[1]
-			intValue := int32(slice[0]) | int32(slice[1])<<8 |
-				int32(slice[2])<<16 | int32(slice[3])<<24
+			intValue := int32(byteSlice[0])<<8 | int32(byteSlice[1]) |
+				int32(byteSlice[2])<<24 | int32(byteSlice[3])<<16
 			floatValue := float32(intValue) * float32(Weight)
 			finalValue := strconv.FormatFloat(float64(floatValue), 'f', lenFloatRound, 32)
 			return finalValue
 		}
 		// 大端字节序转换为int32
 		if DataBlockOrder == "DCBA" {
-			intValue := int32(byteSlice[3]) | int32(byteSlice[2])<<8 |
-				int32(byteSlice[1])<<16 | int32(byteSlice[0])<<24
+			intValue := int32(byteSlice[0]) | int32(byteSlice[1])<<8 |
+				int32(byteSlice[2])<<16 | int32(byteSlice[3])<<24
 			floatValue := float32(intValue) * float32(Weight)
 			finalValue := strconv.FormatFloat(float64(floatValue), 'f', lenFloatRound, 32)
 			return finalValue
@@ -116,21 +113,20 @@ func ParseModbusValue(
 	case "FLOAT": // 3.14159:DCBA -> 40490FDC
 		// ABCD
 		if DataBlockOrder == "ABCD" {
-			intValue := int32(byteSlice[0]) | int32(byteSlice[1])<<8 |
-				int32(byteSlice[2])<<16 | int32(byteSlice[3])<<24
+			intValue := int32(byteSlice[0])<<24 | int32(byteSlice[1])<<16 |
+				int32(byteSlice[2])<<8 | int32(byteSlice[3])
 			floatValue := float32(math.Float32frombits(uint32(intValue)))
 			return fmt.Sprintf("%4f", math.Pow(float64(floatValue), float64(lenFloatRound)))
 		}
 		if DataBlockOrder == "CDAB" {
-			intValue := int32(byteSlice[2]) | int32(byteSlice[3])<<8 |
-				int32(byteSlice[0])<<16 | int32(byteSlice[1])<<24
+			intValue := int32(byteSlice[0])<<8 | int32(byteSlice[1]) |
+				int32(byteSlice[2])<<24 | int32(byteSlice[3])<<16
 			floatValue := float32(math.Float32frombits(uint32(intValue)))
 			return fmt.Sprintf("%4f", math.Pow(float64(floatValue), float64(lenFloatRound)))
 		}
-		// 大端字节序转换为int32
 		if DataBlockOrder == "DCBA" {
-			intValue := int32(byteSlice[3]) | int32(byteSlice[2])<<8 |
-				int32(byteSlice[1])<<16 | int32(byteSlice[0])<<24
+			intValue := int32(byteSlice[0]) | int32(byteSlice[1])<<8 |
+				int32(byteSlice[2])<<16 | int32(byteSlice[3])<<24
 			floatValue := float32(math.Float32frombits(uint32(intValue)))
 			return fmt.Sprintf("%4f", math.Pow(float64(floatValue), float64(lenFloatRound)))
 		}
@@ -153,12 +149,12 @@ func ParseUSignedValue(DataBlockType string, DataBlockOrder string,
 			// AB: 1234
 			// BA: 3412
 			if DataBlockOrder == "AB" {
-				uint16Value := uint16(byteSlice[3]) | uint16(byteSlice[2])<<8
+				uint16Value := uint16(byteSlice[0])<<8 | uint16(byteSlice[1])
 				return fmt.Sprintf("%d", uint16Value*uint16(Weight))
 
 			}
 			if DataBlockOrder == "BA" {
-				uint16Value := uint16(byteSlice[2]) | uint16(byteSlice[3])<<8
+				uint16Value := uint16(byteSlice[0]) | uint16(byteSlice[1])<<8
 				return fmt.Sprintf("%d", uint16Value*uint16(Weight))
 			}
 
@@ -166,45 +162,20 @@ func ParseUSignedValue(DataBlockType string, DataBlockOrder string,
 	case "UINT":
 		// ABCD
 		if DataBlockOrder == "ABCD" {
-			intValue := uint32(byteSlice[0]) | uint32(byteSlice[1])<<8 |
-				uint32(byteSlice[2])<<16 | uint32(byteSlice[3])<<24
+			intValue := uint32(byteSlice[0])<<24 | uint32(byteSlice[1])<<16 |
+				uint32(byteSlice[2])<<8 | uint32(byteSlice[3])
 			return fmt.Sprintf("%d", intValue*uint32(Weight))
 
 		}
 		if DataBlockOrder == "CDAB" {
-			slice := [4]byte{}
-			slice[0], slice[1] = byteSlice[2], byteSlice[3]
-			slice[2], slice[3] = byteSlice[0], byteSlice[1]
-			intValue := uint32(slice[0]) | uint32(slice[1])<<8 |
-				uint32(slice[2])<<16 | uint32(slice[3])<<24
+			intValue := uint32(byteSlice[0])<<8 | uint32(byteSlice[1]) |
+				uint32(byteSlice[2])<<24 | uint32(byteSlice[3])<<16
 			return fmt.Sprintf("%d", intValue*uint32(Weight))
 		}
-		// 大端字节序转换为int32
 		if DataBlockOrder == "DCBA" {
-			intValue := uint32(byteSlice[3]) | uint32(byteSlice[2])<<8 |
-				uint32(byteSlice[1])<<16 | uint32(byteSlice[0])<<24
+			intValue := uint32(byteSlice[0]) | uint32(byteSlice[1])<<8 |
+				uint32(byteSlice[2])<<16 | uint32(byteSlice[3])<<24
 			return fmt.Sprintf("%d", intValue*uint32(Weight))
-		}
-	case "UFLOAT": // 3.14159:DCBA -> 40490FDC
-		// ABCD
-		if DataBlockOrder == "ABCD" {
-			intValue := int32(byteSlice[0]) | int32(byteSlice[1])<<8 |
-				int32(byteSlice[2])<<16 | int32(byteSlice[3])<<24
-			floatValue := float32(math.Float32frombits(uint32(intValue)))
-			return fmt.Sprintf("%.2f", floatValue*Weight)
-		}
-		if DataBlockOrder == "CDAB" {
-			intValue := int32(byteSlice[2]) | int32(byteSlice[3])<<8 |
-				int32(byteSlice[0])<<16 | int32(byteSlice[1])<<24
-			floatValue := float32(math.Float32frombits(uint32(intValue)))
-			return fmt.Sprintf("%.2f", math.Abs(float64(floatValue*Weight)))
-		}
-		// 大端字节序转换为int32
-		if DataBlockOrder == "DCBA" {
-			intValue := int32(byteSlice[3]) | int32(byteSlice[2])<<8 |
-				int32(byteSlice[1])<<16 | int32(byteSlice[0])<<24
-			floatValue := float32(math.Float32frombits(uint32(intValue)))
-			return fmt.Sprintf("%.2f", math.Abs(float64(floatValue*Weight)))
 		}
 	}
 	return ""
