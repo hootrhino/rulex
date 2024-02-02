@@ -23,6 +23,7 @@ import (
 	"fmt"
 	golog "log"
 	"sort"
+	"strconv"
 
 	"time"
 
@@ -79,6 +80,16 @@ type GroupedTags struct {
 	Frequency int64  `json:"frequency"`
 	Quantity  uint16 `json:"quantity"`
 	Registers map[string]*common.RegisterRW
+}
+
+func (g *GroupedTags) String() string {
+	tagIds := make([]string, 0, len(g.Registers))
+	for k, _ := range g.Registers {
+		tagIds = append(tagIds, k)
+	}
+	str := fmt.Sprintf("func=%v slaveId=%v address=%v quantity=%v frequency=%v tagIds=%v",
+		g.Function, g.SlaverId, g.Address, g.Quantity, g.Frequency, tagIds)
+	return str
 }
 
 /*
@@ -191,6 +202,9 @@ func (mdev *generic_modbus_device) Init(devId string, configMap map[string]inter
 			idx++
 		}
 		mdev.RegisterGroups = mdev.groupTags(rws)
+		for i, v := range mdev.RegisterGroups {
+			glogger.GLogger.Infof("RegisterGroups%v %v", i, v)
+		}
 	}
 	if mdev.mainConfig.CommonConfig.Mode == "UART" {
 		hwPort, err := hwportmanager.GetHwPort(mdev.mainConfig.PortUuid)
@@ -687,7 +701,7 @@ func (mdev *generic_modbus_device) modbusGroupRead(buffer []byte) (int, error) {
 					Tag:           r.Tag,
 					SlaverId:      r.SlaverId,
 					Alias:         r.Alias,
-					Value:         string(value),
+					Value:         strconv.Itoa(int(value)),
 					LastFetchTime: uint64(ts),
 				}
 				jsonValueGroups = append(jsonValueGroups, jsonVal)
@@ -695,7 +709,7 @@ func (mdev *generic_modbus_device) modbusGroupRead(buffer []byte) (int, error) {
 				modbuscache.SetValue(mdev.PointId, uuid, modbuscache.RegisterPoint{
 					UUID:          uuid,
 					Status:        0,
-					Value:         string(value),
+					Value:         strconv.Itoa(int(value)),
 					LastFetchTime: uint64(ts),
 				})
 			}
@@ -717,7 +731,7 @@ func (mdev *generic_modbus_device) modbusGroupRead(buffer []byte) (int, error) {
 					Tag:           r.Tag,
 					SlaverId:      r.SlaverId,
 					Alias:         r.Alias,
-					Value:         string(value),
+					Value:         strconv.Itoa(int(value)),
 					LastFetchTime: uint64(ts),
 				}
 				jsonValueGroups = append(jsonValueGroups, jsonVal)
@@ -725,7 +739,7 @@ func (mdev *generic_modbus_device) modbusGroupRead(buffer []byte) (int, error) {
 				modbuscache.SetValue(mdev.PointId, uuid, modbuscache.RegisterPoint{
 					UUID:          uuid,
 					Status:        0,
-					Value:         string(value),
+					Value:         strconv.Itoa(int(value)),
 					LastFetchTime: uint64(ts),
 				})
 			}
@@ -790,6 +804,8 @@ func (mdev *generic_modbus_device) modbusGroupRead(buffer []byte) (int, error) {
 				})
 			}
 		}
+
+		time.Sleep(time.Duration(group.Frequency) * time.Millisecond)
 	}
 	if len(jsonValueGroups) != 0 {
 		bytes, _ := json.Marshal(jsonValueGroups)
