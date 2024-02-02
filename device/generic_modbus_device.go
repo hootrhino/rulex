@@ -251,10 +251,14 @@ func (mdev *generic_modbus_device) groupTags(registers []*common.RegisterRW) []*
 		result = append(result, tagGroup)
 		tagGroup.Registers = make(map[string]*common.RegisterRW)
 
+		regMaxAddr := uint16(0)
 		for end < len(registers) {
 			curReg := registers[cursor]
 			evaluateReg := registers[end]
-			rAddress := curReg.Address + curReg.Quantity - 1
+			curRegAddr := curReg.Address + curReg.Quantity - 1
+			if curRegAddr > regMaxAddr {
+				regMaxAddr = curRegAddr
+			}
 			if tagGroup.SlaverId != evaluateReg.SlaverId {
 				break
 			}
@@ -264,7 +268,7 @@ func (mdev *generic_modbus_device) groupTags(registers []*common.RegisterRW) []*
 			if tagGroup.Frequency != evaluateReg.Frequency {
 				break
 			}
-			if evaluateReg.Address > rAddress+1 {
+			if evaluateReg.Address > regMaxAddr+1 {
 				break
 			}
 			totalQuantity := evaluateReg.Address + evaluateReg.Quantity - tagGroup.Address
