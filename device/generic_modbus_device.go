@@ -65,7 +65,7 @@ type _GMODCommonConfig struct {
 	Mode           string `json:"mode"`
 	AutoRequest    *bool  `json:"autoRequest"`
 	EnableOptimize bool   `json:"enableOptimize"`
-	MaxRegNum      uint16 `json:"maxNum"`
+	MaxRegNum      uint16 `json:"maxRegNum"`
 }
 type _GMODConfig struct {
 	CommonConfig _GMODCommonConfig `json:"commonConfig" validate:"required"`
