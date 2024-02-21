@@ -33,13 +33,6 @@ type RtspCameraInfo struct {
 	PushAddr string `json:"pushAddr,omitempty"`
 }
 
-/*
-*
-* 这是用来给外部输出日志的websocket服务器，其功能非常简单，就是单纯的对外输出实时日志，方便调试使用。
-* 注意：该功能需要配合HttpApiServer使用, 客户端连上以后必须在5s内发送一个 ‘WsPlayer’ 的固定字符
-*       串到服务器才能过认证。
-*
- */
 type websocketPlayerManager struct {
 	WsServer websocket.Upgrader
 	Clients  map[string]*websocket.Conn
@@ -50,6 +43,7 @@ type rtspServer struct {
 	webServer              *gin.Engine
 	rtspCameras            map[string]RtspCameraInfo
 	websocketPlayerManager *websocketPlayerManager
+	wsPort                 int
 }
 
 // NewRouter Gin 路由配置
@@ -59,6 +53,7 @@ func InitRtspServer(rulex typex.RuleX) *rtspServer {
 		webServer:              gin.New(),
 		rtspCameras:            map[string]RtspCameraInfo{},
 		websocketPlayerManager: NewPlayerManager(),
+		wsPort:                 9400,
 	}
 	// 注册Websocket server
 	__DefaultRtspServer.webServer.Use(cros)
@@ -68,6 +63,10 @@ func InitRtspServer(rulex typex.RuleX) *rtspServer {
 	// 注意：这个接口是给FFMPEG请求的
 	group.POST("/ffmpegPush", func(ctx *gin.Context) {
 		LiveId := ctx.Query("liveId")
+		if LiveId == "" {
+			ctx.Writer.Flush()
+			return
+		}
 		// Token := ctx.Query("token")
 		glogger.GLogger.Info("Receive stream push From:", LiveId)
 		// http://127.0.0.1:9400 :后期通过参数传进
@@ -83,9 +82,10 @@ func InitRtspServer(rulex typex.RuleX) *rtspServer {
 			pushToWebsocket(LiveId, data)
 		}
 		ctx.Writer.Flush()
+		glogger.GLogger.Info("Stream push stop:", LiveId)
 	})
 	go func(ctx context.Context) {
-		listener, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", 9400))
+		listener, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", __DefaultRtspServer.wsPort))
 		if err != nil {
 			glogger.GLogger.Fatalf("Rtsp stream server listen error: %s\n", err)
 		}
