@@ -107,7 +107,7 @@ func (td *tdEngineTarget) Status() typex.SourceState {
 	if td.test() {
 		return typex.SOURCE_UP
 	}
-	return typex.SOURCE_DOWN
+	return td.status
 }
 
 // 获取资源绑定的的详情

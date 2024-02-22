@@ -278,7 +278,7 @@ func (tc *iothub) Status() typex.SourceState {
 			return typex.SOURCE_UP
 		}
 	}
-	return typex.SOURCE_DOWN
+	return tc.status
 }
 
 func (tc *iothub) Test(inEndId string) bool {
@@ -287,7 +287,6 @@ func (tc *iothub) Test(inEndId string) bool {
 	}
 	return false
 }
-
 
 func (tc *iothub) Details() *typex.InEnd {
 	return tc.RuleEngine.GetInEnd(tc.PointId)

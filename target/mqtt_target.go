@@ -110,8 +110,9 @@ func (mq *mqttOutEndTarget) Status() typex.SourceState {
 		if mq.client.IsConnected() {
 			return typex.SOURCE_UP
 		}
+		return typex.SOURCE_DOWN
 	}
-	return typex.SOURCE_DOWN
+	return mq.status
 }
 
 func (mq *mqttOutEndTarget) Details() *typex.OutEnd {
