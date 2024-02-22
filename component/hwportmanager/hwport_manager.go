@@ -32,16 +32,14 @@ import (
 var __HwPortsManager *HwPortsManager
 
 type HwPortsManager struct {
-	Interfaces map[string]RhinoH3HwPort
+	Interfaces sync.Map
 	rulex      typex.RuleX
-	lock       sync.Mutex
 }
 
 func InitHwPortsManager(rulex typex.RuleX) *HwPortsManager {
 	__HwPortsManager = &HwPortsManager{
-		Interfaces: map[string]RhinoH3HwPort{},
+		Interfaces: sync.Map{},
 		rulex:      rulex,
-		lock:       sync.Mutex{},
 	}
 	return __HwPortsManager
 }
@@ -61,7 +59,7 @@ type UartConfig struct {
 }
 type HwPortOccupy struct {
 	UUID string `json:"uuid"` // UUID
-	Type string `json:"type"` // DEVICE, Other......
+	Type string `json:"type"` // DEVICE, OS,... Other......
 	Name string `json:"name"` // 占用的设备名称
 }
 type RhinoH3HwPort struct {
@@ -86,15 +84,11 @@ func (v RhinoH3HwPort) String() string {
 *
  */
 func SetHwPort(Port RhinoH3HwPort) {
-	__HwPortsManager.lock.Lock()
-	defer __HwPortsManager.lock.Unlock()
-	__HwPortsManager.Interfaces[Port.Name] = Port
+	__HwPortsManager.Interfaces.Store(Port.Name, Port)
 	refreshHwPort(Port.Name)
 }
 func RefreshPort(Port RhinoH3HwPort) {
-	__HwPortsManager.lock.Lock()
-	defer __HwPortsManager.lock.Unlock()
-	__HwPortsManager.Interfaces[Port.Name] = Port
+	__HwPortsManager.Interfaces.Store(Port.Name, Port)
 	refreshHwPort(Port.Name)
 }
 
@@ -104,10 +98,11 @@ func RefreshPort(Port RhinoH3HwPort) {
 *
  */
 func refreshHwPort(name string) {
-	Port, ok := __HwPortsManager.Interfaces[name]
+	Object, ok := __HwPortsManager.Interfaces.Load(name)
 	if !ok {
 		return
 	}
+	Port := Object.(RhinoH3HwPort)
 	if Port.Busy {
 		if Port.OccupyBy.Type == "DEVICE" {
 			UUID := Port.OccupyBy.UUID
@@ -117,6 +112,7 @@ func refreshHwPort(name string) {
 			}
 		}
 	}
+
 }
 
 /*
@@ -125,10 +121,8 @@ func refreshHwPort(name string) {
 *
  */
 func GetHwPort(name string) (RhinoH3HwPort, error) {
-	__HwPortsManager.lock.Lock()
-	defer __HwPortsManager.lock.Unlock()
-	if Port, ok := __HwPortsManager.Interfaces[name]; ok {
-		return Port, nil
+	if Object, ok := __HwPortsManager.Interfaces.Load(name); ok {
+		return Object.(RhinoH3HwPort), nil
 	}
 	return RhinoH3HwPort{}, fmt.Errorf("interface not exists:%s", name)
 }
@@ -140,9 +134,24 @@ func GetHwPort(name string) (RhinoH3HwPort, error) {
  */
 func AllHwPort() []RhinoH3HwPort {
 	result := []RhinoH3HwPort{}
-	for _, v := range __HwPortsManager.Interfaces {
-		result = append(result, v)
-	}
+	__HwPortsManager.Interfaces.Range(func(key, Object any) bool {
+		// 如果不是被rulex占用；则需要检查是否被操作系统进程占用了
+		Port := Object.(RhinoH3HwPort)
+		if Port.OccupyBy.Type != "DEVICE" {
+			if err := CheckSerialBusy(Port.Name); err != nil {
+				SetInterfaceBusy(Port.Name, HwPortOccupy{
+					UUID: "OS",
+					Type: "OS",
+					Name: "OS",
+				})
+			} else {
+				FreeInterfaceBusy(Port.Name)
+			}
+		}
+		result = append(result, Port)
+		return true
+	})
+
 	return result
 }
 
@@ -152,12 +161,11 @@ func AllHwPort() []RhinoH3HwPort {
 *
  */
 func SetInterfaceBusy(name string, OccupyBy HwPortOccupy) {
-	__HwPortsManager.lock.Lock()
-	defer __HwPortsManager.lock.Unlock()
-	if Port, ok := __HwPortsManager.Interfaces[name]; ok {
+	if Object, ok := __HwPortsManager.Interfaces.Load(name); ok {
+		Port := Object.(RhinoH3HwPort)
 		Port.Busy = true
 		Port.OccupyBy = OccupyBy
-		__HwPortsManager.Interfaces[name] = Port
+		__HwPortsManager.Interfaces.Store(name, Port)
 	}
 }
 
@@ -167,15 +175,14 @@ func SetInterfaceBusy(name string, OccupyBy HwPortOccupy) {
 *
  */
 func FreeInterfaceBusy(name string) {
-	__HwPortsManager.lock.Lock()
-	defer __HwPortsManager.lock.Unlock()
-	if Port, ok := __HwPortsManager.Interfaces[name]; ok {
+	if Object, ok := __HwPortsManager.Interfaces.Load(name); ok {
+		Port := Object.(RhinoH3HwPort)
 		if Port.OccupyBy.Type == "DEVICE" {
 			Port.Busy = false
 			Port.OccupyBy = HwPortOccupy{
 				"-", "-", "-",
 			}
-			__HwPortsManager.Interfaces[name] = Port
+			__HwPortsManager.Interfaces.Store(name, Port)
 		}
 	}
 }
