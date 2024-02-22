@@ -35,6 +35,7 @@ import (
  */
 func ReStartRulex(c *gin.Context, ruleEngine typex.RuleX) {
 	c.JSON(common.HTTP_OK, common.Ok())
+	os.Exit(0)
 }
 
 /*
