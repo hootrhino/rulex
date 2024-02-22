@@ -136,7 +136,7 @@ func (tc *genericMqttSource) Status() typex.SourceState {
 			return typex.SOURCE_UP
 		}
 	}
-	return typex.SOURCE_DOWN
+	return tc.status
 }
 
 func (tc *genericMqttSource) Details() *typex.InEnd {

@@ -105,7 +105,7 @@ func (g776 *userG776) Status() typex.SourceState {
 		}
 		return typex.SOURCE_UP
 	}
-	return typex.SOURCE_DOWN
+	return g776.status
 }
 
 /*

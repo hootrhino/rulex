@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/hootrhino/rulex/component/intermetric"
 	"github.com/hootrhino/rulex/glogger"
@@ -95,6 +96,45 @@ func (q *DataCacheQueue) Push(d QueueData) error {
 		return nil
 	}
 }
+func processQueueData(xQueue XQueue) {
+	select {
+	case qd := <-xQueue.GetInQueue():
+		if qd.I != nil {
+			qd.E.RunSourceCallbacks(qd.I, qd.Data)
+		}
+	case qd := <-xQueue.GetDeviceQueue():
+		if qd.D != nil {
+			qd.E.RunDeviceCallbacks(qd.D, qd.Data)
+		}
+	case qd := <-xQueue.GetOutQueue():
+		processOutQueueData(qd, qd.E)
+	case <-xQueue.GetQueue():
+		// 马上废弃
+	}
+}
+func runCallbacksIfNotNull(entity interface{}, e typex.RuleX,
+	data interface{}, callback func(interface{}, interface{})) {
+	if entity != nil {
+		callback(entity, data)
+	}
+}
+func processOutQueueData(qd QueueData, e typex.RuleX) {
+	if qd.O != nil {
+		v, ok := e.AllOutEnd().Load(qd.O.UUID)
+		if ok {
+			target := v.(*typex.OutEnd).Target
+			if target == nil {
+				return
+			}
+			if _, err := target.To(qd.Data); err != nil {
+				glogger.GLogger.Error(err)
+				intermetric.IncOutFailed()
+			} else {
+				intermetric.IncOut()
+			}
+		}
+	}
+}
 
 /*
 *
@@ -140,64 +180,78 @@ func StartDataCacheQueue() {
 			select {
 			case <-ctx.Done():
 				return
-			// 这个地方不能阻塞，需要借助一个外部queue
-			// push qd -> Queue
-			case qd := <-xQueue.GetInQueue():
-				{
-					if qd.I != nil {
-						qd.E.RunSourceCallbacks(qd.I, qd.Data)
-					}
-				}
-			case qd := <-xQueue.GetDeviceQueue():
-				{
-					if qd.D != nil {
-						qd.E.RunDeviceCallbacks(qd.D, qd.Data)
-					}
-				}
-			case qd := <-xQueue.GetOutQueue():
-				{
-					if qd.O != nil {
-						v, ok := qd.E.AllOutEnd().Load(qd.O.UUID)
-						if ok {
-							target := v.(*typex.OutEnd).Target
-							if target == nil {
-								continue
-							}
-							if _, err := target.To(qd.Data); err != nil {
-								glogger.GLogger.Error(err)
-								intermetric.IncOutFailed()
-							} else {
-								intermetric.IncOut()
-							}
-						}
-					}
-				}
-			case qd := <-xQueue.GetQueue(): // 马上废弃
-				{
-					if qd.I != nil {
-						qd.E.RunSourceCallbacks(qd.I, qd.Data)
-					}
-					if qd.D != nil {
-						qd.E.RunDeviceCallbacks(qd.D, qd.Data)
-					}
-					if qd.O != nil {
-						v, ok := qd.E.AllOutEnd().Load(qd.O.UUID)
-						if ok {
-							target := v.(*typex.OutEnd).Target
-							if target == nil {
-								continue
-							}
-							if _, err := target.To(qd.Data); err != nil {
-								glogger.GLogger.Error(err)
-								intermetric.IncOutFailed()
-							} else {
-								intermetric.IncOut()
-							}
-						}
-					}
-				}
+			case <-time.After(100 * time.Millisecond):
+				processQueueData(xQueue)
 			}
 		}
+		// for {
+		// 	select {
+		// 	case <-ctx.Done():
+		// 		return
+		// 	case <-time.After(100 * time.Millisecond):
+
+		// 		select {
+		// 		case qd := <-xQueue.GetInQueue():
+		// 			{
+		// 				if qd.I != nil {
+		// 					qd.E.RunSourceCallbacks(qd.I, qd.Data)
+		// 				}
+		// 			}
+		// 		case qd := <-xQueue.GetDeviceQueue():
+		// 			{
+		// 				if qd.D != nil {
+		// 					qd.E.RunDeviceCallbacks(qd.D, qd.Data)
+		// 				}
+		// 			}
+		// 		case qd := <-xQueue.GetOutQueue():
+		// 			{
+		// 				if qd.O != nil {
+		// 					v, ok := qd.E.AllOutEnd().Load(qd.O.UUID)
+		// 					if ok {
+		// 						target := v.(*typex.OutEnd).Target
+		// 						if target == nil {
+		// 							continue
+		// 						}
+		// 						if _, err := target.To(qd.Data); err != nil {
+		// 							glogger.GLogger.Error(err)
+		// 							intermetric.IncOutFailed()
+		// 						} else {
+		// 							intermetric.IncOut()
+		// 						}
+		// 					}
+		// 				}
+		// 			}
+		// 		case qd := <-xQueue.GetQueue(): // 马上废弃
+		// 			{
+		// 				if qd.I != nil {
+		// 					qd.E.RunSourceCallbacks(qd.I, qd.Data)
+		// 				}
+		// 				if qd.D != nil {
+		// 					qd.E.RunDeviceCallbacks(qd.D, qd.Data)
+		// 				}
+		// 				if qd.O != nil {
+		// 					v, ok := qd.E.AllOutEnd().Load(qd.O.UUID)
+		// 					if ok {
+		// 						target := v.(*typex.OutEnd).Target
+		// 						if target == nil {
+		// 							continue
+		// 						}
+		// 						if _, err := target.To(qd.Data); err != nil {
+		// 							glogger.GLogger.Error(err)
+		// 							intermetric.IncOutFailed()
+		// 						} else {
+		// 							intermetric.IncOut()
+		// 						}
+		// 					}
+		// 				}
+		// 			}
+		// 		default:
+		// 			{
+		// 				break
+		// 			}
+		// 		}
+		// 	}
+		// }
 	}(typex.GCTX, DefaultDataCacheQueue)
 }
 

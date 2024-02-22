@@ -69,7 +69,7 @@ func (nt *natsTarget) Status() typex.SourceState {
 			return typex.SOURCE_UP
 		}
 	}
-	return typex.SOURCE_DOWN
+	return nt.status
 }
 
 func (nt *natsTarget) Details() *typex.OutEnd {

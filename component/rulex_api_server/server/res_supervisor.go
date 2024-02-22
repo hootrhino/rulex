@@ -33,7 +33,7 @@ func StartInSupervisor(ctx context.Context, in *typex.InEnd, ruleEngine typex.Ru
 			return
 		}
 		// STOP 设计特殊状态,标记被彻底删除的资源
-		if currentIn.Source.Details().State == typex.SOURCE_STOP {
+		if currentIn.Source.Status() == typex.SOURCE_STOP {
 			glogger.GLogger.Debugf("Source:%v Stopped, supervisor exit", UUID)
 			return
 		}
@@ -75,7 +75,7 @@ func StartOutSupervisor(ctx context.Context, out *typex.OutEnd, ruleEngine typex
 			glogger.GLogger.Debugf("OutEnd:%v Deleted, supervisor exit", UUID)
 			return
 		}
-		if currentOut.Target.Details().State == typex.SOURCE_STOP {
+		if currentOut.Target.Status() == typex.SOURCE_STOP {
 			glogger.GLogger.Debugf("OutEnd:%v Stopped, supervisor exit", UUID)
 			return
 		}
@@ -119,7 +119,7 @@ func StartDeviceSupervisor(ctx context.Context, device *typex.Device, ruleEngine
 			glogger.GLogger.Debugf("Device:%v Deleted, supervisor exit", UUID)
 			return
 		}
-		if currentDevice.Device.Details().State == typex.DEV_STOP {
+		if currentDevice.Device.Status() == typex.DEV_STOP {
 			glogger.GLogger.Debugf("Device:%v Stopped, supervisor exit", UUID)
 			return
 		}
