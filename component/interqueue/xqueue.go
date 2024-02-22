@@ -296,7 +296,7 @@ func (q *DataCacheQueue) pushIn(d QueueData) error {
 	// }
 	if len(q.InQueue)+1 > q.GetSize() {
 		msg := fmt.Sprintf("attached max queue size, max size is:%v, current size is: %v",
-			q.GetSize(), len(q.Queue)+1)
+			q.GetSize(), len(q.InQueue)+1)
 		glogger.GLogger.Error(msg)
 		return errors.New(msg)
 	} else {
@@ -316,7 +316,7 @@ func (q *DataCacheQueue) pushOut(d QueueData) error {
 	// }
 	if len(q.OutQueue)+1 > q.GetSize() {
 		msg := fmt.Sprintf("attached max queue size, max size is:%v, current size is: %v",
-			q.GetSize(), len(q.Queue)+1)
+			q.GetSize(), len(q.OutQueue)+1)
 		glogger.GLogger.Error(msg)
 		return errors.New(msg)
 	} else {
@@ -336,7 +336,7 @@ func (q *DataCacheQueue) pushDevice(d QueueData) error {
 	// }
 	if len(q.DeviceQueue)+1 > q.GetSize() {
 		msg := fmt.Sprintf("attached max queue size, max size is:%v, current size is: %v",
-			q.GetSize(), len(q.Queue)+1)
+			q.GetSize(), len(q.DeviceQueue)+1)
 		glogger.GLogger.Error(msg)
 		return errors.New(msg)
 	} else {

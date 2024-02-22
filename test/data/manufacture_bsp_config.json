@@ -1,0 +1,112 @@
+{
+    "uart": [
+        {
+            "uuid": 1,
+            "name": "ttyS1",
+            "path": "/dev/ttyS1",
+            "alias": "TTY",
+            "type": "system/user",
+            "description": "system serialport"
+        }
+    ],
+    "rs232": [
+        {
+            "uuid": 1,
+            "name": "ttyS1",
+            "path": "/dev/ttyS1",
+            "alias": "TTY",
+            "type": "system/user",
+            "description": "system serialport"
+        }
+    ],
+    "rs485": [
+        {
+            "uuid": 1,
+            "name": "ttyS1",
+            "path": "/dev/ttyS1",
+            "alias": "TTY",
+            "type": "system/user",
+            "description": "system serialport"
+        }
+    ],
+    "can": [
+        {
+            "uuid": 1,
+            "name": "ttyS1",
+            "path": "/dev/ttyS1",
+            "alias": "TTY",
+            "type": "system/user",
+            "description": "system serialport"
+        }
+    ],
+    "hdmi": [
+        {
+            "uuid": 1,
+            "name": "ttyS1",
+            "path": "/dev/ttyS1",
+            "alias": "TTY",
+            "type": "system/user",
+            "description": "system serialport"
+        }
+    ],
+    "video": [
+        {
+            "uuid": 1,
+            "name": "ttyS1",
+            "path": "/dev/ttyS1",
+            "alias": "TTY",
+            "type": "system/user",
+            "description": "system serialport"
+        }
+    ],
+    "audio": [
+        {
+            "uuid": 1,
+            "name": "ttyS1",
+            "path": "/dev/ttyS1",
+            "alias": "TTY",
+            "type": "system/user",
+            "description": "system serialport"
+        }
+    ],
+    "di": [
+        {
+            "uuid": 1,
+            "name": "ttyS1",
+            "path": "/dev/ttyS1",
+            "alias": "TTY",
+            "type": "system/user",
+            "description": "system serialport"
+        }
+    ],
+    "do": [
+        {
+            "uuid": 1,
+            "name": "ttyS1",
+            "path": "/dev/ttyS1",
+            "alias": "TTY",
+            "type": "system/user",
+            "description": "system serialport"
+        }
+    ],
+    "relay": [
+        {
+            "uuid": 1,
+            "name": "ttyS1",
+            "path": "/dev/ttyS1",
+            "alias": "TTY",
+            "type": "system/user",
+            "description": "system serialport"
+        }
+    ],
+    "ir": [
+        {
+            "uuid": 1,
+            "name": "ttyS1",
+            "path": "/dev/ttyS1",
+            "alias": "TTY",
+            "type": "system/user",
+            "description": "system serialport"
+        }
+    ]
+}

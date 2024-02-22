@@ -433,11 +433,11 @@ func (e *RuleEngine) RestartInEnd(uuid string) error {
 	if Value, ok := e.InEnds.Load(uuid); ok {
 		InEnd := Value.(*typex.InEnd)
 		if InEnd.Source != nil {
-			InEnd.Source.Stop() // Down 以后会被自动拉起来
+			InEnd.Source.Details().State = typex.SOURCE_DOWN // Down 以后会被自动拉起来
 		}
 		return nil
 	}
-	return fmt.Errorf("InendEnd not exists:%s", uuid)
+	return fmt.Errorf("inend not exists:%s", uuid)
 }
 
 // 重启目标
@@ -445,11 +445,11 @@ func (e *RuleEngine) RestartOutEnd(uuid string) error {
 	if Value, ok := e.OutEnds.Load(uuid); ok {
 		OutEnd := Value.(*typex.OutEnd)
 		if OutEnd.Target != nil {
-			OutEnd.Target.Stop() // Down 以后会被自动拉起来
+			OutEnd.Target.Details().State = typex.SOURCE_DOWN // Down 以后会被自动拉起来
 		}
 		return nil
 	}
-	return fmt.Errorf("OutEnd not exists:%s", uuid)
+	return fmt.Errorf("outEnd not exists:%s", uuid)
 
 }
 
@@ -458,12 +458,11 @@ func (e *RuleEngine) RestartDevice(uuid string) error {
 	if Value, ok := e.Devices.Load(uuid); ok {
 		Device := Value.(*typex.Device)
 		if Device.Device != nil {
-			// Device.Device.Stop() // Down 以后会被自动拉起来
 			Device.Device.SetState(typex.DEV_DOWN) // Down 以后会被自动拉起来
 		}
 		return nil
 	}
-	return fmt.Errorf("Device not exists:%s", uuid)
+	return fmt.Errorf("device not exists:%s", uuid)
 }
 
 /*
