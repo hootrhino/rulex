@@ -127,7 +127,7 @@ func (td *tdEngineTarget) Topology() []typex.TopologyPoint {
 
 // 停止资源, 用来释放资源
 func (td *tdEngineTarget) Stop() {
-	td.status = typex.SOURCE_STOP
+	td.status = typex.SOURCE_DOWN
 	td.CancelCTX()
 }
 

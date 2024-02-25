@@ -30,7 +30,6 @@ func LoadNewestInEnd(uuid string, ruleEngine typex.RuleX) error {
 	old := ruleEngine.GetInEnd(uuid)
 	if old != nil {
 		if old.Source.Status() == typex.SOURCE_UP {
-			old.Source.Details().State = typex.SOURCE_STOP
 			old.Source.Stop()
 		}
 	}
@@ -119,6 +118,10 @@ func LoadNewestDevice(uuid string, ruleEngine typex.RuleX) error {
 	if err != nil {
 		return err
 	}
+	// 自动加载
+	// if !mDevice.Enable {
+	// 	return nil
+	// }
 	config := map[string]interface{}{}
 	if err := json.Unmarshal([]byte(mDevice.Config), &config); err != nil {
 		return err

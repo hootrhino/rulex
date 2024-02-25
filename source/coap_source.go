@@ -77,7 +77,7 @@ func (cc *coAPInEndSource) Start(cctx typex.CCTX) error {
 }
 
 func (cc *coAPInEndSource) Stop() {
-	cc.status = typex.SOURCE_STOP
+	cc.status = typex.SOURCE_DOWN
 	if cc.CancelCTX != nil {
 		cc.CancelCTX()
 	}

@@ -25,7 +25,6 @@ import (
 	lua "github.com/hootrhino/gopher-lua"
 	"github.com/hootrhino/rulex/component/aibase"
 	"github.com/hootrhino/rulex/component/appstack"
-	"github.com/hootrhino/rulex/component/datacenter"
 	"github.com/hootrhino/rulex/component/hwportmanager"
 	iotschema "github.com/hootrhino/rulex/component/intercache/iotschema"
 	modbuscache "github.com/hootrhino/rulex/component/intercache/modbus"
@@ -73,7 +72,7 @@ type RuleEngine struct {
 }
 
 func InitRuleEngine(config typex.RulexConfig) typex.RuleX {
-	__DefaultRuleEngine := &RuleEngine{
+	__DefaultRuleEngine = &RuleEngine{
 		DeviceTypeManager: core.NewDeviceTypeManager(),
 		SourceTypeManager: core.NewSourceTypeManager(),
 		TargetTypeManager: core.NewTargetTypeManager(),
@@ -113,7 +112,7 @@ func InitRuleEngine(config typex.RulexConfig) typex.RuleX {
 	// Internal Queue
 	interqueue.InitDataCacheQueue(__DefaultRuleEngine, core.GlobalConfig.MaxQueueSize)
 	// Data center
-	datacenter.InitDataCenter(__DefaultRuleEngine)
+	// datacenter.InitDataCenter(__DefaultRuleEngine)
 	// Rtsp server
 	rtspserver.InitRtspServer(__DefaultRuleEngine)
 	return __DefaultRuleEngine
@@ -319,12 +318,16 @@ func (e *RuleEngine) SaveInEnd(in *typex.InEnd) {
 	e.InEnds.Store(in.UUID, in)
 }
 
-func (e *RuleEngine) RemoveInEnd(id string) {
-	if inEnd := e.GetInEnd(id); inEnd != nil {
-		inEnd.Source.Stop()
-		e.InEnds.Delete(id)
-		inEnd = nil
-		glogger.GLogger.Infof("InEnd [%v] has been deleted", id)
+func (e *RuleEngine) RemoveInEnd(uuid string) {
+	if inEnd := e.GetInEnd(uuid); inEnd != nil {
+		if inEnd.Source != nil {
+			glogger.GLogger.Infof("InEnd [%v] ready to stop", uuid)
+			inEnd.Source.Stop()
+			glogger.GLogger.Infof("InEnd [%v] stopped", uuid)
+			e.InEnds.Delete(uuid)
+			inEnd = nil
+			glogger.GLogger.Infof("InEnd [%v] has been deleted", uuid)
+		}
 	}
 }
 
@@ -350,11 +353,13 @@ func (e *RuleEngine) SaveOutEnd(out *typex.OutEnd) {
 func (e *RuleEngine) RemoveOutEnd(uuid string) {
 	if outEnd := e.GetOutEnd(uuid); outEnd != nil {
 		if outEnd.Target != nil {
+			glogger.GLogger.Infof("OutEnd [%v] ready to stop", uuid)
 			outEnd.Target.Stop()
+			glogger.GLogger.Infof("OutEnd [%v] stopped", uuid)
 			e.OutEnds.Delete(uuid)
 			outEnd = nil
+			glogger.GLogger.Infof("OutEnd [%v] has been deleted", uuid)
 		}
-		glogger.GLogger.Infof("OutEnd [%v] has been deleted", uuid)
 	}
 }
 

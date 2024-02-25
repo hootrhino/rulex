@@ -54,7 +54,7 @@ func InitDataCenter(rulex typex.RuleX) {
 func SchemaList() []SchemaDetail {
 	Schemas := []SchemaDetail{}
 	// 本地内部数据中心
-	Schemas = append(Schemas, __DefaultDataCenter.LocalDb.GetSchemaDetail("RULEX_INTERNAL_DATACENTER"))
+	Schemas = append(Schemas, __DefaultDataCenter.LocalDb.GetSchemaDetail("rulex_internal_datacenter"))
 	// RPC的
 	trailer.AllGoods().Range(func(key, value any) bool {
 		goodsPs := (value.(*trailer.GoodsProcess))
@@ -82,10 +82,10 @@ func SchemaList() []SchemaDetail {
 func GetSchemaDefine(goodsId string) (SchemaDefine, error) {
 	schemaDefine := SchemaDefine{}
 	// Rows 来自本地Sqlite查询
-	if goodsId == "RULEX_INTERNAL_DATACENTER" {
+	if goodsId == "rulex_internal_datacenter" {
 		return SchemaDefine{
 			// 本地是固定写法INTERNAL_DATACENTER
-			UUID:    "RULEX_INTERNAL_DATACENTER",
+			UUID:    "rulex_internal_datacenter",
 			Columns: []Column{},
 		}, nil
 	}
@@ -193,7 +193,7 @@ func Query(goodsId, query string) ([]map[string]any, error) {
 
 	// 本地
 	// Rows 来自本地Sqlite查询
-	if goodsId == "RULEX_INTERNAL_DATACENTER" {
+	if goodsId == "rulex_internal_datacenter" {
 		LocalResult, err := __DefaultDataCenter.LocalDb.Query(goodsId, query)
 		return LocalResult, err
 	}

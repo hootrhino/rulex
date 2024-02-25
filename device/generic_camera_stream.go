@@ -126,7 +126,7 @@ func (vc *videoCamera) Status() typex.DeviceState {
 }
 
 func (vc *videoCamera) Stop() {
-	vc.status = typex.DEV_STOP
+	vc.status = typex.DEV_DOWN
 	if vc.CancelCTX != nil {
 		vc.CancelCTX()
 	}

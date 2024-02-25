@@ -55,14 +55,12 @@ func (e *RuleEngine) RemoveDevice(uuid string) {
 	if dev := e.GetDevice(uuid); dev != nil {
 		if dev.Device != nil {
 			glogger.GLogger.Infof("Device [%v] ready to stop", uuid)
-			if dev.Device.Status() == typex.DEV_UP {
-				dev.Device.Stop()
-			}
+			dev.Device.Stop()
 			glogger.GLogger.Infof("Device [%v] has been stopped", uuid)
 			e.Devices.Delete(uuid)
+			dev = nil
 			glogger.GLogger.Infof("Device [%v] has been deleted", uuid)
 		}
-
 	}
 }
 
@@ -95,7 +93,7 @@ func (e *RuleEngine) loadDevices(abstractDevice typex.XDevice, deviceInfo *typex
 	config := e.GetDevice(deviceInfo.UUID).Config
 	if config == nil {
 		e.RemoveDevice(deviceInfo.UUID)
-		err := fmt.Errorf("Device [%v] config is nil", deviceInfo.Name)
+		err := fmt.Errorf("device [%v] config is nil", deviceInfo.Name)
 		return err
 	}
 	if err := abstractDevice.Init(deviceInfo.UUID, config); err != nil {

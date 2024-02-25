@@ -152,7 +152,7 @@ func (uart *genericUartDevice) Status() typex.DeviceState {
 
 // 停止设备
 func (uart *genericUartDevice) Stop() {
-	uart.status = typex.DEV_STOP
+	uart.status = typex.DEV_DOWN
 	uart.CancelCTX()
 	if uart.driver != nil {
 		uart.driver.Stop()

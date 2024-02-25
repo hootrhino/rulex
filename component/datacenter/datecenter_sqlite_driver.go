@@ -13,7 +13,7 @@ import (
 	"gorm.io/gorm/logger"
 )
 
-const __DEFAULT_DB_PATH string = "./RULEX_INTERNAL_DATACENTER.db"
+const __DEFAULT_DB_PATH string = "./rulex_internal_datacenter.db"
 
 var __Sqlite *SqliteDAO
 

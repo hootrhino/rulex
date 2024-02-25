@@ -102,7 +102,7 @@ func (sqt *SqliteTarget) To(data interface{}) (interface{}, error) {
 }
 
 func (sqt *SqliteTarget) Stop() {
-	sqt.status = typex.SOURCE_STOP
+	sqt.status = typex.SOURCE_DOWN
 	sqt.CancelCTX()
 	sqt.db = nil
 }

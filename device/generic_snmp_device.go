@@ -96,7 +96,7 @@ func (sd *genericSnmpDevice) Start(cctx typex.CCTX) error {
 			select {
 			case <-ctx.Done():
 				{
-					sd.status = typex.DEV_STOP
+					sd.status = typex.DEV_DOWN
 					ticker.Stop()
 					return
 				}
@@ -141,7 +141,7 @@ func (sd *genericSnmpDevice) Status() typex.DeviceState {
 
 // 停止设备
 func (sd *genericSnmpDevice) Stop() {
-	sd.status = typex.DEV_STOP
+	sd.status = typex.DEV_DOWN
 	if sd.CancelCTX != nil {
 		sd.CancelCTX()
 	}

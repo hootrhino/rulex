@@ -77,7 +77,7 @@ func (mm *httpInEndSource) DataModels() []typex.XDataModel {
 }
 
 func (hh *httpInEndSource) Stop() {
-	hh.status = typex.SOURCE_STOP
+	hh.status = typex.SOURCE_DOWN
 	if hh.CancelCTX != nil {
 		hh.CancelCTX()
 	}
