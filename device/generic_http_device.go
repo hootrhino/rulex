@@ -115,7 +115,7 @@ func (hd *GenericHttpDevice) Status() typex.DeviceState {
 
 // 停止设备
 func (hd *GenericHttpDevice) Stop() {
-	hd.status = typex.DEV_STOP
+	hd.status = typex.DEV_DOWN
 	if hd.CancelCTX != nil {
 		hd.CancelCTX()
 	}

@@ -89,7 +89,7 @@ func (udpt *UdpTarget) To(data interface{}) (interface{}, error) {
 }
 
 func (udpt *UdpTarget) Stop() {
-	udpt.status = typex.SOURCE_STOP
+	udpt.status = typex.SOURCE_DOWN
 	if udpt.CancelCTX != nil {
 		udpt.CancelCTX()
 	}

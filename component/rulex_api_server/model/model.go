@@ -55,11 +55,11 @@ type MRule struct {
 type MInEnd struct {
 	RulexModel
 	// UUID for origin source ID
-	UUID      string     `gorm:"uniqueIndex"`
-	Type      string     `gorm:"not null"`
-	Name      string     `gorm:"not null"`
-	BindRules StringList `json:"bindRules"` // 与之关联的规则表["A","B","C"]
-
+	UUID        string     `gorm:"uniqueIndex"`
+	Type        string     `gorm:"not null"`
+	Enable      bool       `gorm:"not null"`
+	Name        string     `gorm:"not null"`
+	BindRules   StringList `json:"bindRules"` // 与之关联的规则表["A","B","C"]
 	Description string
 	Config      string
 	XDataModels string
@@ -76,9 +76,9 @@ func (md MInEnd) GetConfig() map[string]interface{} {
 
 type MOutEnd struct {
 	RulexModel
-	// UUID for origin source ID
 	UUID        string `gorm:"uniqueIndex"`
 	Type        string `gorm:"not null"`
+	Enable      bool   `gorm:"not null"`
 	Name        string `gorm:"not null"`
 	Description string
 	Config      string
@@ -107,6 +107,7 @@ type MDevice struct {
 	UUID        string `gorm:"uniqueIndex"`
 	Name        string `gorm:"not null"`
 	Type        string `gorm:"not null"`
+	Enable      bool   `gorm:"not null"`
 	SchemaId    string `gorm:"not null"`
 	Config      string
 	BindRules   StringList `json:"bindRules"` // 与之关联的规则表["A","B","C"]

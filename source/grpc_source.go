@@ -80,7 +80,7 @@ func (g *grpcInEndSource) DataModels() []typex.XDataModel {
 }
 
 func (g *grpcInEndSource) Stop() {
-	g.status = typex.SOURCE_STOP
+	g.status = typex.SOURCE_DOWN
 	if g.CancelCTX != nil {
 		g.CancelCTX()
 	}

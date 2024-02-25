@@ -139,16 +139,15 @@ Actions = {
 ## 数据样例
 Modbus采集器采集出来的数据是一个大Map结构。
 ```json
-{
-    "d1":{
-        "tag":"d1",
-        "function":3,
-        "slaverId":1,
-        "address":0,
-        "quantity":6,
-        "value":"0117011d0127011a0110010e"
+[
+    {
+        "tag": "a15",
+        "alias": "a15",
+        "slaverId": 15,
+        "lastFetchTime": 1708873997979,
+        "value": "1.000000"
     }
-}
+]
 ```
 - value: 十六进制字符串
 

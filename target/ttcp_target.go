@@ -166,7 +166,7 @@ func (ht *TTcpTarget) To(data interface{}) (interface{}, error) {
 }
 
 func (ht *TTcpTarget) Stop() {
-	ht.status = typex.SOURCE_STOP
+	ht.status = typex.SOURCE_DOWN
 	ht.CancelCTX()
 	if ht.client != nil {
 		ht.client.Close()

@@ -89,7 +89,7 @@ func NewDevice(t DeviceType,
 		UUID:        utils.DeviceUuid(),
 		Name:        name,
 		Type:        t,
-		State:       DEV_STOP,
+		State:       3,
 		Description: description,
 		AutoRestart: true, // 0.5以前默认自动重启
 		Config:      config,

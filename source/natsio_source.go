@@ -91,7 +91,7 @@ func (nt *natsSource) Details() *typex.InEnd {
 //--------------------------------------------------------
 
 func (nt *natsSource) Stop() {
-	nt.status = typex.SOURCE_STOP
+	nt.status = typex.SOURCE_DOWN
 	if nt.CancelCTX != nil {
 		nt.CancelCTX()
 	}

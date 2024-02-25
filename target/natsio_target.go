@@ -92,7 +92,7 @@ func (nt *natsTarget) To(data interface{}) (interface{}, error) {
 }
 
 func (nt *natsTarget) Stop() {
-	nt.status = typex.SOURCE_STOP
+	nt.status = typex.SOURCE_DOWN
 	nt.CancelCTX()
 	if nt.natsConnector != nil {
 		if nt.natsConnector.IsConnected() {

@@ -180,7 +180,7 @@ uninstall(){
     __remove_files "$WORKING_DIRECTORY/rulex.db"
     __remove_files "$WORKING_DIRECTORY/license.lic"
     __remove_files "$WORKING_DIRECTORY/license.key"
-    __remove_files "$WORKING_DIRECTORY/RULEX_INTERNAL_DATACENTER.db"
+    __remove_files "$WORKING_DIRECTORY/rulex_internal_datacenter.db"
     __remove_files "$WORKING_DIRECTORY/upload/"
     __remove_files "$WORKING_DIRECTORY/rulexlog.txt"
     __remove_files "$WORKING_DIRECTORY/rulex-daemon-log.txt"

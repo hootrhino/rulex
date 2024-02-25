@@ -10,6 +10,11 @@ import (
 	"github.com/hootrhino/rulex/typex"
 )
 
+/*
+*
+* 南向资源监控器 5秒检查一下状态
+*
+ */
 func StartInSupervisor(ctx context.Context, in *typex.InEnd, ruleEngine typex.RuleX) {
 	UUID := in.UUID
 	ticker := time.NewTicker(time.Duration(time.Second * 5))
@@ -27,16 +32,13 @@ func StartInSupervisor(ctx context.Context, in *typex.InEnd, ruleEngine typex.Ru
 			{
 			}
 		}
+		// 被删除后就直接退出监督进程
 		currentIn := ruleEngine.GetInEnd(UUID)
 		if currentIn == nil {
 			glogger.GLogger.Debugf("Source:%v Deleted, supervisor exit", UUID)
 			return
 		}
 		// STOP 设计特殊状态,标记被彻底删除的资源
-		if currentIn.Source.Status() == typex.SOURCE_STOP {
-			glogger.GLogger.Debugf("Source:%v Stopped, supervisor exit", UUID)
-			return
-		}
 		// 资源可能不会及时DOWN
 		if currentIn.Source.Status() == typex.SOURCE_DOWN {
 			info := fmt.Sprintf("Source:%v DOWN, supervisor try to Restart", UUID)
@@ -55,6 +57,12 @@ func StartInSupervisor(ctx context.Context, in *typex.InEnd, ruleEngine typex.Ru
 		<-ticker.C
 	}
 }
+
+/*
+*
+* 北向资源监控器 5秒检查一下状态
+*
+ */
 func StartOutSupervisor(ctx context.Context, out *typex.OutEnd, ruleEngine typex.RuleX) {
 	UUID := out.UUID
 	ticker := time.NewTicker(time.Duration(time.Second * 5))
@@ -70,13 +78,10 @@ func StartOutSupervisor(ctx context.Context, out *typex.OutEnd, ruleEngine typex
 			{
 			}
 		}
+		// 被删除后就直接退出监督进程
 		currentOut := ruleEngine.GetOutEnd(UUID)
 		if currentOut == nil {
 			glogger.GLogger.Debugf("OutEnd:%v Deleted, supervisor exit", UUID)
-			return
-		}
-		if currentOut.Target.Status() == typex.SOURCE_STOP {
-			glogger.GLogger.Debugf("OutEnd:%v Stopped, supervisor exit", UUID)
 			return
 		}
 		// 资源可能不会及时DOWN
@@ -97,6 +102,12 @@ func StartOutSupervisor(ctx context.Context, out *typex.OutEnd, ruleEngine typex
 		<-ticker.C
 	}
 }
+
+/*
+*
+* 设备监控器 5秒检查一下状态
+*
+ */
 func StartDeviceSupervisor(ctx context.Context, device *typex.Device, ruleEngine typex.RuleX) {
 	UUID := device.UUID
 	ticker := time.NewTicker(time.Duration(time.Second * 5))
@@ -114,13 +125,10 @@ func StartDeviceSupervisor(ctx context.Context, device *typex.Device, ruleEngine
 			{
 			}
 		}
+		// 被删除后就直接退出监督进程
 		currentDevice := ruleEngine.GetDevice(UUID)
 		if currentDevice == nil {
 			glogger.GLogger.Debugf("Device:%v Deleted, supervisor exit", UUID)
-			return
-		}
-		if currentDevice.Device.Status() == typex.DEV_STOP {
-			glogger.GLogger.Debugf("Device:%v Stopped, supervisor exit", UUID)
 			return
 		}
 		// 资源可能不会及时DOWN

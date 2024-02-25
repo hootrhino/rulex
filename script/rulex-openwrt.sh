@@ -111,7 +111,7 @@ uninstall() {
     __remove_files "$WORKING_DIRECTORY/rulex.db"
     __remove_files "$WORKING_DIRECTORY/license.lic"
     __remove_files "$WORKING_DIRECTORY/license.key"
-    __remove_files "$WORKING_DIRECTORY/RULEX_INTERNAL_DATACENTER.db"
+    __remove_files "$WORKING_DIRECTORY/rulex_internal_datacenter.db"
     __remove_files "$WORKING_DIRECTORY/LICENSE"
     __remove_files "$WORKING_DIRECTORY/md5.sum"
     __remove_files "$WORKING_DIRECTORY/upload/"

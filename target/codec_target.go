@@ -106,7 +106,7 @@ func (ct *codecTarget) To(data interface{}) (interface{}, error) {
 
 // 停止资源, 用来释放资源
 func (ct *codecTarget) Stop() {
-	ct.status = typex.SOURCE_STOP
+	ct.status = typex.SOURCE_DOWN
 	ct.CancelCTX()
 	if ct.rpcConnection != nil {
 		ct.rpcConnection.Close()
