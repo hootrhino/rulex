@@ -88,6 +88,7 @@ func LoadBuildInLuaLib(e typex.RuleX, r *typex.Rule) {
 	{
 		// 缓存器库
 		r.AddLib(e, "kv", "VSet", rulexlib.StoreSet(e))
+		r.AddLib(e, "kv", "VSetDuration", rulexlib.StoreSetDuration(e))
 		r.AddLib(e, "kv", "VGet", rulexlib.StoreGet(e))
 		r.AddLib(e, "kv", "VDel", rulexlib.StoreDelete(e))
 	}

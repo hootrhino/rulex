@@ -141,6 +141,7 @@ func LoadAppLib(app *Application, e typex.RuleX) {
 	{
 		// 缓存器库
 		addAppLib(app, e, "kv", "VSet", rulexlib.StoreSet(e))
+		addAppLib(app, e, "kv", "VSetDuration", rulexlib.StoreSetDuration(e))
 		addAppLib(app, e, "kv", "VGet", rulexlib.StoreGet(e))
 		addAppLib(app, e, "kv", "VDel", rulexlib.StoreDelete(e))
 	}
