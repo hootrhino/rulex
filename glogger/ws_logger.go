@@ -70,13 +70,13 @@ type RealTimeLogger struct {
 
 func (w *RealTimeLogger) Write(p []byte) (n int, err error) {
 	w.lock.Lock()
+	defer w.lock.Unlock()
 	for _, c := range w.Clients {
 		err := c.WriteMessage(websocket.TextMessage, p)
 		if err != nil {
 			return 0, err
 		}
 	}
-	w.lock.Unlock()
 	return 0, nil
 }
 

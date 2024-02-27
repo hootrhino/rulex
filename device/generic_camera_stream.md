@@ -16,7 +16,7 @@
         "inputMode": "LOCAL",
         "device": "USB2.0 PC CAMERA",
         "rtspUrl": "",
-        "outputMode": "H264_STREAM"
+        "OutputEncode": "H264_STREAM"
     }
 }
 ```
@@ -31,7 +31,7 @@
         "inputMode": "RTSP",
         "device": "",
         "rtspUrl": "rtsp://192.168.1.210:554/av0_0",
-        "outputMode": "H264_STREAM"
+        "OutputEncode": "H264_STREAM"
     }
 }
 ```

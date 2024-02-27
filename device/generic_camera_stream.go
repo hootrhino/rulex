@@ -6,6 +6,8 @@ import (
 	"io"
 	"os/exec"
 	"regexp"
+	"runtime"
+	"strings"
 	"syscall"
 
 	"github.com/hootrhino/rulex/component/iotschema"
@@ -14,14 +16,22 @@ import (
 	"github.com/hootrhino/rulex/utils"
 )
 
+const (
+	__INPUT_REMOTE_STREAM_RTSP               = "REMOTE_STREAM_RTSP"   // 远程RTSP拉流
+	__INPUT_LOCAL_CAMERA                     = "LOCAL_CAMERA"         // 本地摄像头
+	__OUTPUT_LOCAL_STREAM_SERVER             = "LOCAL_STREAM_SERVER"  // RULEX 自带的FLVServer
+	__OUTPUT_REMOTE_STREAM_SERVER            = "REMOTE_STREAM_SERVER" // 远程地址
+	__default_push_to_internal_ws_server_url = "http://127.0.0.1:9400/stream/ffmpegPush?liveId="
+)
+
 // RTSP URL格式= rtsp://<username>:<password>@<ip>:<port>，
+// 默认为本地拉流，推向Rulex自带的Stream server
 type _MainConfig struct {
-	InputMode   string `json:"inputMode" validate:"required"`  // 视频输入模式：RTSP | LOCAL
-	LocalDevice string `json:"device"`                         // 本地视频设备路径，在输入模式=LOCAL时生效
-	RtspUrl     string `json:"rtspUrl"`                        // 远程视频设备地址，在输入模式=RTSP时生效
-	OutputMode  string `json:"outputMode" validate:"required"` // 输出模式：JPEG_STREAM | H264_STREAM
-	outputAddr  string // 输出地址, 格式为: "Ip:Port",例如127.0.0.1:7890
-	playAddr    string // 输出地址, 格式为: "Ip:Port",例如127.0.0.1:7890
+	InputMode    string `json:"inputMode" validate:"required"`    // 视频输入模式: REMOTE_STREAM_RTSP | LOCAL_CAMERA
+	InputAddr    string `json:"inputAddr"`                        // 本地视频设备路径，在输入模式=LOCAL时生效
+	OutputMode   string `json:"outputMode" validate:"required"`   // 输出模式: LOCAL_STREAM_SERVER | REMOTE_STREAM_SERVER
+	OutputEncode string `json:"outputEncode" validate:"required"` // 输出编码: H264_STREAM
+	OutputAddr   string `json:"outputAddr"`                       // 输出地址, 格式为: "Ip:Port",例如127.0.0.1:7890
 }
 
 // 摄像头
@@ -37,12 +47,11 @@ func NewVideoCamera(e typex.RuleX) typex.XDevice {
 	videoCamera.RuleEngine = e
 	videoCamera.status = typex.DEV_DOWN
 	videoCamera.mainConfig = _MainConfig{
-		LocalDevice: "0",
-		RtspUrl:     "rtsp://127.0.0.1",
-		InputMode:   "LOCAL",
-		OutputMode:  "H264_STREAM",
-		outputAddr:  "http://127.0.0.1:9400/stream/ffmpegPush?liveId=",
-		playAddr:    "ws://127.0.0.1:9400/stream/live?liveId=",
+		InputMode:    __INPUT_LOCAL_CAMERA,
+		InputAddr:    "0",
+		OutputMode:   __OUTPUT_LOCAL_STREAM_SERVER,
+		OutputEncode: "H264_STREAM",
+		OutputAddr:   __default_push_to_internal_ws_server_url,
 	}
 	return videoCamera
 }
@@ -58,9 +67,9 @@ func (vc *videoCamera) Init(devId string, configMap map[string]interface{}) erro
 		glogger.GLogger.Error(err)
 		return err
 	}
-	if vc.mainConfig.InputMode == "RTSP" {
-		if !isValidRTSPAddress(vc.mainConfig.RtspUrl) {
-			return fmt.Errorf("invalid RtspUrl Format:%s", vc.mainConfig.RtspUrl)
+	if vc.mainConfig.InputMode == __INPUT_REMOTE_STREAM_RTSP {
+		if !isValidRTSPAddress(vc.mainConfig.InputAddr) {
+			return fmt.Errorf("invalid RtspUrl Format:%s", vc.mainConfig.InputAddr)
 		}
 	}
 	return nil
@@ -77,27 +86,45 @@ func isValidRTSPAddress(address string) bool {
 // 启动, 设备的工作进程
 // http://127.0.0.1:9400 RULEX自带的RTSP服务
 func (vc *videoCamera) Start(cctx typex.CCTX) error {
-	if vc.mainConfig.InputMode == "LOCAL" { // 本地USB摄像头
+	// 输出模式: LOCAL_STREAM_SERVER | REMOTE_STREAM_SERVER
+
+	if vc.mainConfig.InputMode == __INPUT_LOCAL_CAMERA { // 本地USB摄像头
 		// URL1 告诉RULEX要去哪里拉流
-		if vc.mainConfig.OutputMode == "H264_STREAM" {
-			url1 := vc.mainConfig.outputAddr + calculateMD5(vc.mainConfig.LocalDevice)
-			go vc.startFFMPEGProcess(vc.mainConfig.LocalDevice, url1)
+		if vc.mainConfig.OutputEncode == "H264_STREAM" {
+			if vc.mainConfig.OutputMode == __OUTPUT_LOCAL_STREAM_SERVER {
+				outputAddr := "http://127.0.0.1:9400/stream/ffmpegPush?liveId="
+				pushUrl := outputAddr + calculateMD5(vc.mainConfig.InputAddr)
+				go vc.startFFMPEGProcess(vc.mainConfig.InputAddr, pushUrl)
+			}
+			if vc.mainConfig.OutputMode == __OUTPUT_REMOTE_STREAM_SERVER {
+				if !isValidRTSPAddress(vc.mainConfig.OutputAddr) {
+					return fmt.Errorf("invalid OutputAddr Format:%s", vc.mainConfig.OutputAddr)
+				}
+				go vc.startFFMPEGProcess(vc.mainConfig.InputAddr, vc.mainConfig.OutputAddr)
+			}
 			// 告诉用户去那里拉流
-			url2 := vc.mainConfig.playAddr + calculateMD5(vc.mainConfig.LocalDevice)
-			vc.mainConfig.outputAddr = url2
 			vc.status = typex.DEV_UP
+			return nil
 		}
 
 	}
-	if vc.mainConfig.InputMode == "RTSP" { // RTSP
+	if vc.mainConfig.InputMode == __INPUT_REMOTE_STREAM_RTSP { // RTSP
 		// URL1 告诉RULEX要去哪里拉流
-		if vc.mainConfig.OutputMode == "H264_STREAM" {
-			url1 := vc.mainConfig.outputAddr + calculateMD5(vc.mainConfig.RtspUrl)
-			go vc.startFFMPEGProcess(vc.mainConfig.RtspUrl, url1)
+		if vc.mainConfig.OutputEncode == "H264_STREAM" {
+			if vc.mainConfig.OutputMode == __OUTPUT_LOCAL_STREAM_SERVER {
+				outputAddr := "http://127.0.0.1:9400/stream/ffmpegPush?liveId="
+				pushUrl := outputAddr + calculateMD5(vc.mainConfig.InputAddr)
+				go vc.startFFMPEGProcess(vc.mainConfig.InputAddr, pushUrl)
+			}
+			if vc.mainConfig.OutputMode == __OUTPUT_REMOTE_STREAM_SERVER {
+				if !isValidRTSPAddress(vc.mainConfig.OutputAddr) {
+					return fmt.Errorf("invalid OutputAddr Format:%s", vc.mainConfig.OutputAddr)
+				}
+				go vc.startFFMPEGProcess(vc.mainConfig.InputAddr, vc.mainConfig.OutputAddr)
+			}
 			// url2 告诉用户去哪里拉流
-			url2 := vc.mainConfig.playAddr + calculateMD5(vc.mainConfig.RtspUrl)
-			vc.mainConfig.outputAddr = url2
 			vc.status = typex.DEV_UP
+			return nil
 		}
 	}
 	return nil
@@ -154,69 +181,96 @@ func (vc *videoCamera) OnDCACall(_ string, _ string, _ interface{}) typex.DCARes
 	return typex.DCAResult{}
 }
 
-func (vc *videoCamera) StartPullRtsp(rtspUrl, pushAddr string) {
-	vc.startFFMPEGProcess(rtspUrl, pushAddr)
-}
-func (vc *videoCamera) StartLocalVideo(localDevice, pushAddr string) {
-	vc.startFFMPEGProcess(localDevice, pushAddr)
-}
-func (vc *videoCamera) startFFMPEGProcess(rtspUrl, pushAddr string) {
+func (vc *videoCamera) startFFMPEGProcess(inputUrl, pushAddr string) {
 	defer func() {
 		vc.status = typex.DEV_DOWN
 	}()
-	paramsVideo := []string{
-		"-hide_banner",
-		"-r", "24",
-		"-i", rtspUrl,
-		"-c:v", "libx264",
-		"-preset", "veryfast",
-		"-tune", "zerolatency",
-		"-f", "flv",
-		pushAddr,
+
+	// LOCAL_STREAM_SERVER 向前端websocket输出
+	// REMOTE_STREAM_SERVER 向远端推流(比如Monibuca)
+	// ffmpeg -i rtsp://IP/av0_0 -c:v h264 -c:a aac -f rtsp rtsp://IP/live/test001
+	if vc.mainConfig.OutputMode == __OUTPUT_LOCAL_STREAM_SERVER {
+		glogger.GLogger.Info("Start FFMPEG ffmpegProcess with: LOCAL_STREAM_SERVER Mode")
+		var cmd *exec.Cmd
+		if vc.mainConfig.InputMode == __INPUT_LOCAL_CAMERA {
+			var paramsVideo []string
+
+			if runtime.GOOS == "windows" {
+				paramsVideo = []string{
+					"-err_detect", "ignore_err",
+					"-hide_banner",
+					"-f", "dshow", // windows下特有的DirectX加速引擎
+					"-i", fmt.Sprintf("video=\"%s\"", inputUrl),
+					"-q", "5",
+					"-fflags", "nobuffer",
+					"-c:v", "libx264",
+					"-preset", "veryfast",
+					"-tune", "zerolatency",
+					"-f", "mpegts",
+					"-an", pushAddr,
+				}
+			} else {
+				paramsVideo = []string{
+					"-err_detect", "ignore_err",
+					"-hide_banner",
+					"-i", fmt.Sprintf("video=%s", inputUrl),
+					"-q", "5",
+					"-fflags", "nobuffer",
+					"-c:v", "libx264",
+					"-preset", "veryfast",
+					"-tune", "zerolatency",
+					"-f", "mpegts",
+					"-an", pushAddr,
+				}
+			}
+
+			if runtime.GOOS == "windows" {
+				bat := strings.Join(paramsVideo, " ")
+				cmd = exec.Command("powershell.exe", "-Command", "ffmpeg "+bat)
+			} else {
+				cmd = exec.Command("ffmpeg", paramsVideo...)
+			}
+		}
+		if vc.mainConfig.InputMode == __INPUT_REMOTE_STREAM_RTSP {
+			paramsRtsp := []string{
+				"-hide_banner",
+				"-r", "24",
+				"-rtsp_transport",
+				"tcp",
+				"-re",
+				"-i",
+				// rtsp://192.168.199.243:554/av0_0
+				inputUrl,
+				"-q",
+				"5",
+				"-f",
+				"mpegts",
+				"-fflags",
+				"nobuffer",
+				"-c:v",
+				"libx264",
+				"-an",
+				// "-s",
+				// "1920x1080",
+				// http://127.0.0.1:9400/stream/ffmpegPush?liveId=147a6d7ae5a785f6e3ea90f25d36c63e
+				pushAddr,
+			}
+			cmd = exec.Command("ffmpeg", paramsRtsp...)
+		}
+		if cmd == nil {
+			glogger.GLogger.Error(fmt.Errorf("no supported InputMode:" + vc.mainConfig.InputMode))
+			return
+		}
+		glogger.GLogger.Info("Start FFMPEG with:", cmd.String())
+		// 启动 FFmpeg 推流
+		vc.ffmpegProcess = cmd
+		if output, err1 := cmd.CombinedOutput(); err1 != nil {
+			glogger.GLogger.Error("Combined Output error: ", err1, ", output: ", string(output))
+		}
+
 	}
 
-	paramsRtsp := []string{
-		"-hide_banner",
-		"-r", "24",
-		"-rtsp_transport",
-		"tcp",
-		"-re",
-		"-i",
-		// rtsp://192.168.199.243:554/av0_0
-		rtspUrl,
-		"-q",
-		"5",
-		"-f",
-		"mpegts",
-		"-fflags",
-		"nobuffer",
-		"-c:v",
-		"libx264",
-		"-an",
-		"-s",
-		"1920x1080",
-		// http://127.0.0.1:9400/stream/ffmpegPush?liveId=147a6d7ae5a785f6e3ea90f25d36c63e
-		pushAddr,
-	}
-	var cmd *exec.Cmd
-	if vc.mainConfig.InputMode == "LOCAL" {
-		cmd = exec.Command("ffmpeg", paramsVideo...)
-	}
-	if vc.mainConfig.InputMode == "RTSP" {
-		cmd = exec.Command("ffmpeg", paramsRtsp...)
-	}
-	if cmd == nil {
-		glogger.GLogger.Error(fmt.Errorf("no supported InputMode:" + vc.mainConfig.InputMode))
-		return
-	}
-	glogger.GLogger.Info("Start FFMPEG ffmpegProcess with:", cmd.String())
-	// 启动 FFmpeg 推流
-	vc.ffmpegProcess = cmd
-	if err := cmd.Run(); err != nil {
-		glogger.GLogger.Error("error: ", err, ", output: ", err)
-		return
-	}
-	glogger.GLogger.Info("stop Video Stream Endpoint:", rtspUrl)
+	glogger.GLogger.Info("stop Video Stream Endpoint:", inputUrl)
 }
 
 /*

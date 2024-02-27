@@ -35,7 +35,7 @@ type RtspCameraInfo struct {
 
 type websocketPlayerManager struct {
 	WsServer websocket.Upgrader
-	Clients  map[string]*websocket.Conn
+	Clients  map[string]StreamPlayer
 	lock     sync.Mutex
 }
 
@@ -61,25 +61,31 @@ func InitRtspServer(rulex typex.RuleX) *rtspServer {
 	// http://127.0.0.1:3000/stream/live/001
 	group := __DefaultRtspServer.webServer.Group("/stream")
 	// 注意：这个接口是给FFMPEG请求的
+	//    ffmpeg -hide_banner -r 24 -rtsp_transport tcp -re -i rtsp://192.168.1.210:554/av0_0 -q 5 -f mpegts
+	// -fflags nobuffer -c:v libx264 -an -s 1920x1080 http://?:9400/stream/ffmpegPush?liveId=xx
 	group.POST("/ffmpegPush", func(ctx *gin.Context) {
 		LiveId := ctx.Query("liveId")
 		if LiveId == "" {
 			ctx.Writer.Flush()
 			return
 		}
-		// Token := ctx.Query("token")
-		glogger.GLogger.Info("Receive stream push From:", LiveId)
+		glogger.GLogger.Info("Receive stream push From:", LiveId,
+			"stream play url is:", fmt.Sprintf("ws://127.0.0.1:9400/ws?token=WebRtspPlayer&liveId=%s", LiveId))
 		// http://127.0.0.1:9400 :后期通过参数传进
 		// 启动一个FFMPEG开始从摄像头拉流
 		bodyReader := bufio.NewReader(ctx.Request.Body)
+		// 每个ffmpeg都给起一个进程，监控是否有websocket来拉流
 		for {
 			// data 就是 RTSP 帧
 			// 只需将其转发给websocket即可
 			data, err := bodyReader.ReadBytes('\n')
 			if err != nil {
+				glogger.GLogger.Error("ReadBytes from ffmpeg error:", err)
 				break
 			}
-			pushToWebsocket(LiveId, data)
+			if len(__DefaultRtspServer.websocketPlayerManager.Clients) > 0 {
+				pushToWebsocket(LiveId, data)
+			}
 		}
 		ctx.Writer.Flush()
 		glogger.GLogger.Info("Stream push stop:", LiveId)
@@ -94,15 +100,25 @@ func InitRtspServer(rulex typex.RuleX) *rtspServer {
 			glogger.GLogger.Fatalf("Rtsp stream server listen error: %s\n", err)
 		}
 	}(context.Background())
-	glogger.GLogger.Info("Rtsp stream server start success")
+	glogger.GLogger.Info("Rtsp stream server start success, listening at:",
+		fmt.Sprintf("0.0.0.0:%d", __DefaultRtspServer.wsPort))
 	return __DefaultRtspServer
 }
-func pushToWebsocket(liveId string, data []byte) {
-	if C, Ok := __DefaultRtspServer.websocketPlayerManager.Clients[liveId]; Ok {
-		// println(liveId, data)
-		C.WriteMessage(websocket.BinaryMessage, data)
-	}
 
+/*
+*
+* 推流
+*
+ */
+func pushToWebsocket(liveId string, data []byte) {
+	__DefaultRtspServer.websocketPlayerManager.lock.Lock()
+	defer __DefaultRtspServer.websocketPlayerManager.lock.Unlock()
+	// 检查到底有没有拉流的,如果有就推给他
+	for _, C := range __DefaultRtspServer.websocketPlayerManager.Clients {
+		if C.RequestLiveId == liveId {
+			C.wsConn.WriteMessage(websocket.BinaryMessage, data)
+		}
+	}
 }
 
 /*
@@ -143,7 +159,7 @@ func (hk wsInOut) Read(p []byte) (n int, err error) {
 func (w *websocketPlayerManager) Write(p []byte) (n int, err error) {
 	for _, c := range w.Clients {
 		w.lock.Lock()
-		err := c.WriteMessage(websocket.TextMessage, p)
+		err := c.wsConn.WriteMessage(websocket.TextMessage, p)
 		w.lock.Unlock()
 		if err != nil {
 			return 0, err
@@ -159,10 +175,22 @@ func NewPlayerManager() *websocketPlayerManager {
 				return true
 			},
 		},
-		Clients: make(map[string]*websocket.Conn),
+		Clients: make(map[string]StreamPlayer),
 		lock:    sync.Mutex{},
 	}
 
+}
+
+/*
+*
+* websocket播放器
+*
+ */
+type StreamPlayer struct {
+	ClientId      string
+	RequestLiveId string
+	Token         string
+	wsConn        *websocket.Conn
 }
 
 /*
@@ -176,13 +204,8 @@ func wsServerEndpoint(c *gin.Context) {
 		return
 	}
 	LiveId := c.Query("liveId")
+	ClientId := c.Query("clientId")
 	Token := c.Query("token")
-
-	if Token != "WebRtspPlayer" {
-		wsConn.WriteMessage(websocket.CloseMessage, []byte("Invalid client token"))
-		wsConn.Close()
-		return
-	}
 	glogger.GLogger.Debugf("Request live:%s, Token is :%s", LiveId, Token)
 	// 最多允许连接10个客户端，实际情况下根本用不了那么多
 	if len(__DefaultRtspServer.websocketPlayerManager.Clients) >= 10 {
@@ -190,7 +213,24 @@ func wsServerEndpoint(c *gin.Context) {
 		wsConn.Close()
 		return
 	}
-	__DefaultRtspServer.websocketPlayerManager.Clients[LiveId] = wsConn
+
+	StreamPlayer := StreamPlayer{
+		RequestLiveId: LiveId,
+		ClientId:      ClientId,
+		Token:         Token,
+	}
+	if Token != "WebRtspPlayer" {
+		wsConn.WriteMessage(websocket.CloseMessage, []byte("Invalid client token"))
+		wsConn.Close()
+		return
+	}
+	if C, ok := __DefaultRtspServer.websocketPlayerManager.Clients[ClientId]; ok {
+		wsConn.WriteMessage(websocket.CloseMessage, []byte("already exists a client:"+C.ClientId))
+		wsConn.Close()
+		return
+	}
+	// 每个LiveId只能有1路播放
+	__DefaultRtspServer.websocketPlayerManager.Clients[ClientId] = StreamPlayer
 	glogger.GLogger.Info("WebSocket Player connected:" + wsConn.RemoteAddr().String())
 	wsConn.SetCloseHandler(func(code int, text string) error {
 		glogger.GLogger.Info("wsConn CloseHandler:", wsConn.RemoteAddr().String())
@@ -218,7 +258,7 @@ func wsServerEndpoint(c *gin.Context) {
 			}
 			_, _, err := wsConn.ReadMessage()
 			if err != nil {
-				glogger.GLogger.Info("wsConn CloseHandler:", wsConn.RemoteAddr().String())
+				glogger.GLogger.Info("wsConn Close Handler:", wsConn.RemoteAddr().String())
 				__DefaultRtspServer.websocketPlayerManager.lock.Lock()
 				delete(__DefaultRtspServer.websocketPlayerManager.Clients, wsConn.RemoteAddr().String())
 				__DefaultRtspServer.websocketPlayerManager.lock.Unlock()
