@@ -35,4 +35,11 @@ protoc -I ./component/trailer --go_out ./component/trailer --go_opt paths=source
     ./component/trailer/trailer.proto
 echo ">>> Generate Trailer Proto OK."
 
+# AI Base
+echo ">>> Generating Aibase Proto..."
+protoc -I ./component/aibase --go_out ./component/aibase --go_opt paths=source_relative \
+    --go-grpc_out=./component/aibase --go-grpc_opt paths=source_relative \
+    ./component/aibase/aibase.proto
+echo ">>> Generate AIBase Proto OK."
+
 echo -e "\033[42;33m>>>\033[0m [FINISHED]"
