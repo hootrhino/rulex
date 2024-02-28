@@ -116,7 +116,9 @@ func pushToWebsocket(liveId string, data []byte) {
 	// 检查到底有没有拉流的,如果有就推给他
 	for _, C := range __DefaultRtspServer.websocketPlayerManager.Clients {
 		if C.RequestLiveId == liveId {
-			C.wsConn.WriteMessage(websocket.BinaryMessage, data)
+			if C.wsConn != nil {
+				C.wsConn.WriteMessage(websocket.BinaryMessage, data)
+			}
 		}
 	}
 }
@@ -138,6 +140,8 @@ func GetVideoStreamEndpoint(k string) RtspCameraInfo {
 	return __DefaultRtspServer.rtspCameras[k]
 }
 func DeleteVideoStreamEndpoint(k string) {
+	__DefaultRtspServer.websocketPlayerManager.lock.Lock()
+	defer __DefaultRtspServer.websocketPlayerManager.lock.Unlock()
 	delete(__DefaultRtspServer.rtspCameras, k)
 }
 
@@ -218,6 +222,7 @@ func wsServerEndpoint(c *gin.Context) {
 		RequestLiveId: LiveId,
 		ClientId:      ClientId,
 		Token:         Token,
+		wsConn:        wsConn,
 	}
 	if Token != "WebRtspPlayer" {
 		wsConn.WriteMessage(websocket.CloseMessage, []byte("Invalid client token"))
@@ -258,7 +263,7 @@ func wsServerEndpoint(c *gin.Context) {
 			}
 			_, _, err := wsConn.ReadMessage()
 			if err != nil {
-				glogger.GLogger.Info("wsConn Close Handler:", wsConn.RemoteAddr().String())
+				glogger.GLogger.Warn("wsConn Close Handler:", wsConn.RemoteAddr().String())
 				__DefaultRtspServer.websocketPlayerManager.lock.Lock()
 				delete(__DefaultRtspServer.websocketPlayerManager.Clients, wsConn.RemoteAddr().String())
 				__DefaultRtspServer.websocketPlayerManager.lock.Unlock()
