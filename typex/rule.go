@@ -101,21 +101,13 @@ func (r *Rule) LoadExternLuaLib(path string) error {
 *  - Global: 命名空间
 *   - funcName: 函数名称
  */
-func (r *Rule) AddLib(rx RuleX, Global string, funcName string,
+func (r *Rule) AddLib(rx RuleX, ModuleName string, funcName string,
 	f func(l *lua.LState) int) {
-	rulexTb := r.LuaVM.G.Global
-	r.LuaVM.SetGlobal(Global, rulexTb)
-	loadLib(rulexTb, r.LuaVM, funcName, f)
-}
 
-func loadLib(
-	tb *lua.LTable,
-	VM *lua.LState,
-	funcName string,
-	f func(*lua.LState) int,
-) {
-	mod := VM.SetFuncs(tb, map[string]lua.LGFunction{
-		funcName: f,
+	r.LuaVM.PreloadModule(ModuleName, func(L *lua.LState) int {
+		table := r.LuaVM.NewTable()
+		table.RawSetString(funcName, r.LuaVM.NewClosure(f))
+		L.Push(table)
+		return 1
 	})
-	VM.Push(mod)
 }
