@@ -59,7 +59,8 @@ func LoadApp(app *Application, luaSource string) error {
 	fMain := *AppMainVM.(*lua.LFunction)
 	app.SetMainFunc(&fMain)
 	// 加载库
-	LoadAppLib(app, __DefaultAppStackRuntime.RuleEngine)
+	// LoadAppLib(app, __DefaultAppStackRuntime.RuleEngine)
+	LoadAppLibGroup(app, __DefaultAppStackRuntime.RuleEngine)
 	// 加载到内存里
 	__DefaultAppStackRuntime.Applications[app.UUID] = app
 	return nil

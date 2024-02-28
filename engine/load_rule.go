@@ -38,7 +38,7 @@ func (e *RuleEngine) LoadRule(r *typex.Rule) error {
 	//--------------------------------------------------------------
 	// Load LoadBuildInLuaLib
 	//--------------------------------------------------------------
-	LoadBuildInLuaLib(e, r)
+	LoadRuleLibGroup(r, e)
 	glogger.GLogger.Infof("Rule [%v, %v] load successfully", r.Name, r.UUID)
 	// 查找输入定义的资源是否存在
 	if in := e.GetInEnd(r.FromSource); in != nil {
