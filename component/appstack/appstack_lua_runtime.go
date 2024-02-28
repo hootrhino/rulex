@@ -54,15 +54,15 @@ func ValidateLuaSyntax(bytes []byte) error {
 *  - Global: 命名空间
 *   - funcName: 函数名称
  */
-func addAppLib(app *Application,
-	rx typex.RuleX, Global string, funcName string,
-	f func(l *lua.LState) int) {
-	rulexTb := app.VM().G.Global
-	app.VM().SetGlobal(Global, rulexTb)
-	mod := app.VM().SetFuncs(rulexTb, map[string]lua.LGFunction{
-		funcName: f,
+func addAppLib(app *Application, rx typex.RuleX,
+	ModuleName string, funcName string, fn func(l *lua.LState) int) {
+	// app.vm.SetGlobal("ModuleName1", lua.LString("ModuleName1"))
+	app.vm.PreloadModule(ModuleName, func(L *lua.LState) int {
+		table := app.vm.NewTable()
+		table.RawSetString(funcName, app.vm.NewClosure(fn))
+		L.Push(table)
+		return 1
 	})
-	app.VM().Push(mod)
 }
 
 /*
@@ -222,5 +222,8 @@ func LoadAppLib(app *Application, e typex.RuleX) {
 	// http
 	addAppLib(app, e, "http", "Get", rulexlib.HttpGet(e))
 	addAppLib(app, e, "http", "Post", rulexlib.HttpPost(e))
-
+	{
+		addAppLib(app, e, "time1", "Time", rulexlib.Time(e))
+		addAppLib(app, e, "time2", "Time", rulexlib.TsUnixNano(e))
+	}
 }
