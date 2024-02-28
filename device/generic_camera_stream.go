@@ -197,30 +197,32 @@ func (vc *videoCamera) startFFMPEGProcess(inputUrl, pushAddr string) {
 
 			if runtime.GOOS == "windows" {
 				paramsVideo = []string{
-					"-err_detect", "ignore_err",
-					"-hide_banner",
+					// "-err_detect", "ignore_err",
+					// "-hide_banner",
 					"-f", "dshow", // windows下特有的DirectX加速引擎
 					"-i", fmt.Sprintf("video=\"%s\"", inputUrl),
+					// "-vf", "drawtext=text='%{localtime}':x=10:y=10:fontsize=24:fontcolor=white",
 					"-q", "5",
-					"-fflags", "nobuffer",
+					"-fflags", "+genpts",
 					"-c:v", "libx264",
 					"-preset", "veryfast",
 					"-tune", "zerolatency",
 					"-f", "mpegts",
-					"-an", pushAddr,
+					pushAddr,
 				}
 			} else {
 				paramsVideo = []string{
-					"-err_detect", "ignore_err",
-					"-hide_banner",
+					// "-err_detect", "ignore_err",
+					// "-hide_banner",
 					"-i", fmt.Sprintf("video=%s", inputUrl),
+					// "-vf", "drawtext=text='%{localtime}':x=10:y=10:fontsize=24:fontcolor=white",
 					"-q", "5",
-					"-fflags", "nobuffer",
+					"-fflags", "+genpts",
 					"-c:v", "libx264",
 					"-preset", "veryfast",
 					"-tune", "zerolatency",
 					"-f", "mpegts",
-					"-an", pushAddr,
+					pushAddr,
 				}
 			}
 
