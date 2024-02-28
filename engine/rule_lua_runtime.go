@@ -16,6 +16,7 @@
 package engine
 
 import (
+	lua "github.com/hootrhino/gopher-lua"
 	"github.com/hootrhino/rulex/core"
 	"github.com/hootrhino/rulex/rulexlib"
 	"github.com/hootrhino/rulex/typex"
@@ -23,149 +24,207 @@ import (
 
 /*
 *
-* 加载标准库, 为什么是每个LUA脚本都加载一次？主要是为了隔离，互不影响
-*
- */
-func LoadBuildInLuaLib(e typex.RuleX, r *typex.Rule) {
-	{
-		// 消息转发\数据持久化\编解码
-		r.AddLib(e, "data", "ToHttp", rulexlib.DataToHttp(e))
-		r.AddLib(e, "data", "ToMqtt", rulexlib.DataToMqtt(e))
-		r.AddLib(e, "data", "ToUdp", rulexlib.DataToUdp(e))
-		r.AddLib(e, "data", "ToTcp", rulexlib.DataToTcp(e))
-		r.AddLib(e, "data", "ToTdEngine", rulexlib.DataToTdEngine(e))
-		r.AddLib(e, "data", "ToMongo", rulexlib.DataToMongo(e))
-		r.AddLib(e, "data", "ToNats", rulexlib.DataToNats(e))
+  - 分组加入函数
+*/
+func AddRuleLibToGroup(r *typex.Rule, rx typex.RuleX,
+	ModuleName string, funcs map[string]func(l *lua.LState) int) {
+	table := r.LuaVM.NewTable()
+	r.LuaVM.SetGlobal(ModuleName, table)
+	for funcName, f := range funcs {
+		table.RawSetString(funcName, r.LuaVM.NewClosure(f))
 	}
-	{
-		r.AddLib(e, "rpc", "Request", rulexlib.Request(e))
-	}
-	{
-		// JQ
-		r.AddLib(e, "jq", "Execute", rulexlib.JqSelect(e))
-	}
-	{
-		// 标准库
-		r.AddLib(e, "stdlib", "Debug", rulexlib.DebugRule(e, r.UUID))
-		r.AddLib(e, "stdlib", "Println", rulexlib.Println(e))
-		r.AddLib(e, "stdlib", "Throw", rulexlib.Throw(e))
-		r.AddLib(e, "_G", "Debug", rulexlib.DebugRule(e, r.UUID))
-		r.AddLib(e, "_G", "Throw", rulexlib.Throw(e))
-	}
-	{
-		// 二进制操作
-		r.AddLib(e, "binary", "MB", rulexlib.MatchBinary(e))
-		r.AddLib(e, "binary", "MBHex", rulexlib.MatchBinaryHex(e))
-		r.AddLib(e, "binary", "B2BS", rulexlib.ByteToBitString(e))
-		r.AddLib(e, "binary", "Bit", rulexlib.GetABitOnByte(e))
-		r.AddLib(e, "binary", "B2I64", rulexlib.ByteToInt64(e))
-		r.AddLib(e, "binary", "B64S2B", rulexlib.B64S2B(e))
-		r.AddLib(e, "binary", "BS2B", rulexlib.BitStringToBytes(e))
-		r.AddLib(e, "binary", "Bin2F32", rulexlib.BinToFloat32(e))
-		r.AddLib(e, "binary", "Bin2F64", rulexlib.BinToFloat64(e))
-		r.AddLib(e, "binary", "Bin2F32Big", rulexlib.BinToFloat32(e))
-		r.AddLib(e, "binary", "Bin2F64Big", rulexlib.BinToFloat64(e))
-		r.AddLib(e, "binary", "Bin2F32Little", rulexlib.BinToFloat32Little(e))
-		r.AddLib(e, "binary", "Bin2F64Little", rulexlib.BinToFloat64Little(e))
-	}
-	{
-		// URL处理
-		r.AddLib(e, "url", "UrlBuild", rulexlib.UrlBuild(e))
-		r.AddLib(e, "url", "UrlBuildQS", rulexlib.UrlBuildQS(e))
-		r.AddLib(e, "url", "UrlParse", rulexlib.UrlParse(e))
-		r.AddLib(e, "url", "UrlResolve", rulexlib.UrlResolve(e))
-	}
-	{
-		// 时间库
-		r.AddLib(e, "time", "Time", rulexlib.Time(e))
-		r.AddLib(e, "time", "TimeMs", rulexlib.TimeMs(e))
-		r.AddLib(e, "time", "TsUnix", rulexlib.TsUnix(e))
-		r.AddLib(e, "time", "TsUnixNano", rulexlib.TsUnixNano(e))
-		r.AddLib(e, "time", "NtpTime", rulexlib.NtpTime(e))
-		r.AddLib(e, "time", "Sleep", rulexlib.Sleep(e))
-	}
+	r.LuaVM.Push(table)
+}
 
+func LoadRuleLibGroup(r *typex.Rule, e typex.RuleX) {
 	{
-		// 缓存器库
-		r.AddLib(e, "kv", "VSet", rulexlib.StoreSet(e))
-		r.AddLib(e, "kv", "VGet", rulexlib.StoreGet(e))
-		r.AddLib(e, "kv", "VDel", rulexlib.StoreDelete(e))
+		Funcs := map[string]func(l *lua.LState) int{
+			"ToHttp":     rulexlib.DataToHttp(e),
+			"ToMqtt":     rulexlib.DataToMqtt(e),
+			"ToUdp":      rulexlib.DataToUdp(e),
+			"ToTcp":      rulexlib.DataToTcp(e),
+			"ToTdEngine": rulexlib.DataToTdEngine(e),
+			"ToMongo":    rulexlib.DataToMongo(e),
+			"ToScreen":   rulexlib.DataToUiComponent(e),
+		}
+		AddRuleLibToGroup(r, e, "data", Funcs)
 	}
 	{
-		// JSON
-		r.AddLib(e, "json", "T2J", rulexlib.JSONE(e))           // Lua Table -> JSON
-		r.AddLib(e, "json", "J2T", rulexlib.JSOND(e))           // JSON -> Lua Table
-		r.AddLib(e, "json", "base64J2T", rulexlib.Base64J2T(e)) // Base64 JSON -> Lua Table
-	}
-	// Get Rule ID
-	r.AddLib(e, "rule", "SelfId", rulexlib.SelfRuleUUID(e, r.UUID))
-	{
-		// Device R/W
-		r.AddLib(e, "device", "ReadDevice", rulexlib.ReadDevice(e))
-		r.AddLib(e, "device", "WriteDevice", rulexlib.WriteDevice(e))
-		// Source R/W
-		r.AddLib(e, "device", "ReadSource", rulexlib.ReadSource(e))
-		r.AddLib(e, "device", "WriteSource", rulexlib.WriteSource(e))
+		Funcs := map[string]func(l *lua.LState) int{
+			"Debug":   rulexlib.DebugAPP(e, r.UUID),
+			"Throw":   rulexlib.Throw(e),
+			"Println": rulexlib.Println(e),
+		}
+		AddRuleLibToGroup(r, e, "_G", Funcs)
 	}
 	{
-		// String
-		r.AddLib(e, "string", "T2Str", rulexlib.T2Str(e))
-		r.AddLib(e, "string", "Bin2Str", rulexlib.Bin2Str(e))
-		r.AddLib(e, "string", "MakeUid", rulexlib.MakeUUID(e))
-	}
-	//------------------------------------------------------------------------
-	// 十六进制编码处理
-	//------------------------------------------------------------------------
-	{
-		r.AddLib(e, "hex", "Bytes2Hexs", rulexlib.Bytes2Hexs(e))
-		r.AddLib(e, "hex", "Hexs2Bytes", rulexlib.Hexs2Bytes(e))
-		r.AddLib(e, "hex", "ABCD", rulexlib.ABCD(e))
-		r.AddLib(e, "hex", "DCBA", rulexlib.DCBA(e))
-		r.AddLib(e, "hex", "BADC", rulexlib.BADC(e))
-		r.AddLib(e, "hex", "CDAB", rulexlib.CDAB(e))
-		r.AddLib(e, "hex", "HexToNum", rulexlib.HToN(e))
-		r.AddLib(e, "hex", "HsubToN", rulexlib.HsubToN(e))
-		r.AddLib(e, "hex", "MatchHex", rulexlib.MatchHex(e))
-		r.AddLib(e, "hex", "MatchUInt", rulexlib.MatchUInt(e))
+		Funcs := map[string]func(l *lua.LState) int{
+			"VSet": rulexlib.StoreSet(e),
+			"VGet": rulexlib.StoreGet(e),
+			"VDel": rulexlib.StoreDelete(e),
+		}
+		AddRuleLibToGroup(r, e, "kv", Funcs)
 	}
 	{
-		// DO1 DO2
-		r.AddLib(e, "rhinopi", "DO1Set", rulexlib.H3DO1Set(e))
-		r.AddLib(e, "rhinopi", "DO1Get", rulexlib.H3DO1Get(e))
-		r.AddLib(e, "rhinopi", "DO2Set", rulexlib.H3DO2Set(e))
-		r.AddLib(e, "rhinopi", "DO2Get", rulexlib.H3DO2Get(e))
-		// DI1 DI2 DI3
-		r.AddLib(e, "rhinopi", "DI1Get", rulexlib.H3DI1Get(e))
-		r.AddLib(e, "rhinopi", "DI2Get", rulexlib.H3DI2Get(e))
-		r.AddLib(e, "rhinopi", "DI3Get", rulexlib.H3DI3Get(e))
-		// Led
-		r.AddLib(e, "rhinopi", "Led1On", rulexlib.Led1On(e))
-		r.AddLib(e, "rhinopi", "Led1Off", rulexlib.Led1Off(e))
-
+		Funcs := map[string]func(l *lua.LState) int{
+			"Time":       rulexlib.Time(e),
+			"TimeMs":     rulexlib.TimeMs(e),
+			"TsUnix":     rulexlib.TsUnix(e),
+			"TsUnixNano": rulexlib.TsUnixNano(e),
+			"NtpTime":    rulexlib.NtpTime(e),
+			"Sleep":      rulexlib.Sleep(e),
+		}
+		AddRuleLibToGroup(r, e, "time", Funcs)
 	}
-	// Modbus
 	{
-		r.AddLib(e, "modbus", "F5", rulexlib.F5(e))
-		r.AddLib(e, "modbus", "F6", rulexlib.F6(e))
-		r.AddLib(e, "modbus", "F15", rulexlib.F15(e))
-		r.AddLib(e, "modbus", "F16", rulexlib.F16(e))
+		Funcs := map[string]func(l *lua.LState) int{
+			"HToN":       rulexlib.HToN(e),
+			"HsubToN":    rulexlib.HsubToN(e),
+			"MatchHex":   rulexlib.MatchHex(e),
+			"MatchUInt":  rulexlib.MatchUInt(e),
+			"Bytes2Hexs": rulexlib.Bytes2Hexs(e),
+			"Hexs2Bytes": rulexlib.Hexs2Bytes(e),
+			"ABCD":       rulexlib.ABCD(e),
+			"DCBA":       rulexlib.DCBA(e),
+			"BADC":       rulexlib.BADC(e),
+			"CDAB":       rulexlib.CDAB(e),
+		}
+		AddRuleLibToGroup(r, e, "hex", Funcs)
 	}
-	//------------------------------------------------------------------------
-	// AI BASE
-	//------------------------------------------------------------------------
-	r.AddLib(e, "aibase", "Infer", rulexlib.Infer(e))
-	//------------------------------------------------------------------------
-	// Math
-	//------------------------------------------------------------------------
-	r.AddLib(e, "math", "TFloat", rulexlib.TruncateFloat(e))
-	// LocalDBQuery
-	r.AddLib(e, "datacenter", "DBQuery", rulexlib.LocalDBQuery(e))
-	//
-	r.AddLib(e, "network", "Ping", rulexlib.PingIp(e))
-	// Http
-	r.AddLib(e, "http", "Get", rulexlib.HttpGet(e))
-	r.AddLib(e, "http", "Post", rulexlib.HttpPost(e))
-
+	{
+		Funcs := map[string]func(l *lua.LState) int{
+			"MB":            rulexlib.MatchBinary(e),
+			"MBHex":         rulexlib.MatchBinaryHex(e),
+			"B2BS":          rulexlib.ByteToBitString(e),
+			"Bit":           rulexlib.GetABitOnByte(e),
+			"B2I64":         rulexlib.ByteToInt64(e),
+			"B64S2B":        rulexlib.B64S2B(e),
+			"BS2B":          rulexlib.BitStringToBytes(e),
+			"Bin2F32":       rulexlib.BinToFloat32(e),
+			"Bin2F64":       rulexlib.BinToFloat64(e),
+			"Bin2F32Big":    rulexlib.BinToFloat32(e),
+			"Bin2F64Big":    rulexlib.BinToFloat64(e),
+			"Bin2F32Little": rulexlib.BinToFloat32Little(e),
+			"Bin2F64Little": rulexlib.BinToFloat64Little(e),
+		}
+		AddRuleLibToGroup(r, e, "binary", Funcs)
+	}
+	{
+		Funcs := map[string]func(l *lua.LState) int{
+			"T2J": rulexlib.JSONE(e),
+			"J2T": rulexlib.JSOND(e),
+		}
+		AddRuleLibToGroup(r, e, "json", Funcs)
+	}
+	{
+		Funcs := map[string]func(l *lua.LState) int{
+			"ReadDevice":  rulexlib.ReadDevice(e),
+			"WriteDevice": rulexlib.WriteDevice(e),
+			"CtrlDevice":  rulexlib.CtrlDevice(e),
+			"ReadSource":  rulexlib.ReadSource(e),
+			"WriteSource": rulexlib.WriteSource(e),
+		}
+		AddRuleLibToGroup(r, e, "device", Funcs)
+	}
+	{
+		Funcs := map[string]func(l *lua.LState) int{
+			"T2Str":   rulexlib.T2Str(e),
+			"Bin2Str": rulexlib.Bin2Str(e),
+		}
+		AddRuleLibToGroup(r, e, "string", Funcs)
+	}
+	{
+		Funcs := map[string]func(l *lua.LState) int{
+			"F5":  rulexlib.F5(e),
+			"F6":  rulexlib.F6(e),
+			"F15": rulexlib.F15(e),
+			"F16": rulexlib.F16(e),
+		}
+		AddRuleLibToGroup(r, e, "modbus", Funcs)
+	}
+	{
+		Funcs := map[string]func(l *lua.LState) int{
+			"DO1Set":  rulexlib.H3DO1Set(e),
+			"DO1Get":  rulexlib.H3DO1Get(e),
+			"DO2Set":  rulexlib.H3DO2Set(e),
+			"DO2Get":  rulexlib.H3DO2Get(e),
+			"DI1Get":  rulexlib.H3DI1Get(e),
+			"DI2Get":  rulexlib.H3DI2Get(e),
+			"DI3Get":  rulexlib.H3DI3Get(e),
+			"Led1On":  rulexlib.Led1On(e),
+			"Led1Off": rulexlib.Led1Off(e),
+		}
+		AddRuleLibToGroup(r, e, "rhinopi", Funcs)
+	}
+	{
+		Funcs := map[string]func(l *lua.LState) int{
+			"XOR":   rulexlib.XOR(e),
+			"CRC16": rulexlib.CRC16(e),
+		}
+		AddRuleLibToGroup(r, e, "misc", Funcs)
+	}
+	{
+		Funcs := map[string]func(l *lua.LState) int{
+			"GPIOGet": rulexlib.RASPI4_GPIOGet(e),
+			"GPIOSet": rulexlib.RASPI4_GPIOSet(e),
+		}
+		AddRuleLibToGroup(r, e, "raspi4b", Funcs)
+	}
+	{
+		Funcs := map[string]func(l *lua.LState) int{
+			"GPIOGet": rulexlib.WKYWS1608_GPIOGet(e),
+			"GPIOSet": rulexlib.WKYWS1608_GPIOSet(e),
+		}
+		AddRuleLibToGroup(r, e, "ws1608", Funcs)
+	}
+	{
+		Funcs := map[string]func(l *lua.LState) int{
+			"TFloat": rulexlib.TruncateFloat(e),
+		}
+		AddRuleLibToGroup(r, e, "math", Funcs)
+	}
+	{
+		Funcs := map[string]func(l *lua.LState) int{
+			"PlayMusic": rulexlib.PlayMusic(e),
+		}
+		AddRuleLibToGroup(r, e, "audio", Funcs)
+	}
+	{
+		Funcs := map[string]func(l *lua.LState) int{
+			"Request": rulexlib.Request(e),
+		}
+		AddRuleLibToGroup(r, e, "rpc", Funcs)
+	}
+	{
+		Funcs := map[string]func(l *lua.LState) int{
+			"Execute": rulexlib.JqSelect(e),
+		}
+		AddRuleLibToGroup(r, e, "jq", Funcs)
+	}
+	{
+		Funcs := map[string]func(l *lua.LState) int{
+			"Ping": rulexlib.PingIp(e),
+		}
+		AddRuleLibToGroup(r, e, "network", Funcs)
+	}
+	{
+		Funcs := map[string]func(l *lua.LState) int{
+			"Get":  rulexlib.HttpGet(e),
+			"Post": rulexlib.HttpPost(e),
+		}
+		AddRuleLibToGroup(r, e, "http", Funcs)
+	}
+	{
+		// Just For test
+		Func1 := map[string]func(l *lua.LState) int{
+			"Time": rulexlib.Time(e),
+		}
+		AddRuleLibToGroup(r, e, "time1", Func1)
+		Func2 := map[string]func(l *lua.LState) int{
+			"Time": rulexlib.TsUnixNano(e),
+		}
+		AddRuleLibToGroup(r, e, "time2", Func2)
+	}
 }
 
 /*
