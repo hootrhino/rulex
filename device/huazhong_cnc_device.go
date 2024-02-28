@@ -22,11 +22,24 @@ import (
 	"github.com/hootrhino/rulex/utils"
 )
 
+/*
+*
+* 华中数控点位表
+*
+ */
+type hncDataPoint struct {
+	Name        string `json:"name" validate:"required"`         // 点位名称
+	ApiFunction string `json:"api_function" validate:"required"` // API路径
+	Group       int    `json:"group" validate:"required"`        // 分组采集
+	Address     string `json:"address" validate:"required"`      // 地址
+}
+
 // HNC8 NC-Link 接口参口手册 版本 v1.0 2019-02-13
 type hnc8_cnc_config struct {
-	CNCSerialNumber string `json:"serialNumber" validate:"required"` // CNC 序列号
-	Host            string `json:"host" validate:"required"`         // IP:Port
-	ApiVersion      int    `json:"apiVersion" validate:"required"`   // API 版本,2 | 3
+	CNCSerialNumber string         `json:"serialNumber" validate:"required"` // CNC 序列号
+	Host            string         `json:"host" validate:"required"`         // IP:Port
+	ApiVersion      int            `json:"apiVersion" validate:"required"`   // API 版本,2 | 3
+	HncDataPoint    []hncDataPoint `json:"hncDataPoint" validate:"required"` // 点位表
 }
 
 /*
