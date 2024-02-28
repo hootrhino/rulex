@@ -28,6 +28,18 @@ import (
 	"github.com/hootrhino/rulex/utils"
 )
 
+/*
+*
+* 点位表
+*
+ */
+type kndDataPoint struct {
+	Name        string `json:"name" validate:"required"`         // 点位名称
+	ApiFunction string `json:"api_function" validate:"required"` // API路径
+	Group       int    `json:"group" validate:"required"`        // 分组采集
+	Address     string `json:"address" validate:"required"`      // 地址
+}
+
 //	{
 //		"error": -1, // 错误码
 //		"error-message": "未知错误" // 错误的消息
@@ -95,10 +107,11 @@ type kdnCNCInfo struct {
 }
 
 type kdn_cnc_config struct {
-	Host       string       `json:"host" validate:"required"`       // IP:Port
-	ApiVersion int          `json:"apiVersion" validate:"required"` // API 版本,2 | 3
-	CNCInfo    kdnCNCInfo   `json:"cncInfo"`
-	CNCStatus  kdnCNCStatus `json:"cncStatus"`
+	Host          string         `json:"host" validate:"required"`       // IP:Port
+	ApiVersion    int            `json:"apiVersion" validate:"required"` // API 版本,2 | 3
+	CNCInfo       kdnCNCInfo     `json:"cncInfo"`
+	CNCStatus     kdnCNCStatus   `json:"cncStatus"`
+	KndDataPoints []kndDataPoint `json:"kndDataPoints"`
 }
 
 /*
