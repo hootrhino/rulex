@@ -200,16 +200,16 @@ func Hnc8SheetDelete(c *gin.Context, ruleEngine typex.RuleX) {
  */
 func checkHnc8DataPoints(M Hnc8PointVo) error {
 	if M.Name == "" {
-		return fmt.Errorf("Missing required param 'name'")
+		return fmt.Errorf("'Missing required param 'name'")
 	}
 	if len(M.Name) > 256 {
-		return fmt.Errorf("Tag length must range of 1-256")
+		return fmt.Errorf("'Tag length must range of 1-256")
 	}
 	if M.Alias == "" {
-		return fmt.Errorf("Missing required param 'alias'")
+		return fmt.Errorf("'Missing required param 'alias'")
 	}
 	if len(M.Alias) > 256 {
-		return fmt.Errorf("Alias length must range of 1-256")
+		return fmt.Errorf("'Alias length must range of 1-256")
 	}
 	return nil
 }
@@ -353,7 +353,7 @@ func parseHnc8PointExcel(r io.Reader, sheetName string,
 	}
 	// 判断首行标头
 	// name, alias, function, group, address
-	err1 := errors.New("Invalid Sheet Header, must follow fixed format: 【name, alias, function, group, address】")
+	err1 := errors.New("'Invalid Sheet Header, must follow fixed format: 【name, alias, function, group, address】")
 	if len(rows[0]) < 5 {
 		return nil, err1
 	}

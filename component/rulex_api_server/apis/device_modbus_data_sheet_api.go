@@ -225,72 +225,72 @@ func ModbusSheetDelete(c *gin.Context, ruleEngine typex.RuleX) {
  */
 func checkModbusDataPoints(M ModbusPointVo) error {
 	if M.Tag == "" {
-		return fmt.Errorf("Missing required param 'tag'")
+		return fmt.Errorf("'Missing required param 'tag'")
 	}
 	if len(M.Tag) > 256 {
-		return fmt.Errorf("Tag length must range of 1-256")
+		return fmt.Errorf("'Tag length must range of 1-256")
 	}
 	if M.Alias == "" {
-		return fmt.Errorf("Missing required param 'alias'")
+		return fmt.Errorf("'Missing required param 'alias'")
 	}
 	if len(M.Alias) > 256 {
-		return fmt.Errorf("Alias length must range of 1-256")
+		return fmt.Errorf("'Alias length must range of 1-256")
 	}
 	if M.Address == nil {
-		return fmt.Errorf("Missing required param 'address'")
+		return fmt.Errorf("'Missing required param 'address'")
 	}
 	if *M.Address > 65535 {
-		return fmt.Errorf("Address length must range of 0-65535")
+		return fmt.Errorf("'Address length must range of 0-65535")
 	}
 	if M.Function == nil {
-		return fmt.Errorf("Missing required param 'function'")
+		return fmt.Errorf("'Missing required param 'function'")
 	}
 	if *M.Function > 4 {
-		return fmt.Errorf("Function only support value of 1,2,3,4")
+		return fmt.Errorf("'Function only support value of 1,2,3,4")
 	}
 	if M.SlaverId == nil {
-		return fmt.Errorf("Missing required param 'slaverId'")
+		return fmt.Errorf("'Missing required param 'slaverId'")
 	}
 	if (*M.SlaverId) > 255 {
-		return fmt.Errorf("Alias length must range of 1-256")
+		return fmt.Errorf("'Alias length must range of 1-256")
 	}
 	if M.Frequency == nil {
-		return fmt.Errorf("Missing required param 'frequency'")
+		return fmt.Errorf("'Missing required param 'frequency'")
 	}
 	if *M.Frequency < 50 {
-		return fmt.Errorf("Frequency must greater than 50ms")
+		return fmt.Errorf("'Frequency must greater than 50ms")
 	}
 	if *M.Frequency > 100000 {
-		return fmt.Errorf("Frequency must little than 100s")
+		return fmt.Errorf("'Frequency must little than 100s")
 	}
 	if M.Quantity == nil {
-		return fmt.Errorf("Missing required param 'quantity'")
+		return fmt.Errorf("'Missing required param 'quantity'")
 	}
 	switch M.Type {
 	case "UTF8":
 		if (*M.Quantity * uint16(2)) > 255 {
-			return fmt.Errorf("Invalid 'UTF8' Length '%d'", (*M.Quantity * uint16(2)))
+			return fmt.Errorf("'Invalid 'UTF8' Length '%d'", (*M.Quantity * uint16(2)))
 		}
 		if !utils.SContains([]string{"BIG_ENDIAN", "LITTLE_ENDIAN"}, M.Order) {
-			return fmt.Errorf("Invalid '%s' order '%s'", M.Type, M.Order)
+			return fmt.Errorf("'Invalid '%s' order '%s'", M.Type, M.Order)
 		}
 	case "I", "Q", "BYTE":
 		if M.Order != "A" {
-			return fmt.Errorf("Invalid '%s' order '%s'", M.Type, M.Order)
+			return fmt.Errorf("'Invalid '%s' order '%s'", M.Type, M.Order)
 		}
 	case "RAW", "INT", "UINT", "FLOAT", "UFLOAT":
 		if !utils.SContains([]string{"ABCD", "DCBA", "CDAB"}, M.Order) {
-			return fmt.Errorf("Invalid '%s' order '%s'", M.Type, M.Order)
+			return fmt.Errorf("'Invalid '%s' order '%s'", M.Type, M.Order)
 		}
 	case "SHORT", "USHORT":
 		if !utils.SContains([]string{"AB", "BA"}, M.Order) {
-			return fmt.Errorf("Invalid '%s' order '%s'", M.Type, M.Order)
+			return fmt.Errorf("'Invalid '%s' order '%s'", M.Type, M.Order)
 		}
 	default:
-		return fmt.Errorf("Invalid '%s' order '%s'", M.Type, M.Order)
+		return fmt.Errorf("'Invalid '%s' order '%s'", M.Type, M.Order)
 	}
 	if M.Weight == nil {
-		return fmt.Errorf("Invalid Weight value:%d", M.Weight)
+		return fmt.Errorf("'Invalid Weight value:%d", M.Weight)
 	}
 	return nil
 }

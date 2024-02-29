@@ -122,14 +122,6 @@ func sumMD5(filePath string) (string, error) {
 	_, _ = io.Copy(hash, file)
 	return hex.EncodeToString(hash.Sum(nil)), nil
 }
-func chmodX(filePath string) error {
-
-	if err := os.Chmod(filePath, 0755); err != nil {
-		return err
-	}
-	return nil
-
-}
 
 /*
 *
