@@ -26,7 +26,9 @@ import (
 	"github.com/hootrhino/rulex/component/aibase"
 	"github.com/hootrhino/rulex/component/appstack"
 	"github.com/hootrhino/rulex/component/hwportmanager"
+	hnccnc "github.com/hootrhino/rulex/component/intercache/hnccnc"
 	iotschema "github.com/hootrhino/rulex/component/intercache/iotschema"
+	kdncnc "github.com/hootrhino/rulex/component/intercache/kdncnc"
 	modbuscache "github.com/hootrhino/rulex/component/intercache/modbus"
 	siemenscache "github.com/hootrhino/rulex/component/intercache/siemens"
 
@@ -91,6 +93,10 @@ func InitRuleEngine(config typex.RulexConfig) typex.RuleX {
 	modbuscache.InitModbusPointCache(__DefaultRuleEngine)
 	// Init Siemens Point Cache
 	siemenscache.InitSiemensPointCache(__DefaultRuleEngine)
+	// KDN CNC
+	hnccnc.InitHnc8CnCPointCache(__DefaultRuleEngine)
+	// HNC CNC
+	kdncnc.InitKdnCnCPointCache(__DefaultRuleEngine)
 	// Internal Bus
 	internotify.InitInternalEventBus(__DefaultRuleEngine, core.GlobalConfig.MaxQueueSize)
 	// 前后交互组件
@@ -552,6 +558,18 @@ func (e *RuleEngine) InitDeviceTypeManager() error {
 		&typex.XConfig{
 			Engine:    e,
 			NewDevice: device.NewGenericBacnetIpDevice,
+		},
+	)
+	e.DeviceTypeManager.Register(typex.HNC8,
+		&typex.XConfig{
+			Engine:    e,
+			NewDevice: device.NewHNC8_CNC,
+		},
+	)
+	e.DeviceTypeManager.Register(typex.KDN,
+		&typex.XConfig{
+			Engine:    e,
+			NewDevice: device.NewKDN_CNC,
 		},
 	)
 	return nil

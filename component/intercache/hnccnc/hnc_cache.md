@@ -1,5 +1,5 @@
 <!--
- Copyright (C) 2023 wwhai
+ Copyright (C) 2024 wwhai
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU Affero General Public License as
@@ -15,5 +15,5 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 -->
 
-# 内部缓存器
-主要用来做内存缓存加速使用，比如留给物模型来展示实时值等。是一个K-V存储器，其本质是Map。只保存点位的ID和数值映射关系，因此需要处理好ID作为MAP的K不能冲突了。
+# 华中数控
+华中数控的CNC机床。

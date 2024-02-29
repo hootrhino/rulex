@@ -192,6 +192,7 @@ func (mdev *generic_modbus_device) Init(devId string, configMap map[string]inter
 			UUID:          ModbusPoint.UUID,
 			Status:        0,
 			LastFetchTime: LastFetchTime,
+			Value:         "",
 		})
 	}
 	if mdev.mainConfig.CommonConfig.EnableOptimize {

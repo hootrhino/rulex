@@ -34,10 +34,14 @@ import (
 *
  */
 type kndDataPoint struct {
-	Name        string `json:"name" validate:"required"`         // 点位名称
-	ApiFunction string `json:"api_function" validate:"required"` // API路径
-	Group       int    `json:"group" validate:"required"`        // 分组采集
-	Address     string `json:"address" validate:"required"`      // 地址
+	DeviceUUID    string `json:"device_uuid"`
+	Name          string `json:"name"`
+	Alias         string `json:"alias"`
+	Function      *int   `json:"function"`
+	Group         *int   `json:"group"`
+	Status        int    `json:"status"`        // 运行时数据
+	LastFetchTime uint64 `json:"lastFetchTime"` // 运行时数据
+	Value         string `json:"value"`         // 运行时数据
 }
 
 //	{
@@ -119,20 +123,20 @@ type kdn_cnc_config struct {
 * 凯帝恩CNC
 *
  */
-type KDN_CNC_Device struct {
+type KDN_CNC struct {
 	typex.XStatus
 	status     typex.DeviceState
 	mainConfig kdn_cnc_config
 }
 
-func NewKDN_CNC_Device(e typex.RuleX) typex.XDevice {
-	hd := new(KDN_CNC_Device)
+func NewKDN_CNC(e typex.RuleX) typex.XDevice {
+	hd := new(KDN_CNC)
 	hd.RuleEngine = e
 	return hd
 }
 
 //  初始化
-func (hd *KDN_CNC_Device) Init(devId string, configMap map[string]interface{}) error {
+func (hd *KDN_CNC) Init(devId string, configMap map[string]interface{}) error {
 	hd.PointId = devId
 	if err := utils.BindSourceConfig(configMap, &hd.mainConfig); err != nil {
 		glogger.GLogger.Error(err)
@@ -142,7 +146,7 @@ func (hd *KDN_CNC_Device) Init(devId string, configMap map[string]interface{}) e
 }
 
 // 启动
-func (hd *KDN_CNC_Device) Start(cctx typex.CCTX) error {
+func (hd *KDN_CNC) Start(cctx typex.CCTX) error {
 	hd.Ctx = cctx.Ctx
 	hd.CancelCTX = cctx.CancelCTX
 	kdnCNCInfo, err1 := hd.getCncInfo()
@@ -158,18 +162,18 @@ func (hd *KDN_CNC_Device) Start(cctx typex.CCTX) error {
 	return nil
 }
 
-func (hd *KDN_CNC_Device) OnRead(cmd []byte, data []byte) (int, error) {
+func (hd *KDN_CNC) OnRead(cmd []byte, data []byte) (int, error) {
 	return 0, nil
 }
 
 // 把数据写入设备
-func (hd *KDN_CNC_Device) OnWrite(cmd []byte, b []byte) (int, error) {
+func (hd *KDN_CNC) OnWrite(cmd []byte, b []byte) (int, error) {
 	return 0, nil
 }
 
 // 设备当前状态
 // 主要判别依据是获取CNC的基础信息
-func (hd *KDN_CNC_Device) Status() typex.DeviceState {
+func (hd *KDN_CNC) Status() typex.DeviceState {
 	_, err1 := hd.getCncInfo()
 	if err1 != nil {
 		glogger.GLogger.Error("Fetch KDN CNC Status Failed", err1,
@@ -180,29 +184,29 @@ func (hd *KDN_CNC_Device) Status() typex.DeviceState {
 }
 
 // 停止设备
-func (hd *KDN_CNC_Device) Stop() {
+func (hd *KDN_CNC) Stop() {
 	hd.status = typex.DEV_STOP
 	hd.CancelCTX()
 }
 
 // 设备属性，是一系列属性描述
-func (hd *KDN_CNC_Device) Property() []iotschema.IoTSchema {
+func (hd *KDN_CNC) Property() []iotschema.IoTSchema {
 	return []iotschema.IoTSchema{}
 }
 
 // 真实设备
-func (hd *KDN_CNC_Device) Details() *typex.Device {
+func (hd *KDN_CNC) Details() *typex.Device {
 	return hd.RuleEngine.GetDevice(hd.PointId)
 }
 
 // 状态
-func (hd *KDN_CNC_Device) SetState(status typex.DeviceState) {
+func (hd *KDN_CNC) SetState(status typex.DeviceState) {
 	hd.status = status
 
 }
 
 // 驱动
-func (hd *KDN_CNC_Device) Driver() typex.XExternalDriver {
+func (hd *KDN_CNC) Driver() typex.XExternalDriver {
 	return nil
 }
 
@@ -210,10 +214,10 @@ func (hd *KDN_CNC_Device) Driver() typex.XExternalDriver {
 //
 // --------------------------------------------------------------------------------------------------
 
-func (hd *KDN_CNC_Device) OnDCACall(UUID string, Command string, Args interface{}) typex.DCAResult {
+func (hd *KDN_CNC) OnDCACall(UUID string, Command string, Args interface{}) typex.DCAResult {
 	return typex.DCAResult{}
 }
-func (hd *KDN_CNC_Device) OnCtrl(cmd []byte, args []byte) ([]byte, error) {
+func (hd *KDN_CNC) OnCtrl(cmd []byte, args []byte) ([]byte, error) {
 	return []byte{}, nil
 }
 
@@ -253,7 +257,7 @@ func kdnHttpGet(url string) (string, error) {
 * 获取CNC的基本信息
 *
  */
-func (hd *KDN_CNC_Device) getCncInfo() (kdnCNCInfo, error) {
+func (hd *KDN_CNC) getCncInfo() (kdnCNCInfo, error) {
 	ApiVersion := "v1.3" // 默认就是1.3
 	if hd.mainConfig.ApiVersion == 2 {
 		ApiVersion = "v1.2"
@@ -275,7 +279,7 @@ func (hd *KDN_CNC_Device) getCncInfo() (kdnCNCInfo, error) {
 * 获取运行时状态
 *
  */
-func (hd *KDN_CNC_Device) getCncStatus() (kdnCNCStatus, error) {
+func (hd *KDN_CNC) getCncStatus() (kdnCNCStatus, error) {
 	ApiVersion := "v1.3" // 默认就是1.3
 	if hd.mainConfig.ApiVersion == 2 {
 		ApiVersion = "v1.2"

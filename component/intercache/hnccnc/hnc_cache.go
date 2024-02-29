@@ -23,10 +23,10 @@ import (
 
 // 点位表
 type Hnc8RegisterPoint struct {
-	Name        string // 点位名称
-	ApiFunction string // API路径
-	Group       int    // 分组采集
-	Address     string // 地址
+	UUID          string
+	Status        int
+	LastFetchTime uint64
+	Value         string
 }
 
 var __DefaultHnc8CnCPointCache *Hnc8CnCPointCache
@@ -112,6 +112,7 @@ func (M *Hnc8CnCPointCache) UnRegisterSlot(Slot string) {
 	M.lock.Lock()
 	defer M.lock.Unlock()
 	delete(M.Slots, Slot)
+	M.Flush()
 }
 func (M *Hnc8CnCPointCache) Size() uint64 {
 	return uint64(len(M.Slots))

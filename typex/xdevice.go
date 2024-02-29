@@ -62,6 +62,8 @@ const (
 	GENERIC_BACNET_IP          DeviceType = "GENERIC_BACNET_IP"          // 通用BacnetIP
 	RHINOPI_IR                 DeviceType = "RHINOPI_IR"                 // 大犀牛PI的红外线接收器
 	GENERIC_HTTP_DEVICE        DeviceType = "GENERIC_HTTP_DEVICE"        // GENERIC_HTTP
+	HNC8                       DeviceType = "HNC8"                       // 华中数控机床
+	KDN                        DeviceType = "KDN"                        // 凯帝恩控机床
 )
 
 // 设备元数据, 本质是保存在配置里面的数据的一个内存映射实例
