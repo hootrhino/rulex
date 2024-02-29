@@ -54,7 +54,12 @@ func ValidateLuaSyntax(bytes []byte) error {
 */
 func AddAppLibToGroup(app *Application, rx typex.RuleX,
 	ModuleName string, funcs map[string]func(l *lua.LState) int) {
-	table := app.vm.NewTable()
+	var table *lua.LTable
+	if ModuleName == "_G" {
+		table = app.vm.G.Global
+	} else {
+		table = app.vm.NewTable()
+	}
 	app.vm.SetGlobal(ModuleName, table)
 	for funcName, f := range funcs {
 		table.RawSetString(funcName, app.vm.NewClosure(f))

@@ -110,6 +110,7 @@ func (M *SiemensPointCache) UnRegisterSlot(Slot string) {
 	M.lock.Lock()
 	defer M.lock.Unlock()
 	delete(M.Slots, Slot)
+	M.Flush()
 }
 func (M *SiemensPointCache) Size() uint64 {
 	return uint64(len(M.Slots))

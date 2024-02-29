@@ -192,6 +192,8 @@ func (hs *ApiServerPlugin) Init(config *ini.Section) error {
 		&model.MUserLuaTemplate{},
 		&model.MModbusDataPoint{},
 		&model.MSiemensDataPoint{},
+		&model.MHnc8DataPoint{},
+		&model.MKnd8DataPoint{},
 	)
 	// 初始化所有预制参数
 	server.DefaultApiServer.InitializeGenericOSData()
@@ -334,6 +336,16 @@ func (hs *ApiServerPlugin) LoadRoute() {
 		SIEMENS_PLC.POST(("/update"), server.AddRoute(apis.SiemensSheetUpdate))
 		SIEMENS_PLC.DELETE(("/delIds"), server.AddRoute(apis.SiemensSheetDelete))
 		SIEMENS_PLC.DELETE(("/delAll"), server.AddRoute(apis.SiemensSheetDeleteAll))
+	}
+	// 华中数控 点位表
+	Hnc8 := server.RouteGroup(server.ContextUrl("/hnc8_data_sheet"))
+	{
+		Hnc8.POST(("/sheetImport"), server.AddRoute(apis.Hnc8SheetImport))
+		Hnc8.GET(("/sheetExport"), server.AddRoute(apis.Hnc8PointsExport))
+		Hnc8.GET(("/list"), server.AddRoute(apis.Hnc8SheetPageList))
+		Hnc8.POST(("/update"), server.AddRoute(apis.Hnc8SheetUpdate))
+		Hnc8.DELETE(("/delIds"), server.AddRoute(apis.Hnc8SheetDelete))
+		Hnc8.DELETE(("/delAll"), server.AddRoute(apis.Hnc8SheetDeleteAll))
 	}
 
 	// ----------------------------------------------------------------------------------------------

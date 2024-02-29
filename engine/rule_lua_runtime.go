@@ -28,7 +28,12 @@ import (
 */
 func AddRuleLibToGroup(r *typex.Rule, rx typex.RuleX,
 	ModuleName string, funcs map[string]func(l *lua.LState) int) {
-	table := r.LuaVM.NewTable()
+	var table *lua.LTable
+	if ModuleName == "_G" {
+		table = r.LuaVM.G.Global
+	} else {
+		table = r.LuaVM.NewTable()
+	}
 	r.LuaVM.SetGlobal(ModuleName, table)
 	for funcName, f := range funcs {
 		table.RawSetString(funcName, r.LuaVM.NewClosure(f))

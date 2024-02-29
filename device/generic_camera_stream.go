@@ -284,6 +284,7 @@ func (vc *videoCamera) stopFFMPEGProcess() error {
 	if vc.ffmpegProcess != nil {
 		vc.ffmpegProcess.Process.Kill()
 		vc.ffmpegProcess.Process.Signal(syscall.SIGTERM)
+		glogger.GLogger.Info("FFMPEG Process stopped:", vc.ffmpegProcess.Process.Pid)
 	}
 	return nil
 }

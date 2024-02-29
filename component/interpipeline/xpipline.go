@@ -97,10 +97,8 @@ func callLuaFunc(vm *lua.LState, callable *lua.LFunction, args ...lua.LValue) ([
 	// C.call(Lst, arg1,arg2) -> -1
 	// 返回值在栈顶
 	// Pop的作用是把压入栈的参数args...删除，防止registry无限增长
-	vm.Pop(1)
-	vm.Pop(2)
-	vm.Pop(3) // 这是我很早以前写的代码，
-	//           // 但是今天突然发现看不懂为啥这里要Pop栈？
+	vm.Pop(2) // 这是我很早以前写的代码，
+	//        // 但是今天突然发现看不懂为啥这里要Pop栈？
 	// 2023 12-01 删除
 	// return data, true|false
 	// -1栈顶；1栈底

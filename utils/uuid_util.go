@@ -59,9 +59,20 @@ func UserLuaUuid() string {
 func ModbusPointUUID() string {
 	return MakeUUID("MDTB")
 }
+
 // MakeUUID
 func SiemensPointUUID() string {
 	return MakeUUID("SIMTB")
+}
+
+// 凯帝恩
+func KDNPointUUID() string {
+	return MakeUUID("KDNC")
+}
+
+// 华中数控
+func HNC8PointUUID() string {
+	return MakeUUID("HNC8")
 }
 
 // MakeUUID

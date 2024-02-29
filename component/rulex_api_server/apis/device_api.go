@@ -138,15 +138,22 @@ func DeleteDevice(c *gin.Context, ruleEngine typex.RuleX) {
 	}
 
 	// 检查是否通用Modbus设备.需要同步删除点位表记录
-	if Mdev.Type == "GENERIC_MODBUS" {
+	if Mdev.Type == typex.GENERIC_MODBUS.String() {
 		if err := service.DeleteAllModbusPointByDevice(uuid); err != nil {
 			c.JSON(common.HTTP_OK, common.Error400(err))
 			return
 		}
 	}
-	// 西门子的
-	if Mdev.Type == "SIEMENS_PLC" {
+	// 西门子需要同步删除点位表记录
+	if Mdev.Type == typex.SIEMENS_PLC.String() {
 		if err := service.DeleteAllSiemensPointByDevice(uuid); err != nil {
+			c.JSON(common.HTTP_OK, common.Error400(err))
+			return
+		}
+	}
+	// 华中数控需要同步删除点位表记录
+	if Mdev.Type == typex.HNC8.String() {
+		if err := service.DeleteAllHnc8PointByDevice(uuid); err != nil {
 			c.JSON(common.HTTP_OK, common.Error400(err))
 			return
 		}
