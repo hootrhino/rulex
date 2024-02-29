@@ -34,6 +34,8 @@ func GetMetric() InternalMetric {
 func IncIn() {
 	if __DefaultInternalMetric.InSuccess < math.MaxUint64 {
 		__DefaultInternalMetric.InSuccess = __DefaultInternalMetric.InSuccess + 1
+	} else {
+		Reset()
 	}
 }
 func DecIn() {
@@ -46,6 +48,8 @@ func IncOut() {
 
 	if __DefaultInternalMetric.OutSuccess < math.MaxUint64 {
 		__DefaultInternalMetric.OutSuccess = __DefaultInternalMetric.OutSuccess + 1
+	} else {
+		Reset()
 	}
 }
 func DecOut() {
@@ -58,6 +62,8 @@ func IncInFailed() {
 
 	if __DefaultInternalMetric.InFailed < math.MaxUint64 {
 		__DefaultInternalMetric.InFailed = __DefaultInternalMetric.InFailed + 1
+	} else {
+		Reset()
 	}
 }
 
@@ -65,6 +71,8 @@ func IncOutFailed() {
 
 	if __DefaultInternalMetric.InFailed < math.MaxUint64 {
 		__DefaultInternalMetric.OutFailed = __DefaultInternalMetric.OutFailed + 1
+	} else {
+		Reset()
 	}
 }
 
