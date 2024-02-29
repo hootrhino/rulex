@@ -62,8 +62,6 @@ func InEnds(c *gin.Context, ruleEngine typex.RuleX) {
 		}
 	}
 	c.JSON(common.HTTP_OK, common.OkWithData(inEnds))
-	return
-
 }
 
 // Create or Update InEnd
