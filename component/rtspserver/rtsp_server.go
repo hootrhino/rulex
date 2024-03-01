@@ -66,6 +66,8 @@ func InitRtspServer(rulex typex.RuleX) *rtspServer {
 	group.POST("/ffmpegPush", func(ctx *gin.Context) {
 		LiveId := ctx.Query("liveId")
 		if LiveId == "" {
+			ctx.Writer.Write([]byte("missing required 'liveId'"))
+			glogger.GLogger.Error("missing required 'liveId'")
 			ctx.Writer.Flush()
 			return
 		}
