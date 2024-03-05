@@ -12,6 +12,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/typex"
+	"github.com/hootrhino/rulex/utils"
 )
 
 /*
@@ -56,14 +57,14 @@ func InitRtspServer(rulex typex.RuleX) *rtspServer {
 		wsPort:                 9400,
 	}
 	// 注册Websocket server
-	__DefaultRtspServer.webServer.Use(cros)
+	__DefaultRtspServer.webServer.Use(utils.AllowCros)
 	__DefaultRtspServer.webServer.GET("/ws", wsServerEndpoint)
-	// http://127.0.0.1:3000/stream/live/001
-	group := __DefaultRtspServer.webServer.Group("/stream")
+	// http://127.0.0.1:3000/h264_stream/live/001
+	group := __DefaultRtspServer.webServer.Group("/h264_stream")
 	// 注意：这个接口是给FFMPEG请求的
 	//    ffmpeg -hide_banner -r 24 -rtsp_transport tcp -re -i rtsp://192.168.1.210:554/av0_0 -q 5 -f mpegts
-	// -fflags nobuffer -c:v libx264 -an -s 1920x1080 http://?:9400/stream/ffmpegPush?liveId=xx
-	group.POST("/ffmpegPush", func(ctx *gin.Context) {
+	// -fflags nobuffer -c:v libx264 -an -s 1920x1080 http://?:9400/h264_stream/push?liveId=xx
+	group.POST("/push", func(ctx *gin.Context) {
 		LiveId := ctx.Query("liveId")
 		if LiveId == "" {
 			ctx.Writer.Write([]byte("missing required 'liveId'"))
@@ -72,7 +73,7 @@ func InitRtspServer(rulex typex.RuleX) *rtspServer {
 			return
 		}
 		glogger.GLogger.Info("Receive stream push From:", LiveId,
-			"stream play url is:", fmt.Sprintf("ws://127.0.0.1:9400/ws?token=WebRtspPlayer&liveId=%s", LiveId))
+			", stream play url is:", fmt.Sprintf("ws://127.0.0.1:9400/ws?token=WebRtspPlayer&liveId=%s", LiveId))
 		// http://127.0.0.1:9400 :后期通过参数传进
 		// 启动一个FFMPEG开始从摄像头拉流
 		bodyReader := bufio.NewReader(ctx.Request.Body)
@@ -197,6 +198,7 @@ type StreamPlayer struct {
 	RequestLiveId string
 	Token         string
 	wsConn        *websocket.Conn
+	Resolution    utils.Resolution
 }
 
 /*
@@ -277,24 +279,4 @@ func wsServerEndpoint(c *gin.Context) {
 			}
 		}
 	}(wsConn)
-}
-
-func cros(c *gin.Context) {
-	c.Header("Cache-Control", "private, max-age=10")
-	method := c.Request.Method
-	origin := c.Request.Header.Get("Origin")
-
-	c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
-	c.Header("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE, UPDATE")
-	c.Header("Access-Control-Allow-Headers", "Authorization, Content-Length, X-CSRF-Token, Token,session")
-	c.Header("Access-Control-Expose-Headers", "Content-Length, Access-Control-Allow-Origin, Access-Control-Allow-Headers")
-	c.Header("Access-Control-Max-Age", "172800")
-	c.Header("Access-Control-Allow-Credentials", "true")
-
-	if method == http.MethodOptions {
-		c.AbortWithStatus(http.StatusNoContent)
-		return
-	}
-	c.Request.Header.Del("Origin")
-	c.Next()
 }

@@ -21,7 +21,7 @@
 指令如下：
 
 ```sh
-ffmpeg -rtsp_transport tcp -re -i rtsp://192.168.199.243:554/av0_0 -q 5 -f mpegts -fflags nobuffer -c:v mpeg1video -an -s 1920x1080 http://127.0.0.1:9400/stream/ffmpegPush?liveId=147a6d7ae5a785f6e3ea90f25d36c63e
+ffmpeg -rtsp_transport tcp -re -i rtsp://192.168.199.243:554/av0_0 -q 5 -f mpegts -fflags nobuffer -c:v mpeg1video -an -s 1920x1080 http://127.0.0.1:9400/h264_stream/push?liveId=147a6d7ae5a785f6e3ea90f25d36c63e
 ```
 ## 原理
 ![1](1.png)
