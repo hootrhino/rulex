@@ -36,6 +36,7 @@ import (
 	"github.com/hootrhino/rulex/component/intermetric"
 	"github.com/hootrhino/rulex/component/internotify"
 	"github.com/hootrhino/rulex/component/interqueue"
+	"github.com/hootrhino/rulex/component/jpegstream"
 	"github.com/hootrhino/rulex/component/rtspserver"
 	"github.com/hootrhino/rulex/component/trailer"
 	"github.com/hootrhino/rulex/core"
@@ -121,6 +122,8 @@ func InitRuleEngine(config typex.RulexConfig) typex.RuleX {
 	// datacenter.InitDataCenter(__DefaultRuleEngine)
 	// Rtsp server
 	rtspserver.InitRtspServer(__DefaultRuleEngine)
+	// Jpeg Stream Server
+	jpegstream.InitJpegStreamServer(__DefaultRuleEngine)
 	return __DefaultRuleEngine
 }
 
