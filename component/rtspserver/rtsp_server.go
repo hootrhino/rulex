@@ -20,41 +20,47 @@ import (
 * 默认服务
 *
  */
-var __DefaultRtspServer *rtspServer
+var __DefaultRtspServer *RtspServer
 
 /*
 *
 * RTSP 设备(rtsp://192.168.199.243:554/av0_0)
 *
  */
-type RtspCameraInfo struct {
-	Type     string `json:"type,omitempty"`     // 1-RTSP,2-Local
-	LocalId  string `json:"local_id,omitempty"` // 本地ID
-	PullAddr string `json:"pullAddr,omitempty"`
-	PushAddr string `json:"pushAddr,omitempty"`
+type FlvStream struct {
+	Type          string `json:"type"`     // 1-RTSP,2-Local
+	LocalId       string `json:"local_id"` // 本地ID
+	PullAddr      string `json:"pullAddr"`
+	PushAddr      string `json:"pushAddr"`
+	GetFirstFrame bool
+	LiveId        string
+	Pulled        bool
+	Resolution    utils.Resolution
 }
 
-type websocketPlayerManager struct {
-	WsServer websocket.Upgrader
-	Clients  map[string]StreamPlayer
-	lock     sync.Mutex
-}
-
-type rtspServer struct {
-	webServer              *gin.Engine
-	rtspCameras            map[string]RtspCameraInfo
-	websocketPlayerManager *websocketPlayerManager
-	wsPort                 int
+type RtspServer struct {
+	webServer   *gin.Engine
+	wsPort      int
+	locker      sync.Mutex
+	RtspStreams map[string]*FlvStream
+	WsServer    websocket.Upgrader
+	Clients     map[string]streamPlayer
 }
 
 // NewRouter Gin 路由配置
-func InitRtspServer(rulex typex.RuleX) *rtspServer {
+func InitRtspServer(rulex typex.RuleX) *RtspServer {
 	gin.SetMode(gin.ReleaseMode)
-	__DefaultRtspServer = &rtspServer{
-		webServer:              gin.New(),
-		rtspCameras:            map[string]RtspCameraInfo{},
-		websocketPlayerManager: NewPlayerManager(),
-		wsPort:                 9400,
+	__DefaultRtspServer = &RtspServer{
+		webServer:   gin.New(),
+		RtspStreams: map[string]*FlvStream{},
+		WsServer: websocket.Upgrader{
+			CheckOrigin: func(r *http.Request) bool {
+				return true
+			},
+		},
+		Clients: make(map[string]streamPlayer),
+		locker:  sync.Mutex{},
+		wsPort:  9400,
 	}
 	// 注册Websocket server
 	__DefaultRtspServer.webServer.Use(utils.AllowCros)
@@ -86,7 +92,7 @@ func InitRtspServer(rulex typex.RuleX) *rtspServer {
 				glogger.GLogger.Error("ReadBytes from ffmpeg error:", err)
 				break
 			}
-			if len(__DefaultRtspServer.websocketPlayerManager.Clients) > 0 {
+			if len(__DefaultRtspServer.Clients) > 0 {
 				pushToWebsocket(LiveId, data)
 			}
 		}
@@ -114,11 +120,11 @@ func InitRtspServer(rulex typex.RuleX) *rtspServer {
 *
  */
 func pushToWebsocket(liveId string, data []byte) {
-	__DefaultRtspServer.websocketPlayerManager.lock.Lock()
-	defer __DefaultRtspServer.websocketPlayerManager.lock.Unlock()
+	__DefaultRtspServer.locker.Lock()
+	defer __DefaultRtspServer.locker.Unlock()
 	// 检查到底有没有拉流的,如果有就推给他
-	for _, C := range __DefaultRtspServer.websocketPlayerManager.Clients {
-		if C.RequestLiveId == liveId {
+	for _, C := range __DefaultRtspServer.Clients {
+		if C.LiveId == liveId {
 			if C.wsConn != nil {
 				C.wsConn.WriteMessage(websocket.BinaryMessage, data)
 			}
@@ -128,155 +134,58 @@ func pushToWebsocket(liveId string, data []byte) {
 
 /*
 *
-* 远程摄像头列表
+* Manage API
 *
  */
-func AllVideoStreamEndpoints() map[string]RtspCameraInfo {
-	return __DefaultRtspServer.rtspCameras
-}
-func AddVideoStreamEndpoint(k string, v RtspCameraInfo) {
-	if GetVideoStreamEndpoint(k).PullAddr == "" {
-		__DefaultRtspServer.rtspCameras[k] = v
-	}
-}
-func GetVideoStreamEndpoint(k string) RtspCameraInfo {
-	return __DefaultRtspServer.rtspCameras[k]
-}
-func DeleteVideoStreamEndpoint(k string) {
-	__DefaultRtspServer.websocketPlayerManager.lock.Lock()
-	defer __DefaultRtspServer.websocketPlayerManager.lock.Unlock()
-	delete(__DefaultRtspServer.rtspCameras, k)
-}
 
-type wsInOut struct {
-}
-
-func NewWSStdInOut() wsInOut {
-	return wsInOut{}
-}
-
-func (hk wsInOut) Write(p []byte) (n int, err error) {
-	glogger.Logrus.Info(string(p))
-	return len(p), nil
-}
-func (hk wsInOut) Read(p []byte) (n int, err error) {
-	return len(p), nil
-}
-
-func (w *websocketPlayerManager) Write(p []byte) (n int, err error) {
-	for _, c := range w.Clients {
-		w.lock.Lock()
-		err := c.wsConn.WriteMessage(websocket.TextMessage, p)
-		w.lock.Unlock()
-		if err != nil {
-			return 0, err
+func (s *RtspServer) RegisterFlvStreamSource(liveId string) error {
+	s.locker.Lock()
+	defer s.locker.Unlock()
+	_, ok := s.RtspStreams[liveId]
+	if !ok {
+		s.RtspStreams[liveId] = &FlvStream{
+			GetFirstFrame: false,
+			LiveId:        liveId,
+			Pulled:        false,
+			Resolution:    utils.Resolution{Width: 0, Height: 0},
 		}
+		return nil
 	}
-	return 0, nil
+	return fmt.Errorf("stream already exists")
 }
 
-func NewPlayerManager() *websocketPlayerManager {
-	return &websocketPlayerManager{
-		WsServer: websocket.Upgrader{
-			CheckOrigin: func(r *http.Request) bool {
-				return true
-			},
-		},
-		Clients: make(map[string]StreamPlayer),
-		lock:    sync.Mutex{},
+func (s *RtspServer) GetFlvStreamSource(liveId string) (*FlvStream, error) {
+	s.locker.Lock()
+	defer s.locker.Unlock()
+	FlvStream, ok := s.RtspStreams[liveId]
+	if ok {
+		return FlvStream, nil
+	} else {
+		return FlvStream, fmt.Errorf("stream not exists")
 	}
-
 }
 
-/*
-*
-* websocket播放器
-*
- */
-type StreamPlayer struct {
-	ClientId      string
-	RequestLiveId string
-	Token         string
-	wsConn        *websocket.Conn
-	Resolution    utils.Resolution
+func (s *RtspServer) Exists(liveId string) bool {
+	s.locker.Lock()
+	defer s.locker.Unlock()
+	_, ok := s.RtspStreams[liveId]
+	return ok
+}
+func (s *RtspServer) DeleteFlvStreamSource(liveId string) {
+	s.locker.Lock()
+	defer s.locker.Unlock()
+	delete(s.RtspStreams, liveId)
 }
 
-/*
-*
-* 启动服务
-*
- */
-func wsServerEndpoint(c *gin.Context) {
-	wsConn, err := __DefaultRtspServer.websocketPlayerManager.WsServer.Upgrade(c.Writer, c.Request, nil)
-	if err != nil {
-		return
+func (s *RtspServer) FlvStreamSourceList() []FlvStream {
+	List := []FlvStream{}
+	for _, v := range s.RtspStreams {
+		List = append(List, *v)
 	}
-	LiveId := c.Query("liveId")
-	ClientId := c.Query("clientId")
-	Token := c.Query("token")
-	glogger.GLogger.Debugf("Request live:%s, Token is :%s", LiveId, Token)
-	// 最多允许连接10个客户端，实际情况下根本用不了那么多
-	if len(__DefaultRtspServer.websocketPlayerManager.Clients) >= 10 {
-		wsConn.WriteMessage(websocket.CloseMessage, []byte{})
-		wsConn.Close()
-		return
+	return List
+}
+func (s *RtspServer) FlvStreamFlush() {
+	for k := range s.RtspStreams {
+		delete(s.RtspStreams, k)
 	}
-
-	StreamPlayer := StreamPlayer{
-		RequestLiveId: LiveId,
-		ClientId:      ClientId,
-		Token:         Token,
-		wsConn:        wsConn,
-	}
-	if Token != "WebRtspPlayer" {
-		wsConn.WriteMessage(websocket.CloseMessage, []byte("Invalid client token"))
-		wsConn.Close()
-		return
-	}
-	if C, ok := __DefaultRtspServer.websocketPlayerManager.Clients[ClientId]; ok {
-		wsConn.WriteMessage(websocket.CloseMessage, []byte("already exists a client:"+C.ClientId))
-		wsConn.Close()
-		return
-	}
-	// 每个LiveId只能有1路播放
-	__DefaultRtspServer.websocketPlayerManager.Clients[ClientId] = StreamPlayer
-	glogger.GLogger.Info("WebSocket Player connected:" + wsConn.RemoteAddr().String())
-	wsConn.SetCloseHandler(func(code int, text string) error {
-		glogger.GLogger.Info("wsConn CloseHandler:", wsConn.RemoteAddr().String())
-		__DefaultRtspServer.websocketPlayerManager.lock.Lock()
-		delete(__DefaultRtspServer.websocketPlayerManager.Clients, wsConn.RemoteAddr().String())
-		__DefaultRtspServer.websocketPlayerManager.lock.Unlock()
-		return nil
-	})
-	wsConn.SetPingHandler(func(appData string) error {
-		return nil
-	})
-	wsConn.SetPongHandler(func(appData string) error {
-		return nil
-	})
-	go func(wsConn *websocket.Conn) {
-		for {
-			select {
-			case <-typex.GCTX.Done():
-				{
-					return
-				}
-			default:
-				{
-				}
-			}
-			_, _, err := wsConn.ReadMessage()
-			if err != nil {
-				glogger.GLogger.Warn("wsConn Close Handler:", wsConn.RemoteAddr().String())
-				__DefaultRtspServer.websocketPlayerManager.lock.Lock()
-				delete(__DefaultRtspServer.websocketPlayerManager.Clients, wsConn.RemoteAddr().String())
-				__DefaultRtspServer.websocketPlayerManager.lock.Unlock()
-				break
-			}
-			err = wsConn.WriteMessage(websocket.PingMessage, []byte{})
-			if err != nil {
-				break
-			}
-		}
-	}(wsConn)
 }

@@ -717,8 +717,8 @@ func ListByInend(c *gin.Context, ruleEngine typex.RuleX) {
 *
  */
 type RulexResource struct {
-	UUID string `json:"uuid"`
-	Name string `json:"name"`
+	UUID string `json:"uuid"` // UUID
+	Name string `json:"name"` // 名称
 }
 
 func GetAllResources(c *gin.Context, ruleEngine typex.RuleX) {
@@ -727,22 +727,39 @@ func GetAllResources(c *gin.Context, ruleEngine typex.RuleX) {
 	OutEnds := []RulexResource{}
 	Devices := []RulexResource{}
 	for _, v := range MOutEnds {
-		if utils.SContains([]string{}, v.Type) {
-
+		if utils.SContains([]string{
+			"SIEMENS_PLC",
+			"GENERIC_MODBUS",
+			"GENERIC_UART",
+			"GENERIC_PROTOCOL",
+			"GENERIC_OPCUA",
+			"RHINOPI_IR",
+			"GENERIC_HTTP_DEVICE",
+		}, v.Type) {
+			OutEnds = append(OutEnds, RulexResource{
+				UUID: v.UUID,
+				Name: v.Name,
+			})
 		}
-		OutEnds = append(OutEnds, RulexResource{
-			UUID: v.UUID,
-			Name: v.Name,
-		})
+
 	}
 	for _, v := range MDevices {
-		if utils.SContains([]string{}, v.Type) {
-
+		if utils.SContains([]string{
+			"MONGO_SINGLE",
+			"MONGO_CLUSTER",
+			"MQTT",
+			"NATS",
+			"HTTP",
+			"TDENGINE",
+			"GRPC_CODEC_TARGET",
+			"UDP_TARGET",
+			"TCP_TRANSPORT",
+		}, v.Type) {
+			Devices = append(Devices, RulexResource{
+				UUID: v.UUID,
+				Name: v.Name,
+			})
 		}
-		Devices = append(Devices, RulexResource{
-			UUID: v.UUID,
-			Name: v.Name,
-		})
 	}
 	c.JSON(common.HTTP_OK, common.OkWithData(map[string]any{
 		"devices": Devices,

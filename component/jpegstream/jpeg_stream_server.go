@@ -137,15 +137,26 @@ func (s *JpegStreamServer) Init(cfg map[string]any) error {
 					glogger.GLogger.Error(err1.Error())
 					return
 				}
+				if !JpegStream.Pulled && !JpegStream.GetFirstFrame {
+					_, Resolution, err2 := utils.CvMatToImageBytes(FrameBuffer[:Offset])
+					if err2 != nil {
+						glogger.GLogger.Error(err1)
+						return
+					}
+					JpegStream.Type = "JPEG_STREAM"    // 流
+					JpegStream.LiveId = LiveId         // 设置ID
+					JpegStream.Resolution = Resolution // 设置分辨率
+					JpegStream.GetFirstFrame = true    // 获取到第一帧
+				}
 				// 当没有被拉流的时候不需要推流, 减少OpenCV消耗
 				if JpegStream.Pulled {
-					ImageBytes, Resolution, err2 := utils.CvMatToImageBytes(FrameBuffer[:Offset])
+					ImageBytes, _, err2 := utils.CvMatToImageBytes(FrameBuffer[:Offset])
 					if err2 != nil {
 						glogger.GLogger.Error(err1)
 						break
 					}
-					JpegStream.Resolution = Resolution // 设置分辨率
-					JpegStream.UpdateJPEG(ImageBytes)  // 刷新帧
+
+					JpegStream.UpdateJPEG(ImageBytes) // 刷新帧
 					for i := range FrameBuffer[:Offset] {
 						FrameBuffer[i] = 0
 					}
@@ -227,20 +238,29 @@ func (s *JpegStreamServer) PluginMetaInfo() component.XComponentMetaInfo {
 	return component.XComponentMetaInfo{}
 }
 
+/*
+*
+* Manage API
+*
+ */
+
 func (s *JpegStreamServer) RegisterJpegStreamSource(liveId string) error {
 	s.locker.Lock()
 	defer s.locker.Unlock()
 	_, ok := s.JpegStreams[liveId]
 	if !ok {
 		s.JpegStreams[liveId] = &JpegStream{
-			Resolution: utils.Resolution{Width: 0, Height: 0},
-			frame:      []byte{},
-			Pulled:     false,
+			GetFirstFrame: false,
+			LiveId:        liveId,
+			Pulled:        false,
+			Resolution:    utils.Resolution{Width: 0, Height: 0},
+			frame:         []byte{},
 		}
 		return nil
 	}
 	return fmt.Errorf("stream already exists")
 }
+
 func (s *JpegStreamServer) GetJpegStreamSource(liveId string) (*JpegStream, error) {
 	s.locker.Lock()
 	defer s.locker.Unlock()
@@ -251,6 +271,7 @@ func (s *JpegStreamServer) GetJpegStreamSource(liveId string) (*JpegStream, erro
 		return JpegStream, fmt.Errorf("stream not exists")
 	}
 }
+
 func (s *JpegStreamServer) Exists(liveId string) bool {
 	s.locker.Lock()
 	defer s.locker.Unlock()
@@ -277,17 +298,19 @@ func (s *JpegStreamServer) JpegStreamFlush() {
 }
 
 type JpegStream struct {
-	frame      []byte
-	frameSize  int
-	headerSize int
-	LiveId     string           `json:"liveId"`
-	Pulled     bool             `json:"pulled"`
-	Resolution utils.Resolution `json:"resolution"`
+	frame         []byte
+	frameSize     int
+	headerSize    int
+	GetFirstFrame bool
+	Type          string
+	LiveId        string
+	Pulled        bool
+	Resolution    utils.Resolution
 }
 
 func (S JpegStream) String() string {
-	return fmt.Sprintf(`{"liveId":%s,"liveId":%s,"liveId":%s}`,
-		S.LiveId, S.Pulled, S.Resolution)
+	return fmt.Sprintf(`{"liveId":%s,"pulled":%v,"resolution":%s}`,
+		S.LiveId, S.Pulled, S.Resolution.String())
 }
 func (s *JpegStream) GetWebJpegFrame() []byte {
 	b := s.frame[:s.frameSize]

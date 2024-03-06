@@ -229,7 +229,6 @@ func (vc *videoCamera) startFFMPEGProcess(inputUrl, pushAddr string) {
 					"-i", deviceName,
 					"-c:v", "mjpeg",
 					"-f", "mjpeg",
-					"-s", "640x480",
 					"-headers", `"Content-Type:multipart/x-mixed-replace; boundary=MJPEG_BOUNDARY"`,
 					pushAddr,
 				}
@@ -239,7 +238,6 @@ func (vc *videoCamera) startFFMPEGProcess(inputUrl, pushAddr string) {
 					"-i", deviceName,
 					"-c:v", "mjpeg",
 					"-f", "mjpeg",
-					"-s", "640x480",
 					"-headers", `"Content-Type:multipart/x-mixed-replace; boundary=MJPEG_BOUNDARY"`,
 					pushAddr,
 				}
