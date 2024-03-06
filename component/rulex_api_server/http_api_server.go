@@ -298,6 +298,7 @@ func (hs *ApiServerPlugin) LoadRoute() {
 		osApi.GET(("/osRelease"), server.AddRoute(apis.CatOsRelease))
 		osApi.GET(("/system"), server.AddRoute(apis.System))
 		osApi.GET(("/startedAt"), server.AddRoute(apis.StartedAt))
+		osApi.POST(("/resetInterMetric"), server.AddRoute(apis.ResetInterMetric))
 	}
 	backupApi := server.RouteGroup(server.ContextUrl("/backup"))
 	{
@@ -502,6 +503,14 @@ func (hs *ApiServerPlugin) LoadRoute() {
 		crontaskApi.GET("/start", server.AddRouteV2(apis.StartTask))
 		crontaskApi.GET("/stop", server.AddRouteV2(apis.StopTask))
 	}
+	//
+	// jpegStream APi
+	//
+	jpegStream := server.DefaultApiServer.GetGroup(server.ContextUrl("/jpeg_stream"))
+	{
+		jpegStream.GET("/list", server.AddRoute(apis.GetJpegStreamList))
+		jpegStream.GET("/detail", server.AddRoute(apis.GetJpegStreamDetail))
+	}
 
 	/**
 	  swagger config
@@ -509,6 +518,7 @@ func (hs *ApiServerPlugin) LoadRoute() {
 	*/
 	route := server.DefaultApiServer.Route()
 	route.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
 }
 
 // ApiServerPlugin Start

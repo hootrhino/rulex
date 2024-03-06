@@ -274,3 +274,13 @@ func CatOsRelease(c *gin.Context, ruleEngine typex.RuleX) {
 	}
 	c.JSON(common.HTTP_OK, common.OkWithData(r))
 }
+
+/*
+*
+* 重置度量值
+*
+ */
+func ResetInterMetric(c *gin.Context, ruleEngine typex.RuleX) {
+	intermetric.Reset()
+	c.JSON(common.HTTP_OK, common.Ok())
+}

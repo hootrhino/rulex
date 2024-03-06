@@ -1,5 +1,7 @@
 package utils
 
+import "sort"
+
 /*
 *
 * 检查列表元素是不是不重复了
@@ -24,10 +26,6 @@ func IsListDuplicated(list []string) bool {
 *
  */
 func SContains(s []string, e string) bool {
-	for _, a := range s {
-		if a == e {
-			return true
-		}
-	}
-	return false
+	i := sort.SearchStrings(s, e)
+	return i < len(s) && s[i] == e
 }

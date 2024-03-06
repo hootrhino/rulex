@@ -184,6 +184,7 @@ func WsLogger(c *gin.Context) {
 			if err != nil {
 				break
 			}
+			time.Sleep(5 * time.Second)
 		}
 	}(wsConn)
 }
