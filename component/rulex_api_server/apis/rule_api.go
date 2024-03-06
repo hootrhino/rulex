@@ -710,3 +710,42 @@ func ListByInend(c *gin.Context, ruleEngine typex.RuleX) {
 	c.JSON(common.HTTP_OK, common.OkWithData(ruleVos))
 
 }
+
+/*
+*
+* 给前端快速查询当前系统内的资源
+*
+ */
+type RulexResource struct {
+	UUID string `json:"uuid"`
+	Name string `json:"name"`
+}
+
+func GetAllResources(c *gin.Context, ruleEngine typex.RuleX) {
+	MOutEnds := service.AllMOutEnd()
+	MDevices := service.AllDevices()
+	OutEnds := []RulexResource{}
+	Devices := []RulexResource{}
+	for _, v := range MOutEnds {
+		if utils.SContains([]string{}, v.Type) {
+
+		}
+		OutEnds = append(OutEnds, RulexResource{
+			UUID: v.UUID,
+			Name: v.Name,
+		})
+	}
+	for _, v := range MDevices {
+		if utils.SContains([]string{}, v.Type) {
+
+		}
+		Devices = append(Devices, RulexResource{
+			UUID: v.UUID,
+			Name: v.Name,
+		})
+	}
+	c.JSON(common.HTTP_OK, common.OkWithData(map[string]any{
+		"devices": Devices,
+		"outEnds": OutEnds,
+	}))
+}

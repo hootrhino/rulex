@@ -4,6 +4,7 @@ import (
 	"crypto/md5"
 	"fmt"
 	"io"
+	"os"
 	"os/exec"
 	"regexp"
 	"runtime"
@@ -12,6 +13,7 @@ import (
 
 	"github.com/hootrhino/rulex/component/iotschema"
 	"github.com/hootrhino/rulex/glogger"
+	"github.com/hootrhino/rulex/ossupport"
 	"github.com/hootrhino/rulex/typex"
 	"github.com/hootrhino/rulex/utils"
 )
@@ -197,12 +199,19 @@ func (vc *videoCamera) OnDCACall(_ string, _ string, _ interface{}) typex.DCARes
 func (vc *videoCamera) startFFMPEGProcess(inputUrl, pushAddr string) {
 	defer func() {
 		vc.status = typex.DEV_DOWN
+		if vc.ffmpegProcess != nil {
+			vc.stopFFMPEGProcess()
+		}
 	}()
 
 	// 本地摄像头推向本地JpegStream服务器
 	if vc.mainConfig.OutputMode == __OUTPUT_LOCAL_JPEG_STREAM_SERVER {
 		glogger.GLogger.Info("Start FFMPEG ffmpegProcess with: LOCAL_JPEG_STREAM_SERVER Mode")
-		var cmd *exec.Cmd
+		defer func() {
+			if vc.ffmpegProcess != nil && vc.ffmpegProcess.Process != nil {
+				vc.ffmpegProcess.Process.Kill()
+			}
+		}()
 		// 本地摄像头
 		if vc.mainConfig.InputMode == __INPUT_LOCAL_CAMERA {
 			var deviceName string
@@ -215,27 +224,27 @@ func (vc *videoCamera) startFFMPEGProcess(inputUrl, pushAddr string) {
 			}
 			if runtime.GOOS == "windows" {
 				paramsVideo = []string{
-					"-stream_loop", "-1",
 					"-re",
 					"-f", "dshow", // windows下特有的DirectX加速引擎
 					"-i", deviceName,
 					"-c:v", "mjpeg",
 					"-f", "mjpeg",
+					"-s", "640x480",
 					"-headers", `"Content-Type:multipart/x-mixed-replace; boundary=MJPEG_BOUNDARY"`,
 					pushAddr,
 				}
 			} else {
 				paramsVideo = []string{
-					"-stream_loop", "-1",
 					"-re",
 					"-i", deviceName,
 					"-c:v", "mjpeg",
 					"-f", "mjpeg",
+					"-s", "640x480",
 					"-headers", `"Content-Type:multipart/x-mixed-replace; boundary=MJPEG_BOUNDARY"`,
 					pushAddr,
 				}
 			}
-			cmd = concatFFmpegCommand(paramsVideo)
+			vc.ffmpegProcess = concatFFmpegCommand(paramsVideo)
 
 		}
 		// RTSP摄像头
@@ -253,18 +262,17 @@ func (vc *videoCamera) startFFMPEGProcess(inputUrl, pushAddr string) {
 				"-headers", `"Content-Type:multipart/x-mixed-replace; boundary=MJPEG_BOUNDARY"`,
 				pushAddr, // "http://127.0.0.1:9401/jpeg_stream/push?liveId=123",
 			}
-			cmd = concatFFmpegCommand(params)
+			vc.ffmpegProcess = concatFFmpegCommand(params)
 		}
-		if cmd == nil {
+		if vc.ffmpegProcess == nil {
 			glogger.GLogger.Error(fmt.Errorf("InputMode Not Supported:" + vc.mainConfig.InputMode))
 			return
 		}
-		glogger.GLogger.Debug("Start FFMPEG with:", cmd.String())
+		glogger.GLogger.Debug("Start FFMPEG with:", vc.ffmpegProcess.String())
 		// 启动 FFmpeg 推流
-		vc.ffmpegProcess = cmd
-		if output, err1 := cmd.CombinedOutput(); err1 != nil {
-			glogger.GLogger.Error("Combined Output error: ", err1)
-			fmt.Println(string(output))
+
+		if output, err1 := vc.ffmpegProcess.CombinedOutput(); err1 != nil {
+			glogger.GLogger.Error("Combined Output error: ", err1, string(output))
 			return
 		}
 	}
@@ -272,7 +280,6 @@ func (vc *videoCamera) startFFMPEGProcess(inputUrl, pushAddr string) {
 	// ffmpeg -i rtsp://IP/av0_0 -c:v h264 -c:a aac -f rtsp rtsp://IP/live/test001
 	if vc.mainConfig.OutputMode == __OUTPUT_LOCAL_H264_STREAM_SERVER {
 		glogger.GLogger.Info("Start FFMPEG ffmpegProcess with: LOCAL_H264_STREAM_SERVER Mode")
-		var cmd *exec.Cmd
 		if vc.mainConfig.InputMode == __INPUT_LOCAL_CAMERA {
 			var paramsVideo []string
 			var deviceName string
@@ -312,7 +319,7 @@ func (vc *videoCamera) startFFMPEGProcess(inputUrl, pushAddr string) {
 					pushAddr,
 				}
 			}
-			cmd = concatFFmpegCommand(paramsVideo)
+			vc.ffmpegProcess = concatFFmpegCommand(paramsVideo)
 		}
 		// RTSP转地址
 		if vc.mainConfig.InputMode == __INPUT_REMOTE_STREAM_RTSP {
@@ -329,16 +336,15 @@ func (vc *videoCamera) startFFMPEGProcess(inputUrl, pushAddr string) {
 				"-headers", `"Content-Type:multipart/x-mixed-replace; boundary=MJPEG_BOUNDARY"`,
 				pushAddr, // "http://127.0.0.1:9401/jpeg_stream/push?liveId=123",
 			}
-			cmd = concatFFmpegCommand(params)
+			vc.ffmpegProcess = concatFFmpegCommand(params)
 		}
-		if cmd == nil {
+		if vc.ffmpegProcess == nil {
 			glogger.GLogger.Error(fmt.Errorf("InputMode Not Supported:" + vc.mainConfig.InputMode))
 			return
 		}
-		glogger.GLogger.Debug("Start FFMPEG with command line:", cmd.String())
+		glogger.GLogger.Debug("Start FFMPEG with command line:", vc.ffmpegProcess.String())
 		// 启动 FFmpeg 推流
-		vc.ffmpegProcess = cmd
-		if output, err1 := cmd.CombinedOutput(); err1 != nil {
+		if output, err1 := vc.ffmpegProcess.CombinedOutput(); err1 != nil {
 			glogger.GLogger.Error("Combined Output error: ", err1, ", output: ", string(output))
 		}
 		return
@@ -348,7 +354,6 @@ func (vc *videoCamera) startFFMPEGProcess(inputUrl, pushAddr string) {
 	// -preset fast -tune zerolatency -ar 44100 -f flv rtmp://112.5.155.64:10110/live/123
 	if vc.mainConfig.OutputMode == __OUTPUT_REMOTE_STREAM_SERVER {
 		glogger.GLogger.Info("Start FFMPEG ffmpegProcess with: REMOTE_STREAM_SERVER Mode")
-		var cmd *exec.Cmd
 		// 本地摄像头推向远程服务器
 		if vc.mainConfig.InputMode == __INPUT_LOCAL_CAMERA {
 			var paramsVideo []string
@@ -387,7 +392,7 @@ func (vc *videoCamera) startFFMPEGProcess(inputUrl, pushAddr string) {
 					pushAddr,
 				}
 			}
-			cmd = concatFFmpegCommand(paramsVideo)
+			vc.ffmpegProcess = concatFFmpegCommand(paramsVideo)
 		}
 		// 远程拉RTSP推向RTMP
 		if vc.mainConfig.InputMode == __INPUT_REMOTE_STREAM_RTSP {
@@ -401,16 +406,15 @@ func (vc *videoCamera) startFFMPEGProcess(inputUrl, pushAddr string) {
 				"-f", "flv",
 				pushAddr,
 			}
-			cmd = concatFFmpegCommand(params)
+			vc.ffmpegProcess = concatFFmpegCommand(params)
 		}
-		if cmd == nil {
+		if vc.ffmpegProcess == nil {
 			glogger.GLogger.Error(fmt.Errorf("InputMode Not Supported:" + vc.mainConfig.InputMode))
 			return
 		}
-		glogger.GLogger.Debug("Start FFMPEG with command line: ", cmd.String())
+		glogger.GLogger.Debug("Start FFMPEG with command line: ", vc.ffmpegProcess.String())
 		// 启动 FFmpeg 推流
-		vc.ffmpegProcess = cmd
-		if output, err1 := cmd.CombinedOutput(); err1 != nil {
+		if output, err1 := vc.ffmpegProcess.CombinedOutput(); err1 != nil {
 			glogger.GLogger.Error("Combined Output error: ", err1, ", output: ", string(output))
 		}
 		return
@@ -418,15 +422,16 @@ func (vc *videoCamera) startFFMPEGProcess(inputUrl, pushAddr string) {
 	glogger.GLogger.Info("stop Video Stream Endpoint:", inputUrl)
 }
 func concatFFmpegCommand(params []string) *exec.Cmd {
-	var cmd *exec.Cmd
-	// params = append([]string{"ffmpeg"}, params...)
+	var ffmpegProcess *exec.Cmd
 	if runtime.GOOS == "windows" {
 		bat := strings.Join(params, " ")
-		cmd = exec.Command("powershell.exe", "-Command", "ffmpeg "+bat)
+		ffmpegProcess = exec.Command("powershell.exe", "-Command", "ffmpeg "+bat)
 	} else {
-		cmd = exec.Command("ffmpeg", params...)
+		ffmpegProcess = exec.Command("ffmpeg", params...)
 	}
-	return cmd
+	ffmpegProcess.SysProcAttr = ossupport.NewSysProcAttr()
+	ffmpegProcess.Env = os.Environ()
+	return ffmpegProcess
 }
 
 /*
@@ -439,6 +444,7 @@ func (vc *videoCamera) stopFFMPEGProcess() error {
 		vc.ffmpegProcess.Process.Kill()
 		vc.ffmpegProcess.Process.Signal(syscall.SIGTERM)
 		glogger.GLogger.Info("FFMPEG Process stopped:", vc.ffmpegProcess.Process.Pid)
+		vc.ffmpegProcess = nil
 	}
 	return nil
 }

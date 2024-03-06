@@ -39,60 +39,34 @@ const (
 	DRIVER_DOWN DriverState = 2
 )
 
-// InEndType
-type InEndType string
-
-func (i InEndType) String() string {
-	return string(i)
-}
+type DeviceState int
 
 const (
-	MQTT            InEndType = "MQTT"
-	HTTP            InEndType = "HTTP"
-	COAP            InEndType = "COAP"
-	GRPC            InEndType = "GRPC"
-	NATS_SERVER     InEndType = "NATS_SERVER"
-	RULEX_UDP       InEndType = "RULEX_UDP"
-	GENERIC_IOT_HUB InEndType = "GENERIC_IOT_HUB"
-	INTERNAL_EVENT  InEndType = "INTERNAL_EVENT" // 内部消息
-	GENERIC_MQTT    InEndType = "GENERIC_MQTT"   // 通用MQTT
+	// 设备故障
+	DEV_DOWN DeviceState = 0
+	// 设备启用
+	DEV_UP DeviceState = 1
+	// 暂停，这是个占位值，只为了和其他地方统一值,但是没用
+	_ DeviceState = 2
+	// 外部停止
+	DEV_STOP DeviceState = 3
 )
 
-// TargetType
-type TargetType string
-
-func (i TargetType) String() string {
-	return string(i)
+func (s DeviceState) String() string {
+	if s == 0 {
+		return "DOWN"
+	}
+	if s == 1 {
+		return "UP"
+	}
+	if s == 2 {
+		return "PAUSE"
+	}
+	if s == 3 {
+		return "STOP"
+	}
+	return "ERROR"
 }
-
-/*
-*
-* 输出资源类型
-*
- */
-const (
-	MONGO_SINGLE  TargetType = "MONGO_SINGLE"
-	MONGO_CLUSTER TargetType = "MONGO_CLUSTER"
-	REDIS_SINGLE  TargetType = "REDIS_SINGLE"
-	FLINK_SINGLE  TargetType = "FLINK_SINGLE"
-	MQTT_TARGET   TargetType = "MQTT"
-	MYSQL_TARGET  TargetType = "MYSQL"
-	PGSQL_TARGET  TargetType = "PGSQL"
-	NATS_TARGET   TargetType = "NATS"
-	HTTP_TARGET   TargetType = "HTTP"
-	// TDENGINE
-	TDENGINE_TARGET TargetType = "TDENGINE"
-	// GRPC
-	GRPC_CODEC_TARGET TargetType = "GRPC_CODEC_TARGET"
-	// UDP Server
-	UDP_TARGET TargetType = "UDP_TARGET"
-	// SQLITE
-	SQLITE_TARGET TargetType = "SQLITE_TARGET"
-	// USER_G776 DTU
-	USER_G776_TARGET TargetType = "USER_G776_TARGET"
-	// TCP 透传
-	TCP_TRANSPORT TargetType = "TCP_TRANSPORT"
-)
 
 /*
 *

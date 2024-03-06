@@ -280,10 +280,15 @@ type JpegStream struct {
 	frame      []byte
 	frameSize  int
 	headerSize int
-	Pulled     bool
+	LiveId     string           `json:"liveId"`
+	Pulled     bool             `json:"pulled"`
 	Resolution utils.Resolution `json:"resolution"`
 }
 
+func (S JpegStream) String() string {
+	return fmt.Sprintf(`{"liveId":%s,"liveId":%s,"liveId":%s}`,
+		S.LiveId, S.Pulled, S.Resolution)
+}
 func (s *JpegStream) GetWebJpegFrame() []byte {
 	b := s.frame[:s.frameSize]
 	return b

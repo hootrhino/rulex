@@ -42,6 +42,9 @@ type Resolution struct {
 	Height int `json:"height"`
 }
 
+func (O Resolution) String() string {
+	return fmt.Sprintf("%dx%d", O.Width, O.Height)
+}
 func GetVideoResolution(FrameBuffer []byte) Resolution {
 	__CGoMutex.Lock()
 	defer __CGoMutex.Unlock()
