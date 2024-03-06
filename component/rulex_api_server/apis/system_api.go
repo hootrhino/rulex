@@ -14,9 +14,6 @@ import (
 	"github.com/hootrhino/rulex/ossupport"
 	"github.com/hootrhino/rulex/utils"
 
-	"github.com/hootrhino/rulex/device"
-	"github.com/hootrhino/rulex/source"
-	"github.com/hootrhino/rulex/target"
 	"github.com/hootrhino/rulex/typex"
 
 	"github.com/gin-gonic/gin"
@@ -204,51 +201,6 @@ func SourceCount(c *gin.Context, ruleEngine typex.RuleX) {
 		"rules":   c3,
 		"plugins": c4,
 	}))
-}
-
-/*
-*
-* 输入类型配置
-*
- */
-func RType(c *gin.Context, ruleEngine typex.RuleX) {
-	Type, _ := c.GetQuery("type")
-	if Type == "" {
-		c.JSON(common.HTTP_OK, common.OkWithData(source.SM.All()))
-	} else {
-		c.JSON(common.HTTP_OK, common.OkWithData(source.SM.Find(typex.InEndType(Type))))
-	}
-
-}
-
-/*
-*
-* 输出类型配置
-*
- */
-func TType(c *gin.Context, ruleEngine typex.RuleX) {
-	Type, _ := c.GetQuery("type")
-	if Type == "" {
-		c.JSON(common.HTTP_OK, common.OkWithData(target.TM.All()))
-	} else {
-		c.JSON(common.HTTP_OK, common.OkWithData(target.TM.Find(typex.TargetType(Type))))
-	}
-
-}
-
-/*
-*
-* 设备配置
-*
- */
-func DType(c *gin.Context, ruleEngine typex.RuleX) {
-	Type, _ := c.GetQuery("type")
-	if Type == "" {
-		c.JSON(common.HTTP_OK, common.OkWithData(device.DM.All()))
-	} else {
-		c.JSON(common.HTTP_OK, common.OkWithData(device.DM.Find(typex.DeviceType(Type))))
-	}
-
 }
 
 /*

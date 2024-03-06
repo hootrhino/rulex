@@ -15,11 +15,8 @@ import (
 	response "github.com/hootrhino/rulex/component/rulex_api_server/common"
 	"github.com/hootrhino/rulex/component/rulex_api_server/model"
 	"github.com/hootrhino/rulex/component/rulex_api_server/service"
-	"github.com/hootrhino/rulex/device"
 	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/ossupport"
-	"github.com/hootrhino/rulex/source"
-	"github.com/hootrhino/rulex/target"
 	"github.com/hootrhino/rulex/typex"
 )
 
@@ -243,10 +240,6 @@ func (s *RulexApiServer) InitializeConfigCtl() {
 *
  */
 func initStaticModel() {
-	// 加载资源类型
-	source.LoadSt()
-	target.LoadTt()
-	device.LoadDt()
 	// 初始化有线网口配置
 	service.InitNetWorkConfig()
 	// 初始化WIFI配置
