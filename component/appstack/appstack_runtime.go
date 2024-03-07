@@ -23,6 +23,7 @@ import (
 	lua "github.com/hootrhino/gopher-lua"
 	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/typex"
+	"github.com/sirupsen/logrus"
 )
 
 var __DefaultAppStackRuntime *AppStackRuntime
@@ -74,74 +75,93 @@ func LoadApp(app *Application, luaSource string) error {
 func StartApp(uuid string) error {
 	app, ok := __DefaultAppStackRuntime.Applications[uuid]
 	if !ok {
-		return fmt.Errorf("app not exists:%s", uuid)
+		return fmt.Errorf("Application not exists:%s", uuid)
 	}
 	if app.AppState == 1 {
-		return fmt.Errorf("app not already started:%s", uuid)
+		return fmt.Errorf("Application already started:%s", uuid)
 	}
 	args := lua.LBool(false) // Main的参数，未来准备扩展
 	ctx, cancel := context.WithCancel(typex.GCTX)
 	app.SetCnC(ctx, cancel)
 	go func(app *Application) {
 		defer func() {
-			glogger.GLogger.Debug("App exit:", app.UUID)
-			if err := recover(); err != nil {
-				glogger.GLogger.Error("App recover:", err)
-			}
+			glogger.GLogger.Debug("Application exit:", app.UUID)
+			app.VM().Pop(1) // 防止registry溢出
 			app.AppState = 0
 		}()
-		glogger.GLogger.Debugf("Ready to run app:%s", app.UUID)
+		glogger.GLogger.Debugf("Ready to run Application:%s", app.UUID)
 		app.AppState = 1
 		err := app.VM().CallByParam(lua.P{
-			Fn:   app.GetMainFunc(),
-			NRet: 1,
-			// Protect: true, // If ``Protect`` is false,
-			// GopherLua will panic instead of returning an ``error`` value.
+			Fn:      app.GetMainFunc(),
+			NRet:    1,
+			Protect: true,
 			Handler: &lua.LFunction{
 				GFunction: func(*lua.LState) int {
-					return 1
+					glogger.GLogger.Debug("Protect Mode Call")
+					return 0
 				},
 			},
 		}, args)
-		// !!!非常关键的一个出栈操作!!!
-		app.VM().Pop(1) // 防止registry溢出
-		app.VM().Pop(2) // 防止registry溢出
+		if err == nil {
+			if app.KilledBy == "RULEX" {
+				glogger.GLogger.Infof("Application %s Killed By RULEX", app.UUID)
+			}
+			if app.KilledBy == "NORMAL" || app.KilledBy == "" {
+				glogger.GLogger.Infof("Application %s NORMAL Exited", app.UUID)
+			}
+			return
+		}
+		Debugger, Ok := app.vm.GetStack(1)
+		if Ok {
+			LValue, _ := app.vm.GetInfo("f", Debugger, lua.LNil)
+			app.vm.GetInfo("l", Debugger, lua.LNil)
+			app.vm.GetInfo("S", Debugger, lua.LNil)
+			app.vm.GetInfo("u", Debugger, lua.LNil)
+			app.vm.GetInfo("n", Debugger, lua.LNil)
+			LFunction := LValue.(*lua.LFunction)
+			LastCall := lua.DbgCall{
+				Name: "_main", Pc: 0,
+			}
+			if len(LFunction.Proto.DbgCalls) > 0 {
+				LastCall = LFunction.Proto.DbgCalls[0]
+			}
+			glogger.GLogger.WithFields(logrus.Fields{
+				"topic": "app/console/" + uuid,
+			}).Infof("Stacktrace: Current Function Name: [%s],"+
+				"What(lua|native): [%s], Source Line: [%d],"+
+				" Last Call: [%s], Error message: %s",
+				Debugger.Name, Debugger.What, Debugger.CurrentLine,
+				LastCall.Name, err.Error(),
+			)
+		}
 		//
 		// 检查是自己死的还是被RULEX杀死
 		// 1 正常结束
 		// 2 被rulex删除
 		// 3 跑飞了
-		if err == nil {
-			if app.KilledBy == "RULEX" {
-				glogger.GLogger.Infof("App %s Killed By RULEX", app.UUID)
-			}
-			if app.KilledBy == "NORMAL" || app.KilledBy == "" {
-				glogger.GLogger.Infof("App %s NORMAL Exited", app.UUID)
-			}
+
+		// 中间出现异常挂了，此时要根据: auto start 来判断是否抢救
+		time.Sleep(5 * time.Second)
+		if app.KilledBy == "RULEX" {
+			glogger.GLogger.Infof("App %s Killed By RULEX, No need to rescue", app.UUID)
 			return
 		}
-		// 中间出现异常挂了，此时要根据: auto start 来判断是否抢救
-		if err != nil {
-			time.Sleep(5 * time.Second)
-			if app.KilledBy == "RULEX" {
-				glogger.GLogger.Errorf("App %s Killed By RULEX, No need to rescue", app.UUID)
-				return
-			}
-			if app.KilledBy == "NORMAL" {
-				glogger.GLogger.Errorf("App %s NORMAL Exited,  No need to rescue", app.UUID)
-				return
-			}
-			glogger.GLogger.Warnf("App %s Exited With error: %s, May be accident, Try to survive",
-				app.UUID, err.Error())
-			// TODO 到底要不要设置一个尝试重启的阈值？
-			// if tryTimes >= Max -> return
-			if app.AutoStart {
-				glogger.GLogger.Warnf("App %s Try to restart", app.UUID)
-				go StartApp(uuid)
-				return
-			}
-			glogger.GLogger.Infof("App %s not need to restart", app.UUID)
+		if app.KilledBy == "NORMAL" {
+			glogger.GLogger.Infof("App %s NORMAL Exited, No need to rescue", app.UUID)
+			return
 		}
+
+		glogger.GLogger.Warnf("App %s Exited With error: %s, Maybe accident, Try to survive",
+			app.UUID, err.Error())
+		// TODO 到底要不要设置一个尝试重启的阈值？
+		// if tryTimes >= Max -> return
+		if app.AutoStart {
+			glogger.GLogger.Warnf("App %s Try to restart", app.UUID)
+			go StartApp(uuid)
+			return
+		}
+		glogger.GLogger.Infof("App %s not need to restart", app.UUID)
+
 	}(app)
 	glogger.GLogger.Info("App started:", app.UUID)
 	return nil
