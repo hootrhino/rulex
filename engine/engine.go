@@ -247,7 +247,29 @@ func (e *RuleEngine) RunSourceCallbacks(in *typex.InEnd, callbackArgs string) {
 		if rule.Status == typex.RULE_RUNNING {
 			_, errA := core.ExecuteActions(&rule, lua.LString(callbackArgs))
 			if errA != nil {
-				glogger.GLogger.Error("RunLuaCallbacks error:", errA)
+				Debugger, Ok := rule.LuaVM.GetStack(1)
+				if Ok {
+					LValue, _ := rule.LuaVM.GetInfo("f", Debugger, lua.LNil)
+					rule.LuaVM.GetInfo("l", Debugger, lua.LNil)
+					rule.LuaVM.GetInfo("S", Debugger, lua.LNil)
+					rule.LuaVM.GetInfo("u", Debugger, lua.LNil)
+					rule.LuaVM.GetInfo("n", Debugger, lua.LNil)
+					LFunction := LValue.(*lua.LFunction)
+					LastCall := lua.DbgCall{
+						Name: "_main", Pc: 0,
+					}
+					if len(LFunction.Proto.DbgCalls) > 0 {
+						LastCall = LFunction.Proto.DbgCalls[0]
+					}
+					glogger.GLogger.WithFields(logrus.Fields{
+						"topic": "rule/log/" + rule.UUID,
+					}).Infof("Run Lua Callbacks error, Stacktrace: Current Function Name: [%s],"+
+						"What(lua|native): [%s], Source Line: [%d],"+
+						" Last Call: [%s], Error message: %s",
+						Debugger.Name, Debugger.What, Debugger.CurrentLine,
+						LastCall.Name, errA.Error(),
+					)
+				}
 				_, err0 := core.ExecuteFailed(rule.LuaVM, lua.LString(errA.Error()))
 				if err0 != nil {
 					glogger.GLogger.Error(err0)
@@ -272,9 +294,29 @@ func (e *RuleEngine) RunDeviceCallbacks(Device *typex.Device, callbackArgs strin
 	for _, rule := range Device.BindRules {
 		_, errA := core.ExecuteActions(&rule, lua.LString(callbackArgs))
 		if errA != nil {
-			glogger.GLogger.WithFields(logrus.Fields{
-				"topic": "rule/log/" + rule.UUID,
-			}).Info("RunLuaCallbacks error:", errA)
+			Debugger, Ok := rule.LuaVM.GetStack(1)
+			if Ok {
+				LValue, _ := rule.LuaVM.GetInfo("f", Debugger, lua.LNil)
+				rule.LuaVM.GetInfo("l", Debugger, lua.LNil)
+				rule.LuaVM.GetInfo("S", Debugger, lua.LNil)
+				rule.LuaVM.GetInfo("u", Debugger, lua.LNil)
+				rule.LuaVM.GetInfo("n", Debugger, lua.LNil)
+				LFunction := LValue.(*lua.LFunction)
+				LastCall := lua.DbgCall{
+					Name: "_main", Pc: 0,
+				}
+				if len(LFunction.Proto.DbgCalls) > 0 {
+					LastCall = LFunction.Proto.DbgCalls[0]
+				}
+				glogger.GLogger.WithFields(logrus.Fields{
+					"topic": "rule/log/" + rule.UUID,
+				}).Infof("Run Lua Callbacks error, Stacktrace: Current Function Name: [%s],"+
+					"What(lua|native): [%s], Source Line: [%d],"+
+					" Last Call: [%s], Error message: %s",
+					Debugger.Name, Debugger.What, Debugger.CurrentLine,
+					LastCall.Name, errA.Error(),
+				)
+			}
 			_, err1 := core.ExecuteFailed(rule.LuaVM, lua.LString(errA.Error()))
 			if err1 != nil {
 				glogger.GLogger.Error(err1)
