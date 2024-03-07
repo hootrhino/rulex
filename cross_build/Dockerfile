@@ -12,14 +12,18 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+FROM golang:1.21
 
-FROM  arm32v7/golang:1.21
-RUN apt update && apt install sudo
+RUN apt update && \
+    apt upgrade && \
+    apt install -y sudo make jq
+
 
 WORKDIR  "/go/src"
 RUN git clone https://github.com/hybridgroup/gocv.git
 WORKDIR "/go/src/gocv"
-RUN make install
+# RUN make install
 ADD ../ "/go/src/rulex"
 WORKDIR "/go/src/rulex"
-RUN make
+# RUN ["go","build"]
+RUN "bash"
