@@ -726,7 +726,7 @@ func GetAllResources(c *gin.Context, ruleEngine typex.RuleX) {
 	MDevices := service.AllDevices()
 	OutEnds := []RulexResource{}
 	Devices := []RulexResource{}
-	for _, v := range MOutEnds {
+	for _, v := range MDevices {
 		if utils.SContains([]string{
 			"SIEMENS_PLC",
 			"GENERIC_MODBUS",
@@ -736,14 +736,14 @@ func GetAllResources(c *gin.Context, ruleEngine typex.RuleX) {
 			"RHINOPI_IR",
 			"GENERIC_HTTP_DEVICE",
 		}, v.Type) {
-			OutEnds = append(OutEnds, RulexResource{
+			Devices = append(Devices, RulexResource{
 				UUID: v.UUID,
 				Name: v.Name,
 			})
 		}
 
 	}
-	for _, v := range MDevices {
+	for _, v := range MOutEnds {
 		if utils.SContains([]string{
 			"MONGO_SINGLE",
 			"MONGO_CLUSTER",
@@ -755,7 +755,7 @@ func GetAllResources(c *gin.Context, ruleEngine typex.RuleX) {
 			"UDP_TARGET",
 			"TCP_TRANSPORT",
 		}, v.Type) {
-			Devices = append(Devices, RulexResource{
+			OutEnds = append(OutEnds, RulexResource{
 				UUID: v.UUID,
 				Name: v.Name,
 			})
@@ -763,6 +763,6 @@ func GetAllResources(c *gin.Context, ruleEngine typex.RuleX) {
 	}
 	c.JSON(common.HTTP_OK, common.OkWithData(map[string]any{
 		"devices": Devices,
-		"outEnds": OutEnds,
+		"outends": OutEnds,
 	}))
 }

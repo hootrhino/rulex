@@ -1,6 +1,8 @@
 package utils
 
-import "sort"
+import (
+	"github.com/plgd-dev/kit/v2/strings"
+)
 
 /*
 *
@@ -26,6 +28,5 @@ func IsListDuplicated(list []string) bool {
 *
  */
 func SContains(s []string, e string) bool {
-	i := sort.SearchStrings(s, e)
-	return i < len(s) && s[i] == e
+	return strings.SliceContains(s, e)
 }

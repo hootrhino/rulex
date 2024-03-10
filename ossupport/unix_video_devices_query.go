@@ -22,20 +22,36 @@ import (
 
 /*
 *
+* Unix摄像头
+*
+ */
+type UnixCameraDevice struct {
+	Node     string `json:"node"`
+	DeviceID string `json:"deviceId"`
+	Name     string `json:"name"`
+}
+
+/*
+*
 * Unix 获取视频设备
 *
  */
-func GetUnixVideos() []string {
-	var videos []string
+func GetUnixVideos() ([]UnixCameraDevice, error) {
+	Devices := []UnixCameraDevice{}
 	files, err := os.ReadDir("/dev")
 	if err != nil {
-		return videos
+		return Devices, err
 	}
 	for _, file := range files {
 		name := file.Name()
 		if strings.HasPrefix(name, "video") {
-			videos = append(videos, filepath.Join("/dev", name))
+			Name := filepath.Join("/dev", name)
+			Devices = append(Devices, UnixCameraDevice{
+				Node:     "Local",
+				DeviceID: Name,
+				Name:     Name,
+			})
 		}
 	}
-	return videos
+	return Devices, nil
 }

@@ -284,3 +284,18 @@ func ResetInterMetric(c *gin.Context, ruleEngine typex.RuleX) {
 	intermetric.Reset()
 	c.JSON(common.HTTP_OK, common.Ok())
 }
+
+/*
+*
+* 获取视频接口
+*
+ */
+func GetVideos(c *gin.Context, ruleEngine typex.RuleX) {
+	if runtime.GOOS == "windows" {
+		L, _ := ossupport.GetWindowsVideos()
+		c.JSON(common.HTTP_OK, common.OkWithData(L))
+	} else {
+		L, _ := ossupport.GetUnixVideos()
+		c.JSON(common.HTTP_OK, common.OkWithData(L))
+	}
+}
