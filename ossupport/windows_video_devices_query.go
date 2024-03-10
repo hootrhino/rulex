@@ -26,10 +26,10 @@ import (
 * Windows 获取视频设备
 *
  */
-type CameraDevice struct {
-	Node     string
-	DeviceID string
-	Name     string
+type WindowsCameraDevice struct {
+	Node     string `json:"node"`
+	DeviceID string `json:"deviceId"`
+	Name     string `json:"name"`
 }
 
 /*
@@ -40,7 +40,7 @@ Node,DeviceID,Name
 DESKTOP-EMD3M3C,USB\VID_1908&amp;PID_2311&amp;MI_00\6&amp;1666943&amp;0&amp;0000,USB2.0 PC CAMERA
 *
 */
-func GetWindowsVideos() ([]CameraDevice, error) {
+func GetWindowsVideos() ([]WindowsCameraDevice, error) {
 	cmd := exec.Command("powershell.exe", "-Command",
 		`WMIC Path Win32_PnPEntity WHERE "Caption LIKE '%CAMERA%'" GET DeviceID,Name /FORMAT:CSV`)
 	output, err := cmd.Output()
@@ -54,7 +54,7 @@ func GetWindowsVideos() ([]CameraDevice, error) {
 			lines = append(lines, v)
 		}
 	}
-	videos := []CameraDevice{}
+	videos := []WindowsCameraDevice{}
 	if len(lines) < 2 {
 		return videos, fmt.Errorf("camera device not found")
 	}
@@ -63,7 +63,7 @@ func GetWindowsVideos() ([]CameraDevice, error) {
 		if len(fields) < 3 {
 			return videos, fmt.Errorf("parse output line error:%s", line)
 		}
-		videos = append(videos, CameraDevice{
+		videos = append(videos, WindowsCameraDevice{
 			Node:     fields[0],
 			DeviceID: fields[1],
 			Name:     fields[2],

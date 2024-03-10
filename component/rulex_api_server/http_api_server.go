@@ -298,6 +298,7 @@ func (hs *ApiServerPlugin) LoadRoute() {
 		osApi.GET(("/osRelease"), server.AddRoute(apis.CatOsRelease))
 		osApi.GET(("/system"), server.AddRoute(apis.System))
 		osApi.GET(("/startedAt"), server.AddRoute(apis.StartedAt))
+		osApi.GET(("/getVideos"), server.AddRoute(apis.GetVideos))
 		osApi.POST(("/resetInterMetric"), server.AddRoute(apis.ResetInterMetric))
 	}
 	backupApi := server.RouteGroup(server.ContextUrl("/backup"))
