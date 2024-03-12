@@ -200,13 +200,15 @@ func (s *JpegStreamServer) Init(cfg map[string]any) error {
 		ctx.Header("Cache-Control", "no-cache, no-store, must-revalidate")
 		ctx.Header("Pragma", "no-cache")
 		ctx.Header("Expires", "0")
+		ctx.Header("Age", "0")
+		ctx.Writer.Write([]byte("HTTP/1.1 200 OK\r\n"))
 		for {
 			_, err := ctx.Writer.Write(JpegStream.GetWebJpegFrame())
 			if err != nil {
 				glogger.GLogger.Error("Jpeg Stream Server Write error", err)
 				break
 			}
-			time.Sleep(50 * time.Millisecond) // 50帧
+			time.Sleep(50 * time.Millisecond) // 1000/50=20帧
 		}
 		glogger.GLogger.Infof("Client [%s] pull jpeg stream[%s] finished:",
 			ctx.Request.RemoteAddr, liveId)

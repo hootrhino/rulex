@@ -63,24 +63,32 @@ func CvMatToImageBytes(FrameBuffer []byte) ([]byte, Resolution, error) {
 	__CGoMutex.Lock()
 	defer __CGoMutex.Unlock()
 	imgMat := gocv.NewMat()
-	err0 := gocv.IMDecodeIntoMat(FrameBuffer,
-		gocv.IMReadFlag(gocv.ColorBGRToGray), &imgMat)
+	defer imgMat.Close()
+	err0 := gocv.IMDecodeIntoMat(FrameBuffer, gocv.IMReadFlag(gocv.IMReadColor), &imgMat)
 	Resolution := Resolution{
 		imgMat.Cols(), imgMat.Rows(),
 	}
 	if err0 != nil {
-		__CGoMutex.Unlock()
 		return nil, Resolution, err0
 	}
 	currentTime := time.Now()
 	formattedTime := currentTime.Format("2006-01-02 15:04:05")
-	gocv.PutText(&imgMat, fmt.Sprintf("%s(%d*%d)", formattedTime, Resolution.Width, Resolution.Height), image.Point{10, 50},
-		gocv.FontHersheyPlain, 4, color.RGBA{255, 0, 0, 0}, 4)
-	ImgBytes, err1 := gocv.IMEncode(".jpg", imgMat)
-	if err1 != nil {
-		__CGoMutex.Unlock()
-		return nil, Resolution, err0
-
+	gocv.PutText(&imgMat, fmt.Sprintf("%s(%d*%d)", formattedTime, Resolution.Width, Resolution.Height), image.Point{5, 25},
+		gocv.FontHersheyPlain, 2, color.RGBA{255, 0, 0, 0}, 2)
+	NewImgMat := gocv.NewMat()
+	defer NewImgMat.Close()
+	if imgMat.Cols() <= 640 {
+		gocv.Resize(imgMat, &NewImgMat, image.Point{}, 2, 2, gocv.InterpolationArea)
+		ImgBytes, err1 := gocv.IMEncode(".jpg", NewImgMat)
+		if err1 != nil {
+			return nil, Resolution, err0
+		}
+		return ImgBytes.GetBytes(), Resolution, nil
+	} else {
+		ImgBytes, err1 := gocv.IMEncode(".jpg", imgMat)
+		if err1 != nil {
+			return nil, Resolution, err0
+		}
+		return ImgBytes.GetBytes(), Resolution, nil
 	}
-	return ImgBytes.GetBytes(), Resolution, nil
 }
