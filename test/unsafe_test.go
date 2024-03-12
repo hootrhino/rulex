@@ -24,12 +24,12 @@ func Test_unsafe_pointer(t *testing.T) {
 	var a3 uint = 3
 	var a4 uint = 4
 	var a5 uint = 5
-	t.Log("real pointer of a1: ", unsafe.Pointer(&a1))
-	t.Log("real pointer of a2: ", unsafe.Pointer(&a2))
-	t.Log("real pointer of a3: ", unsafe.Pointer(&a3))
-	t.Log("real pointer of a4: ", unsafe.Pointer(&a4))
-	t.Log("real pointer of a5: ", unsafe.Pointer(&a5))
-	t.Log("array: ", (*((*[5]int)(unsafe.Pointer(&a1)))))
+	t.Log("real pointer of a1: ", unsafe.Pointer(&a1))    // == C: uint *p = &a1;
+	t.Log("real pointer of a2: ", unsafe.Pointer(&a2))    // == C: uint *p = &a2;
+	t.Log("real pointer of a3: ", unsafe.Pointer(&a3))    // == C: uint *p = &a3;
+	t.Log("real pointer of a4: ", unsafe.Pointer(&a4))    // == C: uint *p = &a4;
+	t.Log("real pointer of a5: ", unsafe.Pointer(&a5))    // == C: uint *p = &a5;
+	t.Log("array: ", (*((*[5]int)(unsafe.Pointer(&a1))))) // == C: memcpy(&a1, (*[5]int)
 	t.Log("m: ", (*((*M)(unsafe.Pointer(&a1)))).String())
 	t.Logf("up1+0: 0x%x  %v", uintptr(unsafe.Pointer(&a1))+8*0, (*(*uint)(unsafe.Pointer(uintptr(unsafe.Pointer(&a1)) + unsafe.Sizeof(uint(1))*0))))
 	t.Logf("up1+1: 0x%x  %v", uintptr(unsafe.Pointer(&a1))+8*1, (*(*uint)(unsafe.Pointer(uintptr(unsafe.Pointer(&a1)) + unsafe.Sizeof(uint(1))*1))))
