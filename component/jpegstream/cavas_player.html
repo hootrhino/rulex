@@ -1,54 +1,27 @@
-<!--
- Copyright (C) 2024 wwhai
-
- This program is free software: you can redistribute it and/or modify
- it under the terms of the GNU Affero General Public License as
- published by the Free Software Foundation, either version 3 of the
- License, or (at your option) any later version.
-
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU Affero General Public License for more details.
-
- You should have received a copy of the GNU Affero General Public License
- along with this program.  If not, see <http://www.gnu.org/licenses/>.
--->
-
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Canvas Player</title>
+    <title>Background Image DIV</title>
+    <style>
+        #myDiv1 {
+            width: 960px;
+            height: 540px;
+            background-image: url('http://127.0.0.1:9401/jpeg_stream/pull?liveId=123a4509de8a99aa0f680cb5847e0765');
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-color: black;
+            border-color: aqua;
+            border: 2px;
+            background-position: center;
+        }
+    </style>
+
 </head>
 
 <body>
-    <canvas id="canvas" width="320" height="240"></canvas>
-    <script>
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-
-        // 定义图像地址
-        const imageUrl = 'http://127.0.0.1:9401/jpeg_stream/pull?liveId=a97607e47c81d43dba8ef6fa48a2cd45';
-
-        // 加载图像并在 Canvas 上绘制
-        function loadImage() {
-            const image = new Image();
-            image.crossOrigin = 'Anonymous'; // 允许跨域
-            image.onload = function () {
-                // 清除 Canvas
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                // 在 Canvas 上绘制图像
-                ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-            };
-            image.src = imageUrl;
-        }
-
-        // 每隔一段时间加载图像
-        setInterval(loadImage, 100); // 每秒加载一次
-    </script>
+    <div id="myDiv1"></div>
 </body>
 
 </html>
