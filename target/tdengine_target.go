@@ -40,7 +40,7 @@ type tdEngineTarget struct {
 	mainConfig common.TDEngineConfig
 	status     typex.SourceState
 }
-type tdrs struct {
+type tdHttpResult struct {
 	Status string `json:"status"`
 	Code   int    `json:"code"`
 	Desc   string `json:"desc"`
@@ -135,8 +135,7 @@ func post(client http.Client,
 	username string,
 	password string,
 	sql string,
-	url string,
-	headers map[string]string) (string, error) {
+	url string) (string, error) {
 	body := strings.NewReader(sql)
 	request, _ := http.NewRequest("POST", url, body)
 	request.Header.Add("Content-Type", "text/plain")
@@ -165,9 +164,9 @@ func post(client http.Client,
 *
  */
 func execQuery(client http.Client, username string, password string, sql string, url string) error {
-	var r tdrs
+	var r tdHttpResult
 	// {"status":"error","code":534,"desc":"Syntax error in SQL"}
-	body, err1 := post(client, username, password, sql, url, map[string]string{})
+	body, err1 := post(client, username, password, sql, url)
 	if err1 != nil {
 		return err1
 	}

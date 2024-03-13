@@ -16,7 +16,10 @@
 package target
 
 import (
+	"net"
 	"net/http"
+	"net/url"
+	"time"
 
 	"github.com/hootrhino/rulex/common"
 	"github.com/hootrhino/rulex/glogger"
@@ -54,11 +57,15 @@ func (ht *HTTPTarget) Start(cctx typex.CCTX) error {
 	ht.CancelCTX = cctx.CancelCTX
 	ht.client = http.Client{}
 	ht.status = typex.SOURCE_UP
-	glogger.GLogger.Info("HTTPTarget started")
+	glogger.GLogger.Info("HTTP Target started")
 	return nil
 }
 
 func (ht *HTTPTarget) Status() typex.SourceState {
+	if err := ht.prob(); err != nil {
+		glogger.GLogger.Error(err)
+		return typex.SOURCE_DOWN
+	}
 	return ht.status
 
 }
@@ -75,4 +82,19 @@ func (ht *HTTPTarget) Stop() {
 }
 func (ht *HTTPTarget) Details() *typex.OutEnd {
 	return ht.RuleEngine.GetOutEnd(ht.PointId)
+}
+func (ht *HTTPTarget) prob() error {
+	d := net.Dialer{
+		Timeout: 3 * time.Second,
+	}
+	Url, err := url.Parse(ht.mainConfig.Url)
+	if err != nil {
+		return err
+	}
+	conn, err := d.Dial("tcp", Url.Host)
+	if err != nil {
+		return err
+	}
+	conn.Close()
+	return nil
 }
