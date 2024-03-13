@@ -56,7 +56,7 @@ func LoadRuleLibGroup(r *typex.Rule, e typex.RuleX) {
 	}
 	{
 		Funcs := map[string]func(l *lua.LState) int{
-			"Debug":   rulexlib.DebugAPP(e, r.UUID),
+			"Debug":   rulexlib.DebugRule(e, r.UUID),
 			"Throw":   rulexlib.Throw(e),
 			"Println": rulexlib.Println(e),
 		}
