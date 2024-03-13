@@ -16,14 +16,24 @@
 package target
 
 import (
+	"encoding/hex"
+	"fmt"
 	"net"
-	"net/http"
+	"time"
 
-	"github.com/hootrhino/rulex/common"
 	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/typex"
 	"github.com/hootrhino/rulex/utils"
 )
+
+type _UdpMainConfig struct {
+	AllowPing  *bool  `json:"allowPing"`
+	DataMode   string `json:"dataMode"`
+	Host       string `json:"host"`
+	PingPacket string `json:"pingPacket"`
+	Port       int    `json:"port"`
+	Timeout    int    `json:"timeout"`
+}
 
 /*
 *
@@ -32,68 +42,138 @@ import (
  */
 type UdpTarget struct {
 	typex.XStatus
-	client     http.Client
-	mainConfig common.HostConfig
+	mainConfig _UdpMainConfig
 	status     typex.SourceState
 }
 
 func NewUdpTarget(e typex.RuleX) typex.XTarget {
-	udpt := new(UdpTarget)
-	udpt.RuleEngine = e
-	udpt.mainConfig = common.HostConfig{}
-	udpt.status = typex.SOURCE_DOWN
-	return udpt
+	udpT := new(UdpTarget)
+	udpT.RuleEngine = e
+	udpT.mainConfig = _UdpMainConfig{
+		DataMode:   "RAW_STRING",
+		Timeout:    3000,
+		PingPacket: "PING\r\n",
+		AllowPing: func() *bool {
+			b := true
+			return &b
+		}(),
+	}
+	udpT.status = typex.SOURCE_DOWN
+	return udpT
 }
 
-func (udpt *UdpTarget) Init(outEndId string, configMap map[string]interface{}) error {
-	udpt.PointId = outEndId
-
-	if err := utils.BindSourceConfig(configMap, &udpt.mainConfig); err != nil {
+func (udpT *UdpTarget) Init(outEndId string, configMap map[string]interface{}) error {
+	udpT.PointId = outEndId
+	if err := utils.BindSourceConfig(configMap, &udpT.mainConfig); err != nil {
 		return err
 	}
-
 	return nil
 
 }
-func (udpt *UdpTarget) Start(cctx typex.CCTX) error {
-	udpt.Ctx = cctx.Ctx
-	udpt.CancelCTX = cctx.CancelCTX
-	udpt.client = http.Client{}
-	udpt.status = typex.SOURCE_UP
+func (udpT *UdpTarget) Start(cctx typex.CCTX) error {
+	udpT.Ctx = cctx.Ctx
+	udpT.CancelCTX = cctx.CancelCTX
+	if *udpT.mainConfig.AllowPing {
+		go func(ht *UdpTarget) {
+			for {
+				select {
+				case <-ht.Ctx.Done():
+					{
+						return
+					}
+				default:
+					{
+					}
+				}
+				socket, err := net.DialUDP("udp", nil, &net.UDPAddr{
+					IP:   net.ParseIP(udpT.mainConfig.Host),
+					Port: udpT.mainConfig.Port,
+				})
+				if err != nil {
+					glogger.GLogger.Error(err)
+					udpT.status = typex.SOURCE_DOWN
+					return
+				}
+				socket.Close()
+				time.Sleep(5 * time.Second)
+			}
+		}(udpT)
+	}
+	udpT.status = typex.SOURCE_UP
 	glogger.GLogger.Info("UdpTarget started")
 	return nil
 }
 
-func (udpt *UdpTarget) Status() typex.SourceState {
-	return udpt.status
+func (udpT *UdpTarget) Status() typex.SourceState {
+	if err := udpT.UdpStatus(fmt.Sprintf("%s:%d",
+		udpT.mainConfig.Host, udpT.mainConfig.Port)); err != nil {
+		return typex.SOURCE_DOWN
+	}
+	return udpT.status
 
 }
-func (udpt *UdpTarget) To(data interface{}) (interface{}, error) {
+func (udpT *UdpTarget) To(data interface{}) (interface{}, error) {
 	socket, err := net.DialUDP("udp", nil, &net.UDPAddr{
-		IP:   net.ParseIP(udpt.mainConfig.Host),
-		Port: udpt.mainConfig.Port,
+		IP:   net.ParseIP(udpT.mainConfig.Host),
+		Port: udpT.mainConfig.Port,
 	})
 	if err != nil {
 		return 0, err
 	}
 	defer socket.Close()
-	switch t := data.(type) {
+	switch s := data.(type) {
 	case string:
-		socket.Write([]byte(t))
-	case []byte:
-		socket.Write(t)
+		if udpT.mainConfig.DataMode == "RAW_STRING" {
+			socket.SetReadDeadline(
+				time.Now().Add((time.Duration(udpT.mainConfig.Timeout) *
+					time.Millisecond)),
+			)
+			_, err0 := socket.Write([]byte(s + "\r\n"))
+			socket.SetReadDeadline(time.Time{})
+			if err0 != nil {
+				return 0, err0
+			}
+		}
+		if udpT.mainConfig.DataMode == "HEX_STRING" {
+			dByte, err1 := hex.DecodeString(s)
+			if err1 != nil {
+				return 0, err1
+			}
+			socket.SetReadDeadline(
+				time.Now().Add((time.Duration(udpT.mainConfig.Timeout) *
+					time.Millisecond)),
+			)
+			dByte = append(dByte, []byte{'\r', '\n'}...)
+			_, err0 := socket.Write(dByte)
+			socket.SetReadDeadline(time.Time{})
+			if err0 != nil {
+				return 0, err0
+			}
+		}
+		return len(s), nil
 	default:
-		glogger.GLogger.Error("unknown type:", t)
+		return 0, fmt.Errorf("only support string format")
 	}
-	return 0, err
 }
 
-func (udpt *UdpTarget) Stop() {
-	udpt.status = typex.SOURCE_DOWN
-	if udpt.CancelCTX != nil {
-		udpt.CancelCTX()
+func (udpT *UdpTarget) Stop() {
+	udpT.status = typex.SOURCE_DOWN
+	if udpT.CancelCTX != nil {
+		udpT.CancelCTX()
 	}
 }
-func (udpt *UdpTarget) Details() *typex.OutEnd {
-	return udpt.RuleEngine.GetOutEnd(udpt.PointId)
+func (udpT *UdpTarget) Details() *typex.OutEnd {
+	return udpT.RuleEngine.GetOutEnd(udpT.PointId)
+}
+func (udpT *UdpTarget) UdpStatus(serverAddr string) error {
+	conn, err := net.Dial("udp", serverAddr)
+	if err != nil {
+		return fmt.Errorf("UDP connection failed: %v", err)
+	}
+	defer conn.Close()
+	_, err = conn.Write([]byte(udpT.mainConfig.PingPacket))
+	if err != nil {
+		return fmt.Errorf("failed to send data over UDP: %v", err)
+	}
+	return nil
 }
