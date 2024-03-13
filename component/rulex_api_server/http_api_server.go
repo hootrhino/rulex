@@ -2,11 +2,12 @@ package httpserver
 
 import (
 	"fmt"
-	"runtime"
+	"strconv"
 	"time"
 
 	"github.com/hootrhino/rulex/component/cron_task"
 	"github.com/hootrhino/rulex/component/hwportmanager"
+	"github.com/shirou/gopsutil/cpu"
 
 	"github.com/hootrhino/rulex/component/appstack"
 	"github.com/hootrhino/rulex/component/interdb"
@@ -572,7 +573,8 @@ func GetCpuUsage() {
 			{
 			}
 		}
-		V := getCpuUsage()
+		cpuPercent, _ := cpu.Percent(time.Duration(10)*time.Second, true)
+		V := calculateCpuPercent(cpuPercent)
 		if V > 95 {
 			service.InsertInternalNotify(model.MInternalNotify{
 				UUID:    utils.MakeUUID("NOTIFY"), // UUID
@@ -584,18 +586,16 @@ func GetCpuUsage() {
 				Info:    fmt.Sprintf("CPU负载过高: %.2f%%, 请注意维护设备", V),
 			})
 		}
-		time.Sleep(10 * time.Second)
 	}
 
 }
 
-// GetCpuUsage 返回 Go 程序的 CPU 使用率。
-func getCpuUsage() float64 {
-	goroutineCount := runtime.NumGoroutine()
-	cpuCoreCount := runtime.GOMAXPROCS(0)
-	if cpuCoreCount > 0 {
-		cpuUsage := float64(goroutineCount) / float64(cpuCoreCount)
-		return cpuUsage
+// 计算CPU平均使用率
+func calculateCpuPercent(cpus []float64) float64 {
+	var acc float64 = 0
+	for _, v := range cpus {
+		acc += v
 	}
-	return 0
+	value, _ := strconv.ParseFloat(fmt.Sprintf("%.2f", acc/float64(len(cpus))), 64)
+	return value
 }
