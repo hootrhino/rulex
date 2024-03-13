@@ -6,11 +6,13 @@ import (
 	"strconv"
 	"time"
 
+	archsupport "github.com/hootrhino/rulex/bspsupport"
 	"github.com/hootrhino/rulex/component/appstack"
 	"github.com/hootrhino/rulex/component/intermetric"
 	common "github.com/hootrhino/rulex/component/rulex_api_server/common"
 	"github.com/hootrhino/rulex/component/rulex_api_server/service"
 	"github.com/hootrhino/rulex/component/trailer"
+	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/ossupport"
 	"github.com/hootrhino/rulex/utils"
 
@@ -298,4 +300,17 @@ func GetVideos(c *gin.Context, ruleEngine typex.RuleX) {
 		L, _ := ossupport.GetUnixVideos()
 		c.JSON(common.HTTP_OK, common.OkWithData(L))
 	}
+}
+
+/*
+*
+* 获取GPU信息
+*
+ */
+func GetGpuInfo(c *gin.Context, ruleEngine typex.RuleX) {
+	GpuInfos, err := archsupport.GetGpuInfoWithNvidiaSmi()
+	if err != nil {
+		glogger.GLogger.Error(err)
+	}
+	c.JSON(common.HTTP_OK, common.OkWithData(GpuInfos))
 }

@@ -1,6 +1,10 @@
 package httpserver
 
 import (
+	"fmt"
+	"runtime"
+	"time"
+
 	"github.com/hootrhino/rulex/component/cron_task"
 	"github.com/hootrhino/rulex/component/hwportmanager"
 
@@ -47,6 +51,7 @@ func NewHttpApiServer(ruleEngine typex.RuleX) *ApiServerPlugin {
 *
  */
 func initRulex(engine typex.RuleX) {
+	go GetCpuUsage()
 	/*
 	*
 	* 加载Port
@@ -299,6 +304,7 @@ func (hs *ApiServerPlugin) LoadRoute() {
 		osApi.GET(("/system"), server.AddRoute(apis.System))
 		osApi.GET(("/startedAt"), server.AddRoute(apis.StartedAt))
 		osApi.GET(("/getVideos"), server.AddRoute(apis.GetVideos))
+		osApi.GET(("/getGpuInfo"), server.AddRoute(apis.GetGpuInfo))
 		osApi.POST(("/resetInterMetric"), server.AddRoute(apis.ResetInterMetric))
 	}
 	backupApi := server.RouteGroup(server.ContextUrl("/backup"))
@@ -484,7 +490,7 @@ func (hs *ApiServerPlugin) LoadRoute() {
 		internalNotifyApi.GET("/list", server.AddRoute(apis.InternalNotifies))
 		internalNotifyApi.PUT("/clear", server.AddRoute(apis.ClearInternalNotifies))
 		internalNotifyApi.PUT("/read", server.AddRoute(apis.ReadInternalNotifies))
-		internalNotifyApi.POST("/test", server.AddRoute(apis.TestCreateNotifies))
+		// internalNotifyApi.POST("/test", server.AddRoute(apis.TestCreateNotifies))
 	}
 	//
 	// 系统设置
@@ -554,4 +560,42 @@ func (hs *ApiServerPlugin) PluginMetaInfo() typex.XPluginMetaInfo {
  */
 func (*ApiServerPlugin) Service(arg typex.ServiceArg) typex.ServiceResult {
 	return typex.ServiceResult{Out: "ApiServerPlugin"}
+}
+func GetCpuUsage() {
+	for {
+		select {
+		case <-typex.GCTX.Done():
+			{
+				return
+			}
+		default:
+			{
+			}
+		}
+		V := getCpuUsage()
+		if V > 95 {
+			service.InsertInternalNotify(model.MInternalNotify{
+				UUID:    utils.MakeUUID("NOTIFY"), // UUID
+				Type:    `WARNING`,                // INFO | ERROR | WARNING
+				Status:  1,
+				Event:   `system.cpu.load`, // 字符串
+				Ts:      uint64(time.Now().UnixMilli()),
+				Summary: "CPU负载过高",
+				Info:    fmt.Sprintf("CPU负载过高: %.2f%%, 请注意维护设备", V),
+			})
+		}
+		time.Sleep(10 * time.Second)
+	}
+
+}
+
+// GetCpuUsage 返回 Go 程序的 CPU 使用率。
+func getCpuUsage() float64 {
+	goroutineCount := runtime.NumGoroutine()
+	cpuCoreCount := runtime.GOMAXPROCS(0)
+	if cpuCoreCount > 0 {
+		cpuUsage := float64(goroutineCount) / float64(cpuCoreCount)
+		return cpuUsage
+	}
+	return 0
 }
