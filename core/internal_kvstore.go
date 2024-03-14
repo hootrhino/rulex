@@ -47,7 +47,7 @@ func NewRulexStore(maxSize int) typex.XStore {
 * 设置过期时间
 *
  */
-func (rs *RulexStore) SetDuration(k string, v string, d time.Duration) {
+func (rs *RulexStore) SetWithDuration(k string, v string, d time.Duration) {
 	if (rs.cache.ItemCount() + 1) > 10000 {
 		glogger.GLogger.Error("Max store size reached:", rs.cache.ItemCount())
 	}
