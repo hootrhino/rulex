@@ -90,9 +90,10 @@ func LoadAppLibGroup(app *Application, e typex.RuleX) {
 	}
 	{
 		Funcs := map[string]func(l *lua.LState) int{
-			"VSet": rulexlib.StoreSet(e),
-			"VGet": rulexlib.StoreGet(e),
-			"VDel": rulexlib.StoreDelete(e),
+			"VSet":             rulexlib.StoreSet(e),
+			"VSetWithDuration": rulexlib.StoreSetWithDuration(e),
+			"VGet":             rulexlib.StoreGet(e),
+			"VDel":             rulexlib.StoreDelete(e),
 		}
 		AddAppLibToGroup(app, e, "kv", Funcs)
 	}
