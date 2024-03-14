@@ -1,5 +1,7 @@
 package typex
 
+import "time"
+
 /*
 *
 * 缓存器接口
@@ -8,6 +10,8 @@ package typex
 type XStore interface {
 	// 设置值
 	Set(k string, v string)
+	// 设置值和值超时时间
+	SetWithDuration(k string, v string, long time.Duration)
 	// 获取值
 	Get(k string) string
 	// 删除值
