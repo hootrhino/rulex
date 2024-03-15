@@ -199,6 +199,14 @@ func CreateDevice(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
+	if service.CheckNameDuplicate(form.Name) {
+		c.JSON(common.HTTP_OK, common.Error("Device Name Duplicated"))
+		return
+	}
+	if utils.IsValidName(form.Name) {
+		c.JSON(common.HTTP_OK, common.Error("Device Name Invalid, Must Between 6-12 characters"))
+		return
+	}
 	isSingle := false
 	// 红外线是单例模式
 	if form.Type == typex.INTERNAL_EVENT.String() {
@@ -256,8 +264,8 @@ func UpdateDevice(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	if form.UUID == "" {
-		c.JSON(common.HTTP_OK, common.Error("missing 'uuid' fields"))
+	if utils.IsValidName(form.Name) {
+		c.JSON(common.HTTP_OK, common.Error("Device Name Invalid, Must Between 6-12 characters"))
 		return
 	}
 	//

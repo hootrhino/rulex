@@ -98,6 +98,7 @@ func main() {
 				},
 				Action: func(c *cli.Context) error {
 					utils.CLog(typex.Banner)
+					utils.ShowGGpuAndCpuInfo()
 					engine.RunRulex(c.String("config"))
 					fmt.Printf("[RULEX UPGRADE] Run rulex successfully.")
 					return nil

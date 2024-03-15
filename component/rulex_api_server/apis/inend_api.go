@@ -84,6 +84,10 @@ func CreateInend(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err1))
 		return
 	}
+	if utils.IsValidName(form.Name) {
+		c.JSON(common.HTTP_OK, common.Error("Device Name Invalid, Must Between 6-12 characters"))
+		return
+	}
 	isSingle := false
 	// 内部消息总线是单例模式
 	if form.Type == typex.INTERNAL_EVENT.String() {
@@ -156,8 +160,8 @@ func UpdateInend(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	if form.UUID == "" {
-		c.JSON(common.HTTP_OK, common.Error("missing 'uuid' fields"))
+	if utils.IsValidName(form.Name) {
+		c.JSON(common.HTTP_OK, common.Error("Device Name Invalid, Must Between 6-12 characters"))
 		return
 	}
 	// 更新的时候从数据库往外面拿

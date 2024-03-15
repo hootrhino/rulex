@@ -19,11 +19,10 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gorilla/websocket"
 	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/typex"
 	"github.com/hootrhino/rulex/utils"
-	"github.com/gorilla/websocket"
-
 )
 
 /*
@@ -34,7 +33,6 @@ import (
 type streamPlayer struct {
 	wsConn        *websocket.Conn
 	GetFirstFrame bool
-	ClientId      string
 	Token         string
 	Type          string           `json:"type"` // push | pull
 	LiveId        string           `json:"liveId"`
@@ -53,7 +51,6 @@ func wsServerEndpoint(c *gin.Context) {
 		return
 	}
 	LiveId := c.Query("liveId")
-	ClientId := c.Query("clientId")
 	Token := c.Query("token")
 	glogger.GLogger.Debugf("Request live:%s, Token is :%s", LiveId, Token)
 	// 最多允许连接10个客户端，实际情况下根本用不了那么多
@@ -64,26 +61,29 @@ func wsServerEndpoint(c *gin.Context) {
 	}
 
 	streamPlayer := streamPlayer{
-		LiveId:   LiveId,
-		ClientId: ClientId,
-		Token:    Token,
-		wsConn:   wsConn,
+		LiveId: LiveId,
+		Token:  Token,
+		wsConn: wsConn,
 	}
 	if Token != "WebRtspPlayer" {
-		wsConn.WriteMessage(websocket.CloseMessage, []byte("Invalid client token"))
+		msg := "Invalid client token"
+		glogger.GLogger.Error(msg)
+		wsConn.WriteMessage(websocket.CloseMessage, []byte(msg))
 		wsConn.Close()
 		return
 	}
-	if C, ok := __DefaultRtspServer.Clients[ClientId]; ok {
-		wsConn.WriteMessage(websocket.CloseMessage, []byte("already exists a client:"+C.ClientId))
+	if C, ok := __DefaultRtspServer.Clients[wsConn.RemoteAddr().String()]; ok {
+		msg := "already exists a client:" + C.LiveId
+		glogger.GLogger.Error(msg)
+		wsConn.WriteMessage(websocket.CloseMessage, []byte(msg))
 		wsConn.Close()
 		return
 	}
-	// 每个LiveId只能有1路播放
-	__DefaultRtspServer.Clients[ClientId] = streamPlayer
+	// 考虑到性能，每个LiveId只能有1路播放, 后期优化成支持多路播放
+	__DefaultRtspServer.Clients[wsConn.RemoteAddr().String()] = streamPlayer
 	glogger.GLogger.Info("WebSocket Player connected:" + wsConn.RemoteAddr().String())
 	wsConn.SetCloseHandler(func(code int, text string) error {
-		glogger.GLogger.Info("wsConn CloseHandler:", wsConn.RemoteAddr().String())
+		glogger.GLogger.Info("WebSocket Close Handler:", wsConn.RemoteAddr().String())
 		__DefaultRtspServer.locker.Lock()
 		delete(__DefaultRtspServer.Clients, wsConn.RemoteAddr().String())
 		__DefaultRtspServer.locker.Unlock()
@@ -108,7 +108,7 @@ func wsServerEndpoint(c *gin.Context) {
 			}
 			_, _, err := wsConn.ReadMessage()
 			if err != nil {
-				glogger.GLogger.Warn("wsConn Close Handler:", wsConn.RemoteAddr().String())
+				glogger.GLogger.Warn("WebSocket Close Handler:", wsConn.RemoteAddr().String())
 				__DefaultRtspServer.locker.Lock()
 				delete(__DefaultRtspServer.Clients, wsConn.RemoteAddr().String())
 				__DefaultRtspServer.locker.Unlock()

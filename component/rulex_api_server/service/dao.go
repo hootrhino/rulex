@@ -178,6 +178,13 @@ func GetMDeviceWithUUID(uuid string) (*model.MDevice, error) {
 	return m, interdb.DB().Where("uuid=?", uuid).First(m).Error
 }
 
+// 检查名称是否重复
+func CheckNameDuplicate(name string) bool {
+	Count := int64(0)
+	interdb.DB().Model(model.MDevice{}).Where("name=?", name).Count(&Count)
+	return Count > 0
+}
+
 // 删除设备
 func DeleteDevice(uuid string) error {
 	return interdb.DB().Where("uuid=?", uuid).Delete(&model.MDevice{}).Error

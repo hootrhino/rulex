@@ -73,8 +73,8 @@ func (s *JpegStreamServer) Init(cfg map[string]any) error {
 			glogger.GLogger.Error(msg)
 			return
 		}
-		glogger.GLogger.Info("Receive stream push From:", LiveId, ", jpeg stream play url is:",
-			fmt.Sprintf("http://127.0.0.1:9401/jpeg_stream/pull?liveId=%s", LiveId))
+		glogger.GLogger.Info("Receive stream push From:", LiveId, ", jpeg stream play url is: ",
+			fmt.Sprintf(`http://127.0.0.1:9401/jpeg_stream/pull?liveId=%s`, LiveId))
 		// http://127.0.0.1:9400 :后期通过参数传进
 		// 启动一个FFMPEG开始从摄像头拉流
 		s.RegisterJpegStreamSource(LiveId)
