@@ -69,12 +69,12 @@ func (e *RuleEngine) RemoveDevice(uuid string) {
 * 加载设备
 *
  */
-func (e *RuleEngine) LoadDeviceWithCtx(deviceInfo *typex.Device,
+func (e *RuleEngine) LoadDeviceWithCtx(deviceInstance *typex.Device,
 	ctx context.Context, cancelCTX context.CancelFunc) error {
-	if config := e.DeviceTypeManager.Find(deviceInfo.Type); config != nil {
-		return e.loadDevices(config.NewDevice(e), deviceInfo, ctx, cancelCTX)
+	if config := e.DeviceTypeManager.Find(deviceInstance.Type); config != nil {
+		return e.loadDevices(config.NewDevice(e), deviceInstance, ctx, cancelCTX)
 	}
-	return fmt.Errorf("unsupported Device type:%s", deviceInfo.Type)
+	return fmt.Errorf("unsupported Device type:%s", deviceInstance.Type)
 
 }
 
@@ -83,25 +83,27 @@ func (e *RuleEngine) LoadDeviceWithCtx(deviceInfo *typex.Device,
 * 启动一个和RULEX直连的外部设备
 *
  */
-func (e *RuleEngine) loadDevices(abstractDevice typex.XDevice, deviceInfo *typex.Device,
+func (e *RuleEngine) loadDevices(xDevice typex.XDevice, deviceInstance *typex.Device,
 	ctx context.Context, cancelCTX context.CancelFunc) error {
 	// Bind
-	deviceInfo.Device = abstractDevice
-	e.SaveDevice(deviceInfo)
+	// xDevice: Interface
+	// deviceInstance: Real Worker, Running instance
+	deviceInstance.Device = xDevice
+	e.SaveDevice(deviceInstance)
 	// Load config
 	// 要从数据库里面查Config
-	config := e.GetDevice(deviceInfo.UUID).Config
+	config := e.GetDevice(deviceInstance.UUID).Config
 	if config == nil {
-		e.RemoveDevice(deviceInfo.UUID)
-		err := fmt.Errorf("device [%v] config is nil", deviceInfo.Name)
+		e.RemoveDevice(deviceInstance.UUID)
+		err := fmt.Errorf("device [%v] config is nil", deviceInstance.Name)
 		return err
 	}
-	if err := abstractDevice.Init(deviceInfo.UUID, config); err != nil {
-		e.RemoveDevice(deviceInfo.UUID)
+	if err := xDevice.Init(deviceInstance.UUID, config); err != nil {
+		e.RemoveDevice(deviceInstance.UUID)
 		return err
 	}
-	startDevice(abstractDevice, e, ctx, cancelCTX)
-	glogger.GLogger.Infof("Device [%v, %v] load successfully", deviceInfo.Name, deviceInfo.UUID)
+	startDevice(xDevice, e, ctx, cancelCTX)
+	glogger.GLogger.Infof("Device [%v, %v] load successfully", deviceInstance.Name, deviceInstance.UUID)
 	return nil
 }
 
@@ -110,15 +112,15 @@ func (e *RuleEngine) loadDevices(abstractDevice typex.XDevice, deviceInfo *typex
 * Start是异步进行的,当设备的GetStatus返回状态UP时，正常运行，当Down时重启
 *
  */
-func startDevice(abstractDevice typex.XDevice, e *RuleEngine,
+func startDevice(xDevice typex.XDevice, e *RuleEngine,
 	ctx context.Context, cancelCTX context.CancelFunc) error {
-	if err := abstractDevice.Start(typex.CCTX{Ctx: ctx, CancelCTX: cancelCTX}); err != nil {
+	if err := xDevice.Start(typex.CCTX{Ctx: ctx, CancelCTX: cancelCTX}); err != nil {
 		glogger.GLogger.Error("Device start error:", err)
 		return err
 	}
 	// LoadNewestDevice
 	// 2023-06-14新增： 重启成功后数据会丢失,还得加载最新的Rule到设备中
-	device := abstractDevice.Details()
+	device := xDevice.Details()
 	if device != nil {
 		// bind 最新的规则 要从数据库拿刚更新的
 		for _, rule := range device.BindRules {
