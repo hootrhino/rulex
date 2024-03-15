@@ -90,6 +90,10 @@ func CreateRule(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
+	if utils.IsValidName(form.Name) {
+		c.JSON(common.HTTP_OK, common.Error("Device Name Invalid, Must Between 6-12 characters"))
+		return
+	}
 	if !utils.SContains([]string{"lua"}, form.Type) {
 		c.JSON(common.HTTP_OK, common.Error(`rule type must be 'lua' but now is:`+form.Type))
 		return
@@ -289,6 +293,10 @@ func UpdateRule(c *gin.Context, ruleEngine typex.RuleX) {
 	form := Form{Type: "lua"}
 	if err := c.ShouldBindJSON(&form); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
+	if utils.IsValidName(form.Name) {
+		c.JSON(common.HTTP_OK, common.Error("Device Name Invalid, Must Between 6-12 characters"))
 		return
 	}
 	// tmpRule 是一个一次性的临时rule，用来验证规则，这么做主要是为了防止真实Lua Vm 被污染

@@ -104,7 +104,7 @@ AppDESCRIPTION = "%s"
 `
 const defaultLuaMain = `
 function Main(arg)
-	stdlib:Debug("Hello World:" .. time:Time())
+	Debug("Hello World:" .. time:Time())
 	return 0
 end
 `
@@ -113,6 +113,10 @@ func CreateApp(c *gin.Context, ruleEngine typex.RuleX) {
 	form := appStackDto{}
 	if err := c.ShouldBindJSON(&form); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
+	if utils.IsValidName(form.Name) {
+		c.JSON(common.HTTP_OK, common.Error("Device Name Invalid, Must Between 6-12 characters"))
 		return
 	}
 	newUUID := utils.AppUuid()
@@ -157,6 +161,10 @@ func UpdateApp(c *gin.Context, ruleEngine typex.RuleX) {
 	form := appStackDto{}
 	if err := c.ShouldBindJSON(&form); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
+	if utils.IsValidName(form.Name) {
+		c.JSON(common.HTTP_OK, common.Error("Device Name Invalid, Must Between 6-12 characters"))
 		return
 	}
 	// 校验语法

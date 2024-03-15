@@ -79,21 +79,23 @@ func InitRtspServer(rulex typex.RuleX) *RtspServer {
 			return
 		}
 		glogger.GLogger.Info("Receive stream push From:", LiveId,
-			", stream play url is:", fmt.Sprintf("ws://127.0.0.1:9400/ws?token=WebRtspPlayer&liveId=%s", LiveId))
+			", stream play url is: ", fmt.Sprintf(
+				`ws://127.0.0.1:9400/ws?token=WebRtspPlayer&liveId=%s`, LiveId))
 		// http://127.0.0.1:9400 :后期通过参数传进
 		// 启动一个FFMPEG开始从摄像头拉流
 		bodyReader := bufio.NewReader(ctx.Request.Body)
 		// 每个ffmpeg都给起一个进程，监控是否有websocket来拉流
+		frameBuf := [1024 * 100]byte{}
 		for {
 			// data 就是 RTSP 帧
 			// 只需将其转发给websocket即可
-			data, err := bodyReader.ReadBytes('\n')
+			NByte, err := bodyReader.Read(frameBuf[:])
 			if err != nil {
 				glogger.GLogger.Error("ReadBytes from ffmpeg error:", err)
 				break
 			}
 			if len(__DefaultRtspServer.Clients) > 0 {
-				pushToWebsocket(LiveId, data)
+				pushToWebsocket(LiveId, frameBuf[:NByte])
 			}
 		}
 		ctx.Writer.Flush()

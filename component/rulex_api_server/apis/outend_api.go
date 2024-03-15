@@ -122,6 +122,10 @@ func CreateOutEnd(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err0))
 		return
 	}
+	if utils.IsValidName(form.Name) {
+		c.JSON(common.HTTP_OK, common.Error("Device Name Invalid, Must Between 6-12 characters"))
+		return
+	}
 	configJson, err1 := json.Marshal(form.Config)
 	if err1 != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err1))
@@ -176,8 +180,8 @@ func UpdateOutEnd(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	if form.UUID == "" {
-		c.JSON(common.HTTP_OK, common.Error("missing 'uuid' fields"))
+	if utils.IsValidName(form.Name) {
+		c.JSON(common.HTTP_OK, common.Error("Device Name Invalid, Must Between 6-12 characters"))
 		return
 	}
 	// 更新的时候从数据库往外面拿

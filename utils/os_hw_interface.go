@@ -1,6 +1,12 @@
 package utils
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"fmt"
+	"runtime"
+
+	archsupport "github.com/hootrhino/rulex/bspsupport"
+)
 
 /*
 *
@@ -66,4 +72,42 @@ type SystemDevices struct {
 func (m SystemDevices) String() string {
 	b, _ := json.Marshal(m)
 	return string(b)
+}
+
+/*
+*
+* 展示硬件信息
+*
+ */
+func ShowGGpuAndCpuInfo() {
+	if runtime.GOARCH == "amd64" {
+		if runtime.GOOS == "windows" || runtime.GOOS == "linux" {
+			gpus, err1 := archsupport.GetGpuInfoWithNvidiaSmi()
+			if err1 == nil {
+				for _, gpu := range gpus {
+					fmt.Println("* Current GPU Device:", gpu.Name)
+				}
+			} else {
+				fmt.Println("* GPU Device Not Found")
+			}
+			if runtime.GOOS == "linux" {
+				cpu, err2 := archsupport.GetLinuxCPUName()
+				if err2 == nil {
+					fmt.Println("* Current CPU Device:", cpu)
+				} else {
+					fmt.Println("* CPU Detail Not Found")
+				}
+			}
+			if runtime.GOOS == "windows" {
+				cpu, err2 := archsupport.GetWindowsCPUName()
+				if err2 == nil {
+					fmt.Println("* Current CPU Device:", cpu)
+				} else {
+					fmt.Println("* CPU Detail Not Found")
+
+				}
+			}
+			fmt.Println()
+		}
+	}
 }

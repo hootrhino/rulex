@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"regexp"
+
 	"github.com/plgd-dev/kit/v2/strings"
 )
 
@@ -29,4 +31,18 @@ func IsListDuplicated(list []string) bool {
  */
 func SContains(s []string, e string) bool {
 	return strings.SliceContains(s, e)
+}
+
+/*
+*
+* 合法名称
+*
+ */
+func IsValidName(username string) bool {
+	// 检查用户名长度是否在 6 到 32 之间
+	if len(username) < 6 || len(username) > 32 {
+		return false
+	}
+	match, _ := regexp.MatchString(`^[a-zA-Z0-9_-]+$`, username)
+	return match
 }
