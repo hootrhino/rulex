@@ -469,7 +469,7 @@ func parseModbusPointExcel(r io.Reader, sheetName string,
 		tag := row[0]
 		alias := row[1]
 		function, _ := strconv.ParseUint(row[2], 10, 8)
-		frequency, _ := strconv.ParseUint(row[3], 10, 8)
+		frequency, _ := strconv.ParseUint(row[3], 10, 64)
 		slaverId, _ := strconv.ParseUint(row[4], 10, 8)
 		address, _ := strconv.ParseUint(row[5], 10, 16)
 		quantity, _ := strconv.ParseUint(row[6], 10, 16)
