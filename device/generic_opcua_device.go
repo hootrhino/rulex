@@ -140,7 +140,7 @@ func (opcDev *genericOpcuaDevice) Start(cctx typex.CCTX) error {
 	// 	opts = append(opts, opcua.SecurityFromEndpoint(ep, ua.UserTokenTypeAnonymous))
 	// }
 	//连接opcua -判断连接是否正常
-	opcDev.client = opcua.NewClient(ep.EndpointURL, opcua.SecurityMode(ua.MessageSecurityModeNone))
+	opcDev.client, _ = opcua.NewClient(ep.EndpointURL)
 	if err := opcDev.client.Connect(cctx.Ctx); err != nil {
 		glogger.GLogger.Error("Connect opcua client failed:", err)
 		return err
@@ -217,7 +217,7 @@ func (opcDev *genericOpcuaDevice) readNodes(cmd []byte, data []byte) (int, error
 			TimestampsToReturn: ua.TimestampsToReturnBoth,
 		}
 		ctx := context.Background()
-		resp, err := opcDev.client.ReadWithContext(ctx, req)
+		resp, err := opcDev.client.Read(ctx, req)
 		if err != nil {
 			opcDev.errorCount++
 			glogger.GLogger.Errorf("Read failed: %s", err)
@@ -309,7 +309,7 @@ func (sd *genericOpcuaDevice) Stop() {
 	sd.status = typex.DEV_DOWN
 	sd.CancelCTX()
 	if sd.driver != nil {
-		sd.client.CloseWithContext(sd.Ctx)
+		sd.client.Close(sd.Ctx)
 		sd.driver.Stop()
 	}
 }

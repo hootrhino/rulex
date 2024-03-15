@@ -70,7 +70,7 @@ func (s *MqttServer) Start(r typex.RuleX) error {
 	//
 	s.mqttServer = server
 	server.AddHook(&ahooks{s: s}, nil)
-	server.AddHook(&mhooks{s: s, locker: sync.Mutex{}}, nil)
+	server.AddHook(&mHooks{}, nil)
 	glogger.GLogger.Infof("MqttServer start at [%s:%v] successfully", s.Host, s.Port)
 	return nil
 }
@@ -103,29 +103,29 @@ func (s *MqttServer) PluginMetaInfo() typex.XPluginMetaInfo {
 *
  */
 
-type mhooks struct {
+type mHooks struct {
 	mqtt.HookBase
 	s      *MqttServer
 	locker sync.Mutex
 }
 
-func (h *mhooks) ID() string {
+func (h *mHooks) ID() string {
 	return "events-hooks"
 }
 
-func (h *mhooks) Provides(b byte) bool {
+func (h *mHooks) Provides(b byte) bool {
 	return true
 }
 
-func (h *mhooks) OnConnect(client *mqtt.Client, pk packets.Packet) {
+func (h *mHooks) OnConnect(client *mqtt.Client, pk packets.Packet) error {
 	h.locker.Lock()
 	h.s.clients[client.ID] = client
 	h.locker.Unlock()
 	glogger.GLogger.Debugf("client OnConnect:[%v] %v", client.ID, string(client.Properties.Username))
-
+	return nil
 }
 
-func (h *mhooks) OnDisconnect(client *mqtt.Client, err error, expire bool) {
+func (h *mHooks) OnDisconnect(client *mqtt.Client, err error, expire bool) {
 	if h.s.clients[client.ID] != nil {
 		h.locker.Lock()
 		delete(h.s.clients, client.ID)
@@ -135,7 +135,7 @@ func (h *mhooks) OnDisconnect(client *mqtt.Client, err error, expire bool) {
 	}
 }
 
-func (h *mhooks) OnPublish(cl *mqtt.Client, pk packets.Packet) (packets.Packet, error) {
+func (h *mHooks) OnPublish(cl *mqtt.Client, pk packets.Packet) (packets.Packet, error) {
 	glogger.GLogger.Debugf("client OnPublish:[%v]=%v", pk.TopicName, string(pk.Payload))
 	return pk, nil
 }

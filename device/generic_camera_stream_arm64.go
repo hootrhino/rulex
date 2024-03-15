@@ -1,5 +1,5 @@
-//go:build arm
-// +build arm
+//go:build arm64
+// +build arm64
 
 // Copyright (C) 2023 wwhai
 //
