@@ -16,7 +16,7 @@ import (
  */
 func DebugAPP(rx typex.RuleX, uuid string) func(*lua.LState) int {
 	return func(l *lua.LState) int {
-		content := l.ToString(2)
+		content := l.ToString(1)
 		glogger.GLogger.WithFields(logrus.Fields{
 			"topic": "app/console/" + uuid,
 		}).Info(content)
@@ -31,7 +31,7 @@ func DebugAPP(rx typex.RuleX, uuid string) func(*lua.LState) int {
  */
 func DebugRule(rx typex.RuleX, uuid string) func(*lua.LState) int {
 	return func(l *lua.LState) int {
-		content := l.ToString(2)
+		content := l.ToString(1)
 		glogger.GLogger.WithFields(logrus.Fields{
 			"topic": "rule/log/" + uuid,
 		}).Info(content)

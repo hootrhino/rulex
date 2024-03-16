@@ -24,7 +24,6 @@ import (
 	"runtime"
 	"time"
 
-	_ "github.com/hootrhino/rulex/component/cron_task/docs"
 	"github.com/hootrhino/rulex/engine"
 	"github.com/hootrhino/rulex/ossupport"
 	"github.com/hootrhino/rulex/typex"
@@ -58,22 +57,19 @@ func init() {
 	if env == "RPI4B" {
 		typex.DefaultVersionInfo.Product = env
 	}
+	if env == "EN6400" {
+		typex.DefaultVersionInfo.Product = env
+	}
 	dist, err := utils.GetOSDistribution()
 	if err != nil {
-		panic(err)
+		utils.CLog("Failed to Get OS Distribution:%s", err)
+		os.Exit(1)
 	}
 	typex.DefaultVersionInfo.Dist = dist
 	arch := fmt.Sprintf("%s-%s", typex.DefaultVersionInfo.Dist, runtime.GOARCH)
 	typex.DefaultVersionInfo.Arch = arch
 }
 
-// @title           Rulex API
-// @version         1.0
-// @description     Rulex Swagger API
-
-// @contact.name   API Support
-// @contact.url    https://github.com/hootrhino/rulex
-// @BasePath  /api/v1
 //
 //go:generate bash ./gen_info.sh
 func main() {
@@ -259,22 +255,26 @@ func main() {
 				Action: func(c *cli.Context) error {
 					host := c.String("H")
 					if host == "" {
-						return fmt.Errorf("[LICENCE ACTIVE]: missing host")
+						return fmt.Errorf("[LICENCE ACTIVE]: missing 'host' parameter")
 					}
 					username := c.String("U")
 					if username == "" {
-						return fmt.Errorf("[LICENCE ACTIVE]: missing admin username")
+						return fmt.Errorf("[LICENCE ACTIVE]: missing admin 'username' parameter")
 					}
 					password := c.String("P")
 					if password == "" {
-						return fmt.Errorf("[LICENCE ACTIVE]: missing admin password")
+						return fmt.Errorf("[LICENCE ACTIVE]: missing admin 'password' parameter")
 					}
 					macAddr, err := ossupport.ReadIfaceMacAddr("eth0")
 					if err != nil {
 						return err
 					}
-					// commercial version will implement it
-					utils.CLog("[LICENCE ACTIVE]: Admin(%s,%s), mac addr:[%s] try to request license from %s\n",
+					// Commercial version will implement it
+					// rulex active -H 127.0.0.1 -U admin -P 123456
+					// - H: Active Server Host
+					// - U: Active Server Account
+					// - P: Active Server Password
+					utils.CLog("[LICENCE ACTIVE]: \n*> Admin(%s, %s)\n*> Local Mac: [%s]\n*> Try to request license from %s ...\n",
 						username, password, macAddr, host)
 					return nil
 				},

@@ -155,8 +155,8 @@ func Paginate(pageNum int, pageSize int, sliceLength int) (int, int) {
 *
  */
 func CLog(format string, v ...interface{}) {
-	timestamp := time.Now().UTC().Format("2006/01/02 15:04:05.000000")
+	timestamp := time.Now().UTC().Format("2006/01/02 15:04:05")
 	logMsg := fmt.Sprintf(format, v...)
-	logLine := fmt.Sprintf("[%s] %s\n", timestamp, logMsg)
+	logLine := fmt.Sprintf("[%s] %s", timestamp, logMsg)
 	fmt.Print(logLine)
 }

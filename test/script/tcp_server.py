@@ -17,7 +17,7 @@ import socket
 
 def main():
     # 服务器地址和端口
-    server_address = ("localhost", 5556)
+    server_address = ("0.0.0.0", 5556)
 
     # 创建TCP套接字
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
