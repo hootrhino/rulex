@@ -265,6 +265,7 @@ func main() {
 					if password == "" {
 						return fmt.Errorf("[LICENCE ACTIVE]: missing admin 'password' parameter")
 					}
+					// linux
 					macAddr, err := ossupport.ReadIfaceMacAddr("eth0")
 					if err != nil {
 						return err
@@ -274,8 +275,12 @@ func main() {
 					// - H: Active Server Host
 					// - U: Active Server Account
 					// - P: Active Server Password
-					utils.CLog("[LICENCE ACTIVE]: \n*> Admin(%s, %s)\n*> Local Mac: [%s]\n*> Try to request license from %s ...\n",
+					utils.CLog("\n*>> BEGIN LICENCE ACTIVE\n"+
+						"*# Vendor Admin: (%s, %s)\n"+
+						"*# Local Mac Address: (%s)\n"+
+						"*# Try to request license from server:(%s) ...\n",
 						username, password, macAddr, host)
+					fmt.Println("*<< END LICENCE ACTIVE")
 					return nil
 				},
 			},
