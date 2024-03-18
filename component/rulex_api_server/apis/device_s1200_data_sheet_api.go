@@ -239,12 +239,12 @@ func checkSiemensDataPoints(M SiemensPointVo) error {
 		if M.DataOrder != "A" {
 			return fmt.Errorf("invalid '%s' order '%s'", M.DataType, M.DataOrder)
 		}
-	case "RAW", "INT", "UINT", "FLOAT", "UFLOAT":
-		if !utils.SContains([]string{"ABCD", "DCBA", "CDAB"}, M.DataOrder) {
-			return fmt.Errorf("invalid '%s' order '%s'", M.DataType, M.DataOrder)
-		}
-	case "SHORT", "USHORT":
+	case "SHORT", "USHORT", "INT16", "UINT16":
 		if !utils.SContains([]string{"AB", "BA"}, M.DataOrder) {
+			return fmt.Errorf("'Invalid '%s' order '%s'", M.DataType, M.DataOrder)
+		}
+	case "RAW", "INT", "INT32", "UINT", "UINT32", "FLOAT", "UFLOAT":
+		if !utils.SContains([]string{"ABCD", "DCBA", "CDAB"}, M.DataOrder) {
 			return fmt.Errorf("invalid '%s' order '%s'", M.DataType, M.DataOrder)
 		}
 	default:

@@ -253,16 +253,16 @@ func checkModbusDataPoints(M ModbusPointVo) error {
 		return fmt.Errorf("'Missing required param 'slaverId'")
 	}
 	if (*M.SlaverId) > 255 {
-		return fmt.Errorf("'Alias length must range of 1-256")
+		return fmt.Errorf("'Alias' length must range of 1-256")
 	}
 	if M.Frequency == nil {
 		return fmt.Errorf("'Missing required param 'frequency'")
 	}
 	if *M.Frequency < 50 {
-		return fmt.Errorf("'Frequency must greater than 50ms")
+		return fmt.Errorf("'Frequency' must greater than 50ms")
 	}
 	if *M.Frequency > 100000 {
-		return fmt.Errorf("'Frequency must little than 100s")
+		return fmt.Errorf("'Frequency' must little than 100s")
 	}
 	if M.Quantity == nil {
 		return fmt.Errorf("'Missing required param 'quantity'")
@@ -279,12 +279,12 @@ func checkModbusDataPoints(M ModbusPointVo) error {
 		if M.Order != "A" {
 			return fmt.Errorf("'Invalid '%s' order '%s'", M.Type, M.Order)
 		}
-	case "RAW", "INT", "UINT", "FLOAT", "UFLOAT":
-		if !utils.SContains([]string{"ABCD", "DCBA", "CDAB"}, M.Order) {
+	case "SHORT", "USHORT", "INT16", "UINT16":
+		if !utils.SContains([]string{"AB", "BA"}, M.Order) {
 			return fmt.Errorf("'Invalid '%s' order '%s'", M.Type, M.Order)
 		}
-	case "SHORT", "USHORT":
-		if !utils.SContains([]string{"AB", "BA"}, M.Order) {
+	case "RAW", "INT", "INT32", "UINT", "UINT32", "FLOAT", "UFLOAT":
+		if !utils.SContains([]string{"ABCD", "DCBA", "CDAB"}, M.Order) {
 			return fmt.Errorf("'Invalid '%s' order '%s'", M.Type, M.Order)
 		}
 	default:
