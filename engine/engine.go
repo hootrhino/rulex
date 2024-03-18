@@ -102,8 +102,8 @@ func InitRuleEngine(config typex.RulexConfig) typex.RuleX {
 	internotify.InitInternalEventBus(__DefaultRuleEngine, core.GlobalConfig.MaxQueueSize)
 	// 前后交互组件
 	interqueue.InitInteractQueue(__DefaultRuleEngine, core.GlobalConfig.MaxQueueSize)
-	// Web Pipeline
-	core.InitWebDataPipe(__DefaultRuleEngine)
+	// Web Pipeline: future version maybe support
+	// core.InitWebDataPipe(__DefaultRuleEngine)
 	// Internal Schema
 	iotschema.InitInternalSchemaCache(__DefaultRuleEngine)
 	// Load hardware Port Manager
@@ -118,7 +118,7 @@ func InitRuleEngine(config typex.RulexConfig) typex.RuleX {
 	aibase.InitAIRuntime(__DefaultRuleEngine)
 	// Internal Queue
 	interqueue.InitDataCacheQueue(__DefaultRuleEngine, core.GlobalConfig.MaxQueueSize)
-	// Data center
+	// Data center: future version maybe support
 	// datacenter.InitDataCenter(__DefaultRuleEngine)
 	// Rtsp server
 	rtspserver.InitRtspServer(__DefaultRuleEngine)
