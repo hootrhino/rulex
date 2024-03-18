@@ -72,11 +72,14 @@ func Hnc8PointsExport(c *gin.Context, ruleEngine typex.RuleX) {
 		"name", "alias", "function", "group", "address",
 	}
 	Rows := [][]string{Headers}
-	for _, record := range records[0:] {
-		Row := []string{
-			record.Name, record.Alias, record.ApiFunction, record.Address,
+	if len(records) > 1 {
+		for _, record := range records[0:] {
+			Row := []string{
+				record.Name, record.Alias, record.ApiFunction, record.Address,
+			}
+			Rows = append(Rows, Row)
 		}
-		Rows = append(Rows, Row)
+
 	}
 
 	csvWriter.WriteAll(Rows)

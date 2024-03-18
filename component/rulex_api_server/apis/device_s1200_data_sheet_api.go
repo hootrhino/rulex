@@ -76,17 +76,19 @@ func SiemensPointsExport(c *gin.Context, ruleEngine typex.RuleX) {
 		"address", "tag", "alias", "type", "order", "weight", "frequency",
 	}
 	Rows := [][]string{Headers}
-	for _, record := range records[0:] {
-		Row := []string{
-			record.SiemensAddress,
-			record.Tag,
-			record.Alias,
-			record.DataBlockType,
-			record.DataBlockOrder,
-			fmt.Sprintf("%f", *record.Weight),
-			fmt.Sprintf("%d", *record.Frequency),
+	if len(records) > 1 {
+		for _, record := range records[0:] {
+			Row := []string{
+				record.SiemensAddress,
+				record.Tag,
+				record.Alias,
+				record.DataBlockType,
+				record.DataBlockOrder,
+				fmt.Sprintf("%f", *record.Weight),
+				fmt.Sprintf("%d", *record.Frequency),
+			}
+			Rows = append(Rows, Row)
 		}
-		Rows = append(Rows, Row)
 	}
 
 	csvWriter.WriteAll(Rows)

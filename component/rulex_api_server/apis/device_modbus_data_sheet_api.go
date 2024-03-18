@@ -81,22 +81,23 @@ func ModbusPointsExport(c *gin.Context, ruleEngine typex.RuleX) {
 		"order", "weight",
 	}
 	Rows := [][]string{Headers}
-	for _, record := range records[0:] {
-		Row := []string{
-			record.Tag,
-			record.Alias,
-			fmt.Sprintf("%d", *record.Function),
-			fmt.Sprintf("%d", *record.Frequency),
-			fmt.Sprintf("%d", *record.SlaverId),
-			fmt.Sprintf("%d", *record.Address),
-			fmt.Sprintf("%d", *record.Quantity),
-			record.Type,
-			record.Order,
-			fmt.Sprintf("%f", *record.Weight),
+	if len(records) > 1 {
+		for _, record := range records[0:] {
+			Row := []string{
+				record.Tag,
+				record.Alias,
+				fmt.Sprintf("%d", *record.Function),
+				fmt.Sprintf("%d", *record.Frequency),
+				fmt.Sprintf("%d", *record.SlaverId),
+				fmt.Sprintf("%d", *record.Address),
+				fmt.Sprintf("%d", *record.Quantity),
+				record.Type,
+				record.Order,
+				fmt.Sprintf("%f", *record.Weight),
+			}
+			Rows = append(Rows, Row)
 		}
-		Rows = append(Rows, Row)
 	}
-
 	csvWriter.WriteAll(Rows)
 	csvWriter.Flush()
 }
