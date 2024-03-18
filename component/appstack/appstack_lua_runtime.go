@@ -247,14 +247,10 @@ func LoadAppLibGroup(app *Application, e typex.RuleX) {
 		AddAppLibToGroup(app, e, "http", Funcs)
 	}
 	{
-		// Just For test
-		Func1 := map[string]func(l *lua.LState) int{
-			"Time": rulexlib.Time(e),
+		Funcs := map[string]func(l *lua.LState) int{
+			"LedOn":  rulexlib.EN6400_LedOn(e),
+			"LedOff": rulexlib.EN6400_LedOff(e),
 		}
-		AddAppLibToGroup(app, e, "time1", Func1)
-		Func2 := map[string]func(l *lua.LState) int{
-			"Time": rulexlib.TsUnixNano(e),
-		}
-		AddAppLibToGroup(app, e, "time2", Func2)
+		AddAppLibToGroup(app, e, "en6400", Funcs)
 	}
 }
