@@ -120,7 +120,7 @@ func runCallbacksIfNotNull(entity interface{}, e typex.RuleX,
 }
 func processOutQueueData(qd QueueData, e typex.RuleX) {
 	if qd.O != nil {
-		v, ok := e.AllOutEnd().Load(qd.O.UUID)
+		v, ok := e.AllOutEnds().Load(qd.O.UUID)
 		if ok {
 			target := v.(*typex.OutEnd).Target
 			if target == nil {
@@ -206,7 +206,7 @@ func StartDataCacheQueue() {
 		// 		case qd := <-xQueue.GetOutQueue():
 		// 			{
 		// 				if qd.O != nil {
-		// 					v, ok := qd.E.AllOutEnd().Load(qd.O.UUID)
+		// 					v, ok := qd.E.AllOutEnds().Load(qd.O.UUID)
 		// 					if ok {
 		// 						target := v.(*typex.OutEnd).Target
 		// 						if target == nil {
@@ -230,7 +230,7 @@ func StartDataCacheQueue() {
 		// 					qd.E.RunDeviceCallbacks(qd.D, qd.Data)
 		// 				}
 		// 				if qd.O != nil {
-		// 					v, ok := qd.E.AllOutEnd().Load(qd.O.UUID)
+		// 					v, ok := qd.E.AllOutEnds().Load(qd.O.UUID)
 		// 					if ok {
 		// 						target := v.(*typex.OutEnd).Target
 		// 						if target == nil {

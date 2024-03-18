@@ -72,7 +72,7 @@ func (e *RuleEngine) SaveRule(r *typex.Rule) {
 func (e *RuleEngine) RemoveRule(ruleId string) {
 	if rule := e.GetRule(ruleId); rule != nil {
 		// 清空 InEnd 的 bind 资源
-		e.AllInEnd().Range(func(key, value interface{}) bool {
+		e.AllInEnds().Range(func(key, value interface{}) bool {
 			inEnd := value.(*typex.InEnd)
 			for _, r := range inEnd.BindRules {
 				if rule.UUID == r.UUID {
@@ -97,6 +97,6 @@ func (e *RuleEngine) RemoveRule(ruleId string) {
 	}
 }
 
-func (e *RuleEngine) AllRule() *sync.Map {
+func (e *RuleEngine) AllRules() *sync.Map {
 	return e.Rules
 }

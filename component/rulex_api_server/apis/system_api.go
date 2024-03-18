@@ -21,7 +21,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/shirou/gopsutil/v3/cpu"
 	"github.com/shirou/gopsutil/v3/disk"
-	"go.bug.st/serial"
 )
 
 // 启动时间
@@ -50,9 +49,9 @@ func Plugins(c *gin.Context, ruleEngine typex.RuleX) {
 
 // 计算资源数据
 func source_count(e typex.RuleX) map[string]int {
-	allInEnd := e.AllInEnd()
-	allOutEnd := e.AllOutEnd()
-	allRule := e.AllRule()
+	allInEnd := e.AllInEnds()
+	allOutEnd := e.AllOutEnds()
+	allRule := e.AllRules()
 	plugins := e.AllPlugins()
 	devices := e.AllDevices()
 	goods := trailer.AllGoods()
@@ -146,7 +145,7 @@ func SnapshotDump(c *gin.Context, ruleEngine typex.RuleX) {
 func Drivers(c *gin.Context, ruleEngine typex.RuleX) {
 	data := []interface{}{}
 	id := 0
-	ruleEngine.AllInEnd().Range(func(key, value interface{}) bool {
+	ruleEngine.AllInEnds().Range(func(key, value interface{}) bool {
 		drivers := value.(*typex.InEnd).Source.Driver()
 		if drivers != nil {
 			dd := drivers.DriverDetail()
@@ -176,9 +175,9 @@ func Statistics(c *gin.Context, ruleEngine typex.RuleX) {
 
 // Get statistics data
 func SourceCount(c *gin.Context, ruleEngine typex.RuleX) {
-	allInEnd := ruleEngine.AllInEnd()
-	allOutEnd := ruleEngine.AllOutEnd()
-	allRule := ruleEngine.AllRule()
+	allInEnd := ruleEngine.AllInEnds()
+	allOutEnd := ruleEngine.AllOutEnds()
+	allRule := ruleEngine.AllRules()
 	plugins := ruleEngine.AllPlugins()
 	var c1, c2, c3, c4 int
 	allInEnd.Range(func(key, value interface{}) bool {
@@ -208,21 +207,6 @@ func SourceCount(c *gin.Context, ruleEngine typex.RuleX) {
 /*
 *
 * 获取本地的串口列表
-*
- */
-func GetUarts(c *gin.Context, ruleEngine typex.RuleX) {
-	var ports []string
-	if runtime.GOOS == "windows" {
-		ports, _ = serial.GetPortsList()
-	} else {
-		ports, _ = ossupport.GetPortsListUnix()
-	}
-	c.JSON(common.HTTP_OK, common.OkWithData(ports))
-}
-
-/*
-*
-* apiV2
 *
  */
 func GetUartList(c *gin.Context, ruleEngine typex.RuleX) {

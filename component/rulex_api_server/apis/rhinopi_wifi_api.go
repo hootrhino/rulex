@@ -16,6 +16,8 @@
 package apis
 
 import (
+	"strings"
+
 	"github.com/gin-gonic/gin"
 	common "github.com/hootrhino/rulex/component/rulex_api_server/common"
 	"github.com/hootrhino/rulex/ossupport"
@@ -28,6 +30,22 @@ import (
 *
  */
 func ScanWIFIWithNmcli(c *gin.Context, ruleEngine typex.RuleX) {
+	interfaces, err := ossupport.GetAvailableInterfaces()
+	if err != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err))
+		return
+	}
+	SupportWifi := false
+	for _, IFace := range interfaces {
+		if strings.Contains(IFace.Name, "wlan") {
+			SupportWifi = true
+			break
+		}
+	}
+	if !SupportWifi {
+		c.JSON(common.HTTP_OK, common.Error("Device not support Wifi"))
+		return
+	}
 	Wlans, err := ossupport.ScanWIFIWithNmcli()
 	if err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))

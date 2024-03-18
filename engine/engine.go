@@ -382,7 +382,7 @@ func (e *RuleEngine) RemoveInEnd(uuid string) {
 	}
 }
 
-func (e *RuleEngine) AllInEnd() *sync.Map {
+func (e *RuleEngine) AllInEnds() *sync.Map {
 	return e.InEnds
 }
 
@@ -414,7 +414,7 @@ func (e *RuleEngine) RemoveOutEnd(uuid string) {
 	}
 }
 
-func (e *RuleEngine) AllOutEnd() *sync.Map {
+func (e *RuleEngine) AllOutEnds() *sync.Map {
 	return e.OutEnds
 }
 
@@ -427,12 +427,11 @@ func (e *RuleEngine) SnapshotDump() string {
 	plugins := []interface{}{}
 	outends := []interface{}{}
 	devices := []interface{}{}
-	drivers := []interface{}{}
-	e.AllInEnd().Range(func(key, value interface{}) bool {
+	e.AllInEnds().Range(func(key, value interface{}) bool {
 		inends = append(inends, value)
 		return true
 	})
-	e.AllRule().Range(func(key, value interface{}) bool {
+	e.AllRules().Range(func(key, value interface{}) bool {
 		rules = append(rules, value)
 		return true
 	})
@@ -440,15 +439,12 @@ func (e *RuleEngine) SnapshotDump() string {
 		plugins = append(plugins, (value.(typex.XPlugin)).PluginMetaInfo())
 		return true
 	})
-	e.AllOutEnd().Range(func(key, value interface{}) bool {
+	e.AllOutEnds().Range(func(key, value interface{}) bool {
 		outends = append(outends, value)
 		return true
 	})
 	e.AllDevices().Range(func(key, value interface{}) bool {
-		Device := value.(*typex.Device)
-		if Device.Device.Driver() != nil {
-			devices = append(devices, Device.Device.Driver())
-		}
+		devices = append(devices, value)
 		return true
 	})
 
@@ -472,7 +468,6 @@ func (e *RuleEngine) SnapshotDump() string {
 		"inends":     inends,
 		"outends":    outends,
 		"devices":    devices,
-		"drivers":    drivers,
 		"statistics": intermetric.GetMetric(),
 		"system":     system,
 		"config":     core.GlobalConfig,
@@ -480,6 +475,7 @@ func (e *RuleEngine) SnapshotDump() string {
 	b, err := json.Marshal(data)
 	if err != nil {
 		glogger.GLogger.Error(err)
+		return err.Error()
 	}
 	return string(b)
 }

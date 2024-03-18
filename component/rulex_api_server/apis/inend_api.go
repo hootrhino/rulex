@@ -91,7 +91,7 @@ func CreateInend(c *gin.Context, ruleEngine typex.RuleX) {
 	isSingle := false
 	// 内部消息总线是单例模式
 	if form.Type == typex.INTERNAL_EVENT.String() {
-		ruleEngine.AllInEnd().Range(func(key, value any) bool {
+		ruleEngine.AllInEnds().Range(func(key, value any) bool {
 			In := value.(*typex.InEnd)
 			if In.Type.String() == form.Type {
 				isSingle = true

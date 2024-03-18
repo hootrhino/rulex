@@ -20,7 +20,7 @@ func WriteSource(rx typex.RuleX) func(l *lua.LState) int {
 		uuid := l.ToString(2)
 		data := l.ToString(3)
 
-		if value, ok := rx.AllInEnd().Load(uuid); ok {
+		if value, ok := rx.AllInEnds().Load(uuid); ok {
 			n, err := value.(*typex.InEnd).Source.DownStream([]byte(data))
 			if err != nil {
 				glogger.GLogger.Error(err)
