@@ -48,20 +48,7 @@ type Resolution struct {
 func (O Resolution) String() string {
 	return fmt.Sprintf("%dx%d", O.Width, O.Height)
 }
-func GetVideoResolution(FrameBuffer []byte) Resolution {
-	__CGoMutex.Lock()
-	defer __CGoMutex.Unlock()
-	imgMat := gocv.NewMat()
-	err0 := gocv.IMDecodeIntoMat(FrameBuffer,
-		gocv.IMReadFlag(gocv.ColorBGRToGray), &imgMat)
-	if err0 != nil {
-		__CGoMutex.Unlock()
-		return Resolution{640, 480}
-	}
-	return Resolution{
-		imgMat.Cols(), imgMat.Rows(),
-	}
-}
+
 func CvMatToImageBytes(FrameBuffer []byte) ([]byte, Resolution, error) {
 	__CGoMutex.Lock()
 	defer __CGoMutex.Unlock()

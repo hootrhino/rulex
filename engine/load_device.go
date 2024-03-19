@@ -50,7 +50,6 @@ func (e *RuleEngine) AllDevices() *sync.Map {
 
 }
 
-// 删除设备
 func (e *RuleEngine) RemoveDevice(uuid string) {
 	if dev := e.GetDevice(uuid); dev != nil {
 		if dev.Device != nil {
@@ -83,12 +82,14 @@ func (e *RuleEngine) LoadDeviceWithCtx(deviceInstance *typex.Device,
 * 启动一个和RULEX直连的外部设备
 *
  */
+
 func (e *RuleEngine) loadDevices(xDevice typex.XDevice, deviceInstance *typex.Device,
 	ctx context.Context, cancelCTX context.CancelFunc) error {
 	// Bind
 	// xDevice: Interface
 	// deviceInstance: Real Worker, Running instance
 	deviceInstance.Device = xDevice
+	deviceInstance.Device.SetState(typex.DEV_PENDING)
 	e.SaveDevice(deviceInstance)
 	// Load config
 	// 要从数据库里面查Config

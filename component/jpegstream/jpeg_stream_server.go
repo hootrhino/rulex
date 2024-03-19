@@ -89,7 +89,9 @@ func (s *JpegStreamServer) Init(cfg map[string]any) error {
 		var FrameBuffer = [1250000 / 2]byte{} // 默认5MB数据
 
 		timeoutSignal := make(chan bool)
+		defer close(timeoutSignal)
 		ticker := time.NewTicker(5 * time.Second)
+		defer ticker.Stop()
 		go func() {
 			<-ticker.C
 			timeoutSignal <- true
@@ -161,13 +163,13 @@ func (s *JpegStreamServer) Init(cfg map[string]any) error {
 						FrameBuffer[i] = 0
 					}
 				}
-				FrameStart1 = false           // 标志位：FF
-				FrameStart2 = false           // 标志位：D8
-				FrameEnd1 = false             // 标志位：FF
-				FrameEnd2 = false             // 标志位：D9
-				Offset = 0                    // 初始化游标
-				ticker.Reset(5 * time.Second) // 重置计时器
+				FrameStart1 = false // 标志位：FF
+				FrameStart2 = false // 标志位：D8
+				FrameEnd1 = false   // 标志位：FF
+				FrameEnd2 = false   // 标志位：D9
+				Offset = 0          // 初始化游标
 				go func() {
+					ticker.Reset(5 * time.Second) // 重置计时器
 					<-ticker.C
 					timeoutSignal <- true
 				}()

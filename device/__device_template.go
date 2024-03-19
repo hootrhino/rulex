@@ -69,7 +69,7 @@ func (hd *TemplateDevice) Status() typex.DeviceState {
 
 // 停止设备
 func (hd *TemplateDevice) Stop() {
-	hd.status = typex.DEV_STOP
+	hd.status = typex.DEV_DOWN
 	hd.CancelCTX()
 }
 

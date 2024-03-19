@@ -185,7 +185,7 @@ func (hd *KDN_CNC) Status() typex.DeviceState {
 
 // 停止设备
 func (hd *KDN_CNC) Stop() {
-	hd.status = typex.DEV_STOP
+	hd.status = typex.DEV_DOWN
 	hd.CancelCTX()
 }
 

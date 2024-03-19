@@ -116,7 +116,7 @@ func CreateApp(c *gin.Context, ruleEngine typex.RuleX) {
 		return
 	}
 	if utils.IsValidName(form.Name) {
-		c.JSON(common.HTTP_OK, common.Error("Device Name Invalid, Must Between 6-12 characters"))
+		c.JSON(common.HTTP_OK, common.Error("App Name Invalid, Must Between 6-12 characters"))
 		return
 	}
 	newUUID := utils.AppUuid()
@@ -164,7 +164,7 @@ func UpdateApp(c *gin.Context, ruleEngine typex.RuleX) {
 		return
 	}
 	if utils.IsValidName(form.Name) {
-		c.JSON(common.HTTP_OK, common.Error("Device Name Invalid, Must Between 6-12 characters"))
+		c.JSON(common.HTTP_OK, common.Error("App Name Invalid, Must Between 6-12 characters"))
 		return
 	}
 	// 校验语法

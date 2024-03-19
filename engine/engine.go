@@ -31,6 +31,7 @@ import (
 	kdncnc "github.com/hootrhino/rulex/component/intercache/kdncnc"
 	modbuscache "github.com/hootrhino/rulex/component/intercache/modbus"
 	siemenscache "github.com/hootrhino/rulex/component/intercache/siemens"
+	supervisor "github.com/hootrhino/rulex/component/supervisor"
 
 	"github.com/hootrhino/rulex/component/interdb"
 	"github.com/hootrhino/rulex/component/intermetric"
@@ -90,6 +91,8 @@ func InitRuleEngine(config typex.RulexConfig) typex.RuleX {
 	}
 	// Internal DB
 	interdb.Init(__DefaultRuleEngine, __DEFAULT_DB_PATH)
+	//
+	supervisor.InitResourceSuperVisorAdmin(__DefaultRuleEngine)
 	// Init Modbus Point Cache
 	modbuscache.InitModbusPointCache(__DefaultRuleEngine)
 	// Init Siemens Point Cache

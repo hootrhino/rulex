@@ -310,7 +310,7 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 		mdev.rtuHandler.Timeout = time.Duration(mdev.hwPortConfig.Timeout) * time.Millisecond
 		if core.GlobalConfig.AppDebugMode {
 			mdev.rtuHandler.Logger = golog.New(glogger.GLogger.Writer(),
-				"Modbus RTU Mode: "+mdev.PointId+", ", golog.LstdFlags)
+				"Modbus RTU Mode: "+mdev.PointId+", "+fmt.Sprintf("%p", &mdev)+", ", golog.LstdFlags)
 		}
 
 		if err := mdev.rtuHandler.Connect(); err != nil {
@@ -329,7 +329,7 @@ func (mdev *generic_modbus_device) Start(cctx typex.CCTX) error {
 		)
 		if core.GlobalConfig.AppDebugMode {
 			mdev.tcpHandler.Logger = golog.New(glogger.GLogger.Writer(),
-				"Modbus TCP Mode: "+mdev.PointId+", ", golog.LstdFlags)
+				"Modbus TCP Mode: "+mdev.PointId+", "+fmt.Sprintf("%p", &mdev)+", ", golog.LstdFlags)
 		}
 		if err := mdev.tcpHandler.Connect(); err != nil {
 			return err

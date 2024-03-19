@@ -123,7 +123,7 @@ func CreateOutEnd(c *gin.Context, ruleEngine typex.RuleX) {
 		return
 	}
 	if utils.IsValidName(form.Name) {
-		c.JSON(common.HTTP_OK, common.Error("Device Name Invalid, Must Between 6-12 characters"))
+		c.JSON(common.HTTP_OK, common.Error("OutEnd Name Invalid, Must Between 6-12 characters"))
 		return
 	}
 	configJson, err1 := json.Marshal(form.Config)
@@ -181,7 +181,7 @@ func UpdateOutEnd(c *gin.Context, ruleEngine typex.RuleX) {
 		return
 	}
 	if utils.IsValidName(form.Name) {
-		c.JSON(common.HTTP_OK, common.Error("Device Name Invalid, Must Between 6-12 characters"))
+		c.JSON(common.HTTP_OK, common.Error("OutEnd Name Invalid, Must Between 6-12 characters"))
 		return
 	}
 	// 更新的时候从数据库往外面拿
