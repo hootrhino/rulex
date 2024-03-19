@@ -328,6 +328,8 @@ func (hs *ApiServerPlugin) LoadRoute() {
 		deviceApi.GET("/listByGroup", server.AddRoute(apis.ListDeviceByGroup))
 		deviceApi.PUT("/restart", server.AddRoute(apis.RestartDevice))
 		deviceApi.GET("/properties", server.AddRoute(apis.DevicePropertiesPage))
+		deviceApi.GET("/deviceErrMsg", server.AddRoute(apis.GetDeviceErrorMsg))
+		deviceApi.GET("/pointErrMsg", server.AddRoute(apis.GetDevicePointErrorMsg))
 	}
 	// Modbus 点位表
 	modbusApi := server.RouteGroup(server.ContextUrl("/modbus_data_sheet"))
