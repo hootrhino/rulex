@@ -61,8 +61,8 @@ type SiemensPointVo struct {
 // SiemensPoints 获取Siemens_excel类型的点位数据
 func SiemensPointsExport(c *gin.Context, ruleEngine typex.RuleX) {
 	deviceUuid, _ := c.GetQuery("device_uuid")
-	c.Header("Content-Type", "text/csv")
-	c.Header("Content-Disposition", fmt.Sprintf("attachment;filename=%v.csv",
+	c.Header("Content-Type", "application/octet-stream")
+	c.Header("Content-Disposition", fmt.Sprintf("attachment;filename=%v.xlsx",
 		time.Now().UnixMilli()))
 	var records []model.MSiemensDataPoint
 	result := interdb.DB().Order("created_at DESC").Find(&records,
