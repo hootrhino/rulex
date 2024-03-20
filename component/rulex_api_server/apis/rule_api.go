@@ -308,130 +308,132 @@ func UpdateRule(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	for _, id := range form.FromSource {
-		in := ruleEngine.GetInEnd(id)
-		if in == nil {
-			c.JSON(common.HTTP_OK, common.Error(`inend not exists: `+id))
+	go func() {
+		for _, id := range form.FromSource {
+			in := ruleEngine.GetInEnd(id)
+			if in == nil {
+				c.JSON(common.HTTP_OK, common.Error(`inend not exists: `+id))
+				return
+			}
+		}
+		for _, id := range form.FromDevice {
+			in := ruleEngine.GetDevice(id)
+			if in == nil {
+				c.JSON(common.HTTP_OK, common.Error(`device not exists: `+id))
+				return
+			}
+		}
+		OldRule, err := service.GetMRuleWithUUID(form.UUID)
+		if err != nil {
+			c.JSON(common.HTTP_OK, common.Error400(err))
 			return
 		}
-	}
-	for _, id := range form.FromDevice {
-		in := ruleEngine.GetDevice(id)
-		if in == nil {
-			c.JSON(common.HTTP_OK, common.Error(`device not exists: `+id))
+		rule := typex.NewLuaRule(
+			ruleEngine,
+			OldRule.UUID,
+			OldRule.Name,
+			OldRule.Description,
+			OldRule.SourceId,
+			OldRule.DeviceId,
+			OldRule.Success,
+			OldRule.Actions,
+			OldRule.Failed)
+		ruleEngine.RemoveRule(rule.UUID)
+		if err := ruleEngine.LoadRule(rule); err != nil {
+			c.JSON(common.HTTP_OK, common.Error400(err))
 			return
 		}
-	}
-	OldRule, err := service.GetMRuleWithUUID(form.UUID)
-	if err != nil {
-		c.JSON(common.HTTP_OK, common.Error400(err))
-		return
-	}
-	rule := typex.NewLuaRule(
-		ruleEngine,
-		OldRule.UUID,
-		OldRule.Name,
-		OldRule.Description,
-		OldRule.SourceId,
-		OldRule.DeviceId,
-		OldRule.Success,
-		OldRule.Actions,
-		OldRule.Failed)
-	ruleEngine.RemoveRule(rule.UUID)
-	if err := ruleEngine.LoadRule(rule); err != nil {
-		c.JSON(common.HTTP_OK, common.Error400(err))
-		return
-	}
-	// SaveDB
-	//
-	if err := service.UpdateMRule(OldRule.UUID, &model.MRule{
-		Name:        form.Name,
-		Description: form.Description,
-		SourceId: func(s []string) string {
-			if len(s) > 0 {
-				return s[0]
-			}
-			return ""
-		}(form.FromSource),
-		DeviceId: func(s []string) string {
-			if len(s) > 0 {
-				return s[0]
-			}
-			return ""
-		}(form.FromDevice),
-		Success: __default_success,
-		Failed:  __default_failed,
-		Actions: form.Actions,
-	}); err != nil {
-		c.JSON(common.HTTP_OK, common.Error400(err))
-		return
-	}
+		// SaveDB
+		//
+		if err := service.UpdateMRule(OldRule.UUID, &model.MRule{
+			Name:        form.Name,
+			Description: form.Description,
+			SourceId: func(s []string) string {
+				if len(s) > 0 {
+					return s[0]
+				}
+				return ""
+			}(form.FromSource),
+			DeviceId: func(s []string) string {
+				if len(s) > 0 {
+					return s[0]
+				}
+				return ""
+			}(form.FromDevice),
+			Success: __default_success,
+			Failed:  __default_failed,
+			Actions: form.Actions,
+		}); err != nil {
+			c.JSON(common.HTTP_OK, common.Error400(err))
+			return
+		}
 
-	// 耗时操作直接后台执行
-	if len(form.FromSource) > 0 {
-		// 更新FromSource RULE到Device表中
-		InEnd, _ := service.GetMInEndWithUUID(form.FromSource[0])
-		if InEnd == nil {
-			glogger.GLogger.Error((`inend not exists: ` + form.FromSource[0]))
-			return
+		// 耗时操作直接后台执行
+		if len(form.FromSource) > 0 {
+			// 更新FromSource RULE到Device表中
+			InEnd, _ := service.GetMInEndWithUUID(form.FromSource[0])
+			if InEnd == nil {
+				glogger.GLogger.Error((`inend not exists: ` + form.FromSource[0]))
+				return
+			}
+			// 去重旧的
+			ruleMap := map[string]string{}
+			for _, rule := range InEnd.BindRules {
+				ruleMap[rule] = rule
+			}
+			// 追加新的ID
+			ruleMap[OldRule.UUID] = OldRule.UUID // append New Rule UUID
+			// 最后ID列表
+			BindRules := []string{}
+			for _, iid := range ruleMap {
+				BindRules = append(BindRules, iid)
+			}
+			InEnd.BindRules = BindRules
+			if err := service.UpdateMInEnd(InEnd.UUID, &model.MInEnd{
+				BindRules: BindRules,
+			}); err != nil {
+				glogger.GLogger.Error((err))
+				return
+			}
+			// LoadNewest!!!
+			if err := server.LoadNewestInEnd(InEnd.UUID, ruleEngine); err != nil {
+				glogger.GLogger.Error((err))
+				return
+			}
 		}
-		// 去重旧的
-		ruleMap := map[string]string{}
-		for _, rule := range InEnd.BindRules {
-			ruleMap[rule] = rule
+		// FromDevice
+		if len(form.FromDevice) > 0 {
+			Device, _ := service.GetMDeviceWithUUID(form.FromDevice[0])
+			if Device == nil {
+				glogger.GLogger.Error((`device not exists: ` + form.FromDevice[0]))
+				return
+			}
+			// 去重旧的
+			ruleMap := map[string]string{}
+			for _, rule := range Device.BindRules {
+				ruleMap[rule] = rule // for ["", "", "" ....]
+			}
+			// 追加新的ID
+			ruleMap[OldRule.UUID] = OldRule.UUID // append New Rule UUID
+			// 最后ID列表
+			BindRules := []string{}
+			for _, iid := range ruleMap {
+				BindRules = append(BindRules, iid)
+			}
+			Device.BindRules = BindRules
+			if err := service.UpdateDevice(Device.UUID, &model.MDevice{
+				BindRules: BindRules,
+			}); err != nil {
+				glogger.GLogger.Error((err))
+				return
+			}
+			// LoadNewest!!!
+			if err := server.LoadNewestDevice(Device.UUID, ruleEngine); err != nil {
+				glogger.GLogger.Error((err))
+				return
+			}
 		}
-		// 追加新的ID
-		ruleMap[OldRule.UUID] = OldRule.UUID // append New Rule UUID
-		// 最后ID列表
-		BindRules := []string{}
-		for _, iid := range ruleMap {
-			BindRules = append(BindRules, iid)
-		}
-		InEnd.BindRules = BindRules
-		if err := service.UpdateMInEnd(InEnd.UUID, &model.MInEnd{
-			BindRules: BindRules,
-		}); err != nil {
-			glogger.GLogger.Error((err))
-			return
-		}
-		// LoadNewest!!!
-		if err := server.LoadNewestInEnd(InEnd.UUID, ruleEngine); err != nil {
-			glogger.GLogger.Error((err))
-			return
-		}
-	}
-	// FromDevice
-	if len(form.FromDevice) > 0 {
-		Device, _ := service.GetMDeviceWithUUID(form.FromDevice[0])
-		if Device == nil {
-			glogger.GLogger.Error((`device not exists: ` + form.FromDevice[0]))
-			return
-		}
-		// 去重旧的
-		ruleMap := map[string]string{}
-		for _, rule := range Device.BindRules {
-			ruleMap[rule] = rule // for ["", "", "" ....]
-		}
-		// 追加新的ID
-		ruleMap[OldRule.UUID] = OldRule.UUID // append New Rule UUID
-		// 最后ID列表
-		BindRules := []string{}
-		for _, iid := range ruleMap {
-			BindRules = append(BindRules, iid)
-		}
-		Device.BindRules = BindRules
-		if err := service.UpdateDevice(Device.UUID, &model.MDevice{
-			BindRules: BindRules,
-		}); err != nil {
-			glogger.GLogger.Error((err))
-			return
-		}
-		// LoadNewest!!!
-		if err := server.LoadNewestDevice(Device.UUID, ruleEngine); err != nil {
-			glogger.GLogger.Error((err))
-			return
-		}
-	}
+	}()
 	c.JSON(common.HTTP_OK, common.Ok())
 }
 
