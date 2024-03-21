@@ -183,8 +183,8 @@ func (mdev *generic_modbus_device) Init(devId string, configMap map[string]inter
 			Address:   ModbusPoint.Address,
 			Quantity:  ModbusPoint.Quantity,
 			Frequency: ModbusPoint.Frequency,
-			Type:      ModbusPoint.Type,
-			Order:     ModbusPoint.Order,
+			DataType:  ModbusPoint.Type,
+			DataOrder: ModbusPoint.Order,
 			Weight:    ModbusPoint.Weight,
 		}
 		LastFetchTime := uint64(time.Now().UnixMilli())
@@ -566,7 +566,7 @@ func (mdev *generic_modbus_device) modbusSingleRead(buffer []byte) (int, error) 
 			}
 			// ValidData := [4]byte{0, 0, 0, 0}
 			copy(__modbusReadResult[:], results[:])
-			Value := utils.ParseModbusValue(r.Type, r.Order, float32(r.Weight), __modbusReadResult)
+			Value := utils.ParseModbusValue(r.DataType, r.DataOrder, float32(r.Weight), __modbusReadResult)
 			lastTimes := uint64(time.Now().UnixMilli())
 			Reg := RegJsonValue{
 				Tag:           r.Tag,
@@ -594,7 +594,7 @@ func (mdev *generic_modbus_device) modbusSingleRead(buffer []byte) (int, error) 
 			}
 			// ValidData := [4]byte{0, 0, 0, 0}
 			copy(__modbusReadResult[:], results[:])
-			Value := utils.ParseModbusValue(r.Type, r.Order, float32(r.Weight), __modbusReadResult)
+			Value := utils.ParseModbusValue(r.DataType, r.DataOrder, float32(r.Weight), __modbusReadResult)
 			lastTimes := uint64(time.Now().UnixMilli())
 			Reg := RegJsonValue{
 				Tag:           r.Tag,
@@ -623,7 +623,7 @@ func (mdev *generic_modbus_device) modbusSingleRead(buffer []byte) (int, error) 
 			}
 			// ValidData := [4]byte{0, 0, 0, 0}
 			copy(__modbusReadResult[:], results[:])
-			Value := utils.ParseModbusValue(r.Type, r.Order, float32(r.Weight), __modbusReadResult)
+			Value := utils.ParseModbusValue(r.DataType, r.DataOrder, float32(r.Weight), __modbusReadResult)
 			lastTimes := uint64(time.Now().UnixMilli())
 
 			Reg := RegJsonValue{
@@ -653,7 +653,7 @@ func (mdev *generic_modbus_device) modbusSingleRead(buffer []byte) (int, error) 
 			}
 			// ValidData := [4]byte{0, 0, 0, 0}
 			copy(__modbusReadResult[:], results[:])
-			Value := utils.ParseModbusValue(r.Type, r.Order, float32(r.Weight), __modbusReadResult)
+			Value := utils.ParseModbusValue(r.DataType, r.DataOrder, float32(r.Weight), __modbusReadResult)
 			lastTimes := uint64(time.Now().UnixMilli())
 			Reg := RegJsonValue{
 				Tag:           r.Tag,
@@ -759,7 +759,7 @@ func (mdev *generic_modbus_device) modbusGroupRead(buffer []byte) (int, error) {
 				offsetByte := (r.Address - group.Address) * 2
 				offsetByteEnd := offsetByte + r.Quantity*2
 				copy(__modbusReadResult[:], buf[offsetByte:offsetByteEnd])
-				value := utils.ParseModbusValue(r.Type, r.Order, float32(r.Weight), __modbusReadResult)
+				value := utils.ParseModbusValue(r.DataType, r.DataOrder, float32(r.Weight), __modbusReadResult)
 
 				ts := time.Now().UnixMilli()
 				jsonVal := RegJsonValue{
@@ -789,7 +789,7 @@ func (mdev *generic_modbus_device) modbusGroupRead(buffer []byte) (int, error) {
 				offsetByte := (r.Address - group.Address) * 2
 				offsetByteEnd := offsetByte + r.Quantity*2
 				copy(__modbusReadResult[:], buf[offsetByte:offsetByteEnd])
-				value := utils.ParseModbusValue(r.Type, r.Order, float32(r.Weight), __modbusReadResult)
+				value := utils.ParseModbusValue(r.DataType, r.DataOrder, float32(r.Weight), __modbusReadResult)
 
 				ts := time.Now().UnixMilli()
 				jsonVal := RegJsonValue{

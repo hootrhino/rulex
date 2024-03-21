@@ -44,8 +44,8 @@ type ModbusPointVo struct {
 	Address       *uint16  `json:"address"`
 	Frequency     *int64   `json:"frequency"`
 	Quantity      *uint16  `json:"quantity"`
-	Type          string   `json:"type"`          // 数据类型
-	Order         string   `json:"order"`         // 字节序
+	DataType      string   `json:"dataType"`      // 数据类型
+	DataOrder     string   `json:"dataOrder"`     // 字节序
 	Weight        *float64 `json:"weight"`        // 权重
 	Status        int      `json:"status"`        // 运行时数据
 	LastFetchTime uint64   `json:"lastFetchTime"` // 运行时数据
@@ -91,8 +91,8 @@ func ModbusPointsExport(c *gin.Context, ruleEngine typex.RuleX) {
 				fmt.Sprintf("%d", *record.SlaverId),
 				fmt.Sprintf("%d", *record.Address),
 				fmt.Sprintf("%d", *record.Quantity),
-				record.Type,
-				record.Order,
+				record.DataType,
+				record.DataOrder,
 				fmt.Sprintf("%f", *record.Weight),
 			}
 			Rows = append(Rows, Row)
@@ -145,8 +145,8 @@ func ModbusSheetPageList(c *gin.Context, ruleEngine typex.RuleX) {
 			Address:       record.Address,
 			Frequency:     record.Frequency,
 			Quantity:      record.Quantity,
-			Type:          record.Type,
-			Order:         record.Order,
+			DataType:      record.DataType,
+			DataOrder:     record.DataOrder,
 			Weight:        record.Weight,
 			LastFetchTime: Value.LastFetchTime, // 运行时
 			Value:         Value.Value,         // 运行时
@@ -267,28 +267,28 @@ func checkModbusDataPoints(M ModbusPointVo) error {
 	if M.Quantity == nil {
 		return fmt.Errorf("'Missing required param 'quantity'")
 	}
-	switch M.Type {
+	switch M.DataType {
 	case "UTF8":
 		if (*M.Quantity * uint16(2)) > 255 {
 			return fmt.Errorf("'Invalid 'UTF8' Length '%d'", (*M.Quantity * uint16(2)))
 		}
-		if !utils.SContains([]string{"BIG_ENDIAN", "LITTLE_ENDIAN"}, M.Order) {
-			return fmt.Errorf("'Invalid '%s' order '%s'", M.Type, M.Order)
+		if !utils.SContains([]string{"BIG_ENDIAN", "LITTLE_ENDIAN"}, M.DataOrder) {
+			return fmt.Errorf("'Invalid '%s' order '%s'", M.DataType, M.DataOrder)
 		}
 	case "I", "Q", "BYTE":
-		if M.Order != "A" {
-			return fmt.Errorf("'Invalid '%s' order '%s'", M.Type, M.Order)
+		if M.DataOrder != "A" {
+			return fmt.Errorf("'Invalid '%s' order '%s'", M.DataType, M.DataOrder)
 		}
 	case "SHORT", "USHORT", "INT16", "UINT16":
-		if !utils.SContains([]string{"AB", "BA"}, M.Order) {
-			return fmt.Errorf("'Invalid '%s' order '%s'", M.Type, M.Order)
+		if !utils.SContains([]string{"AB", "BA"}, M.DataOrder) {
+			return fmt.Errorf("'Invalid '%s' order '%s'", M.DataType, M.DataOrder)
 		}
 	case "RAW", "INT", "INT32", "UINT", "UINT32", "FLOAT", "UFLOAT":
-		if !utils.SContains([]string{"ABCD", "DCBA", "CDAB"}, M.Order) {
-			return fmt.Errorf("'Invalid '%s' order '%s'", M.Type, M.Order)
+		if !utils.SContains([]string{"ABCD", "DCBA", "CDAB"}, M.DataOrder) {
+			return fmt.Errorf("'Invalid '%s' order '%s'", M.DataType, M.DataOrder)
 		}
 	default:
-		return fmt.Errorf("'Invalid '%s' order '%s'", M.Type, M.Order)
+		return fmt.Errorf("'Invalid '%s' order '%s'", M.DataType, M.DataOrder)
 	}
 	if M.Weight == nil {
 		return fmt.Errorf("'Invalid Weight value:%d", M.Weight)
@@ -329,8 +329,8 @@ func ModbusSheetUpdate(c *gin.Context, ruleEngine typex.RuleX) {
 				Address:    ModbusDataPoint.Address,
 				Frequency:  ModbusDataPoint.Frequency,
 				Quantity:   ModbusDataPoint.Quantity,
-				Type:       ModbusDataPoint.Type,
-				Order:      ModbusDataPoint.Order,
+				DataType:   ModbusDataPoint.DataType,
+				DataOrder:  ModbusDataPoint.DataOrder,
 				Weight:     utils.HandleZeroValue(ModbusDataPoint.Weight),
 			}
 			err0 := service.InsertModbusPointPosition(NewRow)
@@ -349,8 +349,8 @@ func ModbusSheetUpdate(c *gin.Context, ruleEngine typex.RuleX) {
 				Address:    ModbusDataPoint.Address,
 				Frequency:  ModbusDataPoint.Frequency,
 				Quantity:   ModbusDataPoint.Quantity,
-				Type:       ModbusDataPoint.Type,
-				Order:      ModbusDataPoint.Order,
+				DataType:   ModbusDataPoint.DataType,
+				DataOrder:  ModbusDataPoint.DataOrder,
 				Weight:     utils.HandleZeroValue(ModbusDataPoint.Weight),
 			}
 			err0 := service.UpdateModbusPoint(OldRow)
@@ -494,8 +494,8 @@ func parseModbusPointExcel(r io.Reader, sheetName string,
 			Address:   &Address,
 			Frequency: &Frequency, //ms
 			Quantity:  &Quantity,
-			Type:      Type,
-			Order:     utils.GetDefaultDataOrder(Type, Order),
+			DataType:  Type,
+			DataOrder: utils.GetDefaultDataOrder(Type, Order),
 			Weight:    &Weight,
 		}); err != nil {
 			return nil, err
@@ -511,8 +511,8 @@ func parseModbusPointExcel(r io.Reader, sheetName string,
 			Address:    &Address,
 			Frequency:  &Frequency, //ms
 			Quantity:   &Quantity,
-			Type:       Type,
-			Order:      utils.GetDefaultDataOrder(Type, Order),
+			DataType:   Type,
+			DataOrder:  utils.GetDefaultDataOrder(Type, Order),
 			Weight:     &Weight,
 		}
 		list = append(list, model)

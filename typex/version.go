@@ -12,12 +12,22 @@ type VersionInfo struct {
 	Dist        string
 }
 
+var License = LocalLicense{
+	DeviceID:          "",
+	AuthorizeAdmin:    "",
+	AuthorizePassword: "",
+	MAC:               "",
+	BeginAuthorize:    0,
+	EndAuthorize:      0,
+	License:           "",
+}
+
 var DefaultVersionInfo = VersionInfo{
 	Product:        "COMMON",
-	ReleaseTime: "2024-03-19 23:21:40",
+	ReleaseTime: "2024-03-21 21:39:14",
 }
 var Banner = `
  **  Welcome to RULEX framework world <'_'>     -.
-**   Version: v0.6.7-6816ad5a146a639             -.
+**   Version: v0.6.7-b06f517ea794aad             -.
  **  More information: https://hootrhino.github.io  -.
 `

@@ -18,28 +18,9 @@ import (
 	"gopkg.in/ini.v1"
 )
 
-type LocalLicense struct {
-	DeviceID          string // 设备生产序列号
-	AuthorizeAdmin    string // 证书签发人
-	AuthorizePassword string // 证书签发人密钥
-	BeginAuthorize    int64  // 证书授权开始时间
-	EndAuthorize      int64  // 证书授权结束时间
-	MAC               string // 设备硬件MAC地址，一般取以太网卡
-	License           string // 公钥, 发给用户设备
-}
-
-func (d LocalLicense) ValidateTime() bool {
-	Now := time.Now().UnixNano()
-	V := d.EndAuthorize - Now
-	if (d.BeginAuthorize > Now) && (V <= 0) {
-		return false
-	}
-	return true
-}
-
 // 00001 & rhino & hoot & FF:FF:FF:FF:FF:FF & 0 & 0
-func ParseAuthInfo(info string) (LocalLicense, error) {
-	LocalLicense := LocalLicense{}
+func ParseAuthInfo(info string) (typex.LocalLicense, error) {
+	LocalLicense := typex.LocalLicense{}
 	ss := strings.Split(info, "&")
 	if len(ss) == 6 {
 		BeginAuthorize, err1 := strconv.ParseInt(ss[4], 10, 64)
@@ -63,7 +44,7 @@ func ParseAuthInfo(info string) (LocalLicense, error) {
 
 // LicenseManager 证书管理
 type LicenseManager struct {
-	localLicense LocalLicense
+	localLicense typex.LocalLicense
 }
 
 /*
@@ -73,7 +54,7 @@ type LicenseManager struct {
  */
 func NewLicenseManager(r typex.RuleX) *LicenseManager {
 	return &LicenseManager{
-		localLicense: LocalLicense{},
+		localLicense: typex.LocalLicense{},
 	}
 }
 
@@ -138,6 +119,7 @@ func (l *LicenseManager) Init(section *ini.Section) error {
 	if LocalLicense.EndAuthorize == 0 {
 		T2s = Tip
 	}
+	typex.License = LocalLicense
 	fmt.Println("[∫∫] Load Local License Success <'v'>")
 	fmt.Println("|>>| Device ID:", LocalLicense.DeviceID)
 	fmt.Println("|>>| Authorize Admin:", LocalLicense.AuthorizeAdmin)
@@ -145,7 +127,7 @@ func (l *LicenseManager) Init(section *ini.Section) error {
 	fmt.Println("|>>| Local MAC:", LocalLicense.MAC)
 	fmt.Println("|>>| Begin Authorize:", T1s)
 	fmt.Println("|>>| End   Authorize:", T2s)
-	fmt.Println("|>>| License Content:", LocalLicense.License)
+	fmt.Println("|>>| License Content: ****************")
 	return nil
 }
 
