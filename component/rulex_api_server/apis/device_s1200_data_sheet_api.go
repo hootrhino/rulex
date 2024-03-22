@@ -16,9 +16,9 @@
 package apis
 
 import (
-	"encoding/csv"
 	"errors"
 	"fmt"
+	"github.com/hootrhino/rulex/glogger"
 	"io"
 	"strconv"
 	"strings"
@@ -61,10 +61,9 @@ type SiemensPointVo struct {
 // SiemensPoints 获取Siemens_excel类型的点位数据
 func SiemensPointsExport(c *gin.Context, ruleEngine typex.RuleX) {
 	deviceUuid, _ := c.GetQuery("device_uuid")
-	c.Header("Content-Type", "text/csv")
-	c.Header("Content-Disposition", fmt.Sprintf("attachment;filename=%v.csv",
+	c.Header("Content-Type", "application/octet-stream")
+	c.Header("Content-Disposition", fmt.Sprintf("attachment;filename=%v.xlsx",
 		time.Now().UnixMilli()))
-	csvWriter := csv.NewWriter(c.Writer)
 	var records []model.MSiemensDataPoint
 	result := interdb.DB().Order("created_at DESC").Find(&records,
 		&model.MSiemensDataPoint{DeviceUuid: deviceUuid})
@@ -75,9 +74,17 @@ func SiemensPointsExport(c *gin.Context, ruleEngine typex.RuleX) {
 	Headers := []string{
 		"address", "tag", "alias", "type", "order", "weight", "frequency",
 	}
-	Rows := [][]string{Headers}
+	xlsx := excelize.NewFile()
+	defer func() {
+		if err := xlsx.Close(); err != nil {
+			glogger.GLogger.Errorf("close excel file, err=%v", err)
+		}
+	}()
+	cell, _ := excelize.CoordinatesToCellName(1, 1)
+	xlsx.SetSheetRow("Sheet1", cell, &Headers)
+
 	if len(records) > 1 {
-		for _, record := range records[0:] {
+		for idx, record := range records[0:] {
 			Row := []string{
 				record.SiemensAddress,
 				record.Tag,
@@ -87,12 +94,13 @@ func SiemensPointsExport(c *gin.Context, ruleEngine typex.RuleX) {
 				fmt.Sprintf("%f", *record.Weight),
 				fmt.Sprintf("%d", *record.Frequency),
 			}
-			Rows = append(Rows, Row)
+			cell, _ = excelize.CoordinatesToCellName(1, idx+2)
+			xlsx.SetSheetRow("Sheet1", cell, &Row)
 		}
 	}
 
-	csvWriter.WriteAll(Rows)
-	csvWriter.Flush()
+	xlsx.WriteTo(c.Writer)
+
 }
 
 // 分页获取

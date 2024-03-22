@@ -16,9 +16,9 @@
 package apis
 
 import (
-	"encoding/csv"
 	"errors"
 	"fmt"
+	"github.com/hootrhino/rulex/glogger"
 	"io"
 	"strconv"
 	"time"
@@ -62,10 +62,9 @@ type ModbusPointVo struct {
 // ModbusPoints 获取modbus_excel类型的点位数据
 func ModbusPointsExport(c *gin.Context, ruleEngine typex.RuleX) {
 	deviceUuid, _ := c.GetQuery("device_uuid")
-	c.Header("Content-Type", "text/csv")
-	c.Header("Content-Disposition", fmt.Sprintf("attachment;filename=%v.csv",
+	c.Header("Content-Type", "application/octet-stream")
+	c.Header("Content-Disposition", fmt.Sprintf("attachment;filename=%v.xlsx",
 		time.Now().UnixMilli()))
-	csvWriter := csv.NewWriter(c.Writer)
 	var records []model.MModbusDataPoint
 	result := interdb.DB().Order("created_at DESC").Find(&records,
 		&model.MModbusDataPoint{DeviceUuid: deviceUuid})
@@ -80,26 +79,32 @@ func ModbusPointsExport(c *gin.Context, ruleEngine typex.RuleX) {
 		"quality", "type",
 		"order", "weight",
 	}
-	Rows := [][]string{Headers}
-	if len(records) > 1 {
-		for _, record := range records[0:] {
-			Row := []string{
-				record.Tag,
-				record.Alias,
-				fmt.Sprintf("%d", *record.Function),
-				fmt.Sprintf("%d", *record.Frequency),
-				fmt.Sprintf("%d", *record.SlaverId),
-				fmt.Sprintf("%d", *record.Address),
-				fmt.Sprintf("%d", *record.Quantity),
-				record.DataType,
-				record.DataOrder,
-				fmt.Sprintf("%f", *record.Weight),
-			}
-			Rows = append(Rows, Row)
+
+	xlsx := excelize.NewFile()
+	defer func() {
+		if err := xlsx.Close(); err != nil {
+			glogger.GLogger.Errorf("close excel file, err=%v", err)
 		}
+	}()
+	cell, _ := excelize.CoordinatesToCellName(1, 1)
+	xlsx.SetSheetRow("Sheet1", cell, &Headers)
+	for idx, record := range records[0:] {
+		Row := []string{
+			record.Tag,
+			record.Alias,
+			fmt.Sprintf("%d", *record.Function),
+			fmt.Sprintf("%d", *record.Frequency),
+			fmt.Sprintf("%d", *record.SlaverId),
+			fmt.Sprintf("%d", *record.Address),
+			fmt.Sprintf("%d", *record.Quantity),
+			record.Type,
+			record.Order,
+			fmt.Sprintf("%f", *record.Weight),
+		}
+		cell, _ = excelize.CoordinatesToCellName(1, idx+2)
+		xlsx.SetSheetRow("Sheet1", cell, &Row)
 	}
-	csvWriter.WriteAll(Rows)
-	csvWriter.Flush()
+	xlsx.WriteTo(c.Writer)
 }
 
 // 分页获取
