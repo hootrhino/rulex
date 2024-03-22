@@ -97,8 +97,8 @@ func ModbusPointsExport(c *gin.Context, ruleEngine typex.RuleX) {
 			fmt.Sprintf("%d", *record.SlaverId),
 			fmt.Sprintf("%d", *record.Address),
 			fmt.Sprintf("%d", *record.Quantity),
-			record.Type,
-			record.Order,
+			record.DataType,
+			record.DataOrder,
 			fmt.Sprintf("%f", *record.Weight),
 		}
 		cell, _ = excelize.CoordinatesToCellName(1, idx+2)
