@@ -298,3 +298,12 @@ func GetGpuInfo(c *gin.Context, ruleEngine typex.RuleX) {
 	}
 	c.JSON(common.HTTP_OK, common.OkWithData(GpuInfos))
 }
+
+/*
+*
+* 获取控制面板上支持的设备
+*
+ */
+func GetDeviceCtrlTree(c *gin.Context, ruleEngine typex.RuleX) {
+	c.JSON(common.HTTP_OK, common.OkWithData(archsupport.GetDeviceCtrlTree()))
+}

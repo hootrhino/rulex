@@ -16,6 +16,8 @@
 package apis
 
 import (
+	"fmt"
+	"os"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -23,6 +25,21 @@ import (
 	"github.com/hootrhino/rulex/ossupport"
 	"github.com/hootrhino/rulex/typex"
 )
+
+func isWiFiInterface(interfaceName string) bool {
+	devicePath := fmt.Sprintf("/sys/class/net/%s/device", interfaceName)
+	files, err := os.ReadDir(devicePath)
+	if err != nil {
+		return false
+	}
+	for _, file := range files {
+		if strings.Contains(file.Name(), "802") {
+			return true
+		}
+	}
+
+	return false
+}
 
 /*
 *
@@ -37,7 +54,7 @@ func ScanWIFIWithNmcli(c *gin.Context, ruleEngine typex.RuleX) {
 	}
 	SupportWifi := false
 	for _, IFace := range interfaces {
-		if strings.Contains(IFace.Name, "wlan") {
+		if isWiFiInterface(IFace.Name) {
 			SupportWifi = true
 			break
 		}
@@ -46,10 +63,10 @@ func ScanWIFIWithNmcli(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error("Device not support Wifi"))
 		return
 	}
-	Wlans, err := ossupport.ScanWIFIWithNmcli()
+	wLanList, err := ossupport.ScanWIFIWithNmcli()
 	if err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	c.JSON(common.HTTP_OK, common.OkWithData(Wlans))
+	c.JSON(common.HTTP_OK, common.OkWithData(wLanList))
 }

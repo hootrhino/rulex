@@ -22,12 +22,13 @@ func LoadSystemSettingsAPI() {
 	// 系统设置
 	//
 
-	ifacesApi := server.RouteGroup(server.ContextUrl("/settings"))
+	iFacesApi := server.RouteGroup(server.ContextUrl("/settings"))
 	{
-		ifacesApi.GET(("/ifaces"), server.AddRoute(GetNetInterfaces))
-		ifacesApi.GET(("/uarts"), server.AddRoute(GetUartList))
-		ifacesApi.GET(("/netStatus"), server.AddRoute(GetNmcliDeviceStatus))
-		ifacesApi.GET(("/netDetails"), server.AddRoute(GetNmcliDeviceShow))
+		iFacesApi.GET(("/ctrlTree"), server.AddRoute(GetDeviceCtrlTree))
+		iFacesApi.GET(("/ifaces"), server.AddRoute(GetNetInterfaces))
+		iFacesApi.GET(("/uarts"), server.AddRoute(GetUartList))
+		iFacesApi.GET(("/netStatus"), server.AddRoute(GetNmcliDeviceStatus))
+		iFacesApi.GET(("/netDetails"), server.AddRoute(GetNmcliDeviceShow))
 	}
 	settingsApi := server.RouteGroup(server.ContextUrl("/settings"))
 	{

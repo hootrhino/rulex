@@ -11,6 +11,7 @@ rulex.exe
 *.db
 .idea
 *.exe
+*.exe~
 *.bin
 *.output
 profile*
