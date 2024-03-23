@@ -91,7 +91,7 @@ func InitRuleEngine(config typex.RulexConfig) typex.RuleX {
 	}
 	// Internal DB
 	interdb.Init(__DefaultRuleEngine, __DEFAULT_DB_PATH)
-	//
+	// SuperVisor Admin
 	supervisor.InitResourceSuperVisorAdmin(__DefaultRuleEngine)
 	// Init Modbus Point Cache
 	modbuscache.InitModbusPointCache(__DefaultRuleEngine)
@@ -118,7 +118,7 @@ func InitRuleEngine(config typex.RulexConfig) typex.RuleX {
 	// lua appstack manager
 	appstack.InitAppStack(__DefaultRuleEngine)
 	// current only support Internal ai
-	aibase.InitAIRuntime(__DefaultRuleEngine)
+	aibase.InitAlgorithmRuntime(__DefaultRuleEngine)
 	// Internal Queue
 	interqueue.InitDataCacheQueue(__DefaultRuleEngine, core.GlobalConfig.MaxQueueSize)
 	// Data center: future version maybe support

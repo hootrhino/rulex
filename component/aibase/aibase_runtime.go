@@ -17,39 +17,13 @@ package aibase
 
 import (
 	"fmt"
+	"sync"
 
 	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/typex"
 )
 
-var __DefaultAIRuntime *AIRuntime
-
-func AIBaseRuntime() *AIRuntime {
-	return __DefaultAIRuntime
-}
-func InitAIRuntime(re typex.RuleX) *AIRuntime {
-	__DefaultAIRuntime = new(AIRuntime)
-	__DefaultAIRuntime.RuleEngine = re
-	__DefaultAIRuntime.AiBases = make(map[string]*typex.AI)
-	// 预加载内置模型
-	LoadAi(&typex.AI{
-		UUID:      "BODY_POSE_RECOGNITION",
-		Name:      "人体姿态识别",
-		Type:      typex.BODY_POSE_RECOGNITION,
-		IsBuildIn: true,
-		Filepath:  "...",
-		Config: map[string]interface{}{
-			"algorithm":   "ANN",
-			"inputs":      10,
-			"layout":      []int{5, 3, 3},
-			"output":      3,
-			"activation:": "Sigmoid",
-			"bias":        true,
-		},
-		Description: "一个轻量级人体姿态识别模型",
-	})
-	return __DefaultAIRuntime
-}
+var __DefaultAIRuntime *AlgorithmRuntime
 
 /*
 *
@@ -57,83 +31,116 @@ func InitAIRuntime(re typex.RuleX) *AIRuntime {
 *
  */
 
-type AIRuntime struct {
-	RuleEngine typex.RuleX
-	AiBases    map[string]*typex.AI
+type AlgorithmRuntime struct {
+	RuleEngine  typex.RuleX
+	locker      sync.Mutex
+	XAlgorithms map[string]XAlgorithm
 }
 
-func GetRuleX() typex.RuleX {
-	return __DefaultAIRuntime.RuleEngine
+/*
+*
+* 初始化
+*
+ */
+func InitAlgorithmRuntime(re typex.RuleX) *AlgorithmRuntime {
+	__DefaultAIRuntime = new(AlgorithmRuntime)
+	__DefaultAIRuntime.RuleEngine = re
+	__DefaultAIRuntime.XAlgorithms = make(map[string]XAlgorithm)
+	// Yolo8
+	err1 := LoadAlgorithm(NewYolo8ObjectDetectionCpu(), map[string]interface{}{})
+	if err1 != nil {
+		glogger.GLogger.Error(err1)
+	}
+	// Tensorflow
+	// LoadAlgorithm(NewTfObjectDetectionCpu(), map[string]interface{}{})
+	return __DefaultAIRuntime
 }
-func ListAi() []*typex.AI {
-	ll := []*typex.AI{}
-	for _, v := range __DefaultAIRuntime.AiBases {
+
+/*
+*
+* 停止运行时
+*
+ */
+func Stop() {
+	for _, v := range __DefaultAIRuntime.XAlgorithms {
+		glogger.GLogger.Info("Try to Stop Algorithm:", v.AlgorithmDetail().Name)
+		v.Unload()
+		glogger.GLogger.Info("Algorithm Stop:", v.AlgorithmDetail().Name, " Success")
+	}
+	glogger.GLogger.Info("Algorithm Runtime stopped")
+}
+
+/*
+*
+* 列表
+*
+ */
+func ListAlgorithm() []XAlgorithm {
+	ll := []XAlgorithm{}
+	for _, v := range __DefaultAIRuntime.XAlgorithms {
 		ll = append(ll, v)
 	}
 	return ll
 }
-func LoadAi(Ai *typex.AI) error {
-	if Ai.Type == typex.BODY_POSE_RECOGNITION {
-		Ai.XAI = NewBodyPoseRecognition(__DefaultAIRuntime.RuleEngine)
-		__DefaultAIRuntime.AiBases[Ai.UUID] = Ai
-	}
-	return fmt.Errorf("not support:%s", Ai.Type)
-}
-func GetAi(uuid string) *typex.AI {
-	return __DefaultAIRuntime.AiBases[uuid]
-}
-func RemoveAi(uuid string) error {
-	if v, ok := __DefaultAIRuntime.AiBases[uuid]; ok {
-		// 内建类型不可删除
-		if v.IsBuildIn {
-			return fmt.Errorf("can not remove build-in aibase")
-		}
-		delete(__DefaultAIRuntime.AiBases, uuid)
-		glogger.GLogger.Error("XAI.Start deleted")
-		return nil
-	}
-	return fmt.Errorf("aibase not exists:" + uuid)
 
-}
-func UpdateAi(Ai *typex.AI) error {
-	if v, ok := __DefaultAIRuntime.AiBases[Ai.UUID]; ok {
-		// 内建类型不可修改
-		if v.IsBuildIn {
-			return fmt.Errorf("can not change 'BUILDIN' aibase")
-		}
-		__DefaultAIRuntime.AiBases[Ai.UUID] = Ai
-		glogger.GLogger.Error("XAI.Start updated")
-
-		return nil
-	}
-	return fmt.Errorf("aibase not exists:" + Ai.UUID)
-}
-func StartAi(uuid string) error {
-	if ai, ok := __DefaultAIRuntime.AiBases[uuid]; ok {
-		// 内建类型不可修改
-		if ai.IsBuildIn {
-			return fmt.Errorf("can not change 'BUILDIN' aibase")
-		}
-		err := ai.XAI.Start(map[string]interface{}{})
-		if err != nil {
-			glogger.GLogger.Error("XAI.Start error:", err)
-		}
+/*
+*
+* 加载算法
+*
+ */
+func LoadAlgorithm(Algorithm XAlgorithm, Config map[string]interface{}) error {
+	__DefaultAIRuntime.locker.Lock()
+	defer __DefaultAIRuntime.locker.Unlock()
+	if err := Algorithm.Init(Config); err != nil {
+		glogger.GLogger.Error(err)
 		return err
 	}
-	return nil
+	if err := Algorithm.Load(); err != nil {
+		glogger.GLogger.Error(err)
+		return err
+	}
+	Info := Algorithm.AlgorithmDetail()
+	__DefaultAIRuntime.XAlgorithms[Info.UUID] = Algorithm
+	return fmt.Errorf("not support:%s", Algorithm.AlgorithmDetail().UUID)
 }
-func StopAi(uuid string) error {
-	if ai, ok := __DefaultAIRuntime.AiBases[uuid]; ok {
-		// 内建类型不可修改
-		if ai.IsBuildIn {
-			return fmt.Errorf("can not change 'BUILDIN' aibase")
-		}
-		ai.XAI.Stop()
+
+/*
+*
+* 获取一个算法
+*
+ */
+func GetAlgorithm(uuid string) XAlgorithm {
+	return __DefaultAIRuntime.XAlgorithms[uuid]
+}
+
+/*
+*
+* 更新算法
+*
+ */
+func UpdateAlgorithm(Algorithm XAlgorithm) error {
+	__DefaultAIRuntime.locker.Lock()
+	defer __DefaultAIRuntime.locker.Unlock()
+	if _, ok := __DefaultAIRuntime.XAlgorithms[Algorithm.AlgorithmDetail().UUID]; ok {
+		__DefaultAIRuntime.XAlgorithms[Algorithm.AlgorithmDetail().UUID] = Algorithm
+		glogger.GLogger.Error("XAI.Start updated")
+		return nil
+	}
+	return fmt.Errorf("Algorithm not exists:" + Algorithm.AlgorithmDetail().UUID)
+}
+
+/*
+*
+* 卸载算法
+*
+ */
+func UnloadAlgorithm(uuid string) error {
+	__DefaultAIRuntime.locker.Lock()
+	defer __DefaultAIRuntime.locker.Unlock()
+	if Algorithm, ok := __DefaultAIRuntime.XAlgorithms[uuid]; ok {
+		Algorithm.Unload()
 		glogger.GLogger.Error("XAI.Start stopped")
 		return nil
 	}
 	return nil
-}
-func Stop() {
-	glogger.GLogger.Info("AIRuntime stopped")
 }

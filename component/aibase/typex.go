@@ -34,12 +34,10 @@ type Algorithm struct {
 * AI 接口
 *
  */
-type AlgorithmResource interface {
-	Init(map[string]interface{}) error // 初始化环境
-	// Type , Sample, ExpectOut
-	Train(string, [][]float64, [][]float64) error      // 训练模型
-	Load() error                                       // 加载模型
-	OnCall(string, [][]float64) map[string]interface{} // 用数据去执行
-	Unload() error                                     // 卸载模型
-	AiDetail() Algorithm                               // 获取信息
+type XAlgorithm interface {
+	Init(map[string]interface{}) error              // 初始化环境
+	Load() error                                    // 加载模型
+	Forward([]byte) (map[string]interface{}, error) // 用数据去执行
+	Unload() error                                  // 卸载模型
+	AlgorithmDetail() Algorithm                     // 获取信息
 }
