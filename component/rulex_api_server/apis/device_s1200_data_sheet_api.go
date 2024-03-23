@@ -261,6 +261,9 @@ func checkSiemensDataPoints(M SiemensPointVo) error {
 	if M.Weight == nil {
 		return fmt.Errorf("invalid Weight value:%d", M.Weight)
 	}
+	if !utils.IsValidColumnName(M.Tag) {
+		return fmt.Errorf("'Invalid Tag Name:%d", M.Tag)
+	}
 	return nil
 }
 

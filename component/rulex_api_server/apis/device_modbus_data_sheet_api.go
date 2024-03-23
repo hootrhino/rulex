@@ -18,10 +18,11 @@ package apis
 import (
 	"errors"
 	"fmt"
-	"github.com/hootrhino/rulex/glogger"
 	"io"
 	"strconv"
 	"time"
+
+	"github.com/hootrhino/rulex/glogger"
 
 	"github.com/gin-gonic/gin"
 	modbuscache "github.com/hootrhino/rulex/component/intercache/modbus"
@@ -297,6 +298,9 @@ func checkModbusDataPoints(M ModbusPointVo) error {
 	}
 	if M.Weight == nil {
 		return fmt.Errorf("'Invalid Weight value:%d", M.Weight)
+	}
+	if !utils.IsValidColumnName(M.Tag) {
+		return fmt.Errorf("'Invalid Tag Name:%d", M.Tag)
 	}
 	return nil
 }

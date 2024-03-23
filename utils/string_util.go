@@ -1,10 +1,6 @@
 package utils
 
-import (
-	"regexp"
-
-	"github.com/plgd-dev/kit/v2/strings"
-)
+import "strings"
 
 /*
 *
@@ -29,8 +25,13 @@ func IsListDuplicated(list []string) bool {
 * 列表包含
 *
  */
-func SContains(s []string, e string) bool {
-	return strings.SliceContains(s, e)
+func SContains(slice []string, e string) bool {
+	for _, s := range slice {
+		if s == e {
+			return true
+		}
+	}
+	return false
 }
 
 /*
@@ -39,10 +40,24 @@ func SContains(s []string, e string) bool {
 *
  */
 func IsValidName(username string) bool {
-	// 检查用户名长度是否在 6 到 32 之间
-	if len(username) < 6 || len(username) > 32 {
+	return (len(username) < 6 || len(username) > 32)
+}
+
+/*
+*
+* Tag name 不可出现非法字符
+*
+ */
+func IsValidColumnName(columnName string) bool {
+	// 列名不能以数字开头
+	if len(columnName) == 0 || (columnName[0] >= '0' && columnName[0] <= '9') {
 		return false
 	}
-	match, _ := regexp.MatchString(`^[a-zA-Z0-9_-]+$`, username)
-	return match
+	invalidChars := []string{" ", "-", ";"}
+	for _, char := range invalidChars {
+		if strings.Contains(columnName, char) {
+			return false
+		}
+	}
+	return true
 }

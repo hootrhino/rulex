@@ -67,18 +67,36 @@ func CvMatToImageBytes(FrameBuffer []byte) ([]byte, Resolution, error) {
 		gocv.FontHersheyPlain, 2, color.RGBA{255, 0, 0, 0}, 2)
 	NewImgMat := gocv.NewMat()
 	defer NewImgMat.Close()
-	if imgMat.Cols() <= 640 {
-		gocv.Resize(imgMat, &NewImgMat, image.Point{}, 2, 2, gocv.InterpolationArea)
-		ImgBytes, err1 := gocv.IMEncode(".jpg", NewImgMat)
-		if err1 != nil {
-			return nil, Resolution, err0
-		}
-		return ImgBytes.GetBytes(), Resolution, nil
-	} else {
+	if imgMat.Cols() > 1920 {
 		ImgBytes, err1 := gocv.IMEncode(".jpg", imgMat)
 		if err1 != nil {
 			return nil, Resolution, err0
 		}
 		return ImgBytes.GetBytes(), Resolution, nil
 	}
+	gocv.Resize(imgMat, &NewImgMat, image.Point{}, 2, 2, gocv.InterpolationArea)
+	Resolution.Width = imgMat.Cols() * 2
+	Resolution.Height = imgMat.Rows() * 2
+	ImgBytes, err1 := gocv.IMEncode(".jpg", NewImgMat)
+	if err1 != nil {
+		return nil, Resolution, err0
+	}
+	return ImgBytes.GetBytes(), Resolution, nil
+}
+
+/*
+*
+* 使用DNN来做AI处理, 返回值根据模型不同而不同，需要结合AIBase里面的规则
+*
+ */
+func DNNForward(blob gocv.Mat, DnnNet gocv.Net) gocv.Mat {
+	DnnNet.SetInput(blob, "")
+	// outs.Size() 返回矩阵的形状
+	// [a11 a12 a13 ...a1n]
+	// [a21 a22 a23 ...a2n]
+	// [a31 a32 a33 ...a3n]
+	// z    := outs.Size()[0]
+	// cols := outs.Size()[1]
+	// rows := outs.Size()[2]
+	return DnnNet.Forward("")
 }

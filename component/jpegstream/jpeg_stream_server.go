@@ -89,7 +89,7 @@ func (s *JpegStreamServer) Init(cfg map[string]any) error {
 		var FrameBuffer = [1250000 / 2]byte{} // 默认5MB数据
 
 		timeoutSignal := make(chan bool)
-		defer close(timeoutSignal)
+		// defer close(timeoutSignal)
 		ticker := time.NewTicker(5 * time.Second)
 		defer ticker.Stop()
 		go func() {
