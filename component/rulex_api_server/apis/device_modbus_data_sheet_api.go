@@ -300,7 +300,7 @@ func checkModbusDataPoints(M ModbusPointVo) error {
 		return fmt.Errorf("'Invalid Weight value:%d", M.Weight)
 	}
 	if !utils.IsValidColumnName(M.Tag) {
-		return fmt.Errorf("'Invalid Tag Name:%d", M.Tag)
+		return fmt.Errorf("'Invalid Tag Name:%s", M.Tag)
 	}
 	return nil
 }

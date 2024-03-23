@@ -107,8 +107,8 @@ type ModbusPoint struct {
 	Frequency int64   `json:"frequency"`
 	Quantity  uint16  `json:"quantity"`
 	Value     string  `json:"value,omitempty"` // 运行时数据
-	Type      string  `json:"type"`            // 运行时数据
-	Order     string  `json:"order"`           // 运行时数据
+	DataType  string  `json:"dataType"`        // 运行时数据
+	DataOrder string  `json:"dataOrder"`       // 运行时数据
 	Weight    float64 `json:"weight"`          // 权重
 }
 type generic_modbus_device struct {
@@ -183,8 +183,8 @@ func (mdev *generic_modbus_device) Init(devId string, configMap map[string]inter
 			Address:   ModbusPoint.Address,
 			Quantity:  ModbusPoint.Quantity,
 			Frequency: ModbusPoint.Frequency,
-			DataType:  ModbusPoint.Type,
-			DataOrder: ModbusPoint.Order,
+			DataType:  ModbusPoint.DataType,
+			DataOrder: ModbusPoint.DataOrder,
 			Weight:    ModbusPoint.Weight,
 		}
 		LastFetchTime := uint64(time.Now().UnixMilli())

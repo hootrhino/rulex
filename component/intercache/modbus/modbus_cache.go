@@ -25,6 +25,7 @@ import (
 type RegisterPoint struct {
 	UUID          string
 	Status        int
+	ErrMsg        string
 	LastFetchTime uint64
 	Value         string
 }

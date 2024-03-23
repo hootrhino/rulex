@@ -56,13 +56,19 @@ func InitResourceSuperVisorAdmin(rulex typex.RuleX) {
 *
  */
 func RegisterSuperVisor(SlaverId string) *SuperVisor {
-	if _, Ok := __DefaultSuperVisorAdmin.SuperVisors[SlaverId]; !Ok {
+	if Old, Ok := __DefaultSuperVisorAdmin.SuperVisors[SlaverId]; !Ok {
+		Ctx, Cancel := context.WithCancel(context.Background())
+		SuperVisor := &SuperVisor{SlaverId, Ctx, Cancel}
+		__DefaultSuperVisorAdmin.SuperVisors[SlaverId] = SuperVisor
+		return SuperVisor
+	} else {
+		Old.Cancel()
+		delete(__DefaultSuperVisorAdmin.SuperVisors, SlaverId)
 		Ctx, Cancel := context.WithCancel(context.Background())
 		SuperVisor := &SuperVisor{SlaverId, Ctx, Cancel}
 		__DefaultSuperVisorAdmin.SuperVisors[SlaverId] = SuperVisor
 		return SuperVisor
 	}
-	return nil
 }
 
 /*

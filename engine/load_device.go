@@ -89,7 +89,6 @@ func (e *RuleEngine) loadDevices(xDevice typex.XDevice, deviceInstance *typex.De
 	// xDevice: Interface
 	// deviceInstance: Real Worker, Running instance
 	deviceInstance.Device = xDevice
-	deviceInstance.Device.SetState(typex.DEV_PENDING)
 	e.SaveDevice(deviceInstance)
 	// Load config
 	// 要从数据库里面查Config
@@ -119,6 +118,7 @@ func startDevice(xDevice typex.XDevice, e *RuleEngine,
 		glogger.GLogger.Error("Device start error:", err)
 		return err
 	}
+	xDevice.SetState(typex.DEV_UP)
 	// LoadNewestDevice
 	// 2023-06-14新增： 重启成功后数据会丢失,还得加载最新的Rule到设备中
 	device := xDevice.Details()
