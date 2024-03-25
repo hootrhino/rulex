@@ -49,7 +49,7 @@ func (O Resolution) String() string {
 	return fmt.Sprintf("%dx%d", O.Width, O.Height)
 }
 
-func CvMatToImageBytes(FrameBuffer []byte) ([]byte, Resolution, error) {
+func CvMatToImageBytes(FrameBuffer []byte) (*gocv.NativeByteBuffer, Resolution, error) {
 	__CGoMutex.Lock()
 	defer __CGoMutex.Unlock()
 	imgMat := gocv.NewMat()
@@ -68,20 +68,20 @@ func CvMatToImageBytes(FrameBuffer []byte) ([]byte, Resolution, error) {
 	NewImgMat := gocv.NewMat()
 	defer NewImgMat.Close()
 	if imgMat.Cols() > 1920 {
-		ImgBytes, err1 := gocv.IMEncode(".jpg", imgMat)
+		ImgBytes, err1 := gocv.IMEncode(gocv.JPEGFileExt, imgMat)
 		if err1 != nil {
 			return nil, Resolution, err0
 		}
-		return ImgBytes.GetBytes(), Resolution, nil
+		return ImgBytes, Resolution, nil
 	}
 	gocv.Resize(imgMat, &NewImgMat, image.Point{}, 2, 2, gocv.InterpolationArea)
 	Resolution.Width = imgMat.Cols() * 2
 	Resolution.Height = imgMat.Rows() * 2
-	ImgBytes, err1 := gocv.IMEncode(".jpg", NewImgMat)
+	ImgBytes, err1 := gocv.IMEncode(gocv.JPEGFileExt, NewImgMat)
 	if err1 != nil {
 		return nil, Resolution, err0
 	}
-	return ImgBytes.GetBytes(), Resolution, nil
+	return ImgBytes, Resolution, nil
 }
 
 /*

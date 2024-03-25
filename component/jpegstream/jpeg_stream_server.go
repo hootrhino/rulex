@@ -157,8 +157,8 @@ func (s *JpegStreamServer) Init(cfg map[string]any) error {
 						glogger.GLogger.Error(err1)
 						break
 					}
-
-					JpegStream.UpdateJPEG(ImageBytes) // 刷新帧
+					defer ImageBytes.Close()
+					JpegStream.UpdateJPEG(ImageBytes.GetBytes()) // 刷新帧
 					for i := range FrameBuffer[:Offset] {
 						FrameBuffer[i] = 0
 					}
