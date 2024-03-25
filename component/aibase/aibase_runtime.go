@@ -47,12 +47,15 @@ func InitAlgorithmRuntime(re typex.RuleX) *AlgorithmRuntime {
 	__DefaultAIRuntime.RuleEngine = re
 	__DefaultAIRuntime.XAlgorithms = make(map[string]XAlgorithm)
 	// Yolo8
-	err1 := LoadAlgorithm(NewYolo8ObjectDetectionCpu(), map[string]interface{}{})
-	if err1 != nil {
-		glogger.GLogger.Error(err1)
-	}
+	// err1 := LoadAlgorithm(NewYolo8ObjectDetectionCpu(), map[string]interface{}{})
+	// if err1 != nil {
+	// 	glogger.GLogger.Error(err1)
+	// }
 	// Tensorflow
-	// LoadAlgorithm(NewTfObjectDetectionCpu(), map[string]interface{}{})
+	// err2 :=LoadAlgorithm(NewTfObjectDetectionCpu(), map[string]interface{}{})
+	// if err2 != nil {
+	// 	glogger.GLogger.Error(err1)
+	// }
 	return __DefaultAIRuntime
 }
 
