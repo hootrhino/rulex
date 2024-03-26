@@ -193,6 +193,7 @@ func (mdev *generic_modbus_device) Init(devId string, configMap map[string]inter
 			Status:        0,
 			LastFetchTime: LastFetchTime,
 			Value:         "",
+			ErrMsg:        "Device Loading",
 		})
 	}
 	if mdev.mainConfig.CommonConfig.EnableOptimize {
@@ -560,42 +561,23 @@ func (mdev *generic_modbus_device) modbusSingleRead(buffer []byte) (int, error) 
 		// 1 字节
 		if r.Function == common.READ_COIL {
 			results, err = mdev.Client.ReadCoils(r.Address, r.Quantity)
-			if err != nil {
-				count--
-				glogger.GLogger.Error(err)
-			}
-			// ValidData := [4]byte{0, 0, 0, 0}
-			copy(__modbusReadResult[:], results[:])
-			Value := utils.ParseModbusValue(r.DataType, r.DataOrder, float32(r.Weight), __modbusReadResult)
 			lastTimes := uint64(time.Now().UnixMilli())
-			Reg := RegJsonValue{
-				Tag:           r.Tag,
-				SlaverId:      r.SlaverId,
-				Alias:         r.Alias,
-				Value:         Value,
-				LastFetchTime: lastTimes,
-			}
-			RegisterRWs = append(RegisterRWs, Reg)
-			modbuscache.SetValue(mdev.PointId, uuid, modbuscache.RegisterPoint{
-				UUID:          uuid,
-				Status:        0,
-				Value:         Value,
-				LastFetchTime: lastTimes,
-			})
-		}
-		// 2 字节
-		if r.Function == common.READ_DISCRETE_INPUT {
-			results, err = mdev.Client.ReadDiscreteInputs(r.Address, r.Quantity)
 			if err != nil {
 				count--
 				glogger.GLogger.Error(err)
 				mdev.retryTimes++
+				modbuscache.SetValue(mdev.PointId, uuid, modbuscache.RegisterPoint{
+					UUID:          uuid,
+					Status:        1,
+					Value:         "",
+					LastFetchTime: lastTimes,
+					ErrMsg:        err.Error(),
+				})
 				continue
 			}
 			// ValidData := [4]byte{0, 0, 0, 0}
 			copy(__modbusReadResult[:], results[:])
 			Value := utils.ParseModbusValue(r.DataType, r.DataOrder, float32(r.Weight), __modbusReadResult)
-			lastTimes := uint64(time.Now().UnixMilli())
 			Reg := RegJsonValue{
 				Tag:           r.Tag,
 				SlaverId:      r.SlaverId,
@@ -609,22 +591,66 @@ func (mdev *generic_modbus_device) modbusSingleRead(buffer []byte) (int, error) 
 				Status:        0,
 				Value:         Value,
 				LastFetchTime: lastTimes,
+				ErrMsg:        "",
+			})
+		}
+		// 2 字节
+		if r.Function == common.READ_DISCRETE_INPUT {
+			results, err = mdev.Client.ReadDiscreteInputs(r.Address, r.Quantity)
+			lastTimes := uint64(time.Now().UnixMilli())
+			if err != nil {
+				count--
+				glogger.GLogger.Error(err)
+				mdev.retryTimes++
+				modbuscache.SetValue(mdev.PointId, uuid, modbuscache.RegisterPoint{
+					UUID:          uuid,
+					Status:        1,
+					Value:         "",
+					LastFetchTime: lastTimes,
+					ErrMsg:        err.Error(),
+				})
+				continue
+			}
+			// ValidData := [4]byte{0, 0, 0, 0}
+			copy(__modbusReadResult[:], results[:])
+			Value := utils.ParseModbusValue(r.DataType, r.DataOrder, float32(r.Weight), __modbusReadResult)
+			Reg := RegJsonValue{
+				Tag:           r.Tag,
+				SlaverId:      r.SlaverId,
+				Alias:         r.Alias,
+				Value:         Value,
+				LastFetchTime: lastTimes,
+			}
+			RegisterRWs = append(RegisterRWs, Reg)
+			modbuscache.SetValue(mdev.PointId, uuid, modbuscache.RegisterPoint{
+				UUID:          uuid,
+				Status:        0,
+				Value:         Value,
+				LastFetchTime: lastTimes,
+				ErrMsg:        "",
 			})
 		}
 		// 2 字节
 		//
 		if r.Function == common.READ_HOLDING_REGISTERS {
 			results, err = mdev.Client.ReadHoldingRegisters(r.Address, r.Quantity)
+			lastTimes := uint64(time.Now().UnixMilli())
 			if err != nil {
 				count--
 				glogger.GLogger.Error(err)
 				mdev.retryTimes++
+				modbuscache.SetValue(mdev.PointId, uuid, modbuscache.RegisterPoint{
+					UUID:          uuid,
+					Status:        1,
+					Value:         "",
+					LastFetchTime: lastTimes,
+					ErrMsg:        err.Error(),
+				})
 				continue
 			}
 			// ValidData := [4]byte{0, 0, 0, 0}
 			copy(__modbusReadResult[:], results[:])
 			Value := utils.ParseModbusValue(r.DataType, r.DataOrder, float32(r.Weight), __modbusReadResult)
-			lastTimes := uint64(time.Now().UnixMilli())
 
 			Reg := RegJsonValue{
 				Tag:           r.Tag,
@@ -639,22 +665,30 @@ func (mdev *generic_modbus_device) modbusSingleRead(buffer []byte) (int, error) 
 				Status:        0,
 				Value:         Value,
 				LastFetchTime: lastTimes,
+				ErrMsg:        "",
 			})
 
 		}
 		// 2 字节
 		if r.Function == common.READ_INPUT_REGISTERS {
 			results, err = mdev.Client.ReadInputRegisters(r.Address, r.Quantity)
+			lastTimes := uint64(time.Now().UnixMilli())
 			if err != nil {
 				count--
 				glogger.GLogger.Error(err)
 				mdev.retryTimes++
+				modbuscache.SetValue(mdev.PointId, uuid, modbuscache.RegisterPoint{
+					UUID:          uuid,
+					Status:        1,
+					Value:         "",
+					LastFetchTime: lastTimes,
+					ErrMsg:        err.Error(),
+				})
 				continue
 			}
 			// ValidData := [4]byte{0, 0, 0, 0}
 			copy(__modbusReadResult[:], results[:])
 			Value := utils.ParseModbusValue(r.DataType, r.DataOrder, float32(r.Weight), __modbusReadResult)
-			lastTimes := uint64(time.Now().UnixMilli())
 			Reg := RegJsonValue{
 				Tag:           r.Tag,
 				SlaverId:      r.SlaverId,
@@ -668,6 +702,7 @@ func (mdev *generic_modbus_device) modbusSingleRead(buffer []byte) (int, error) 
 				Status:        0,
 				Value:         Value,
 				LastFetchTime: lastTimes,
+				ErrMsg:        "",
 			})
 		}
 		time.Sleep(time.Duration(r.Frequency) * time.Millisecond)
@@ -700,7 +735,6 @@ func (mdev *generic_modbus_device) modbusGroupRead(buffer []byte) (int, error) {
 				offsetByte := offsetAddr / uint16(8)
 				offsetBit := offsetAddr % uint16(8)
 				value := (buf[offsetByte] >> offsetBit) & 0x1
-
 				ts := time.Now().UnixMilli()
 				jsonVal := RegJsonValue{
 					Tag:           r.Tag,
@@ -710,15 +744,16 @@ func (mdev *generic_modbus_device) modbusGroupRead(buffer []byte) (int, error) {
 					LastFetchTime: uint64(ts),
 				}
 				jsonValueGroups = append(jsonValueGroups, jsonVal)
-
 				modbuscache.SetValue(mdev.PointId, uuid, modbuscache.RegisterPoint{
 					UUID:          uuid,
 					Status:        0,
 					Value:         strconv.Itoa(int(value)),
 					LastFetchTime: uint64(ts),
+					ErrMsg:        "",
 				})
 			}
-		} else if group.Function == common.READ_DISCRETE_INPUT {
+		}
+		if group.Function == common.READ_DISCRETE_INPUT {
 			buf, err := mdev.Client.ReadDiscreteInputs(group.Address, group.Quantity)
 			if err != nil {
 				glogger.GLogger.Error(err)
@@ -740,15 +775,16 @@ func (mdev *generic_modbus_device) modbusGroupRead(buffer []byte) (int, error) {
 					LastFetchTime: uint64(ts),
 				}
 				jsonValueGroups = append(jsonValueGroups, jsonVal)
-
 				modbuscache.SetValue(mdev.PointId, uuid, modbuscache.RegisterPoint{
 					UUID:          uuid,
 					Status:        0,
 					Value:         strconv.Itoa(int(value)),
 					LastFetchTime: uint64(ts),
+					ErrMsg:        "",
 				})
 			}
-		} else if group.Function == common.READ_HOLDING_REGISTERS {
+		}
+		if group.Function == common.READ_HOLDING_REGISTERS {
 			buf, err := mdev.Client.ReadHoldingRegisters(group.Address, group.Quantity)
 			if err != nil {
 				glogger.GLogger.Error(err)
@@ -776,9 +812,11 @@ func (mdev *generic_modbus_device) modbusGroupRead(buffer []byte) (int, error) {
 					Status:        0,
 					Value:         value,
 					LastFetchTime: uint64(ts),
+					ErrMsg:        "",
 				})
 			}
-		} else if group.Function == common.READ_INPUT_REGISTERS {
+		}
+		if group.Function == common.READ_INPUT_REGISTERS {
 			buf, err := mdev.Client.ReadHoldingRegisters(group.Address, group.Quantity)
 			if err != nil {
 				glogger.GLogger.Error(err)
@@ -806,6 +844,7 @@ func (mdev *generic_modbus_device) modbusGroupRead(buffer []byte) (int, error) {
 					Status:        0,
 					Value:         value,
 					LastFetchTime: uint64(ts),
+					ErrMsg:        "",
 				})
 			}
 		}

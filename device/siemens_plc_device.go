@@ -139,6 +139,7 @@ func (s1200 *SIEMENS_PLC) Init(devId string, configMap map[string]interface{}) e
 			Status:        0,
 			LastFetchTime: 0,
 			Value:         "0",
+			ErrMsg:        "",
 		})
 	}
 
@@ -295,18 +296,26 @@ func (s1200 *SIEMENS_PLC) Read(cmd []byte, data []byte) (int, error) {
 	for uuid, db := range s1200.__SiemensDataPoints {
 		//DB 4字节
 		if db.AddressType == "DB" {
+			lastTimes := uint64(time.Now().UnixMilli())
+
 			// 00.00.00.01 | 00.00.00.02 | 00.00.00.03 | 00.00.00.04
 			// 根据类型解析长度
 			if err := s1200.client.AGReadDB(db.DataBlockNumber,
 				db.ElementNumber, db.DataSize, rData[:]); err != nil {
 				glogger.GLogger.Error(err)
-				return 0, err
+				siemenscache.SetValue(s1200.PointId, uuid, siemenscache.SiemensPoint{
+					UUID:          uuid,
+					Status:        1,
+					LastFetchTime: lastTimes,
+					Value:         "",
+					ErrMsg:        err.Error(),
+				})
+				continue
 			}
 			// ValidData := [4]byte{} // 固定4字节，以后有8自己的时候再支持
 			copy(__siemensReadResult[:], rData[:db.DataSize])
 			Value := utils.ParseModbusValue(db.DataBlockType, db.DataBlockOrder,
 				float32(*db.Weight), __siemensReadResult)
-			lastTimes := uint64(time.Now().UnixMilli())
 			values = append(values, SiemensJsonValue{
 				Tag:           db.Tag,
 				Alias:         db.Alias,
@@ -318,6 +327,7 @@ func (s1200 *SIEMENS_PLC) Read(cmd []byte, data []byte) (int, error) {
 				Status:        0,
 				LastFetchTime: lastTimes,
 				Value:         Value,
+				ErrMsg:        "",
 			})
 		}
 		if *db.Frequency < 100 {

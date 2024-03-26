@@ -50,6 +50,8 @@ type SiemensPointVo struct {
 	Status         int      `json:"status"`        // 运行时数据
 	LastFetchTime  uint64   `json:"lastFetchTime"` // 运行时数据
 	Value          string   `json:"value"`         // 运行时数据
+	ErrMsg         string   `json:"errMsg"`        // 运行时数据
+
 }
 
 /*
@@ -147,6 +149,7 @@ func SiemensSheetPageList(c *gin.Context, ruleEngine typex.RuleX) {
 			Weight:         record.Weight,
 			LastFetchTime:  Value.LastFetchTime, // 运行时
 			Value:          Value.Value,         // 运行时
+			ErrMsg:         Value.ErrMsg,
 		}
 		if ok {
 			Vo.Status = func() int {

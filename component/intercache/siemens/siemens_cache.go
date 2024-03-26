@@ -26,7 +26,8 @@ var __DefaultSiemensPointCache *SiemensPointCache
 // 点位表
 type SiemensPoint struct {
 	UUID          string
-	Status        int
+	Status        int // 0 正常；1 错误，填充 ErrMsg
+	ErrMsg        string
 	LastFetchTime uint64
 	Value         string
 }
@@ -117,7 +118,7 @@ func (M *SiemensPointCache) Size() uint64 {
 }
 func (M *SiemensPointCache) Flush() {
 	for slotName, slot := range M.Slots {
-		for k, _ := range slot {
+		for k := range slot {
 			delete(slot, k)
 		}
 		delete(M.Slots, slotName)
