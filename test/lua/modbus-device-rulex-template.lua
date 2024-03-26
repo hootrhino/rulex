@@ -28,11 +28,11 @@ Actions = {
     function(args)
         local JsonT = json:J2T(args)
         for _, dt in ipairs(JsonT) do
-            stdlib:Debug('** tag=' .. dt.tag)
-            stdlib:Debug('** alias=' .. dt.alias)
-            stdlib:Debug('** slaverId=' .. dt.slaverId)
-            stdlib:Debug('** lastFetchTime=' .. dt.lastFetchTime)
-            stdlib:Debug('** value=' .. dt.value)
+            Debug('** tag=' .. dt.tag)
+            Debug('** alias=' .. dt.alias)
+            Debug('** slaverId=' .. dt.slaverId)
+            Debug('** lastFetchTime=' .. dt.lastFetchTime)
+            Debug('** value=' .. dt.value)
         end
         return true, args
     end

@@ -11,7 +11,7 @@ import (
 
 /*
 *
-* APP debug输出, stdlib:Debug(".....")
+* APP debug输出, Debug(".....")
 *
  */
 func DebugAPP(rx typex.RuleX, uuid string) func(*lua.LState) int {

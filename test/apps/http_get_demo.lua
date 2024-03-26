@@ -15,6 +15,6 @@
 
 function Main(arg)
     local Value = http:Get("http://127.0.0.1:2580/api/v1/os/system")
-    stdlib:Debug("Http Get:" .. Value)
+    Debug("Http Get:" .. Value)
     return 0
 end

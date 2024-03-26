@@ -25,7 +25,7 @@ Actions = {
     function(args)
         local dataT, err = json:J2T(args)
         if (err ~= nil) then
-            stdlib:Throw('parse json error:' .. err)
+            Throw('parse json error:' .. err)
             return true, args
         end
         for _, value in pairs(dataT) do
@@ -36,10 +36,10 @@ Actions = {
                 method = "thing.event.property.post",
                 params = params
             })
-            stdlib:Debug(json)
+            Debug(json)
             local err = data:ToMqtt('OUTSKGLIQJX', json)
             if err ~= nil then
-                stdlib:Throw(err)
+                Throw(err)
                 return true, args
             end
         end

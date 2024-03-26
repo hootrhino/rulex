@@ -14,8 +14,8 @@
 -- along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 function Main(arg)
-    stdlib:Debug("Bin2F32Big 410e6667: " .. binary:Bin2F32Big("410e6667"))
+    Debug("Bin2F32Big 410e6667: " .. binary:Bin2F32Big("410e6667"))
     -- 8.9
-    stdlib:Debug("Bin2F32Little 410e6667: " .. binary:Bin2F32Little("410e6667"))
+    Debug("Bin2F32Little 410e6667: " .. binary:Bin2F32Little("410e6667"))
     return 0
 end
