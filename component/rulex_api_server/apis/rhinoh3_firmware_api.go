@@ -82,7 +82,7 @@ func GetRunningLog(c *gin.Context, ruleEngine typex.RuleX) {
 		c.FileAttachment(ossupport.RunningLogPath,
 			fmt.Sprintf("running_log_%d_.txt", time.Now().UnixNano()))
 	} else {
-		js := `<script>alert("log file not found");</script>`
+		js := `<script>alert("log file not found");window.location.href = "/";</script>`
 		c.Writer.Write([]byte(js))
 	}
 	c.Writer.Flush()
