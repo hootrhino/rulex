@@ -62,7 +62,18 @@ func ParseModbusValue(
 		}
 	case "RAW":
 		{
-			return hex.EncodeToString(byteSlice[:])
+			acc := 0
+			for _, v := range byteSlice {
+				if v != 0 {
+					acc++
+				} else {
+					continue
+				}
+			}
+			if acc == 0 {
+				return ""
+			}
+			return hex.EncodeToString(byteSlice[:acc])
 		}
 	case "BYTE":
 		{
