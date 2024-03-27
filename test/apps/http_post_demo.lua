@@ -38,6 +38,6 @@ function Main(arg)
     }
     local JsonString = json:T2J(dataTable)
     local Value = http:Post("http://127.0.0.1:6003/api", JsonString)
-    stdlib:Debug("Http Post:" .. Value)
+    Debug("Http Post:" .. Value)
     return 0
 end

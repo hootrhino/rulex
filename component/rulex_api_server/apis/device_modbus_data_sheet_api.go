@@ -16,12 +16,13 @@
 package apis
 
 import (
-	"encoding/csv"
 	"errors"
 	"fmt"
 	"io"
 	"strconv"
 	"time"
+
+	"github.com/hootrhino/rulex/glogger"
 
 	"github.com/gin-gonic/gin"
 	modbuscache "github.com/hootrhino/rulex/component/intercache/modbus"
@@ -44,12 +45,13 @@ type ModbusPointVo struct {
 	Address       *uint16  `json:"address"`
 	Frequency     *int64   `json:"frequency"`
 	Quantity      *uint16  `json:"quantity"`
-	Type          string   `json:"type"`          // 数据类型
-	Order         string   `json:"order"`         // 字节序
+	DataType      string   `json:"dataType"`      // 数据类型
+	DataOrder     string   `json:"dataOrder"`     // 字节序
 	Weight        *float64 `json:"weight"`        // 权重
 	Status        int      `json:"status"`        // 运行时数据
 	LastFetchTime uint64   `json:"lastFetchTime"` // 运行时数据
 	Value         string   `json:"value"`         // 运行时数据
+	ErrMsg        string   `json:"errMsg"`        // 运行时数据
 
 }
 
@@ -62,10 +64,9 @@ type ModbusPointVo struct {
 // ModbusPoints 获取modbus_excel类型的点位数据
 func ModbusPointsExport(c *gin.Context, ruleEngine typex.RuleX) {
 	deviceUuid, _ := c.GetQuery("device_uuid")
-	c.Header("Content-Type", "text/csv")
-	c.Header("Content-Disposition", fmt.Sprintf("attachment;filename=%v.csv",
+	c.Header("Content-Type", "application/octet-stream")
+	c.Header("Content-Disposition", fmt.Sprintf("attachment;filename=%v.xlsx",
 		time.Now().UnixMilli()))
-	csvWriter := csv.NewWriter(c.Writer)
 	var records []model.MModbusDataPoint
 	result := interdb.DB().Order("created_at DESC").Find(&records,
 		&model.MModbusDataPoint{DeviceUuid: deviceUuid})
@@ -80,8 +81,16 @@ func ModbusPointsExport(c *gin.Context, ruleEngine typex.RuleX) {
 		"quality", "type",
 		"order", "weight",
 	}
-	Rows := [][]string{Headers}
-	for _, record := range records[0:] {
+
+	xlsx := excelize.NewFile()
+	defer func() {
+		if err := xlsx.Close(); err != nil {
+			glogger.GLogger.Errorf("close excel file, err=%v", err)
+		}
+	}()
+	cell, _ := excelize.CoordinatesToCellName(1, 1)
+	xlsx.SetSheetRow("Sheet1", cell, &Headers)
+	for idx, record := range records[0:] {
 		Row := []string{
 			record.Tag,
 			record.Alias,
@@ -90,15 +99,14 @@ func ModbusPointsExport(c *gin.Context, ruleEngine typex.RuleX) {
 			fmt.Sprintf("%d", *record.SlaverId),
 			fmt.Sprintf("%d", *record.Address),
 			fmt.Sprintf("%d", *record.Quantity),
-			record.Type,
-			record.Order,
+			record.DataType,
+			record.DataOrder,
 			fmt.Sprintf("%f", *record.Weight),
 		}
-		Rows = append(Rows, Row)
+		cell, _ = excelize.CoordinatesToCellName(1, idx+2)
+		xlsx.SetSheetRow("Sheet1", cell, &Row)
 	}
-
-	csvWriter.WriteAll(Rows)
-	csvWriter.Flush()
+	xlsx.WriteTo(c.Writer)
 }
 
 // 分页获取
@@ -144,11 +152,12 @@ func ModbusSheetPageList(c *gin.Context, ruleEngine typex.RuleX) {
 			Address:       record.Address,
 			Frequency:     record.Frequency,
 			Quantity:      record.Quantity,
-			Type:          record.Type,
-			Order:         record.Order,
+			DataType:      record.DataType,
+			DataOrder:     record.DataOrder,
 			Weight:        record.Weight,
 			LastFetchTime: Value.LastFetchTime, // 运行时
 			Value:         Value.Value,         // 运行时
+			ErrMsg:        Value.ErrMsg,        // 运行时
 		}
 		if ok {
 			Vo.Status = func() int {
@@ -252,45 +261,48 @@ func checkModbusDataPoints(M ModbusPointVo) error {
 		return fmt.Errorf("'Missing required param 'slaverId'")
 	}
 	if (*M.SlaverId) > 255 {
-		return fmt.Errorf("'Alias length must range of 1-256")
+		return fmt.Errorf("'Alias' length must range of 1-256")
 	}
 	if M.Frequency == nil {
 		return fmt.Errorf("'Missing required param 'frequency'")
 	}
 	if *M.Frequency < 50 {
-		return fmt.Errorf("'Frequency must greater than 50ms")
+		return fmt.Errorf("'Frequency' must greater than 50ms")
 	}
 	if *M.Frequency > 100000 {
-		return fmt.Errorf("'Frequency must little than 100s")
+		return fmt.Errorf("'Frequency' must little than 100s")
 	}
 	if M.Quantity == nil {
 		return fmt.Errorf("'Missing required param 'quantity'")
 	}
-	switch M.Type {
+	switch M.DataType {
 	case "UTF8":
 		if (*M.Quantity * uint16(2)) > 255 {
 			return fmt.Errorf("'Invalid 'UTF8' Length '%d'", (*M.Quantity * uint16(2)))
 		}
-		if !utils.SContains([]string{"BIG_ENDIAN", "LITTLE_ENDIAN"}, M.Order) {
-			return fmt.Errorf("'Invalid '%s' order '%s'", M.Type, M.Order)
+		if !utils.SContains([]string{"BIG_ENDIAN", "LITTLE_ENDIAN"}, M.DataOrder) {
+			return fmt.Errorf("'Invalid '%s' order '%s'", M.DataType, M.DataOrder)
 		}
 	case "I", "Q", "BYTE":
-		if M.Order != "A" {
-			return fmt.Errorf("'Invalid '%s' order '%s'", M.Type, M.Order)
+		if M.DataOrder != "A" {
+			return fmt.Errorf("'Invalid '%s' order '%s'", M.DataType, M.DataOrder)
 		}
-	case "RAW", "INT", "UINT", "FLOAT", "UFLOAT":
-		if !utils.SContains([]string{"ABCD", "DCBA", "CDAB"}, M.Order) {
-			return fmt.Errorf("'Invalid '%s' order '%s'", M.Type, M.Order)
+	case "SHORT", "USHORT", "INT16", "UINT16":
+		if !utils.SContains([]string{"AB", "BA"}, M.DataOrder) {
+			return fmt.Errorf("'Invalid '%s' order '%s'", M.DataType, M.DataOrder)
 		}
-	case "SHORT", "USHORT":
-		if !utils.SContains([]string{"AB", "BA"}, M.Order) {
-			return fmt.Errorf("'Invalid '%s' order '%s'", M.Type, M.Order)
+	case "RAW", "INT", "INT32", "UINT", "UINT32", "FLOAT", "UFLOAT":
+		if !utils.SContains([]string{"ABCD", "DCBA", "CDAB"}, M.DataOrder) {
+			return fmt.Errorf("'Invalid '%s' order '%s'", M.DataType, M.DataOrder)
 		}
 	default:
-		return fmt.Errorf("'Invalid '%s' order '%s'", M.Type, M.Order)
+		return fmt.Errorf("'Invalid '%s' order '%s'", M.DataType, M.DataOrder)
 	}
 	if M.Weight == nil {
 		return fmt.Errorf("'Invalid Weight value:%d", M.Weight)
+	}
+	if !utils.IsValidColumnName(M.Tag) {
+		return fmt.Errorf("'Invalid Tag Name:%s", M.Tag)
 	}
 	return nil
 }
@@ -328,8 +340,8 @@ func ModbusSheetUpdate(c *gin.Context, ruleEngine typex.RuleX) {
 				Address:    ModbusDataPoint.Address,
 				Frequency:  ModbusDataPoint.Frequency,
 				Quantity:   ModbusDataPoint.Quantity,
-				Type:       ModbusDataPoint.Type,
-				Order:      ModbusDataPoint.Order,
+				DataType:   ModbusDataPoint.DataType,
+				DataOrder:  ModbusDataPoint.DataOrder,
 				Weight:     utils.HandleZeroValue(ModbusDataPoint.Weight),
 			}
 			err0 := service.InsertModbusPointPosition(NewRow)
@@ -348,8 +360,8 @@ func ModbusSheetUpdate(c *gin.Context, ruleEngine typex.RuleX) {
 				Address:    ModbusDataPoint.Address,
 				Frequency:  ModbusDataPoint.Frequency,
 				Quantity:   ModbusDataPoint.Quantity,
-				Type:       ModbusDataPoint.Type,
-				Order:      ModbusDataPoint.Order,
+				DataType:   ModbusDataPoint.DataType,
+				DataOrder:  ModbusDataPoint.DataOrder,
 				Weight:     utils.HandleZeroValue(ModbusDataPoint.Weight),
 			}
 			err0 := service.UpdateModbusPoint(OldRow)
@@ -493,8 +505,8 @@ func parseModbusPointExcel(r io.Reader, sheetName string,
 			Address:   &Address,
 			Frequency: &Frequency, //ms
 			Quantity:  &Quantity,
-			Type:      Type,
-			Order:     utils.GetDefaultDataOrder(Type, Order),
+			DataType:  Type,
+			DataOrder: utils.GetDefaultDataOrder(Type, Order),
 			Weight:    &Weight,
 		}); err != nil {
 			return nil, err
@@ -510,8 +522,8 @@ func parseModbusPointExcel(r io.Reader, sheetName string,
 			Address:    &Address,
 			Frequency:  &Frequency, //ms
 			Quantity:   &Quantity,
-			Type:       Type,
-			Order:      utils.GetDefaultDataOrder(Type, Order),
+			DataType:   Type,
+			DataOrder:  utils.GetDefaultDataOrder(Type, Order),
 			Weight:     &Weight,
 		}
 		list = append(list, model)

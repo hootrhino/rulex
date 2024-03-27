@@ -16,9 +16,9 @@
 package apis
 
 import (
-	"encoding/csv"
 	"errors"
 	"fmt"
+	"github.com/hootrhino/rulex/glogger"
 	"io"
 	"strconv"
 	"strings"
@@ -50,6 +50,8 @@ type SiemensPointVo struct {
 	Status         int      `json:"status"`        // 运行时数据
 	LastFetchTime  uint64   `json:"lastFetchTime"` // 运行时数据
 	Value          string   `json:"value"`         // 运行时数据
+	ErrMsg         string   `json:"errMsg"`        // 运行时数据
+
 }
 
 /*
@@ -61,10 +63,9 @@ type SiemensPointVo struct {
 // SiemensPoints 获取Siemens_excel类型的点位数据
 func SiemensPointsExport(c *gin.Context, ruleEngine typex.RuleX) {
 	deviceUuid, _ := c.GetQuery("device_uuid")
-	c.Header("Content-Type", "text/csv")
-	c.Header("Content-Disposition", fmt.Sprintf("attachment;filename=%v.csv",
+	c.Header("Content-Type", "application/octet-stream")
+	c.Header("Content-Disposition", fmt.Sprintf("attachment;filename=%v.xlsx",
 		time.Now().UnixMilli()))
-	csvWriter := csv.NewWriter(c.Writer)
 	var records []model.MSiemensDataPoint
 	result := interdb.DB().Order("created_at DESC").Find(&records,
 		&model.MSiemensDataPoint{DeviceUuid: deviceUuid})
@@ -75,22 +76,33 @@ func SiemensPointsExport(c *gin.Context, ruleEngine typex.RuleX) {
 	Headers := []string{
 		"address", "tag", "alias", "type", "order", "weight", "frequency",
 	}
-	Rows := [][]string{Headers}
-	for _, record := range records[0:] {
-		Row := []string{
-			record.SiemensAddress,
-			record.Tag,
-			record.Alias,
-			record.DataBlockType,
-			record.DataBlockOrder,
-			fmt.Sprintf("%f", *record.Weight),
-			fmt.Sprintf("%d", *record.Frequency),
+	xlsx := excelize.NewFile()
+	defer func() {
+		if err := xlsx.Close(); err != nil {
+			glogger.GLogger.Errorf("close excel file, err=%v", err)
 		}
-		Rows = append(Rows, Row)
+	}()
+	cell, _ := excelize.CoordinatesToCellName(1, 1)
+	xlsx.SetSheetRow("Sheet1", cell, &Headers)
+
+	if len(records) > 1 {
+		for idx, record := range records[0:] {
+			Row := []string{
+				record.SiemensAddress,
+				record.Tag,
+				record.Alias,
+				record.DataBlockType,
+				record.DataBlockOrder,
+				fmt.Sprintf("%f", *record.Weight),
+				fmt.Sprintf("%d", *record.Frequency),
+			}
+			cell, _ = excelize.CoordinatesToCellName(1, idx+2)
+			xlsx.SetSheetRow("Sheet1", cell, &Row)
+		}
 	}
 
-	csvWriter.WriteAll(Rows)
-	csvWriter.Flush()
+	xlsx.WriteTo(c.Writer)
+
 }
 
 // 分页获取
@@ -137,6 +149,7 @@ func SiemensSheetPageList(c *gin.Context, ruleEngine typex.RuleX) {
 			Weight:         record.Weight,
 			LastFetchTime:  Value.LastFetchTime, // 运行时
 			Value:          Value.Value,         // 运行时
+			ErrMsg:         Value.ErrMsg,
 		}
 		if ok {
 			Vo.Status = func() int {
@@ -237,12 +250,12 @@ func checkSiemensDataPoints(M SiemensPointVo) error {
 		if M.DataOrder != "A" {
 			return fmt.Errorf("invalid '%s' order '%s'", M.DataType, M.DataOrder)
 		}
-	case "RAW", "INT", "UINT", "FLOAT", "UFLOAT":
-		if !utils.SContains([]string{"ABCD", "DCBA", "CDAB"}, M.DataOrder) {
-			return fmt.Errorf("invalid '%s' order '%s'", M.DataType, M.DataOrder)
-		}
-	case "SHORT", "USHORT":
+	case "SHORT", "USHORT", "INT16", "UINT16":
 		if !utils.SContains([]string{"AB", "BA"}, M.DataOrder) {
+			return fmt.Errorf("'Invalid '%s' order '%s'", M.DataType, M.DataOrder)
+		}
+	case "RAW", "INT", "INT32", "UINT", "UINT32", "FLOAT", "UFLOAT":
+		if !utils.SContains([]string{"ABCD", "DCBA", "CDAB"}, M.DataOrder) {
 			return fmt.Errorf("invalid '%s' order '%s'", M.DataType, M.DataOrder)
 		}
 	default:
@@ -250,6 +263,9 @@ func checkSiemensDataPoints(M SiemensPointVo) error {
 	}
 	if M.Weight == nil {
 		return fmt.Errorf("invalid Weight value:%d", M.Weight)
+	}
+	if !utils.IsValidColumnName(M.Tag) {
+		return fmt.Errorf("'Invalid Tag Name:%s", M.Tag)
 	}
 	return nil
 }

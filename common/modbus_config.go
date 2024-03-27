@@ -47,8 +47,8 @@ type RegisterRW struct {
 	Address   uint16  `json:"address" validate:"required" title:"地址"`        // Address
 	Frequency int64   `json:"frequency" validate:"required" title:"采集频率"`    // 间隔
 	Quantity  uint16  `json:"quantity" validate:"required" title:"数量"`       // Quantity
-	Type      string  `json:"type"`                                          // 运行时数据
-	Order     string  `json:"order"`                                         // 运行时数据
+	DataType  string  `json:"dataType"`                                      // 运行时数据
+	DataOrder string  `json:"dataOrder"`                                     // 运行时数据
 	Weight    float64 `json:"weight"`
 	Value     string  `json:"value,omitempty"` // 运行时数据. Type, Order不同值也不同
 }

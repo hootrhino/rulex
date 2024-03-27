@@ -26,7 +26,7 @@ AppDESCRIPTION = ""
 function Main(arg)
     local Value, Err = datacenter:DBQuery("SELECT * FROM T")
     if Err == nil then
-        stdlib:Debug(Value)
+        Debug(Value)
     end
     return 0
 end

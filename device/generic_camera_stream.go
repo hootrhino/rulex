@@ -106,7 +106,7 @@ func (vc *videoCamera) Start(cctx typex.CCTX) error {
 	if vc.mainConfig.OutputMode == __OUTPUT_LOCAL_JPEG_STREAM_SERVER {
 		if vc.mainConfig.OutputEncode == __OUTPUT_MODE_JPEG_STREAM {
 			// Jpeg Stream 推流地址
-			pushUrl := __internal_jpeg_stream_server_url + calculateMD5(vc.mainConfig.InputAddr)
+			pushUrl := __internal_jpeg_stream_server_url + calculateMD5(vc.Details().Name)
 			go vc.startFFMPEGProcess(vc.mainConfig.InputAddr, pushUrl)
 		}
 		vc.status = typex.DEV_UP
@@ -116,7 +116,7 @@ func (vc *videoCamera) Start(cctx typex.CCTX) error {
 	if vc.mainConfig.OutputMode == __OUTPUT_LOCAL_H264_STREAM_SERVER {
 		if vc.mainConfig.OutputEncode == __OUTPUT_MODE_H264_STREAM {
 			// Websocket 推流地址
-			pushUrl := __internal_ws_server_url + calculateMD5(vc.mainConfig.InputAddr)
+			pushUrl := __internal_ws_server_url + calculateMD5(vc.Details().Name)
 			go vc.startFFMPEGProcess(vc.mainConfig.InputAddr, pushUrl)
 		}
 		vc.status = typex.DEV_UP
@@ -251,10 +251,10 @@ func (vc *videoCamera) startFFMPEGProcess(inputUrl, pushAddr string) {
 		// RTSP摄像头
 		if vc.mainConfig.InputMode == __INPUT_REMOTE_STREAM_RTSP {
 			params := []string{
+				"-re",
 				"-hide_banner",
 				"-r", "24",
 				"-rtsp_transport", "tcp",
-				"-re",
 				"-i", inputUrl, //"rtsp://192.168.1.210:554/av0_0"
 				"-c:v", "mjpeg",
 				"-f", "mjpeg",
@@ -292,6 +292,7 @@ func (vc *videoCamera) startFFMPEGProcess(inputUrl, pushAddr string) {
 			}
 			if runtime.GOOS == "windows" {
 				paramsVideo = []string{
+					"-re",
 					"-err_detect",
 					"ignore_err",
 					"-hide_banner",
@@ -307,6 +308,7 @@ func (vc *videoCamera) startFFMPEGProcess(inputUrl, pushAddr string) {
 				}
 			} else {
 				paramsVideo = []string{
+					"-re",
 					"-err_detect",
 					"ignore_err",
 					"-hide_banner",
@@ -325,6 +327,7 @@ func (vc *videoCamera) startFFMPEGProcess(inputUrl, pushAddr string) {
 		// RTSP转地址
 		if vc.mainConfig.InputMode == __INPUT_REMOTE_STREAM_RTSP {
 			params := []string{
+				"-re",
 				"-hide_banner",
 				"-r", "24",
 				"-rtsp_transport", "tcp",
@@ -367,6 +370,7 @@ func (vc *videoCamera) startFFMPEGProcess(inputUrl, pushAddr string) {
 			}
 			if runtime.GOOS == "windows" {
 				paramsVideo = []string{
+					"-re",
 					"-err_detect",
 					"ignore_err",
 					"-hide_banner",
@@ -381,6 +385,7 @@ func (vc *videoCamera) startFFMPEGProcess(inputUrl, pushAddr string) {
 				}
 			} else {
 				paramsVideo = []string{
+					"-re",
 					"-err_detect",
 					"ignore_err",
 					"-hide_banner",
@@ -398,6 +403,7 @@ func (vc *videoCamera) startFFMPEGProcess(inputUrl, pushAddr string) {
 		// 远程拉RTSP推向RTMP
 		if vc.mainConfig.InputMode == __INPUT_REMOTE_STREAM_RTSP {
 			params := []string{
+				"-re",
 				"-rtsp_transport", "tcp",
 				"-i", inputUrl,
 				"-c:v", "libx264",

@@ -16,63 +16,22 @@
 package licensemanager
 
 import (
-	"crypto/aes"
-	"crypto/cipher"
 	"crypto/md5"
 	"crypto/rand"
-	"encoding/base64"
-	"errors"
+	"crypto/rsa"
+	"crypto/x509"
+	"encoding/pem"
 	"fmt"
 	"io"
 )
 
-// encryptAES 加密字符串
-func EncryptAES(key, text string) (string, error) {
-	block, err := aes.NewCipher([]byte(key))
+func RSADecrypt(License, Key []byte) ([]byte, error) {
+	block, _ := pem.Decode(Key)
+	privateKey, err := x509.ParsePKCS1PrivateKey(block.Bytes)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-
-	// 为加密创建一个密码分组模式
-	cipherText := make([]byte, aes.BlockSize+len(text))
-	iv := cipherText[:aes.BlockSize]
-	if _, err := io.ReadFull(rand.Reader, iv); err != nil {
-		return "", err
-	}
-
-	stream := cipher.NewCFBEncrypter(block, iv)
-	stream.XORKeyStream(cipherText[aes.BlockSize:], []byte(text))
-
-	return base64.URLEncoding.EncodeToString(cipherText), nil
-}
-
-// decryptAES 解密字符串
-func DecryptAES(key, cipherText string) (string, error) {
-	block, err := aes.NewCipher([]byte(key))
-	if err != nil {
-		return "", err
-	}
-
-	// 使用密文的前 16 个字节作为 IV
-	cipherTextBytes, err := base64.URLEncoding.DecodeString(cipherText)
-	if err != nil {
-		return "", err
-	}
-
-	if len(cipherTextBytes) < aes.BlockSize {
-		return "", errors.New("cipherText is too short")
-	}
-
-	iv := cipherTextBytes[:aes.BlockSize]
-	cipherTextBytes = cipherTextBytes[aes.BlockSize:]
-
-	// 创建一个密码分组模式
-	stream := cipher.NewCFBDecrypter(block, iv)
-
-	// 解密
-	stream.XORKeyStream(cipherTextBytes, cipherTextBytes)
-
-	return string(cipherTextBytes), nil
+	return rsa.DecryptPKCS1v15(rand.Reader, privateKey, License)
 }
 
 /*

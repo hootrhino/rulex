@@ -28,7 +28,7 @@ function Main(arg)
     for key, value in pairs(_G) do
         print(key, value)
     end
-    stdlib:Debug("Time1:" .. time1:Time())
-    stdlib:Debug("Time2:" .. time2:Time())
+    Debug("Time1:" .. time1:Time())
+    Debug("Time2:" .. time2:Time())
     return 0
 end

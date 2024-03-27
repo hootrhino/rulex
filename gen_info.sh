@@ -20,6 +20,16 @@ type VersionInfo struct {
 	Dist        string
 }
 
+var License = LocalLicense{
+	DeviceID:          "",
+	AuthorizeAdmin:    "",
+	AuthorizePassword: "",
+	MAC:               "",
+	BeginAuthorize:    0,
+	EndAuthorize:      0,
+	License:           "",
+}
+
 var DefaultVersionInfo = VersionInfo{
 	Product:        "COMMON",
 	ReleaseTime: "$(echo $(date "+%Y-%m-%d %H:%M:%S"))",

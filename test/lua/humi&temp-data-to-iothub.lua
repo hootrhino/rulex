@@ -25,23 +25,23 @@ Actions = {
     function(args)
         local dataT, err = json:J2T(args)
         if (err ~= nil) then
-            stdlib:Throw('parse json error:' .. err)
-            return true, args
+            Throw('parse json error:' .. err)
+            return false, args
         end
+        local params = {}
         for _, value in pairs(dataT) do
-            local params = {}
             params[value['tag']] = value.value
-            local json = json:T2J({
-                id = "1",
-                method = "thing.event.property.post",
-                params = params
-            })
-            stdlib:Debug(json)
-            local err = data:ToMqtt('OUTSKGLIQJX', json)
-            if err ~= nil then
-                stdlib:Throw(err)
-                return true, args
-            end
+        end
+        local json = json:T2J({
+            id = time:TimeMs(),
+            method = "thing.event.property.post",
+            params = params
+        })
+        -- Debug(json)
+        local err = data:ToMqtt('OUTSKGLIQJX', json)
+        if err ~= nil then
+            Throw(err)
+            return false, args
         end
         return true, args
     end

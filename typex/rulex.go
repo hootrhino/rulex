@@ -61,7 +61,7 @@ type RuleX interface {
 	//
 	// 所有输入列表
 	//
-	AllInEnd() *sync.Map
+	AllInEnds() *sync.Map
 	//
 	// 加载输出
 	//
@@ -69,7 +69,7 @@ type RuleX interface {
 	//
 	// 所有输出
 	//
-	AllOutEnd() *sync.Map
+	AllOutEnds() *sync.Map
 	//
 	// 获取输出
 	//
@@ -101,7 +101,7 @@ type RuleX interface {
 	//
 	// 所有规则列表
 	//
-	AllRule() *sync.Map
+	AllRules() *sync.Map
 	//
 	// 获取规则
 	//

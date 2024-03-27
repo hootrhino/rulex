@@ -48,21 +48,8 @@ type Resolution struct {
 func (O Resolution) String() string {
 	return fmt.Sprintf("%dx%d", O.Width, O.Height)
 }
-func GetVideoResolution(FrameBuffer []byte) Resolution {
-	__CGoMutex.Lock()
-	defer __CGoMutex.Unlock()
-	imgMat := gocv.NewMat()
-	err0 := gocv.IMDecodeIntoMat(FrameBuffer,
-		gocv.IMReadFlag(gocv.ColorBGRToGray), &imgMat)
-	if err0 != nil {
-		__CGoMutex.Unlock()
-		return Resolution{640, 480}
-	}
-	return Resolution{
-		imgMat.Cols(), imgMat.Rows(),
-	}
-}
-func CvMatToImageBytes(FrameBuffer []byte) ([]byte, Resolution, error) {
+
+func CvMatToImageBytes(FrameBuffer []byte) (*gocv.NativeByteBuffer, Resolution, error) {
 	__CGoMutex.Lock()
 	defer __CGoMutex.Unlock()
 	imgMat := gocv.NewMat()
@@ -80,18 +67,36 @@ func CvMatToImageBytes(FrameBuffer []byte) ([]byte, Resolution, error) {
 		gocv.FontHersheyPlain, 2, color.RGBA{255, 0, 0, 0}, 2)
 	NewImgMat := gocv.NewMat()
 	defer NewImgMat.Close()
-	if imgMat.Cols() <= 640 {
-		gocv.Resize(imgMat, &NewImgMat, image.Point{}, 2, 2, gocv.InterpolationArea)
-		ImgBytes, err1 := gocv.IMEncode(".jpg", NewImgMat)
+	if imgMat.Cols() > 1920 {
+		ImgBytes, err1 := gocv.IMEncode(gocv.JPEGFileExt, imgMat)
 		if err1 != nil {
 			return nil, Resolution, err0
 		}
-		return ImgBytes.GetBytes(), Resolution, nil
-	} else {
-		ImgBytes, err1 := gocv.IMEncode(".jpg", imgMat)
-		if err1 != nil {
-			return nil, Resolution, err0
-		}
-		return ImgBytes.GetBytes(), Resolution, nil
+		return ImgBytes, Resolution, nil
 	}
+	gocv.Resize(imgMat, &NewImgMat, image.Point{}, 2, 2, gocv.InterpolationArea)
+	Resolution.Width = imgMat.Cols() * 2
+	Resolution.Height = imgMat.Rows() * 2
+	ImgBytes, err1 := gocv.IMEncode(gocv.JPEGFileExt, NewImgMat)
+	if err1 != nil {
+		return nil, Resolution, err0
+	}
+	return ImgBytes, Resolution, nil
+}
+
+/*
+*
+* 使用DNN来做AI处理, 返回值根据模型不同而不同，需要结合AIBase里面的规则
+*
+ */
+func DNNForward(blob gocv.Mat, DnnNet gocv.Net) gocv.Mat {
+	DnnNet.SetInput(blob, "")
+	// outs.Size() 返回矩阵的形状
+	// [a11 a12 a13 ...a1n]
+	// [a21 a22 a23 ...a2n]
+	// [a31 a32 a33 ...a3n]
+	// z    := outs.Size()[0]
+	// cols := outs.Size()[1]
+	// rows := outs.Size()[2]
+	return DnnNet.Forward("")
 }

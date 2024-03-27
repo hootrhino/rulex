@@ -63,7 +63,7 @@ func Execute(vm *lua.LState, k string, args ...lua.LValue) (interface{}, error) 
 	if callable.Type() == lua.LTFunction {
 		return callLuaFunc(vm, callable.(*lua.LFunction), args...)
 	}
-	return nil, errors.New("target:" + k + " is not a lua function")
+	return nil, errors.New("Execute lua callback error: " + k + " is not a lua function")
 }
 
 /*

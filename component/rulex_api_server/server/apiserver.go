@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"runtime/debug"
 
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
@@ -15,6 +16,7 @@ import (
 	response "github.com/hootrhino/rulex/component/rulex_api_server/common"
 	"github.com/hootrhino/rulex/component/rulex_api_server/model"
 	"github.com/hootrhino/rulex/component/rulex_api_server/service"
+	"github.com/hootrhino/rulex/core"
 	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/ossupport"
 	"github.com/hootrhino/rulex/typex"
@@ -65,10 +67,14 @@ func StartRulexApiServer(ruleEngine typex.RuleX, port int) {
 	}
 	server.ginEngine.Use(static.Serve("/", WWWRoot("")))
 	server.ginEngine.Use(Authorize())
+	server.ginEngine.Use(CheckLicense())
+	server.ginEngine.Use(RateLimit())
 	server.ginEngine.Use(Cros())
 	server.ginEngine.GET("/ws", glogger.WsLogger)
 	server.ginEngine.Use(gin.CustomRecovery(func(c *gin.Context, err any) {
-		glogger.GLogger.Error(err)
+		if core.GlobalConfig.AppDebugMode {
+			debug.PrintStack()
+		}
 		c.JSON(200, response.Error500(err1crash))
 	}))
 	/*
@@ -90,6 +96,7 @@ func StartRulexApiServer(ruleEngine typex.RuleX, port int) {
 	//
 	// Http server
 	//
+	go StartRateLimiter(typex.GCTX)
 	go func(ctx context.Context, port int) {
 		listener, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", port))
 		if err != nil {

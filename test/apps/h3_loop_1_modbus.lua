@@ -24,9 +24,9 @@ function Main(arg)
     while true do
         local result, err = applib:CtrlDevice('$UUID', "010300010001D5CA")
         if err ~= nil then
-            stdlib:Debug("!!!*** CtrlDevice Error=>" .. err)
+            Debug("!!!*** CtrlDevice Error=>" .. err)
         else
-            stdlib:Debug("√√√*** CtrlDevice result=>" .. result)
+            Debug("√√√*** CtrlDevice result=>" .. result)
         end
         time:Sleep(50)
     end

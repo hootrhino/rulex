@@ -85,13 +85,13 @@ func CreateInend(c *gin.Context, ruleEngine typex.RuleX) {
 		return
 	}
 	if utils.IsValidName(form.Name) {
-		c.JSON(common.HTTP_OK, common.Error("Device Name Invalid, Must Between 6-12 characters"))
+		c.JSON(common.HTTP_OK, common.Error("Inend Name Invalid, Must Between 6-12 characters"))
 		return
 	}
 	isSingle := false
 	// 内部消息总线是单例模式
 	if form.Type == typex.INTERNAL_EVENT.String() {
-		ruleEngine.AllInEnd().Range(func(key, value any) bool {
+		ruleEngine.AllInEnds().Range(func(key, value any) bool {
 			In := value.(*typex.InEnd)
 			if In.Type.String() == form.Type {
 				isSingle = true
@@ -161,7 +161,7 @@ func UpdateInend(c *gin.Context, ruleEngine typex.RuleX) {
 		return
 	}
 	if utils.IsValidName(form.Name) {
-		c.JSON(common.HTTP_OK, common.Error("Device Name Invalid, Must Between 6-12 characters"))
+		c.JSON(common.HTTP_OK, common.Error("Inend Name Invalid, Must Between 6-12 characters"))
 		return
 	}
 	// 更新的时候从数据库往外面拿

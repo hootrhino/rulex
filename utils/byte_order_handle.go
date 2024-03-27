@@ -62,13 +62,24 @@ func ParseModbusValue(
 		}
 	case "RAW":
 		{
-			return hex.EncodeToString(byteSlice[:])
+			acc := 0
+			for _, v := range byteSlice {
+				if v != 0 {
+					acc++
+				} else {
+					continue
+				}
+			}
+			if acc == 0 {
+				return ""
+			}
+			return hex.EncodeToString(byteSlice[:acc])
 		}
 	case "BYTE":
 		{
 			return fmt.Sprintf("%d", byteSlice[0])
 		}
-	case "SHORT":
+	case "SHORT", "INT16":
 		{
 			// AB: 1234
 			// BA: 3412
@@ -86,7 +97,7 @@ func ParseModbusValue(
 			}
 
 		}
-	case "INT":
+	case "INT", "INT32":
 		// ABCD
 		if DataBlockOrder == "ABCD" {
 			intValue := int32(byteSlice[0])<<24 | int32(byteSlice[1])<<16 |
@@ -110,25 +121,26 @@ func ParseModbusValue(
 			finalValue := strconv.FormatFloat(float64(floatValue), 'f', lenFloatRound, 32)
 			return finalValue
 		}
-	case "FLOAT": // 3.14159:DCBA -> 40490FDC
+	case "FLOAT", "FLOAT32": // 3.14159:DCBA -> 40490FDC
 		// ABCD
 		if DataBlockOrder == "ABCD" {
 			intValue := int32(byteSlice[0])<<24 | int32(byteSlice[1])<<16 |
 				int32(byteSlice[2])<<8 | int32(byteSlice[3])
 			floatValue := float32(math.Float32frombits(uint32(intValue)))
-			return fmt.Sprintf("%4f", math.Pow(float64(floatValue), float64(lenFloatRound)))
+			return fmt.Sprintf("%.4f", floatValue)
 		}
 		if DataBlockOrder == "CDAB" {
 			intValue := int32(byteSlice[0])<<8 | int32(byteSlice[1]) |
 				int32(byteSlice[2])<<24 | int32(byteSlice[3])<<16
 			floatValue := float32(math.Float32frombits(uint32(intValue)))
-			return fmt.Sprintf("%4f", math.Pow(float64(floatValue), float64(lenFloatRound)))
+			return fmt.Sprintf("%.4f", floatValue)
 		}
 		if DataBlockOrder == "DCBA" {
 			intValue := int32(byteSlice[0]) | int32(byteSlice[1])<<8 |
 				int32(byteSlice[2])<<16 | int32(byteSlice[3])<<24
 			floatValue := float32(math.Float32frombits(uint32(intValue)))
-			return fmt.Sprintf("%4f", math.Pow(float64(floatValue), float64(lenFloatRound)))
+			return fmt.Sprintf("%.4f", floatValue)
+
 		}
 	default:
 		return ParseUSignedValue(DataBlockType, DataBlockOrder, Weight, byteSlice)
@@ -144,7 +156,7 @@ func ParseModbusValue(
 func ParseUSignedValue(DataBlockType string, DataBlockOrder string,
 	Weight float32, byteSlice [256]byte) string {
 	switch DataBlockType {
-	case "USHORT":
+	case "USHORT", "UINT16":
 		{
 			// AB: 1234
 			// BA: 3412
@@ -159,7 +171,7 @@ func ParseUSignedValue(DataBlockType string, DataBlockOrder string,
 			}
 
 		}
-	case "UINT":
+	case "UINT", "UINT32":
 		// ABCD
 		if DataBlockOrder == "ABCD" {
 			intValue := uint32(byteSlice[0])<<24 | uint32(byteSlice[1])<<16 |
@@ -199,11 +211,11 @@ func stringReverse(str string) string {
 func GetDefaultDataOrder(Type, Order string) string {
 	if Order == "" {
 		switch Type {
-		case "INT", "UINT", "FLOAT", "UFLOAT":
+		case "INT", "UINT", "INT32", "UINT32", "FLOAT", "FLOAT32":
 			return "DCBA"
 		case "BYTE", "I", "Q":
 			return "A"
-		case "SHORT", "USHORT":
+		case "INT16", "UINT16", "SHORT", "USHORT":
 			return "BA"
 		case "LONG", "ULONG":
 			return "HGFEDCBA"

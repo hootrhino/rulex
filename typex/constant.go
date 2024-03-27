@@ -50,6 +50,10 @@ const (
 	_ DeviceState = 2
 	// 外部停止
 	DEV_STOP DeviceState = 3
+	// 准备态
+	DEV_PENDING DeviceState = 4
+	// 被禁用
+	DEV_DISABLE DeviceState = 5
 )
 
 func (s DeviceState) String() string {
@@ -64,6 +68,12 @@ func (s DeviceState) String() string {
 	}
 	if s == 3 {
 		return "STOP"
+	}
+	if s == 4 {
+		return "PENDING"
+	}
+	if s == 5 {
+		return "DISABLE"
 	}
 	return "ERROR"
 }

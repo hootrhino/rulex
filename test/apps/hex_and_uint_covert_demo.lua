@@ -20,12 +20,12 @@ function Main(arg)
     -- "hum:[0,1];temp:[2,3]": 表示提取第 0 1 个字节，赋值给hum；提取第 2 3个字节赋值给humi
     local MatchHexS = hex:MatchUInt("hum:[0,1];temp:[2,3]", "000102030405060708")
     -- 大端输出温度
-    stdlib:Debug("Bin2F32Big hum: " .. binary:Bin2F32Big(MatchHexS['hum']))
+    Debug("Bin2F32Big hum: " .. binary:Bin2F32Big(MatchHexS['hum']))
     -- 大端输出湿度
-    stdlib:Debug("Bin2F32Big temp: " .. binary:Bin2F32Big(MatchHexS['temp']))
+    Debug("Bin2F32Big temp: " .. binary:Bin2F32Big(MatchHexS['temp']))
     -- 小端输出温度
-    stdlib:Debug("Bin2F32Little hum: " .. binary:Bin2F32Little(MatchHexS['hum']))
+    Debug("Bin2F32Little hum: " .. binary:Bin2F32Little(MatchHexS['hum']))
     -- 小端输出湿度
-    stdlib:Debug("Bin2F32Little temp: " .. binary:Bin2F32Little(MatchHexS['temp']))
+    Debug("Bin2F32Little temp: " .. binary:Bin2F32Little(MatchHexS['temp']))
     return 0
 end

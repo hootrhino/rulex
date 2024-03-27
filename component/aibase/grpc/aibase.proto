@@ -1,0 +1,30 @@
+syntax = "proto3";
+option go_package = "./;aibase";
+option java_multiple_files = false;
+option java_package = "aibase";
+option java_outer_classname = "aibase";
+
+package aibase;
+
+service AIBaseService {
+    // 普通请求
+    rpc Call(CallRequest) returns (CallResponse) {}
+    // 流式请求
+    rpc Stream (stream StreamRequest) returns (stream StreamResponse) {}
+}
+
+message CallRequest {
+    bytes data = 1;
+}
+
+message CallResponse {
+    bytes result = 1;
+}
+
+message StreamRequest {
+    bytes data = 1;
+}
+
+message StreamResponse {
+    bytes result = 1;
+}

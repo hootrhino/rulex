@@ -130,7 +130,6 @@ func (hnc8Cnc *HNC8_CNC) Start(cctx typex.CCTX) error {
 				{
 				}
 			}
-			glogger.GLogger.Debug("调试模式, 采集数据中。。。。")
 			time.Sleep(1000 * time.Millisecond)
 		}
 

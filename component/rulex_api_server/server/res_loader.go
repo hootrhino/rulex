@@ -2,6 +2,7 @@ package server
 
 import (
 	"errors"
+	"sync"
 
 	"github.com/hootrhino/rulex/component/rulex_api_server/service"
 	"github.com/hootrhino/rulex/glogger"
@@ -111,9 +112,12 @@ func LoadNewestOutEnd(uuid string, ruleEngine typex.RuleX) error {
 * 当资源重启加载的时候，内存里面的数据会丢失，需要重新从数据库加载规则到资源，建立绑定关联。
 *
  */
+var loadDeviceLocker = sync.Mutex{}
 
 // LoadNewestDevice
 func LoadNewestDevice(uuid string, ruleEngine typex.RuleX) error {
+	loadDeviceLocker.Lock()
+	defer loadDeviceLocker.Unlock()
 	mDevice, err := service.GetMDeviceWithUUID(uuid)
 	if err != nil {
 		return err
@@ -138,9 +142,6 @@ func LoadNewestDevice(uuid string, ruleEngine typex.RuleX) error {
 	dev.UUID = mDevice.UUID // 本质上是配置和内存的数据映射起来
 	BindRules := map[string]typex.Rule{}
 	for _, ruleId := range mDevice.BindRules {
-		if ruleId == "" {
-			continue
-		}
 		mRule, err1 := service.GetMRuleWithUUID(ruleId)
 		if err1 != nil {
 			return err1
@@ -164,8 +165,10 @@ func LoadNewestDevice(uuid string, ruleEngine typex.RuleX) error {
 	dev.Config = mDevice.GetConfig()
 	// 参数传给 --> startDevice()
 	ctx, cancelCTX := typex.NewCCTX()
-	if err := ruleEngine.LoadDeviceWithCtx(dev, ctx, cancelCTX); err != nil {
-		return err
+	err2 := ruleEngine.LoadDeviceWithCtx(dev, ctx, cancelCTX)
+	if err2 != nil {
+		glogger.GLogger.Error(err2)
+		return err2
 	}
 	go StartDeviceSupervisor(ctx, dev, ruleEngine)
 	return nil

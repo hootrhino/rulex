@@ -1,3 +1,4 @@
+---@diagnostic disable: undefined-global
 -- Copyright (C) 2024 wwhai
 --
 -- This program is free software: you can redistribute it and/or modify
@@ -15,7 +16,7 @@
 
 Actions = {
     function(args)
-        stdlib:Debug(args)
+        Debug(args)
         local JsonT = json:J2T(args)
         local t = {
             id = string:MakeUid(),
@@ -25,10 +26,10 @@ Actions = {
             }
         }
         local jsons = json:T2J(t)
-        stdlib:Debug(jsons)
+        Debug(jsons)
         local error = data:ToMqtt('OUTQAQXBVCU', jsons)
         if error ~= nil then
-            stdlib:Throw(error)
+            Throw(error)
         end
         return true, args
     end

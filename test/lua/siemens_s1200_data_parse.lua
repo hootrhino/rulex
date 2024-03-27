@@ -28,7 +28,7 @@ Actions =
     function(args)
         local dataT, err = json:J2T(args)
         if (err ~= nil) then
-            stdlib:Debug('parse json error:' .. err)
+            Debug('parse json error:' .. err)
             return true, args
         end
         for key, value in pairs(dataT) do
@@ -45,7 +45,7 @@ Actions =
                     d = MatchHexS['d'],
                 }
             )
-            stdlib:Debug(Json)
+            Debug(Json)
         end
         return true, args
     end

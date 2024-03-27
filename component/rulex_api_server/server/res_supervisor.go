@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/hootrhino/rulex/component/internotify"
+	"github.com/hootrhino/rulex/component/supervisor"
 	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/typex"
 )
@@ -15,15 +16,26 @@ import (
 * 南向资源监控器 5秒检查一下状态
 *
  */
-func StartInSupervisor(ctx context.Context, in *typex.InEnd, ruleEngine typex.RuleX) {
+func StartInSupervisor(InCtx context.Context, in *typex.InEnd, ruleEngine typex.RuleX) {
 	UUID := in.UUID
 	ticker := time.NewTicker(time.Duration(time.Second * 5))
-	defer func() {
-		ticker.Stop()
-	}()
+	defer ticker.Stop()
+	SuperVisor := supervisor.RegisterSuperVisor(in.UUID)
+	glogger.GLogger.Debugf("Register SuperVisor For InEnd:%s", SuperVisor.SlaverId)
+	defer supervisor.UnRegisterSuperVisor(SuperVisor.SlaverId)
 	for {
 		select {
 		case <-typex.GCTX.Done():
+			{
+				glogger.GLogger.Debugf("Global Context cancel:%v, supervisor exit", UUID)
+				return
+			}
+		case <-SuperVisor.Ctx.Done():
+			{
+				glogger.GLogger.Debugf("SuperVisor Context cancel:%v, supervisor exit", UUID)
+				return
+			}
+		case <-InCtx.Done():
 			{
 				glogger.GLogger.Debugf("Source Context cancel:%v, supervisor exit", UUID)
 				return
@@ -53,7 +65,6 @@ func StartInSupervisor(ctx context.Context, in *typex.InEnd, ruleEngine typex.Ru
 			go LoadNewestInEnd(UUID, ruleEngine)
 			return
 		}
-		// glogger.GLogger.Debugf("Supervisor Get Source :%v state:%v", UUID, currentIn.Source.Status().String())
 		<-ticker.C
 	}
 }
@@ -63,15 +74,25 @@ func StartInSupervisor(ctx context.Context, in *typex.InEnd, ruleEngine typex.Ru
 * 北向资源监控器 5秒检查一下状态
 *
  */
-func StartOutSupervisor(ctx context.Context, out *typex.OutEnd, ruleEngine typex.RuleX) {
+func StartOutSupervisor(OutCtx context.Context, out *typex.OutEnd, ruleEngine typex.RuleX) {
 	UUID := out.UUID
 	ticker := time.NewTicker(time.Duration(time.Second * 5))
-	defer func() {
-		ticker.Stop()
-	}()
+	defer ticker.Stop()
+	SuperVisor := supervisor.RegisterSuperVisor(out.UUID)
+	glogger.GLogger.Debugf("Register SuperVisor For OutEnd:%s", SuperVisor.SlaverId)
+	defer supervisor.UnRegisterSuperVisor(SuperVisor.SlaverId)
+
 	for {
 		select {
 		case <-typex.GCTX.Done():
+			glogger.GLogger.Debugf("Global Context cancel:%v, supervisor exit", UUID)
+			return
+		case <-SuperVisor.Ctx.Done():
+			{
+				glogger.GLogger.Debugf("SuperVisor Context cancel:%v, supervisor exit", UUID)
+				return
+			}
+		case <-OutCtx.Done():
 			glogger.GLogger.Debugf("OutEnd Context cancel:%v, supervisor exit", UUID)
 			return
 		default:
@@ -98,7 +119,6 @@ func StartOutSupervisor(ctx context.Context, out *typex.OutEnd, ruleEngine typex
 			go LoadNewestOutEnd(UUID, ruleEngine)
 			return
 		}
-		// glogger.GLogger.Debugf("Supervisor Get OutEnd :%v state:%v", UUID, currentOut.Target.Status().String())
 		<-ticker.C
 	}
 }
@@ -108,15 +128,27 @@ func StartOutSupervisor(ctx context.Context, out *typex.OutEnd, ruleEngine typex
 * 设备监控器 5秒检查一下状态
 *
  */
-func StartDeviceSupervisor(ctx context.Context, device *typex.Device, ruleEngine typex.RuleX) {
+func StartDeviceSupervisor(DeviceCtx context.Context, device *typex.Device, ruleEngine typex.RuleX) {
 	UUID := device.UUID
 	ticker := time.NewTicker(time.Duration(time.Second * 5))
-	defer func() {
-		ticker.Stop()
-	}()
+	defer ticker.Stop()
+	SuperVisor := supervisor.RegisterSuperVisor(device.UUID)
+	glogger.GLogger.Debugf("Register SuperVisor For Device:%s", SuperVisor.SlaverId)
+	defer supervisor.UnRegisterSuperVisor(SuperVisor.SlaverId)
+
 	for {
 		select {
 		case <-typex.GCTX.Done():
+			{
+				glogger.GLogger.Debugf("Global Context cancel:%v, supervisor exit", UUID)
+				return
+			}
+		case <-SuperVisor.Ctx.Done():
+			{
+				glogger.GLogger.Debugf("SuperVisor Context cancel:%v, supervisor exit", UUID)
+				return
+			}
+		case <-DeviceCtx.Done():
 			{
 				glogger.GLogger.Debugf("Device Context cancel:%v, supervisor exit", UUID)
 				return
@@ -131,6 +163,7 @@ func StartDeviceSupervisor(ctx context.Context, device *typex.Device, ruleEngine
 			glogger.GLogger.Debugf("Device:%v Deleted, supervisor exit", UUID)
 			return
 		}
+
 		// 资源可能不会及时DOWN
 		if currentDevice.Device.Status() == typex.DEV_DOWN {
 			info := fmt.Sprintf("Device:%v DOWN, supervisor try to Restart", UUID)
@@ -145,7 +178,6 @@ func StartDeviceSupervisor(ctx context.Context, device *typex.Device, ruleEngine
 			go LoadNewestDevice(UUID, ruleEngine)
 			return
 		}
-		// glogger.GLogger.Debugf("Supervisor Get Device :%v state:%v", UUID, currentDevice.Device.Status().String())
 		<-ticker.C
 	}
 }

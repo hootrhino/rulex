@@ -16,14 +16,9 @@
 package apis
 
 import (
-	"os"
-	"strings"
-
 	"github.com/gin-gonic/gin"
 	common "github.com/hootrhino/rulex/component/rulex_api_server/common"
-	"github.com/hootrhino/rulex/core"
 	"github.com/hootrhino/rulex/typex"
-	"gopkg.in/ini.v1"
 )
 
 /*
@@ -33,25 +28,5 @@ import (
  */
 
 func GetVendorKey(c *gin.Context, ruleEngine typex.RuleX) {
-	cfg, _ := ini.ShadowLoad(core.INIPath)
-	sections := cfg.ChildSections("plugin")
-	license := ""
-	for _, section := range sections {
-		name := strings.TrimPrefix(section.Name(), "plugin.")
-		if name == "license_manager" {
-			license_path, err1 := section.GetKey("license_path")
-			if err1 != nil {
-				c.JSON(common.HTTP_OK, common.Error400(err1))
-				return
-			}
-			readBytes, err2 := os.ReadFile(license_path.String())
-			if err2 != nil {
-				c.JSON(common.HTTP_OK, common.Error400(err2))
-				return
-			}
-			license += string(readBytes)
-			break
-		}
-	}
-	c.JSON(common.HTTP_OK, common.OkWithData(license))
+	c.JSON(common.HTTP_OK, common.OkWithData(typex.License))
 }

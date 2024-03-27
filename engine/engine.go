@@ -31,6 +31,7 @@ import (
 	kdncnc "github.com/hootrhino/rulex/component/intercache/kdncnc"
 	modbuscache "github.com/hootrhino/rulex/component/intercache/modbus"
 	siemenscache "github.com/hootrhino/rulex/component/intercache/siemens"
+	supervisor "github.com/hootrhino/rulex/component/supervisor"
 
 	"github.com/hootrhino/rulex/component/interdb"
 	"github.com/hootrhino/rulex/component/intermetric"
@@ -90,6 +91,8 @@ func InitRuleEngine(config typex.RulexConfig) typex.RuleX {
 	}
 	// Internal DB
 	interdb.Init(__DefaultRuleEngine, __DEFAULT_DB_PATH)
+	// SuperVisor Admin
+	supervisor.InitResourceSuperVisorAdmin(__DefaultRuleEngine)
 	// Init Modbus Point Cache
 	modbuscache.InitModbusPointCache(__DefaultRuleEngine)
 	// Init Siemens Point Cache
@@ -102,8 +105,8 @@ func InitRuleEngine(config typex.RulexConfig) typex.RuleX {
 	internotify.InitInternalEventBus(__DefaultRuleEngine, core.GlobalConfig.MaxQueueSize)
 	// 前后交互组件
 	interqueue.InitInteractQueue(__DefaultRuleEngine, core.GlobalConfig.MaxQueueSize)
-	// Web Pipeline
-	core.InitWebDataPipe(__DefaultRuleEngine)
+	// Web Pipeline: future version maybe support
+	// core.InitWebDataPipe(__DefaultRuleEngine)
 	// Internal Schema
 	iotschema.InitInternalSchemaCache(__DefaultRuleEngine)
 	// Load hardware Port Manager
@@ -115,10 +118,10 @@ func InitRuleEngine(config typex.RulexConfig) typex.RuleX {
 	// lua appstack manager
 	appstack.InitAppStack(__DefaultRuleEngine)
 	// current only support Internal ai
-	aibase.InitAIRuntime(__DefaultRuleEngine)
+	aibase.InitAlgorithmRuntime(__DefaultRuleEngine)
 	// Internal Queue
 	interqueue.InitDataCacheQueue(__DefaultRuleEngine, core.GlobalConfig.MaxQueueSize)
-	// Data center
+	// Data center: future version maybe support
 	// datacenter.InitDataCenter(__DefaultRuleEngine)
 	// Rtsp server
 	rtspserver.InitRtspServer(__DefaultRuleEngine)
@@ -382,7 +385,7 @@ func (e *RuleEngine) RemoveInEnd(uuid string) {
 	}
 }
 
-func (e *RuleEngine) AllInEnd() *sync.Map {
+func (e *RuleEngine) AllInEnds() *sync.Map {
 	return e.InEnds
 }
 
@@ -414,7 +417,7 @@ func (e *RuleEngine) RemoveOutEnd(uuid string) {
 	}
 }
 
-func (e *RuleEngine) AllOutEnd() *sync.Map {
+func (e *RuleEngine) AllOutEnds() *sync.Map {
 	return e.OutEnds
 }
 
@@ -427,12 +430,11 @@ func (e *RuleEngine) SnapshotDump() string {
 	plugins := []interface{}{}
 	outends := []interface{}{}
 	devices := []interface{}{}
-	drivers := []interface{}{}
-	e.AllInEnd().Range(func(key, value interface{}) bool {
+	e.AllInEnds().Range(func(key, value interface{}) bool {
 		inends = append(inends, value)
 		return true
 	})
-	e.AllRule().Range(func(key, value interface{}) bool {
+	e.AllRules().Range(func(key, value interface{}) bool {
 		rules = append(rules, value)
 		return true
 	})
@@ -440,15 +442,12 @@ func (e *RuleEngine) SnapshotDump() string {
 		plugins = append(plugins, (value.(typex.XPlugin)).PluginMetaInfo())
 		return true
 	})
-	e.AllOutEnd().Range(func(key, value interface{}) bool {
+	e.AllOutEnds().Range(func(key, value interface{}) bool {
 		outends = append(outends, value)
 		return true
 	})
 	e.AllDevices().Range(func(key, value interface{}) bool {
-		Device := value.(*typex.Device)
-		if Device.Device.Driver() != nil {
-			devices = append(devices, Device.Device.Driver())
-		}
+		devices = append(devices, value)
 		return true
 	})
 
@@ -472,7 +471,6 @@ func (e *RuleEngine) SnapshotDump() string {
 		"inends":     inends,
 		"outends":    outends,
 		"devices":    devices,
-		"drivers":    drivers,
 		"statistics": intermetric.GetMetric(),
 		"system":     system,
 		"config":     core.GlobalConfig,
@@ -480,6 +478,7 @@ func (e *RuleEngine) SnapshotDump() string {
 	b, err := json.Marshal(data)
 	if err != nil {
 		glogger.GLogger.Error(err)
+		return err.Error()
 	}
 	return string(b)
 }

@@ -2,7 +2,9 @@ package apis
 
 import (
 	"fmt"
+	"strings"
 
+	"github.com/hootrhino/beautiful-lua-go/parse"
 	"github.com/hootrhino/rulex/component/interqueue"
 	common "github.com/hootrhino/rulex/component/rulex_api_server/common"
 	"github.com/hootrhino/rulex/component/rulex_api_server/model"
@@ -72,6 +74,9 @@ func Rules(c *gin.Context, ruleEngine typex.RuleX) {
 	c.JSON(common.HTTP_OK, common.OkWithData(DataList))
 }
 
+var __default_success = `function Success() end`
+var __default_failed = `function Failed(error) end`
+
 // Create rule
 func CreateRule(c *gin.Context, ruleEngine typex.RuleX) {
 	type Form struct {
@@ -81,17 +86,17 @@ func CreateRule(c *gin.Context, ruleEngine typex.RuleX) {
 		Type        string   `json:"type"`
 		Description string   `json:"description"`
 		Actions     string   `json:"actions"`
-		Success     string   `json:"success"`
-		Failed      string   `json:"failed"`
 	}
-	form := Form{Type: "lua"}
+	form := Form{
+		Type: "lua",
+	}
 
 	if err := c.ShouldBindJSON(&form); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
 	if utils.IsValidName(form.Name) {
-		c.JSON(common.HTTP_OK, common.Error("Device Name Invalid, Must Between 6-12 characters"))
+		c.JSON(common.HTTP_OK, common.Error("Rule Name Invalid, Must Between 6-12 characters"))
 		return
 	}
 	if !utils.SContains([]string{"lua"}, form.Type) {
@@ -115,8 +120,8 @@ func CreateRule(c *gin.Context, ruleEngine typex.RuleX) {
 	}
 
 	// tmpRule 是一个一次性的临时rule，用来验证规则，这么做主要是为了防止真实Lua Vm 被污染
-	tmpRule := typex.NewRule(nil, "_", "_", "_", "", "",
-		form.Success, form.Actions, form.Failed)
+	tmpRule := typex.NewRule(nil, "_", "_", "_", "_", "_",
+		__default_success, form.Actions, __default_failed)
 	if err := core.VerifyLuaSyntax(tmpRule); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
@@ -139,9 +144,9 @@ func CreateRule(c *gin.Context, ruleEngine typex.RuleX) {
 			}
 			return ""
 		}(form.FromDevice),
-		form.Success,
+		__default_success,
 		form.Actions,
-		form.Failed)
+		__default_failed)
 	ruleEngine.RemoveRule(rule.UUID)
 	if err := ruleEngine.LoadRule(rule); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
@@ -153,6 +158,7 @@ func CreateRule(c *gin.Context, ruleEngine typex.RuleX) {
 			InEnd, _ := service.GetMInEndWithUUID(inId)
 			if InEnd == nil {
 				// c.JSON(common.HTTP_OK, common.Error(`inend not exists: `+inId))
+				glogger.GLogger.Error(`inend not exists: ` + inId)
 				return
 			}
 			// SaveDB
@@ -173,8 +179,8 @@ func CreateRule(c *gin.Context, ruleEngine typex.RuleX) {
 					}
 					return ""
 				}(form.FromDevice),
-				Success: form.Success,
-				Failed:  form.Failed,
+				Success: __default_success,
+				Failed:  __default_failed,
 				Actions: form.Actions,
 			}
 			// 去重旧的
@@ -193,17 +199,17 @@ func CreateRule(c *gin.Context, ruleEngine typex.RuleX) {
 			if err := service.UpdateMInEnd(InEnd.UUID, &model.MInEnd{
 				BindRules: BindRules,
 			}); err != nil {
-				// c.JSON(common.HTTP_OK, common.Error400(err))
+				glogger.GLogger.Error(err)
 				return
 			}
 
 			if err := service.InsertMRule(mRule); err != nil {
-				// c.JSON(common.HTTP_OK, common.Error400(err))
+				glogger.GLogger.Error(err)
 				return
 			}
 			// LoadNewest!!!
 			if err := server.LoadNewestInEnd(inId, ruleEngine); err != nil {
-				// c.JSON(common.HTTP_OK, common.Error400(err))
+				glogger.GLogger.Error(err)
 				return
 			}
 
@@ -213,7 +219,7 @@ func CreateRule(c *gin.Context, ruleEngine typex.RuleX) {
 		for _, devId := range form.FromDevice {
 			Device, _ := service.GetMDeviceWithUUID(devId)
 			if Device == nil {
-				// c.JSON(common.HTTP_OK, common.Error(`device not exists: `+devId))
+				glogger.GLogger.Error(`device not exists: ` + devId)
 				return
 			}
 			// 去重旧的
@@ -238,8 +244,8 @@ func CreateRule(c *gin.Context, ruleEngine typex.RuleX) {
 					}
 					return ""
 				}(form.FromDevice),
-				Success: form.Success,
-				Failed:  form.Failed,
+				Success: __default_success,
+				Failed:  __default_failed,
 				Actions: form.Actions,
 			}
 			// 追加新的ID
@@ -253,17 +259,17 @@ func CreateRule(c *gin.Context, ruleEngine typex.RuleX) {
 			if err := service.UpdateDevice(Device.UUID, &model.MDevice{
 				BindRules: BindRules,
 			}); err != nil {
-				// c.JSON(common.HTTP_OK, common.Error400(err))
+				glogger.GLogger.Error((err))
 				return
 			}
 
 			if err := service.InsertMRule(mRule); err != nil {
-				// c.JSON(common.HTTP_OK, common.Error400(err))
+				glogger.GLogger.Error((err))
 				return
 			}
 			// LoadNewest!!!
 			if err := server.LoadNewestDevice(devId, ruleEngine); err != nil {
-				// c.JSON(common.HTTP_OK, common.Error400(err))
+				glogger.GLogger.Error((err))
 				return
 			}
 
@@ -287,8 +293,6 @@ func UpdateRule(c *gin.Context, ruleEngine typex.RuleX) {
 		Type        string   `json:"type"`
 		Description string   `json:"description"`
 		Actions     string   `json:"actions"`
-		Success     string   `json:"success"`
-		Failed      string   `json:"failed"`
 	}
 	form := Form{Type: "lua"}
 	if err := c.ShouldBindJSON(&form); err != nil {
@@ -296,87 +300,82 @@ func UpdateRule(c *gin.Context, ruleEngine typex.RuleX) {
 		return
 	}
 	if utils.IsValidName(form.Name) {
-		c.JSON(common.HTTP_OK, common.Error("Device Name Invalid, Must Between 6-12 characters"))
+		c.JSON(common.HTTP_OK, common.Error("Rule Name Invalid, Must Between 6-12 characters"))
 		return
 	}
 	// tmpRule 是一个一次性的临时rule，用来验证规则，这么做主要是为了防止真实Lua Vm 被污染
-	tmpRule := typex.NewRule(nil, "_", "_", "_", "", "",
-		form.Success, form.Actions, form.Failed)
+	tmpRule := typex.NewRule(nil, "_", "_", "_", "_", "_",
+		__default_success, form.Actions, __default_failed)
 	if err := core.VerifyLuaSyntax(tmpRule); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	for _, id := range form.FromSource {
-		in := ruleEngine.GetInEnd(id)
-		if in == nil {
-			c.JSON(common.HTTP_OK, common.Error(`inend not exists: `+id))
-			return
-		}
-	}
-	for _, id := range form.FromDevice {
-		in := ruleEngine.GetDevice(id)
-		if in == nil {
-			c.JSON(common.HTTP_OK, common.Error(`device not exists: `+id))
-			return
-		}
-	}
-	OldRule, err := service.GetMRuleWithUUID(form.UUID)
-	if err != nil {
-		c.JSON(common.HTTP_OK, common.Error400(err))
-		return
-	}
-	rule := typex.NewLuaRule(
-		ruleEngine,
-		OldRule.UUID,
-		OldRule.Name,
-		OldRule.Description,
-		OldRule.SourceId,
-		OldRule.DeviceId,
-		OldRule.Success,
-		OldRule.Actions,
-		OldRule.Failed)
-	ruleEngine.RemoveRule(rule.UUID)
-	if err := ruleEngine.LoadRule(rule); err != nil {
-		c.JSON(common.HTTP_OK, common.Error400(err))
-		return
-	}
-	// SaveDB
-	//
-	if err := service.UpdateMRule(OldRule.UUID, &model.MRule{
-		Name:        form.Name,
-		Description: form.Description,
-		SourceId: func(s []string) string {
-			if len(s) > 0 {
-				return s[0]
-			}
-			return ""
-		}(form.FromSource),
-		DeviceId: func(s []string) string {
-			if len(s) > 0 {
-				return s[0]
-			}
-			return ""
-		}(form.FromDevice),
-		Success: form.Success,
-		Failed:  form.Failed,
-		Actions: form.Actions,
-	}); err != nil {
-		c.JSON(common.HTTP_OK, common.Error400(err))
-		return
-	}
-
-	// 耗时操作直接后台执行
 	go func() {
-		select {
-		case <-typex.GCTX.Done():
-			return
-		default:
+		for _, id := range form.FromSource {
+			in := ruleEngine.GetInEnd(id)
+			if in == nil {
+				c.JSON(common.HTTP_OK, common.Error(`inend not exists: `+id))
+				return
+			}
 		}
+		for _, id := range form.FromDevice {
+			in := ruleEngine.GetDevice(id)
+			if in == nil {
+				c.JSON(common.HTTP_OK, common.Error(`device not exists: `+id))
+				return
+			}
+		}
+		OldRule, err := service.GetMRuleWithUUID(form.UUID)
+		if err != nil {
+			c.JSON(common.HTTP_OK, common.Error400(err))
+			return
+		}
+		rule := typex.NewLuaRule(
+			ruleEngine,
+			OldRule.UUID,
+			OldRule.Name,
+			OldRule.Description,
+			OldRule.SourceId,
+			OldRule.DeviceId,
+			OldRule.Success,
+			OldRule.Actions,
+			OldRule.Failed)
+		ruleEngine.RemoveRule(rule.UUID)
+		if err := ruleEngine.LoadRule(rule); err != nil {
+			c.JSON(common.HTTP_OK, common.Error400(err))
+			return
+		}
+		// SaveDB
+		//
+		if err := service.UpdateMRule(OldRule.UUID, &model.MRule{
+			Name:        form.Name,
+			Description: form.Description,
+			SourceId: func(s []string) string {
+				if len(s) > 0 {
+					return s[0]
+				}
+				return ""
+			}(form.FromSource),
+			DeviceId: func(s []string) string {
+				if len(s) > 0 {
+					return s[0]
+				}
+				return ""
+			}(form.FromDevice),
+			Success: __default_success,
+			Failed:  __default_failed,
+			Actions: form.Actions,
+		}); err != nil {
+			c.JSON(common.HTTP_OK, common.Error400(err))
+			return
+		}
+
+		// 耗时操作直接后台执行
 		if len(form.FromSource) > 0 {
 			// 更新FromSource RULE到Device表中
 			InEnd, _ := service.GetMInEndWithUUID(form.FromSource[0])
 			if InEnd == nil {
-				//c.JSON(common.HTTP_OK, common.Error(`inend not exists: `+inId))
+				glogger.GLogger.Error((`inend not exists: ` + form.FromSource[0]))
 				return
 			}
 			// 去重旧的
@@ -395,21 +394,20 @@ func UpdateRule(c *gin.Context, ruleEngine typex.RuleX) {
 			if err := service.UpdateMInEnd(InEnd.UUID, &model.MInEnd{
 				BindRules: BindRules,
 			}); err != nil {
-				//c.JSON(common.HTTP_OK, common.Error400(err))
+				glogger.GLogger.Error((err))
 				return
 			}
 			// LoadNewest!!!
 			if err := server.LoadNewestInEnd(InEnd.UUID, ruleEngine); err != nil {
-				//c.JSON(common.HTTP_OK, common.Error400(err))
+				glogger.GLogger.Error((err))
 				return
 			}
 		}
 		// FromDevice
 		if len(form.FromDevice) > 0 {
-
 			Device, _ := service.GetMDeviceWithUUID(form.FromDevice[0])
 			if Device == nil {
-				//c.JSON(common.HTTP_OK, common.Error(`device not exists: `+devId))
+				glogger.GLogger.Error((`device not exists: ` + form.FromDevice[0]))
 				return
 			}
 			// 去重旧的
@@ -428,12 +426,12 @@ func UpdateRule(c *gin.Context, ruleEngine typex.RuleX) {
 			if err := service.UpdateDevice(Device.UUID, &model.MDevice{
 				BindRules: BindRules,
 			}); err != nil {
-				//c.JSON(common.HTTP_OK, common.Error400(err))
+				glogger.GLogger.Error((err))
 				return
 			}
 			// LoadNewest!!!
 			if err := server.LoadNewestDevice(Device.UUID, ruleEngine); err != nil {
-				//c.JSON(common.HTTP_OK, common.Error400(err))
+				glogger.GLogger.Error((err))
 				return
 			}
 		}
@@ -549,9 +547,9 @@ func ValidateLuaSyntax(c *gin.Context, ruleEngine typex.RuleX) {
 			}
 			return ""
 		}(form.FromDevice),
-		form.Success,
+		__default_success,
 		form.Actions,
-		form.Failed)
+		__default_failed)
 	if err := core.VerifyLuaSyntax(tmpRule); err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 	} else {
@@ -772,5 +770,30 @@ func GetAllResources(c *gin.Context, ruleEngine typex.RuleX) {
 	c.JSON(common.HTTP_OK, common.OkWithData(map[string]any{
 		"devices": Devices,
 		"outends": OutEnds,
+	}))
+}
+
+/*
+*
+* 格式化lua
+*
+ */
+type LuaSource struct {
+	Source string `json:"source"`
+}
+
+func FormatLua(c *gin.Context, ruleEngine typex.RuleX) {
+	form := LuaSource{}
+	if err0 := c.ShouldBindJSON(&form); err0 != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err0))
+		return
+	}
+	luaChunk, err1 := parse.Parse(strings.NewReader(form.Source), "")
+	if err1 != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err1))
+		return
+	}
+	c.JSON(common.HTTP_OK, common.OkWithData(LuaSource{
+		Source: luaChunk.String(),
 	}))
 }

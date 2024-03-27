@@ -16,8 +16,8 @@
 -- 003e 004c 00cc 00cd
 function Main(arg)
     local HexS = "3e4ccccd"
-    stdlib:Debug("Bin2F32Big:" .. HexS .. "->" .. binary:Bin2F32Big(HexS))
+    Debug("Bin2F32Big:" .. HexS .. "->" .. binary:Bin2F32Big(HexS))
     -- 8.9
-    stdlib:Debug("Bin2F32Little:" .. HexS .. "->" .. binary:Bin2F32Little(HexS))
+    Debug("Bin2F32Little:" .. HexS .. "->" .. binary:Bin2F32Little(HexS))
     return 0
 end

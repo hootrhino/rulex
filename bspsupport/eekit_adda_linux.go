@@ -110,9 +110,9 @@ func _EEKIT_GPIOAllInit() int {
 /*
 explain:init gpio
 Pin: gpio pin
-EnDir:gpio direction in or out
+direction:gpio direction in or out
 */
-func _EEKIT_GPIOInit(Pin string, EnDir string) {
+func _EEKIT_GPIOInit(Pin string, direction string) {
 	//gpio export
 	cmd := fmt.Sprintf("echo %s > /sys/class/gpio/export", Pin)
 	output, err := exec.Command("sh", "-c", cmd).CombinedOutput()
@@ -121,7 +121,7 @@ func _EEKIT_GPIOInit(Pin string, EnDir string) {
 		return
 	}
 	//gpio set direction
-	cmd = fmt.Sprintf("echo %s > /sys/class/gpio/gpio%s/direction", EnDir, Pin)
+	cmd = fmt.Sprintf("echo %s > /sys/class/gpio/gpio%s/direction", direction, Pin)
 	output, err = exec.Command("sh", "-c", cmd).CombinedOutput()
 	if err != nil {
 		log.Println("[EEKIT_GPIOInit] error", err, string(output))

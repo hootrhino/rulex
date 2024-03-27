@@ -46,7 +46,7 @@ Actions = { function(args)
     local jsons = json:T2J(t)
     local error = data:ToMqtt('OUTQAQXBVCU', jsons)
     if error ~= nil then
-        stdlib:Throw(error)
+        Throw(error)
     end
     return true, args
 end }

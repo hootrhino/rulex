@@ -24,6 +24,7 @@ type DeviceVo struct {
 	Type        string                 `json:"type"`
 	SchemaId    string                 `json:"schemaId"`
 	State       int                    `json:"state"`
+	ErrMsg      string                 `json:"errMsg"`
 	Config      map[string]interface{} `json:"config"`
 	Description string                 `json:"description"`
 }
@@ -356,4 +357,23 @@ func DevicePropertiesPage(c *gin.Context, ruleEngine typex.RuleX) {
 	}
 	Result := service.WrapPageResult(*pager, recordsVoList, count)
 	c.JSON(common.HTTP_OK, common.OkWithData(Result))
+}
+
+/*
+*
+* 获取设备挂了的异常信息
+*
+ */
+func GetDeviceErrorMsg(c *gin.Context, ruleEngine typex.RuleX) {
+
+	c.JSON(common.HTTP_OK, common.OkWithData("Error Msg Not Found"))
+}
+
+/*
+*
+* 获取设备点位表挂了的异常信息
+*
+ */
+func GetDevicePointErrorMsg(c *gin.Context, ruleEngine typex.RuleX) {
+	c.JSON(common.HTTP_OK, common.OkWithData("Error Msg Not Found"))
 }
