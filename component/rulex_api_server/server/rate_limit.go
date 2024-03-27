@@ -12,45 +12,48 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 package server
 
 import (
-	"sync"
+	"context"
+	"sync/atomic"
 	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
-var timeout = 0
-var __lock = sync.Mutex{}
+var timeout int32 = 3000
 
-func DecreaseRateTime() {
-	__lock.Lock()
-	defer __lock.Unlock()
-	timeout--
+func decreaseRateTime() {
+	atomic.AddInt32(&timeout, -1)
 }
-func ReInitRateTime() {
-	__lock.Lock()
-	defer __lock.Unlock()
-	timeout = 300
+
+func reInitRateTime() {
+	atomic.StoreInt32(&timeout, 300)
 }
-func StartRateLimiter() {
+func StartRateLimiter(ctx context.Context) {
+	ticker := time.NewTicker(100 * time.Millisecond)
+	defer ticker.Stop()
+
 	for {
-		if timeout == 0 {
-			ReInitRateTime()
+		select {
+		case <-ticker.C:
+			if atomic.LoadInt32(&timeout) > 0 {
+				decreaseRateTime()
+			}
+		case <-ctx.Done():
+			return // Stop the rate limiter when the context is cancelled
 		}
-		DecreaseRateTime()
-		time.Sleep(100 * time.Millisecond)
 	}
 }
+
 func RateLimit() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		if timeout == 0 {
+		if atomic.LoadInt32(&timeout) <= 0 {
+			reInitRateTime()
 			c.Next()
-			ReInitRateTime()
 		} else {
-			c.AbortWithStatusJSON(400, map[string]interface{}{
+			c.AbortWithStatusJSON(429, map[string]interface{}{
 				"code": 4001,
 				"msg":  "Excessive operating frequency!",
 			})
