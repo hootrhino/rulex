@@ -22,6 +22,7 @@ require (
 	github.com/gopcua/opcua v0.5.3
 	github.com/gorilla/websocket v1.5.1
 	github.com/gosnmp/gosnmp v1.37.0
+	github.com/hootrhino/beautiful-lua-go v0.1.0
 	github.com/hootrhino/go-ais v1.0.0
 	github.com/hootrhino/go-dhcpd-leases v0.0.0-20240116064141-0730f287f9a2
 	github.com/hootrhino/gopher-lua v1.0.3
@@ -128,6 +129,7 @@ require (
 	github.com/montanaflynn/stats v0.0.0-20171201202039-1bf9dbcd8cbe // indirect
 	github.com/nats-io/nkeys v0.4.7 // indirect
 	github.com/nats-io/nuid v1.0.1 // indirect
+	github.com/notnoobmaster/luautil v1.4.11 // indirect
 	github.com/pelletier/go-toml/v2 v2.1.1 // indirect
 	github.com/pion/dtls/v2 v2.1.5 // indirect
 	github.com/pion/logging v0.2.2 // indirect

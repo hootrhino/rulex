@@ -278,6 +278,8 @@ func (hs *ApiServerPlugin) LoadRoute() {
 		rulesApi.GET(("/byDevice"), server.AddRoute(apis.ListByDevice))
 		//
 		rulesApi.GET(("/getCanUsedResources"), server.AddRoute(apis.GetAllResources))
+		//
+		rulesApi.POST(("/formatLua"), server.AddRoute(apis.FormatLua))
 
 	}
 	OutEndApi := server.RouteGroup(server.ContextUrl("/outends"))

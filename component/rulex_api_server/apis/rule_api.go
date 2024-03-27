@@ -2,7 +2,9 @@ package apis
 
 import (
 	"fmt"
+	"strings"
 
+	"github.com/hootrhino/beautiful-lua-go/parse"
 	"github.com/hootrhino/rulex/component/interqueue"
 	common "github.com/hootrhino/rulex/component/rulex_api_server/common"
 	"github.com/hootrhino/rulex/component/rulex_api_server/model"
@@ -768,5 +770,30 @@ func GetAllResources(c *gin.Context, ruleEngine typex.RuleX) {
 	c.JSON(common.HTTP_OK, common.OkWithData(map[string]any{
 		"devices": Devices,
 		"outends": OutEnds,
+	}))
+}
+
+/*
+*
+* 格式化lua
+*
+ */
+type LuaSource struct {
+	Source string `json:"source"`
+}
+
+func FormatLua(c *gin.Context, ruleEngine typex.RuleX) {
+	form := LuaSource{}
+	if err0 := c.ShouldBindJSON(&form); err0 != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err0))
+		return
+	}
+	luaChunk, err1 := parse.Parse(strings.NewReader(form.Source), "")
+	if err1 != nil {
+		c.JSON(common.HTTP_OK, common.Error400(err1))
+		return
+	}
+	c.JSON(common.HTTP_OK, common.OkWithData(LuaSource{
+		Source: luaChunk.String(),
 	}))
 }
