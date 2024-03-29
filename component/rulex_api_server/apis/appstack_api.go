@@ -115,7 +115,7 @@ func CreateApp(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	if utils.IsValidName(form.Name) {
+	if !utils.IsValidName(form.Name) {
 		c.JSON(common.HTTP_OK, common.Error("App Name Invalid, Must Between 6-12 characters"))
 		return
 	}
@@ -163,7 +163,7 @@ func UpdateApp(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	if utils.IsValidName(form.Name) {
+	if !utils.IsValidName(form.Name) {
 		c.JSON(common.HTTP_OK, common.Error("App Name Invalid, Must Between 6-12 characters"))
 		return
 	}

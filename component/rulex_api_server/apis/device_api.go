@@ -204,7 +204,7 @@ func CreateDevice(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error("Device Name Duplicated"))
 		return
 	}
-	if utils.IsValidName(form.Name) {
+	if !utils.IsValidName(form.Name) {
 		c.JSON(common.HTTP_OK, common.Error("Device Name Invalid, Must Between 6-12 characters"))
 		return
 	}
@@ -265,7 +265,7 @@ func UpdateDevice(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
 	}
-	if utils.IsValidName(form.Name) {
+	if !utils.IsValidName(form.Name) {
 		c.JSON(common.HTTP_OK, common.Error("Device Name Invalid, Must Between 6-12 characters"))
 		return
 	}
