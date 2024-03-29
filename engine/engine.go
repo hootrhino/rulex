@@ -266,7 +266,7 @@ func (e *RuleEngine) RunSourceCallbacks(in *typex.InEnd, callbackArgs string) {
 					}
 					glogger.GLogger.WithFields(logrus.Fields{
 						"topic": "rule/log/" + rule.UUID,
-					}).Infof("Run Lua Callbacks error, Stacktrace: Current Function Name: [%s],"+
+					}).Warnf("Run Lua Callbacks error, Stacktrace: Current Function Name: [%s],"+
 						"What(lua|native): [%s], Source Line: [%d],"+
 						" Last Call: [%s], Error message: %s",
 						Debugger.Name, Debugger.What, Debugger.CurrentLine,
@@ -313,7 +313,7 @@ func (e *RuleEngine) RunDeviceCallbacks(Device *typex.Device, callbackArgs strin
 				}
 				glogger.GLogger.WithFields(logrus.Fields{
 					"topic": "rule/log/" + rule.UUID,
-				}).Infof("Run Lua Callbacks error, Stacktrace: Current Function Name: [%s],"+
+				}).Warnf("Run Lua Callbacks error, Stacktrace: Current Function Name: [%s],"+
 					"What(lua|native): [%s], Source Line: [%d],"+
 					" Last Call: [%s], Error message: %s",
 					Debugger.Name, Debugger.What, Debugger.CurrentLine,
@@ -525,6 +525,7 @@ func (e *RuleEngine) RestartDevice(uuid string) error {
 * 初始化设备管理器
 *
  */
+
 func (e *RuleEngine) InitDeviceTypeManager() error {
 	e.DeviceTypeManager.Register(typex.GENERIC_HTTP_DEVICE,
 		&typex.XConfig{
@@ -748,5 +749,26 @@ func (e *RuleEngine) InitTargetTypeManager() error {
 			NewTarget: target.NewTTcpTarget,
 		},
 	)
+	return nil
+}
+
+/*
+*-----------------------------------------------------------------
+* 0.6.8 New Api: 将注册权交给设备
+*-----------------------------------------------------------------
+ */
+func (e *RuleEngine) RegisterNewDevice(Type typex.DeviceType, Cfg *typex.XConfig) error {
+	Cfg.Engine = e
+	e.DeviceTypeManager.Register(Type, Cfg)
+	return nil
+}
+func (e *RuleEngine) RegisterNewSource(Type typex.InEndType, Cfg *typex.XConfig) error {
+	Cfg.Engine = e
+	e.SourceTypeManager.Register(Type, Cfg)
+	return nil
+}
+func (e *RuleEngine) RegisterNewTarget(Type typex.TargetType, Cfg *typex.XConfig) error {
+	Cfg.Engine = e
+	e.TargetTypeManager.Register(Type, Cfg)
 	return nil
 }

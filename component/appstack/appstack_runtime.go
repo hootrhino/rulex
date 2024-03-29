@@ -127,7 +127,7 @@ func StartApp(uuid string) error {
 			}
 			glogger.GLogger.WithFields(logrus.Fields{
 				"topic": "app/console/" + uuid,
-			}).Infof("Stacktrace: Current Function Name: [%s],"+
+			}).Warnf("Stacktrace: Current Function Name: [%s],"+
 				"What(lua|native): [%s], Source Line: [%d],"+
 				" Last Call: [%s], Error message: %s",
 				Debugger.Name, Debugger.What, Debugger.CurrentLine,

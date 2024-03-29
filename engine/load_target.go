@@ -53,13 +53,12 @@ func (e *RuleEngine) loadTarget(target typex.XTarget, out *typex.OutEnd,
 		e.RemoveInEnd(out.UUID)
 		return err
 	}
-	startTarget(target, e, ctx, cancelCTX)
+	startTarget(target, ctx, cancelCTX)
 	glogger.GLogger.Infof("Target [%v, %v] load successfully", out.Name, out.UUID)
 	return nil
 }
 
-func startTarget(target typex.XTarget, e typex.RuleX,
-	ctx context.Context, cancelCTX context.CancelFunc) error {
+func startTarget(target typex.XTarget, ctx context.Context, cancelCTX context.CancelFunc) error {
 	if err := target.Start(typex.CCTX{Ctx: ctx, CancelCTX: cancelCTX}); err != nil {
 		glogger.GLogger.Error("abstractDevice start error:", err)
 		return err
