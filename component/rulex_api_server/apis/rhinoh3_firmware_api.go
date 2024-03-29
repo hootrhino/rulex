@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"runtime"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -34,6 +35,10 @@ import (
 *
  */
 func ReStartRulex(c *gin.Context, ruleEngine typex.RuleX) {
+	if runtime.GOOS == "windows" {
+		c.JSON(common.HTTP_OK, common.Error("Not support windows!"))
+		return
+	}
 	c.JSON(common.HTTP_OK, common.Ok())
 	os.Exit(0)
 }
@@ -44,6 +49,10 @@ func ReStartRulex(c *gin.Context, ruleEngine typex.RuleX) {
 *
  */
 func Reboot(c *gin.Context, ruleEngine typex.RuleX) {
+	if runtime.GOOS == "windows" {
+		c.JSON(common.HTTP_OK, common.Error("Not support windows!"))
+		return
+	}
 	err := ossupport.Reboot()
 	if err != nil {
 		c.JSON(common.HTTP_OK, common.OkWithData(err))
@@ -58,6 +67,10 @@ func Reboot(c *gin.Context, ruleEngine typex.RuleX) {
 *
  */
 func RecoverNew(c *gin.Context, ruleEngine typex.RuleX) {
+	if runtime.GOOS == "windows" {
+		c.JSON(common.HTTP_OK, common.Error("Not support windows!"))
+		return
+	}
 	c.JSON(common.HTTP_OK, common.Ok())
 }
 

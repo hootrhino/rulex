@@ -299,9 +299,9 @@ func GetSysLogo(c *gin.Context, ruleEngine typex.RuleX) {
  */
 func ResetSiteConfig(c *gin.Context, ruleEngine typex.RuleX) {
 	err1 := service.UpdateSiteConfig(model.MSiteConfig{
-		SiteName: "Rhino EEKit",
+		SiteName: "Rhilex",
 		Logo:     "/logo.png",
-		AppName:  "Rhino EEKit",
+		AppName:  "Rhilex",
 	})
 	if err1 != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err1))

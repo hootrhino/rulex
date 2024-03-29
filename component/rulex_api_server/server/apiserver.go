@@ -170,7 +170,7 @@ func (s *RulexApiServer) InitializeWindowsData() {
 func (s *RulexApiServer) InitializeEEKITData() {
 	env := os.Getenv("ARCHSUPPORT")
 	if env == "EEKITH3" {
-		glogger.GLogger.Info("Initialize Rhino EEKIT Pi Default Data")
+		glogger.GLogger.Info("Initialize Rhilex Pi Default Data")
 	}
 }
 
@@ -276,9 +276,9 @@ func initStaticModel() {
 	})
 	// 初始化网站配置
 	service.InitSiteConfig(model.MSiteConfig{
-		SiteName: "Rhino EEKit",
+		SiteName: "Rhilex",
 		Logo:     "/logo.png",
-		AppName:  "Rhino EEKit",
+		AppName:  "Rhilex",
 	})
 	// 初始化一个用户
 	service.InitMUser(

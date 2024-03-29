@@ -22,6 +22,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"runtime"
 
 	"github.com/gin-gonic/gin"
 	common "github.com/hootrhino/rulex/component/rulex_api_server/common"
@@ -39,6 +40,10 @@ import (
 *
 */
 func UploadFirmWare(c *gin.Context, ruleEngine typex.RuleX) {
+	if runtime.GOOS == "windows" {
+		c.JSON(common.HTTP_OK, common.Error("Not support windows!"))
+		return
+	}
 	file, err := c.FormFile("file")
 	if err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
@@ -63,6 +68,10 @@ func UploadFirmWare(c *gin.Context, ruleEngine typex.RuleX) {
 *
  */
 func UpgradeFirmWare(c *gin.Context, ruleEngine typex.RuleX) {
+	if runtime.GOOS == "windows" {
+		c.JSON(common.HTTP_OK, common.Error("Not support windows!"))
+		return
+	}
 	uploadPath := "./upload/Firmware/" // 固定路径
 	tempPath := uploadPath + "temp001" // 固定路径
 	Firmware := "Firmware.zip"         // 固定路径
