@@ -44,7 +44,7 @@ func SContains(slice []string, e string) bool {
 *
  */
 var (
-	s               = `^[a-zA-Z_][a-zA-Z0-9._\u4e00-\u9fa5]*$`
+	s               = `^[a-zA-Z_][a-zA-Z0-9._\\u4e00-\\u9fa5]*$`
 	usernamePattern = regexp.MustCompile(s)
 	once            sync.Once
 )
