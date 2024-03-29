@@ -1,6 +1,10 @@
 package utils
 
-import "strings"
+import (
+	"regexp"
+	"strings"
+	"sync"
+)
 
 /*
 *
@@ -39,8 +43,17 @@ func SContains(slice []string, e string) bool {
 * 合法名称
 *
  */
+var (
+	s               = `^[a-zA-Z_][a-zA-Z0-9._\u4e00-\u9fa5]*$`
+	usernamePattern = regexp.MustCompile(s)
+	once            sync.Once
+)
+
 func IsValidName(username string) bool {
-	return (len(username) < 6 || len(username) > 32)
+	once.Do(func() {
+		usernamePattern = regexp.MustCompile(s)
+	})
+	return usernamePattern.MatchString(username)
 }
 
 /*

@@ -22,7 +22,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var timeout int32 = 3000
+var timeout int32 = 300
 
 func decreaseRateTime() {
 	atomic.AddInt32(&timeout, -1)

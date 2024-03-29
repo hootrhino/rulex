@@ -68,7 +68,7 @@ func StartRulexApiServer(ruleEngine typex.RuleX, port int) {
 	server.ginEngine.Use(static.Serve("/", WWWRoot("")))
 	server.ginEngine.Use(Authorize())
 	server.ginEngine.Use(CheckLicense())
-	server.ginEngine.Use(RateLimit())
+	// server.ginEngine.Use(RateLimit())
 	server.ginEngine.Use(Cros())
 	server.ginEngine.GET("/ws", glogger.WsLogger)
 	server.ginEngine.Use(gin.CustomRecovery(func(c *gin.Context, err any) {
