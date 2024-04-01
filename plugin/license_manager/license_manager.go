@@ -112,7 +112,7 @@ func (l *LicenseManager) Init(section *ini.Section) error {
 		}
 		// get local mac .....
 	}
-	Tip := "Indefinite use version, You can use it till the end of time"
+	Tip := "Indefinite version"
 	if LocalLicense.BeginAuthorize == 0 {
 		T1s = Tip
 	}
@@ -120,14 +120,13 @@ func (l *LicenseManager) Init(section *ini.Section) error {
 		T2s = Tip
 	}
 	typex.License = LocalLicense
-	fmt.Println("[∫∫] Load Local License Success <'v'>")
-	fmt.Println("|>>| Device ID:", LocalLicense.DeviceID)
-	fmt.Println("|>>| Authorize Admin:", LocalLicense.AuthorizeAdmin)
-	fmt.Println("|>>| Authorize Password:", LocalLicense.AuthorizePassword)
-	fmt.Println("|>>| Local MAC:", LocalLicense.MAC)
-	fmt.Println("|>>| Begin Authorize:", T1s)
-	fmt.Println("|>>| End   Authorize:", T2s)
-	fmt.Println("|>>| License Content: ****************")
+	fmt.Println("[∫∫] -----------------------------------")
+	fmt.Println("|>>| * DeviceID *", LocalLicense.DeviceID)
+	fmt.Println("|>>| * Admin    *", LocalLicense.AuthorizeAdmin)
+	fmt.Println("|>>| * MacAddr  *", LocalLicense.MAC)
+	fmt.Println("|>>| * Begin    *", T1s)
+	fmt.Println("|>>| * End      *", T2s)
+	fmt.Println("[∫∫] -----------------------------------")
 	return nil
 }
 
