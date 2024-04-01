@@ -8,11 +8,13 @@ import (
 	"github.com/hootrhino/rulex/typex"
 )
 
+var __DefaultJpegStreamServer *JpegStreamServer
+
 type JpegStreamServer struct {
 }
 
 func InitJpegStreamServer(rulex typex.RuleX) {
-
+	__DefaultJpegStreamServer = &JpegStreamServer{}
 }
 
 func (s *JpegStreamServer) Init(cfg map[string]any) error {
