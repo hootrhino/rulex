@@ -1,6 +1,3 @@
-//go:build amd64
-// +build amd64
-
 // Copyright (C) 2024 wwhai
 //
 // This program is free software: you can redistribute it and/or modify
