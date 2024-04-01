@@ -4,6 +4,7 @@
 package jpegstream
 
 import (
+	"fmt"
 	"github.com/hootrhino/rulex/component"
 	"github.com/hootrhino/rulex/typex"
 )
@@ -30,4 +31,34 @@ func (s *JpegStreamServer) Stop() error {
 }
 func (s *JpegStreamServer) PluginMetaInfo() component.XComponentMetaInfo {
 	return component.XComponentMetaInfo{}
+}
+
+/*
+*
+* Manage API
+*
+ */
+
+func (s *JpegStreamServer) RegisterJpegStreamSource(liveId string) error {
+
+	return fmt.Errorf("stream already exists")
+}
+
+func (s *JpegStreamServer) GetJpegStreamSource(liveId string) (*JpegStream, error) {
+
+	return nil, nil
+
+}
+
+func (s *JpegStreamServer) Exists(liveId string) bool {
+	return true
+}
+func (s *JpegStreamServer) DeleteJpegStreamSource(liveId string) {
+
+}
+
+func (s *JpegStreamServer) JpegStreamSourceList() []JpegStream {
+	return nil
+}
+func (s *JpegStreamServer) JpegStreamFlush() {
 }
