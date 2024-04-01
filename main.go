@@ -45,21 +45,16 @@ func init() {
 		}
 	}()
 	env := os.Getenv("ARCHSUPPORT")
-	if env == "EEKITT507" {
+	if utils.SContains([]string{
+		"EEKITH3",
+		"EEKITT507",
+		"WKYS805",
+		"RPI4B",
+		"EN6400",
+	}, env) {
 		typex.DefaultVersionInfo.Product = env
 	}
-	if env == "EEKITH3" {
-		typex.DefaultVersionInfo.Product = env
-	}
-	if env == "WKYS805" {
-		typex.DefaultVersionInfo.Product = env
-	}
-	if env == "RPI4B" {
-		typex.DefaultVersionInfo.Product = env
-	}
-	if env == "EN6400" {
-		typex.DefaultVersionInfo.Product = env
-	}
+
 	dist, err := utils.GetOSDistribution()
 	if err != nil {
 		utils.CLog("Failed to Get OS Distribution:%s", err)
