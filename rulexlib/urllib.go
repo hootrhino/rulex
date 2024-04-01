@@ -12,11 +12,7 @@ import (
 	lua "github.com/hootrhino/gopher-lua"
 )
 
-var rBracket *regexp.Regexp
-
-func init() {
-	rBracket = regexp.MustCompile(`\\[\\]$`)
-}
+var rBracket *regexp.Regexp = regexp.MustCompile(`\\[\\]$`)
 
 // parse,
 

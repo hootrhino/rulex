@@ -2,14 +2,6 @@ package apis
 
 import (
 	"fmt"
-	"net"
-	"os"
-	"os/exec"
-	"regexp"
-	"runtime"
-	"strconv"
-	"strings"
-
 	"github.com/gin-gonic/gin"
 	common "github.com/hootrhino/rulex/component/rulex_api_server/common"
 	"github.com/hootrhino/rulex/component/rulex_api_server/model"
@@ -18,6 +10,14 @@ import (
 	"github.com/hootrhino/rulex/ossupport"
 	"github.com/hootrhino/rulex/typex"
 	"github.com/hootrhino/rulex/utils"
+	"net"
+	"os"
+	"os/exec"
+	"regexp"
+	"runtime"
+	"strconv"
+	"strings"
+	"sync"
 )
 
 /*
@@ -283,14 +283,19 @@ func isValidIP(ip string) bool {
 	parsedIP := net.ParseIP(ip)
 	return parsedIP != nil
 }
-func validTimeZone(timezone string) bool {
-	// 使用正则表达式来匹配时区格式
-	// 时区格式应该类似于 "America/New_York" 或 "Asia/Shanghai"
-	// 这里使用了简单的正则表达式，你可以根据需要进行调整
-	regexPattern := `^[A-Za-z]+/[A-Za-z_]+$`
-	regex := regexp.MustCompile(regexPattern)
 
-	return regex.MatchString(timezone)
+var (
+	once     sync.Once
+	timeZone *regexp.Regexp
+)
+
+func validTimeZone(timezone string) bool {
+	once.Do(func() {
+		regexPattern := `^[A-Za-z]+/[A-Za-z_]+$`
+		timeZone = regexp.MustCompile(regexPattern)
+	})
+
+	return timeZone.MatchString(timezone)
 }
 
 /*

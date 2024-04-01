@@ -64,7 +64,7 @@ import (
 type _GMODCommonConfig struct {
 	Mode           string `json:"mode"`
 	AutoRequest    *bool  `json:"autoRequest"`
-	EnableOptimize bool   `json:"enableOptimize"`
+	EnableOptimize *bool  `json:"enableOptimize"`
 	MaxRegNum      uint16 `json:"maxRegNum"`
 }
 type _GMODConfig struct {
@@ -137,6 +137,10 @@ func NewGenericModbusDevice(e typex.RuleX) typex.XDevice {
 	mdev.RuleEngine = e
 	mdev.mainConfig = _GMODConfig{
 		CommonConfig: _GMODCommonConfig{
+			EnableOptimize: func() *bool {
+				b := false
+				return &b
+			}(),
 			AutoRequest: func() *bool {
 				b := false
 				return &b
@@ -196,7 +200,7 @@ func (mdev *generic_modbus_device) Init(devId string, configMap map[string]inter
 			ErrMsg:        "Device Loading",
 		})
 	}
-	if mdev.mainConfig.CommonConfig.EnableOptimize {
+	if *mdev.mainConfig.CommonConfig.EnableOptimize {
 		rws := make([]*common.RegisterRW, len(mdev.Registers))
 		idx := 0
 		for _, val := range mdev.Registers {
@@ -531,7 +535,7 @@ type RegJsonValue struct {
 *
  */
 func (mdev *generic_modbus_device) modbusRead(buffer []byte) (int, error) {
-	if mdev.mainConfig.CommonConfig.EnableOptimize {
+	if *mdev.mainConfig.CommonConfig.EnableOptimize {
 		return mdev.modbusGroupRead(buffer)
 	} else {
 		return mdev.modbusSingleRead(buffer)
