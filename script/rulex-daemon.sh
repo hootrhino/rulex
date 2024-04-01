@@ -5,7 +5,7 @@ WORKING_DIRECTORY="/usr/local"
 EXECUTABLE_PATH="$WORKING_DIRECTORY/$SERVICE_NAME"
 CONFIG_PATH="$WORKING_DIRECTORY/$SERVICE_NAME.ini"
 
-SERVICE_FILE="./$SERVICE_NAME.service"
+SERVICE_FILE="/etc/init.d/$SERVICE_NAME.service"
 
 STOP_SIGNAL="/var/run/rulex-stop.sinal"
 UPGRADE_SIGNAL="/var/run/rulex-upgrade.lock"
