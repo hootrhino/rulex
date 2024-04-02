@@ -1,8 +1,6 @@
 package rulexlib
 
 import (
-	"errors"
-
 	lua "github.com/hootrhino/gopher-lua"
 	"github.com/hootrhino/rulex/typex"
 )
@@ -18,7 +16,7 @@ import (
 *   返回值也是一个二维矩阵, 代表预测的结果
 *
  */
-var errType error = errors.New("tensor type error, must be [][]float table")
+// var errType error = errors.New("tensor type error, must be [][]float table")
 
 func Infer(rx typex.RuleX) func(*lua.LState) int {
 	return func(l *lua.LState) int {

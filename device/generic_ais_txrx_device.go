@@ -383,6 +383,8 @@ func (aism *AISDeviceMaster) handleTcpConnect(listener net.Listener) {
 *
  */
 type __AISDeviceSession struct {
+	ctx       context.Context
+	cancel    context.CancelFunc
 	SN        string   // 注册包里的序列号, 必须是:SN-$AA-$BB-$CC-$DD
 	Ip        string   // 注册包里的序列号
 	Transport net.Conn // TCP连接
@@ -391,6 +393,8 @@ type __AISDeviceSession struct {
 func (aism *AISDeviceMaster) handleTcpAuth(ctx context.Context,
 	cancel context.CancelFunc, session *__AISDeviceSession) {
 	// 5秒内读一个SN
+	session.ctx = ctx
+	session.cancel = cancel
 	session.Transport.SetDeadline(time.Now().Add(5 * time.Second))
 	reader := bufio.NewReader(session.Transport)
 	registerPkt, err := reader.ReadString('$')
@@ -576,7 +580,7 @@ func (aism *AISDeviceMaster) ParseAisToJson(rawAiSString string) error {
 		}
 		return nil
 	}
-	return fmt.Errorf("Unsupported AIS Message Type:%s", DataType)
+	return fmt.Errorf("unsupported AIS Message Type:%s", DataType)
 }
 
 //--------------------------------------------------------------------------------------------------

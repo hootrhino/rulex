@@ -279,7 +279,7 @@ func (hd *KDN_CNC) getCncInfo() (kdnCNCInfo, error) {
 * 获取运行时状态
 *
  */
-func (hd *KDN_CNC) getCncStatus() (kdnCNCStatus, error) {
+func (hd *KDN_CNC) GetCncStatus() (kdnCNCStatus, error) {
 	ApiVersion := "v1.3" // 默认就是1.3
 	if hd.mainConfig.ApiVersion == 2 {
 		ApiVersion = "v1.2"

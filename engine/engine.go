@@ -266,8 +266,8 @@ func (e *RuleEngine) RunSourceCallbacks(in *typex.InEnd, callbackArgs string) {
 					}
 					glogger.GLogger.WithFields(logrus.Fields{
 						"topic": "rule/log/" + rule.UUID,
-					}).Warnf("Run Lua Callbacks error, Stacktrace: Current Function Name: [%s],"+
-						"What(lua|native): [%s], Source Line: [%d],"+
+					}).Warnf("Function Name: [%s],"+
+						"What: [%s], Source Line: [%d],"+
 						" Last Call: [%s], Error message: %s",
 						Debugger.Name, Debugger.What, Debugger.CurrentLine,
 						LastCall.Name, errA.Error(),
@@ -313,8 +313,8 @@ func (e *RuleEngine) RunDeviceCallbacks(Device *typex.Device, callbackArgs strin
 				}
 				glogger.GLogger.WithFields(logrus.Fields{
 					"topic": "rule/log/" + rule.UUID,
-				}).Warnf("Run Lua Callbacks error, Stacktrace: Current Function Name: [%s],"+
-					"What(lua|native): [%s], Source Line: [%d],"+
+				}).Warnf("Function Name: [%s],"+
+					"What: [%s], Source Line: [%d],"+
 					" Last Call: [%s], Error message: %s",
 					Debugger.Name, Debugger.What, Debugger.CurrentLine,
 					LastCall.Name, errA.Error(),

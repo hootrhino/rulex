@@ -42,8 +42,13 @@ func PingIp(rx typex.RuleX) func(l *lua.LState) int {
 	return func(l *lua.LState) int {
 		ip := l.ToString(2)
 		Duration, err := pingQ(ip, 5000*time.Millisecond)
-		l.Push(lua.LNumber(Duration))
-		l.Push(lua.LString(err.Error()))
+		if err != nil {
+			l.Push(lua.LNumber(0))
+			l.Push(lua.LString(err.Error()))
+		} else {
+			l.Push(lua.LNumber(Duration))
+			l.Push(lua.LNil)
+		}
 		return 2
 	}
 }

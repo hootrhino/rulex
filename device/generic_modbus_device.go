@@ -84,7 +84,7 @@ type GroupedTags struct {
 
 func (g *GroupedTags) String() string {
 	tagIds := make([]string, 0, len(g.Registers))
-	for k, _ := range g.Registers {
+	for k := range g.Registers {
 		tagIds = append(tagIds, k)
 	}
 	str := fmt.Sprintf("func=%v slaveId=%v address=%v quantity=%v frequency=%v tagIds=%v",

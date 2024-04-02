@@ -199,7 +199,7 @@ func (opcDev *genericOpcuaDevice) OnRead(cmd []byte, data []byte) (int, error) {
 	}
 	return n, err
 }
-func (opcDev *genericOpcuaDevice) readNodes(cmd []byte, data []byte) (int, error) {
+func (opcDev *genericOpcuaDevice) readNodes(_ []byte, data []byte) (int, error) {
 	dataMap := map[string]OpcuaNode{}
 	//遍历所有的寄存器
 	for _, r := range opcDev.mainConfig.OpcNodes {
