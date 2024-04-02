@@ -16,6 +16,7 @@
 package apis
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -376,6 +377,22 @@ func ModbusSheetUpdate(c *gin.Context, ruleEngine typex.RuleX) {
 
 }
 
+type DeviceDto struct {
+	UUID   string
+	Name   string
+	Type   string
+	Config string
+}
+
+func (md DeviceDto) GetConfig() map[string]interface{} {
+	result := make(map[string]interface{})
+	err := json.Unmarshal([]byte(md.Config), &result)
+	if err != nil {
+		return map[string]interface{}{}
+	}
+	return result
+}
+
 // ModbusSheetImport 上传Excel文件
 func ModbusSheetImport(c *gin.Context, ruleEngine typex.RuleX) {
 	// 解析 multipart/form-data 类型的请求体
@@ -393,11 +410,7 @@ func ModbusSheetImport(c *gin.Context, ruleEngine typex.RuleX) {
 	}
 	defer file.Close()
 	deviceUuid := c.Request.Form.Get("device_uuid")
-	type DeviceDto struct {
-		UUID string
-		Name string
-		Type string
-	}
+
 	Device := DeviceDto{}
 	errDb := interdb.DB().Table("m_devices").
 		Where("uuid=?", deviceUuid).Find(&Device).Error
@@ -410,6 +423,23 @@ func ModbusSheetImport(c *gin.Context, ruleEngine typex.RuleX) {
 			common.Error("Invalid Device Type, Only Support Import Modbus Device"))
 		return
 	}
+	ConfigMap := Device.GetConfig()
+	CommonConfig := ConfigMap["commonConfig"]
+	ModbusMode := ""
+	switch T := CommonConfig.(type) {
+	case map[string]any:
+		Mode := T["Mode"]
+		if Mode == "UART" {
+			ModbusMode = "UART"
+		} else if Mode == "TCP" {
+			ModbusMode = "TCP"
+		} else {
+			c.JSON(common.HTTP_OK,
+				common.Error("Invalid Device Mode, Only Support UART And TCP"))
+			return
+		}
+	}
+
 	contentType := header.Header.Get("Content-Type")
 	if contentType != "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" &&
 		contentType != "application/vnd.ms-excel" {
@@ -421,7 +451,8 @@ func ModbusSheetImport(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error("Excel file size cannot be greater than 10MB"))
 		return
 	}
-	list, err := parseModbusPointExcel(file, "Sheet1", deviceUuid)
+	// 只取第一张表，而且名字必须是Sheet1
+	list, err := parseModbusPointExcel(file, "Sheet1", deviceUuid, ModbusMode)
 	if err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
@@ -440,15 +471,13 @@ func ModbusSheetImport(c *gin.Context, ruleEngine typex.RuleX) {
 *
  */
 
-func parseModbusPointExcel(r io.Reader, sheetName string,
+func parseModbusPointExcel(r io.Reader, sheetName string, Mode string,
 	deviceUuid string) (list []model.MModbusDataPoint, err error) {
 	excelFile, err := excelize.OpenReader(r)
 	if err != nil {
 		return nil, err
 	}
-	defer func() {
-		excelFile.Close()
-	}()
+	defer excelFile.Close()
 	// 读取表格
 	rows, err := excelFile.GetRows(sheetName)
 	if err != nil {
@@ -456,10 +485,11 @@ func parseModbusPointExcel(r io.Reader, sheetName string,
 	}
 	// 判断首行标头
 	// tag, alias, function, frequency, slaverId, address, quality
-	err1 := errors.New("Invalid Sheet Header")
+	err1 := errors.New(" Invalid Sheet Header")
 	if len(rows[0]) < 10 {
 		return nil, err1
 	}
+
 	// 严格检查表结构
 	if rows[0][0] != "tag" ||
 		rows[0][1] != "alias" ||
@@ -482,7 +512,13 @@ func parseModbusPointExcel(r io.Reader, sheetName string,
 		alias := row[1]
 		function, _ := strconv.ParseUint(row[2], 10, 8)
 		frequency, _ := strconv.ParseUint(row[3], 10, 64)
-		slaverId, _ := strconv.ParseUint(row[4], 10, 8)
+		slaverId := uint64(0)
+		if Mode == "UART" {
+			slaverId, _ = strconv.ParseUint(row[4], 10, 8)
+		}
+		if Mode == "TCP" {
+			slaverId = 0 // 不起作用
+		}
 		address, _ := strconv.ParseUint(row[5], 10, 16)
 		quantity, _ := strconv.ParseUint(row[6], 10, 16)
 		Type := row[7]
