@@ -82,9 +82,8 @@ func LoadAppLibGroup(app *Application, e typex.RuleX) {
 	}
 	{
 		Funcs := map[string]func(l *lua.LState) int{
-			"Debug":   rulexlib.DebugAPP(e, app.UUID),
-			"Throw":   rulexlib.Throw(e),
-			"Println": rulexlib.Println(e),
+			"Debug": rulexlib.DebugAPP(e, app.UUID),
+			"Throw": rulexlib.Throw(e),
 		}
 		AddAppLibToGroup(app, e, "_G", Funcs)
 	}

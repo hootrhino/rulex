@@ -1,14 +1,18 @@
 package rulexlib
 
 import (
-	"fmt"
-
 	lua "github.com/hootrhino/gopher-lua"
 	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/typex"
 	"github.com/sirupsen/logrus"
 )
 
+// Topic
+// app:         app/console/$uuid
+// rule:        rule/$uuid
+// Test device: device/rule/test/$uuid
+// Test inend:  inend/rule/test/$uuid
+// Test outend: outend/rule/test/$uuid
 /*
 *
 * APP debug输出, Debug(".....")
@@ -35,25 +39,6 @@ func DebugRule(rx typex.RuleX, uuid string) func(*lua.LState) int {
 		glogger.GLogger.WithFields(logrus.Fields{
 			"topic": "rule/log/" + uuid,
 		}).Info(content)
-		return 0
-	}
-}
-
-/*
-*
-* Println
-*
- */
-func Println(rx typex.RuleX) func(*lua.LState) int {
-	return func(L *lua.LState) int {
-		top := L.GetTop()
-		for i := 1; i <= top; i++ {
-			fmt.Print(L.ToStringMeta(L.Get(i)).String())
-			if i != top {
-				fmt.Print("\t")
-			}
-		}
-		fmt.Println("")
 		return 0
 	}
 }

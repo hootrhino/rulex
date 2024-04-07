@@ -580,8 +580,8 @@ func TestSourceCallback(c *gin.Context, ruleEngine typex.RuleX) {
 		return
 	}
 	glogger.GLogger.WithFields(logrus.Fields{
-		"topic": "rule/test/" + form.UUID,
-	}).Debug(form.TestData)
+		"topic": "inend/rule/test/" + form.UUID,
+	}).Info(form.TestData)
 	err1 := interqueue.DefaultDataCacheQueue.PushInQueue(inend, form.TestData)
 	if err1 != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err1))
@@ -611,6 +611,9 @@ func TestOutEndCallback(c *gin.Context, ruleEngine typex.RuleX) {
 		c.JSON(common.HTTP_OK, common.Error(fmt.Sprintf("'OutEnd' not exists: %v", form.UUID)))
 		return
 	}
+	glogger.GLogger.WithFields(logrus.Fields{
+		"topic": "outend/rule/test/" + form.UUID,
+	}).Info(form.TestData)
 	err1 := interqueue.DefaultDataCacheQueue.PushOutQueue(outend, form.TestData)
 	if err1 != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err1))
@@ -635,8 +638,8 @@ func TestDeviceCallback(c *gin.Context, ruleEngine typex.RuleX) {
 		return
 	}
 	glogger.GLogger.WithFields(logrus.Fields{
-		"topic": "rule/test/" + form.UUID,
-	}).Debug(form.TestData)
+		"topic": "device/rule/test/" + form.UUID,
+	}).Info(form.TestData)
 	device := ruleEngine.GetDevice(form.UUID)
 	if device == nil {
 		c.JSON(common.HTTP_OK, common.Error(fmt.Sprintf("'Device' not exists: %v", form.UUID)))
