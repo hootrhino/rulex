@@ -24,7 +24,6 @@ func (hk wsLogHook) Levels() []logrus.Level {
 	return hk.levels
 }
 func (hk wsLogHook) Fire(e *logrus.Entry) error {
-	e.Data["ts"] = time.Now().UnixMicro()
 	msg, _ := e.String()
 	private_GRealtimeLogger.Write([]byte(msg))
 	return nil
