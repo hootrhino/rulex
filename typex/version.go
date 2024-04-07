@@ -24,10 +24,10 @@ var License = LocalLicense{
 
 var DefaultVersionInfo = VersionInfo{
 	Product:        "COMMON",
-	ReleaseTime: "2024-04-07 15:08:12",
+	ReleaseTime: "2024-04-07 23:12:53",
 }
 var Banner = `
  **  Welcome to RULEX framework world <'_'>     -.
-**   Version: v0.6.7-6c26786bbda78ab             -.
+**   Version: v0.6.7-003ad99286cad1b             -.
  **  More information: https://hootrhino.github.io  -.
 `

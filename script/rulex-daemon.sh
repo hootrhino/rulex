@@ -186,6 +186,7 @@ uninstall(){
     __remove_files "$WORKING_DIRECTORY/rulex-daemon-log.txt"
     __remove_files "$WORKING_DIRECTORY/rulex-recover-log.txt"
     __remove_files "$WORKING_DIRECTORY/rulex-upgrade-log.txt"
+    __remove_files "$WORKING_DIRECTORY/rulexlog-*.txt.gz"
     log INFO "Rulex has been uninstalled."
 }
 

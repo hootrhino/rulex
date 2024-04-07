@@ -22,14 +22,14 @@ AppDESCRIPTION = ""
 --
 
 function Main(arg)
-    local gpio = { 6, 7 }
     while true do
-        for _, value in ipairs(gpio) do
-            rhinopi:GPIOSet(value, 0)
-            time:Sleep(1000)
-            rhinopi:GPIOSet(value, 1)
-            time:Sleep(1000)
-        end
+        rhinopi:DO1Set(0)
+        time:Sleep(1000)
+        rhinopi:DO1Set(1)
+        time:Sleep(1000)
+        rhinopi:DO2Set(0)
+        time:Sleep(1000)
+        rhinopi:DO2Set(1)
     end
     return 0
 end
