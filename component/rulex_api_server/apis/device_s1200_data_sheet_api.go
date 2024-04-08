@@ -292,7 +292,9 @@ func SiemensSheetUpdate(c *gin.Context, ruleEngine typex.RuleX) {
 			c.JSON(common.HTTP_OK, common.Error400(err))
 			return
 		}
-		if SiemensDataPoint.UUID == "" {
+		if SiemensDataPoint.UUID == "" ||
+			SiemensDataPoint.UUID == "new" ||
+			SiemensDataPoint.UUID == "copy" {
 			NewRow := model.MSiemensDataPoint{}
 			copier.Copy(&NewRow, &SiemensDataPoint)
 			NewRow.DeviceUuid = SiemensDataPoint.DeviceUUID

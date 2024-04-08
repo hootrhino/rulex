@@ -274,19 +274,13 @@ func initStaticModel() {
 		Name:   "默认分组",
 		Parent: "NULL",
 	})
-	// 初始化网站配置
-	service.InitSiteConfig(model.MSiteConfig{
-		SiteName: "Rhilex",
-		Logo:     "/logo.png",
-		AppName:  "Rhilex",
-	})
 	// 初始化一个用户
 	service.InitMUser(
 		&model.MUser{
-			Role:        "DefaultAdmin",
-			Username:    "hootrhino",
-			Password:    "25d55ad283aa400af464c76d713c07ad", //12345678
-			Description: "Default Rulex Admin User",
+			Role:        "Admin",
+			Username:    "rhilex",
+			Password:    "25d55ad283aa400af464c76d713c07ad", // md5(12345678)
+			Description: "Default RHILEX Admin User",
 		},
 	)
 }

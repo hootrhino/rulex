@@ -56,6 +56,8 @@ func InitResourceSuperVisorAdmin(rulex typex.RuleX) {
 *
  */
 func RegisterSuperVisor(SlaverId string) *SuperVisor {
+	__DefaultSuperVisorAdmin.Locker.Lock()
+	defer __DefaultSuperVisorAdmin.Locker.Unlock()
 	if Old, Ok := __DefaultSuperVisorAdmin.SuperVisors[SlaverId]; !Ok {
 		Ctx, Cancel := context.WithCancel(context.Background())
 		SuperVisor := &SuperVisor{SlaverId, Ctx, Cancel}

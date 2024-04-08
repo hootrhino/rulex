@@ -330,7 +330,9 @@ func ModbusSheetUpdate(c *gin.Context, ruleEngine typex.RuleX) {
 			c.JSON(common.HTTP_OK, common.Error400(err))
 			return
 		}
-		if ModbusDataPoint.UUID == "" {
+		if ModbusDataPoint.UUID == "" ||
+			ModbusDataPoint.UUID == "new" ||
+			ModbusDataPoint.UUID == "copy" {
 			NewRow := model.MModbusDataPoint{
 				UUID:       utils.ModbusPointUUID(),
 				DeviceUuid: ModbusDataPoint.DeviceUUID,
@@ -428,7 +430,7 @@ func ModbusSheetImport(c *gin.Context, ruleEngine typex.RuleX) {
 	ModbusMode := ""
 	switch T := CommonConfig.(type) {
 	case map[string]any:
-		Mode := T["Mode"]
+		Mode := T["mode"]
 		if Mode == "UART" {
 			ModbusMode = "UART"
 		} else if Mode == "TCP" {
@@ -452,7 +454,7 @@ func ModbusSheetImport(c *gin.Context, ruleEngine typex.RuleX) {
 		return
 	}
 	// 只取第一张表，而且名字必须是Sheet1
-	list, err := parseModbusPointExcel(file, "Sheet1", deviceUuid, ModbusMode)
+	list, err := parseModbusPointExcel(file, "Sheet1", ModbusMode, deviceUuid)
 	if err != nil {
 		c.JSON(common.HTTP_OK, common.Error400(err))
 		return
@@ -471,8 +473,8 @@ func ModbusSheetImport(c *gin.Context, ruleEngine typex.RuleX) {
 *
  */
 
-func parseModbusPointExcel(r io.Reader, sheetName string, Mode string,
-	deviceUuid string) (list []model.MModbusDataPoint, err error) {
+func parseModbusPointExcel(r io.Reader,
+	sheetName string, Mode string, deviceUuid string) (list []model.MModbusDataPoint, err error) {
 	excelFile, err := excelize.OpenReader(r)
 	if err != nil {
 		return nil, err

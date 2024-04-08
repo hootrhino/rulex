@@ -189,7 +189,6 @@ func (hs *ApiServerPlugin) Init(config *ini.Section) error {
 		&model.MWifiConfig{},
 		&model.MIotSchema{},
 		&model.MIotProperty{},
-		&model.MSiteConfig{},
 		&model.MIpRoute{},
 		&model.MCronTask{},
 		&model.MCronResult{},
@@ -450,15 +449,6 @@ func (hs *ApiServerPlugin) LoadRoute() {
 		schemaApi.GET(("/properties/list"), server.AddRoute(apis.IotSchemaPropertyPageList))
 		schemaApi.GET(("/properties/detail"), server.AddRoute(apis.IotSchemaPropertyDetail))
 
-	}
-	siteConfigApi := server.RouteGroup(server.ContextUrl("/site"))
-	{
-
-		siteConfigApi.PUT("/update", server.AddRoute(apis.UpdateSiteConfig))
-		siteConfigApi.PUT("/reset", server.AddRoute(apis.ResetSiteConfig))
-		siteConfigApi.GET("/detail", server.AddRoute(apis.GetSiteConfig))
-		siteConfigApi.GET(("/logo"), server.AddRoute(apis.GetSysLogo))
-		siteConfigApi.POST(("/logo"), server.AddRoute(apis.UploadSysLogo))
 	}
 	trailerApi := server.RouteGroup(server.ContextUrl("/goods"))
 	{
