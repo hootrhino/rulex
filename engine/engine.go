@@ -107,8 +107,6 @@ func InitRuleEngine(config typex.RulexConfig) typex.RuleX {
 	internotify.InitInternalEventBus(__DefaultRuleEngine, core.GlobalConfig.MaxQueueSize)
 	// 前后交互组件
 	interqueue.InitInteractQueue(__DefaultRuleEngine, core.GlobalConfig.MaxQueueSize)
-	// Web Pipeline: future version maybe support
-	// core.InitWebDataPipe(__DefaultRuleEngine)
 	// Internal Schema
 	iotschema.InitIotSchemaCache(__DefaultRuleEngine)
 	// Load hardware Port Manager
@@ -146,8 +144,6 @@ func (e *RuleEngine) Start() *typex.RulexConfig {
 	interqueue.StartDataCacheQueue()
 	// InternalEventQueue
 	internotify.StartInternalEventQueue()
-	// WebDataPip
-	go core.StartWebDataPipe()
 	return e.Config
 }
 
@@ -219,6 +215,14 @@ func (e *RuleEngine) Stop() {
 	modbuscache.Flush()
 	glogger.GLogger.Info("Flush Siemens Point sheet Cache")
 	siemenscache.Flush()
+	glogger.GLogger.Info("Flush IotSchema Cache")
+	iotschema.Flush()
+	glogger.GLogger.Info("Flush KDN CNC Cache")
+	kdncnc.Flush()
+	glogger.GLogger.Info("Flush HNC Cache")
+	hnccnc.Flush()
+	glogger.GLogger.Info("Stop AI Runtime")
+	aibase.Stop()
 	glogger.GLogger.Info("[√] Stop Rulex successfully")
 	if err := glogger.Close(); err != nil {
 		fmt.Println("Close logger error: ", err)
