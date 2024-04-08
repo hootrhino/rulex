@@ -6,10 +6,6 @@
 // 因此需要抽象出来一个层专门来描述这些设备
 package typex
 
-import (
-	"github.com/hootrhino/rulex/component/iotschema"
-)
-
 type DeviceType string
 
 func (d DeviceType) String() string {
@@ -65,8 +61,6 @@ type XDevice interface {
 	//
 	// 0.5.2 新增 Reload() error
 	//
-	// 设备属性，是一系列属性描述
-	Property() []iotschema.IoTSchema
 	// 链接指向真实设备，保存在内存里面，和SQLite里的数据是对应关系
 	Details() *Device
 	// 状态

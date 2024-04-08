@@ -18,6 +18,7 @@ package eventbus
 import (
 	"context"
 	"fmt"
+	"sync"
 
 	"github.com/hootrhino/rulex/typex"
 	"github.com/hootrhino/rulex/utils"
@@ -41,9 +42,9 @@ func (E EventMessage) String() string {
 type Topic struct {
 	Topic       string
 	channel     chan EventMessage
-	Subscribers map[string]*Subscriber
 	ctx         context.Context
 	cancel      context.CancelFunc
+	Subscribers map[string]*Subscriber
 }
 type Subscriber struct {
 	id       string
@@ -53,12 +54,14 @@ type EventBus struct {
 	// Topic, chan EventMessage
 	// 给每个订阅者分配一个Channel，实现消息订阅
 	// Topic一样的会挂在同一个树上
+	locker sync.Mutex
 	Topics map[string]*Topic // 订阅树: MAP<Topic>[]Subscribers
 }
 
 func InitEventBus() *EventBus {
 	__DefaultEventBus = &EventBus{
 		Topics: map[string]*Topic{},
+		locker: sync.Mutex{},
 	}
 	return __DefaultEventBus
 }
@@ -69,6 +72,8 @@ func InitEventBus() *EventBus {
 *
  */
 func Subscribe(topic string, subscribe *Subscriber) {
+	__DefaultEventBus.locker.Lock()
+	defer __DefaultEventBus.locker.Unlock()
 	NewUUID := utils.MakeUUID("SUB")
 	subscribe.id = NewUUID
 	var T *Topic
@@ -112,6 +117,8 @@ func Subscribe(topic string, subscribe *Subscriber) {
 *
  */
 func UnSubscribe(topic string, subscribe Subscriber) {
+	__DefaultEventBus.locker.Lock()
+	defer __DefaultEventBus.locker.Unlock()
 	T, Ok1 := __DefaultEventBus.Topics[topic]
 	if Ok1 {
 		if _, Ok2 := T.Subscribers[subscribe.id]; Ok2 {
@@ -143,6 +150,8 @@ func Publish(topic string, Msg EventMessage) {
 *
  */
 func Flush() {
+	__DefaultEventBus.locker.Lock()
+	defer __DefaultEventBus.locker.Unlock()
 	for _, T := range __DefaultEventBus.Topics {
 		for _, S := range T.Subscribers {
 			delete(T.Subscribers, S.id)

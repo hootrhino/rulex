@@ -55,7 +55,7 @@ type IoTPropertyGeo struct {
 *
  */
 type IoTSchema struct {
-	IoTProperties []IoTProperty `json:"iotProperties"`
+	IoTProperties map[string]IoTProperty `json:"iotProperties"`
 }
 
 // 规则
@@ -70,6 +70,7 @@ type IoTPropertyRule struct {
 
 // 物模型属性
 type IoTProperty struct {
+	UUID        string          `json:"uuid"`            // Cache uuid
 	Label       string          `json:"label"`           // UI显示的那个文本
 	Name        string          `json:"name"`            // 变量关联名
 	Description string          `json:"description"`     // 额外信息
@@ -204,7 +205,6 @@ func (V IoTProperty) ValidateType() error {
 	default:
 		return fmt.Errorf("Unknown And Invalid IoT Property Type:%v", V.Type)
 	}
-	return nil
 }
 
 /*

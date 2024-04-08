@@ -7,7 +7,7 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/hootrhino/rulex/component/iotschema"
+	
 	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/typex"
 )
@@ -151,10 +151,6 @@ func (ird *IR) Stop() {
 
 }
 
-// 设备属性，是一系列属性描述
-func (ird *IR) Property() []iotschema.IoTSchema {
-	return []iotschema.IoTSchema{}
-}
 
 // 真实设备
 func (ird *IR) Details() *typex.Device {

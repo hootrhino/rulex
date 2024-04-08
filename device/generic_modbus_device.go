@@ -31,7 +31,7 @@ import (
 	"github.com/hootrhino/rulex/component/hwportmanager"
 	modbuscache "github.com/hootrhino/rulex/component/intercache/modbus"
 	"github.com/hootrhino/rulex/component/interdb"
-	"github.com/hootrhino/rulex/component/iotschema"
+	
 	"github.com/hootrhino/rulex/core"
 	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/typex"
@@ -488,11 +488,6 @@ func (mdev *generic_modbus_device) Stop() {
 	}
 	modbuscache.UnRegisterSlot(mdev.PointId)
 
-}
-
-// 设备属性，是一系列属性描述
-func (mdev *generic_modbus_device) Property() []iotschema.IoTSchema {
-	return []iotschema.IoTSchema{}
 }
 
 // 真实设备

@@ -28,6 +28,7 @@ type MqttServer struct {
 	Port       int
 	mqttServer *mqtt.Server
 	clients    map[string]*mqtt.Client
+	locker     sync.Mutex
 	topics     map[string][]_topic // Topic 订阅表
 	ruleEngine typex.RuleX
 	uuid       string
@@ -40,6 +41,7 @@ func NewMqttServer() typex.XPlugin {
 		clients: map[string]*mqtt.Client{},
 		topics:  map[string][]_topic{},
 		uuid:    "RULEX-MqttServer",
+		locker:  sync.Mutex{},
 	}
 }
 

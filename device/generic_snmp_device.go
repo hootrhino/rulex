@@ -7,7 +7,7 @@ import (
 
 	"github.com/gosnmp/gosnmp"
 	"github.com/hootrhino/rulex/common"
-	"github.com/hootrhino/rulex/component/iotschema"
+	
 	"github.com/hootrhino/rulex/driver"
 	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/typex"
@@ -147,10 +147,6 @@ func (sd *genericSnmpDevice) Stop() {
 	}
 }
 
-// 设备属性，是一系列属性描述
-func (sd *genericSnmpDevice) Property() []iotschema.IoTSchema {
-	return []iotschema.IoTSchema{}
-}
 
 // 真实设备
 func (sd *genericSnmpDevice) Details() *typex.Device {

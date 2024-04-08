@@ -16,7 +16,7 @@
 package device
 
 import (
-	"github.com/hootrhino/rulex/component/iotschema"
+	
 	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/typex"
 	"github.com/hootrhino/rulex/utils"
@@ -71,11 +71,6 @@ func (hd *TemplateDevice) Status() typex.DeviceState {
 func (hd *TemplateDevice) Stop() {
 	hd.status = typex.DEV_DOWN
 	hd.CancelCTX()
-}
-
-// 设备属性，是一系列属性描述
-func (hd *TemplateDevice) Property() []iotschema.IoTSchema {
-	return []iotschema.IoTSchema{}
 }
 
 // 真实设备

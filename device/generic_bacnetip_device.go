@@ -9,7 +9,7 @@ import (
 
 	"github.com/BeatTime/bacnet"
 	"github.com/BeatTime/bacnet/btypes"
-	"github.com/hootrhino/rulex/component/iotschema"
+	
 	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/typex"
 	"github.com/hootrhino/rulex/utils"
@@ -189,9 +189,7 @@ func (dev *GenericBacnetIpDevice) Stop() {
 	}
 }
 
-func (dev *GenericBacnetIpDevice) Property() []iotschema.IoTSchema {
-	return []iotschema.IoTSchema{}
-}
+
 
 func (dev *GenericBacnetIpDevice) Details() *typex.Device {
 	return dev.RuleEngine.GetDevice(dev.PointId)

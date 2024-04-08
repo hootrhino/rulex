@@ -39,6 +39,33 @@ func (e *RuleEngine) GetDevice(id string) *typex.Device {
 
 }
 
+// 0.7.0
+// 更新设备的运行时状态
+func (e *RuleEngine) SetDeviceStatus(uuid string, DeviceState typex.DeviceState) {
+	e.locker.Lock()
+	defer e.locker.Unlock()
+	Device := e.GetDevice(uuid)
+	if Device != nil {
+		Device.State = DeviceState
+	}
+}
+func (e *RuleEngine) SetSourceStatus(uuid string, SourceState typex.SourceState) {
+	e.locker.Lock()
+	defer e.locker.Unlock()
+	Source := e.GetInEnd(uuid)
+	if Source != nil {
+		Source.State = SourceState
+	}
+}
+func (e *RuleEngine) SetTargetStatus(uuid string, SourceState typex.SourceState) {
+	e.locker.Lock()
+	defer e.locker.Unlock()
+	Outend := e.GetOutEnd(uuid)
+	if Outend != nil {
+		Outend.State = SourceState
+	}
+}
+
 // 保存设备
 func (e *RuleEngine) SaveDevice(dev *typex.Device) {
 	e.Devices.Store(dev.UUID, dev)

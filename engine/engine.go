@@ -27,10 +27,10 @@ import (
 	"github.com/hootrhino/rulex/component/appstack"
 	"github.com/hootrhino/rulex/component/hwportmanager"
 	hnccnc "github.com/hootrhino/rulex/component/intercache/hnccnc"
-	iotschema "github.com/hootrhino/rulex/component/intercache/iotschema"
 	kdncnc "github.com/hootrhino/rulex/component/intercache/kdncnc"
 	modbuscache "github.com/hootrhino/rulex/component/intercache/modbus"
 	siemenscache "github.com/hootrhino/rulex/component/intercache/siemens"
+	iotschema "github.com/hootrhino/rulex/component/iotschema"
 	supervisor "github.com/hootrhino/rulex/component/supervisor"
 
 	"github.com/hootrhino/rulex/component/interdb"
@@ -62,6 +62,7 @@ const __DEFAULT_DB_PATH string = "./rulex.db"
 
 // 规则引擎
 type RuleEngine struct {
+	locker            sync.Mutex
 	Hooks             *sync.Map            `json:"hooks"`
 	Rules             *sync.Map            `json:"rules"`
 	Plugins           *sync.Map            `json:"plugins"`
@@ -77,6 +78,7 @@ type RuleEngine struct {
 
 func InitRuleEngine(config typex.RulexConfig) typex.RuleX {
 	__DefaultRuleEngine = &RuleEngine{
+		locker:            sync.Mutex{},
 		DeviceTypeManager: core.NewDeviceTypeManager(),
 		SourceTypeManager: core.NewSourceTypeManager(),
 		TargetTypeManager: core.NewTargetTypeManager(),
@@ -108,7 +110,7 @@ func InitRuleEngine(config typex.RulexConfig) typex.RuleX {
 	// Web Pipeline: future version maybe support
 	// core.InitWebDataPipe(__DefaultRuleEngine)
 	// Internal Schema
-	iotschema.InitInternalSchemaCache(__DefaultRuleEngine)
+	iotschema.InitIotSchemaCache(__DefaultRuleEngine)
 	// Load hardware Port Manager
 	hwportmanager.InitHwPortsManager(__DefaultRuleEngine)
 	// Internal Metric

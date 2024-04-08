@@ -31,6 +31,7 @@ func checkLicense(c *gin.Context) {
 			"code": 4001,
 			"msg":  "Invalid license!",
 		})
+		c.Abort()
 		return
 	}
 	c.Next()

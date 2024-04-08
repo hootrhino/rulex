@@ -10,7 +10,7 @@ import (
 	"time"
 
 	siemenscache "github.com/hootrhino/rulex/component/intercache/siemens"
-	"github.com/hootrhino/rulex/component/iotschema"
+	
 	"github.com/jinzhu/copier"
 
 	"github.com/hootrhino/rulex/common"
@@ -246,11 +246,6 @@ func (s1200 *SIEMENS_PLC) Stop() {
 		s1200.handler.Close()
 	}
 	siemenscache.UnRegisterSlot(s1200.PointId)
-}
-
-// 设备属性，是一系列属性描述
-func (s1200 *SIEMENS_PLC) Property() []iotschema.IoTSchema {
-	return []iotschema.IoTSchema{}
 }
 
 // 真实设备

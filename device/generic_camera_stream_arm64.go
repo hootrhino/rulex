@@ -19,7 +19,7 @@
 package device
 
 import (
-	"github.com/hootrhino/rulex/component/iotschema"
+	
 
 	"github.com/hootrhino/rulex/typex"
 )
@@ -74,10 +74,7 @@ func (hd *videoCamera) Stop() {
 	hd.CancelCTX()
 }
 
-// 设备属性，是一系列属性描述
-func (hd *videoCamera) Property() []iotschema.IoTSchema {
-	return []iotschema.IoTSchema{}
-}
+
 
 // 真实设备
 func (hd *videoCamera) Details() *typex.Device {

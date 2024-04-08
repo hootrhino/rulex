@@ -11,7 +11,7 @@ import (
 	"github.com/gopcua/opcua"
 	"github.com/gopcua/opcua/ua"
 	"github.com/hootrhino/rulex/common"
-	"github.com/hootrhino/rulex/component/iotschema"
+	
 	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/typex"
 	"github.com/hootrhino/rulex/utils"
@@ -312,11 +312,6 @@ func (sd *genericOpcuaDevice) Stop() {
 		sd.client.Close(sd.Ctx)
 		sd.driver.Stop()
 	}
-}
-
-// 设备属性，是一系列属性描述
-func (sd *genericOpcuaDevice) Property() []iotschema.IoTSchema {
-	return []iotschema.IoTSchema{}
 }
 
 // 真实设备

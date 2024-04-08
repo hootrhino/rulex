@@ -21,7 +21,6 @@ import (
 
 	hnc8cache "github.com/hootrhino/rulex/component/intercache/hnccnc"
 	"github.com/hootrhino/rulex/component/interdb"
-	"github.com/hootrhino/rulex/component/iotschema"
 
 	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/typex"
@@ -162,10 +161,6 @@ func (hnc8Cnc *HNC8_CNC) Stop() {
 	hnc8cache.UnRegisterSlot(hnc8Cnc.PointId)
 }
 
-// 设备属性，是一系列属性描述
-func (hnc8Cnc *HNC8_CNC) Property() []iotschema.IoTSchema {
-	return []iotschema.IoTSchema{}
-}
 
 // 真实设备
 func (hnc8Cnc *HNC8_CNC) Details() *typex.Device {

@@ -15,7 +15,7 @@ import (
 	aislib "github.com/hootrhino/go-ais"
 	"github.com/hootrhino/rulex/common"
 	"github.com/hootrhino/rulex/component/hwportmanager"
-	"github.com/hootrhino/rulex/component/iotschema"
+	
 	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/typex"
 	"github.com/hootrhino/rulex/utils"
@@ -307,11 +307,6 @@ func (aism *AISDeviceMaster) Stop() {
 		}
 		hwportmanager.FreeInterfaceBusy(aism.mainConfig.PortUuid)
 	}
-}
-
-// 设备属性，是一系列属性描述
-func (aism *AISDeviceMaster) Property() []iotschema.IoTSchema {
-	return []iotschema.IoTSchema{}
 }
 
 // 真实设备

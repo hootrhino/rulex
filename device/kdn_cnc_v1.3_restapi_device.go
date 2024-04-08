@@ -22,7 +22,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/hootrhino/rulex/component/iotschema"
+	
 	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/typex"
 	"github.com/hootrhino/rulex/utils"
@@ -189,10 +189,6 @@ func (hd *KDN_CNC) Stop() {
 	hd.CancelCTX()
 }
 
-// 设备属性，是一系列属性描述
-func (hd *KDN_CNC) Property() []iotschema.IoTSchema {
-	return []iotschema.IoTSchema{}
-}
 
 // 真实设备
 func (hd *KDN_CNC) Details() *typex.Device {

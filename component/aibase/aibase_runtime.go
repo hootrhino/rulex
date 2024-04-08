@@ -46,6 +46,7 @@ func InitAlgorithmRuntime(re typex.RuleX) *AlgorithmRuntime {
 	__DefaultAIRuntime = new(AlgorithmRuntime)
 	__DefaultAIRuntime.RuleEngine = re
 	__DefaultAIRuntime.XAlgorithms = make(map[string]XAlgorithm)
+	__DefaultAIRuntime.locker = sync.Mutex{}
 	// Yolo8
 	// err1 := LoadAlgorithm(NewYolo8ObjectDetectionCpu(), map[string]interface{}{})
 	// if err1 != nil {

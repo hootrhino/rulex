@@ -14,7 +14,7 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/hootrhino/rulex/component/iotschema"
+	
 	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/ossupport"
 	"github.com/hootrhino/rulex/typex"
@@ -165,9 +165,6 @@ func (vc *videoCamera) Stop() {
 	vc.stopFFMPEGProcess()
 }
 
-func (vc *videoCamera) Property() []iotschema.IoTSchema {
-	return []iotschema.IoTSchema{}
-}
 
 func (vc *videoCamera) Details() *typex.Device {
 	return vc.RuleEngine.GetDevice(vc.PointId)

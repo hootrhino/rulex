@@ -18,6 +18,7 @@ package appstack
 import (
 	"context"
 	"fmt"
+	"sync"
 	"time"
 
 	lua "github.com/hootrhino/gopher-lua"
@@ -31,6 +32,7 @@ var __DefaultAppStackRuntime *AppStackRuntime
 func InitAppStack(re typex.RuleX) *AppStackRuntime {
 	__DefaultAppStackRuntime = &AppStackRuntime{
 		RuleEngine:   re,
+		locker:       sync.Mutex{},
 		Applications: make(map[string]*Application),
 	}
 	return __DefaultAppStackRuntime
@@ -45,7 +47,8 @@ func AppRuntime() *AppStackRuntime {
 *
  */
 func LoadApp(app *Application, luaSource string) error {
-
+	__DefaultAppStackRuntime.locker.Lock()
+	defer __DefaultAppStackRuntime.locker.Unlock()
 	// 重新读
 	app.VM().DoString(string(luaSource))
 	// 检查函数入口
@@ -73,6 +76,8 @@ func LoadApp(app *Application, luaSource string) error {
 *
  */
 func StartApp(uuid string) error {
+	__DefaultAppStackRuntime.locker.Lock()
+	defer __DefaultAppStackRuntime.locker.Unlock()
 	app, ok := __DefaultAppStackRuntime.Applications[uuid]
 	if !ok {
 		return fmt.Errorf("Application not exists:%s", uuid)
@@ -173,6 +178,8 @@ func StartApp(uuid string) error {
 *
  */
 func RemoveApp(uuid string) error {
+	__DefaultAppStackRuntime.locker.Lock()
+	defer __DefaultAppStackRuntime.locker.Unlock()
 	if app, ok := __DefaultAppStackRuntime.Applications[uuid]; ok {
 		app.Remove()
 		delete(__DefaultAppStackRuntime.Applications, uuid)
@@ -187,6 +194,8 @@ func RemoveApp(uuid string) error {
 *
  */
 func StopApp(uuid string) error {
+	__DefaultAppStackRuntime.locker.Lock()
+	defer __DefaultAppStackRuntime.locker.Unlock()
 	if app, ok := __DefaultAppStackRuntime.Applications[uuid]; ok {
 		app.Stop()
 	}
@@ -200,6 +209,8 @@ func StopApp(uuid string) error {
 *
  */
 func UpdateApp(app Application) error {
+	__DefaultAppStackRuntime.locker.Lock()
+	defer __DefaultAppStackRuntime.locker.Unlock()
 	if oldApp, ok := __DefaultAppStackRuntime.Applications[app.UUID]; ok {
 		oldApp.Name = app.Name
 		oldApp.AutoStart = app.AutoStart
@@ -237,6 +248,8 @@ func ListApp() []*Application {
 }
 
 func Stop() {
+	__DefaultAppStackRuntime.locker.Lock()
+	defer __DefaultAppStackRuntime.locker.Unlock()
 	for _, app := range __DefaultAppStackRuntime.Applications {
 		glogger.GLogger.Info("Stop App:", app.UUID)
 		app.Stop()
