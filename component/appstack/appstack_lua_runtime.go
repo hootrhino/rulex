@@ -252,4 +252,10 @@ func LoadAppLibGroup(app *Application, e typex.RuleX) {
 		}
 		AddAppLibToGroup(app, e, "en6400", Funcs)
 	}
+	{
+		Funcs := map[string]func(l *lua.LState) int{
+			"Update": rulexlib.DataSchemaValueUpdate(e),
+		}
+		AddAppLibToGroup(app, e, "dataschema", Funcs)
+	}
 }

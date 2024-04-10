@@ -28,10 +28,11 @@ import (
 	"time"
 
 	"github.com/hootrhino/rulex/common"
+	"github.com/hootrhino/rulex/component/dataschema"
 	"github.com/hootrhino/rulex/component/hwportmanager"
 	modbuscache "github.com/hootrhino/rulex/component/intercache/modbus"
 	"github.com/hootrhino/rulex/component/interdb"
-	
+
 	"github.com/hootrhino/rulex/core"
 	"github.com/hootrhino/rulex/glogger"
 	"github.com/hootrhino/rulex/typex"
@@ -69,8 +70,9 @@ type _GMODCommonConfig struct {
 }
 type _GMODConfig struct {
 	CommonConfig _GMODCommonConfig `json:"commonConfig" validate:"required"`
-	PortUuid     string            `json:"portUuid"`
 	HostConfig   common.HostConfig `json:"hostConfig"`
+	PortUuid     string            `json:"portUuid"`
+	SchemaId     string            `json:"schemaId"`
 }
 
 type GroupedTags struct {
@@ -90,6 +92,22 @@ func (g *GroupedTags) String() string {
 	str := fmt.Sprintf("func=%v slaveId=%v address=%v quantity=%v frequency=%v tagIds=%v",
 		g.Function, g.SlaverId, g.Address, g.Quantity, g.Frequency, tagIds)
 	return str
+}
+
+// 数据模型
+type ModbusSchemaCacheValue struct {
+	UUID          string
+	Status        int    // 0 正常；1 错误，填充 ErrMsg
+	ErrMsg        string // 错误信息
+	LastFetchTime uint64 // 最后更新时间
+	Label         string // UI显示的那个文本
+	Name          string // 变量关联名
+	Description   string // 额外信息
+	Type          string // 类型, 只能是上面几种
+	Rw            string // R读 W写 RW读写
+	Unit          string // 单位 例如：摄氏度、米、牛等等
+	Rule          string // 规则
+	Value         any    // 运行时值
 }
 
 /*
@@ -168,10 +186,10 @@ func (mdev *generic_modbus_device) Init(devId string, configMap map[string]inter
 	}
 	// 合并数据库里面的点位表
 	var ModbusPointList []ModbusPoint
-	errDb := interdb.DB().Table("m_modbus_data_points").
+	modbusPointLoadErr := interdb.DB().Table("m_modbus_data_points").
 		Where("device_uuid=?", devId).Find(&ModbusPointList).Error
-	if errDb != nil {
-		return errDb
+	if modbusPointLoadErr != nil {
+		return modbusPointLoadErr
 	}
 	for _, ModbusPoint := range ModbusPointList {
 		// 频率不能太快
@@ -200,6 +218,36 @@ func (mdev *generic_modbus_device) Init(devId string, configMap map[string]inter
 			ErrMsg:        "Device Loading",
 		})
 	}
+	// 加载数据模型，先根据模型schema_id加载属性m_iot_properties，然后Bind到设备
+	// 先拿到设备的SchemaId, 然后查出来其绑定的数据字段，最后注册到数据模型中心dataschema
+	//
+	// SchemaId = db.find(device.SchemaId)
+	// ModbusSchemaCacheValues = db.find_by_schema_id(SchemaId)
+	// dataschema.RegisterSlot(mdev.PointId)
+	// dataschema.SetValue(mdev.PointId, K, V)
+	//
+	if mdev.mainConfig.SchemaId != "" {
+		dataschema.RegisterSlot(mdev.PointId)
+		var ModbusSchemaCacheValues []ModbusSchemaCacheValue
+		dataSchemaLoadError := interdb.DB().Table("m_iot_properties").
+			Where("schema_id=?", mdev.mainConfig.SchemaId).Find(&ModbusSchemaCacheValues).Error
+		if dataSchemaLoadError != nil {
+			return dataSchemaLoadError
+		}
+		LastFetchTime := uint64(time.Now().UnixMilli())
+
+		for _, MModbusSchemaCacheValue := range ModbusSchemaCacheValues {
+			dataschema.SetValue(mdev.PointId, MModbusSchemaCacheValue.Name,
+				dataschema.DataSchemaValue{
+					UUID:          MModbusSchemaCacheValue.UUID,
+					Name:          MModbusSchemaCacheValue.Name,
+					LastFetchTime: LastFetchTime,
+					Value:         "-",
+				})
+		}
+	}
+
+	// 开启优化
 	if *mdev.mainConfig.CommonConfig.EnableOptimize {
 		rws := make([]*common.RegisterRW, len(mdev.Registers))
 		idx := 0
@@ -486,8 +534,8 @@ func (mdev *generic_modbus_device) Stop() {
 			mdev.tcpHandler.Close()
 		}
 	}
-	modbuscache.UnRegisterSlot(mdev.PointId)
-
+	modbuscache.UnRegisterSlot(mdev.PointId) // 卸载点位表
+	dataschema.UnRegisterSlot(mdev.PointId)  // 卸载数据模型插槽
 }
 
 // 真实设备

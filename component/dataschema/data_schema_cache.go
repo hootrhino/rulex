@@ -3,16 +3,16 @@
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
-// License, or (at your option) IoTProperty later version.
+// License, or (at your option) DataSchemaValue later version.
 //
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT IoTProperty WARRANTY; without even the implied warranty of
+// but WITHOUT DataSchemaValue WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
-package iotschema
+package dataschema
 
 import (
 	"sync"
@@ -26,13 +26,13 @@ var __DefaultIotSchemaCache *IotSchemaCache
 func RegisterSlot(Slot string) {
 	__DefaultIotSchemaCache.RegisterSlot(Slot)
 }
-func GetSlot(Slot string) map[string]IoTProperty {
+func GetSlot(Slot string) map[string]DataSchemaValue {
 	return __DefaultIotSchemaCache.GetSlot(Slot)
 }
-func SetValue(Slot, K string, V IoTProperty) {
+func SetValue(Slot, K string, V DataSchemaValue) {
 	__DefaultIotSchemaCache.SetValue(Slot, K, V)
 }
-func GetValue(Slot, K string) IoTProperty {
+func GetValue(Slot, K string) DataSchemaValue {
 	return __DefaultIotSchemaCache.GetValue(Slot, K)
 }
 func DeleteValue(Slot, K string) {
@@ -51,15 +51,21 @@ func Flush() {
 //Modbus 点位运行时存储器
 
 type IotSchemaCache struct {
-	Slots      map[string]map[string]IoTProperty
+	Slots      map[string]map[string]DataSchemaValue
 	ruleEngine typex.RuleX
 	locker     sync.Mutex
+}
+type DataSchemaValue struct {
+	UUID          string // Cache uuid
+	Name          string // 变量关联名
+	Value         any    //
+	LastFetchTime uint64
 }
 
 func InitIotSchemaCache(ruleEngine typex.RuleX) intercache.InterCache {
 	__DefaultIotSchemaCache = &IotSchemaCache{
 		ruleEngine: ruleEngine,
-		Slots:      map[string]map[string]IoTProperty{},
+		Slots:      map[string]map[string]DataSchemaValue{},
 		locker:     sync.Mutex{},
 	}
 	return __DefaultIotSchemaCache
@@ -67,9 +73,9 @@ func InitIotSchemaCache(ruleEngine typex.RuleX) intercache.InterCache {
 func (M *IotSchemaCache) RegisterSlot(Slot string) {
 	M.locker.Lock()
 	defer M.locker.Unlock()
-	M.Slots[Slot] = map[string]IoTProperty{}
+	M.Slots[Slot] = map[string]DataSchemaValue{}
 }
-func (M *IotSchemaCache) GetSlot(Slot string) map[string]IoTProperty {
+func (M *IotSchemaCache) GetSlot(Slot string) map[string]DataSchemaValue {
 	M.locker.Lock()
 	defer M.locker.Unlock()
 	if S, ok := M.Slots[Slot]; ok {
@@ -77,7 +83,7 @@ func (M *IotSchemaCache) GetSlot(Slot string) map[string]IoTProperty {
 	}
 	return nil
 }
-func (M *IotSchemaCache) SetValue(Slot, K string, V IoTProperty) {
+func (M *IotSchemaCache) SetValue(Slot, K string, V DataSchemaValue) {
 	M.locker.Lock()
 	defer M.locker.Unlock()
 	if S, ok := M.Slots[Slot]; ok {
@@ -85,13 +91,13 @@ func (M *IotSchemaCache) SetValue(Slot, K string, V IoTProperty) {
 		M.Slots[Slot] = S
 	}
 }
-func (M *IotSchemaCache) GetValue(Slot, K string) IoTProperty {
+func (M *IotSchemaCache) GetValue(Slot, K string) DataSchemaValue {
 	M.locker.Lock()
 	defer M.locker.Unlock()
 	if S, ok := M.Slots[Slot]; ok {
 		return S[K]
 	}
-	return IoTProperty{}
+	return DataSchemaValue{}
 }
 func (M *IotSchemaCache) DeleteValue(Slot, K string) {
 	M.locker.Lock()

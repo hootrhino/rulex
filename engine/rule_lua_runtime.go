@@ -56,8 +56,8 @@ func LoadRuleLibGroup(r *typex.Rule, e typex.RuleX) {
 	}
 	{
 		Funcs := map[string]func(l *lua.LState) int{
-			"Debug":   rulexlib.DebugRule(e, r.UUID),
-			"Throw":   rulexlib.Throw(e),
+			"Debug": rulexlib.DebugRule(e, r.UUID),
+			"Throw": rulexlib.Throw(e),
 		}
 		AddRuleLibToGroup(r, e, "_G", Funcs)
 	}
@@ -220,15 +220,10 @@ func LoadRuleLibGroup(r *typex.Rule, e typex.RuleX) {
 		AddRuleLibToGroup(r, e, "http", Funcs)
 	}
 	{
-		// Just For test
-		Func1 := map[string]func(l *lua.LState) int{
-			"Time": rulexlib.Time(e),
+		Funcs := map[string]func(l *lua.LState) int{
+			"Update": rulexlib.DataSchemaValueUpdate(e),
 		}
-		AddRuleLibToGroup(r, e, "time1", Func1)
-		Func2 := map[string]func(l *lua.LState) int{
-			"Time": rulexlib.TsUnixNano(e),
-		}
-		AddRuleLibToGroup(r, e, "time2", Func2)
+		AddRuleLibToGroup(r, e, "dataschema", Funcs)
 	}
 }
 

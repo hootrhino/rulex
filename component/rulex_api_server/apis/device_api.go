@@ -3,6 +3,7 @@ package apis
 import (
 	"fmt"
 
+	"github.com/hootrhino/rulex/component/dataschema"
 	"github.com/hootrhino/rulex/component/interdb"
 	common "github.com/hootrhino/rulex/component/rulex_api_server/common"
 	"github.com/hootrhino/rulex/component/rulex_api_server/model"
@@ -273,6 +274,7 @@ func UpdateDevice(c *gin.Context, ruleEngine typex.RuleX) {
 	// 取消绑定分组,删除原来旧的分组
 	txErr := service.ReBindResource(func(tx *gorm.DB) error {
 		MDevice := model.MDevice{
+			UUID:        form.UUID,
 			Type:        form.Type,
 			Name:        form.Name,
 			SchemaId:    form.SchemaId,
@@ -306,12 +308,12 @@ type DevicePropertyVo struct {
 	Type        string `json:"type"`        // 类型, 只能是上面几种
 	Rw          string `json:"rw"`          // R读 W写 RW读写
 	Unit        string `json:"unit"`        // 单位 例如：摄氏度、米、牛等等
-	Value       string `json:"value"`       // 值
+	Value       any    `json:"value"`       // 值
 }
 
 /*
 *
-*物模型
+*挂在设备上的物模型以及数据
 *
  */
 func DevicePropertiesPage(c *gin.Context, ruleEngine typex.RuleX) {
@@ -334,24 +336,31 @@ func DevicePropertiesPage(c *gin.Context, ruleEngine typex.RuleX) {
 	var records []model.MIotProperty
 	tx.Order("created_at DESC").Where("schema_id=?", MDevice.SchemaId).Find(&records)
 	recordsVoList := []DevicePropertyVo{}
+	// 1 从数据库加载物模型
+	// 2 从物模型缓存器里面拿数据
+	// 3 构造view vo
+	// 如果缓存器里面有数据
+	DataSchemaCacheValueSlot := dataschema.GetSlot(uuid)
 	for _, record := range records {
 		IoTPropertyRuleVo := IoTPropertyRuleVo{}
 		if err0 := IoTPropertyRuleVo.ParseRuleFromModel(record.Rule); err0 != nil {
 			c.JSON(common.HTTP_OK, common.Error400(err0))
 			return
 		}
-		// 物模型定义从数据库拿
-		// 而 Value 要去设备自己的物模型里面拿
-		// 当设备离线的时候应该是空值
-		// Value := Device.Property()
 		IotPropertyVo := DevicePropertyVo{
 			Label:       record.Label,
 			Name:        record.Name,
 			Rw:          record.Rw,
 			Type:        record.Type,
 			Unit:        record.Unit,
-			Value:       "",
 			Description: record.Description,
+			Value:       "--",
+		}
+		// 取出 name 指向的缓冲值
+		if DataSchemaCacheValueSlot != nil {
+			if DataSchemaCacheValue, ok := DataSchemaCacheValueSlot[record.Name]; ok {
+				IotPropertyVo.Value = DataSchemaCacheValue.Value
+			}
 		}
 		recordsVoList = append(recordsVoList, IotPropertyVo)
 	}
@@ -365,7 +374,6 @@ func DevicePropertiesPage(c *gin.Context, ruleEngine typex.RuleX) {
 *
  */
 func GetDeviceErrorMsg(c *gin.Context, ruleEngine typex.RuleX) {
-
 	c.JSON(common.HTTP_OK, common.OkWithData("Error Msg Not Found"))
 }
 

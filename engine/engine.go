@@ -25,12 +25,12 @@ import (
 	lua "github.com/hootrhino/gopher-lua"
 	"github.com/hootrhino/rulex/component/aibase"
 	"github.com/hootrhino/rulex/component/appstack"
+	dataschema "github.com/hootrhino/rulex/component/dataschema"
 	"github.com/hootrhino/rulex/component/hwportmanager"
 	hnccnc "github.com/hootrhino/rulex/component/intercache/hnccnc"
 	kdncnc "github.com/hootrhino/rulex/component/intercache/kdncnc"
 	modbuscache "github.com/hootrhino/rulex/component/intercache/modbus"
 	siemenscache "github.com/hootrhino/rulex/component/intercache/siemens"
-	iotschema "github.com/hootrhino/rulex/component/iotschema"
 	supervisor "github.com/hootrhino/rulex/component/supervisor"
 
 	"github.com/hootrhino/rulex/component/interdb"
@@ -108,7 +108,7 @@ func InitRuleEngine(config typex.RulexConfig) typex.RuleX {
 	// 前后交互组件
 	interqueue.InitInteractQueue(__DefaultRuleEngine, core.GlobalConfig.MaxQueueSize)
 	// Internal Schema
-	iotschema.InitIotSchemaCache(__DefaultRuleEngine)
+	dataschema.InitIotSchemaCache(__DefaultRuleEngine)
 	// Load hardware Port Manager
 	hwportmanager.InitHwPortsManager(__DefaultRuleEngine)
 	// Internal Metric
@@ -215,12 +215,12 @@ func (e *RuleEngine) Stop() {
 	modbuscache.Flush()
 	glogger.GLogger.Info("Flush Siemens Point sheet Cache")
 	siemenscache.Flush()
-	glogger.GLogger.Info("Flush IotSchema Cache")
-	iotschema.Flush()
 	glogger.GLogger.Info("Flush KDN CNC Cache")
 	kdncnc.Flush()
 	glogger.GLogger.Info("Flush HNC Cache")
 	hnccnc.Flush()
+	glogger.GLogger.Info("Flush Data Schema Cache")
+	dataschema.Flush()
 	glogger.GLogger.Info("Stop AI Runtime")
 	aibase.Stop()
 	glogger.GLogger.Info("[√] Stop Rulex successfully")

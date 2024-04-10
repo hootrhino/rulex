@@ -25,7 +25,7 @@ type IoTSchemaVo struct {
 
 /*
 *
-* 属性 @ component/iotschema/iot_schema_define
+* 属性 @ component/dataschema/iot_schema_define
 *
  */
 type IotPropertyVo struct {

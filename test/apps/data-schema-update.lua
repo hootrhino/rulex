@@ -1,4 +1,4 @@
--- Copyright (C) 2023 wwhai
+-- Copyright (C) 2024 wwhai
 --
 -- This program is free software: you can redistribute it and/or modify
 -- it under the terms of the GNU Affero General Public License as
@@ -11,14 +11,21 @@
 -- GNU Affero General Public License for more details.
 --
 -- You should have received a copy of the GNU Affero General Public License
--- along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-- along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 function Main(arg)
+    local acc1 = 300
+    local acc2 = 100
     while true do
-        ui:LoadData('001', 'SCHEMA2RMEGS', {
-            temp = 12.3,
-            date = applib:Time(),
-        })
+        -- DEVICENKRZFRYW
+        local R = dataschema:Update('DEVICENKRZFRYW', json:T2J({
+            a = acc1,
+            b = acc2
+        }))
+        acc1 = acc1 + 1
+        acc2 = acc2 + 1
+        Debug("dataschema:Update acc1:" .. acc1 .. "; R=", R)
+        Debug("dataschema:Update acc2:" .. acc2 .. "; R=", R)
         time:Sleep(1000)
     end
     return 0

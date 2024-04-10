@@ -130,6 +130,7 @@ func LoadNewestDevice(uuid string, ruleEngine typex.RuleX) error {
 	if err := json.Unmarshal([]byte(mDevice.Config), &config); err != nil {
 		return err
 	}
+	config["schemaId"] = mDevice.SchemaId
 	// 所有的更新都先停止资源,然后再加载
 	old := ruleEngine.GetDevice(uuid)
 	if old != nil {
@@ -163,6 +164,7 @@ func LoadNewestDevice(uuid string, ruleEngine typex.RuleX) error {
 	dev.BindRules = BindRules
 	// 最新的配置
 	dev.Config = mDevice.GetConfig()
+	dev.Config["schemaId"] = mDevice.SchemaId
 	// 参数传给 --> startDevice()
 	ctx, cancelCTX := typex.NewCCTX()
 	err2 := ruleEngine.LoadDeviceWithCtx(dev, ctx, cancelCTX)

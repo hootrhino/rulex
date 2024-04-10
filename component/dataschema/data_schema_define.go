@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package iotschema
+package dataschema
 
 import (
 	"fmt"
@@ -78,7 +78,7 @@ type IoTProperty struct {
 	Rw          string          `json:"rw"`              // R读 W写 RW读写
 	Unit        string          `json:"unit"`            // 单位 例如：摄氏度、米、牛等等
 	Value       any             `json:"value,omitempty"` // Value 是运行时值, 前端不用填写
-	Rule        IoTPropertyRule `json:"rule"`            // 规则
+
 }
 
 func (I *IoTProperty) StringValue() string {
