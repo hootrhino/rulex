@@ -10,7 +10,7 @@ import (
 	"time"
 
 	siemenscache "github.com/hootrhino/rulex/component/intercache/siemens"
-	
+
 	"github.com/jinzhu/copier"
 
 	"github.com/hootrhino/rulex/common"
@@ -64,7 +64,7 @@ type SIEMENS_PLC struct {
 	mainConfig          S1200Config
 	client              gos7.Client
 	handler             *gos7.TCPClientHandler
-	lock                sync.Mutex
+	locker              sync.Mutex
 	__SiemensDataPoints map[string]*__SiemensDataPoint
 }
 
@@ -76,7 +76,7 @@ type SIEMENS_PLC struct {
 func NewSIEMENS_PLC(e typex.RuleX) typex.XDevice {
 	s1200 := new(SIEMENS_PLC)
 	s1200.RuleEngine = e
-	s1200.lock = sync.Mutex{}
+	s1200.locker = sync.Mutex{}
 	Rack := 0
 	Slot := 1
 	Timeout := 1000
@@ -183,10 +183,10 @@ func (s1200 *SIEMENS_PLC) Start(cctx typex.CCTX) error {
 				{
 				}
 			}
-			s1200.lock.Lock()
+			s1200.locker.Lock()
 			// CMD 参数无用
 			n, err := s1200.Read([]byte(""), dataBuffer)
-			s1200.lock.Unlock()
+			s1200.locker.Unlock()
 			if err != nil {
 				glogger.GLogger.Error(err)
 				s1200.status = typex.DEV_DOWN

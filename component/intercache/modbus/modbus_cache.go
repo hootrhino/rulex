@@ -62,56 +62,56 @@ func Flush() {
 type ModbusPointCache struct {
 	Slots      map[string]map[string]RegisterPoint
 	ruleEngine typex.RuleX
-	lock       sync.Mutex
+	locker     sync.Mutex
 }
 
 func InitModbusPointCache(ruleEngine typex.RuleX) intercache.InterCache {
 	__DefaultModbusPointCache = &ModbusPointCache{
 		ruleEngine: ruleEngine,
 		Slots:      map[string]map[string]RegisterPoint{},
-		lock:       sync.Mutex{},
+		locker:     sync.Mutex{},
 	}
 	return __DefaultModbusPointCache
 }
 func (M *ModbusPointCache) RegisterSlot(Slot string) {
-	M.lock.Lock()
-	defer M.lock.Unlock()
+	M.locker.Lock()
+	defer M.locker.Unlock()
 	M.Slots[Slot] = map[string]RegisterPoint{}
 }
 func (M *ModbusPointCache) GetSlot(Slot string) map[string]RegisterPoint {
-	M.lock.Lock()
-	defer M.lock.Unlock()
+	M.locker.Lock()
+	defer M.locker.Unlock()
 	if S, ok := M.Slots[Slot]; ok {
 		return S
 	}
 	return nil
 }
 func (M *ModbusPointCache) SetValue(Slot, K string, V RegisterPoint) {
-	M.lock.Lock()
-	defer M.lock.Unlock()
+	M.locker.Lock()
+	defer M.locker.Unlock()
 	if S, ok := M.Slots[Slot]; ok {
 		S[K] = V
 		M.Slots[Slot] = S
 	}
 }
 func (M *ModbusPointCache) GetValue(Slot, K string) RegisterPoint {
-	M.lock.Lock()
-	defer M.lock.Unlock()
+	M.locker.Lock()
+	defer M.locker.Unlock()
 	if S, ok := M.Slots[Slot]; ok {
 		return S[K]
 	}
 	return RegisterPoint{}
 }
 func (M *ModbusPointCache) DeleteValue(Slot, K string) {
-	M.lock.Lock()
-	defer M.lock.Unlock()
+	M.locker.Lock()
+	defer M.locker.Unlock()
 	if S, ok := M.Slots[Slot]; ok {
 		delete(S, Slot)
 	}
 }
 func (M *ModbusPointCache) UnRegisterSlot(Slot string) {
-	M.lock.Lock()
-	defer M.lock.Unlock()
+	M.locker.Lock()
+	defer M.locker.Unlock()
 	delete(M.Slots, Slot)
 	M.Flush()
 }

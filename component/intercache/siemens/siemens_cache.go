@@ -60,56 +60,56 @@ func Flush() {
 type SiemensPointCache struct {
 	Slots      map[string]map[string]SiemensPoint
 	ruleEngine typex.RuleX
-	lock       sync.Mutex
+	locker     sync.Mutex
 }
 
 func InitSiemensPointCache(ruleEngine typex.RuleX) intercache.InterCache {
 	__DefaultSiemensPointCache = &SiemensPointCache{
 		ruleEngine: ruleEngine,
 		Slots:      map[string]map[string]SiemensPoint{},
-		lock:       sync.Mutex{},
+		locker:     sync.Mutex{},
 	}
 	return __DefaultSiemensPointCache
 }
 func (M *SiemensPointCache) RegisterSlot(Slot string) {
-	M.lock.Lock()
-	defer M.lock.Unlock()
+	M.locker.Lock()
+	defer M.locker.Unlock()
 	M.Slots[Slot] = map[string]SiemensPoint{}
 }
 func (M *SiemensPointCache) GetSlot(Slot string) map[string]SiemensPoint {
-	M.lock.Lock()
-	defer M.lock.Unlock()
+	M.locker.Lock()
+	defer M.locker.Unlock()
 	if S, ok := M.Slots[Slot]; ok {
 		return S
 	}
 	return nil
 }
 func (M *SiemensPointCache) SetValue(Slot, K string, V SiemensPoint) {
-	M.lock.Lock()
-	defer M.lock.Unlock()
+	M.locker.Lock()
+	defer M.locker.Unlock()
 	if S, ok := M.Slots[Slot]; ok {
 		S[K] = V
 		M.Slots[Slot] = S
 	}
 }
 func (M *SiemensPointCache) GetValue(Slot, K string) SiemensPoint {
-	M.lock.Lock()
-	defer M.lock.Unlock()
+	M.locker.Lock()
+	defer M.locker.Unlock()
 	if S, ok := M.Slots[Slot]; ok {
 		return S[K]
 	}
 	return SiemensPoint{}
 }
 func (M *SiemensPointCache) DeleteValue(Slot, K string) {
-	M.lock.Lock()
-	defer M.lock.Unlock()
+	M.locker.Lock()
+	defer M.locker.Unlock()
 	if S, ok := M.Slots[Slot]; ok {
 		delete(S, Slot)
 	}
 }
 func (M *SiemensPointCache) UnRegisterSlot(Slot string) {
-	M.lock.Lock()
-	defer M.lock.Unlock()
+	M.locker.Lock()
+	defer M.locker.Unlock()
 	delete(M.Slots, Slot)
 	M.Flush()
 }

@@ -61,56 +61,56 @@ func Flush() {
 type KdnCnCPointCache struct {
 	Slots      map[string]map[string]KndRegisterPoint
 	ruleEngine typex.RuleX
-	lock       sync.Mutex
+	locker     sync.Mutex
 }
 
 func InitKdnCnCPointCache(ruleEngine typex.RuleX) intercache.InterCache {
 	__DefaultKdnCnCPointCache = &KdnCnCPointCache{
 		ruleEngine: ruleEngine,
 		Slots:      map[string]map[string]KndRegisterPoint{},
-		lock:       sync.Mutex{},
+		locker:     sync.Mutex{},
 	}
 	return __DefaultKdnCnCPointCache
 }
 func (M *KdnCnCPointCache) RegisterSlot(Slot string) {
-	M.lock.Lock()
-	defer M.lock.Unlock()
+	M.locker.Lock()
+	defer M.locker.Unlock()
 	M.Slots[Slot] = map[string]KndRegisterPoint{}
 }
 func (M *KdnCnCPointCache) GetSlot(Slot string) map[string]KndRegisterPoint {
-	M.lock.Lock()
-	defer M.lock.Unlock()
+	M.locker.Lock()
+	defer M.locker.Unlock()
 	if S, ok := M.Slots[Slot]; ok {
 		return S
 	}
 	return nil
 }
 func (M *KdnCnCPointCache) SetValue(Slot, K string, V KndRegisterPoint) {
-	M.lock.Lock()
-	defer M.lock.Unlock()
+	M.locker.Lock()
+	defer M.locker.Unlock()
 	if S, ok := M.Slots[Slot]; ok {
 		S[K] = V
 		M.Slots[Slot] = S
 	}
 }
 func (M *KdnCnCPointCache) GetValue(Slot, K string) KndRegisterPoint {
-	M.lock.Lock()
-	defer M.lock.Unlock()
+	M.locker.Lock()
+	defer M.locker.Unlock()
 	if S, ok := M.Slots[Slot]; ok {
 		return S[K]
 	}
 	return KndRegisterPoint{}
 }
 func (M *KdnCnCPointCache) DeleteValue(Slot, K string) {
-	M.lock.Lock()
-	defer M.lock.Unlock()
+	M.locker.Lock()
+	defer M.locker.Unlock()
 	if S, ok := M.Slots[Slot]; ok {
 		delete(S, Slot)
 	}
 }
 func (M *KdnCnCPointCache) UnRegisterSlot(Slot string) {
-	M.lock.Lock()
-	defer M.lock.Unlock()
+	M.locker.Lock()
+	defer M.locker.Unlock()
 	delete(M.Slots, Slot)
 	M.Flush()
 }

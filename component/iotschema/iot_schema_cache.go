@@ -53,56 +53,56 @@ func Flush() {
 type IotSchemaCache struct {
 	Slots      map[string]map[string]IoTProperty
 	ruleEngine typex.RuleX
-	lock       sync.Mutex
+	locker     sync.Mutex
 }
 
 func InitIotSchemaCache(ruleEngine typex.RuleX) intercache.InterCache {
 	__DefaultIotSchemaCache = &IotSchemaCache{
 		ruleEngine: ruleEngine,
 		Slots:      map[string]map[string]IoTProperty{},
-		lock:       sync.Mutex{},
+		locker:     sync.Mutex{},
 	}
 	return __DefaultIotSchemaCache
 }
 func (M *IotSchemaCache) RegisterSlot(Slot string) {
-	M.lock.Lock()
-	defer M.lock.Unlock()
+	M.locker.Lock()
+	defer M.locker.Unlock()
 	M.Slots[Slot] = map[string]IoTProperty{}
 }
 func (M *IotSchemaCache) GetSlot(Slot string) map[string]IoTProperty {
-	M.lock.Lock()
-	defer M.lock.Unlock()
+	M.locker.Lock()
+	defer M.locker.Unlock()
 	if S, ok := M.Slots[Slot]; ok {
 		return S
 	}
 	return nil
 }
 func (M *IotSchemaCache) SetValue(Slot, K string, V IoTProperty) {
-	M.lock.Lock()
-	defer M.lock.Unlock()
+	M.locker.Lock()
+	defer M.locker.Unlock()
 	if S, ok := M.Slots[Slot]; ok {
 		S[K] = V
 		M.Slots[Slot] = S
 	}
 }
 func (M *IotSchemaCache) GetValue(Slot, K string) IoTProperty {
-	M.lock.Lock()
-	defer M.lock.Unlock()
+	M.locker.Lock()
+	defer M.locker.Unlock()
 	if S, ok := M.Slots[Slot]; ok {
 		return S[K]
 	}
 	return IoTProperty{}
 }
 func (M *IotSchemaCache) DeleteValue(Slot, K string) {
-	M.lock.Lock()
-	defer M.lock.Unlock()
+	M.locker.Lock()
+	defer M.locker.Unlock()
 	if S, ok := M.Slots[Slot]; ok {
 		delete(S, Slot)
 	}
 }
 func (M *IotSchemaCache) UnRegisterSlot(Slot string) {
-	M.lock.Lock()
-	defer M.lock.Unlock()
+	M.locker.Lock()
+	defer M.locker.Unlock()
 	delete(M.Slots, Slot)
 	M.Flush()
 }

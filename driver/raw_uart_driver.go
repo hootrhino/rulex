@@ -16,7 +16,7 @@ type rawUartDriver struct {
 	ctx        context.Context
 	RuleEngine typex.RuleX
 	device     *typex.Device
-	lock       sync.Mutex
+	locker     sync.Mutex
 }
 
 // 初始化一个驱动
@@ -31,7 +31,7 @@ func NewRawUartDriver(
 		ctx:        ctx,
 		serialPort: serialPort,
 		device:     device,
-		lock:       sync.Mutex{},
+		locker:     sync.Mutex{},
 	}
 }
 
@@ -56,16 +56,16 @@ func (a *rawUartDriver) Test() error {
 	if a.serialPort == nil {
 		return errors.New("serialPort is nil")
 	}
-	a.lock.Lock()
+	a.locker.Lock()
 	_, err := a.serialPort.Write([]byte("\r\n"))
-	a.lock.Unlock()
+	a.locker.Unlock()
 	return err
 }
 
 func (a *rawUartDriver) Read(cmd []byte, b []byte) (int, error) {
-	a.lock.Lock()
+	a.locker.Lock()
 	n, e := a.serialPort.Read(b)
-	a.lock.Unlock()
+	a.locker.Unlock()
 	return n, e
 }
 

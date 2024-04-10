@@ -64,12 +64,12 @@ func level(ss string) []logrus.Level {
 type RealTimeLogger struct {
 	WsServer websocket.Upgrader
 	Clients  map[string]*websocket.Conn
-	lock     sync.Mutex
+	locker   sync.Mutex
 }
 
 func (w *RealTimeLogger) Write(p []byte) (n int, err error) {
-	w.lock.Lock()
-	defer w.lock.Unlock()
+	w.locker.Lock()
+	defer w.locker.Unlock()
 	for _, c := range w.Clients {
 		err := c.WriteMessage(websocket.TextMessage, p)
 		if err != nil {
@@ -87,7 +87,7 @@ func StartNewRealTimeLogger(s string) *RealTimeLogger {
 			},
 		},
 		Clients: make(map[string]*websocket.Conn),
-		lock:    sync.Mutex{},
+		locker:  sync.Mutex{},
 	}
 	Logrus.AddHook(NewWSLogHook(s))
 	return private_GRealtimeLogger
@@ -116,30 +116,30 @@ func WsLogger(c *gin.Context) {
 	wsConn.SetReadDeadline(time.Time{})
 	token := string(b)
 	if token != "WsTerminal" {
-		private_GRealtimeLogger.lock.Lock()
+		private_GRealtimeLogger.locker.Lock()
 		wsConn.WriteMessage(1, []byte("Invalid client token"))
-		private_GRealtimeLogger.lock.Unlock()
+		private_GRealtimeLogger.locker.Unlock()
 		wsConn.Close()
 		return
 	}
 	// 最多允许连接10个客户端，实际情况下根本用不了那么多
 	if len(private_GRealtimeLogger.Clients) > 5 {
-		private_GRealtimeLogger.lock.Lock()
+		private_GRealtimeLogger.locker.Lock()
 		wsConn.WriteMessage(websocket.CloseMessage, []byte{})
-		private_GRealtimeLogger.lock.Unlock()
+		private_GRealtimeLogger.locker.Unlock()
 		wsConn.Close()
 		return
 	}
 	private_GRealtimeLogger.Clients[wsConn.RemoteAddr().String()] = wsConn
-	private_GRealtimeLogger.lock.Lock()
+	private_GRealtimeLogger.locker.Lock()
 	wsConn.WriteMessage(websocket.TextMessage, []byte("Connected"))
-	private_GRealtimeLogger.lock.Unlock()
+	private_GRealtimeLogger.locker.Unlock()
 	GLogger.Info("WebSocket Terminal connected:" + wsConn.RemoteAddr().String())
 	wsConn.SetCloseHandler(func(code int, text string) error {
 		GLogger.Info("wsConn Auto Close:", wsConn.RemoteAddr().String())
-		private_GRealtimeLogger.lock.Lock()
+		private_GRealtimeLogger.locker.Lock()
 		delete(private_GRealtimeLogger.Clients, wsConn.RemoteAddr().String())
-		private_GRealtimeLogger.lock.Unlock()
+		private_GRealtimeLogger.locker.Unlock()
 		return nil
 	})
 	wsConn.SetPingHandler(func(appData string) error {
@@ -152,9 +152,9 @@ func WsLogger(c *gin.Context) {
 		defer func() {
 			if wsConn != nil {
 				GLogger.Info("wsConn Disconnect By accident:", wsConn.RemoteAddr().String())
-				private_GRealtimeLogger.lock.Lock()
+				private_GRealtimeLogger.locker.Lock()
 				delete(private_GRealtimeLogger.Clients, wsConn.RemoteAddr().String())
-				private_GRealtimeLogger.lock.Unlock()
+				private_GRealtimeLogger.locker.Unlock()
 			}
 		}()
 		for {
@@ -171,14 +171,14 @@ func WsLogger(c *gin.Context) {
 			if err != nil {
 				GLogger.Error("GRealtimeLogger error:", wsConn.RemoteAddr().String(), ", Error:", err)
 				wsConn.Close()
-				private_GRealtimeLogger.lock.Lock()
+				private_GRealtimeLogger.locker.Lock()
 				delete(private_GRealtimeLogger.Clients, wsConn.RemoteAddr().String())
-				private_GRealtimeLogger.lock.Unlock()
+				private_GRealtimeLogger.locker.Unlock()
 				return
 			}
-			private_GRealtimeLogger.lock.Lock()
+			private_GRealtimeLogger.locker.Lock()
 			err = wsConn.WriteMessage(websocket.PingMessage, []byte{})
-			private_GRealtimeLogger.lock.Unlock()
+			private_GRealtimeLogger.locker.Unlock()
 
 			if err != nil {
 				break
