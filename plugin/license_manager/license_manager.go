@@ -148,10 +148,10 @@ func (hh *LicenseManager) PluginMetaInfo() typex.XPluginMetaInfo {
 		UUID:     "LicenseManager",
 		Name:     "LicenseManager",
 		Version:  "v0.0.1",
-		Homepage: "https://hootrhino.github.io",
-		HelpLink: "https://hootrhino.github.io",
-		Author:   "HootRhinoTeam",
-		Email:    "HootRhinoTeam@hootrhino.com",
+		Homepage: "/",
+		HelpLink: "/",
+		Author:   "RHILEXTeam",
+		Email:    "RHILEXTeam@hootrhino.com",
 		License:  "AGPL",
 	}
 }

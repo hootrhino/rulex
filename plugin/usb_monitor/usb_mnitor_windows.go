@@ -42,8 +42,8 @@ func (usbm *usbMonitor) PluginMetaInfo() typex.XPluginMetaInfo {
 		Version:  "v0.0.1",
 		Homepage: "https://github.com/hootrhino/rulex.git",
 		HelpLink: "https://github.com/hootrhino/rulex.git",
-		Author:   "HootRhinoTeam",
-		Email:    "HootRhinoTeam@hootrhino.com",
+		Author:   "RHILEXTeam",
+		Email:    "RHILEXTeam@hootrhino.com",
 		License:  "AGPL",
 	}
 }

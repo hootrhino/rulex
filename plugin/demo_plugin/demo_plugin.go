@@ -31,10 +31,10 @@ func (hh *DemoPlugin) PluginMetaInfo() typex.XPluginMetaInfo {
 		UUID:     hh.uuid,
 		Name:     "DemoPlugin",
 		Version:  "v0.0.1",
-		Homepage: "https://hootrhino.github.io",
-		HelpLink: "https://hootrhino.github.io",
-		Author:   "HootRhinoTeam",
-		Email:    "HootRhinoTeam@hootrhino.com",
+		Homepage: "/",
+		HelpLink: "/",
+		Author:   "RHILEXTeam",
+		Email:    "RHILEXTeam@hootrhino.com",
 		License:  "AGPL",
 	}
 }

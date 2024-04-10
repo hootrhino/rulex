@@ -110,10 +110,10 @@ func (hh *genericWatchDog) PluginMetaInfo() typex.XPluginMetaInfo {
 		UUID:     hh.uuid,
 		Name:     "Linux Soft WatchDog",
 		Version:  "v0.0.1",
-		Homepage: "https://hootrhino.github.io",
-		HelpLink: "https://hootrhino.github.io",
-		Author:   "HootRhinoTeam",
-		Email:    "HootRhinoTeam@hootrhino.com",
+		Homepage: "/",
+		HelpLink: "/",
+		Author:   "RHILEXTeam",
+		Email:    "RHILEXTeam@hootrhino.com",
 		License:  "AGPL",
 	}
 }

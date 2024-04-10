@@ -540,10 +540,10 @@ func (hs *ApiServerPlugin) PluginMetaInfo() typex.XPluginMetaInfo {
 		UUID:     hs.uuid,
 		Name:     "RULEX HTTP RESTFul Api Server",
 		Version:  "v1.0.0",
-		Homepage: "https://hootrhino.github.io",
-		HelpLink: "https://hootrhino.github.io",
-		Author:   "HootRhinoTeam",
-		Email:    "HootRhinoTeam@hootrhino.com",
+		Homepage: "/",
+		HelpLink: "/",
+		Author:   "RHILEXTeam",
+		Email:    "RHILEXTeam@hootrhino.com",
 		License:  "AGPL",
 	}
 }

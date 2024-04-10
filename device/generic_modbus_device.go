@@ -95,18 +95,12 @@ func (g *GroupedTags) String() string {
 }
 
 // 数据模型
-type ModbusSchemaCacheValue struct {
+type SchemaProperty struct {
 	UUID          string
 	Status        int    // 0 正常；1 错误，填充 ErrMsg
 	ErrMsg        string // 错误信息
 	LastFetchTime uint64 // 最后更新时间
-	Label         string // UI显示的那个文本
 	Name          string // 变量关联名
-	Description   string // 额外信息
-	Type          string // 类型, 只能是上面几种
-	Rw            string // R读 W写 RW读写
-	Unit          string // 单位 例如：摄氏度、米、牛等等
-	Rule          string // 规则
 	Value         any    // 运行时值
 }
 
@@ -222,25 +216,25 @@ func (mdev *generic_modbus_device) Init(devId string, configMap map[string]inter
 	// 先拿到设备的SchemaId, 然后查出来其绑定的数据字段，最后注册到数据模型中心dataschema
 	//
 	// SchemaId = db.find(device.SchemaId)
-	// ModbusSchemaCacheValues = db.find_by_schema_id(SchemaId)
+	// SchemaProperties = db.find_by_schema_id(SchemaId)
 	// dataschema.RegisterSlot(mdev.PointId)
 	// dataschema.SetValue(mdev.PointId, K, V)
 	//
 	if mdev.mainConfig.SchemaId != "" {
 		dataschema.RegisterSlot(mdev.PointId)
-		var ModbusSchemaCacheValues []ModbusSchemaCacheValue
+		var SchemaProperties []SchemaProperty
 		dataSchemaLoadError := interdb.DB().Table("m_iot_properties").
-			Where("schema_id=?", mdev.mainConfig.SchemaId).Find(&ModbusSchemaCacheValues).Error
+			Where("schema_id=?", mdev.mainConfig.SchemaId).Find(&SchemaProperties).Error
 		if dataSchemaLoadError != nil {
 			return dataSchemaLoadError
 		}
 		LastFetchTime := uint64(time.Now().UnixMilli())
 
-		for _, MModbusSchemaCacheValue := range ModbusSchemaCacheValues {
-			dataschema.SetValue(mdev.PointId, MModbusSchemaCacheValue.Name,
+		for _, MSchemaProperty := range SchemaProperties {
+			dataschema.SetValue(mdev.PointId, MSchemaProperty.Name,
 				dataschema.DataSchemaValue{
-					UUID:          MModbusSchemaCacheValue.UUID,
-					Name:          MModbusSchemaCacheValue.Name,
+					UUID:          MSchemaProperty.UUID,
+					Name:          MSchemaProperty.Name,
 					LastFetchTime: LastFetchTime,
 					Value:         "-",
 				})
