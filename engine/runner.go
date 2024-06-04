@@ -34,7 +34,6 @@ import (
 	"github.com/hootrhino/rulex/core"
 	"github.com/hootrhino/rulex/glogger"
 	icmpsender "github.com/hootrhino/rulex/plugin/icmp_sender"
-	license_manager "github.com/hootrhino/rulex/plugin/license_manager"
 	"github.com/hootrhino/rulex/typex"
 )
 
@@ -66,11 +65,6 @@ func RunRulex(iniPath string) {
 	// Load Http api Server
 	httpServer := httpserver.NewHttpApiServer(engine)
 	if err := engine.LoadPlugin("plugin.http_server", httpServer); err != nil {
-		glogger.GLogger.Error(err)
-		return
-	}
-	license_manager := license_manager.NewLicenseManager(engine)
-	if err := engine.LoadPlugin("plugin.license_manager", license_manager); err != nil {
 		glogger.GLogger.Error(err)
 		return
 	}

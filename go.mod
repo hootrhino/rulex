@@ -1,6 +1,8 @@
 module github.com/hootrhino/rulex
 
-go 1.18
+go 1.21
+
+toolchain go1.22.2
 
 require (
 	github.com/BeatTime/bacnet v0.2.1
