@@ -5,6 +5,9 @@
 ## 架构设计
 
 <div style="text-align:center">
+     
+![image](https://github.com/user-attachments/assets/f60ee10f-d67d-43d5-a54d-3f2e0b13b26d)
+
 <img src="./README_RES/structure.png"/>
 </div>
 
@@ -45,18 +48,6 @@ sudo apt install jq cloc protobuf-compiler \
   <div style="text-align:center">
     <img src="./README_RES/wx.jpg" width="150px" />
   </div>
-
-## 贡献者
-鸣谢各位给RULEX贡献代码的社区开发者。
-
-<a href="#">
-  <img src="https://contributors-img.web.app/image?repo=hootrhino/rulex" />
-
-</a>
-
-<a href="#">
-  <img src="https://contributors-img.web.app/image?repo=hootrhino/rulex-dashboard-vue-old" />
-</a>
 
 ## Star
 <img src="https://starchart.cc/hootrhino/rulex.svg">
