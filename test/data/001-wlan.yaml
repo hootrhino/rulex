@@ -1,9 +1,0 @@
-network:
-  version: 2
-  renderer: NetworkManager
-  wifis:
-    wlan0:
-      dhcp4: yes
-      access-points:
-        "example.net":
-          password: "123456"
